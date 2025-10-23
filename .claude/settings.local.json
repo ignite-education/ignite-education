@@ -40,7 +40,10 @@
       "Bash(git commit -m \"Add lucide-react dependency for icons\")",
       "Bash(git commit -m \"Update API URLs to production backend on Render\")",
       "Bash(git add server.js)",
-      "Bash(git commit -m \"Fix Reddit API error handling to prevent 500 errors\")"
+      "Bash(git commit -m \"Fix Reddit API error handling to prevent 500 errors\")",
+      "Bash(git commit -m \"Add detailed error logging for Reddit API\")",
+      "Bash(git push)",
+      "Bash(git commit -m \"Implement Reddit OAuth API for reliable post fetching\")"
     ],
     "deny": [],
     "ask": []
