@@ -650,7 +650,9 @@ app.get('/api/reddit-posts', async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error(`Reddit API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Reddit API error: ${response.status}`, errorText);
+      throw new Error(`Reddit API error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
     const json = await response.json();
