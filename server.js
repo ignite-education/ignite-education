@@ -641,11 +641,34 @@ app.get('/api/reddit-posts', async (req, res) => {
 
     console.log('🔄 Fetching fresh Reddit posts...');
 
-    // Fetch from Reddit API (no CORS issues on server-side)
-    const redditUrl = `https://www.reddit.com/r/ProductManagement/hot.json?limit=${limit}`;
+    // Get OAuth access token
+    const authString = Buffer.from(`${process.env.VITE_REDDIT_CLIENT_ID}:${process.env.VITE_REDDIT_CLIENT_SECRET}`).toString('base64');
+
+    const tokenResponse = await fetch('https://www.reddit.com/api/v1/access_token', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${authString}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+      },
+      body: 'grant_type=client_credentials'
+    });
+
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error(`Reddit OAuth error: ${tokenResponse.status}`, errorText);
+      throw new Error(`Reddit OAuth error: ${tokenResponse.status}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Fetch from Reddit OAuth API
+    const redditUrl = `https://oauth.reddit.com/r/ProductManagement/hot?limit=${limit}`;
     const response = await fetch(redditUrl, {
       headers: {
-        'User-Agent': 'IgniteLearning/1.0'
+        'Authorization': `Bearer ${accessToken}`,
+        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
       }
     });
 
