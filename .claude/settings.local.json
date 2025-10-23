@@ -37,7 +37,8 @@
       "Bash(else echo \"No .env file found\")",
       "Bash(fi)",
       "Bash(git add package.json package-lock.json)",
-      "Bash(git commit -m \"Add lucide-react dependency for icons\")"
+      "Bash(git commit -m \"Add lucide-react dependency for icons\")",
+      "Bash(git commit -m \"Update API URLs to production backend on Render\")"
     ],
     "deny": [],
     "ask": []
