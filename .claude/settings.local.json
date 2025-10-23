@@ -27,7 +27,17 @@
       "Bash(npx supabase db execute --file migrations/add_user_roles.sql)",
       "Bash(npx supabase db push)",
       "Bash(git init)",
-      "Bash(git add .)"
+      "Bash(git add .)",
+      "Bash(git commit -m \"Initial commit - Ignite Learning Platform\")",
+      "Bash(git remote add origin https://github.com/ignite-education/ignite-education.git)",
+      "Bash(git branch -M main)",
+      "Bash(git push -u origin main)",
+      "Bash(if [ -f .env ])",
+      "Bash(then cat .env)",
+      "Bash(else echo \"No .env file found\")",
+      "Bash(fi)",
+      "Bash(git add package.json package-lock.json)",
+      "Bash(git commit -m \"Add lucide-react dependency for icons\")"
     ],
     "deny": [],
     "ask": []
