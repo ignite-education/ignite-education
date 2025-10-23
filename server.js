@@ -709,10 +709,9 @@ app.get('/api/reddit-posts', async (req, res) => {
       return res.json(redditPostsCache.data);
     }
 
-    res.status(500).json({
-      error: 'Failed to fetch Reddit posts',
-      message: error.message
-    });
+    // Return empty array instead of error to prevent frontend from breaking
+    console.log('⚠️ Returning empty array due to Reddit API error');
+    res.json([]);
   }
 });
 
