@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build)",
+      "Bash(lsof:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(cat:*)",
+      "Bash(xargs kill:*)",
+      "Bash(npm run server:*)",
+      "Bash(curl http://localhost:3001/api/health)",
+      "Bash(node:*)",
+      "Bash(curl -X POST http://localhost:3001/api/create-checkout-session -H \"Content-Type: application/json\" -d '{\"\"userId\"\":\"\"test-user-123\"\"}')",
+      "Bash(kill:*)",
+      "Bash(curl -X POST http://localhost:3001/api/knowledge-check/question -H \"Content-Type: application/json\" -d '{\"\"\"\"lessonContext\"\"\"\":\"\"\"\"Test lesson\"\"\"\",\"\"\"\"questionNumber\"\"\"\":1,\"\"\"\"totalQuestions\"\"\"\":15,\"\"\"\"previousQA\"\"\"\":[]}')",
+      "Bash(curl -X POST http://localhost:3001/api/knowledge-check/question -H \"Content-Type: application/json\" -d '{\"\"lessonContext\"\":\"\"Test lesson\"\",\"\"questionNumber\"\":1,\"\"totalQuestions\"\":15,\"\"previousQA\"\":[]}')",
+      "Bash(npx eslint:*)",
+      "Bash(timeout 5 npm run build:*)",
+      "Bash(npm run dev:server:*)",
+      "Bash(npm run:*)",
+      "Bash(pkill:*)",
+      "Bash(curl:*)",
+      "Bash(npx supabase db execute --file migrations/add_suggested_question.sql)",
+      "Bash(npx supabase db execute)",
+      "Bash(npx supabase db execute --file migrations/create_flashcards_table.sql)",
+      "Bash(npx supabase db execute --file migrations/create_lesson_ratings_table.sql)",
+      "Bash(npx supabase db execute --file migrations/add_user_roles.sql)",
+      "Bash(npx supabase db push)",
+      "Bash(git init)",
+      "Bash(git add .)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
