@@ -38,7 +38,9 @@
       "Bash(fi)",
       "Bash(git add package.json package-lock.json)",
       "Bash(git commit -m \"Add lucide-react dependency for icons\")",
-      "Bash(git commit -m \"Update API URLs to production backend on Render\")"
+      "Bash(git commit -m \"Update API URLs to production backend on Render\")",
+      "Bash(git add server.js)",
+      "Bash(git commit -m \"Fix Reddit API error handling to prevent 500 errors\")"
     ],
     "deny": [],
     "ask": []
