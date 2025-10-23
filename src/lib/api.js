@@ -200,7 +200,7 @@ export async function createCommunityPost(postData) {
 export async function getRedditPosts(limit = 10) {
   try {
     // Use backend endpoint which handles caching and avoids CORS/rate limit issues
-    const response = await fetch(`http://localhost:3001/api/reddit-posts?limit=${limit}`);
+    const response = await fetch(`https://ignite-education-api.onrender.com/api/reddit-posts?limit=${limit}`);
 
     if (!response.ok) {
       throw new Error(`Reddit API error: ${response.status}`);

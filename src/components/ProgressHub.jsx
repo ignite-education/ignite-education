@@ -931,7 +931,7 @@ const ProgressHub = () => {
 
     try {
       // Call API to delete user account
-      const response = await fetch('http://localhost:3001/api/delete-account', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/delete-account', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

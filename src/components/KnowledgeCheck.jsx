@@ -108,7 +108,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
       // Use answers.length + 1 as the question number (more reliable than currentQuestionIndex)
       const questionNum = currentAnswers.length + 1;
 
-      const response = await fetch('http://localhost:3001/api/knowledge-check/question', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/knowledge-check/question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
     setIsEvaluating(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/knowledge-check/evaluate', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/knowledge-check/evaluate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

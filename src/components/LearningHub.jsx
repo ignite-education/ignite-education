@@ -670,7 +670,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       `.trim() : '';
 
       // Call backend API
-      const response = await fetch('http://localhost:3001/api/chat', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -835,7 +835,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         .replace(/\*(.+?)\*/g, '$1')     // Remove italic *text*
         .trim();
 
-      const response = await fetch('http://localhost:3001/api/text-to-speech', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -981,7 +981,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setUpgradingToAdFree(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/create-checkout-session', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1394,7 +1394,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
 
     try {
-      const response = await fetch('http://localhost:3001/api/text-to-speech', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1481,7 +1481,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     try {
       console.log(`📖 Narrating lesson title: ${lessonName}`);
 
-      const response = await fetch('http://localhost:3001/api/text-to-speech', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2024,7 +2024,7 @@ ${currentLessonSections.map((section) => {
 }).filter(Boolean).join('\n\n')}
 ` : '';
 
-                      const response = await fetch('http://localhost:3001/api/chat', {
+                      const response = await fetch('https://ignite-education-api.onrender.com/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

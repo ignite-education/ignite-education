@@ -516,7 +516,7 @@ const CurriculumUploadNew = () => {
 
     // Call API to generate question
     try {
-      const response = await fetch('http://localhost:3001/api/generate-suggested-question', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/generate-suggested-question', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sectionContent })
@@ -657,7 +657,7 @@ ${contentBlocks.map((block, index) => {
       `.trim();
 
       // Call API to generate flashcards
-      const response = await fetch('http://localhost:3001/api/generate-flashcards', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/generate-flashcards', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
