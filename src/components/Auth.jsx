@@ -136,34 +136,34 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '7vh', paddingBottom: '8vh', scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '2vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
       <div className="relative w-full" style={{ maxWidth: '592px' }}>
         {/* Logo */}
         <div
-          className="mx-auto mb-4 sm:mb-6"
+          className="mx-auto mb-3 sm:mb-4"
           style={{
             backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
-            width: 'clamp(120px, 30vw, 160px)',
-            height: 'clamp(38.4px, 9.6vw, 51.2px)'
+            width: 'clamp(100px, 25vw, 140px)',
+            height: 'clamp(32px, 8vw, 44.8px)'
           }}
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-2xl sm:text-3xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.75rem', paddingBottom: '0.75rem', marginBottom: '1rem sm:mb-6', lineHeight: '1.2' }}>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: 'clamp(0.75rem, 2vh, 1.5rem)', lineHeight: '1.2' }}>
           Upskill. Reskill.<br /><span className="text-pink-500">Get ready for what's next.</span>
         </h1>
 
         {/* Title above the box */}
-        <h2 className="text-lg sm:text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
           {isLogin ? 'Welcome Back' : 'Create Account'}
         </h2>
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-4 py-6 sm:px-8 sm:py-8"
+          className="bg-white text-black px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-8"
           style={{
             animation: 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem'
@@ -177,12 +177,12 @@ const Auth = () => {
           )}
 
           {/* OAuth Buttons */}
-          <div className="space-y-2.5 sm:space-y-3 mb-5 sm:mb-6">
+          <div className="space-y-2 sm:space-y-2.5 mb-4 sm:mb-5">
             <button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-4 py-2 sm:py-2.5 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -197,7 +197,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('linkedin_oidc')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-[#0077B5] text-white rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 sm:gap-3 bg-[#0077B5] text-white rounded-xl px-4 py-2 sm:py-2.5 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -207,7 +207,7 @@ const Auth = () => {
           </div>
 
           {/* Divider */}
-          <div className="relative" style={{ marginBottom: '1.125rem' }}>
+          <div className="relative" style={{ marginBottom: '0.875rem' }}>
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
@@ -216,8 +216,8 @@ const Auth = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               {!isLogin ? (
                 <>
                   <div>
@@ -227,7 +227,7 @@ const Auth = () => {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       required={!isLogin}
-                      className="w-full bg-gray-100 text-black px-4 py-2.5 sm:px-5 sm:py-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                      className="w-full bg-gray-100 text-black px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
                       placeholder="John"
                     />
                   </div>
@@ -238,7 +238,7 @@ const Auth = () => {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       required={!isLogin}
-                      className="w-full bg-gray-100 text-black px-4 py-2.5 sm:px-5 sm:py-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                      className="w-full bg-gray-100 text-black px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
                       placeholder="Doe"
                     />
                   </div>
@@ -246,7 +246,7 @@ const Auth = () => {
               ) : null}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
               <div>
                 <label className="block text-sm font-medium mb-1">Email</label>
                 <input
@@ -254,7 +254,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-gray-100 text-black px-4 py-2.5 sm:px-5 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="you@example.com"
                 />
               </div>
@@ -267,7 +267,7 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-gray-100 text-black px-4 py-2.5 sm:px-5 sm:py-3 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 sm:px-4 sm:py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="••••••••"
                 />
               </div>
@@ -276,13 +276,13 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-pink-500 text-white rounded-xl px-5 py-3 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-pink-500 text-white rounded-xl px-4 py-2.5 sm:px-5 sm:py-3 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
           </form>
 
-          <div className="text-center" style={{ marginTop: '1.2rem' }}>
+          <div className="text-center" style={{ marginTop: '1rem' }}>
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
