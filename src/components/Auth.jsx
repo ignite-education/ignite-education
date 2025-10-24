@@ -137,7 +137,7 @@ const Auth = () => {
       >
       {/* First Section - Auth Form */}
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '2vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
-      <div className="relative w-full" style={{ maxWidth: '592px' }}>
+      <div className="relative w-full" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
           className="mx-auto mb-3 sm:mb-4"
@@ -295,7 +295,7 @@ const Auth = () => {
         </div>
 
         {/* Scroll Down Arrow - visible on both sign in and create account */}
-        <div className="flex justify-center mt-3 sm:mt-4 mb-2">
+        <div className="flex justify-center mt-5 sm:mt-6 mb-2">
           <button
             onClick={scrollToMarketing}
             className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg"
