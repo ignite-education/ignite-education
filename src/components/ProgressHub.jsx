@@ -1686,7 +1686,7 @@ const ProgressHub = () => {
   return (
     <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Left Sidebar - Fixed */}
-      <div className="bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden" style={{ width: '650px', minWidth: '650px' }}>
+      <div className="bg-black border-r border-gray-800 flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
         <div className="flex-shrink-0 px-12" style={{ paddingTop: '1rem', paddingBottom: '0.75rem' }}>
           <div className="flex items-center">
@@ -1705,9 +1705,10 @@ const ProgressHub = () => {
           </div>
         </div>
 
-        {/* Content - No Scroll */}
-        <div className="flex-1 px-12 pb-3 overflow-hidden">
-          <div className="h-full flex flex-col justify-between" style={{ gap: '8px' }}>
+        {/* Content - Scrollable */}
+        <div className="flex-1 px-12 pb-3 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <style dangerouslySetInnerHTML={{__html: `.flex-1.overflow-y-auto::-webkit-scrollbar { display: none; }`}} />
+          <div className="flex flex-col justify-between" style={{ gap: '8px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
                 <h1 className="font-semibold mb-1" style={{ fontSize: '28px' }}>
