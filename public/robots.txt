@@ -1,5 +1,6 @@
-# robots.txt for Ignite Learning
-# Allow all search engines and AI crawlers
+# robots.txt for Ignite Education
+# https://www.ignite.education
+# Allow all search engines and AI crawlers for maximum discoverability
 
 # Google
 User-agent: Googlebot
@@ -36,11 +37,21 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+# Meta/Facebook
+User-agent: FacebookBot
+Allow: /
+
+# Apple
+User-agent: Applebot
+Allow: /
+
 # All other bots
 User-agent: *
 Allow: /
-Disallow: /admin/
+Disallow: /admin
+Disallow: /analytics
+Disallow: /auth/reddit/callback
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: https://www.ignite.education/sitemap.xml
