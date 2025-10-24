@@ -25,12 +25,12 @@ const AuthDesign = () => {
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect authenticated users away from auth page
-  useEffect(() => {
-    if (user && !showOnboarding) {
-      navigate('/progress', { replace: true });
-    }
-  }, [user, navigate, showOnboarding]);
+  // NOTE: Redirect disabled for design testing - this allows viewing the page while logged in
+  // useEffect(() => {
+  //   if (user && !showOnboarding) {
+  //     navigate('/progress', { replace: true });
+  //   }
+  // }, [user, navigate, showOnboarding]);
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
