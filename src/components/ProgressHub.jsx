@@ -1703,8 +1703,8 @@ const ProgressHub = () => {
       <div className="px-12 pb-8 flex-1 overflow-hidden">
         <div className="grid grid-cols-2 gap-8 h-full">
           {/* Left Panel */}
-          <div className="h-full flex flex-col overflow-hidden" style={{ maxWidth: '650px' }}>
-            <div className="space-y-2.5 flex-1 flex flex-col overflow-hidden" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+          <div className="h-full flex flex-col" style={{ maxWidth: '650px' }}>
+            <div className="space-y-2.5 flex-1 flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
                 <h1 className="font-semibold mb-1.5" style={{ fontSize: '30px' }}>
