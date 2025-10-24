@@ -1249,10 +1249,19 @@ const ProgressHub = () => {
 
   // Pull-to-refresh: Handle touch start
   const handlePullStart = useCallback((e) => {
-    if (!postsScrollRef.current || isRefreshing) return;
+    console.log('🔵 handlePullStart called!', {
+      hasRef: !!postsScrollRef.current,
+      isRefreshing,
+      eventType: e.type
+    });
+
+    if (!postsScrollRef.current || isRefreshing) {
+      console.log('⛔ Returning early - no ref or already refreshing');
+      return;
+    }
 
     const scrollTop = postsScrollRef.current.scrollTop;
-    console.log('👆 Touch/Mouse start - scrollTop:', scrollTop);
+    console.log('👆 Touch/Mouse start - scrollTop:', scrollTop, 'threshold: 10px');
 
     // Allow pull when near the top (within 10px) - more forgiving threshold
     if (scrollTop <= 10) {
@@ -1374,20 +1383,8 @@ const ProgressHub = () => {
     }
   }, [pullDistance, isPulling, isRefreshing]);
 
-  // Add non-passive event listeners for touch/wheel events to allow preventDefault
-  useEffect(() => {
-    const element = postsScrollRef.current;
-    if (!element) return;
-
-    // These need to be non-passive to allow preventDefault
-    element.addEventListener('touchmove', handlePullMove, { passive: false });
-    element.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      element.removeEventListener('touchmove', handlePullMove);
-      element.removeEventListener('wheel', handleWheel);
-    };
-  }, [handlePullMove, handleWheel]);
+  // Store cleanup function for event listeners
+  const eventListenerCleanupRef = useRef(null);
 
   // Add document-level mouse event listeners for drag-to-refresh
   useEffect(() => {
@@ -2060,7 +2057,34 @@ const ProgressHub = () => {
 
             {/* Scrollable Posts Section */}
             <div
-              ref={postsScrollRef}
+              ref={(el) => {
+                // Clean up previous event listeners if they exist
+                if (eventListenerCleanupRef.current) {
+                  console.log('🧹 Cleaning up previous event listeners');
+                  eventListenerCleanupRef.current();
+                  eventListenerCleanupRef.current = null;
+                }
+
+                postsScrollRef.current = el;
+
+                if (el) {
+                  console.log('📌 postsScrollRef attached to element, adding event listeners');
+
+                  // Attach event listeners directly in the ref callback
+                  el.addEventListener('touchmove', handlePullMove, { passive: false });
+                  el.addEventListener('wheel', handleWheel, { passive: false });
+
+                  // Store cleanup function
+                  eventListenerCleanupRef.current = () => {
+                    el.removeEventListener('touchmove', handlePullMove);
+                    el.removeEventListener('wheel', handleWheel);
+                  };
+
+                  console.log('✅ Pull-to-refresh event listeners attached successfully');
+                } else {
+                  console.log('❌ postsScrollRef set to null');
+                }
+              }}
               className="flex-1 overflow-y-auto relative"
               style={{
                 scrollbarWidth: 'none',
@@ -2070,6 +2094,7 @@ const ProgressHub = () => {
               onTouchStart={handlePullStart}
               onTouchEnd={handlePullEnd}
               onMouseDown={handlePullStart}
+              onMouseUp={handlePullEnd}
             >
               {/* Refresh indicator that pushes posts down slightly */}
               <div

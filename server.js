@@ -684,22 +684,26 @@ app.get('/api/reddit-posts', async (req, res) => {
     const posts = await Promise.all(json.data.children.map(async child => {
       const post = child.data;
 
-      // Fetch user icon
+      // Fetch user icon using OAuth API
       let authorIcon = null;
       try {
-        const userResponse = await fetch(`https://www.reddit.com/user/${post.author}/about.json`, {
-          headers: { 'User-Agent': 'IgniteLearning/1.0' }
+        const userResponse = await fetch(`https://oauth.reddit.com/user/${post.author}/about`, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+          }
         });
         if (userResponse.ok) {
           const userData = await userResponse.json();
           authorIcon = userData.data?.icon_img || userData.data?.snoovatar_img || null;
           if (authorIcon) {
+            // Clean up the URL
             authorIcon = authorIcon.split('?')[0];
             authorIcon = authorIcon.replace(/&amp;/g, '&');
           }
         }
       } catch (err) {
-        console.error('Error fetching Reddit user icon:', err);
+        console.error(`Error fetching Reddit user icon for ${post.author}:`, err.message);
       }
 
       return {
