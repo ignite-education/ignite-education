@@ -1739,7 +1739,7 @@ const ProgressHub = () => {
 
               {/* Upcoming Lessons */}
               <div className="flex-shrink-0 relative">
-                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '0.05rem' }}>
+                <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '0.05rem' }}>
                   {upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length && upcomingLessons[snappedCardIndex] ? (
                     (() => {
                       const snappedLesson = upcomingLessons[snappedCardIndex];
@@ -1926,7 +1926,7 @@ const ProgressHub = () => {
 
               {/* Office Hours */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Office Hours</h2>
+                <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '12px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
                   {tutorData.name ? (
@@ -1988,7 +1988,7 @@ const ProgressHub = () => {
 
               {/* Merchandise */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Merchandise</h2>
+                <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Merchandise</h2>
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '12px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '110px' }}>
                   <img
