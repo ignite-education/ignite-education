@@ -2413,11 +2413,6 @@ const ProgressHub = () => {
                       </span>
                     )}
                   </div>
-                  {newPost.shareToReddit && !redditAuthenticated && (
-                    <div className="text-orange-600 px-4 whitespace-nowrap" style={{ fontSize: '11px' }}>
-                      Note: You'll be asked to connect your Reddit account when posting and are subject to r/ProductManagement rules
-                    </div>
-                  )}
                 </div>
 
                 <div className="flex gap-3 justify-end mt-6">

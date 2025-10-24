@@ -203,6 +203,10 @@ async function getValidAccessToken() {
 export async function postToReddit(subreddit, title, text) {
   const accessToken = await getValidAccessToken();
 
+  // Append context to the post content
+  const contextText = "\n\nContext - I'm currently studying Product Management at Ignite.";
+  const fullText = text + contextText;
+
   const response = await fetch(`${REDDIT_API_URL}/api/submit`, {
     method: 'POST',
     headers: {
@@ -214,7 +218,7 @@ export async function postToReddit(subreddit, title, text) {
       sr: subreddit,
       kind: 'self', // Text post
       title: title,
-      text: text,
+      text: fullText,
       api_type: 'json'
     })
   });
