@@ -136,7 +136,7 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '2vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '10vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
       <div className="relative w-full" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
@@ -298,14 +298,14 @@ const Auth = () => {
         <div className="flex justify-center mt-5 sm:mt-6 mb-2">
           <button
             onClick={scrollToMarketing}
-            className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg"
+            className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
             style={{
               animation: 'subtleBounce 2s infinite',
               padding: '8px'
             }}
             aria-label="Scroll to learn more"
           >
-            <ChevronDown size={18} className="text-black" />
+            <ChevronDown size={18} className="text-black group-hover:text-pink-500 transition" />
           </button>
         </div>
       </div>
