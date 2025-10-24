@@ -3,6 +3,7 @@ import ProgressHub from './components/ProgressHub'
 import RedditCallback from './components/RedditCallback'
 import LearningHub from './components/LearningHub'
 import Auth from './components/Auth'
+import AuthDesign from './components/AuthDesign'
 import ProtectedRoute from './components/ProtectedRoute'
 import CurriculumUploadNew from './pages/CurriculumUploadNew'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
@@ -14,6 +15,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/welcome" element={<Auth />} />
+          <Route path="/auth-design" element={<AuthDesign />} />
           <Route path="/" element={
             <ProtectedRoute>
               <ProgressHub />
