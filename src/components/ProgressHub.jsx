@@ -2344,7 +2344,7 @@ const ProgressHub = () => {
               <form onSubmit={handleSubmitPost}>
               <div className="space-y-4">
                 <div>
-                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.25rem' }}>Title</label>
+                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>Title</label>
                   <input
                     type="text"
                     value={newPost.title}
@@ -2357,7 +2357,7 @@ const ProgressHub = () => {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.25rem' }}>Content</label>
+                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>Content</label>
                   <textarea
                     value={newPost.content}
                     onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
@@ -2369,7 +2369,7 @@ const ProgressHub = () => {
                 </div>
 
                 <div className="space-y-3">
-                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.25rem' }}>Reddit</label>
+                  <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>Reddit</label>
                   <div className="flex items-center gap-3 p-4 bg-gray-100" style={{ borderRadius: '0.3rem' }}>
                     <input
                       type="checkbox"
