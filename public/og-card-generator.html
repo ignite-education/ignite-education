@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OG Card Generator - Ignite Education</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .og-card {
+      width: 1200px;
+      height: 630px;
+      background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+      border-radius: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .og-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 30% 50%, rgba(239, 11, 114, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 70% 50%, rgba(119, 20, 224, 0.15) 0%, transparent 50%);
+    }
+
+    .og-content {
+      position: relative;
+      z-index: 1;
+      padding: 80px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .og-logo {
+      width: 180px;
+      height: 60px;
+      background-image: url('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: left center;
+    }
+
+    .og-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .og-title {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .og-highlight {
+      color: #EF0B72;
+    }
+
+    .og-description {
+      font-size: 32px;
+      font-weight: 300;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.8);
+      max-width: 900px;
+      margin: 0;
+    }
+
+    .og-footer {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .og-url {
+      font-weight: 600;
+      color: #EF0B72;
+    }
+
+    .instructions {
+      background: #1a1a1a;
+      padding: 20px 30px;
+      border-radius: 8px;
+      max-width: 1200px;
+      border: 1px solid #333;
+    }
+
+    .instructions h2 {
+      margin-top: 0;
+      color: #EF0B72;
+    }
+
+    .instructions ol {
+      line-height: 1.8;
+    }
+
+    .instructions code {
+      background: #000;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+
+    button {
+      background: #EF0B72;
+      color: white;
+      border: none;
+      padding: 15px 40px;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: #d00a63;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+  <div class="instructions">
+    <h2>📸 How to Create Your Social Share Image</h2>
+    <ol>
+      <li>Scroll down to view the preview card below</li>
+      <li>Take a screenshot of just the card (1200x630px area)</li>
+      <li>Or use browser dev tools to screenshot just the <code>.og-card</code> element</li>
+      <li>Save as <code>og-image.png</code></li>
+      <li>Upload to Supabase storage: <code>assets/og-image.png</code></li>
+      <li>Update the meta tag in <code>index.html</code> to use the new URL</li>
+    </ol>
+    <p><strong>Alternative:</strong> Use a tool like <a href="https://www.canva.com" target="_blank" style="color: #EF0B72;">Canva</a> with dimensions 1200x630px and recreate this design.</p>
+  </div>
+
+  <div class="og-card" id="og-card">
+    <div class="og-content">
+      <div class="og-logo"></div>
+
+      <div class="og-main">
+        <h1 class="og-title">
+          Master Product<br/>
+          Management & <span class="og-highlight">Tech Skills</span>
+        </h1>
+
+        <p class="og-description">
+          AI-powered interactive courses. Real-world projects. Expert mentorship.
+        </p>
+      </div>
+
+      <div class="og-footer">
+        <span class="og-url">ignite.education</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h2>🎨 Using Chrome DevTools (Recommended)</h2>
+    <ol>
+      <li>Right-click on the card above → "Inspect Element"</li>
+      <li>In DevTools, right-click on <code>&lt;div class="og-card"&gt;</code></li>
+      <li>Select "Capture node screenshot"</li>
+      <li>This will save a perfect 1200x630px image automatically!</li>
+    </ol>
+  </div>
+
+  <script>
+    // Optional: Add download button
+    const card = document.getElementById('og-card');
+  </script>
+</body>
+</html>
