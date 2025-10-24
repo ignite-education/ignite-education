@@ -153,7 +153,7 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-lg sm:text-xl md:text-2xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)', lineHeight: '1.2' }}>
+        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.5rem, 1.5vh, 1rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
           Upskill. Reskill.<br /><span className="text-pink-500">Get ready for what's next.</span>
         </h1>
 
