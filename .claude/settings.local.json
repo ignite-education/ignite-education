@@ -45,7 +45,9 @@
       "Bash(git push)",
       "Bash(git commit -m \"Implement Reddit OAuth API for reliable post fetching\")",
       "Bash(git checkout HEAD -- src/components/ProgressHub.jsx)",
-      "Bash(git checkout 5d74665 -- src/components/ProgressHub.jsx)"
+      "Bash(git checkout 5d74665 -- src/components/ProgressHub.jsx)",
+      "Bash(git log --all --format=\"%h %ci %s\" -- src/components/ProgressHub.jsx)",
+      "Bash(git checkout 67e654c -- src/components/ProgressHub.jsx)"
     ],
     "deny": [],
     "ask": []

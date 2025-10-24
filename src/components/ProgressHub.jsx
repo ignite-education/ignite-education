@@ -914,7 +914,7 @@ const ProgressHub = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate('/welcome');
+      navigate('/auth');
     } catch (error) {
       console.error('Error logging out:', error);
       alert('Failed to log out');
@@ -941,7 +941,7 @@ const ProgressHub = () => {
 
       if (response.ok) {
         await signOut();
-        navigate('/welcome');
+        navigate('/auth');
       } else {
         throw new Error('Failed to delete account');
       }
@@ -1249,22 +1249,13 @@ const ProgressHub = () => {
 
   // Pull-to-refresh: Handle touch start
   const handlePullStart = useCallback((e) => {
-    console.log('🔵 handlePullStart called!', {
-      hasRef: !!postsScrollRef.current,
-      isRefreshing,
-      eventType: e.type
-    });
-
-    if (!postsScrollRef.current || isRefreshing) {
-      console.log('⛔ Returning early - no ref or already refreshing');
-      return;
-    }
+    if (!postsScrollRef.current || isRefreshing) return;
 
     const scrollTop = postsScrollRef.current.scrollTop;
-    console.log('👆 Touch/Mouse start - scrollTop:', scrollTop, 'threshold: 10px');
+    console.log('👆 Touch/Mouse start - scrollTop:', scrollTop);
 
-    // Allow pull when near the top (within 10px) - more forgiving threshold
-    if (scrollTop <= 10) {
+    // Allow pull when at the top (scrollTop = 0) and user scrolls up
+    if (scrollTop === 0) {
       const startY = e.touches ? e.touches[0].clientY : e.clientY;
       setPullStartY(startY);
       // Track mouse down state for desktop
@@ -1285,8 +1276,8 @@ const ProgressHub = () => {
     const scrollTop = postsScrollRef.current.scrollTop;
     const currentY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    // Allow pull when near the top (within 10px) - more forgiving
-    if (scrollTop <= 10 && pullStartY !== 0) {
+    // Allow pull when at the top (scrollTop = 0)
+    if (scrollTop === 0 && pullStartY !== 0) {
       const distance = currentY - pullStartY;
       console.log('📏 Move distance:', distance, 'scrollTop:', scrollTop);
 
@@ -1317,8 +1308,8 @@ const ProgressHub = () => {
           console.log('❌ Reset pull (scrolling down)');
         }
       }
-    } else if (isPulling && scrollTop > 10) {
-      // Reset if user scrolled away from top (beyond 10px threshold)
+    } else if (isPulling) {
+      // Reset if user scrolled away from top
       setIsPulling(false);
       setPullDistance(0);
       setPullStartY(0);
@@ -1358,8 +1349,8 @@ const ProgressHub = () => {
 
     const scrollTop = postsScrollRef.current.scrollTop;
 
-    // If near the top (within 10px) and scrolling up (negative deltaY), accumulate scroll amount
-    if (scrollTop <= 10 && e.deltaY < 0) {
+    // If at the top and scrolling up (negative deltaY), accumulate scroll amount
+    if (scrollTop === 0 && e.deltaY < 0) {
       e.preventDefault();
 
       // Accumulate scroll distance to require more intentional scroll
@@ -1367,8 +1358,8 @@ const ProgressHub = () => {
         const scrollAmount = Math.abs(e.deltaY);
         setPullDistance(prev => prev + scrollAmount);
       }
-    } else if (scrollTop > 10) {
-      // Reset if scrolling away from top
+    } else {
+      // Reset if scrolling down or away from top
       setPullDistance(0);
     }
   }, [isRefreshing, isPulling]);
@@ -1383,8 +1374,20 @@ const ProgressHub = () => {
     }
   }, [pullDistance, isPulling, isRefreshing]);
 
-  // Store cleanup function for event listeners
-  const eventListenerCleanupRef = useRef(null);
+  // Add non-passive event listeners for touch/wheel events to allow preventDefault
+  useEffect(() => {
+    const element = postsScrollRef.current;
+    if (!element) return;
+
+    // These need to be non-passive to allow preventDefault
+    element.addEventListener('touchmove', handlePullMove, { passive: false });
+    element.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      element.removeEventListener('touchmove', handlePullMove);
+      element.removeEventListener('wheel', handleWheel);
+    };
+  }, [handlePullMove, handleWheel]);
 
   // Add document-level mouse event listeners for drag-to-refresh
   useEffect(() => {
@@ -1703,15 +1706,15 @@ const ProgressHub = () => {
       <div className="px-12 pb-8 flex-1 overflow-hidden">
         <div className="grid grid-cols-2 gap-8 h-full">
           {/* Left Panel */}
-          <div className="h-full flex flex-col" style={{ maxWidth: '650px' }}>
-            <div className="space-y-2.5 flex-1 flex flex-col overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+          <div className="h-full flex flex-col overflow-hidden" style={{ maxWidth: '650px' }}>
+            <div className="space-y-4 flex-1 flex flex-col overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
-                <h1 className="font-semibold mb-1.5" style={{ fontSize: '30px' }}>
+                <h1 className="font-semibold mb-2" style={{ fontSize: '36px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
-                <h2 className="font-semibold mb-0.2" style={{ letterSpacing: '0.011em', fontSize: '22px' }}>{user.enrolledCourse}</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '0.2rem' }}>
+                <h2 className="font-semibold mb-0.2" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.272rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
                   ) : (
@@ -1720,12 +1723,12 @@ const ProgressHub = () => {
                     </>
                   )}
                 </p>
-                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '14px' }}>
+                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '17.6px' }}>
                   <div
                     className="rounded-full transition-all duration-500"
                     style={{
                       width: `${progressPercentage === 0 ? 5 : progressPercentage}%`,
-                      height: '14px',
+                      height: '17.6px',
                       background: 'linear-gradient(to right, #7714E0, #7714E0)'
                     }}
                   />
@@ -1853,7 +1856,7 @@ const ProgressHub = () => {
                                   marginRight: '10px'
                                 }}
                                 onClick={() => {
-                                  navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
+                                  navigate(`/learn?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
                                 <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1920,16 +1923,16 @@ const ProgressHub = () => {
 
               {/* Office Hours */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '18px', marginBottom: '-2px' }}>Office Hours</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '10px', height: '110px', background: '#7714E0' }}>
+                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Office Hours</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
+                <div className="rounded-lg" style={{ padding: '12px', height: '133.401px', background: '#7714E0' }}>
                   {tutorData.name ? (
                     <div className="flex gap-3 h-full items-center">
                       {tutorData.image && (
                         <img
                           src={tutorData.image}
                           alt={tutorData.name}
-                          className="w-[70px] h-[70px] rounded object-cover ml-1 mr-1"
+                          className="w-[88px] h-[88px] rounded object-cover ml-2 mr-2"
                         />
                       )}
                       <div className="flex-1 -mt-6">
@@ -1982,9 +1985,9 @@ const ProgressHub = () => {
 
               {/* Merchandise */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '18px', marginBottom: '-2px' }}>Merchandise</h2>
-                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '13px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
-                <div className="bg-white rounded-lg flex justify-between items-center" style={{ padding: '5px', paddingLeft: '12px', paddingRight: '12px', height: '110px' }}>
+                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Merchandise</h2>
+                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
+                <div className="bg-white rounded-lg flex justify-between items-center" style={{ padding: '6px', paddingLeft: '15px', paddingRight: '15px', height: '133.401px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
                     alt="Tote bag"
@@ -2010,7 +2013,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Footer Links */}
-              <div className="flex gap-6 text-white font-semibold flex-shrink-0" style={{ fontSize: '13px', paddingTop: '2px' }}>
+              <div className="flex gap-6 text-white font-semibold flex-shrink-0" style={{ fontSize: '14.4px', paddingTop: '5.488px' }}>
                 <button
                   className="hover:text-pink-500 transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
@@ -2057,34 +2060,7 @@ const ProgressHub = () => {
 
             {/* Scrollable Posts Section */}
             <div
-              ref={(el) => {
-                // Clean up previous event listeners if they exist
-                if (eventListenerCleanupRef.current) {
-                  console.log('🧹 Cleaning up previous event listeners');
-                  eventListenerCleanupRef.current();
-                  eventListenerCleanupRef.current = null;
-                }
-
-                postsScrollRef.current = el;
-
-                if (el) {
-                  console.log('📌 postsScrollRef attached to element, adding event listeners');
-
-                  // Attach event listeners directly in the ref callback
-                  el.addEventListener('touchmove', handlePullMove, { passive: false });
-                  el.addEventListener('wheel', handleWheel, { passive: false });
-
-                  // Store cleanup function
-                  eventListenerCleanupRef.current = () => {
-                    el.removeEventListener('touchmove', handlePullMove);
-                    el.removeEventListener('wheel', handleWheel);
-                  };
-
-                  console.log('✅ Pull-to-refresh event listeners attached successfully');
-                } else {
-                  console.log('❌ postsScrollRef set to null');
-                }
-              }}
+              ref={postsScrollRef}
               className="flex-1 overflow-y-auto relative"
               style={{
                 scrollbarWidth: 'none',
@@ -2094,7 +2070,6 @@ const ProgressHub = () => {
               onTouchStart={handlePullStart}
               onTouchEnd={handlePullEnd}
               onMouseDown={handlePullStart}
-              onMouseUp={handlePullEnd}
             >
               {/* Refresh indicator that pushes posts down slightly */}
               <div
