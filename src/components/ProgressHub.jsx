@@ -1715,7 +1715,7 @@ const ProgressHub = () => {
                 <h1 className="font-semibold mb-1" style={{ fontSize: '28px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
-                <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '20px' }}>{user.enrolledCourse}</h2>
+                <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
