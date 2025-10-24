@@ -1716,7 +1716,7 @@ const ProgressHub = () => {
 
         {/* Content - Scrollable */}
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '54px', paddingRight: '32px' }}>
-          <div className="flex flex-col justify-between" style={{ gap: '7.2px', minHeight: '100%' }}>
+          <div className="flex flex-col justify-between" style={{ gap: '2px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
                 <h1 className="font-semibold mb-1" style={{ fontSize: '32px' }}>
@@ -1932,7 +1932,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Office Hours */}
-              <div className="flex-shrink-0" style={{ marginTop: '-8px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '-12px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
