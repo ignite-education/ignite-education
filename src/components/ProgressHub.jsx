@@ -1686,7 +1686,7 @@ const ProgressHub = () => {
   return (
     <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {/* Left Sidebar - Fixed */}
-      <div className="bg-black border-r border-gray-800 flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
+      <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
         <div className="flex-shrink-0" style={{ paddingTop: '19.38px', paddingBottom: '5px', paddingLeft: '32px', paddingRight: '32px' }}>
           <div className="flex items-center">
