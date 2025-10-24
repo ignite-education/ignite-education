@@ -1716,7 +1716,7 @@ const ProgressHub = () => {
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
                 <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '0.2rem' }}>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
                   ) : (
@@ -1927,7 +1927,7 @@ const ProgressHub = () => {
               {/* Office Hours */}
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '12px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
                   {tutorData.name ? (
                     <div className="flex gap-2.5 h-full items-center">
@@ -1989,7 +1989,7 @@ const ProgressHub = () => {
               {/* Merchandise */}
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Merchandise</h2>
-                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '12px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
+                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '110px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
