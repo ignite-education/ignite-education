@@ -1709,7 +1709,7 @@ const ProgressHub = () => {
 
         {/* Content - Scrollable */}
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-          <div className="flex flex-col justify-between" style={{ gap: '8px', minHeight: '100%' }}>
+          <div className="flex flex-col justify-between" style={{ gap: '7.2px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
                 <h1 className="font-semibold mb-1" style={{ fontSize: '32px' }}>
@@ -1944,7 +1944,7 @@ const ProgressHub = () => {
                           <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{tutorData.position}</p>
                         )}
                         {tutorData.description && (
-                          <p className="text-white mt-0.5 line-clamp-1" style={{ fontSize: '11px' }}>{tutorData.description}</p>
+                          <p className="text-white mt-0.5 line-clamp-3" style={{ fontSize: '11px' }}>{tutorData.description}</p>
                         )}
                       </div>
                       <div className="flex flex-col gap-2 justify-center mr-1">
