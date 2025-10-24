@@ -1254,8 +1254,8 @@ const ProgressHub = () => {
     const scrollTop = postsScrollRef.current.scrollTop;
     console.log('👆 Touch/Mouse start - scrollTop:', scrollTop);
 
-    // Allow pull when at the top (scrollTop = 0) and user scrolls up
-    if (scrollTop === 0) {
+    // Allow pull when near the top (within 10px) - more forgiving threshold
+    if (scrollTop <= 10) {
       const startY = e.touches ? e.touches[0].clientY : e.clientY;
       setPullStartY(startY);
       // Track mouse down state for desktop
@@ -1276,8 +1276,8 @@ const ProgressHub = () => {
     const scrollTop = postsScrollRef.current.scrollTop;
     const currentY = e.touches ? e.touches[0].clientY : e.clientY;
 
-    // Allow pull when at the top (scrollTop = 0)
-    if (scrollTop === 0 && pullStartY !== 0) {
+    // Allow pull when near the top (within 10px) - more forgiving
+    if (scrollTop <= 10 && pullStartY !== 0) {
       const distance = currentY - pullStartY;
       console.log('📏 Move distance:', distance, 'scrollTop:', scrollTop);
 
@@ -1308,8 +1308,8 @@ const ProgressHub = () => {
           console.log('❌ Reset pull (scrolling down)');
         }
       }
-    } else if (isPulling) {
-      // Reset if user scrolled away from top
+    } else if (isPulling && scrollTop > 10) {
+      // Reset if user scrolled away from top (beyond 10px threshold)
       setIsPulling(false);
       setPullDistance(0);
       setPullStartY(0);
@@ -1349,8 +1349,8 @@ const ProgressHub = () => {
 
     const scrollTop = postsScrollRef.current.scrollTop;
 
-    // If at the top and scrolling up (negative deltaY), accumulate scroll amount
-    if (scrollTop === 0 && e.deltaY < 0) {
+    // If near the top (within 10px) and scrolling up (negative deltaY), accumulate scroll amount
+    if (scrollTop <= 10 && e.deltaY < 0) {
       e.preventDefault();
 
       // Accumulate scroll distance to require more intentional scroll
@@ -1358,8 +1358,8 @@ const ProgressHub = () => {
         const scrollAmount = Math.abs(e.deltaY);
         setPullDistance(prev => prev + scrollAmount);
       }
-    } else {
-      // Reset if scrolling down or away from top
+    } else if (scrollTop > 10) {
+      // Reset if scrolling away from top
       setPullDistance(0);
     }
   }, [isRefreshing, isPulling]);
