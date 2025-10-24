@@ -1584,17 +1584,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   if (loading) {
     return (
       <div className="h-screen bg-black text-white flex items-center justify-center">
-        {lottieData ? (
+        {lottieData && (
           <Lottie
             animationData={lottieData}
             loop={true}
             autoplay={true}
             style={{ width: 200, height: 200 }}
           />
-        ) : (
-          <div className="w-32 h-32 flex items-center justify-center">
-            <div className="animate-pulse text-white">Loading...</div>
-          </div>
         )}
       </div>
     );
