@@ -1718,7 +1718,7 @@ const ProgressHub = () => {
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '54px', paddingRight: '32px' }}>
           <div className="flex flex-col justify-between" style={{ gap: '2px', minHeight: '100%' }}>
               {/* Welcome Section */}
-              <div className="flex-shrink-0" style={{ minHeight: '140px' }}>
+              <div className="flex-shrink-0" style={{ minHeight: '165px' }}>
                 <h1 className="font-semibold mb-1" style={{ fontSize: '32px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
