@@ -1789,7 +1789,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                               marginRight: '10px'
                             }}
                             onClick={() => {
-                              navigate(`/learn?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
+                              navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                             }}
                           >
                             <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -2115,7 +2115,7 @@ ${currentLessonSections.map((section) => {
             <div className="text-center flex flex-col gap-4">
               <div className="text-xl text-black font-semibold">Lesson not available yet</div>
               <button
-                onClick={() => window.location.href = `/learn?module=${currentLessonToNavigate.module_number}&lesson=${currentLessonToNavigate.lesson_number}`}
+                onClick={() => window.location.href = `/learning?module=${currentLessonToNavigate.module_number}&lesson=${currentLessonToNavigate.lesson_number}`}
                 className="px-6 py-2 rounded-lg transition"
                 style={{ backgroundColor: '#EF0B72', color: 'white' }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}

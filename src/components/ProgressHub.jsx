@@ -914,7 +914,7 @@ const ProgressHub = () => {
   const handleLogout = async () => {
     try {
       await signOut();
-      navigate('/auth');
+      navigate('/welcome');
     } catch (error) {
       console.error('Error logging out:', error);
       alert('Failed to log out');
@@ -941,7 +941,7 @@ const ProgressHub = () => {
 
       if (response.ok) {
         await signOut();
-        navigate('/auth');
+        navigate('/welcome');
       } else {
         throw new Error('Failed to delete account');
       }
@@ -1856,7 +1856,7 @@ const ProgressHub = () => {
                                   marginRight: '10px'
                                 }}
                                 onClick={() => {
-                                  navigate(`/learn?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
+                                  navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
                                 <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

@@ -13,13 +13,18 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/welcome" element={<Auth />} />
           <Route path="/" element={
             <ProtectedRoute>
               <ProgressHub />
             </ProtectedRoute>
           } />
-          <Route path="/learn" element={
+          <Route path="/progress" element={
+            <ProtectedRoute>
+              <ProgressHub />
+            </ProtectedRoute>
+          } />
+          <Route path="/learning" element={
             <ProtectedRoute>
               <LearningHub />
             </ProtectedRoute>
