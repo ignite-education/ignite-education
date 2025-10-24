@@ -136,18 +136,19 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '10vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8" style={{ paddingTop: '9vh', paddingBottom: '2vh', scrollSnapAlign: 'start' }}>
       <div className="relative w-full" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
-          className="mx-auto mb-3 sm:mb-4"
+          className="mx-auto"
           style={{
             backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
             backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             backgroundPosition: 'center',
             width: 'clamp(100px, 25vw, 140px)',
-            height: 'clamp(32px, 8vw, 44.8px)'
+            height: 'clamp(32px, 8vw, 44.8px)',
+            marginBottom: 'clamp(0.88rem, 4.4vh, 1.76rem)'
           }}
         />
 
