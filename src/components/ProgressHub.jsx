@@ -1716,7 +1716,7 @@ const ProgressHub = () => {
 
         {/* Content - Scrollable */}
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '54px', paddingRight: '32px' }}>
-          <div className="flex flex-col justify-between" style={{ gap: '2px', minHeight: '100%' }}>
+          <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px' }}>
                 <h1 className="font-semibold mb-1" style={{ fontSize: '32px' }}>
@@ -1745,7 +1745,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Upcoming Lessons */}
-              <div className="flex-shrink-0 relative" style={{ marginTop: '-14px', minHeight: '160px' }}>
+              <div className="flex-shrink-0 relative" style={{ marginTop: '-18px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '0.05rem' }}>
                   {upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length && upcomingLessons[snappedCardIndex] ? (
                     (() => {
@@ -1932,7 +1932,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Office Hours */}
-              <div className="flex-shrink-0" style={{ marginTop: '-20px', minHeight: '160px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '-24px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
@@ -1994,7 +1994,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Merchandise */}
-              <div className="flex-shrink-0" style={{ minHeight: '160px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '-24px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Merchandise</h2>
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '110px' }}>
