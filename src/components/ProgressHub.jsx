@@ -1684,30 +1684,30 @@ const ProgressHub = () => {
   }
 
   return (
-    <div className="h-screen bg-black text-white flex flex-col" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', minWidth: '1200px', minHeight: '900px' }}>
-      {/* Header */}
-      <header className="px-12 flex-shrink-0" style={{ paddingTop: '1.5rem', paddingBottom: '1.575rem' }}>
-        <div className="flex items-center">
-          <div
-            style={{
-              backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-              backgroundSize: 'contain',
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'left center',
-              width: '108.8px',
-              height: '36px',
-              marginBottom: '6px',
-              marginLeft: '-5.44px'
-            }}
-          />
+    <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      {/* Left Sidebar - Fixed */}
+      <div className="bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden" style={{ width: '650px', minWidth: '650px' }}>
+        {/* Header */}
+        <div className="flex-shrink-0 px-12" style={{ paddingTop: '1.5rem', paddingBottom: '1.575rem' }}>
+          <div className="flex items-center">
+            <div
+              style={{
+                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'left center',
+                width: '108.8px',
+                height: '36px',
+                marginBottom: '6px',
+                marginLeft: '-5.44px'
+              }}
+            />
+          </div>
         </div>
-      </header>
 
-      <div className="px-12 pb-8 flex-1 overflow-hidden">
-        <div className="grid grid-cols-2 gap-8 h-full">
-          {/* Left Panel */}
-          <div className="h-full flex flex-col overflow-hidden" style={{ maxWidth: '650px' }}>
-            <div className="space-y-4 flex-1 flex flex-col overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto px-12 pb-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+          <div className="space-y-4">
               {/* Welcome Section */}
               <div className="flex-shrink-0">
                 <h1 className="font-semibold mb-2" style={{ fontSize: '36px' }}>
@@ -1925,45 +1925,45 @@ const ProgressHub = () => {
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '12px', height: '133.401px', background: '#7714E0' }}>
+                <div className="rounded-lg" style={{ padding: '10px', height: '100px', background: '#7714E0' }}>
                   {tutorData.name ? (
-                    <div className="flex gap-3 h-full items-center">
+                    <div className="flex gap-2 h-full items-center">
                       {tutorData.image && (
                         <img
                           src={tutorData.image}
                           alt={tutorData.name}
-                          className="w-[88px] h-[88px] rounded object-cover ml-2 mr-2"
+                          className="w-[64px] h-[64px] rounded object-cover ml-1"
                         />
                       )}
-                      <div className="flex-1 -mt-6">
-                        <h3 className="font-semibold text-base text-white mb-0.5 pt-4">{tutorData.name}</h3>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm text-white mb-0.5">{tutorData.name}</h3>
                         {tutorData.position && (
-                          <p className="text-xs text-white -mt-1">{tutorData.position}</p>
+                          <p className="text-xs text-white -mt-0.5">{tutorData.position}</p>
                         )}
                         {tutorData.description && (
-                          <p className="text-xs text-white mt-1 line-clamp-3">{tutorData.description}</p>
+                          <p className="text-xs text-white mt-0.5 line-clamp-2">{tutorData.description}</p>
                         )}
                       </div>
-                      <div className="flex flex-col gap-3 justify-center mr-4 mt-2">
+                      <div className="flex flex-col gap-2 justify-center mr-2">
                         {tutorData.linkedinLink && (
                           <a
                             href={tutorData.linkedinLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-white hover:bg-gray-100 text-black text-sm font-medium py-1.5 px-3 rounded transition inline-flex items-center justify-center whitespace-nowrap overflow-hidden"
+                            className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-1 px-2 rounded transition inline-flex items-center justify-center whitespace-nowrap overflow-hidden"
                           >
                             <img
                               src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
                               alt="LinkedIn"
-                              className="h-4 w-auto object-contain"
+                              className="h-3 w-auto object-contain"
                             />
                           </a>
                         )}
                         {tutorData.calendlyLink && (
                           <button
                             onClick={handleOpenCalendly}
-                            className="bg-white hover:bg-gray-100 py-1.5 px-3 rounded transition whitespace-nowrap group"
-                            style={{ fontWeight: '600', fontSize: '0.75rem' }}
+                            className="bg-white hover:bg-gray-100 py-1 px-2 rounded transition whitespace-nowrap group"
+                            style={{ fontWeight: '600', fontSize: '0.65rem' }}
                           >
                             <span className="text-black group-hover:text-[#EF0B72] transition-colors">Book Time</span>
                           </button>
@@ -1987,7 +1987,7 @@ const ProgressHub = () => {
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Merchandise</h2>
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
-                <div className="bg-white rounded-lg flex justify-between items-center" style={{ padding: '6px', paddingLeft: '15px', paddingRight: '15px', height: '133.401px' }}>
+                <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '6px', paddingLeft: '12px', paddingRight: '12px', height: '100px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
                     alt="Tote bag"
@@ -2029,13 +2029,14 @@ const ProgressHub = () => {
                 </button>
               </div>
             </div>
-          </div>
+        </div>
+      </div>
 
-          {/* Right Panel - Community Forum */}
-          <div className="h-full flex flex-col overflow-hidden py-2 items-center justify-center">
-            <div className="w-full flex flex-col h-full" style={{ maxWidth: '739px', marginLeft: '0', marginRight: 'auto' }}>
-              {/* Static Header Section */}
-              <div className="flex-shrink-0" style={{ paddingTop: '50px' }}>
+      {/* Right Panel - Community Forum */}
+      <div className="flex-1 h-screen flex flex-col overflow-hidden py-2 px-8">
+        <div className="w-full flex flex-col h-full" style={{ maxWidth: '739px', margin: '0 auto' }}>
+          {/* Static Header Section */}
+          <div className="flex-shrink-0" style={{ paddingTop: '50px' }}>
               <h2 className="font-semibold" style={{ fontSize: '25.3px', marginBottom: '0.175rem' }}>Community Forum</h2>
 
               <div className="flex items-center gap-3 mb-2">
