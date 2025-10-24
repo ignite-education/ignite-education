@@ -48,7 +48,14 @@
       "Bash(git checkout 5d74665 -- src/components/ProgressHub.jsx)",
       "Bash(git log --all --format=\"%h %ci %s\" -- src/components/ProgressHub.jsx)",
       "Bash(git checkout 67e654c -- src/components/ProgressHub.jsx)",
-      "Bash(timeout 10 npm run build:*)"
+      "Bash(timeout 10 npm run build:*)",
+      "Bash(npm --version:*)",
+      "Bash(echo:*)",
+      "Read(//usr/local/**)",
+      "Bash(git log:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
