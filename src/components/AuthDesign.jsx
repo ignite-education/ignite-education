@@ -22,15 +22,20 @@ const AuthDesign = () => {
   const [animateWords, setAnimateWords] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
 
-  const { user, signIn, signUp, signInWithOAuth } = useAuth();
+  const { user, signIn, signUp, signInWithOAuth, signOut } = useAuth();
   const navigate = useNavigate();
+  const [hasLoggedOut, setHasLoggedOut] = useState(false);
 
-  // NOTE: Redirect disabled for design testing - this allows viewing the page while logged in
-  // useEffect(() => {
-  //   if (user && !showOnboarding) {
-  //     navigate('/progress', { replace: true });
-  //   }
-  // }, [user, navigate, showOnboarding]);
+  // Auto-logout on page load to allow testing the sign-up flow
+  useEffect(() => {
+    const logoutForTesting = async () => {
+      if (user && !hasLoggedOut && !showOnboarding) {
+        await signOut();
+        setHasLoggedOut(true);
+      }
+    };
+    logoutForTesting();
+  }, [user, signOut, hasLoggedOut, showOnboarding]);
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
