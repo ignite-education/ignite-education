@@ -1776,9 +1776,10 @@ const ProgressHub = () => {
                   onScroll={handleScroll}
                 >
                   <div
-                    className="flex gap-3"
+                    className="flex gap-4"
                     style={{
-                      minHeight: '100px'
+                      minHeight: '100px',
+                      height: '100px'
                     }}
                   >
                   {upcomingLessons.length > 0 ? (
@@ -1792,18 +1793,18 @@ const ProgressHub = () => {
                       return (
                         <div
                           key={`${lesson.module_number}-${lesson.lesson_number}`}
-                          className="relative flex items-center gap-2"
+                          className="relative flex items-center gap-3"
                           style={{
-                            width: (isCompleted || isCurrentLesson) ? '450px' : '360px',
-                            minWidth: (isCompleted || isCurrentLesson) ? '450px' : '360px',
+                            width: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
+                            minWidth: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
                             flexShrink: 0,
-                            paddingTop: '8px',
-                            paddingRight: '8px',
-                            paddingBottom: '8px',
-                            paddingLeft: '16px',
+                            paddingTop: '4px',
+                            paddingRight: '5.618px',
+                            paddingBottom: '5.618px',
+                            paddingLeft: '14px',
                             borderRadius: '0.3rem',
                             background: '#7714E0',
-                            height: '100px',
+                            height: '90px',
                             scrollSnapAlign: 'start',
                             scrollSnapStop: 'always'
                           }}
@@ -1827,14 +1828,14 @@ const ProgressHub = () => {
                               />
                             )}
                             <div className="flex-1">
-                              <h3 className="font-semibold truncate text-white" style={{ marginBottom: '4px', fontSize: '14px' }}>
+                              <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                                 {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
-                              </h3>
-                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                              </h4>
+                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
                                 {(lesson.bullet_points || [])
-                                  .slice(0, 2)
+                                  .slice(0, 3)
                                   .map((bulletPoint, idx) => (
-                                    <li key={idx} className="flex items-start gap-1.5 text-purple-100" style={{ fontSize: '12px' }}>
+                                    <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
                                       <span className="mt-0.5 text-purple-200">•</span>
                                       <span>{bulletPoint}</span>
                                     </li>
@@ -1847,19 +1848,19 @@ const ProgressHub = () => {
                               <button
                                 className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                                 style={{
-                                  width: '50px',
-                                  height: '50px',
+                                  width: '48px',
+                                  height: '48px',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   borderRadius: '0.3rem',
-                                  marginRight: '8px'
+                                  marginRight: '10px'
                                 }}
                                 onClick={() => {
                                   navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
-                                <svg className="group-hover:stroke-pink-500 transition-colors" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
                               </button>
