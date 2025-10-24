@@ -112,7 +112,7 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
-        redirectTo: `${window.location.origin}/welcome`,
+        redirectTo: `${window.location.origin}/progress`,
       }
     });
 

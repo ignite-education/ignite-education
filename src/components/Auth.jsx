@@ -25,6 +25,10 @@ const Auth = () => {
   // Redirect authenticated users away from auth page
   useEffect(() => {
     if (user && !showOnboarding) {
+      // Clean up any hash fragments from OAuth redirect
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
       navigate('/progress', { replace: true });
     }
   }, [user, navigate, showOnboarding]);

@@ -30,6 +30,10 @@ const AuthDesign = () => {
   useEffect(() => {
     const logoutForTesting = async () => {
       if (user && !hasLoggedOut && !showOnboarding) {
+        // Clean up any hash fragments from OAuth redirect
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
         await signOut();
         setHasLoggedOut(true);
       }

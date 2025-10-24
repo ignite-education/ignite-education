@@ -85,6 +85,13 @@ const ProgressHub = () => {
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
+  // Clean up hash fragments from OAuth redirect
+  useEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     // Fetch Lottie animation data
     fetch('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/icon%20v1.json')
