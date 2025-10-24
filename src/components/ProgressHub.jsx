@@ -2284,7 +2284,7 @@ const ProgressHub = () => {
                                     </div>
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs text-gray-400">u/{commentAuthor}</span>
+                                        <span className="text-xs text-gray-400">u/</span><span className="text-xs text-gray-400">{commentAuthor}</span>
                                         <span className="text-xs text-gray-500">• {timeAgo}</span>
                                       </div>
                                       <p className="text-xs text-gray-300">{comment.content}</p>
@@ -2301,10 +2301,8 @@ const ProgressHub = () => {
                   ))}
               </div>
             </div>
-            </div>
           </div>
         </div>
-      </div>
 
       {/* Post Creation Modal */}
       {showPostModal && (
