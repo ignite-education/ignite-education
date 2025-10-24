@@ -163,7 +163,7 @@ const Auth = () => {
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-3 py-3 sm:px-5 sm:py-5 md:px-6 md:py-6"
+          className="bg-white text-black px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4"
           style={{
             animation: 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem'
@@ -177,7 +177,7 @@ const Auth = () => {
           )}
 
           {/* OAuth Buttons */}
-          <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
+          <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
             <button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
@@ -216,39 +216,37 @@ const Auth = () => {
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:gap-2.5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
-              {!isLogin ? (
-                <>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">First Name</label>
-                    <input
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      required={!isLogin}
-                      className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
-                      placeholder="John"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">Last Name</label>
-                    <input
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      required={!isLogin}
-                      className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
-                      placeholder="Doe"
-                    />
-                  </div>
-                </>
-              ) : null}
+          <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 sm:gap-2">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="John"
+                  disabled={isLogin}
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="Doe"
+                  disabled={isLogin}
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">Email</label>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Email</label>
                 <input
                   type="email"
                   value={email}
@@ -260,7 +258,7 @@ const Auth = () => {
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5 sm:mb-1">Password</label>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Password</label>
                 <input
                   type="password"
                   value={password}
@@ -276,13 +274,13 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-pink-500 text-white rounded-xl px-4 py-2 sm:py-2.5 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-pink-500 text-white rounded-xl px-4 py-1.5 sm:py-2 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
           </form>
 
-          <div className="text-center" style={{ marginTop: '0.75rem' }}>
+          <div className="text-center" style={{ marginTop: '0.5rem' }}>
             <button
               onClick={() => {
                 setIsLogin(!isLogin);
@@ -296,27 +294,24 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Scroll Down Arrow - Only on create account page */}
-        {!isLogin && (
-          <div className="flex justify-center mt-3 sm:mt-4 mb-2">
-            <button
-              onClick={scrollToMarketing}
-              className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg"
-              style={{
-                animation: 'subtleBounce 2s infinite',
-                padding: '8px'
-              }}
-              aria-label="Scroll to learn more"
-            >
-              <ChevronDown size={18} className="text-black" />
-            </button>
-          </div>
-        )}
+        {/* Scroll Down Arrow - visible on both sign in and create account */}
+        <div className="flex justify-center mt-3 sm:mt-4 mb-2">
+          <button
+            onClick={scrollToMarketing}
+            className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg"
+            style={{
+              animation: 'subtleBounce 2s infinite',
+              padding: '8px'
+            }}
+            aria-label="Scroll to learn more"
+          >
+            <ChevronDown size={18} className="text-black" />
+          </button>
+        </div>
       </div>
       </div>
 
-      {/* Second Section - Marketing Content (only for create account) */}
-      {!isLogin && (
+      {/* Second Section - Marketing Content (visible for both sign in and create account) */}
         <div
           ref={marketingSectionRef}
           className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24"
@@ -615,7 +610,6 @@ const Auth = () => {
             </div>
           </div>
         </div>
-      )}
     </div>
     </>
   );
