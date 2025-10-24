@@ -1925,7 +1925,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Office Hours */}
-              <div className="flex-shrink-0" style={{ marginTop: '-4px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '-8px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
@@ -2016,7 +2016,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Footer Links */}
-              <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '14px', paddingTop: '2px' }}>
+              <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '14px', paddingTop: '2px', marginTop: '-8px' }}>
                 <button
                   className="hover:text-pink-500 transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
