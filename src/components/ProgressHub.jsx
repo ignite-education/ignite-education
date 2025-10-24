@@ -1688,7 +1688,7 @@ const ProgressHub = () => {
       {/* Left Sidebar - Fixed */}
       <div className="bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden" style={{ width: '650px', minWidth: '650px' }}>
         {/* Header */}
-        <div className="flex-shrink-0 px-12" style={{ paddingTop: '1.5rem', paddingBottom: '1.575rem' }}>
+        <div className="flex-shrink-0 px-12" style={{ paddingTop: '1rem', paddingBottom: '0.75rem' }}>
           <div className="flex items-center">
             <div
               style={{
@@ -1705,16 +1705,16 @@ const ProgressHub = () => {
           </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto px-12 pb-8" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
-          <div className="space-y-4">
+        {/* Content - No Scroll */}
+        <div className="flex-1 px-12 pb-3 overflow-hidden">
+          <div className="h-full flex flex-col justify-between" style={{ gap: '8px' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
-                <h1 className="font-semibold mb-2" style={{ fontSize: '36px' }}>
+                <h1 className="font-semibold mb-1" style={{ fontSize: '28px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
-                <h2 className="font-semibold mb-0.2" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.272rem' }}>
+                <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '20px' }}>{user.enrolledCourse}</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
                   ) : (
@@ -1723,12 +1723,12 @@ const ProgressHub = () => {
                     </>
                   )}
                 </p>
-                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '17.6px' }}>
+                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '14px' }}>
                   <div
                     className="rounded-full transition-all duration-500"
                     style={{
                       width: `${progressPercentage === 0 ? 5 : progressPercentage}%`,
-                      height: '17.6px',
+                      height: '14px',
                       background: 'linear-gradient(to right, #7714E0, #7714E0)'
                     }}
                   />
@@ -1737,7 +1737,7 @@ const ProgressHub = () => {
 
               {/* Upcoming Lessons */}
               <div className="flex-shrink-0 relative">
-                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '0.05rem' }}>
+                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '0.05rem' }}>
                   {upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length && upcomingLessons[snappedCardIndex] ? (
                     (() => {
                       const snappedLesson = upcomingLessons[snappedCardIndex];
@@ -1776,9 +1776,9 @@ const ProgressHub = () => {
                   onScroll={handleScroll}
                 >
                   <div
-                    className="flex gap-4"
+                    className="flex gap-3"
                     style={{
-                      minHeight: '96px'
+                      minHeight: '70px'
                     }}
                   >
                   {upcomingLessons.length > 0 ? (
@@ -1792,18 +1792,18 @@ const ProgressHub = () => {
                       return (
                         <div
                           key={`${lesson.module_number}-${lesson.lesson_number}`}
-                          className="relative flex items-center gap-3"
+                          className="relative flex items-center gap-2"
                           style={{
-                            width: (isCompleted || isCurrentLesson) ? '450px' : '350px',
-                            minWidth: (isCompleted || isCurrentLesson) ? '450px' : '350px',
+                            width: (isCompleted || isCurrentLesson) ? '400px' : '320px',
+                            minWidth: (isCompleted || isCurrentLesson) ? '400px' : '320px',
                             flexShrink: 0,
                             paddingTop: '4px',
-                            paddingRight: '5.618px',
-                            paddingBottom: '5.618px',
-                            paddingLeft: '14px',
+                            paddingRight: '5px',
+                            paddingBottom: '5px',
+                            paddingLeft: '12px',
                             borderRadius: '0.3rem',
                             background: '#7714E0',
-                            height: '90px',
+                            height: '70px',
                             scrollSnapAlign: 'start',
                             scrollSnapStop: 'always'
                           }}
@@ -1827,14 +1827,14 @@ const ProgressHub = () => {
                               />
                             )}
                             <div className="flex-1">
-                              <h3 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
+                              <h3 className="font-semibold truncate text-white" style={{ marginBottom: '2px', fontSize: '12px' }}>
                                 {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                               </h3>
                               <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
                                 {(lesson.bullet_points || [])
-                                  .slice(0, 3)
+                                  .slice(0, 2)
                                   .map((bulletPoint, idx) => (
-                                    <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
+                                    <li key={idx} className="flex items-start gap-1.5 text-purple-100" style={{ fontSize: '11px' }}>
                                       <span className="mt-0.5 text-purple-200">•</span>
                                       <span>{bulletPoint}</span>
                                     </li>
@@ -1847,19 +1847,19 @@ const ProgressHub = () => {
                               <button
                                 className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                                 style={{
-                                  width: '48px',
-                                  height: '48px',
+                                  width: '40px',
+                                  height: '40px',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   borderRadius: '0.3rem',
-                                  marginRight: '10px'
+                                  marginRight: '6px'
                                 }}
                                 onClick={() => {
                                   navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
-                                <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="group-hover:stroke-pink-500 transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
                               </button>
@@ -1923,28 +1923,28 @@ const ProgressHub = () => {
 
               {/* Office Hours */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Office Hours</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '10px', height: '100px', background: '#7714E0' }}>
+                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Office Hours</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '12px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
+                <div className="rounded-lg" style={{ padding: '8px', height: '75px', background: '#7714E0' }}>
                   {tutorData.name ? (
-                    <div className="flex gap-2 h-full items-center">
+                    <div className="flex gap-1.5 h-full items-center">
                       {tutorData.image && (
                         <img
                           src={tutorData.image}
                           alt={tutorData.name}
-                          className="w-[64px] h-[64px] rounded object-cover ml-1"
+                          className="w-[48px] h-[48px] rounded object-cover"
                         />
                       )}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-sm text-white mb-0.5">{tutorData.name}</h3>
+                        <h3 className="font-semibold text-white mb-0" style={{ fontSize: '12px' }}>{tutorData.name}</h3>
                         {tutorData.position && (
-                          <p className="text-xs text-white -mt-0.5">{tutorData.position}</p>
+                          <p className="text-white" style={{ fontSize: '10px', marginTop: '1px' }}>{tutorData.position}</p>
                         )}
                         {tutorData.description && (
-                          <p className="text-xs text-white mt-0.5 line-clamp-2">{tutorData.description}</p>
+                          <p className="text-white mt-0.5 line-clamp-1" style={{ fontSize: '10px' }}>{tutorData.description}</p>
                         )}
                       </div>
-                      <div className="flex flex-col gap-2 justify-center mr-2">
+                      <div className="flex flex-col gap-1.5 justify-center mr-1">
                         {tutorData.linkedinLink && (
                           <a
                             href={tutorData.linkedinLink}
@@ -1985,9 +1985,9 @@ const ProgressHub = () => {
 
               {/* Merchandise */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Merchandise</h2>
-                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
-                <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '6px', paddingLeft: '12px', paddingRight: '12px', height: '100px' }}>
+                <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Merchandise</h2>
+                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '12px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
+                <div className="bg-white rounded-lg flex justify-between items-center gap-1.5" style={{ padding: '6px', paddingLeft: '10px', paddingRight: '10px', height: '75px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
                     alt="Tote bag"
@@ -2013,7 +2013,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Footer Links */}
-              <div className="flex gap-6 text-white font-semibold flex-shrink-0" style={{ fontSize: '14.4px', paddingTop: '5.488px' }}>
+              <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '12px', paddingTop: '2px' }}>
                 <button
                   className="hover:text-pink-500 transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
