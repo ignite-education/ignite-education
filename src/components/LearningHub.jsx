@@ -339,28 +339,38 @@ const LearningHub = () => {
 
   const fetchLessonData = async () => {
     try {
+      console.log('🔄 Starting fetchLessonData...');
       const courseId = 'product-management';
       const userId = user?.id || 'temp-user-id';
+      console.log('📝 Using userId:', userId, 'courseId:', courseId);
 
+      console.log('📚 Fetching lessons by module...');
       const lessonsData = await getLessonsByModule(courseId);
+      console.log('✅ Lessons data received:', lessonsData);
       setGroupedLessons(lessonsData);
 
       // Fetch lessons metadata (for upcoming lessons carousel)
+      console.log('📋 Fetching lessons metadata...');
       const metadataData = await getLessonsMetadata(courseId);
+      console.log('✅ Metadata received:', metadataData);
       setLessonsMetadata(metadataData);
 
       // Fetch completed lessons
       try {
+        console.log('✓ Fetching completed lessons...');
         const completedLessonsData = await getCompletedLessons(userId, courseId);
+        console.log('✅ Completed lessons received:', completedLessonsData);
         setCompletedLessons(completedLessonsData);
       } catch (error) {
         console.error('Error fetching completed lessons:', error);
         setCompletedLessons([]);
       }
 
+      console.log('✅ All data loaded, setting loading to false');
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching lesson data:', error);
+      console.error('❌ Error fetching lesson data:', error);
+      console.error('Error details:', error.message, error.stack);
       setLoading(false);
     }
   };
