@@ -27,9 +27,11 @@ import {
   getRetentionMetrics
 } from '../lib/analytics';
 import { getAllUsers, updateUserRole, deleteUser, updateUserCourse } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const AnalyticsDashboard = () => {
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30'); // days
 
@@ -675,10 +677,18 @@ const AnalyticsDashboard = () => {
                         filteredUsers.map((user) => {
                           const RoleIcon = getRoleIcon(user.role);
                           const isUpdating = updatingUserId === user.id;
+                          const isCurrentUser = authUser?.id === user.id;
                           return (
-                            <tr key={user.id} className="hover:bg-gray-800/50">
+                            <tr key={user.id} className={`hover:bg-gray-800/50 ${isCurrentUser ? 'bg-pink-900/10 border-l-4 border-pink-500' : ''}`}>
                               <td className="px-6 py-4 text-sm font-medium text-white">
-                                {user.first_name} {user.last_name}
+                                <div className="flex items-center gap-2">
+                                  {user.first_name} {user.last_name}
+                                  {isCurrentUser && (
+                                    <span className="px-2 py-0.5 bg-pink-500 text-white text-xs font-semibold rounded">
+                                      You
+                                    </span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-400 font-mono text-xs">
                                 {user.id.substring(0, 8)}...
