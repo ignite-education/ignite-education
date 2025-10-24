@@ -25,7 +25,7 @@ const Auth = () => {
   // Redirect authenticated users away from auth page
   useEffect(() => {
     if (user && !showOnboarding) {
-      navigate('/', { replace: true });
+      navigate('/progress', { replace: true });
     }
   }, [user, navigate, showOnboarding]);
 
@@ -72,7 +72,7 @@ const Auth = () => {
     try {
       if (isLogin) {
         await signIn(email, password);
-        navigate('/');
+        navigate('/progress');
       } else {
         const result = await signUp(email, password, firstName, lastName);
         // Show onboarding for new signups
