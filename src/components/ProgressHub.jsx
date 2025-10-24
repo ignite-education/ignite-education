@@ -241,13 +241,6 @@ const ProgressHub = () => {
     }
   }, [isRefreshing, pullDistance]);
 
-  // Add context line when modal opens with shareToReddit checked
-  useEffect(() => {
-    if (showPostModal && newPost.shareToReddit && newPost.content === '') {
-      const contextLine = "\n\nContext - I'm currently studying Product Management at Ignite.";
-      setNewPost(prev => ({ ...prev, content: contextLine }));
-    }
-  }, [showPostModal]);
 
   const fetchData = async () => {
     try {
@@ -541,7 +534,9 @@ const ProgressHub = () => {
         // Post to Reddit
         try {
           console.log('📤 Posting to Reddit...');
-          const redditResult = await postToReddit('ProductManagement', newPost.title, newPost.content);
+          const contextLine = "\n\nContext - I'm currently studying Product Management at Ignite.";
+          const redditContent = newPost.content + contextLine;
+          const redditResult = await postToReddit('ProductManagement', newPost.title, redditContent);
           console.log('✅ Posted to Reddit successfully:', redditResult.url);
         } catch (redditError) {
           console.error('❌ Error posting to Reddit:', redditError);
@@ -2383,24 +2378,7 @@ const ProgressHub = () => {
                       id="shareToReddit"
                       checked={newPost.shareToReddit}
                       onChange={(e) => {
-                        const isChecked = e.target.checked;
-                        const contextLine = "\n\nContext - I'm currently studying Product Management at Ignite.";
-
-                        if (isChecked) {
-                          // Add context line if not already present
-                          if (!newPost.content.includes(contextLine)) {
-                            setNewPost({ ...newPost, content: newPost.content + contextLine, shareToReddit: true });
-                          } else {
-                            setNewPost({ ...newPost, shareToReddit: true });
-                          }
-                        } else {
-                          // Remove context line if present
-                          setNewPost({
-                            ...newPost,
-                            content: newPost.content.replace(contextLine, ''),
-                            shareToReddit: false
-                          });
-                        }
+                        setNewPost({ ...newPost, shareToReddit: e.target.checked });
                       }}
                       className="w-5 h-5 text-pink-500 bg-white border-gray-300 rounded focus:ring-pink-500"
                       disabled={isSubmitting}
