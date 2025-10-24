@@ -1704,14 +1704,14 @@ const ProgressHub = () => {
         <div className="grid grid-cols-2 gap-8 h-full">
           {/* Left Panel */}
           <div className="h-full flex flex-col overflow-hidden" style={{ maxWidth: '650px' }}>
-            <div className="space-y-4 flex-1 flex flex-col overflow-y-auto overflow-x-hidden" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
+            <div className="space-y-2.5 flex-1 flex flex-col overflow-hidden" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4B5563 #1F2937' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0">
-                <h1 className="font-semibold mb-2" style={{ fontSize: '36px' }}>
+                <h1 className="font-semibold mb-1.5" style={{ fontSize: '30px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
-                <h2 className="font-semibold mb-0.2" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.272rem' }}>
+                <h2 className="font-semibold mb-0.2" style={{ letterSpacing: '0.011em', fontSize: '22px' }}>{user.enrolledCourse}</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
                   ) : (
@@ -1720,12 +1720,12 @@ const ProgressHub = () => {
                     </>
                   )}
                 </p>
-                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '17.6px' }}>
+                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '14px' }}>
                   <div
                     className="rounded-full transition-all duration-500"
                     style={{
                       width: `${progressPercentage === 0 ? 5 : progressPercentage}%`,
-                      height: '17.6px',
+                      height: '14px',
                       background: 'linear-gradient(to right, #7714E0, #7714E0)'
                     }}
                   />
@@ -1920,16 +1920,16 @@ const ProgressHub = () => {
 
               {/* Office Hours */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Office Hours</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '12px', height: '133.401px', background: '#7714E0' }}>
+                <h2 className="font-semibold" style={{ fontSize: '18px', marginBottom: '-2px' }}>Office Hours</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '13px', fontWeight: '100', marginBottom: '3px' }}>Get personalised support from your course leader.</p>
+                <div className="rounded-lg" style={{ padding: '10px', height: '110px', background: '#7714E0' }}>
                   {tutorData.name ? (
                     <div className="flex gap-3 h-full items-center">
                       {tutorData.image && (
                         <img
                           src={tutorData.image}
                           alt={tutorData.name}
-                          className="w-[88px] h-[88px] rounded object-cover ml-2 mr-2"
+                          className="w-[70px] h-[70px] rounded object-cover ml-1 mr-1"
                         />
                       )}
                       <div className="flex-1 -mt-6">
@@ -1982,9 +1982,9 @@ const ProgressHub = () => {
 
               {/* Merchandise */}
               <div className="flex-shrink-0">
-                <h2 className="font-semibold" style={{ fontSize: '20px', marginBottom: '-2px' }}>Merchandise</h2>
-                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
-                <div className="bg-white rounded-lg flex justify-between items-center" style={{ padding: '6px', paddingLeft: '15px', paddingRight: '15px', height: '133.401px' }}>
+                <h2 className="font-semibold" style={{ fontSize: '18px', marginBottom: '-2px' }}>Merchandise</h2>
+                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '13px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
+                <div className="bg-white rounded-lg flex justify-between items-center" style={{ padding: '5px', paddingLeft: '12px', paddingRight: '12px', height: '110px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
                     alt="Tote bag"
@@ -2010,7 +2010,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Footer Links */}
-              <div className="flex gap-6 text-white font-semibold flex-shrink-0" style={{ fontSize: '14.4px', paddingTop: '5.488px' }}>
+              <div className="flex gap-6 text-white font-semibold flex-shrink-0" style={{ fontSize: '13px', paddingTop: '2px' }}>
                 <button
                   className="hover:text-pink-500 transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
