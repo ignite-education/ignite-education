@@ -1736,7 +1736,7 @@ const ProgressHub = () => {
                   <div
                     className="rounded-full transition-all duration-500"
                     style={{
-                      width: `${progressPercentage === 0 ? 5 : progressPercentage}%`,
+                      width: `${progressPercentage === 0 ? 3 : progressPercentage}%`,
                       height: '14px',
                       background: 'linear-gradient(to right, #7714E0, #7714E0)'
                     }}
