@@ -1778,7 +1778,7 @@ const ProgressHub = () => {
                   <div
                     className="flex gap-3"
                     style={{
-                      minHeight: '70px'
+                      minHeight: '100px'
                     }}
                   >
                   {upcomingLessons.length > 0 ? (
@@ -1794,16 +1794,16 @@ const ProgressHub = () => {
                           key={`${lesson.module_number}-${lesson.lesson_number}`}
                           className="relative flex items-center gap-2"
                           style={{
-                            width: (isCompleted || isCurrentLesson) ? '400px' : '320px',
-                            minWidth: (isCompleted || isCurrentLesson) ? '400px' : '320px',
+                            width: (isCompleted || isCurrentLesson) ? '450px' : '360px',
+                            minWidth: (isCompleted || isCurrentLesson) ? '450px' : '360px',
                             flexShrink: 0,
-                            paddingTop: '4px',
-                            paddingRight: '5px',
-                            paddingBottom: '5px',
-                            paddingLeft: '12px',
+                            paddingTop: '8px',
+                            paddingRight: '8px',
+                            paddingBottom: '8px',
+                            paddingLeft: '16px',
                             borderRadius: '0.3rem',
                             background: '#7714E0',
-                            height: '70px',
+                            height: '100px',
                             scrollSnapAlign: 'start',
                             scrollSnapStop: 'always'
                           }}
@@ -1827,14 +1827,14 @@ const ProgressHub = () => {
                               />
                             )}
                             <div className="flex-1">
-                              <h3 className="font-semibold truncate text-white" style={{ marginBottom: '2px', fontSize: '12px' }}>
+                              <h3 className="font-semibold truncate text-white" style={{ marginBottom: '4px', fontSize: '14px' }}>
                                 {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                               </h3>
-                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
+                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                                 {(lesson.bullet_points || [])
                                   .slice(0, 2)
                                   .map((bulletPoint, idx) => (
-                                    <li key={idx} className="flex items-start gap-1.5 text-purple-100" style={{ fontSize: '11px' }}>
+                                    <li key={idx} className="flex items-start gap-1.5 text-purple-100" style={{ fontSize: '12px' }}>
                                       <span className="mt-0.5 text-purple-200">•</span>
                                       <span>{bulletPoint}</span>
                                     </li>
@@ -1847,19 +1847,19 @@ const ProgressHub = () => {
                               <button
                                 className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                                 style={{
-                                  width: '40px',
-                                  height: '40px',
+                                  width: '50px',
+                                  height: '50px',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
                                   borderRadius: '0.3rem',
-                                  marginRight: '6px'
+                                  marginRight: '8px'
                                 }}
                                 onClick={() => {
                                   navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
-                                <svg className="group-hover:stroke-pink-500 transition-colors" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <svg className="group-hover:stroke-pink-500 transition-colors" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M5 12h14M12 5l7 7-7 7"/>
                                 </svg>
                               </button>
@@ -1925,45 +1925,45 @@ const ProgressHub = () => {
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '12px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '8px', height: '75px', background: '#7714E0' }}>
+                <div className="rounded-lg" style={{ padding: '12px', height: '110px', background: '#7714E0' }}>
                   {tutorData.name ? (
-                    <div className="flex gap-1.5 h-full items-center">
+                    <div className="flex gap-2.5 h-full items-center">
                       {tutorData.image && (
                         <img
                           src={tutorData.image}
                           alt={tutorData.name}
-                          className="w-[48px] h-[48px] rounded object-cover"
+                          className="w-[70px] h-[70px] rounded object-cover"
                         />
                       )}
                       <div className="flex-1">
-                        <h3 className="font-semibold text-white mb-0" style={{ fontSize: '12px' }}>{tutorData.name}</h3>
+                        <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{tutorData.name}</h3>
                         {tutorData.position && (
-                          <p className="text-white" style={{ fontSize: '10px', marginTop: '1px' }}>{tutorData.position}</p>
+                          <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{tutorData.position}</p>
                         )}
                         {tutorData.description && (
-                          <p className="text-white mt-0.5 line-clamp-1" style={{ fontSize: '10px' }}>{tutorData.description}</p>
+                          <p className="text-white mt-0.5 line-clamp-1" style={{ fontSize: '11px' }}>{tutorData.description}</p>
                         )}
                       </div>
-                      <div className="flex flex-col gap-1.5 justify-center mr-1">
+                      <div className="flex flex-col gap-2 justify-center mr-1">
                         {tutorData.linkedinLink && (
                           <a
                             href={tutorData.linkedinLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-1 px-2 rounded transition inline-flex items-center justify-center whitespace-nowrap overflow-hidden"
+                            className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-2 px-3 rounded transition inline-flex items-center justify-center whitespace-nowrap overflow-hidden"
                           >
                             <img
                               src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
                               alt="LinkedIn"
-                              className="h-3 w-auto object-contain"
+                              className="h-4 w-auto object-contain"
                             />
                           </a>
                         )}
                         {tutorData.calendlyLink && (
                           <button
                             onClick={handleOpenCalendly}
-                            className="bg-white hover:bg-gray-100 py-1 px-2 rounded transition whitespace-nowrap group"
-                            style={{ fontWeight: '600', fontSize: '0.65rem' }}
+                            className="bg-white hover:bg-gray-100 py-2 px-3 rounded transition whitespace-nowrap group"
+                            style={{ fontWeight: '600', fontSize: '0.75rem' }}
                           >
                             <span className="text-black group-hover:text-[#EF0B72] transition-colors">Book Time</span>
                           </button>
@@ -1987,7 +1987,7 @@ const ProgressHub = () => {
               <div className="flex-shrink-0">
                 <h2 className="font-semibold" style={{ fontSize: '17px', marginBottom: '-2px' }}>Merchandise</h2>
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '12px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
-                <div className="bg-white rounded-lg flex justify-between items-center gap-1.5" style={{ padding: '6px', paddingLeft: '10px', paddingRight: '10px', height: '75px' }}>
+                <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '110px' }}>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
                     alt="Tote bag"
