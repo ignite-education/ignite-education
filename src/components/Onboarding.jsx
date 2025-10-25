@@ -182,8 +182,8 @@ const Onboarding = ({ firstName, userId }) => {
             <div>
               {/* Welcome message stays at top */}
               <h1
-                className="text-5xl font-bold mb-16 flex items-center justify-center"
-                style={{ transform: 'translateY(-100px)', opacity: 0.8 }}
+                className="text-5xl font-bold flex items-center justify-center"
+                style={{ transform: 'translateY(-100px)', opacity: 0.8, marginBottom: '38px' }}
               >
                 <span>Welcome</span>
                 <span>,</span>
@@ -334,19 +334,6 @@ const Onboarding = ({ firstName, userId }) => {
             </div>
           )}
 
-          {/* Page Indicators - Only show on pages 2 and 3 */}
-          {currentPage !== 1 && (
-            <div className="flex justify-center gap-2 mt-12">
-              {[1, 2, 3].map((page) => (
-                <div
-                  key={page}
-                  className={`w-2 h-2 rounded-full transition ${
-                    currentPage === page ? 'bg-pink-500' : 'bg-gray-600'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </>
