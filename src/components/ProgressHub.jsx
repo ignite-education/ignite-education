@@ -2434,8 +2434,9 @@ const ProgressHub = () => {
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
             animation: isClosingSettingsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
-            paddingTop: '23vh',
-            alignItems: 'flex-start',
+            paddingTop: '8vh',
+            paddingBottom: '8vh',
+            alignItems: 'center',
             overflowY: 'auto'
           }}
           onClick={handleCloseSettings}
