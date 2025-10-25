@@ -140,14 +140,9 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white px-4">
+        <div className="w-full max-w-3xl text-white px-4 transition-all duration-700" style={{ transform: showCourseSelection ? 'translateY(-80px)' : 'translateY(0)' }}>
           {/* Welcome message */}
-          <h1
-            className="text-5xl font-bold inline-flex items-start mb-10 transition-all duration-700"
-            style={{
-              transform: showCourseSelection ? 'translateY(-80px)' : 'translateY(0)'
-            }}
-          >
+          <h1 className="text-5xl font-bold inline-flex items-start mb-10">
             <span>Welcome</span>
             <span>,</span>
             <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
@@ -166,7 +161,7 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Course selection appears after typing */}
           {showCourseSelection && (
-            <div className="animate-fadeIn">
+            <div className="animate-fadeIn" style={{ marginTop: '-40px' }}>
               <h2 className="text-2xl font-medium mb-2">
                 See yourself as a
               </h2>
