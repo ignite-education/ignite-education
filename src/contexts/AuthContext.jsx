@@ -77,6 +77,29 @@ export const AuthProvider = ({ children }) => {
     });
 
     if (error) throw error;
+
+    // Create user record in public.users table (fallback if trigger doesn't exist)
+    if (data.user) {
+      try {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            first_name: firstName,
+            last_name: lastName,
+            onboarding_completed: false,
+            role: 'user'
+          });
+
+        // Ignore conflict errors (user already exists from trigger)
+        if (insertError && !insertError.message.includes('duplicate key')) {
+          console.error('Error creating user record:', insertError);
+        }
+      } catch (err) {
+        console.error('Exception creating user record:', err);
+      }
+    }
+
     return data;
   };
 
