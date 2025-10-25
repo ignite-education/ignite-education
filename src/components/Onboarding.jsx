@@ -306,7 +306,7 @@ const Onboarding = ({ firstName, userId }) => {
 
                           return (
                             <>
-                              {allCourses.length > 0 ? (
+                              {allCourses.length > 0 && (
                                 allCourses.map((course) => (
                                   <div
                                     key={course.name}
@@ -319,10 +319,6 @@ const Onboarding = ({ firstName, userId }) => {
                                     </span>
                                   </div>
                                 ))
-                              ) : (
-                                <div className="px-6 py-4 text-gray-500 text-center">
-                                  No courses found
-                                </div>
                               )}
                             </>
                           );
@@ -344,7 +340,7 @@ const Onboarding = ({ firstName, userId }) => {
                 <div className="mb-12 flex items-start gap-4 animate-fadeIn">
                   <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center" style={{ minHeight: '60px' }}>
                     <p className="text-lg">
-                      We'll email you when the <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
+                      We'll email you when the <span className="text-pink-500 font-semibold">{selectedCourse.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</span> course is available
                     </p>
                   </div>
 
