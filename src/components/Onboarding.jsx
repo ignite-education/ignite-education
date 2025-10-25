@@ -146,8 +146,8 @@ const Onboarding = ({ firstName, userId }) => {
         }}>
           {/* Welcome message */}
           <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn" style={{ marginBottom: '90px' }}>
-            <span style={{ animation: 'fadeIn 0.5s ease-in' }}>Welcome</span>
-            <span style={{ animation: 'fadeIn 0.5s ease-in' }}>,</span>
+            <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
+            <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
             <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
               {displayedName}
               {showCursor && displayedName && (
@@ -202,7 +202,7 @@ const Onboarding = ({ firstName, userId }) => {
                       <div
                         className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl overflow-y-auto z-50 text-left"
                         style={{
-                          maxHeight: 'calc(100vh - 400px)'
+                          maxHeight: '240px'
                         }}
                       >
                         {(() => {
@@ -243,8 +243,8 @@ const Onboarding = ({ firstName, userId }) => {
                   <button
                     onClick={handleComplete}
                     disabled={!selectedCourse}
-                    className="bg-white hover:bg-white rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center py-3 px-4 shadow-sm"
-                    style={{ border: 'none' }}
+                    className="bg-white hover:bg-white rounded-xl transition disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
+                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px' }}
                   >
                     <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
                   </button>
