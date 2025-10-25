@@ -161,7 +161,7 @@ const Onboarding = ({ firstName, userId }) => {
                 className="text-5xl font-bold inline-flex items-center transition-all duration-600"
                 style={{
                   transform: showTransition ? 'translateY(-100px)' : 'translateY(0)',
-                  opacity: showTransition ? 0.8 : 1,
+                  opacity: 1,
                   minHeight: '4rem'
                 }}
               >
@@ -183,7 +183,7 @@ const Onboarding = ({ firstName, userId }) => {
               {/* Welcome message stays at top */}
               <h1
                 className="text-5xl font-bold inline-flex items-start"
-                style={{ transform: 'translateY(-100px)', opacity: 0.8, marginBottom: '19px' }}
+                style={{ transform: 'translateY(-100px)', opacity: 1, marginBottom: '19px' }}
               >
                 <span>Welcome</span>
                 <span>,</span>
