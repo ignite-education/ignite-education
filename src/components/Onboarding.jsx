@@ -10,8 +10,6 @@ const Onboarding = ({ firstName, userId }) => {
   const [showCourseSelection, setShowCourseSelection] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [placeholderText, setPlaceholderText] = useState('');
-  const [showPlaceholderCursor, setShowPlaceholderCursor] = useState(true);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -46,31 +44,6 @@ const Onboarding = ({ firstName, userId }) => {
       return () => clearTimeout(startDelay);
     }
   }, [firstName]);
-
-  // Typing animation for placeholder when course selection shows
-  useEffect(() => {
-    if (showCourseSelection) {
-      const fullText = 'Select your path...';
-      let currentIndex = 0;
-      const typingSpeed = 80;
-
-      const startDelay = setTimeout(() => {
-        const typingInterval = setInterval(() => {
-          if (currentIndex <= fullText.length) {
-            setPlaceholderText(fullText.slice(0, currentIndex));
-            currentIndex++;
-          } else {
-            clearInterval(typingInterval);
-            setShowPlaceholderCursor(false);
-          }
-        }, typingSpeed);
-
-        return () => clearInterval(typingInterval);
-      }, 300);
-
-      return () => clearTimeout(startDelay);
-    }
-  }, [showCourseSelection]);
 
   const courseCategories = {
     available: ['Product Manager'],
@@ -210,20 +183,6 @@ const Onboarding = ({ firstName, userId }) => {
                           caretColor: '#ec4899'
                         }}
                       />
-                      {!searchQuery && (
-                        <div className="absolute left-6 top-1/2 pointer-events-none flex items-center" style={{ transform: 'translateY(-50%)' }}>
-                          <span className="text-gray-400 text-xl">{placeholderText}</span>
-                          {showPlaceholderCursor && (
-                            <span
-                              className="h-6 bg-gray-400 ml-1"
-                              style={{
-                                width: '2px',
-                                animation: 'blink 1s step-end infinite'
-                              }}
-                            />
-                          )}
-                        </div>
-                      )}
                     </div>
 
                     {isDropdownOpen && (
