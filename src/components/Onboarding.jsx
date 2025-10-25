@@ -156,6 +156,13 @@ const Onboarding = ({ firstName, userId }) => {
 
   return (
     <>
+      <style>
+        {`
+          .overflow-y-auto::-webkit-scrollbar {
+            display: none;
+          }
+        `}
+      </style>
       {/* Blurred Background */}
       <div className="fixed inset-0 bg-black" style={{ opacity: 0.95 }} />
 
@@ -167,7 +174,7 @@ const Onboarding = ({ firstName, userId }) => {
           willChange: 'transform'
         }}>
           {/* Welcome message */}
-          <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn" style={{ marginBottom: '90px' }}>
+          <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn" style={{ marginBottom: '30px' }}>
             <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
             <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
             <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
@@ -187,7 +194,7 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Course selection appears after typing */}
           {showCourseSelection && (
-            <div className="animate-fadeIn" style={{ marginTop: '-60px' }}>
+            <div className="animate-fadeIn">
               <h2 className="text-2xl font-light mb-2">
                 See yourself as a
               </h2>
@@ -224,7 +231,9 @@ const Onboarding = ({ firstName, userId }) => {
                       <div
                         className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl overflow-y-auto z-50 text-left"
                         style={{
-                          maxHeight: '240px'
+                          maxHeight: '240px',
+                          scrollbarWidth: 'none', /* Firefox */
+                          msOverflowStyle: 'none' /* IE and Edge */
                         }}
                       >
                         {(() => {
