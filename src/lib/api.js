@@ -969,29 +969,16 @@ export async function getAllUsers() {
     return [];
   }
 
-  // Fetch emails from auth.users for all users
-  const usersWithEmails = await Promise.all(
-    (data || []).map(async (user) => {
-      try {
-        // Get auth user data to fetch email
-        const { data: { user: authUser }, error: authError } = await supabase.auth.admin.getUserById(user.id);
+  // Note: Cannot fetch emails from auth.users due to permissions
+  // Emails require Service Role key which cannot be used client-side
+  // Users will show with "Email not accessible" instead
+  const usersWithPlaceholder = (data || []).map(user => ({
+    ...user,
+    email: 'Email not accessible (requires service role)'
+  }));
 
-        return {
-          ...user,
-          email: authUser?.email || 'No email'
-        };
-      } catch (err) {
-        console.error(`Error fetching email for user ${user.id}:`, err);
-        return {
-          ...user,
-          email: 'No email'
-        };
-      }
-    })
-  );
-
-  console.log(`Fetched ${usersWithEmails?.length || 0} users (total count: ${count})`);
-  return usersWithEmails;
+  console.log(`Fetched ${usersWithPlaceholder?.length || 0} users (total count: ${count})`);
+  return usersWithPlaceholder;
 }
 
 /**
@@ -1040,38 +1027,32 @@ export async function getCurrentUserWithRole(userId) {
 
 /**
  * Delete a user from the system
- * Deletes from both auth.users and public.users
+ * Note: Only deletes from public.users table.
+ * Auth user must be deleted manually from Supabase Dashboard due to security restrictions.
  * @param {string} userId - The user's ID to delete
  */
 export async function deleteUser(userId) {
   try {
-    // First delete from auth.users (this will cascade to public.users if ON DELETE CASCADE is set)
-    const { data: authData, error: authError } = await supabase.auth.admin.deleteUser(userId);
-
-    if (authError) {
-      console.error('Error deleting user from auth:', authError);
-      console.error('Error details:', JSON.stringify(authError, null, 2));
-      throw authError;
-    }
-
-    console.log('User deleted from auth successfully:', authData);
-
-    // Also delete from public.users table (in case cascade isn't set up)
+    // Delete from public.users table
     const { data, error } = await supabase
       .from('users')
       .delete()
       .eq('id', userId)
       .select();
 
-    if (error && error.code !== 'PGRST116') {
-      // PGRST116 means no rows found, which is ok if cascade already deleted it
+    if (error) {
       console.error('Error deleting user from public.users:', error);
       console.error('Error details:', JSON.stringify(error, null, 2));
-      // Don't throw here, auth deletion succeeded which is most important
+      throw error;
     }
 
     console.log('User deleted from public.users successfully:', data);
-    return true;
+
+    // Return success with note about manual auth deletion
+    return {
+      success: true,
+      note: 'User removed from database. To fully delete, remove from Supabase Dashboard > Authentication > Users'
+    };
   } catch (err) {
     console.error('Error in deleteUser:', err);
     throw err;
