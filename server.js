@@ -873,6 +873,97 @@ Return ONLY valid JSON in this exact format:
   }
 });
 
+// Admin authentication middleware
+const verifyAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+
+    // Verify the JWT token and get user
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Check if user is admin
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (userError || !userData || userData.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    // Attach user to request
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Admin verification error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
+
+// Delete user endpoint (admin only)
+app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    console.log(`Admin ${req.user.id} attempting to delete user ${userId}`);
+
+    // Delete from auth.users using service role
+    const { data: authData, error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      console.error('Error deleting user from auth:', authError);
+      return res.status(500).json({
+        error: 'Failed to delete user from auth',
+        details: authError.message
+      });
+    }
+
+    console.log('User deleted from auth successfully:', authData);
+
+    // Delete from public.users table
+    const { data: dbData, error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (dbError) {
+      console.error('Error deleting user from database:', dbError);
+      // Don't fail if user was already deleted from public.users
+      if (dbError.code !== 'PGRST116') {
+        return res.status(500).json({
+          error: 'User deleted from auth but failed to delete from database',
+          details: dbError.message
+        });
+      }
+    }
+
+    console.log('User deleted from database successfully');
+
+    res.json({
+      success: true,
+      message: 'User deleted successfully from both auth and database',
+      userId
+    });
+  } catch (error) {
+    console.error('Error in delete user endpoint:', error);
+    res.status(500).json({
+      error: 'Failed to delete user',
+      details: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);

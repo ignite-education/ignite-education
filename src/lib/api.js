@@ -1027,32 +1027,36 @@ export async function getCurrentUserWithRole(userId) {
 
 /**
  * Delete a user from the system
- * Note: Only deletes from public.users table.
- * Auth user must be deleted manually from Supabase Dashboard due to security restrictions.
+ * Calls backend API which has service role permissions to delete from both auth and database
  * @param {string} userId - The user's ID to delete
  */
 export async function deleteUser(userId) {
   try {
-    // Delete from public.users table
-    const { data, error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId)
-      .select();
+    // Get current session token
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (error) {
-      console.error('Error deleting user from public.users:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      throw error;
+    if (!session) {
+      throw new Error('Not authenticated');
     }
 
-    console.log('User deleted from public.users successfully:', data);
+    // Call backend API to delete user
+    const response = await fetch(`https://ignite-education-api.onrender.com/api/users/${userId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
-    // Return success with note about manual auth deletion
-    return {
-      success: true,
-      note: 'User removed from database. To fully delete, remove from Supabase Dashboard > Authentication > Users'
-    };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete user');
+    }
+
+    const data = await response.json();
+    console.log('User deleted successfully:', data);
+
+    return data;
   } catch (err) {
     console.error('Error in deleteUser:', err);
     throw err;

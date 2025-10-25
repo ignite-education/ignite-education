@@ -177,7 +177,7 @@ const AnalyticsDashboard = () => {
 
   const handleDeleteUser = async (userId, userName) => {
     const confirmed = window.confirm(
-      `Are you sure you want to delete ${userName}? This will remove them from the database.\n\nNote: You'll need to manually delete their auth account from Supabase Dashboard > Authentication > Users to fully remove them.`
+      `Are you sure you want to delete ${userName}? This will completely remove them from both the authentication system and database. This action cannot be undone.`
     );
 
     if (!confirmed) return;
@@ -187,10 +187,10 @@ const AnalyticsDashboard = () => {
       const result = await deleteUser(userId);
       // Remove from local state
       setAllUsers(prev => prev.filter(user => user.id !== userId));
-      alert(`${userName} has been removed from the database.\n\n⚠️ Manual step required: Go to Supabase Dashboard > Authentication > Users and delete user ID: ${userId}`);
+      alert(`${userName} has been completely deleted from the system.`);
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete user. Please try again.');
+      alert(`Failed to delete user: ${error.message}`);
     } finally {
       setUpdatingUserId(null);
     }
