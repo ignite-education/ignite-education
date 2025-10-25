@@ -2057,33 +2057,6 @@ const ProgressHub = () => {
                 >
                   <Edit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
-                <button
-                  onClick={refreshPosts}
-                  disabled={isRefreshing}
-                  className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group disabled:opacity-50"
-                  style={{
-                    width: '38.4px',
-                    height: '38.4px',
-                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                    borderRadius: '0.3rem'
-                  }}
-                  title="Refresh posts"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`text-black group-hover:text-pink-500 transition-colors ${isRefreshing ? 'animate-spin' : ''}`}
-                  >
-                    <polyline points="23 4 23 10 17 10"></polyline>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                  </svg>
-                </button>
                 <div className="flex-1">
                   <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the Product Management conversation.</p>
                   <p className="text-white" style={{ fontSize: '14px' }}>Ask a question and contribute your expertise to Ignite users and r/ProductManagement.</p>
