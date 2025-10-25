@@ -5,6 +5,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
+import { Resend } from 'resend';
+import { render } from '@react-email/render';
+import React from 'react';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,6 +35,9 @@ const pollyClient = new PollyClient({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
   }
 });
+
+// Initialize Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 app.use(cors());
 app.use(express.json());
@@ -964,9 +970,96 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
   }
 });
 
+// Email sending endpoint
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { type, userId, data = {} } = req.body;
+    console.log(`📧 Sending ${type} email to user ${userId}`);
+
+    // Get user details from database
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .select('first_name, last_name')
+      .eq('id', userId)
+      .single();
+
+    if (userError) {
+      throw new Error(`Failed to fetch user: ${userError.message}`);
+    }
+
+    // Get user email from auth
+    const { data: { user: authUser }, error: authError } = await supabase.auth.admin.getUserById(userId);
+
+    if (authError || !authUser) {
+      throw new Error('Failed to fetch user email');
+    }
+
+    const userEmail = authUser.email;
+    const firstName = user?.first_name || 'there';
+
+    // Prepare email based on type
+    let subject, htmlContent;
+
+    switch (type) {
+      case 'welcome':
+        subject = `Welcome to Ignite, ${firstName}!`;
+        // We'll render the React component to HTML
+        const WelcomeEmail = (await import('./emails/templates/WelcomeEmail.jsx')).default;
+        htmlContent = render(React.createElement(WelcomeEmail, { firstName }));
+        break;
+
+      case 'module_complete':
+        subject = `🎉 You completed ${data.moduleName}!`;
+        const ModuleCompleteEmail = (await import('./emails/templates/ModuleCompleteEmail.jsx')).default;
+        htmlContent = render(React.createElement(ModuleCompleteEmail, {
+          firstName,
+          moduleName: data.moduleName,
+          courseName: data.courseName
+        }));
+        break;
+
+      case 'course_complete':
+        subject = `🎓 Congratulations on completing ${data.courseName}!`;
+        const CourseCompleteEmail = (await import('./emails/templates/CourseCompleteEmail.jsx')).default;
+        htmlContent = render(React.createElement(CourseCompleteEmail, {
+          firstName,
+          courseName: data.courseName
+        }));
+        break;
+
+      default:
+        throw new Error(`Unknown email type: ${type}`);
+    }
+
+    // Send email with Resend
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: 'Ignite <hello@ignite.education>',
+      to: userEmail,
+      subject,
+      html: htmlContent,
+    });
+
+    if (emailError) {
+      console.error('❌ Resend error:', emailError);
+      throw new Error(`Failed to send email: ${emailError.message}`);
+    }
+
+    console.log(`✅ Email sent successfully:`, emailData);
+    res.json({ success: true, emailId: emailData.id });
+
+  } catch (error) {
+    console.error('❌ Error sending email:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ Stripe configured: ${process.env.STRIPE_SECRET_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ AWS Polly configured: ${process.env.AWS_ACCESS_KEY_ID ? 'Yes' : 'No'}`);
+  console.log(`✅ Resend configured: ${process.env.RESEND_API_KEY ? 'Yes' : 'No'}`);
 });

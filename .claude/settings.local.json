@@ -61,7 +61,8 @@
       "Bash(find:*)",
       "Bash(git remote set-url:*)",
       "Bash(git config:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx supabase:*)"
     ],
     "deny": [],
     "ask": []

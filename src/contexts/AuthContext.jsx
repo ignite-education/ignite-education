@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { sendWelcomeEmail } from '../lib/email';
 
 const AuthContext = createContext({});
 
@@ -97,6 +98,14 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Exception creating user record:', err);
+      }
+
+      // Send welcome email (don't block signup if it fails)
+      try {
+        await sendWelcomeEmail(data.user.id);
+      } catch (emailErr) {
+        console.error('Failed to send welcome email:', emailErr);
+        // Don't throw - email failure shouldn't block signup
       }
     }
 
