@@ -197,6 +197,17 @@ const Onboarding = ({ firstName, userId }) => {
           .overflow-y-auto::-webkit-scrollbar {
             display: none;
           }
+
+          @keyframes slideUpFadeIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
         `}
       </style>
       {/* Blurred Background */}
@@ -233,11 +244,13 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Course selection appears after typing - absolutely positioned below Welcome */}
           {showCourseSelection && (
-            <div className="animate-fadeIn" style={{
+            <div style={{
               position: 'absolute',
-              top: '10px',
+              top: '-20px',
               left: '40px',
-              right: '40px'
+              right: '40px',
+              animation: 'slideUpFadeIn 0.8s ease-out forwards',
+              opacity: 0
             }}>
               <h2 className="text-2xl font-light mb-2">
                 See yourself as a
