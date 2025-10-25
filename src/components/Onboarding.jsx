@@ -4,12 +4,10 @@ import { ChevronRight, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const Onboarding = ({ firstName, userId }) => {
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [seniorityLevel, setSeniorityLevel] = useState('');
   const [displayedName, setDisplayedName] = useState('');
   const [showCursor, setShowCursor] = useState(true);
-  const [showTransition, setShowTransition] = useState(false);
+  const [showCourseSelection, setShowCourseSelection] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -17,7 +15,7 @@ const Onboarding = ({ firstName, userId }) => {
 
   // Typing animation effect for the name
   useEffect(() => {
-    if (currentPage === 1 && firstName) {
+    if (firstName) {
       let currentIndex = 0;
       const typingSpeed = 120; // milliseconds per character
 
@@ -32,13 +30,9 @@ const Onboarding = ({ firstName, userId }) => {
             // Stop cursor blinking after typing is done
             setTimeout(() => {
               setShowCursor(false);
-              // After 2 seconds, trigger transition to page 2
+              // After 2 seconds, show course selection
               setTimeout(() => {
-                setShowTransition(true);
-                setTimeout(() => {
-                  setCurrentPage(2);
-                  setShowTransition(false);
-                }, 600); // Wait for animation to complete
+                setShowCourseSelection(true);
               }, 2000);
             }, 500);
           }
@@ -49,7 +43,7 @@ const Onboarding = ({ firstName, userId }) => {
 
       return () => clearTimeout(startDelay);
     }
-  }, [currentPage, firstName]);
+  }, [firstName]);
 
   const courseCategories = {
     available: ['Product Manager'],
@@ -73,8 +67,6 @@ const Onboarding = ({ firstName, userId }) => {
       'Interior Designer', 'Graphic Designer', 'Motion Graphics Designer'
     ]
   };
-
-  const seniorityLevels = ['Junior', 'Mid', 'Senior'];
 
   // Click outside handler for dropdown
   useEffect(() => {
@@ -108,13 +100,9 @@ const Onboarding = ({ firstName, userId }) => {
     setIsDropdownOpen(false);
   };
 
-  const handleNext = () => {
-    if (currentPage < 3) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   const handleComplete = async () => {
+    if (!selectedCourse) return;
+
     // Check if user is still authenticated
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -125,12 +113,11 @@ const Onboarding = ({ firstName, userId }) => {
     }
 
     try {
-      // Update user profile with course and seniority level
+      // Update user profile with course
       const { error } = await supabase
         .from('users')
         .update({
           enrolled_course: selectedCourse,
-          seniority_level: seniorityLevel,
           onboarding_completed: true,
           updated_at: new Date().toISOString()
         })
@@ -153,54 +140,31 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white" style={{ position: 'relative', minHeight: '300px' }}>
-          {/* Page 1: Welcome */}
-          {currentPage === 1 && (
-            <div className="animate-fadeIn px-4" style={{ position: 'absolute', width: '100%', top: '50%', transform: 'translateY(-50%)' }}>
-              <h1
-                className="text-5xl font-bold inline-flex items-center transition-all duration-600"
+        <div className="w-full max-w-3xl text-white px-4">
+          {/* Welcome message */}
+          <h1 className="text-5xl font-bold inline-flex items-start mb-10">
+            <span>Welcome</span>
+            <span>,</span>
+            <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
+              {displayedName}
+              <span
+                className="absolute h-12 bg-pink-500 ml-1"
                 style={{
-                  transform: showTransition ? 'translateY(-100px)' : 'translateY(0)',
-                  opacity: 1,
-                  minHeight: '4rem'
+                  animation: 'blink 1s step-end infinite',
+                  width: '4px',
+                  opacity: showCursor ? 1 : 0,
+                  transition: 'opacity 0.3s'
                 }}
-              >
-                <span>Welcome</span>
-                <span>,</span>
-                <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
-                  {displayedName}
-                  <span
-                    className="absolute h-12 bg-pink-500 ml-1"
-                    style={{
-                      animation: 'blink 1s step-end infinite',
-                      width: '4px',
-                      opacity: showCursor ? 1 : 0,
-                      transition: 'opacity 0.3s'
-                    }}
-                  />
-                </span>
-              </h1>
-            </div>
-          )}
+              />
+            </span>
+          </h1>
 
-          {/* Page 2: Course Selection */}
-          {currentPage === 2 && (
-            <div className="text-left px-4" style={{ position: 'absolute', width: '100%', top: '50%', transform: 'translateY(-50%)' }}>
-              {/* Welcome message */}
-              <h1
-                className="text-5xl font-bold inline-flex items-start"
-                style={{ opacity: 1, marginBottom: '40px' }}
-              >
-                <span>Welcome</span>
-                <span>,</span>
-                <span className="text-pink-500 ml-3">{displayedName}</span>
-              </h1>
-
-              {/* Course selection appears below */}
-              <div>
-                <h2 className="text-2xl font-medium mb-2">
-                  See yourself as a
-                </h2>
+          {/* Course selection appears after typing */}
+          {showCourseSelection && (
+            <div className="animate-fadeIn">
+              <h2 className="text-2xl font-medium mb-2">
+                See yourself as a
+              </h2>
                 <div className="mb-12 flex items-start gap-4">
                   <div className="flex-1 relative" ref={dropdownRef}>
                     <div className="relative">
@@ -310,7 +274,7 @@ const Onboarding = ({ firstName, userId }) => {
                   </div>
 
                   <button
-                    onClick={handleNext}
+                    onClick={handleComplete}
                     disabled={!selectedCourse}
                     className="bg-white hover:bg-white text-gray-800 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center"
                     style={{ width: '60px', height: '60px' }}
@@ -318,40 +282,6 @@ const Onboarding = ({ firstName, userId }) => {
                     <ArrowRight size={28} className="text-gray-800 group-hover:text-pink-500 transition" />
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {/* Page 3: Seniority Level */}
-          {currentPage === 3 && (
-            <div className="animate-fadeIn">
-              <h1 className="text-4xl font-bold mb-4">
-                We'll find the top <span className="text-pink-500">{selectedCourse}</span> jobs for you every week.
-              </h1>
-              <p className="text-xl text-gray-400 mb-12">Select your experience level</p>
-              <div className="flex justify-center gap-6 mb-12">
-                {seniorityLevels.map((level) => (
-                  <button
-                    key={level}
-                    onClick={() => setSeniorityLevel(level)}
-                    className={`px-8 py-4 rounded-xl font-semibold text-lg transition ${
-                      seniorityLevel === level
-                        ? 'bg-pink-500 text-white'
-                        : 'bg-gray-800 text-white hover:bg-gray-700'
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={handleComplete}
-                disabled={!seniorityLevel}
-                className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Complete Setup
-                <ChevronRight size={24} />
-              </button>
             </div>
           )}
 
