@@ -255,6 +255,8 @@ const Onboarding = ({ firstName, userId }) => {
               <h2 className="text-2xl font-light mb-2">
                 See yourself as a
               </h2>
+
+              {!showNotification ? (
                 <div className="mb-12 flex items-start gap-4">
                   <div className="flex-1 relative" ref={dropdownRef}>
                     <div className="relative">
@@ -338,17 +340,23 @@ const Onboarding = ({ firstName, userId }) => {
                     <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
                   </button>
                 </div>
-
-                {/* Notification for unavailable courses */}
-                {showNotification && (
-                  <div className="mt-6 animate-fadeIn">
-                    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-4 text-white">
-                      <p className="text-lg">
-                        We'll email you when <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
-                      </p>
-                    </div>
+              ) : (
+                <div className="mb-12 flex items-start gap-4 animate-fadeIn">
+                  <div className="flex-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 text-white flex items-center" style={{ minHeight: '60px' }}>
+                    <p className="text-lg">
+                      We'll email you when <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
+                    </p>
                   </div>
-                )}
+
+                  <button
+                    onClick={() => window.location.href = 'https://ignite.education'}
+                    className="bg-white hover:bg-white rounded-xl transition flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
+                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px' }}
+                  >
+                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
