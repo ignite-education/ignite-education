@@ -52,25 +52,25 @@ const Onboarding = ({ firstName, userId }) => {
   }, [currentPage, firstName]);
 
   const courseCategories = {
-    available: ['Product Management'],
-    upcoming: ['Cyber Security'],
+    available: ['Product Manager'],
+    upcoming: ['Cyber Security Analyst'],
     requested: [
-      'Software Engineering', 'Data Science', 'UX Design', 'Digital Marketing',
-      'Business Analytics', 'Cloud Architecture', 'DevOps Engineering',
-      'Machine Learning Engineering', 'Frontend Development', 'Backend Development',
-      'Full Stack Development', 'Mobile Development', 'Game Development',
-      'Data Engineering', 'Business Intelligence', 'Financial Analysis',
-      'Investment Banking', 'Management Consulting', 'Strategy Consulting',
-      'Sales Engineering', 'Technical Writing', 'Content Marketing',
-      'Growth Marketing', 'Brand Management', 'Public Relations',
-      'Human Resources', 'Talent Acquisition', 'Operations Management',
-      'Supply Chain Management', 'Legal Counsel', 'Corporate Law',
-      'Intellectual Property Law', 'Accounting', 'Tax Advisory',
-      'Audit', 'Risk Management', 'Compliance', 'Quality Assurance',
-      'Test Automation', 'Site Reliability Engineering', 'Network Engineering',
-      'Systems Administration', 'Database Administration', 'Information Security',
-      'Penetration Testing', 'Incident Response', 'Architecture',
-      'Interior Design', 'Graphic Design', 'Motion Graphics'
+      'Software Engineer', 'Data Scientist', 'UX Designer', 'Digital Marketer',
+      'Business Analyst', 'Cloud Architect', 'DevOps Engineer',
+      'Machine Learning Engineer', 'Frontend Developer', 'Backend Developer',
+      'Full Stack Developer', 'Mobile Developer', 'Game Developer',
+      'Data Engineer', 'Business Intelligence Analyst', 'Financial Analyst',
+      'Investment Banker', 'Management Consultant', 'Strategy Consultant',
+      'Sales Engineer', 'Technical Writer', 'Content Marketer',
+      'Growth Marketer', 'Brand Manager', 'Public Relations Manager',
+      'Human Resources Manager', 'Talent Acquisition Specialist', 'Operations Manager',
+      'Supply Chain Manager', 'Legal Counsel', 'Corporate Lawyer',
+      'Intellectual Property Lawyer', 'Accountant', 'Tax Advisor',
+      'Auditor', 'Risk Manager', 'Compliance Officer', 'Quality Assurance Engineer',
+      'Test Automation Engineer', 'Site Reliability Engineer', 'Network Engineer',
+      'Systems Administrator', 'Database Administrator', 'Information Security Analyst',
+      'Penetration Tester', 'Incident Response Analyst', 'Architect',
+      'Interior Designer', 'Graphic Designer', 'Motion Graphics Designer'
     ]
   };
 
