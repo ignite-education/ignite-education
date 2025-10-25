@@ -152,11 +152,11 @@ const Onboarding = ({ firstName, userId }) => {
       <div className="fixed inset-0 bg-black" style={{ opacity: 0.95 }} />
 
       {/* Onboarding Content */}
-      <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-        <div className="w-full max-w-3xl text-white">
+      <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-full max-w-3xl text-white" style={{ position: 'relative', minHeight: '300px' }}>
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
-            <div className="animate-fadeIn px-4">
+            <div className="animate-fadeIn px-4" style={{ position: 'absolute', width: '100%', top: '50%', transform: 'translateY(-50%)' }}>
               <h1
                 className="text-5xl font-bold inline-flex items-center transition-all duration-600"
                 style={{
@@ -185,21 +185,19 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Page 2: Course Selection */}
           {currentPage === 2 && (
-            <div className="text-left px-4" style={{ position: 'relative' }}>
-              {/* Welcome message stays in same position as transition end */}
-              <div style={{ position: 'absolute', top: '-100px', left: 0, right: 0 }}>
-                <h1
-                  className="text-5xl font-bold inline-flex items-start"
-                  style={{ opacity: 1 }}
-                >
-                  <span>Welcome</span>
-                  <span>,</span>
-                  <span className="text-pink-500 ml-3">{displayedName}</span>
-                </h1>
-              </div>
+            <div className="text-left px-4" style={{ position: 'absolute', width: '100%', top: '50%', transform: 'translateY(-50%)' }}>
+              {/* Welcome message */}
+              <h1
+                className="text-5xl font-bold inline-flex items-start"
+                style={{ opacity: 1, marginBottom: '40px' }}
+              >
+                <span>Welcome</span>
+                <span>,</span>
+                <span className="text-pink-500 ml-3">{displayedName}</span>
+              </h1>
 
-              {/* Course selection appears below in the space created */}
-              <div style={{ paddingTop: '60px' }}>
+              {/* Course selection appears below */}
+              <div>
                 <h2 className="text-2xl font-medium mb-2">
                   See yourself as a
                 </h2>
