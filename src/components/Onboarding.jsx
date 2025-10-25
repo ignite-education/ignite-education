@@ -197,7 +197,7 @@ const Onboarding = ({ firstName, userId }) => {
               </h1>
 
               {/* Course selection appears below in the space created */}
-              <div>
+              <div style={{ marginTop: '-80px' }}>
                 <h2 className="text-2xl font-medium mb-2">
                   See yourself as a
                 </h2>
