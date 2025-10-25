@@ -156,7 +156,7 @@ const Onboarding = ({ firstName, userId }) => {
         <div className="w-full max-w-3xl text-white">
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
-            <div className="animate-fadeIn text-center">
+            <div className="animate-fadeIn text-left px-4">
               <h1
                 className="text-5xl font-bold inline-flex items-center transition-all duration-600"
                 style={{
@@ -167,11 +167,17 @@ const Onboarding = ({ firstName, userId }) => {
               >
                 <span>Welcome</span>
                 <span>,</span>
-                <span className="text-pink-500 ml-3" style={{ minWidth: displayedName ? 'auto' : '0' }}>
+                <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
                   {displayedName}
-                  {showCursor && (
-                    <span className="inline-block w-1 h-12 bg-pink-500 ml-1 animate-pulse" style={{ animation: 'blink 1s step-end infinite' }} />
-                  )}
+                  <span
+                    className="absolute h-12 bg-pink-500 ml-1"
+                    style={{
+                      animation: 'blink 1s step-end infinite',
+                      width: '4px',
+                      opacity: showCursor ? 1 : 0,
+                      transition: 'opacity 0.3s'
+                    }}
+                  />
                 </span>
               </h1>
             </div>
