@@ -2041,7 +2041,7 @@ const ProgressHub = () => {
       <div className="flex-1 h-screen flex flex-col overflow-hidden py-2 px-8">
         <div className="w-full flex flex-col h-full" style={{ maxWidth: '739px', margin: '0 auto' }}>
           {/* Static Header Section */}
-          <div className="flex-shrink-0" style={{ paddingTop: '117.38px' }}>
+          <div className="flex-shrink-0" style={{ paddingTop: '122.38px' }}>
               <h2 className="font-semibold" style={{ fontSize: '25.3px', marginBottom: '0.175rem' }}>Community Forum</h2>
 
               <div className="flex items-center gap-3 mb-2">
