@@ -208,65 +208,28 @@ const Onboarding = ({ firstName, userId }) => {
                       >
                         {(() => {
                           const filtered = getFilteredCourses();
+                          const allCourses = [
+                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700' })),
+                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700' })),
+                            ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600' }))
+                          ];
+
                           return (
                             <>
-                              {/* Available */}
-                              {filtered.available.length > 0 && (
-                                <div>
-                                  <div className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold text-sm sticky top-0">
-                                    Available
+                              {allCourses.length > 0 ? (
+                                allCourses.map((course) => (
+                                  <div
+                                    key={course.name}
+                                    onClick={() => handleCourseSelect(course.name)}
+                                    className="px-6 py-2 text-black hover:bg-pink-50 cursor-pointer transition flex items-center justify-between"
+                                  >
+                                    <span>{course.name}</span>
+                                    <span className={`text-xs px-2 py-1 rounded ${course.tagColor}`}>
+                                      {course.tag}
+                                    </span>
                                   </div>
-                                  {filtered.available.map((course) => (
-                                    <div
-                                      key={course}
-                                      onClick={() => handleCourseSelect(course)}
-                                      className="px-6 py-3 text-black hover:bg-pink-50 cursor-pointer transition"
-                                    >
-                                      {course}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Upcoming */}
-                              {filtered.upcoming.length > 0 && (
-                                <div>
-                                  <div className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold text-sm sticky top-0">
-                                    Upcoming
-                                  </div>
-                                  {filtered.upcoming.map((course) => (
-                                    <div
-                                      key={course}
-                                      onClick={() => handleCourseSelect(course)}
-                                      className="px-6 py-3 text-black hover:bg-pink-50 cursor-pointer transition"
-                                    >
-                                      {course}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {/* Requested */}
-                              {filtered.requested.length > 0 && (
-                                <div>
-                                  <div className="px-6 py-3 bg-gray-100 text-gray-700 font-semibold text-sm sticky top-0">
-                                    Requested
-                                  </div>
-                                  {filtered.requested.map((course) => (
-                                    <div
-                                      key={course}
-                                      onClick={() => handleCourseSelect(course)}
-                                      className="px-6 py-3 text-black hover:bg-pink-50 cursor-pointer transition"
-                                    >
-                                      {course}
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-
-                              {filtered.available.length === 0 &&
-                               filtered.upcoming.length === 0 &&
-                               filtered.requested.length === 0 && (
+                                ))
+                              ) : (
                                 <div className="px-6 py-4 text-gray-500 text-center">
                                   No courses found
                                 </div>
