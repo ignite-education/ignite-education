@@ -382,7 +382,12 @@ const Onboarding = ({ firstName, userId }) => {
                   </div>
 
                   <button
-                    onClick={() => window.location.href = 'https://ignite.education'}
+                    onClick={async () => {
+                      // Sign out the user
+                      await supabase.auth.signOut();
+                      // Redirect to main landing page
+                      window.location.href = 'https://ignite.education';
+                    }}
                     className="bg-white hover:bg-white rounded-xl transition flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
                     style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px' }}
                   >
