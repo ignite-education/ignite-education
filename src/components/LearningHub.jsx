@@ -1682,13 +1682,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               }}
               onClick={() => navigate('/')}
             />
-            <button
-              onClick={() => navigate('/auth-design')}
-              className="text-xs text-gray-400 hover:text-white transition-colors"
-              style={{ fontSize: '11px' }}
-            >
-              Design Test
-            </button>
           </div>
           <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>Product Management</h2>
         </div>
