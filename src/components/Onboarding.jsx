@@ -267,6 +267,7 @@ const Onboarding = ({ firstName, userId }) => {
                         }}
                         onFocus={() => setIsDropdownOpen(true)}
                         placeholder=""
+                        autoFocus
                         className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
                         style={{
                           caretColor: '#ec4899'
