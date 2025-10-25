@@ -3,10 +3,24 @@ import { useEffect, useState, useRef } from 'react';
 const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = false }) => {
   const [showPlaceholder, setShowPlaceholder] = useState(true); // Start with placeholder
   const adInitialized = useRef(false); // Track if ad has been initialized
+  const insRef = useRef(null); // Reference to the ins element
 
   useEffect(() => {
-    // Don't load ads if user is ad-free or already initialized
-    if (isAdFree || adInitialized.current) return;
+    // Don't load ads if user is ad-free
+    if (isAdFree) return;
+
+    // Don't initialize if already done
+    if (adInitialized.current) return;
+
+    // Wait for ins element to be in the DOM
+    if (!insRef.current) return;
+
+    // Check if this specific ins element already has an ad
+    if (insRef.current.getAttribute('data-ad-status') === 'filled' ||
+        insRef.current.getAttribute('data-adsbygoogle-status')) {
+      setShowPlaceholder(false);
+      return;
+    }
 
     // Load AdSense script if not already loaded
     if (!window.adsbygoogle) {
@@ -22,7 +36,7 @@ const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = 
         // Hide placeholder when script loads successfully
         setShowPlaceholder(false);
         // Push ad to AdSense queue only if not already initialized
-        if (!adInitialized.current) {
+        if (!adInitialized.current && insRef.current) {
           try {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
             adInitialized.current = true;
@@ -42,7 +56,7 @@ const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = 
     } else {
       // Script already loaded, hide placeholder and push ad only if not already initialized
       setShowPlaceholder(false);
-      if (!adInitialized.current) {
+      if (!adInitialized.current && insRef.current) {
         try {
           (window.adsbygoogle = window.adsbygoogle || []).push({});
           adInitialized.current = true;
@@ -52,6 +66,12 @@ const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = 
         }
       }
     }
+
+    // Cleanup function
+    return () => {
+      // Mark as needing reinitialization if component unmounts
+      adInitialized.current = false;
+    };
   }, [adClient, isAdFree]);
 
   // Don't render anything if user is ad-free
@@ -82,6 +102,7 @@ const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = 
         </div>
       ) : (
         <ins
+          ref={insRef}
           className="adsbygoogle"
           style={{ display: 'block', ...style }}
           data-ad-client={adClient}
