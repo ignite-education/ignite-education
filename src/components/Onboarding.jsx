@@ -268,6 +268,18 @@ const Onboarding = ({ firstName, userId }) => {
                           setIsDropdownOpen(true);
                         }}
                         onClick={() => setIsDropdownOpen(true)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && searchQuery.trim()) {
+                            e.preventDefault();
+                            // Set the selected course to what was typed
+                            const course = searchQuery.trim();
+                            setSelectedCourse(course);
+                            // Close dropdown
+                            setIsDropdownOpen(false);
+                            // Call handleComplete after state update
+                            setTimeout(() => handleComplete(), 10);
+                          }
+                        }}
                         placeholder=""
                         autoFocus
                         className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
