@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -7,7 +7,35 @@ const Onboarding = ({ firstName, userId }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCourse, setSelectedCourse] = useState('');
   const [seniorityLevel, setSeniorityLevel] = useState('');
+  const [displayedName, setDisplayedName] = useState('');
+  const [showCursor, setShowCursor] = useState(true);
   const navigate = useNavigate();
+
+  // Typing animation effect for the name
+  useEffect(() => {
+    if (currentPage === 1 && firstName) {
+      let currentIndex = 0;
+      const typingSpeed = 100; // milliseconds per character
+
+      // Start typing after a short delay
+      const startDelay = setTimeout(() => {
+        const typingInterval = setInterval(() => {
+          if (currentIndex <= firstName.length) {
+            setDisplayedName(firstName.slice(0, currentIndex));
+            currentIndex++;
+          } else {
+            clearInterval(typingInterval);
+            // Stop cursor blinking after typing is done
+            setTimeout(() => setShowCursor(false), 500);
+          }
+        }, typingSpeed);
+
+        return () => clearInterval(typingInterval);
+      }, 800); // Wait 800ms before starting to type
+
+      return () => clearTimeout(startDelay);
+    }
+  }, [currentPage, firstName]);
 
   const courses = [
     'Product Management',
@@ -69,8 +97,19 @@ const Onboarding = ({ firstName, userId }) => {
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
             <div className="animate-fadeIn">
-              <h1 className="text-5xl font-bold mb-8">
-                Welcome, <span className="text-pink-500">{firstName}</span>
+              <h1 className="text-5xl font-bold mb-8 flex items-center justify-center gap-3">
+                <span>Welcome</span>
+                {displayedName && (
+                  <>
+                    <span>,</span>
+                    <span className="text-pink-500">
+                      {displayedName}
+                      {showCursor && (
+                        <span className="inline-block w-1 h-12 bg-pink-500 ml-1 animate-pulse" style={{ animation: 'blink 1s step-end infinite' }} />
+                      )}
+                    </span>
+                  </>
+                )}
               </h1>
               <p className="text-xl text-gray-300 mb-4 leading-relaxed">
                 We believe education should be accessible, personalised and integrated for everyone.
