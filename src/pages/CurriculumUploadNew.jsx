@@ -1219,7 +1219,7 @@ ${contentBlocks.map((block, index) => {
                       type="text"
                       value={courseName}
                       onChange={(e) => setCourseName(e.target.value)}
-                      placeholder="e.g., Product Management"
+                      placeholder="e.g., Product Manager"
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                     />
                   </div>
@@ -1373,7 +1373,7 @@ ${contentBlocks.map((block, index) => {
                       type="text"
                       value={moduleName}
                       onChange={(e) => setModuleName(e.target.value)}
-                      placeholder="e.g., Introduction to Product Management"
+                      placeholder="e.g., Introduction to Product Manager"
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                     />
                   </div>
@@ -1504,7 +1504,7 @@ ${contentBlocks.map((block, index) => {
                       type="text"
                       value={lessonName}
                       onChange={(e) => setLessonName(e.target.value)}
-                      placeholder="e.g., What is Product Management?"
+                      placeholder="e.g., What is a Product Manager?"
                       className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                     />
                   </div>

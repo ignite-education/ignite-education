@@ -37,7 +37,7 @@ const AnalyticsDashboard = () => {
 
   // Available courses
   const courses = [
-    'Product Management',
+    'Product Manager',
     'Software Engineering',
     'Data Science',
     'UX Design',

@@ -1,21 +1,20 @@
--- Fix enrolled course names from role names to course names
--- This updates users who enrolled in "Product Manager" to show "Product Management"
--- which matches the course name used in the analytics dashboard
+-- Update enrolled course names to match new naming convention
+-- Product Management -> Product Manager
+-- Cyber Security -> Cyber Security Analyst
 
 UPDATE public.users
 SET
-  enrolled_course = 'Product Management',
+  enrolled_course = 'Product Manager',
   updated_at = NOW()
-WHERE enrolled_course = 'Product Manager';
+WHERE enrolled_course = 'Product Management';
 
--- Also update any Cyber Security Analyst to Cyber Security
 UPDATE public.users
 SET
-  enrolled_course = 'Cyber Security',
+  enrolled_course = 'Cyber Security Analyst',
   updated_at = NOW()
-WHERE enrolled_course = 'Cyber Security Analyst';
+WHERE enrolled_course = 'Cyber Security';
 
--- Check the results
+-- Verify the results
 SELECT
   id,
   first_name,
@@ -23,5 +22,5 @@ SELECT
   enrolled_course,
   updated_at
 FROM public.users
-WHERE enrolled_course IN ('Product Management', 'Cyber Security')
+WHERE enrolled_course IN ('Product Manager', 'Cyber Security Analyst')
 ORDER BY updated_at DESC;
