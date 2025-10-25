@@ -5,11 +5,13 @@ import { supabase } from '../lib/supabase';
 
 const Onboarding = ({ firstName, userId }) => {
   const [selectedCourse, setSelectedCourse] = useState('');
+  const [courseStatus, setCourseStatus] = useState(''); // 'available', 'upcoming', 'requested', or 'unrecognized'
   const [displayedName, setDisplayedName] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [showCourseSelection, setShowCourseSelection] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -93,8 +95,9 @@ const Onboarding = ({ firstName, userId }) => {
     };
   };
 
-  const handleCourseSelect = (course) => {
+  const handleCourseSelect = (course, status) => {
     setSelectedCourse(course);
+    setCourseStatus(status);
     setSearchQuery(course);
     setIsDropdownOpen(false);
   };
@@ -111,24 +114,43 @@ const Onboarding = ({ firstName, userId }) => {
       return;
     }
 
-    try {
-      // Update user profile with course
-      const { error } = await supabase
-        .from('users')
-        .update({
-          enrolled_course: selectedCourse,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', userId)
-        .select();
+    // Determine if course is recognized
+    let status = courseStatus;
+    if (!status) {
+      // Check if it's an unrecognized course (typed in but not in dropdown)
+      const allCourses = [
+        ...courseCategories.available,
+        ...courseCategories.upcoming,
+        ...courseCategories.requested
+      ];
+      status = allCourses.includes(selectedCourse) ? 'requested' : 'unrecognized';
+    }
 
-      if (error) throw error;
+    // If available course, enroll and proceed to progress hub
+    if (status === 'available') {
+      try {
+        // Update user profile with course
+        const { error } = await supabase
+          .from('users')
+          .update({
+            enrolled_course: selectedCourse,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+          .select();
 
-      // Force a full page reload to ensure ProtectedRoute re-checks
-      window.location.href = '/';
-    } catch (error) {
-      alert(`There was an error saving your preferences: ${error.message}`);
+        if (error) throw error;
+
+        // Force a full page reload to ensure ProtectedRoute re-checks
+        window.location.href = '/';
+      } catch (error) {
+        alert(`There was an error saving your preferences: ${error.message}`);
+      }
+    } else {
+      // For upcoming, requested, or unrecognized courses, show notification
+      setCourseStatus(status);
+      setShowNotification(true);
     }
   };
 
@@ -208,9 +230,9 @@ const Onboarding = ({ firstName, userId }) => {
                         {(() => {
                           const filtered = getFilteredCourses();
                           const allCourses = [
-                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700' })),
-                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700' })),
-                            ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600' }))
+                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'available' })),
+                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'upcoming' })),
+                            ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600', status: 'requested' }))
                           ];
 
                           return (
@@ -219,7 +241,7 @@ const Onboarding = ({ firstName, userId }) => {
                                 allCourses.map((course) => (
                                   <div
                                     key={course.name}
-                                    onClick={() => handleCourseSelect(course.name)}
+                                    onClick={() => handleCourseSelect(course.name, course.status)}
                                     className="px-6 py-2 text-black hover:bg-pink-50 cursor-pointer transition flex items-center justify-between"
                                   >
                                     <span>{course.name}</span>
@@ -249,6 +271,17 @@ const Onboarding = ({ firstName, userId }) => {
                     <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
                   </button>
                 </div>
+
+                {/* Notification for unavailable courses */}
+                {showNotification && (
+                  <div className="mt-6 animate-fadeIn">
+                    <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-4 text-white">
+                      <p className="text-lg">
+                        We'll email you when <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
+                      </p>
+                    </div>
+                  </div>
+                )}
             </div>
           )}
 
