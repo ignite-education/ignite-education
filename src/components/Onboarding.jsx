@@ -12,6 +12,7 @@ const Onboarding = ({ firstName, userId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -266,18 +267,40 @@ const Onboarding = ({ firstName, userId }) => {
                         onChange={(e) => {
                           setSearchQuery(e.target.value);
                           setIsDropdownOpen(true);
+                          setHighlightedIndex(-1);
                         }}
                         onClick={() => setIsDropdownOpen(true)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && searchQuery.trim()) {
+                          const filtered = getFilteredCourses();
+                          const allCourses = [
+                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'available' })),
+                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'upcoming' })),
+                            ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600', status: 'requested' }))
+                          ];
+
+                          if (e.key === 'ArrowDown') {
                             e.preventDefault();
-                            // Set the selected course to what was typed
-                            const course = searchQuery.trim();
-                            setSelectedCourse(course);
-                            // Close dropdown
-                            setIsDropdownOpen(false);
-                            // Call handleComplete after state update
-                            setTimeout(() => handleComplete(), 10);
+                            setIsDropdownOpen(true);
+                            setHighlightedIndex(prev =>
+                              prev < allCourses.length - 1 ? prev + 1 : prev
+                            );
+                          } else if (e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            setHighlightedIndex(prev => prev > 0 ? prev - 1 : -1);
+                          } else if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (highlightedIndex >= 0 && highlightedIndex < allCourses.length) {
+                              // Select the highlighted course
+                              const course = allCourses[highlightedIndex];
+                              handleCourseSelect(course.name, course.status);
+                              setTimeout(() => handleComplete(), 10);
+                            } else if (searchQuery.trim()) {
+                              // No course highlighted, use typed text
+                              const course = searchQuery.trim();
+                              setSelectedCourse(course);
+                              setIsDropdownOpen(false);
+                              setTimeout(() => handleComplete(), 10);
+                            }
                           }
                         }}
                         placeholder=""
@@ -319,11 +342,13 @@ const Onboarding = ({ firstName, userId }) => {
                           return (
                             <>
                               {allCourses.length > 0 && (
-                                allCourses.map((course) => (
+                                allCourses.map((course, index) => (
                                   <div
                                     key={course.name}
                                     onClick={() => handleCourseSelect(course.name, course.status)}
-                                    className="px-6 py-2 text-black hover:bg-pink-50 cursor-pointer transition flex items-center justify-between"
+                                    className={`px-6 py-2 text-black cursor-pointer transition flex items-center justify-between ${
+                                      index === highlightedIndex ? 'bg-pink-100' : 'hover:bg-pink-50'
+                                    }`}
                                   >
                                     <span>{course.name}</span>
                                     <span className={`text-xs px-2 py-1 rounded ${course.tagColor}`}>
