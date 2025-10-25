@@ -105,6 +105,8 @@ const Onboarding = ({ firstName, userId }) => {
   const handleComplete = async () => {
     if (!selectedCourse) return;
 
+    console.log('handleComplete called', { selectedCourse, courseStatus });
+
     // Check if user is still authenticated
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -126,11 +128,14 @@ const Onboarding = ({ firstName, userId }) => {
       status = allCourses.includes(selectedCourse) ? 'requested' : 'unrecognized';
     }
 
+    console.log('Course status determined:', status);
+
     // If available course, enroll and proceed to progress hub
     if (status === 'available') {
+      console.log('Enrolling in available course:', selectedCourse);
       try {
         // Update user profile with course
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('users')
           .update({
             enrolled_course: selectedCourse,
@@ -140,15 +145,20 @@ const Onboarding = ({ firstName, userId }) => {
           .eq('id', userId)
           .select();
 
+        console.log('Database update result:', { data, error });
+
         if (error) throw error;
 
+        console.log('Redirecting to progress hub');
         // Force a full page reload to ensure ProtectedRoute re-checks
         window.location.href = '/';
       } catch (error) {
+        console.error('Error updating user:', error);
         alert(`There was an error saving your preferences: ${error.message}`);
       }
     } else {
       // For upcoming, requested, or unrecognized courses, show notification
+      console.log('Showing notification for unavailable course');
       setCourseStatus(status);
       setShowNotification(true);
     }
