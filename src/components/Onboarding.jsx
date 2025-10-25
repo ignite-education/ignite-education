@@ -149,6 +149,11 @@ const Onboarding = ({ firstName, userId }) => {
 
         if (error) throw error;
 
+        console.log('Update successful, data:', data);
+
+        // Wait a moment for the database to fully commit the transaction
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         console.log('Redirecting to progress hub');
         // Force a full page reload to ensure ProtectedRoute re-checks
         window.location.href = '/';
