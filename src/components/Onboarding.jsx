@@ -189,7 +189,7 @@ const Onboarding = ({ firstName, userId }) => {
               {/* Welcome message stays at top */}
               <h1
                 className="text-5xl font-bold inline-flex items-start"
-                style={{ transform: 'translateY(-100px)', opacity: 1, marginBottom: '2px' }}
+                style={{ transform: 'translateY(-100px)', opacity: 1, marginBottom: '1px' }}
               >
                 <span>Welcome</span>
                 <span>,</span>
