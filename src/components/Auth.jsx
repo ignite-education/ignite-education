@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ProgressHub from './ProgressHub';
+const ProgressHub = lazy(() => import('./ProgressHub'));
 import Onboarding from './Onboarding';
 import { ChevronDown } from 'lucide-react';
 
@@ -122,10 +122,19 @@ const Auth = () => {
           filter: 'blur(2px)',
           pointerEvents: 'none',
           opacity: 0,
-          animation: 'fadeIn 1s ease-out forwards'
+          animation: 'fadeIn 1s ease-out forwards',
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
         }}
       >
-        <ProgressHub />
+        <Suspense fallback={
+          <div style={{
+            width: '100%',
+            height: '100vh',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+          }} />
+        }>
+          <ProgressHub />
+        </Suspense>
       </div>
 
       {/* Auth Overlay - Scrollable Container */}
