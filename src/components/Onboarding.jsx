@@ -145,9 +145,9 @@ const Onboarding = ({ firstName, userId }) => {
           willChange: 'transform'
         }}>
           {/* Welcome message */}
-          <h1 className="text-5xl font-bold inline-flex items-start" style={{ marginBottom: '90px' }}>
-            <span>Welcome</span>
-            <span>,</span>
+          <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn" style={{ marginBottom: '90px' }}>
+            <span style={{ animation: 'fadeIn 0.5s ease-in' }}>Welcome</span>
+            <span style={{ animation: 'fadeIn 0.5s ease-in' }}>,</span>
             <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
               {displayedName}
               {showCursor && displayedName && (
@@ -243,9 +243,10 @@ const Onboarding = ({ firstName, userId }) => {
                   <button
                     onClick={handleComplete}
                     disabled={!selectedCourse}
-                    className="bg-white hover:bg-white rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center py-3 px-4"
+                    className="bg-white hover:bg-white rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center py-3 px-4 shadow-sm"
+                    style={{ border: 'none' }}
                   >
-                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" />
+                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
                   </button>
                 </div>
             </div>
