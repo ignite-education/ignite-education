@@ -208,7 +208,7 @@ const Onboarding = ({ firstName, userId }) => {
           {/* Welcome message - absolutely positioned */}
           <div style={{
             position: 'absolute',
-            top: '50px',
+            top: '-100px',
             left: '40px',
             right: '40px'
           }}>
@@ -235,7 +235,7 @@ const Onboarding = ({ firstName, userId }) => {
           {showCourseSelection && (
             <div className="animate-fadeIn" style={{
               position: 'absolute',
-              top: '160px',
+              top: '10px',
               left: '40px',
               right: '40px'
             }}>
