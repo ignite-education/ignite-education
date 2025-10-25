@@ -267,7 +267,7 @@ const Onboarding = ({ firstName, userId }) => {
                           setSearchQuery(e.target.value);
                           setIsDropdownOpen(true);
                         }}
-                        onFocus={() => setIsDropdownOpen(true)}
+                        onClick={() => setIsDropdownOpen(true)}
                         placeholder=""
                         autoFocus
                         className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
@@ -342,9 +342,9 @@ const Onboarding = ({ firstName, userId }) => {
                 </div>
               ) : (
                 <div className="mb-12 flex items-start gap-4 animate-fadeIn">
-                  <div className="flex-1 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-6 py-3 text-white flex items-center" style={{ minHeight: '60px' }}>
+                  <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center" style={{ minHeight: '60px' }}>
                     <p className="text-lg">
-                      We'll email you when <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
+                      We'll email you when the <span className="text-pink-500 font-semibold">{selectedCourse}</span> course is available
                     </p>
                   </div>
 
