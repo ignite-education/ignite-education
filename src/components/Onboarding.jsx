@@ -152,7 +152,7 @@ const Onboarding = ({ firstName, userId }) => {
       <div className="fixed inset-0 bg-black" style={{ opacity: 0.95 }} />
 
       {/* Onboarding Content */}
-      <div className="fixed inset-0 flex items-center z-50 px-4">
+      <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
         <div className="w-full max-w-3xl text-white">
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
