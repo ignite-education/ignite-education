@@ -167,7 +167,7 @@ const Onboarding = ({ firstName, userId }) => {
           {/* Course selection appears after typing */}
           {showCourseSelection && (
             <div className="animate-fadeIn" style={{ marginTop: '-60px' }}>
-              <h2 className="text-2xl font-medium mb-2">
+              <h2 className="text-2xl font-light mb-2">
                 See yourself as a
               </h2>
                 <div className="mb-12 flex items-start gap-4">
