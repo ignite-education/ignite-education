@@ -179,10 +179,10 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Page 2: Course Selection */}
           {currentPage === 2 && (
-            <div>
+            <div className="max-w-3xl mx-auto text-left px-4">
               {/* Welcome message stays at top */}
               <h1
-                className="text-5xl font-bold flex items-center justify-center"
+                className="text-5xl font-bold flex items-start"
                 style={{ transform: 'translateY(-100px)', opacity: 0.8, marginBottom: '38px' }}
               >
                 <span>Welcome</span>
@@ -197,10 +197,10 @@ const Onboarding = ({ firstName, userId }) => {
                   animation: 'slideUp 0.6s ease-out'
                 }}
               >
-                <h1 className="text-4xl font-bold mb-12">
+                <h2 className="text-2xl font-bold mb-8">
                   See yourself as a
-                </h1>
-                <div className="mb-12 flex items-start justify-center gap-4 max-w-3xl mx-auto">
+                </h2>
+                <div className="mb-12 flex items-start gap-4">
                   <div className="flex-1 relative" ref={dropdownRef}>
                     <input
                       type="text"
@@ -212,6 +212,9 @@ const Onboarding = ({ firstName, userId }) => {
                       onFocus={() => setIsDropdownOpen(true)}
                       placeholder="Select your path..."
                       className="w-full bg-white text-black text-xl px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      style={{
+                        caretColor: '#ec4899'
+                      }}
                     />
 
                     {isDropdownOpen && (
@@ -291,10 +294,10 @@ const Onboarding = ({ firstName, userId }) => {
                   <button
                     onClick={handleNext}
                     disabled={!selectedCourse}
-                    className="bg-pink-500 hover:bg-pink-600 text-white p-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                    className="bg-white hover:bg-white text-gray-800 p-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group"
                     style={{ width: '64px', height: '64px' }}
                   >
-                    <ArrowRight size={32} className="mx-auto" />
+                    <ArrowRight size={32} className="mx-auto text-gray-800 group-hover:text-pink-500 transition" />
                   </button>
                 </div>
               </div>
