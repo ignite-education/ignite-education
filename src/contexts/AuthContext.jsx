@@ -93,8 +93,26 @@ export const AuthProvider = ({ children }) => {
 
   // Sign out
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        // If there's an auth session error, clear local storage manually
+        if (error.message?.includes('Auth session missing') || error.status === 403) {
+          console.log('Session already invalid, clearing local storage...');
+          localStorage.clear();
+          sessionStorage.clear();
+          window.location.href = '/';
+          return;
+        }
+        throw error;
+      }
+    } catch (err) {
+      // If logout fails, force clear and redirect
+      console.error('Error during logout:', err);
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
+    }
   };
 
   // Update user profile
