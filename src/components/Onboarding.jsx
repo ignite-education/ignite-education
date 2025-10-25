@@ -153,12 +153,12 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 flex items-center justify-center z-50 px-4">
-        <div className="w-full max-w-2xl text-white text-center">
+        <div className="w-full max-w-3xl text-white">
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
-            <div className="animate-fadeIn">
+            <div className="animate-fadeIn text-center">
               <h1
-                className="text-5xl font-bold flex items-center justify-center transition-all duration-600"
+                className="text-5xl font-bold inline-flex items-center transition-all duration-600"
                 style={{
                   transform: showTransition ? 'translateY(-100px)' : 'translateY(0)',
                   opacity: showTransition ? 0.8 : 1,
@@ -179,10 +179,10 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Page 2: Course Selection */}
           {currentPage === 2 && (
-            <div className="max-w-3xl mx-auto text-left px-4">
+            <div className="text-left px-4">
               {/* Welcome message stays at top */}
               <h1
-                className="text-5xl font-bold flex items-start"
+                className="text-5xl font-bold inline-flex items-start"
                 style={{ transform: 'translateY(-100px)', opacity: 0.8, marginBottom: '19px' }}
               >
                 <span>Welcome</span>
