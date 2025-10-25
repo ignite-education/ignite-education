@@ -192,7 +192,7 @@ const Onboarding = ({ firstName, userId }) => {
 
               {/* Course selection */}
               <div>
-                <h2 className="text-2xl font-bold mb-8">
+                <h2 className="text-2xl font-bold mb-4">
                   See yourself as a
                 </h2>
                 <div className="mb-12 flex items-start gap-4">
