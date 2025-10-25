@@ -678,6 +678,11 @@ async function getRedditOAuthToken() {
     return redditOAuthToken.token;
   }
 
+  // Validate environment variables
+  if (!process.env.VITE_REDDIT_CLIENT_ID || !process.env.VITE_REDDIT_CLIENT_SECRET) {
+    throw new Error('Reddit API credentials not configured. Please set VITE_REDDIT_CLIENT_ID and VITE_REDDIT_CLIENT_SECRET environment variables.');
+  }
+
   console.log('🔑 Fetching new Reddit OAuth token...');
   await waitForRateLimit();
 
@@ -788,7 +793,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     res.json(posts);
 
   } catch (error) {
-    console.error('Error fetching Reddit posts:', error);
+    console.error('❌ Error fetching Reddit posts:', error.message);
+    console.error('❌ Error stack:', error.stack);
 
     // If we have stale cache, return it rather than failing
     if (redditPostsCache.data) {
@@ -798,6 +804,7 @@ app.get('/api/reddit-posts', async (req, res) => {
 
     // Return empty array instead of error to prevent frontend from breaking
     console.log('⚠️ Returning empty array due to Reddit API error');
+    console.log('💡 Check that VITE_REDDIT_CLIENT_ID and VITE_REDDIT_CLIENT_SECRET are set in environment variables');
     res.json([]);
   }
 });
