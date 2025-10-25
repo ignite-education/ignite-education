@@ -624,44 +624,123 @@ app.post('/api/text-to-speech', async (req, res) => {
   }
 });
 
-// Reddit posts endpoint with server-side caching
+// Reddit posts endpoint with server-side caching and rate limiting
 let redditPostsCache = { data: null, timestamp: 0 };
-const REDDIT_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+let redditOAuthToken = { token: null, timestamp: 0 };
+let lastRedditRequestTime = 0;
+let redditRequestCount = 0;
+let redditRateLimitResetTime = 0;
+
+const REDDIT_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (increased from 5)
+const REDDIT_CACHE_MINIMUM_REFRESH = 2 * 60 * 1000; // 2 minutes minimum between refreshes
+const REDDIT_TOKEN_DURATION = 55 * 60 * 1000; // 55 minutes (tokens last 60min, refresh early)
+const REDDIT_REQUEST_DELAY = 1100; // 1.1 seconds between requests (stay under 60/min limit)
+const REDDIT_MAX_REQUESTS_PER_MINUTE = 55; // Conservative limit (Reddit allows 60)
+
+// Rate limiter: ensures we don't exceed Reddit's rate limits
+async function waitForRateLimit() {
+  const now = Date.now();
+
+  // Reset counter if a minute has passed
+  if (now - redditRateLimitResetTime > 60000) {
+    redditRequestCount = 0;
+    redditRateLimitResetTime = now;
+  }
+
+  // If we've hit the limit, wait until the minute resets
+  if (redditRequestCount >= REDDIT_MAX_REQUESTS_PER_MINUTE) {
+    const waitTime = 60000 - (now - redditRateLimitResetTime);
+    if (waitTime > 0) {
+      console.log(`⏳ Rate limit reached, waiting ${Math.ceil(waitTime / 1000)}s...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      redditRequestCount = 0;
+      redditRateLimitResetTime = Date.now();
+    }
+  }
+
+  // Ensure minimum delay between requests
+  const timeSinceLastRequest = now - lastRedditRequestTime;
+  if (timeSinceLastRequest < REDDIT_REQUEST_DELAY) {
+    await new Promise(resolve => setTimeout(resolve, REDDIT_REQUEST_DELAY - timeSinceLastRequest));
+  }
+
+  lastRedditRequestTime = Date.now();
+  redditRequestCount++;
+}
+
+// Get or refresh OAuth token (cached to avoid repeated token requests)
+async function getRedditOAuthToken() {
+  const now = Date.now();
+
+  // Return cached token if still valid
+  if (redditOAuthToken.token && (now - redditOAuthToken.timestamp) < REDDIT_TOKEN_DURATION) {
+    console.log('🔑 Using cached Reddit OAuth token');
+    return redditOAuthToken.token;
+  }
+
+  console.log('🔑 Fetching new Reddit OAuth token...');
+  await waitForRateLimit();
+
+  const authString = Buffer.from(`${process.env.VITE_REDDIT_CLIENT_ID}:${process.env.VITE_REDDIT_CLIENT_SECRET}`).toString('base64');
+
+  const tokenResponse = await fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${authString}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+    },
+    body: 'grant_type=client_credentials'
+  });
+
+  if (!tokenResponse.ok) {
+    const errorText = await tokenResponse.text();
+    console.error(`Reddit OAuth error: ${tokenResponse.status}`, errorText);
+    throw new Error(`Reddit OAuth error: ${tokenResponse.status}`);
+  }
+
+  const tokenData = await tokenResponse.json();
+  redditOAuthToken = {
+    token: tokenData.access_token,
+    timestamp: now
+  };
+
+  console.log('✅ Reddit OAuth token cached');
+  return redditOAuthToken.token;
+}
 
 app.get('/api/reddit-posts', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 40;
+    const forceRefresh = req.query.refresh === 'true';
+    const now = Date.now();
 
     // Check if we have valid cached data
-    const now = Date.now();
-    if (redditPostsCache.data && (now - redditPostsCache.timestamp) < REDDIT_CACHE_DURATION) {
-      console.log('📦 Returning cached Reddit posts');
+    const cacheAge = now - redditPostsCache.timestamp;
+    const hasValidCache = redditPostsCache.data && cacheAge < REDDIT_CACHE_DURATION;
+    const canRefresh = cacheAge >= REDDIT_CACHE_MINIMUM_REFRESH;
+
+    // Return cache if valid and not forcing refresh, or if too soon to refresh
+    if (hasValidCache && (!forceRefresh || !canRefresh)) {
+      const cacheMinutesOld = Math.floor(cacheAge / 60000);
+      console.log(`📦 Returning cached Reddit posts (${cacheMinutesOld}m old)`);
+      return res.json(redditPostsCache.data);
+    }
+
+    // If forcing refresh but too soon, warn and return cache
+    if (forceRefresh && !canRefresh) {
+      const waitSeconds = Math.ceil((REDDIT_CACHE_MINIMUM_REFRESH - cacheAge) / 1000);
+      console.log(`⏳ Refresh requested but cache too fresh. Wait ${waitSeconds}s. Returning cached data.`);
       return res.json(redditPostsCache.data);
     }
 
     console.log('🔄 Fetching fresh Reddit posts...');
 
-    // Get OAuth access token
-    const authString = Buffer.from(`${process.env.VITE_REDDIT_CLIENT_ID}:${process.env.VITE_REDDIT_CLIENT_SECRET}`).toString('base64');
+    // Get OAuth access token (cached)
+    const accessToken = await getRedditOAuthToken();
 
-    const tokenResponse = await fetch('https://www.reddit.com/api/v1/access_token', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${authString}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
-      },
-      body: 'grant_type=client_credentials'
-    });
-
-    if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error(`Reddit OAuth error: ${tokenResponse.status}`, errorText);
-      throw new Error(`Reddit OAuth error: ${tokenResponse.status}`);
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
+    // Rate limit before fetching posts
+    await waitForRateLimit();
 
     // Fetch from Reddit OAuth API
     const redditUrl = `https://oauth.reddit.com/r/ProductManagement/hot?limit=${limit}`;
@@ -680,36 +759,15 @@ app.get('/api/reddit-posts', async (req, res) => {
 
     const json = await response.json();
 
-    // Transform Reddit data
-    const posts = await Promise.all(json.data.children.map(async child => {
+    // Transform Reddit data WITHOUT fetching individual user icons
+    // This eliminates 40+ additional API requests per fetch
+    const posts = json.data.children.map(child => {
       const post = child.data;
-
-      // Fetch user icon using OAuth API
-      let authorIcon = null;
-      try {
-        const userResponse = await fetch(`https://oauth.reddit.com/user/${post.author}/about`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
-          }
-        });
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          authorIcon = userData.data?.icon_img || userData.data?.snoovatar_img || null;
-          if (authorIcon) {
-            // Clean up the URL
-            authorIcon = authorIcon.split('?')[0];
-            authorIcon = authorIcon.replace(/&amp;/g, '&');
-          }
-        }
-      } catch (err) {
-        console.error(`Error fetching Reddit user icon for ${post.author}:`, err.message);
-      }
 
       return {
         id: post.id,
         author: post.author,
-        author_icon: authorIcon,
+        author_icon: null, // Don't fetch individual user icons to save API calls
         created_at: new Date(post.created_utc * 1000).toISOString(),
         title: post.title,
         content: post.selftext || '',
@@ -718,7 +776,7 @@ app.get('/api/reddit-posts', async (req, res) => {
         comments: post.num_comments,
         url: `https://reddit.com${post.permalink}`
       };
-    }));
+    });
 
     // Cache the results
     redditPostsCache = {

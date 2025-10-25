@@ -333,7 +333,7 @@ const ProgressHub = () => {
 
       // Try to load cached posts first
       const CACHE_KEY = 'community_posts_cache';
-      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+      const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matches server cache)
 
       try {
         const cachedData = localStorage.getItem(CACHE_KEY);
@@ -351,9 +351,9 @@ const ProgressHub = () => {
         console.error('❌ Error loading cached posts:', err);
       }
 
-      // Fetch fresh data in the background
+      // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
-        redditData = await getRedditPosts(40);
+        redditData = await getRedditPosts(40, false);
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
@@ -1146,7 +1146,8 @@ const ProgressHub = () => {
       let userPostsData = [];
 
       try {
-        redditData = await getRedditPosts(40);
+        // Force refresh = true to bypass cache (but respects minimum 2-min refresh on server)
+        redditData = await getRedditPosts(40, true);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error refreshing Reddit posts:', err);
