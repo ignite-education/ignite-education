@@ -10,6 +10,8 @@ const Onboarding = ({ firstName, userId }) => {
   const [showCourseSelection, setShowCourseSelection] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [placeholderText, setPlaceholderText] = useState('');
+  const [showPlaceholderCursor, setShowPlaceholderCursor] = useState(true);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -44,6 +46,31 @@ const Onboarding = ({ firstName, userId }) => {
       return () => clearTimeout(startDelay);
     }
   }, [firstName]);
+
+  // Typing animation for placeholder when course selection shows
+  useEffect(() => {
+    if (showCourseSelection) {
+      const fullText = 'Select your path...';
+      let currentIndex = 0;
+      const typingSpeed = 80;
+
+      const startDelay = setTimeout(() => {
+        const typingInterval = setInterval(() => {
+          if (currentIndex <= fullText.length) {
+            setPlaceholderText(fullText.slice(0, currentIndex));
+            currentIndex++;
+          } else {
+            clearInterval(typingInterval);
+            setShowPlaceholderCursor(false);
+          }
+        }, typingSpeed);
+
+        return () => clearInterval(typingInterval);
+      }, 300);
+
+      return () => clearTimeout(startDelay);
+    }
+  }, [showCourseSelection]);
 
   const courseCategories = {
     available: ['Product Manager'],
@@ -142,26 +169,27 @@ const Onboarding = ({ firstName, userId }) => {
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div className="w-full max-w-3xl text-white px-4 transition-all duration-700" style={{ transform: showCourseSelection ? 'translateY(-80px)' : 'translateY(0)' }}>
           {/* Welcome message */}
-          <h1 className="text-5xl font-bold inline-flex items-start mb-10">
+          <h1 className="text-5xl font-bold inline-flex items-start mb-16">
             <span>Welcome</span>
             <span>,</span>
             <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
               {displayedName}
-              <span
-                className="absolute h-12 bg-pink-500 ml-1"
-                style={{
-                  animation: 'blink 1s step-end infinite',
-                  width: '4px',
-                  opacity: showCursor ? 1 : 0,
-                  transition: 'opacity 0.3s'
-                }}
-              />
+              {showCursor && displayedName && (
+                <span
+                  className="absolute h-12 bg-pink-500 ml-1"
+                  style={{
+                    animation: 'blink 1s step-end infinite',
+                    width: '4px',
+                    transition: 'opacity 0.3s'
+                  }}
+                />
+              )}
             </span>
           </h1>
 
           {/* Course selection appears after typing */}
           {showCourseSelection && (
-            <div className="animate-fadeIn" style={{ marginTop: '-40px' }}>
+            <div className="animate-fadeIn" style={{ marginTop: '-60px' }}>
               <h2 className="text-2xl font-medium mb-2">
                 See yourself as a
               </h2>
@@ -176,21 +204,25 @@ const Onboarding = ({ firstName, userId }) => {
                           setIsDropdownOpen(true);
                         }}
                         onFocus={() => setIsDropdownOpen(true)}
-                        placeholder="Select your path..."
+                        placeholder=""
                         className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
                         style={{
                           caretColor: '#ec4899'
                         }}
                       />
                       {!searchQuery && (
-                        <span
-                          className="absolute left-6 top-1/2 h-6 bg-gray-400 pointer-events-none"
-                          style={{
-                            width: '2px',
-                            transform: 'translateY(-50%)',
-                            animation: 'blink 1s step-end infinite'
-                          }}
-                        />
+                        <div className="absolute left-6 top-1/2 pointer-events-none flex items-center" style={{ transform: 'translateY(-50%)' }}>
+                          <span className="text-gray-400 text-xl">{placeholderText}</span>
+                          {showPlaceholderCursor && (
+                            <span
+                              className="h-6 bg-gray-400 ml-1"
+                              style={{
+                                width: '2px',
+                                animation: 'blink 1s step-end infinite'
+                              }}
+                            />
+                          )}
+                        </div>
                       )}
                     </div>
 
