@@ -15,7 +15,7 @@ const Onboarding = ({ firstName, userId }) => {
   useEffect(() => {
     if (currentPage === 1 && firstName) {
       let currentIndex = 0;
-      const typingSpeed = 100; // milliseconds per character
+      const typingSpeed = 60; // milliseconds per character (reduced from 100)
 
       // Start typing after a short delay
       const startDelay = setTimeout(() => {
@@ -97,12 +97,12 @@ const Onboarding = ({ firstName, userId }) => {
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
             <div className="animate-fadeIn">
-              <h1 className="text-5xl font-bold mb-8 flex items-center justify-center gap-3">
+              <h1 className="text-5xl font-bold mb-8 flex items-center justify-center">
                 <span>Welcome</span>
                 {displayedName && (
                   <>
                     <span>,</span>
-                    <span className="text-pink-500">
+                    <span className="text-pink-500 ml-3">
                       {displayedName}
                       {showCursor && (
                         <span className="inline-block w-1 h-12 bg-pink-500 ml-1 animate-pulse" style={{ animation: 'blink 1s step-end infinite' }} />
@@ -111,12 +111,6 @@ const Onboarding = ({ firstName, userId }) => {
                   </>
                 )}
               </h1>
-              <p className="text-xl text-gray-300 mb-4 leading-relaxed">
-                We believe education should be accessible, personalised and integrated for everyone.
-              </p>
-              <p className="text-xl text-gray-300 mb-12 leading-relaxed">
-                We're reinventing education and we're glad you've joined us.
-              </p>
               <button
                 onClick={handleNext}
                 className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition flex items-center gap-2 mx-auto"
