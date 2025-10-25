@@ -203,20 +203,32 @@ const Onboarding = ({ firstName, userId }) => {
                 </h2>
                 <div className="mb-12 flex items-start gap-4">
                   <div className="flex-1 relative" ref={dropdownRef}>
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setIsDropdownOpen(true);
-                      }}
-                      onFocus={() => setIsDropdownOpen(true)}
-                      placeholder="Select your path..."
-                      className="w-full bg-white text-black text-xl px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
-                      style={{
-                        caretColor: '#ec4899'
-                      }}
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => {
+                          setSearchQuery(e.target.value);
+                          setIsDropdownOpen(true);
+                        }}
+                        onFocus={() => setIsDropdownOpen(true)}
+                        placeholder="Select your path..."
+                        className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        style={{
+                          caretColor: '#ec4899'
+                        }}
+                      />
+                      {!searchQuery && (
+                        <span
+                          className="absolute left-6 top-1/2 h-6 bg-gray-400 pointer-events-none"
+                          style={{
+                            width: '2px',
+                            transform: 'translateY(-50%)',
+                            animation: 'blink 1s step-end infinite'
+                          }}
+                        />
+                      )}
+                    </div>
 
                     {isDropdownOpen && (
                       <div
@@ -300,10 +312,10 @@ const Onboarding = ({ firstName, userId }) => {
                   <button
                     onClick={handleNext}
                     disabled={!selectedCourse}
-                    className="bg-white hover:bg-white text-gray-800 p-4 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group"
-                    style={{ width: '64px', height: '64px' }}
+                    className="bg-white hover:bg-white text-gray-800 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center"
+                    style={{ width: '60px', height: '60px' }}
                   >
-                    <ArrowRight size={32} className="mx-auto text-gray-800 group-hover:text-pink-500 transition" />
+                    <ArrowRight size={28} className="text-gray-800 group-hover:text-pink-500 transition" />
                   </button>
                 </div>
               </div>
