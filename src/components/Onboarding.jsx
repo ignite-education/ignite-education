@@ -9,6 +9,7 @@ const Onboarding = ({ firstName, userId }) => {
   const [seniorityLevel, setSeniorityLevel] = useState('');
   const [displayedName, setDisplayedName] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [showTransition, setShowTransition] = useState(false);
   const navigate = useNavigate();
 
   // Typing animation effect for the name
@@ -26,7 +27,17 @@ const Onboarding = ({ firstName, userId }) => {
           } else {
             clearInterval(typingInterval);
             // Stop cursor blinking after typing is done
-            setTimeout(() => setShowCursor(false), 500);
+            setTimeout(() => {
+              setShowCursor(false);
+              // After 2 seconds, trigger transition to page 2
+              setTimeout(() => {
+                setShowTransition(true);
+                setTimeout(() => {
+                  setCurrentPage(2);
+                  setShowTransition(false);
+                }, 600); // Wait for animation to complete
+              }, 2000);
+            }, 500);
           }
         }, typingSpeed);
 
@@ -97,7 +108,13 @@ const Onboarding = ({ firstName, userId }) => {
           {/* Page 1: Welcome */}
           {currentPage === 1 && (
             <div className="animate-fadeIn">
-              <h1 className="text-5xl font-bold mb-8 flex items-center justify-center">
+              <h1
+                className="text-5xl font-bold flex items-center justify-center transition-all duration-600"
+                style={{
+                  transform: showTransition ? 'translateY(-100px)' : 'translateY(0)',
+                  opacity: showTransition ? 0.8 : 1
+                }}
+              >
                 <span>Welcome</span>
                 {displayedName && (
                   <>
@@ -111,50 +128,61 @@ const Onboarding = ({ firstName, userId }) => {
                   </>
                 )}
               </h1>
-              <button
-                onClick={handleNext}
-                className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition flex items-center gap-2 mx-auto"
-              >
-                Get Started
-                <ChevronRight size={24} />
-              </button>
             </div>
           )}
 
           {/* Page 2: Course Selection */}
           {currentPage === 2 && (
-            <div className="animate-fadeIn">
-              <h1 className="text-4xl font-bold mb-12">
-                See yourself as a
-              </h1>
-              <div className="mb-12">
-                <select
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full max-w-md bg-gray-800 text-white text-xl px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none cursor-pointer"
-                  style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'right 1rem center',
-                    backgroundSize: '1.5rem'
-                  }}
-                >
-                  <option value="" disabled>Select your path...</option>
-                  {courses.map((course) => (
-                    <option key={course} value={course}>
-                      {course}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={handleNext}
-                disabled={!selectedCourse}
-                className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+            <div>
+              {/* Welcome message stays at top */}
+              <h1
+                className="text-5xl font-bold mb-16 flex items-center justify-center"
+                style={{ transform: 'translateY(-100px)', opacity: 0.8 }}
               >
-                Continue
-                <ChevronRight size={24} />
-              </button>
+                <span>Welcome</span>
+                <span>,</span>
+                <span className="text-pink-500 ml-3">{displayedName}</span>
+              </h1>
+
+              {/* Course selection slides up from below */}
+              <div
+                className="animate-fadeIn"
+                style={{
+                  animation: 'slideUp 0.6s ease-out'
+                }}
+              >
+                <h1 className="text-4xl font-bold mb-12">
+                  See yourself as a
+                </h1>
+                <div className="mb-12">
+                  <select
+                    value={selectedCourse}
+                    onChange={(e) => setSelectedCourse(e.target.value)}
+                    className="w-full max-w-md bg-gray-800 text-white text-xl px-6 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500 appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 1rem center',
+                      backgroundSize: '1.5rem'
+                    }}
+                  >
+                    <option value="" disabled>Select your path...</option>
+                    {courses.map((course) => (
+                      <option key={course} value={course}>
+                        {course}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  onClick={handleNext}
+                  disabled={!selectedCourse}
+                  className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Continue
+                  <ChevronRight size={24} />
+                </button>
+              </div>
             </div>
           )}
 
@@ -191,17 +219,19 @@ const Onboarding = ({ firstName, userId }) => {
             </div>
           )}
 
-          {/* Page Indicators */}
-          <div className="flex justify-center gap-2 mt-12">
-            {[1, 2, 3].map((page) => (
-              <div
-                key={page}
-                className={`w-2 h-2 rounded-full transition ${
-                  currentPage === page ? 'bg-pink-500' : 'bg-gray-600'
-                }`}
-              />
-            ))}
-          </div>
+          {/* Page Indicators - Only show on pages 2 and 3 */}
+          {currentPage !== 1 && (
+            <div className="flex justify-center gap-2 mt-12">
+              {[1, 2, 3].map((page) => (
+                <div
+                  key={page}
+                  className={`w-2 h-2 rounded-full transition ${
+                    currentPage === page ? 'bg-pink-500' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
