@@ -140,7 +140,7 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white px-4 transition-all duration-700" style={{ transform: showCourseSelection ? 'translateY(-40px)' : 'translateY(0)' }}>
+        <div className="w-full max-w-3xl text-white px-4 transition-all duration-1000 ease-in-out" style={{ transform: showCourseSelection ? 'translateY(20px)' : 'translateY(60px)' }}>
           {/* Welcome message */}
           <h1 className="text-5xl font-bold inline-flex items-start" style={{ marginBottom: '90px' }}>
             <span>Welcome</span>
