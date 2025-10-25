@@ -1710,7 +1710,7 @@ const ProgressHub = () => {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '31.56px', paddingRight: '22px' }}>
+        <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: '31.56px', paddingRight: '17px' }}>
           <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px' }}>
