@@ -282,7 +282,7 @@ const Onboarding = ({ firstName, userId }) => {
                         }}
                         placeholder=""
                         autoFocus
-                        className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500"
+                        className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none"
                         style={{
                           caretColor: '#ec4899'
                         }}
@@ -351,7 +351,7 @@ const Onboarding = ({ firstName, userId }) => {
               ) : (
                 <div className="mb-12 flex items-start gap-4 animate-fadeIn">
                   <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center">
-                    <p className="text-xl font-light">
+                    <p className="text-lg font-light">
                       We'll email you when the {selectedCourse.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} course is available
                     </p>
                   </div>
