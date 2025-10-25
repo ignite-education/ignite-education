@@ -246,7 +246,7 @@ const Onboarding = ({ firstName, userId }) => {
           {showCourseSelection && (
             <div style={{
               position: 'absolute',
-              top: '-20px',
+              top: '-30px',
               left: '40px',
               right: '40px',
               animation: 'slideUpFadeIn 0.8s ease-out forwards',
