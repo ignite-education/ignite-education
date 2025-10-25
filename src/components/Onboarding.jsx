@@ -140,7 +140,7 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white px-4 transition-all duration-700" style={{ transform: showCourseSelection ? 'translateY(-80px)' : 'translateY(0)' }}>
+        <div className="w-full max-w-3xl text-white px-4 transition-all duration-700" style={{ transform: showCourseSelection ? 'translateY(-40px)' : 'translateY(0)' }}>
           {/* Welcome message */}
           <h1 className="text-5xl font-bold inline-flex items-start" style={{ marginBottom: '90px' }}>
             <span>Welcome</span>
@@ -183,6 +183,16 @@ const Onboarding = ({ firstName, userId }) => {
                           caretColor: '#ec4899'
                         }}
                       />
+                      {!searchQuery && (
+                        <span
+                          className="absolute left-6 top-1/2 h-6 bg-pink-500 pointer-events-none"
+                          style={{
+                            width: '2px',
+                            transform: 'translateY(-50%)',
+                            animation: 'blink 1s step-end infinite'
+                          }}
+                        />
+                      )}
                     </div>
 
                     {isDropdownOpen && (
