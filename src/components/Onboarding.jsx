@@ -16,7 +16,7 @@ const Onboarding = ({ firstName, userId }) => {
   useEffect(() => {
     if (currentPage === 1 && firstName) {
       let currentIndex = 0;
-      const typingSpeed = 60; // milliseconds per character (reduced from 100)
+      const typingSpeed = 120; // milliseconds per character
 
       // Start typing after a short delay
       const startDelay = setTimeout(() => {
@@ -112,21 +112,18 @@ const Onboarding = ({ firstName, userId }) => {
                 className="text-5xl font-bold flex items-center justify-center transition-all duration-600"
                 style={{
                   transform: showTransition ? 'translateY(-100px)' : 'translateY(0)',
-                  opacity: showTransition ? 0.8 : 1
+                  opacity: showTransition ? 0.8 : 1,
+                  minHeight: '4rem'
                 }}
               >
                 <span>Welcome</span>
-                {displayedName && (
-                  <>
-                    <span>,</span>
-                    <span className="text-pink-500 ml-3">
-                      {displayedName}
-                      {showCursor && (
-                        <span className="inline-block w-1 h-12 bg-pink-500 ml-1 animate-pulse" style={{ animation: 'blink 1s step-end infinite' }} />
-                      )}
-                    </span>
-                  </>
-                )}
+                <span>,</span>
+                <span className="text-pink-500 ml-3" style={{ minWidth: displayedName ? 'auto' : '0' }}>
+                  {displayedName}
+                  {showCursor && (
+                    <span className="inline-block w-1 h-12 bg-pink-500 ml-1 animate-pulse" style={{ animation: 'blink 1s step-end infinite' }} />
+                  )}
+                </span>
               </h1>
             </div>
           )}
