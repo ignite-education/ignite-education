@@ -190,13 +190,8 @@ const Onboarding = ({ firstName, userId }) => {
                 <span className="text-pink-500 ml-3">{displayedName}</span>
               </h1>
 
-              {/* Course selection slides up from below */}
-              <div
-                className="animate-fadeIn"
-                style={{
-                  animation: 'slideUp 0.6s ease-out'
-                }}
-              >
+              {/* Course selection */}
+              <div>
                 <h2 className="text-2xl font-bold mb-8">
                   See yourself as a
                 </h2>
@@ -218,7 +213,12 @@ const Onboarding = ({ firstName, userId }) => {
                     />
 
                     {isDropdownOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl max-h-96 overflow-y-auto z-50 text-left">
+                      <div
+                        className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl overflow-y-auto z-50 text-left"
+                        style={{
+                          maxHeight: 'calc(100vh - 400px)'
+                        }}
+                      >
                         {(() => {
                           const filtered = getFilteredCourses();
                           return (
