@@ -244,10 +244,9 @@ const Onboarding = ({ firstName, userId }) => {
                   <button
                     onClick={handleComplete}
                     disabled={!selectedCourse}
-                    className="bg-white hover:bg-white text-gray-800 rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center"
-                    style={{ width: '60px', height: '60px' }}
+                    className="bg-white hover:bg-white rounded-xl font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center py-3 px-4"
                   >
-                    <ArrowRight size={28} className="text-gray-800 group-hover:text-pink-500 transition" />
+                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" />
                   </button>
                 </div>
             </div>
