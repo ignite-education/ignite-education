@@ -26,7 +26,7 @@ import {
   getEngagementMetrics,
   getRetentionMetrics
 } from '../lib/analytics';
-import { getAllUsers, updateUserRole, deleteUser, updateUserCourse } from '../lib/api';
+import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 
 const AnalyticsDashboard = () => {
@@ -75,12 +75,16 @@ const AnalyticsDashboard = () => {
   const [userFilter, setUserFilter] = useState('all'); // all, student, teacher, admin
   const [updatingUserId, setUpdatingUserId] = useState(null);
 
+  // Course requests
+  const [courseRequests, setCourseRequests] = useState([]);
+
   useEffect(() => {
     loadAnalytics();
   }, [timeRange]);
 
   useEffect(() => {
     loadUsers();
+    loadCourseRequests();
   }, []);
 
   const loadAnalytics = async () => {
@@ -140,6 +144,16 @@ const AnalyticsDashboard = () => {
     } catch (error) {
       console.error('Error loading users:', error);
       setAllUsers([]);
+    }
+  };
+
+  const loadCourseRequests = async () => {
+    try {
+      const requests = await getCourseRequestAnalytics();
+      setCourseRequests(requests || []);
+    } catch (error) {
+      console.error('Error loading course requests:', error);
+      setCourseRequests([]);
     }
   };
 
@@ -783,6 +797,76 @@ const AnalyticsDashboard = () => {
                   </div>
                 </div>
               </div>
+            </section>
+
+            {/* Course Demand Section */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ fontSize: '27px', letterSpacing: '0.011em' }}>
+                <TrendingUp size={24} className="text-pink-500" />
+                Course Demand
+              </h2>
+              <p className="text-gray-400 mb-6 text-sm">
+                User interest in upcoming and requested courses
+              </p>
+
+              {courseRequests.length === 0 ? (
+                <div className="bg-gray-900 rounded-lg border border-gray-800 p-8 text-center">
+                  <BookOpen className="mx-auto text-gray-600 mb-3" size={48} />
+                  <p className="text-gray-400 text-lg">No course requests yet</p>
+                  <p className="text-gray-500 text-sm mt-2">Users will see this data when they request upcoming or new courses</p>
+                </div>
+              ) : (
+                <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-800">
+                    <h3 className="font-semibold text-white">Requested Courses ({courseRequests.reduce((sum, c) => sum + c.total, 0)} total requests)</h3>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-800">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Course Name</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Total Requests</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Upcoming</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Requested</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Popularity</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {courseRequests.map((request, idx) => {
+                          const maxRequests = Math.max(...courseRequests.map(r => r.total));
+                          const popularityPercent = (request.total / maxRequests) * 100;
+
+                          return (
+                            <tr key={idx} className="hover:bg-gray-800/50">
+                              <td className="px-6 py-4 text-sm font-medium text-white">{request.courseName}</td>
+                              <td className="px-6 py-4 text-sm">
+                                <span className="px-3 py-1 bg-pink-900/30 text-pink-400 rounded-full font-semibold">
+                                  {request.total}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-gray-300">{request.upcoming}</td>
+                              <td className="px-6 py-4 text-sm text-gray-300">{request.requested}</td>
+                              <td className="px-6 py-4 text-sm">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex-1 bg-gray-700 rounded-full h-2" style={{ minWidth: '100px' }}>
+                                    <div
+                                      className="bg-gradient-to-r from-pink-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                                      style={{ width: `${popularityPercent}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-xs font-medium text-gray-400 w-12 text-right">
+                                    {popularityPercent.toFixed(0)}%
+                                  </span>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </section>
           </div>
         )}

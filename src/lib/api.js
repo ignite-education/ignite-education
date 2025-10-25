@@ -1098,3 +1098,53 @@ export async function updateUserCourse(userId, courseId) {
 
   return data;
 }
+
+/**
+ * Get course request analytics
+ * Shows demand for upcoming and requested courses
+ * @returns {Promise<Array>} Array of course request objects with counts
+ */
+export async function getCourseRequestAnalytics() {
+  try {
+    const { data, error } = await supabase
+      .from('course_requests')
+      .select('course_name, status, created_at');
+
+    if (error) {
+      console.error('Error fetching course requests:', error);
+      return [];
+    }
+
+    // Group by course name and count requests
+    const requestCounts = {};
+
+    (data || []).forEach(request => {
+      if (!requestCounts[request.course_name]) {
+        requestCounts[request.course_name] = {
+          courseName: request.course_name,
+          total: 0,
+          upcoming: 0,
+          requested: 0
+        };
+      }
+
+      requestCounts[request.course_name].total++;
+
+      if (request.status === 'upcoming') {
+        requestCounts[request.course_name].upcoming++;
+      } else if (request.status === 'requested') {
+        requestCounts[request.course_name].requested++;
+      }
+    });
+
+    // Convert to array and sort by total requests (highest first)
+    const result = Object.values(requestCounts)
+      .sort((a, b) => b.total - a.total);
+
+    console.log('Course request analytics:', result);
+    return result;
+  } catch (err) {
+    console.error('Exception in getCourseRequestAnalytics:', err);
+    return [];
+  }
+}

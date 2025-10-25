@@ -162,8 +162,29 @@ const Onboarding = ({ firstName, userId }) => {
         alert(`There was an error saving your preferences: ${error.message}`);
       }
     } else {
-      // For upcoming, requested, or unrecognized courses, show notification
+      // For upcoming, requested, or unrecognized courses, save request and show notification
       console.log('Showing notification for unavailable course');
+
+      try {
+        // Save the course request to track interest
+        const { error: requestError } = await supabase
+          .from('course_requests')
+          .insert({
+            user_id: userId,
+            course_name: selectedCourse,
+            status: status === 'unrecognized' ? 'requested' : status
+          });
+
+        if (requestError) {
+          // Log error but don't block the notification
+          console.error('Error saving course request:', requestError);
+        } else {
+          console.log('Course request saved successfully');
+        }
+      } catch (err) {
+        console.error('Exception saving course request:', err);
+      }
+
       setCourseStatus(status);
       setShowNotification(true);
     }
