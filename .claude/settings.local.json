@@ -58,7 +58,10 @@
       "Bash(git commit:*)",
       "Bash(then echo \".env file exists\")",
       "Bash(python3:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git config:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
