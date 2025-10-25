@@ -338,9 +338,9 @@ const Onboarding = ({ firstName, userId }) => {
                 </div>
               ) : (
                 <div className="mb-12 flex items-start gap-4 animate-fadeIn">
-                  <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center" style={{ minHeight: '60px' }}>
-                    <p className="text-lg">
-                      We'll email you when the <span className="text-pink-500 font-semibold">{selectedCourse.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')}</span> course is available
+                  <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center">
+                    <p className="text-xl font-light">
+                      We'll email you when the {selectedCourse.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} course is available
                     </p>
                   </div>
 
