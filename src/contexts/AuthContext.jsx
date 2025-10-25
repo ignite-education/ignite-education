@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }) => {
             first_name: firstName,
             last_name: lastName,
             onboarding_completed: false,
-            role: 'user'
+            role: 'student'
           });
 
         // Ignore conflict errors (user already exists from trigger)

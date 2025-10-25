@@ -19,7 +19,7 @@ BEGIN
       ''
     ),
     false,
-    'user'
+    'student'
   );
   RETURN NEW;
 END;
@@ -49,7 +49,7 @@ SELECT
     ''
   ) as last_name,
   false as onboarding_completed,
-  'user' as role
+  'student' as role
 FROM auth.users au
 LEFT JOIN public.users pu ON au.id = pu.id
 WHERE pu.id IS NULL
