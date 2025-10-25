@@ -204,33 +204,41 @@ const Onboarding = ({ firstName, userId }) => {
 
       {/* Onboarding Content */}
       <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white px-4" style={{
-          transition: 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: 'translate(40px, 50px)',
-          willChange: 'transform'
-        }}>
-          {/* Welcome message */}
-          <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn" style={{ marginBottom: '30px' }}>
-            <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
-            <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
-            <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
-              {displayedName}
-              {showCursor && displayedName && (
-                <span
-                  className="absolute h-12 bg-pink-500 ml-1"
-                  style={{
-                    animation: 'blink 1s step-end infinite',
-                    width: '4px',
-                    transition: 'opacity 0.3s'
-                  }}
-                />
-              )}
-            </span>
-          </h1>
+        <div className="w-full max-w-3xl text-white px-4 relative">
+          {/* Welcome message - absolutely positioned */}
+          <div style={{
+            position: 'absolute',
+            top: '50px',
+            left: '40px',
+            right: '40px'
+          }}>
+            <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn">
+              <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
+              <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
+              <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
+                {displayedName}
+                {showCursor && displayedName && (
+                  <span
+                    className="absolute h-12 bg-pink-500 ml-1"
+                    style={{
+                      animation: 'blink 1s step-end infinite',
+                      width: '4px',
+                      transition: 'opacity 0.3s'
+                    }}
+                  />
+                )}
+              </span>
+            </h1>
+          </div>
 
-          {/* Course selection appears after typing */}
+          {/* Course selection appears after typing - absolutely positioned below Welcome */}
           {showCourseSelection && (
-            <div className="animate-fadeIn">
+            <div className="animate-fadeIn" style={{
+              position: 'absolute',
+              top: '160px',
+              left: '40px',
+              right: '40px'
+            }}>
               <h2 className="text-2xl font-light mb-2">
                 See yourself as a
               </h2>
