@@ -392,7 +392,7 @@ const ProgressHub = () => {
       // Transform user posts (ensure userPostsData is an array)
       const userPosts = (Array.isArray(userPostsData) ? userPostsData : []).map((post, index) => ({
         id: `user-${post.id}`,
-        author: post.author_name || post.author || `u/${user.firstName}`, // Use author_name from join, fallback to author field
+        author: post.author_name || post.author, // Use author_name from join, fallback to author field from database
         author_icon: post.author_icon || null, // User profile image from auth metadata
         time: getTimeAgo(post.created_at),
         created_at: post.created_at,
@@ -1186,7 +1186,7 @@ const ProgressHub = () => {
       // Transform user posts
       const userPosts = (Array.isArray(userPostsData) ? userPostsData : []).map((post, index) => ({
         id: `user-${post.id}`,
-        author: post.author_name || post.author || `u/${user.firstName}`, // Use author_name from join, fallback to author field
+        author: post.author_name || post.author, // Use author_name from join, fallback to author field from database
         time: getTimeAgo(post.created_at),
         created_at: post.created_at,
         title: post.title,
