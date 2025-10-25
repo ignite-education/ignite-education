@@ -12,11 +12,19 @@ const ProtectedRoute = ({ children }) => {
   const [lottieData, setLottieData] = useState(null);
 
   useEffect(() => {
-    // Fetch Lottie animation data
-    fetch('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/icon%20v1.json')
-      .then(response => response.json())
-      .then(data => setLottieData(data))
-      .catch(error => console.error('Error loading Lottie animation:', error));
+    // Preload Lottie animation data immediately
+    const loadAnimation = async () => {
+      try {
+        const response = await fetch('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/icon%20v1.json');
+        const data = await response.json();
+        setLottieData(data);
+      } catch (error) {
+        console.error('Error loading Lottie animation:', error);
+        // Set a placeholder to prevent showing "Loading..." text
+        setLottieData({});
+      }
+    };
+    loadAnimation();
   }, []);
 
   useEffect(() => {
@@ -64,7 +72,7 @@ const ProtectedRoute = ({ children }) => {
   if (authLoading || loading) {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
-        {lottieData ? (
+        {lottieData && Object.keys(lottieData).length > 0 ? (
           <Lottie
             animationData={lottieData}
             loop={true}
@@ -73,7 +81,7 @@ const ProtectedRoute = ({ children }) => {
           />
         ) : (
           <div className="w-32 h-32 flex items-center justify-center">
-            <div className="animate-pulse text-white">Loading...</div>
+            {/* Empty div - no text shown while animation loads */}
           </div>
         )}
       </div>
