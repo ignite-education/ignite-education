@@ -2436,7 +2436,7 @@ const ProgressHub = () => {
             animation: isClosingSettingsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
             paddingTop: '8vh',
             paddingBottom: '8vh',
-            alignItems: 'center',
+            alignItems: 'flex-start',
             overflowY: 'auto'
           }}
           onClick={handleCloseSettings}
