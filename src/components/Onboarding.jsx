@@ -69,6 +69,13 @@ const Onboarding = ({ firstName, userId }) => {
     ]
   };
 
+  // Map role names to course names for database storage
+  const roleToCourseMap = {
+    'Product Manager': 'Product Management',
+    'Cyber Security Analyst': 'Cyber Security',
+    // Add more mappings as courses are added
+  };
+
   // Click outside handler for dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -134,11 +141,15 @@ const Onboarding = ({ firstName, userId }) => {
     if (status === 'available') {
       console.log('Enrolling in available course:', selectedCourse);
       try {
+        // Map role name to course name for database
+        const courseName = roleToCourseMap[selectedCourse] || selectedCourse;
+        console.log('Mapped to course name:', courseName);
+
         // Update user profile with course
         const { data, error } = await supabase
           .from('users')
           .update({
-            enrolled_course: selectedCourse,
+            enrolled_course: courseName,
             onboarding_completed: true,
             updated_at: new Date().toISOString()
           })
