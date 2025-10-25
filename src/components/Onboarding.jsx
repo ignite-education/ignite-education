@@ -185,19 +185,21 @@ const Onboarding = ({ firstName, userId }) => {
 
           {/* Page 2: Course Selection */}
           {currentPage === 2 && (
-            <div className="text-left px-4">
+            <div className="text-left px-4" style={{ position: 'relative' }}>
               {/* Welcome message stays in same position as transition end */}
-              <h1
-                className="text-5xl font-bold inline-flex items-start"
-                style={{ transform: 'translateY(-100px)', opacity: 1, marginBottom: '1px' }}
-              >
-                <span>Welcome</span>
-                <span>,</span>
-                <span className="text-pink-500 ml-3">{displayedName}</span>
-              </h1>
+              <div style={{ position: 'absolute', top: '-100px', left: 0, right: 0 }}>
+                <h1
+                  className="text-5xl font-bold inline-flex items-start"
+                  style={{ opacity: 1 }}
+                >
+                  <span>Welcome</span>
+                  <span>,</span>
+                  <span className="text-pink-500 ml-3">{displayedName}</span>
+                </h1>
+              </div>
 
               {/* Course selection appears below in the space created */}
-              <div style={{ marginTop: '-70px' }}>
+              <div style={{ paddingTop: '60px' }}>
                 <h2 className="text-2xl font-medium mb-2">
                   See yourself as a
                 </h2>
