@@ -49,22 +49,21 @@ const Onboarding = ({ firstName, userId }) => {
     available: ['Product Manager'],
     upcoming: ['Cyber Security Analyst'],
     requested: [
-      'Software Engineer', 'Data Scientist', 'UX Designer', 'Digital Marketer',
-      'Business Analyst', 'Cloud Architect', 'DevOps Engineer',
-      'Machine Learning Engineer', 'Frontend Developer', 'Backend Developer',
-      'Full Stack Developer', 'Mobile Developer', 'Game Developer',
-      'Data Engineer', 'Business Intelligence Analyst', 'Financial Analyst',
-      'Investment Banker', 'Management Consultant', 'Strategy Consultant',
-      'Sales Engineer', 'Technical Writer', 'Content Marketer',
-      'Growth Marketer', 'Brand Manager', 'Public Relations Manager',
-      'Human Resources Manager', 'Talent Acquisition Specialist', 'Operations Manager',
-      'Supply Chain Manager', 'Legal Counsel', 'Corporate Lawyer',
-      'Intellectual Property Lawyer', 'Accountant', 'Tax Advisor',
-      'Auditor', 'Risk Manager', 'Compliance Officer', 'Quality Assurance Engineer',
-      'Test Automation Engineer', 'Site Reliability Engineer', 'Network Engineer',
-      'Systems Administrator', 'Database Administrator', 'Information Security Analyst',
-      'Penetration Tester', 'Incident Response Analyst', 'Architect',
-      'Interior Designer', 'Graphic Designer', 'Motion Graphics Designer'
+      'Accountant', 'Architect', 'Auditor', 'Backend Developer', 'Brand Manager',
+      'Business Analyst', 'Business Intelligence Analyst', 'Cloud Architect',
+      'Compliance Officer', 'Content Marketer', 'Corporate Lawyer', 'Data Engineer',
+      'Data Scientist', 'Database Administrator', 'DevOps Engineer', 'Digital Marketer',
+      'Financial Analyst', 'Frontend Developer', 'Full Stack Developer', 'Game Developer',
+      'Graphic Designer', 'Growth Marketer', 'Human Resources Manager',
+      'Incident Response Analyst', 'Information Security Analyst', 'Intellectual Property Lawyer',
+      'Interior Designer', 'Investment Banker', 'Legal Counsel', 'Machine Learning Engineer',
+      'Management Consultant', 'Mobile Developer', 'Motion Graphics Designer',
+      'Network Engineer', 'Operations Manager', 'Penetration Tester',
+      'Public Relations Manager', 'Quality Assurance Engineer', 'Risk Manager',
+      'Sales Engineer', 'Site Reliability Engineer', 'Software Engineer',
+      'Strategy Consultant', 'Supply Chain Manager', 'Systems Administrator',
+      'Talent Acquisition Specialist', 'Tax Advisor', 'Technical Writer',
+      'Test Automation Engineer', 'UX Designer'
     ]
   };
 
