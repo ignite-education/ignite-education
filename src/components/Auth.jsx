@@ -335,16 +335,16 @@ const Auth = () => {
           }}
         >
           <div className="max-w-4xl w-full text-black text-left">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold px-4 leading-tight">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4 leading-tight">
               Education should be{' '}
-              <span className="text-black">
+              <span className="text-pink-500">
                 accessible
               </span>,{' '}
-              <span className="text-black">
+              <span className="text-pink-500">
                 personalised
               </span>{' '}
               and{' '}
-              <span className="text-black">
+              <span className="text-pink-500">
                 integrated
               </span>{' '}
               for everyone.
