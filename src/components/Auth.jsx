@@ -449,41 +449,44 @@ const Auth = () => {
                 </h2>
 
                 {/* Feature bullets - fade in after typing completes - reserve space */}
-                <div className="mt-8 w-full max-w-3xl" style={{ minHeight: '240px' }}>
-                  <div className="space-y-2 text-left">
+                <div className="mt-8 w-full max-w-3xl" style={{ minHeight: '280px' }}>
+                  <div className="space-y-3 text-left">
                     {isEducationTypingComplete && (
                       <>
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold text-green-500">Built by Industry Experts</span> - Our courses are built with industry experts to ensure you get the latest area expertise.
-                          </p>
+                          <div className="text-lg leading-relaxed font-light">
+                            <div className="font-semibold text-purple-600">Built by Industry Experts</div>
+                            <div className="text-white">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
+                          </div>
                         </div>
 
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold text-green-500">Ignite is Free</span> - All of our courses are completely free. We're funded by limited ads, not your finances.
-                          </p>
+                          <div className="text-lg leading-relaxed font-light">
+                            <div className="font-semibold text-purple-600">Ignite is Free</div>
+                            <div className="text-white">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
+                          </div>
                         </div>
 
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
-                          <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold text-green-500">No Educational Prerequisite</span> - You don't need any experience to study. Our curricula is built for all educational backgrounds.
-                          </p>
+                          <div className="text-lg leading-relaxed font-light">
+                            <div className="font-semibold text-purple-600">No Educational Prerequisite</div>
+                            <div className="text-white">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
+                          </div>
                         </div>
                       </>
                     )}
