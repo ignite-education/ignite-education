@@ -43,6 +43,7 @@ const CurriculumUploadNew = () => {
   const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false);
   const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
   const [showFlashcards, setShowFlashcards] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     loadCourses();
@@ -723,6 +724,224 @@ ${contentBlocks.map((block, index) => {
     } finally {
       setIsGeneratingFlashcards(false);
     }
+  };
+
+  // Helper to render text with highlights (for preview)
+  const renderTextWithHighlight = (text) => {
+    if (!text) return null;
+    return text;
+  };
+
+  // Preview modal rendering function (matches LearningHub rendering)
+  const renderPreviewContent = () => {
+    if (!lessonName || contentBlocks.length === 0) {
+      return (
+        <div className="text-center text-gray-400 py-12">
+          <p>No content to preview yet.</p>
+          <p className="text-sm mt-2">Add a lesson name and content blocks to see the preview.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-0">
+        {/* Lesson Title */}
+        <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
+          <p className="text-xl font-medium" style={{ color: '#EF0B72', marginBottom: '0.25rem' }}>
+            Lesson {selectedLessonNumber}
+          </p>
+          <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
+            <h1 className="text-3xl font-medium text-left">{lessonName}</h1>
+          </div>
+        </div>
+
+        {/* Content Blocks */}
+        {contentBlocks.map((block, index) => {
+          if (block.type === 'heading') {
+            const level = block.content?.level || 2;
+            const text = block.content?.text || '';
+
+            // Render heading text with underline formatting
+            const renderHeadingText = (text) => {
+              const parts = text.split(/(__[^_]+__)/g);
+              return parts.map((part, i) => {
+                if (part.startsWith('__') && part.endsWith('__')) {
+                  const innerText = part.slice(2, -2);
+                  return <u key={i}>{innerText}</u>;
+                }
+                return <span key={i}>{part}</span>;
+              });
+            };
+
+            // For h2 headings, wrap in black box
+            if (level === 2) {
+              return (
+                <div key={index} className="bg-black text-white flex items-center mb-2" style={{ borderRadius: '0.2rem', paddingTop: '0.35rem', paddingBottom: '0.35rem', paddingLeft: '0.5rem', paddingRight: '0.5rem', maxWidth: '750px', width: 'fit-content', marginTop: '3rem' }}>
+                  <h2 className="font-medium" style={{ fontSize: '1.4rem' }}>
+                    {renderHeadingText(text)}
+                  </h2>
+                </div>
+              );
+            }
+
+            const HeadingTag = `h${level}`;
+            return React.createElement(HeadingTag, {
+              key: index,
+              className: level === 3 ? 'text-xl font-bold mt-8 mb-2' : 'text-3xl font-bold mt-8 mb-2'
+            }, renderHeadingText(text));
+          }
+
+          if (block.type === 'paragraph') {
+            const text = block.content || '';
+
+            // Helper function to render text with bold, underline, italic, and link formatting
+            const renderTextWithBold = (text) => {
+              const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[([^\]]+)\]\(([^)]+)\)|(?<!\*)\*(?!\*)([^*]+)\*(?!\*))/g);
+
+              return parts.map((part, i) => {
+                if (part === undefined) return null;
+
+                // Check for link format [text](url)
+                const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+
+                if (linkMatch) {
+                  const linkText = linkMatch[1];
+                  const url = linkMatch[2];
+                  return (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-800"
+                    >
+                      {linkText}
+                    </a>
+                  );
+                } else if (part.startsWith('**') && part.endsWith('**')) {
+                  const innerText = part.slice(2, -2);
+                  return <strong key={i} className="font-semibold">{innerText}</strong>;
+                } else if (part.startsWith('__') && part.endsWith('__')) {
+                  const innerText = part.slice(2, -2);
+                  return <u key={i}>{innerText}</u>;
+                } else if (part.match(/^(?<!\*)\*(?!\*)([^*]+)\*(?!\*)$/)) {
+                  const innerText = part.slice(1, -1);
+                  return <em key={i}>{innerText}</em>;
+                }
+                return <span key={i}>{part}</span>;
+              });
+            };
+
+            // Check if text contains bullet points or newlines
+            const lines = text.split('\n');
+            const hasBullets = lines.some(line => /^[•\-]\s/.test(line.trim()));
+            const hasMultipleLines = lines.filter(line => line.trim()).length > 1;
+
+            if (hasBullets || hasMultipleLines) {
+              return (
+                <div key={index} className="mb-6">
+                  {lines.map((line, idx) => {
+                    const trimmedLine = line.trim();
+                    if (/^[•\-]\s/.test(trimmedLine)) {
+                      const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
+                      return (
+                        <div key={idx} className="flex items-start gap-2 mb-1">
+                          <span className="text-black mt-1">•</span>
+                          <span className="text-base leading-relaxed flex-1">
+                            {renderTextWithBold(bulletText)}
+                          </span>
+                        </div>
+                      );
+                    } else if (trimmedLine) {
+                      return (
+                        <p key={idx} className="text-base leading-relaxed mb-2">
+                          {renderTextWithBold(line)}
+                        </p>
+                      );
+                    } else if (hasMultipleLines) {
+                      return <div key={idx} className="h-2"></div>;
+                    }
+                    return null;
+                  })}
+                </div>
+              );
+            }
+
+            return (
+              <p key={index} className="text-base leading-relaxed mb-6">
+                {renderTextWithBold(text)}
+              </p>
+            );
+          }
+
+          if (block.type === 'bulletlist') {
+            const items = block.content?.items || [];
+            return (
+              <ul key={index} className="list-disc list-inside space-y-2 mb-6">
+                {items.map((item, idx) => (
+                  <li key={idx} className="text-base leading-relaxed">{item}</li>
+                ))}
+              </ul>
+            );
+          }
+
+          if (block.type === 'image') {
+            const imageData = block.content || {};
+            const widthClass =
+              imageData.width === 'small' ? 'max-w-sm' :
+              imageData.width === 'medium' ? 'max-w-md' :
+              imageData.width === 'large' ? 'max-w-lg' :
+              imageData.width === 'xl' ? 'max-w-xl' :
+              imageData.width === '2xl' ? 'max-w-2xl' :
+              imageData.width === 'full' ? 'max-w-full' :
+              'max-w-lg';
+
+            return (
+              <div key={index} className="my-8 flex flex-col items-center">
+                {imageData.url && (
+                  <>
+                    <img
+                      src={imageData.url}
+                      alt={imageData.alt || ''}
+                      className={`${widthClass} rounded-lg shadow-lg`}
+                    />
+                    {imageData.caption && (
+                      <p className="text-sm text-gray-600 mt-2 italic">{imageData.caption}</p>
+                    )}
+                  </>
+                )}
+              </div>
+            );
+          }
+
+          if (block.type === 'youtube') {
+            const videoData = block.content || {};
+            const videoId = videoData.videoId;
+
+            return (
+              <div key={index} className="my-8">
+                {videoData.title && (
+                  <h3 className="text-xl font-bold mb-4">{videoData.title}</h3>
+                )}
+                {videoId && (
+                  <div className="aspect-w-16 aspect-h-9">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title={videoData.title || 'YouTube video'}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="w-full h-96 rounded-lg shadow-lg"
+                    />
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          return null;
+        })}
+      </div>
+    );
   };
 
   const renderBlockEditor = (block, index) => {
@@ -1666,14 +1885,28 @@ ${contentBlocks.map((block, index) => {
                       <Youtube size={14} /> YouTube
                     </button>
                   </div>
-                  <button
-                    onClick={saveContent}
-                    disabled={isUploading}
-                    className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
-                  >
-                    <Save size={16} />
-                    {isUploading ? 'Saving...' : 'Save Lesson'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setShowPreview(true)}
+                      disabled={!lessonName || contentBlocks.length === 0}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
+                      title="Preview how the lesson will look to users"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Preview
+                    </button>
+                    <button
+                      onClick={saveContent}
+                      disabled={isUploading}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium whitespace-nowrap transition"
+                    >
+                      <Save size={16} />
+                      {isUploading ? 'Saving...' : 'Save Lesson'}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Content Blocks */}
@@ -1786,13 +2019,27 @@ ${contentBlocks.map((block, index) => {
 
                 {/* Action Buttons */}
                 <div className="space-y-3">
-                  <button
-                    onClick={saveContent}
-                    disabled={isUploading}
-                    className="w-full px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 font-medium transition"
-                  >
-                    {isUploading ? 'Saving...' : 'Save Lesson Content'}
-                  </button>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setShowPreview(true)}
+                      disabled={!lessonName || contentBlocks.length === 0}
+                      className="flex-1 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 font-medium transition flex items-center justify-center gap-2"
+                      title="Preview how the lesson will look to users"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                      Preview Lesson
+                    </button>
+                    <button
+                      onClick={saveContent}
+                      disabled={isUploading}
+                      className="flex-1 px-6 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 font-medium transition"
+                    >
+                      {isUploading ? 'Saving...' : 'Save Lesson Content'}
+                    </button>
+                  </div>
 
                   <button
                     onClick={generateFlashcards}
@@ -1883,6 +2130,65 @@ ${contentBlocks.map((block, index) => {
           </div>
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowPreview(false)}
+        >
+          <div
+            className="bg-black text-white rounded-lg w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+            style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+              <h2 className="text-2xl font-semibold">Lesson Preview</h2>
+              <button
+                onClick={() => setShowPreview(false)}
+                className="p-2 hover:bg-gray-800 rounded-lg transition"
+                title="Close preview"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="flex-1 overflow-y-auto px-16 py-8" style={{ scrollbarWidth: 'thin' }}>
+              <div className="max-w-4xl mx-auto">
+                {renderPreviewContent()}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-800">
+              <p className="text-sm text-gray-400">
+                This is how your lesson will appear to students in the learning hub
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                  Close
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPreview(false);
+                    saveContent();
+                  }}
+                  disabled={isUploading}
+                  className="px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 transition flex items-center gap-2"
+                >
+                  <Save size={16} />
+                  Save Lesson
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

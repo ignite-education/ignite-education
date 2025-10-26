@@ -330,60 +330,51 @@ const Auth = () => {
           ref={marketingSectionRef}
           className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24"
           style={{
-            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8))',
+            background: 'white',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left">
+          <div className="max-w-4xl w-full text-black text-left">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold px-4 leading-tight">
-              We believe education should be{' '}
-              <span
-                className={animateWords ? 'animate-colorFade' : 'text-white'}
-                style={{ animationDelay: '0.3s' }}
-              >
+              Education should be{' '}
+              <span className="text-black">
                 accessible
               </span>,{' '}
-              <span
-                className={animateWords ? 'animate-colorFade' : 'text-white'}
-                style={{ animationDelay: '0.6s' }}
-              >
+              <span className="text-black">
                 personalised
               </span>{' '}
               and{' '}
-              <span
-                className={animateWords ? 'animate-colorFade' : 'text-white'}
-                style={{ animationDelay: '0.9s' }}
-              >
+              <span className="text-black">
                 integrated
               </span>{' '}
               for everyone.
             </h2>
 
-            <div className="mt-8 px-4 space-y-2 text-sm sm:text-base text-white">
+            <div className="mt-8 px-4 space-y-2 text-sm sm:text-base text-black">
               <p
                 className={animateWords ? 'animate-slideUp' : 'opacity-0'}
                 style={{ animationDelay: '1.2s', animationFillMode: 'forwards' }}
               >
-                <span className="font-semibold text-white">Accessible</span> - Ignite is completely free with no educational prerequisite.
+                <span className="font-semibold text-black">Accessible</span> - Ignite is completely free with no educational prerequisite.
               </p>
               <p
                 className={animateWords ? 'animate-slideUp' : 'opacity-0'}
                 style={{ animationDelay: '1.4s', animationFillMode: 'forwards' }}
               >
-                <span className="font-semibold text-white">Personalised:</span> Tailored tutoring though personalised feedback and 1:1 support
+                <span className="font-semibold text-black">Personalised:</span> Tailored tutoring though personalised feedback and 1:1 support
               </p>
               <p
                 className={animateWords ? 'animate-slideUp' : 'opacity-0'}
                 style={{ animationDelay: '1.6s', animationFillMode: 'forwards' }}
               >
-                <span className="font-semibold text-white">Integrated:</span> Built by industry experts for in-demand skills and knowledge
+                <span className="font-semibold text-black">Integrated:</span> Built by industry experts for in-demand skills and knowledge
               </p>
             </div>
 
             {/* Courses Section */}
             <div className="mt-16 px-4">
               <h3
-                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-white mb-4' : 'opacity-0'}
+                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-black mb-4' : 'opacity-0'}
                 style={{ animationDelay: '1.8s', animationFillMode: 'forwards' }}
               >
                 See yourself as a
@@ -452,7 +443,7 @@ const Auth = () => {
             {/* Learning Model Section */}
             <div className="mt-20 px-4">
               <h3
-                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-white text-left mb-6' : 'opacity-0'}
+                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-black text-left mb-6' : 'opacity-0'}
                 style={{ animationDelay: '2.5s', animationFillMode: 'forwards' }}
               >
                 Building a smarter, more personalised era of education.
@@ -465,8 +456,8 @@ const Auth = () => {
                   <div
                     className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 0
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-800 bg-opacity-50 backdrop-blur-sm border border-gray-700'
+                        ? 'bg-pink-50 shadow-xl scale-105 border-2 border-pink-200'
+                        : 'bg-gray-100 border border-gray-300'
                     }`}
                     style={{ animationDelay: '2.7s', animationFillMode: 'forwards' }}
                   >
@@ -477,10 +468,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className={`font-semibold text-lg mb-2 ${activeCard === 0 ? 'text-black' : 'text-white'}`}>
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Hands-on, interactive courses
                         </h4>
-                        <p className={`text-sm ${activeCard === 0 ? 'text-gray-700' : 'text-gray-300'}`}>
+                        <p className="text-sm text-gray-700">
                           Short videos are broken up by interactive exercises. Practice new skills immediately to retain information.
                         </p>
                       </div>
@@ -491,8 +482,8 @@ const Auth = () => {
                   <div
                     className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 1
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-800 bg-opacity-50 backdrop-blur-sm border border-gray-700'
+                        ? 'bg-green-50 shadow-xl scale-105 border-2 border-green-200'
+                        : 'bg-gray-100 border border-gray-300'
                     }`}
                     style={{ animationDelay: '2.85s', animationFillMode: 'forwards' }}
                   >
@@ -503,10 +494,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className={`font-semibold text-lg mb-2 ${activeCard === 1 ? 'text-black' : 'text-white'}`}>
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Real-world projects
                         </h4>
-                        <p className={`text-sm mb-4 ${activeCard === 1 ? 'text-gray-700' : 'text-gray-300'}`}>
+                        <p className="text-sm mb-4 text-gray-700">
                           Apply your learning in real situations, perfect for developing practical skills and building up your portfolio.
                         </p>
                         {activeCard === 1 && (
@@ -522,8 +513,8 @@ const Auth = () => {
                   <div
                     className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 2
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-800 bg-opacity-50 backdrop-blur-sm border border-gray-700'
+                        ? 'bg-purple-50 shadow-xl scale-105 border-2 border-purple-200'
+                        : 'bg-gray-100 border border-gray-300'
                     }`}
                     style={{ animationDelay: '3s', animationFillMode: 'forwards' }}
                   >
@@ -534,10 +525,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className={`font-semibold text-lg mb-2 ${activeCard === 2 ? 'text-black' : 'text-white'}`}>
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Become a certified professional
                         </h4>
-                        <p className={`text-sm ${activeCard === 2 ? 'text-gray-700' : 'text-gray-300'}`}>
+                        <p className="text-sm text-gray-700">
                           Prove you're job-ready. Earn industry-leading certifications built around in-demand roles.
                         </p>
                       </div>
@@ -581,7 +572,7 @@ const Auth = () => {
             </div>
 
             {/* About Section - Redefining Education */}
-            <div className="mt-20 px-4 py-16 bg-gray-100 bg-opacity-10 backdrop-blur-sm rounded-2xl">
+            <div className="mt-20 px-4 py-16 bg-gray-100 rounded-2xl">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
                 {/* Left Column - Image */}
                 <div
@@ -603,16 +594,16 @@ const Auth = () => {
                   className={animateWords ? 'animate-slideUp' : 'opacity-0'}
                   style={{ animationDelay: '3.4s', animationFillMode: 'forwards' }}
                 >
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-6">
                     We're re-defining{' '}
-                    <span className="text-purple-400">post-18 education</span>
+                    <span className="text-purple-600">post-18 education</span>
                   </h2>
 
-                  <p className="text-gray-300 text-base sm:text-lg mb-6 leading-relaxed">
+                  <p className="text-gray-700 text-base sm:text-lg mb-6 leading-relaxed">
                     For too long, the post-18 education landscape has offered fragmented, inaccessible and outdated solutions, often unsuited for modern in-demand careers.
                   </p>
 
-                  <p className="text-gray-300 text-base sm:text-lg mb-8 leading-relaxed">
+                  <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed">
                     We believe education should be accessible, personalised and integrated for everyone.
                   </p>
 
