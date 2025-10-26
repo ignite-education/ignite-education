@@ -350,24 +350,12 @@ const Auth = () => {
               for everyone.
             </h2>
 
-            <div className="mt-8 px-4 space-y-2 text-sm sm:text-base text-black">
+            <div className="mt-8 px-4 text-sm sm:text-base text-black">
               <p
                 className={animateWords ? 'animate-slideUp' : 'opacity-0'}
                 style={{ animationDelay: '1.2s', animationFillMode: 'forwards' }}
               >
-                <span className="font-semibold text-black">Accessible</span> - Ignite is completely free with no educational prerequisite.
-              </p>
-              <p
-                className={animateWords ? 'animate-slideUp' : 'opacity-0'}
-                style={{ animationDelay: '1.4s', animationFillMode: 'forwards' }}
-              >
-                <span className="font-semibold text-black">Personalised:</span> Tailored tutoring though personalised feedback and 1:1 support
-              </p>
-              <p
-                className={animateWords ? 'animate-slideUp' : 'opacity-0'}
-                style={{ animationDelay: '1.6s', animationFillMode: 'forwards' }}
-              >
-                <span className="font-semibold text-black">Integrated:</span> Built by industry experts for in-demand skills and knowledge
+                Get career-ready with personalised courses built by industry experts, completely free. We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
               </p>
             </div>
 
