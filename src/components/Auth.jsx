@@ -587,6 +587,150 @@ const Auth = () => {
           </div>
         </div>
     </div>
+
+    {/* Course Details Modal */}
+    {selectedCourseModal && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+        }}
+        onClick={() => setSelectedCourseModal(null)}
+      >
+        <div className="relative">
+          {/* Title above the box */}
+          <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+            {selectedCourseModal === 'product-manager' ? 'Product Manager' : 'Cyber Security Analyst'}
+          </h2>
+
+          <div
+            className="bg-white relative flex flex-col"
+            style={{
+              width: '600px',
+              maxHeight: '70vh',
+              animation: 'scaleUp 0.2s ease-out',
+              borderRadius: '0.3rem',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedCourseModal(null)}
+              className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Content */}
+            <div
+              className="flex-1 overflow-y-auto px-8 py-8"
+              style={{ scrollbarWidth: 'thin' }}
+            >
+              {selectedCourseModal === 'product-manager' ? (
+                <div>
+                  <div className="mb-6">
+                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">Available Now</span>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    Master the fundamentals of product management, from strategy to execution. This comprehensive course is designed for complete beginners and will take you through everything you need to know to start your career as a Product Manager.
+                  </p>
+
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">What You'll Learn</h3>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Complete beginner-friendly curriculum covering all PM fundamentals</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Real-world case studies from leading tech companies</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Interactive exercises and hands-on projects</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Product strategy, roadmapping, and prioritization</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Working with engineering, design, and stakeholders</span>
+                    </li>
+                  </ul>
+
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                  <div className="space-y-2 mb-6">
+                    <p className="text-gray-700"><strong>3 comprehensive modules</strong></p>
+                    <p className="text-gray-700">Taught by industry expert instructors</p>
+                    <p className="text-gray-700">Certificate upon completion</p>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedCourseModal(null)}
+                    className="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg hover:bg-pink-600 transition"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div className="mb-6">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">Coming Soon</span>
+                  </div>
+
+                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
+                  <p className="text-gray-700 mb-6 leading-relaxed">
+                    Learn essential cybersecurity skills to protect systems and data from threats. This comprehensive course will prepare you for a career as a Cyber Security Analyst with hands-on training in threat detection, security analysis, and incident response.
+                  </p>
+
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">What You'll Learn</h3>
+                  <ul className="space-y-3 mb-6">
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Comprehensive security fundamentals and best practices</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Threat detection, analysis, and incident response</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Hands-on labs with real security scenarios</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Industry-standard tools and technologies</span>
+                    </li>
+                    <li className="flex items-start">
+                      <span className="text-pink-500 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">Network security and vulnerability assessment</span>
+                    </li>
+                  </ul>
+
+                  <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                  <div className="space-y-2 mb-6">
+                    <p className="text-gray-700"><strong>Multiple comprehensive modules</strong></p>
+                    <p className="text-gray-700">Taught by cybersecurity professionals</p>
+                    <p className="text-gray-700">Certificate upon completion</p>
+                  </div>
+
+                  <button
+                    onClick={() => setSelectedCourseModal(null)}
+                    className="w-full bg-gray-400 text-white font-semibold py-3 rounded-lg cursor-not-allowed"
+                    disabled
+                  >
+                    Notify Me When Available
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 };
