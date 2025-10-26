@@ -450,7 +450,7 @@ const Auth = () => {
 
                 {/* Feature bullets - fade in after typing completes - reserve space */}
                 <div className="mt-8 w-full max-w-3xl" style={{ minHeight: '240px' }}>
-                  <div className="space-y-4 text-left">
+                  <div className="space-y-2 text-left">
                     {isEducationTypingComplete && (
                       <>
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
@@ -460,7 +460,7 @@ const Auth = () => {
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold">Built by Industry Experts</span> - Our courses are built with industry experts to ensure you get the latest area expertise.
+                            <span className="font-semibold text-green-500">Built by Industry Experts</span> - Our courses are built with industry experts to ensure you get the latest area expertise.
                           </p>
                         </div>
 
@@ -471,7 +471,7 @@ const Auth = () => {
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold">Ignite is Free</span> - All of our courses are completely free. We're funded by limited ads, not your finances.
+                            <span className="font-semibold text-green-500">Ignite is Free</span> - All of our courses are completely free. We're funded by limited ads, not your finances.
                           </p>
                         </div>
 
@@ -482,7 +482,7 @@ const Auth = () => {
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            <span className="font-semibold">No Educational Prerequisite</span> - You don't need any experience to study. Our curricula is built for all educational backgrounds.
+                            <span className="font-semibold text-green-500">No Educational Prerequisite</span> - You don't need any experience to study. Our curricula is built for all educational backgrounds.
                           </p>
                         </div>
                       </>
