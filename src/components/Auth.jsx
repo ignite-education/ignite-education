@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 const ProgressHub = lazy(() => import('./ProgressHub'));
 import Onboarding from './Onboarding';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -136,6 +136,13 @@ const Auth = () => {
           lastIndex = i + 1;
         }
       }
+    }
+
+    // Add cursor if typing is not complete
+    if (!isEducationTypingComplete) {
+      result.push(
+        <span key="cursor" className="text-white animate-blink">|</span>
+      );
     }
 
     return result;
@@ -418,7 +425,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left">
+          <div className="max-w-4xl w-full text-white text-left" style={{ marginTop: '-80px' }}>
             <h2 className="text-5xl font-bold px-4 leading-tight min-h-[120px]">
               {renderTypedEducation()}
             </h2>
