@@ -21,6 +21,8 @@ const Auth = () => {
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const [typedEducationText, setTypedEducationText] = useState('');
   const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
+  const coursesSectionRef = useRef(null);
+  const learningModelSectionRef = useRef(null);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -195,6 +197,20 @@ const Auth = () => {
 
   const scrollToMarketing = () => {
     marketingSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  const scrollToCourses = () => {
+    coursesSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  const scrollToLearningModel = () => {
+    learningModelSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
@@ -419,54 +435,80 @@ const Auth = () => {
       {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
           <div className="max-w-4xl w-full text-white text-left" style={{ marginTop: '-120px' }}>
-            <h2 className="text-5xl font-bold px-4 leading-tight min-h-[120px]">
-              {renderTypedEducation()}
-            </h2>
+            <div className="px-4">
+              <h2 className="text-5xl font-bold leading-tight" style={{ minHeight: '200px' }}>
+                {renderTypedEducation()}
 
-            {/* Feature bullets - fade in after typing completes */}
-            {isEducationTypingComplete && (
-              <div className="px-4 mt-8 space-y-4">
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
-                  <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-lg text-gray-300 leading-relaxed">
-                    Our courses are built with industry experts to ensure you get the latest area expertise
-                  </p>
-                </div>
+                {/* Feature bullets - fade in after typing completes - reserve space */}
+                <div className="mt-8 space-y-4">
+                  {isEducationTypingComplete && (
+                    <>
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <p className="text-lg text-gray-300 leading-relaxed">
+                          Our courses are built with industry experts to ensure you get the latest area expertise
+                        </p>
+                      </div>
 
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.6s', opacity: 0, animationFillMode: 'forwards' }}>
-                  <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-lg text-gray-300 leading-relaxed">
-                    Ignite is completely free. We're funded by limited ads, not your finances.
-                  </p>
-                </div>
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <p className="text-lg text-gray-300 leading-relaxed">
+                          Ignite is completely free. We're funded by limited ads, not your finances.
+                        </p>
+                      </div>
 
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.9s', opacity: 0, animationFillMode: 'forwards' }}>
-                  <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <p className="text-lg text-gray-300 leading-relaxed">
-                    You don't need prior experience to study. Our courses are built for all educational backgrounds.
-                  </p>
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.9s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <p className="text-lg text-gray-300 leading-relaxed">
+                          You don't need prior experience to study. Our courses are built for all educational backgrounds.
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-            )}
+              </h2>
+            </div>
+          </div>
+
+          {/* Scroll Down Arrow */}
+          <div className="flex justify-center mt-auto mb-8">
+            <button
+              onClick={scrollToCourses}
+              className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to courses"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+            </button>
           </div>
         </div>
 
       {/* Third Section - Courses */}
         <div
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          ref={coursesSectionRef}
+          className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -514,10 +556,26 @@ const Auth = () => {
               </div>
             </div>
           </div>
+
+          {/* Scroll Down Arrow */}
+          <div className="flex justify-center mt-auto mb-8">
+            <button
+              onClick={scrollToLearningModel}
+              className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to learning model"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+            </button>
+          </div>
         </div>
 
       {/* Fourth Section - Learning Model */}
         <div
+          ref={learningModelSectionRef}
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'black',
