@@ -449,42 +449,42 @@ const Auth = () => {
                 </h2>
 
                 {/* Feature bullets - fade in after typing completes - reserve space */}
-                <div className="mt-8 space-y-4 w-full max-w-3xl">
+                <div className="mt-8 w-full max-w-3xl">
                   {isEducationTypingComplete && (
-                    <>
-                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="space-y-4 text-left">
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed font-light">
+                        <p className="text-lg text-white leading-relaxed font-light">
                           Our courses are built with industry experts to ensure you get the latest area expertise
                         </p>
                       </div>
 
-                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1.5s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed font-light">
+                        <p className="text-lg text-white leading-relaxed font-light">
                           Ignite is completely free. We're funded by limited ads, not your finances.
                         </p>
                       </div>
 
-                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1.3s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed font-light">
+                        <p className="text-lg text-white leading-relaxed font-light">
                           You don't need prior experience to study. Our courses are built for all educational backgrounds.
                         </p>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
