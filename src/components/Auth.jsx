@@ -85,39 +85,57 @@ const Auth = () => {
   const renderTypedEducation = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
+    const fullText = 'Education should be accessible, personalised and integrated for everyone.';
 
     // Split text into parts and highlight the key words
     let result = [];
     let lastIndex = 0;
 
-    words.forEach((word) => {
-      const index = text.indexOf(word, lastIndex);
-      if (index !== -1 && index < text.length) {
-        // Add text before the word
-        if (index > lastIndex) {
+    // Define positions of each word in the full text
+    const wordPositions = words.map(word => ({
+      word,
+      start: fullText.indexOf(word),
+      end: fullText.indexOf(word) + word.length
+    }));
+
+    let currentPos = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      // Check if we're at the start of a pink word
+      const inPinkWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
+
+      if (inPinkWord) {
+        // If this is the start of a pink word section
+        if (currentPos < lastIndex || !result.length || result[result.length - 1].key !== inPinkWord.word) {
+          const pinkChunk = text.substring(i, Math.min(text.length, inPinkWord.end));
           result.push(
-            <span key={`before-${word}`}>{text.substring(lastIndex, index)}</span>
+            <span key={`${inPinkWord.word}-${i}`} className="text-pink-500">
+              {pinkChunk}
+            </span>
           );
+          i = Math.min(text.length - 1, inPinkWord.end - 1);
+          lastIndex = i + 1;
+        }
+      } else {
+        // Regular text - find the next pink word or end
+        let nextPinkStart = text.length;
+        for (const wp of wordPositions) {
+          if (wp.start > i && wp.start < nextPinkStart && wp.start < text.length) {
+            nextPinkStart = wp.start;
+          }
         }
 
-        // Add the word in pink (only show what's been typed)
-        const wordEndIndex = index + word.length;
-        const typedWordPart = text.substring(index, Math.min(wordEndIndex, text.length));
-        result.push(
-          <span key={word} className="text-pink-500">
-            {typedWordPart}
-          </span>
-        );
-
-        lastIndex = wordEndIndex;
+        const chunk = text.substring(i, Math.min(nextPinkStart, text.length));
+        if (chunk) {
+          result.push(
+            <span key={`text-${i}`} className="text-white">
+              {chunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, nextPinkStart - 1);
+          lastIndex = i + 1;
+        }
       }
-    });
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      result.push(
-        <span key="remaining">{text.substring(lastIndex)}</span>
-      );
     }
 
     return result;
