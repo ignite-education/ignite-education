@@ -443,8 +443,8 @@ const Auth = () => {
         >
           <div className="max-w-4xl w-full text-white">
             <div className="px-4 flex flex-col items-center justify-center">
-              <div style={{ minHeight: '380px' }} className="flex flex-col items-center justify-center text-center">
-                <h2 className="text-5xl font-bold leading-tight">
+              <div style={{ minHeight: '380px' }} className="flex flex-col items-center justify-center w-full max-w-3xl">
+                <h2 className="text-5xl font-bold leading-tight text-left w-full">
                   {renderTypedEducation()}
                 </h2>
 
