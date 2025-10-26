@@ -315,11 +315,11 @@ const Auth = () => {
             className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
             style={{
               animation: 'subtleBounce 2s infinite',
-              padding: '12px'
+              padding: '11px'
             }}
             aria-label="Scroll to learn more"
           >
-            <ChevronDown size={27} className="text-black group-hover:text-pink-500 transition" />
+            <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
           </button>
         </div>
       </div>
