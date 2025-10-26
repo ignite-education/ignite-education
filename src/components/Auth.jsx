@@ -18,6 +18,7 @@ const Auth = () => {
   const marketingSectionRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
+  const [hoveredCourseCard, setHoveredCourseCard] = useState(null);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -358,69 +359,102 @@ const Auth = () => {
 
             {/* Courses Section */}
             <div className="mt-16 px-4">
-              <h3
-                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-black mb-4' : 'opacity-0'}
-                style={{ animationDelay: '1.8s', animationFillMode: 'forwards' }}
-              >
+              <h3 className="text-2xl sm:text-3xl font-semibold text-black mb-4">
                 See yourself as a
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Course Card 1 */}
                 <div
-                  className={animateWords ? 'animate-slideUp bg-white rounded-lg p-6 shadow-lg' : 'opacity-0'}
-                  style={{ animationDelay: '2s', animationFillMode: 'forwards' }}
+                  onMouseEnter={() => setHoveredCourseCard(1)}
+                  onMouseLeave={() => setHoveredCourseCard(null)}
+                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  style={{
+                    maxHeight: hoveredCourseCard === 1 ? '500px' : '200px',
+                    transition: 'max-height 0.3s ease-in-out'
+                  }}
                 >
-                  <h4 className="text-lg font-semibold text-black mb-2">Product Management Fundamentals</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <span className="px-2 py-1 bg-gray-100 rounded">Basic</span>
+                  <h4 className="text-lg font-semibold mb-2">Product Management Fundamentals</h4>
+                  <div className="flex items-center gap-2 text-sm mb-3">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Basic</span>
                     <span>8 hrs</span>
                   </div>
-                  <p className="text-gray-700 text-sm mb-4">
+                  <p className="text-sm mb-4">
                     Master the fundamentals of product management, from strategy to execution.
                   </p>
-                  <button className="text-pink-500 font-semibold text-sm hover:text-pink-600 transition flex items-center gap-1">
-                    See Details →
-                  </button>
-                  <div className="mt-4 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded"></div>
+                  {hoveredCourseCard === 1 && (
+                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
+                      <h5 className="font-semibold mb-2">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside">
+                        <li>15 comprehensive lessons</li>
+                        <li>Hands-on projects</li>
+                        <li>Industry expert instructors</li>
+                        <li>Certificate upon completion</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* Course Card 2 */}
                 <div
-                  className={animateWords ? 'animate-slideUp bg-white rounded-lg p-6 shadow-lg' : 'opacity-0'}
-                  style={{ animationDelay: '2.15s', animationFillMode: 'forwards' }}
+                  onMouseEnter={() => setHoveredCourseCard(2)}
+                  onMouseLeave={() => setHoveredCourseCard(null)}
+                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  style={{
+                    maxHeight: hoveredCourseCard === 2 ? '500px' : '200px',
+                    transition: 'max-height 0.3s ease-in-out'
+                  }}
                 >
-                  <h4 className="text-lg font-semibold text-black mb-2">Data-Driven Decision Making</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <span className="px-2 py-1 bg-gray-100 rounded">Intermediate</span>
+                  <h4 className="text-lg font-semibold mb-2">Data-Driven Decision Making</h4>
+                  <div className="flex items-center gap-2 text-sm mb-3">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Intermediate</span>
                     <span>6 hrs</span>
                   </div>
-                  <p className="text-gray-700 text-sm mb-4">
+                  <p className="text-sm mb-4">
                     Learn how to leverage data and analytics to drive product decisions.
                   </p>
-                  <button className="text-pink-500 font-semibold text-sm hover:text-pink-600 transition flex items-center gap-1">
-                    See Details →
-                  </button>
-                  <div className="mt-4 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded"></div>
+                  {hoveredCourseCard === 2 && (
+                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
+                      <h5 className="font-semibold mb-2">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside">
+                        <li>12 in-depth lessons</li>
+                        <li>Real-world data analysis</li>
+                        <li>Analytics tools training</li>
+                        <li>Certificate upon completion</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
 
                 {/* Course Card 3 */}
                 <div
-                  className={animateWords ? 'animate-slideUp bg-white rounded-lg p-6 shadow-lg' : 'opacity-0'}
-                  style={{ animationDelay: '2.3s', animationFillMode: 'forwards' }}
+                  onMouseEnter={() => setHoveredCourseCard(3)}
+                  onMouseLeave={() => setHoveredCourseCard(null)}
+                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  style={{
+                    maxHeight: hoveredCourseCard === 3 ? '500px' : '200px',
+                    transition: 'max-height 0.3s ease-in-out'
+                  }}
                 >
-                  <h4 className="text-lg font-semibold text-black mb-2">Agile Product Development</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                    <span className="px-2 py-1 bg-gray-100 rounded">Intermediate</span>
+                  <h4 className="text-lg font-semibold mb-2">Agile Product Development</h4>
+                  <div className="flex items-center gap-2 text-sm mb-3">
+                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Intermediate</span>
                     <span>5 hrs</span>
                   </div>
-                  <p className="text-gray-700 text-sm mb-4">
+                  <p className="text-sm mb-4">
                     Build products iteratively using agile methodologies and best practices.
                   </p>
-                  <button className="text-pink-500 font-semibold text-sm hover:text-pink-600 transition flex items-center gap-1">
-                    See Details →
-                  </button>
-                  <div className="mt-4 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded"></div>
+                  {hoveredCourseCard === 3 && (
+                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
+                      <h5 className="font-semibold mb-2">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside">
+                        <li>10 practical lessons</li>
+                        <li>Agile framework mastery</li>
+                        <li>Sprint planning workshops</li>
+                        <li>Certificate upon completion</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
