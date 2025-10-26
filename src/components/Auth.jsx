@@ -18,7 +18,7 @@ const Auth = () => {
   const marketingSectionRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
-  const [hoveredCourseCard, setHoveredCourseCard] = useState(null);
+  const [selectedCourseModal, setSelectedCourseModal] = useState(null);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -379,82 +379,34 @@ const Auth = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Course Card 1 - Product Manager */}
                 <div
-                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 1 ? null : 1)}
-                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
-                  style={{
-                    backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 1 ? '650px' : '260px',
-                    transition: 'max-height 0.3s ease-in-out',
-                    padding: '31px'
-                  }}
+                  onClick={() => setSelectedCourseModal('product-manager')}
+                  className="bg-black text-white rounded cursor-pointer transition-transform hover:scale-105"
+                  style={{ padding: '31px' }}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Product Manager</h4>
-                    <div className="flex-shrink-0 ml-3">
-                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 1 ? 'rotate-45' : ''}`}>
-                        <span className="text-lg font-light leading-none">+</span>
-                      </div>
-                    </div>
+                  <h4 className="text-xl font-semibold mb-3">Product Manager</h4>
+                  <div className="flex items-center gap-2 text-base mb-4">
+                    <span className="px-2 py-1 bg-green-500 bg-opacity-20 text-green-400 rounded text-sm">Available</span>
+                    <span className="text-gray-300 text-sm">3 modules</span>
                   </div>
-                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Available</span>
-                    <span>3 modules</span>
-                  </div>
-                  <p className="text-base mb-5 text-gray-700">
+                  <p className="text-base text-gray-300">
                     Master the fundamentals of product management, from strategy to execution.
                   </p>
-                  {hoveredCourseCard === 1 && (
-                    <div className="mt-5 border-t border-gray-300 pt-5">
-                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
-                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
-                        <li>Complete beginner-friendly curriculum</li>
-                        <li>Real-world case studies</li>
-                        <li>Interactive exercises and projects</li>
-                        <li>Industry expert instructors</li>
-                        <li>Certificate upon completion</li>
-                      </ul>
-                    </div>
-                  )}
                 </div>
 
                 {/* Course Card 2 - Cyber Security Analyst */}
                 <div
-                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 2 ? null : 2)}
-                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
-                  style={{
-                    backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 2 ? '650px' : '260px',
-                    transition: 'max-height 0.3s ease-in-out',
-                    padding: '31px'
-                  }}
+                  onClick={() => setSelectedCourseModal('cyber-security')}
+                  className="bg-black text-white rounded cursor-pointer transition-transform hover:scale-105"
+                  style={{ padding: '31px' }}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Cyber Security Analyst</h4>
-                    <div className="flex-shrink-0 ml-3">
-                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 2 ? 'rotate-45' : ''}`}>
-                        <span className="text-lg font-light leading-none">+</span>
-                      </div>
-                    </div>
+                  <h4 className="text-xl font-semibold mb-3">Cyber Security Analyst</h4>
+                  <div className="flex items-center gap-2 text-base mb-4">
+                    <span className="px-2 py-1 bg-blue-500 bg-opacity-20 text-blue-400 rounded text-sm">Coming Soon</span>
+                    <span className="text-gray-300 text-sm">Multiple modules</span>
                   </div>
-                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">Coming Soon</span>
-                    <span>Multiple modules</span>
-                  </div>
-                  <p className="text-base mb-5 text-gray-700">
+                  <p className="text-base text-gray-300">
                     Learn essential cybersecurity skills to protect systems and data from threats.
                   </p>
-                  {hoveredCourseCard === 2 && (
-                    <div className="mt-5 border-t border-gray-300 pt-5">
-                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
-                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
-                        <li>Comprehensive security fundamentals</li>
-                        <li>Threat detection and analysis</li>
-                        <li>Hands-on labs and simulations</li>
-                        <li>Industry-standard tools training</li>
-                        <li>Certificate upon completion</li>
-                      </ul>
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
