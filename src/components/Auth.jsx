@@ -341,23 +341,23 @@ const Auth = () => {
               <span className="text-black relative inline-block">
                 accessible
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
+                  style={{ bottom: '2px', animationDelay: '0.5s', animationFillMode: 'forwards' }}
                 />
               </span>,{' '}
               <span className="text-black relative inline-block">
                 personalised
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
+                  style={{ bottom: '2px', animationDelay: '1.2s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
               and{' '}
               <span className="text-black relative inline-block">
                 integrated
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '2.5s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
+                  style={{ bottom: '2px', animationDelay: '1.9s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
               for everyone.
