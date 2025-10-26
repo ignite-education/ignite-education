@@ -338,15 +338,27 @@ const Auth = () => {
           <div className="max-w-4xl w-full text-black text-left">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4 leading-tight">
               Education should be{' '}
-              <span className="text-black">
+              <span className="text-black relative inline-block">
                 accessible
+                <span
+                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
+                  style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
+                />
               </span>,{' '}
-              <span className="text-black">
+              <span className="text-black relative inline-block">
                 personalised
+                <span
+                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
+                  style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}
+                />
               </span>{' '}
               and{' '}
-              <span className="text-black">
+              <span className="text-black relative inline-block">
                 integrated
+                <span
+                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
+                  style={{ animationDelay: '0.9s', animationFillMode: 'forwards' }}
+                />
               </span>{' '}
               for everyone.
             </h2>
@@ -368,24 +380,25 @@ const Auth = () => {
                 <div
                   onMouseEnter={() => setHoveredCourseCard(1)}
                   onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
+                    backgroundColor: '#f0f0f0',
                     maxHeight: hoveredCourseCard === 1 ? '500px' : '200px',
                     transition: 'max-height 0.3s ease-in-out'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2">Product Management Fundamentals</h4>
-                  <div className="flex items-center gap-2 text-sm mb-3">
-                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Basic</span>
+                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Product Management Fundamentals</h4>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <span className="px-2 py-1 bg-gray-200 rounded">Basic</span>
                     <span>8 hrs</span>
                   </div>
-                  <p className="text-sm mb-4">
+                  <p className="text-sm mb-4 text-gray-700">
                     Master the fundamentals of product management, from strategy to execution.
                   </p>
                   {hoveredCourseCard === 1 && (
-                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
-                      <h5 className="font-semibold mb-2">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside">
+                    <div className="mt-4 border-t border-gray-300 pt-4">
+                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                         <li>15 comprehensive lessons</li>
                         <li>Hands-on projects</li>
                         <li>Industry expert instructors</li>
@@ -399,24 +412,25 @@ const Auth = () => {
                 <div
                   onMouseEnter={() => setHoveredCourseCard(2)}
                   onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
+                    backgroundColor: '#f0f0f0',
                     maxHeight: hoveredCourseCard === 2 ? '500px' : '200px',
                     transition: 'max-height 0.3s ease-in-out'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2">Data-Driven Decision Making</h4>
-                  <div className="flex items-center gap-2 text-sm mb-3">
-                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Intermediate</span>
+                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Data-Driven Decision Making</h4>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
                     <span>6 hrs</span>
                   </div>
-                  <p className="text-sm mb-4">
+                  <p className="text-sm mb-4 text-gray-700">
                     Learn how to leverage data and analytics to drive product decisions.
                   </p>
                   {hoveredCourseCard === 2 && (
-                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
-                      <h5 className="font-semibold mb-2">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside">
+                    <div className="mt-4 border-t border-gray-300 pt-4">
+                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                         <li>12 in-depth lessons</li>
                         <li>Real-world data analysis</li>
                         <li>Analytics tools training</li>
@@ -430,24 +444,25 @@ const Auth = () => {
                 <div
                   onMouseEnter={() => setHoveredCourseCard(3)}
                   onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="bg-pink-500 text-white rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
+                    backgroundColor: '#f0f0f0',
                     maxHeight: hoveredCourseCard === 3 ? '500px' : '200px',
                     transition: 'max-height 0.3s ease-in-out'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2">Agile Product Development</h4>
-                  <div className="flex items-center gap-2 text-sm mb-3">
-                    <span className="px-2 py-1 bg-white bg-opacity-20 rounded">Intermediate</span>
+                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Agile Product Development</h4>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                    <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
                     <span>5 hrs</span>
                   </div>
-                  <p className="text-sm mb-4">
+                  <p className="text-sm mb-4 text-gray-700">
                     Build products iteratively using agile methodologies and best practices.
                   </p>
                   {hoveredCourseCard === 3 && (
-                    <div className="mt-4 border-t border-white border-opacity-30 pt-4">
-                      <h5 className="font-semibold mb-2">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside">
+                    <div className="mt-4 border-t border-gray-300 pt-4">
+                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
+                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
                         <li>10 practical lessons</li>
                         <li>Agile framework mastery</li>
                         <li>Sprint planning workshops</li>
