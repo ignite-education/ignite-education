@@ -143,7 +143,7 @@ const Auth = () => {
     // Add cursor if typing is not complete
     if (!isEducationTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink">|</span>
+        <span key="cursor" className="text-white animate-blink font-light">|</span>
       );
     }
 
@@ -442,9 +442,9 @@ const Auth = () => {
           }}
         >
           <div className="max-w-4xl w-full text-white">
-            <div className="px-4 flex flex-col items-center justify-center" style={{ marginTop: '120px' }}>
-              <div style={{ minHeight: '380px' }} className="flex flex-col items-center justify-center w-full max-w-3xl">
-                <h2 className="text-5xl font-bold leading-tight text-left w-full">
+            <div className="px-4 flex flex-col items-center justify-center" style={{ marginTop: '180px' }}>
+              <div style={{ minHeight: '380px' }} className="flex flex-col items-start justify-start w-full max-w-3xl">
+                <h2 className="text-5xl font-bold leading-tight text-left w-full" style={{ minHeight: '140px' }}>
                   {renderTypedEducation()}
                 </h2>
 
