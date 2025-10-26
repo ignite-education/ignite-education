@@ -212,5 +212,5 @@ body {
 }
 
 .animate-expandUnderline {
-  animation: expandUnderline 0.6s ease-out forwards;
+  animation: expandUnderline 0.4s ease-out forwards;
 }
