@@ -19,6 +19,8 @@ const Auth = () => {
   const [animateWords, setAnimateWords] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
+  const [typedEducationText, setTypedEducationText] = useState('');
+  const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -43,6 +45,8 @@ const Auth = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !animateWords) {
             setAnimateWords(true);
+            // Start typing animation
+            startEducationTyping();
           }
         });
       },
@@ -57,6 +61,70 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateWords]);
+
+  // Typing animation for education text
+  const startEducationTyping = () => {
+    const fullText = 'Education should be accessible, personalised and integrated for everyone.';
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= fullText.length) {
+        setTypedEducationText(fullText.substring(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsEducationTypingComplete(true);
+      }
+    }, 40); // 40ms per character for smooth typing
+  };
+
+  // Helper to render typed text with pink highlights for key words
+  const renderTypedEducation = () => {
+    const text = typedEducationText;
+    const words = ['accessible', 'personalised', 'integrated'];
+
+    // Split text into parts and highlight the key words
+    let result = [];
+    let lastIndex = 0;
+
+    words.forEach((word) => {
+      const index = text.indexOf(word, lastIndex);
+      if (index !== -1 && index < text.length) {
+        // Add text before the word
+        if (index > lastIndex) {
+          result.push(
+            <span key={`before-${word}`}>{text.substring(lastIndex, index)}</span>
+          );
+        }
+
+        // Add the word in pink (only show what's been typed)
+        const wordEndIndex = index + word.length;
+        const typedWordPart = text.substring(index, Math.min(wordEndIndex, text.length));
+        result.push(
+          <span key={word} className="text-pink-500 relative inline-block">
+            {typedWordPart}
+            {isEducationTypingComplete && typedWordPart === word && (
+              <span
+                className="absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline"
+                style={{ bottom: '2px' }}
+              />
+            )}
+          </span>
+        );
+
+        lastIndex = wordEndIndex;
+      }
+    });
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      result.push(
+        <span key="remaining">{text.substring(lastIndex)}</span>
+      );
+    }
+
+    return result;
+  };
 
   // Auto-rotate through cards
   useEffect(() => {
@@ -336,31 +404,8 @@ const Auth = () => {
           }}
         >
           <div className="max-w-4xl w-full text-white text-left">
-            <h2 className="text-5xl font-bold px-4 leading-tight">
-              Education should be{' '}
-              <span className="text-white relative inline-block">
-                accessible
-                <span
-                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ bottom: '2px', animationDelay: '0.5s', animationFillMode: 'forwards' }}
-                />
-              </span>,{' '}
-              <span className="text-white relative inline-block">
-                personalised
-                <span
-                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ bottom: '2px', animationDelay: '1.2s', animationFillMode: 'forwards' }}
-                />
-              </span>{' '}
-              and{' '}
-              <span className="text-white relative inline-block">
-                integrated
-                <span
-                  className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
-                  style={{ bottom: '2px', animationDelay: '1.9s', animationFillMode: 'forwards' }}
-                />
-              </span>{' '}
-              for everyone.
+            <h2 className="text-5xl font-bold px-4 leading-tight min-h-[120px]">
+              {renderTypedEducation()}
             </h2>
 
             <div className="mt-8 px-4 text-base sm:text-lg text-gray-300 max-w-3xl">
