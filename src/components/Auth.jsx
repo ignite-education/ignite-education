@@ -441,9 +441,9 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left" style={{ marginTop: '-120px' }}>
+          <div className="max-w-4xl w-full text-white text-left">
             <div className="px-4">
-              <h2 className="text-5xl font-bold leading-tight" style={{ minHeight: '200px' }}>
+              <h2 className="text-5xl font-bold leading-tight" style={{ minHeight: '380px' }}>
                 {renderTypedEducation()}
 
                 {/* Feature bullets - fade in after typing completes - reserve space */}
