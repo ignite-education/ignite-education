@@ -328,7 +328,7 @@ const Auth = () => {
       {/* Second Section - Marketing Content (visible for both sign in and create account) */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 lg:pt-24"
+          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20"
           style={{
             background: 'white',
             scrollSnapAlign: 'start'
@@ -337,14 +337,14 @@ const Auth = () => {
           <div className="max-w-4xl w-full text-black text-left">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4 leading-tight">
               Education should be{' '}
-              <span className="text-pink-500">
+              <span className="text-black">
                 accessible
               </span>,{' '}
-              <span className="text-pink-500">
+              <span className="text-black">
                 personalised
               </span>{' '}
               and{' '}
-              <span className="text-pink-500">
+              <span className="text-black">
                 integrated
               </span>{' '}
               for everyone.
