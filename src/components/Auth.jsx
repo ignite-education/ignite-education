@@ -441,51 +441,53 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left">
-            <div className="px-4">
-              <h2 className="text-5xl font-bold leading-tight" style={{ minHeight: '380px' }}>
-                {renderTypedEducation()}
+          <div className="max-w-4xl w-full text-white">
+            <div className="px-4 flex flex-col items-center justify-center">
+              <div style={{ minHeight: '380px' }} className="flex flex-col items-center justify-center text-center">
+                <h2 className="text-5xl font-bold leading-tight">
+                  {renderTypedEducation()}
+                </h2>
 
                 {/* Feature bullets - fade in after typing completes - reserve space */}
-                <div className="mt-8 space-y-4">
+                <div className="mt-8 space-y-4 w-full max-w-3xl">
                   {isEducationTypingComplete && (
                     <>
-                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed">
+                        <p className="text-lg text-gray-300 leading-relaxed font-light">
                           Our courses are built with industry experts to ensure you get the latest area expertise
                         </p>
                       </div>
 
-                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed">
+                        <p className="text-lg text-gray-300 leading-relaxed font-light">
                           Ignite is completely free. We're funded by limited ads, not your finances.
                         </p>
                       </div>
 
-                      <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out', animationDelay: '0.9s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-start gap-3 text-left" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1.3s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
                           <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
-                        <p className="text-lg text-gray-300 leading-relaxed">
+                        <p className="text-lg text-gray-300 leading-relaxed font-light">
                           You don't need prior experience to study. Our courses are built for all educational backgrounds.
                         </p>
                       </div>
                     </>
                   )}
                 </div>
-              </h2>
+              </div>
             </div>
           </div>
 
