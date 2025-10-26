@@ -432,8 +432,8 @@ const Auth = () => {
 
             {/* Feature bullets - fade in after typing completes */}
             {isEducationTypingComplete && (
-              <div className="px-4 mt-8 space-y-4 animate-fadeIn" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.6s ease-out forwards', animationDelay: '0.3s', opacity: 0 }}>
+              <div className="px-4 mt-8 space-y-4">
+                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
                   <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -442,7 +442,7 @@ const Auth = () => {
                   </p>
                 </div>
 
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.6s ease-out forwards', animationDelay: '0.5s', opacity: 0 }}>
+                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.6s', opacity: 0, animationFillMode: 'forwards' }}>
                   <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -451,7 +451,7 @@ const Auth = () => {
                   </p>
                 </div>
 
-                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.6s ease-out forwards', animationDelay: '0.7s', opacity: 0 }}>
+                <div className="flex items-start gap-3" style={{ animation: 'fadeIn 0.8s ease-out forwards', animationDelay: '0.9s', opacity: 0, animationFillMode: 'forwards' }}>
                   <svg className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
