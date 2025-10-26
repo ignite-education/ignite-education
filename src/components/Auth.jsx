@@ -453,7 +453,7 @@ const Auth = () => {
                   <div className="space-y-3 text-left">
                     {isEducationTypingComplete && (
                       <>
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -465,7 +465,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
@@ -477,7 +477,7 @@ const Auth = () => {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
                           <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
