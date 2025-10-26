@@ -454,35 +454,35 @@ const Auth = () => {
                     {isEducationTypingComplete && (
                       <>
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            Our courses are built with industry experts to ensure you get the latest area expertise
+                            <span className="font-semibold">Built by Industry Experts</span> - Our courses are built with industry experts to ensure you get the latest area expertise.
                           </p>
                         </div>
 
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            Ignite is completely free. We're funded by limited ads, not your finances.
+                            <span className="font-semibold">Ignite is Free</span> - All of our courses are completely free. We're funded by limited ads, not your finances.
                           </p>
                         </div>
 
                         <div className="flex items-start gap-3" style={{ animation: 'fadeIn 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5">
+                          <div className="bg-white rounded-full p-1.5 flex-shrink-0 mt-0.5" style={{ transform: 'scale(0.8)' }}>
                             <svg className="w-4 h-4 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                           </div>
                           <p className="text-lg text-white leading-relaxed font-light">
-                            You don't need prior experience to study. Our courses are built for all educational backgrounds.
+                            <span className="font-semibold">No Educational Prerequisite</span> - You don't need any experience to study. Our curricula is built for all educational backgrounds.
                           </p>
                         </div>
                       </>
