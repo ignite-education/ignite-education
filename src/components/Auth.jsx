@@ -341,14 +341,14 @@ const Auth = () => {
               <span className="text-black relative inline-block">
                 accessible
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
                   style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
                 />
               </span>,{' '}
               <span className="text-black relative inline-block">
                 personalised
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
                   style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
@@ -356,14 +356,14 @@ const Auth = () => {
               <span className="text-black relative inline-block">
                 integrated
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1.5 bg-pink-500 w-0'}
                   style={{ animationDelay: '2.5s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
               for everyone.
             </h2>
 
-            <div className="mt-8 px-4 text-base sm:text-lg text-black">
+            <div className="mt-8 px-4 text-base sm:text-lg text-black max-w-3xl">
               <p>
                 Get career-ready with personalised courses built by industry experts, completely free.<br />
                 We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
@@ -372,12 +372,12 @@ const Auth = () => {
 
             {/* Courses Section */}
             <div className="mt-16 px-4">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-black mb-4">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-black mb-2">
                 See yourself as a
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* Course Card 1 */}
+                {/* Course Card 1 - Product Manager */}
                 <div
                   onClick={() => setHoveredCourseCard(hoveredCourseCard === 1 ? null : 1)}
                   className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
@@ -389,7 +389,7 @@ const Auth = () => {
                   }}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Product Management Fundamentals</h4>
+                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Product Manager</h4>
                     <div className="flex-shrink-0 ml-3">
                       <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 1 ? 'rotate-45' : ''}`}>
                         <span className="text-lg font-light leading-none">+</span>
@@ -397,8 +397,8 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
-                    <span className="px-2 py-1 bg-gray-200 rounded">Basic</span>
-                    <span>8 hrs</span>
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded">Available</span>
+                    <span>3 modules</span>
                   </div>
                   <p className="text-base mb-5 text-gray-700">
                     Master the fundamentals of product management, from strategy to execution.
@@ -407,8 +407,9 @@ const Auth = () => {
                     <div className="mt-5 border-t border-gray-300 pt-5">
                       <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
                       <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
-                        <li>15 comprehensive lessons</li>
-                        <li>Hands-on projects</li>
+                        <li>Complete beginner-friendly curriculum</li>
+                        <li>Real-world case studies</li>
+                        <li>Interactive exercises and projects</li>
                         <li>Industry expert instructors</li>
                         <li>Certificate upon completion</li>
                       </ul>
@@ -416,7 +417,7 @@ const Auth = () => {
                   )}
                 </div>
 
-                {/* Course Card 2 */}
+                {/* Course Card 2 - Cyber Security Analyst */}
                 <div
                   onClick={() => setHoveredCourseCard(hoveredCourseCard === 2 ? null : 2)}
                   className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
@@ -428,7 +429,7 @@ const Auth = () => {
                   }}
                 >
                   <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Data-Driven Decision Making</h4>
+                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Cyber Security Analyst</h4>
                     <div className="flex-shrink-0 ml-3">
                       <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 2 ? 'rotate-45' : ''}`}>
                         <span className="text-lg font-light leading-none">+</span>
@@ -436,58 +437,20 @@ const Auth = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
-                    <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
-                    <span>6 hrs</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded">Coming Soon</span>
+                    <span>Multiple modules</span>
                   </div>
                   <p className="text-base mb-5 text-gray-700">
-                    Learn how to leverage data and analytics to drive product decisions.
+                    Learn essential cybersecurity skills to protect systems and data from threats.
                   </p>
                   {hoveredCourseCard === 2 && (
                     <div className="mt-5 border-t border-gray-300 pt-5">
                       <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
                       <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
-                        <li>12 in-depth lessons</li>
-                        <li>Real-world data analysis</li>
-                        <li>Analytics tools training</li>
-                        <li>Certificate upon completion</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-
-                {/* Course Card 3 */}
-                <div
-                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 3 ? null : 3)}
-                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
-                  style={{
-                    backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 3 ? '650px' : '260px',
-                    transition: 'max-height 0.3s ease-in-out',
-                    padding: '31px'
-                  }}
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Agile Product Development</h4>
-                    <div className="flex-shrink-0 ml-3">
-                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 3 ? 'rotate-45' : ''}`}>
-                        <span className="text-lg font-light leading-none">+</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
-                    <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
-                    <span>5 hrs</span>
-                  </div>
-                  <p className="text-base mb-5 text-gray-700">
-                    Build products iteratively using agile methodologies and best practices.
-                  </p>
-                  {hoveredCourseCard === 3 && (
-                    <div className="mt-5 border-t border-gray-300 pt-5">
-                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
-                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
-                        <li>10 practical lessons</li>
-                        <li>Agile framework mastery</li>
-                        <li>Sprint planning workshops</li>
+                        <li>Comprehensive security fundamentals</li>
+                        <li>Threat detection and analysis</li>
+                        <li>Hands-on labs and simulations</li>
+                        <li>Industry-standard tools training</li>
                         <li>Certificate upon completion</li>
                       </ul>
                     </div>
