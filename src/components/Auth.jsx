@@ -80,7 +80,7 @@ const Auth = () => {
           setIsEducationTypingComplete(true);
         }
       }, 75); // 75ms per character for slower typing
-    }, 500); // 500ms delay before starting
+    }, 1000); // 1000ms delay before starting
   };
 
   // Helper to render typed text with pink highlights for key words
@@ -442,7 +442,7 @@ const Auth = () => {
           }}
         >
           <div className="max-w-4xl w-full text-white">
-            <div className="px-4 flex flex-col items-center justify-center">
+            <div className="px-4 flex flex-col items-center justify-center" style={{ marginTop: '80px' }}>
               <div style={{ minHeight: '380px' }} className="flex flex-col items-center justify-center w-full max-w-3xl">
                 <h2 className="text-5xl font-bold leading-tight text-left w-full">
                   {renderTypedEducation()}
