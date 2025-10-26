@@ -326,10 +326,10 @@ const Auth = () => {
       </div>
       </div>
 
-      {/* Second Section - Marketing Content (visible for both sign in and create account) */}
+      {/* Second Section - Education Philosophy & Courses */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-12 sm:pt-16 lg:pt-20"
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'white',
             scrollSnapAlign: 'start'
@@ -410,13 +410,21 @@ const Auth = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
+      {/* Third Section - Learning Model */}
+        <div
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          style={{
+            background: 'white',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-4xl w-full text-black text-left">
             {/* Learning Model Section */}
-            <div className="mt-20 px-4">
-              <h3
-                className={animateWords ? 'animate-slideUp text-2xl sm:text-3xl font-semibold text-black text-left mb-6' : 'opacity-0'}
-                style={{ animationDelay: '2.5s', animationFillMode: 'forwards' }}
-              >
+            <div className="px-4">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-black text-left mb-6">
                 Building a smarter, more personalised era of education.
               </h3>
 
@@ -425,12 +433,11 @@ const Auth = () => {
                 <div className="space-y-6">
                   {/* Card 1 - Hands-on */}
                   <div
-                    className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 0
                         ? 'bg-pink-50 shadow-xl scale-105 border-2 border-pink-200'
                         : 'bg-gray-100 border border-gray-300'
                     }`}
-                    style={{ animationDelay: '2.7s', animationFillMode: 'forwards' }}
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <div className="bg-pink-500 rounded-full p-2 flex-shrink-0">
@@ -451,12 +458,11 @@ const Auth = () => {
 
                   {/* Card 2 - Real-world projects */}
                   <div
-                    className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 1
                         ? 'bg-green-50 shadow-xl scale-105 border-2 border-green-200'
                         : 'bg-gray-100 border border-gray-300'
                     }`}
-                    style={{ animationDelay: '2.85s', animationFillMode: 'forwards' }}
                   >
                     <div className="flex items-start gap-3 mb-4">
                       <div className="bg-green-500 rounded-full p-2 flex-shrink-0">
@@ -482,12 +488,11 @@ const Auth = () => {
 
                   {/* Card 3 - Certified professional */}
                   <div
-                    className={`${animateWords ? 'animate-slideUp' : 'opacity-0'} rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 2
                         ? 'bg-purple-50 shadow-xl scale-105 border-2 border-purple-200'
                         : 'bg-gray-100 border border-gray-300'
                     }`}
-                    style={{ animationDelay: '3s', animationFillMode: 'forwards' }}
                   >
                     <div className="flex items-start gap-3 mb-3">
                       <div className="bg-purple-500 rounded-full p-2 flex-shrink-0">
@@ -508,10 +513,7 @@ const Auth = () => {
                 </div>
 
                 {/* Right Column - Portfolio Preview */}
-                <div
-                  className={animateWords ? 'animate-slideUp flex items-center justify-center' : 'opacity-0'}
-                  style={{ animationDelay: '2.7s', animationFillMode: 'forwards' }}
-                >
+                <div className="flex items-center justify-center">
                   <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-xl p-8 border border-gray-600 w-full max-w-md">
                     <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
                       Build a <span className="text-green-400">career portfolio</span>
@@ -546,10 +548,7 @@ const Auth = () => {
             <div className="mt-20 px-4 py-16 bg-gray-100 rounded-2xl">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
                 {/* Left Column - Image */}
-                <div
-                  className={animateWords ? 'animate-slideUp' : 'opacity-0'}
-                  style={{ animationDelay: '3.2s', animationFillMode: 'forwards' }}
-                >
+                <div>
                   <div className="relative">
                     <img
                       src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
@@ -561,10 +560,7 @@ const Auth = () => {
                 </div>
 
                 {/* Right Column - Text Content */}
-                <div
-                  className={animateWords ? 'animate-slideUp' : 'opacity-0'}
-                  style={{ animationDelay: '3.4s', animationFillMode: 'forwards' }}
-                >
+                <div>
                   <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-6">
                     We're re-defining{' '}
                     <span className="text-purple-600">post-18 education</span>
