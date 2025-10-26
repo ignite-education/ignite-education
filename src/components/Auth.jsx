@@ -326,26 +326,26 @@ const Auth = () => {
       </div>
       </div>
 
-      {/* Second Section - Education Philosophy & Courses */}
+      {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
-            background: 'white',
+            background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-black text-left">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold px-4 leading-tight">
+          <div className="max-w-4xl w-full text-white text-left">
+            <h2 className="text-5xl font-bold px-4 leading-tight">
               Education should be{' '}
-              <span className="text-black relative inline-block">
+              <span className="text-white relative inline-block">
                 accessible
                 <span
                   className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
                   style={{ bottom: '2px', animationDelay: '0.5s', animationFillMode: 'forwards' }}
                 />
               </span>,{' '}
-              <span className="text-black relative inline-block">
+              <span className="text-white relative inline-block">
                 personalised
                 <span
                   className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
@@ -353,7 +353,7 @@ const Auth = () => {
                 />
               </span>{' '}
               and{' '}
-              <span className="text-black relative inline-block">
+              <span className="text-white relative inline-block">
                 integrated
                 <span
                   className={animateWords ? 'absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline' : 'absolute left-0 h-1.5 bg-pink-500 w-0'}
@@ -363,16 +363,27 @@ const Auth = () => {
               for everyone.
             </h2>
 
-            <div className="mt-8 px-4 text-base sm:text-lg text-black max-w-3xl">
+            <div className="mt-8 px-4 text-base sm:text-lg text-gray-300 max-w-3xl">
               <p>
                 Get career-ready with personalised courses built by industry experts, completely free.<br />
                 We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
               </p>
             </div>
+          </div>
+        </div>
 
+      {/* Third Section - Courses */}
+        <div
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-4xl w-full text-white text-left">
             {/* Courses Section */}
-            <div className="mt-16 px-4">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-black mb-2">
+            <div className="px-4">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-white mb-2">
                 See yourself as a
               </h3>
 
@@ -380,15 +391,15 @@ const Auth = () => {
                 {/* Course Card 1 - Product Manager */}
                 <div
                   onClick={() => setSelectedCourseModal('product-manager')}
-                  className="bg-black text-white rounded cursor-pointer transition-transform hover:scale-105"
+                  className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
                   style={{ padding: '31px' }}
                 >
                   <h4 className="text-xl font-semibold mb-3">Product Manager</h4>
                   <div className="flex items-center gap-2 text-base mb-4">
-                    <span className="px-2 py-1 bg-green-500 bg-opacity-20 text-green-400 rounded text-sm">Available</span>
-                    <span className="text-gray-300 text-sm">3 modules</span>
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">Available</span>
+                    <span className="text-gray-600 text-sm">3 modules</span>
                   </div>
-                  <p className="text-base text-gray-300">
+                  <p className="text-base text-gray-700">
                     Master the fundamentals of product management, from strategy to execution.
                   </p>
                 </div>
@@ -396,15 +407,15 @@ const Auth = () => {
                 {/* Course Card 2 - Cyber Security Analyst */}
                 <div
                   onClick={() => setSelectedCourseModal('cyber-security')}
-                  className="bg-black text-white rounded cursor-pointer transition-transform hover:scale-105"
+                  className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
                   style={{ padding: '31px' }}
                 >
                   <h4 className="text-xl font-semibold mb-3">Cyber Security Analyst</h4>
                   <div className="flex items-center gap-2 text-base mb-4">
-                    <span className="px-2 py-1 bg-blue-500 bg-opacity-20 text-blue-400 rounded text-sm">Coming Soon</span>
-                    <span className="text-gray-300 text-sm">Multiple modules</span>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">Coming Soon</span>
+                    <span className="text-gray-600 text-sm">Multiple modules</span>
                   </div>
-                  <p className="text-base text-gray-300">
+                  <p className="text-base text-gray-700">
                     Learn essential cybersecurity skills to protect systems and data from threats.
                   </p>
                 </div>
@@ -413,18 +424,18 @@ const Auth = () => {
           </div>
         </div>
 
-      {/* Third Section - Learning Model */}
+      {/* Fourth Section - Learning Model */}
         <div
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
-            background: 'white',
+            background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-black text-left">
+          <div className="max-w-4xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-black text-left mb-6">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-white text-left mb-6">
                 Building a smarter, more personalised era of education.
               </h3>
 
@@ -435,8 +446,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 0
-                        ? 'bg-pink-50 shadow-xl scale-105 border-2 border-pink-200'
-                        : 'bg-gray-100 border border-gray-300'
+                        ? 'bg-pink-900 bg-opacity-30 shadow-xl scale-105 border-2 border-pink-500'
+                        : 'bg-gray-800 border border-gray-700'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
@@ -446,10 +457,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-lg mb-2 text-white">
                           Hands-on, interactive courses
                         </h4>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-300">
                           Short videos are broken up by interactive exercises. Practice new skills immediately to retain information.
                         </p>
                       </div>
@@ -460,8 +471,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 1
-                        ? 'bg-green-50 shadow-xl scale-105 border-2 border-green-200'
-                        : 'bg-gray-100 border border-gray-300'
+                        ? 'bg-green-900 bg-opacity-30 shadow-xl scale-105 border-2 border-green-500'
+                        : 'bg-gray-800 border border-gray-700'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-4">
@@ -471,14 +482,14 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-lg mb-2 text-white">
                           Real-world projects
                         </h4>
-                        <p className="text-sm mb-4 text-gray-700">
+                        <p className="text-sm mb-4 text-gray-300">
                           Apply your learning in real situations, perfect for developing practical skills and building up your portfolio.
                         </p>
                         {activeCard === 1 && (
-                          <button className="border-2 border-black text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-white transition text-sm">
+                          <button className="border-2 border-white text-white font-semibold px-4 py-2 rounded hover:bg-white hover:text-black transition text-sm">
                             Explore Projects →
                           </button>
                         )}
@@ -490,8 +501,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 2
-                        ? 'bg-purple-50 shadow-xl scale-105 border-2 border-purple-200'
-                        : 'bg-gray-100 border border-gray-300'
+                        ? 'bg-purple-900 bg-opacity-30 shadow-xl scale-105 border-2 border-purple-500'
+                        : 'bg-gray-800 border border-gray-700'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
@@ -501,10 +512,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-lg mb-2 text-white">
                           Become a certified professional
                         </h4>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-sm text-gray-300">
                           Prove you're job-ready. Earn industry-leading certifications built around in-demand roles.
                         </p>
                       </div>
