@@ -350,11 +350,8 @@ const Auth = () => {
               for everyone.
             </h2>
 
-            <div className="mt-8 px-4 text-sm sm:text-base text-black">
-              <p
-                className={animateWords ? 'animate-slideUp' : 'opacity-0'}
-                style={{ animationDelay: '1.2s', animationFillMode: 'forwards' }}
-              >
+            <div className="mt-8 px-4 text-base sm:text-lg text-black">
+              <p>
                 Get career-ready with personalised courses built by industry experts, completely free. We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
               </p>
             </div>
