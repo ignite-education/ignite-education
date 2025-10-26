@@ -341,23 +341,23 @@ const Auth = () => {
               <span className="text-black relative inline-block">
                 accessible
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  style={{ animationDelay: '0.5s', animationFillMode: 'forwards' }}
                 />
               </span>,{' '}
               <span className="text-black relative inline-block">
                 personalised
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  style={{ animationDelay: '1.5s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
               and{' '}
               <span className="text-black relative inline-block">
                 integrated
                 <span
-                  className={animateWords ? 'absolute bottom-0 left-0 h-0.5 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-0.5 bg-pink-500 w-0'}
-                  style={{ animationDelay: '0.9s', animationFillMode: 'forwards' }}
+                  className={animateWords ? 'absolute bottom-0 left-0 h-1 bg-pink-500 animate-expandUnderline' : 'absolute bottom-0 left-0 h-1 bg-pink-500 w-0'}
+                  style={{ animationDelay: '2.5s', animationFillMode: 'forwards' }}
                 />
               </span>{' '}
               for everyone.
@@ -365,7 +365,8 @@ const Auth = () => {
 
             <div className="mt-8 px-4 text-base sm:text-lg text-black">
               <p>
-                Get career-ready with personalised courses built by industry experts, completely free. We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
+                Get career-ready with personalised courses built by industry experts, completely free.<br />
+                We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
               </p>
             </div>
 
@@ -378,27 +379,34 @@ const Auth = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Course Card 1 */}
                 <div
-                  onMouseEnter={() => setHoveredCourseCard(1)}
-                  onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 1 ? null : 1)}
+                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
                     backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 1 ? '500px' : '200px',
-                    transition: 'max-height 0.3s ease-in-out'
+                    maxHeight: hoveredCourseCard === 1 ? '650px' : '260px',
+                    transition: 'max-height 0.3s ease-in-out',
+                    padding: '31px'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Product Management Fundamentals</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Product Management Fundamentals</h4>
+                    <div className="flex-shrink-0 ml-3">
+                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 1 ? 'rotate-45' : ''}`}>
+                        <span className="text-lg font-light leading-none">+</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
                     <span className="px-2 py-1 bg-gray-200 rounded">Basic</span>
                     <span>8 hrs</span>
                   </div>
-                  <p className="text-sm mb-4 text-gray-700">
+                  <p className="text-base mb-5 text-gray-700">
                     Master the fundamentals of product management, from strategy to execution.
                   </p>
                   {hoveredCourseCard === 1 && (
-                    <div className="mt-4 border-t border-gray-300 pt-4">
-                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                    <div className="mt-5 border-t border-gray-300 pt-5">
+                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
+                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
                         <li>15 comprehensive lessons</li>
                         <li>Hands-on projects</li>
                         <li>Industry expert instructors</li>
@@ -410,27 +418,34 @@ const Auth = () => {
 
                 {/* Course Card 2 */}
                 <div
-                  onMouseEnter={() => setHoveredCourseCard(2)}
-                  onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 2 ? null : 2)}
+                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
                     backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 2 ? '500px' : '200px',
-                    transition: 'max-height 0.3s ease-in-out'
+                    maxHeight: hoveredCourseCard === 2 ? '650px' : '260px',
+                    transition: 'max-height 0.3s ease-in-out',
+                    padding: '31px'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Data-Driven Decision Making</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Data-Driven Decision Making</h4>
+                    <div className="flex-shrink-0 ml-3">
+                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 2 ? 'rotate-45' : ''}`}>
+                        <span className="text-lg font-light leading-none">+</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
                     <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
                     <span>6 hrs</span>
                   </div>
-                  <p className="text-sm mb-4 text-gray-700">
+                  <p className="text-base mb-5 text-gray-700">
                     Learn how to leverage data and analytics to drive product decisions.
                   </p>
                   {hoveredCourseCard === 2 && (
-                    <div className="mt-4 border-t border-gray-300 pt-4">
-                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                    <div className="mt-5 border-t border-gray-300 pt-5">
+                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
+                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
                         <li>12 in-depth lessons</li>
                         <li>Real-world data analysis</li>
                         <li>Analytics tools training</li>
@@ -442,27 +457,34 @@ const Auth = () => {
 
                 {/* Course Card 3 */}
                 <div
-                  onMouseEnter={() => setHoveredCourseCard(3)}
-                  onMouseLeave={() => setHoveredCourseCard(null)}
-                  className="rounded-lg p-6 shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+                  onClick={() => setHoveredCourseCard(hoveredCourseCard === 3 ? null : 3)}
+                  className="rounded transition-all duration-300 cursor-pointer overflow-hidden"
                   style={{
                     backgroundColor: '#f0f0f0',
-                    maxHeight: hoveredCourseCard === 3 ? '500px' : '200px',
-                    transition: 'max-height 0.3s ease-in-out'
+                    maxHeight: hoveredCourseCard === 3 ? '650px' : '260px',
+                    transition: 'max-height 0.3s ease-in-out',
+                    padding: '31px'
                   }}
                 >
-                  <h4 className="text-lg font-semibold mb-2 text-pink-500">Agile Product Development</h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                  <div className="flex items-start justify-between mb-3">
+                    <h4 className="text-xl font-semibold text-pink-500 flex-1">Agile Product Development</h4>
+                    <div className="flex-shrink-0 ml-3">
+                      <div className={`w-6 h-6 flex items-center justify-center rounded-full border-2 border-pink-500 text-pink-500 transition-transform duration-300 ${hoveredCourseCard === 3 ? 'rotate-45' : ''}`}>
+                        <span className="text-lg font-light leading-none">+</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 text-base text-gray-600 mb-4">
                     <span className="px-2 py-1 bg-gray-200 rounded">Intermediate</span>
                     <span>5 hrs</span>
                   </div>
-                  <p className="text-sm mb-4 text-gray-700">
+                  <p className="text-base mb-5 text-gray-700">
                     Build products iteratively using agile methodologies and best practices.
                   </p>
                   {hoveredCourseCard === 3 && (
-                    <div className="mt-4 border-t border-gray-300 pt-4">
-                      <h5 className="font-semibold mb-2 text-gray-900">Course Details:</h5>
-                      <ul className="text-sm space-y-1 list-disc list-inside text-gray-700">
+                    <div className="mt-5 border-t border-gray-300 pt-5">
+                      <h5 className="font-semibold mb-3 text-gray-900">Course Details:</h5>
+                      <ul className="text-base space-y-2 list-disc list-inside text-gray-700">
                         <li>10 practical lessons</li>
                         <li>Agile framework mastery</li>
                         <li>Sprint planning workshops</li>
