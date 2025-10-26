@@ -67,15 +67,18 @@ const Auth = () => {
     const fullText = 'Education should be accessible, personalised and integrated for everyone.';
     let currentIndex = 0;
 
-    const typingInterval = setInterval(() => {
-      if (currentIndex <= fullText.length) {
-        setTypedEducationText(fullText.substring(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(typingInterval);
-        setIsEducationTypingComplete(true);
-      }
-    }, 40); // 40ms per character for smooth typing
+    // Add delay before starting typing
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedEducationText(fullText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsEducationTypingComplete(true);
+        }
+      }, 60); // 60ms per character for slower typing
+    }, 500); // 500ms delay before starting
   };
 
   // Helper to render typed text with pink highlights for key words
@@ -101,14 +104,8 @@ const Auth = () => {
         const wordEndIndex = index + word.length;
         const typedWordPart = text.substring(index, Math.min(wordEndIndex, text.length));
         result.push(
-          <span key={word} className="text-pink-500 relative inline-block">
+          <span key={word} className="text-pink-500">
             {typedWordPart}
-            {isEducationTypingComplete && typedWordPart === word && (
-              <span
-                className="absolute left-0 h-1.5 bg-pink-500 animate-expandUnderline"
-                style={{ bottom: '2px' }}
-              />
-            )}
           </span>
         );
 
@@ -407,13 +404,6 @@ const Auth = () => {
             <h2 className="text-5xl font-bold px-4 leading-tight min-h-[120px]">
               {renderTypedEducation()}
             </h2>
-
-            <div className="mt-8 px-4 text-base sm:text-lg text-gray-300 max-w-3xl">
-              <p>
-                Get career-ready with personalised courses built by industry experts, completely free.<br />
-                We work backwards from what employers actually need, creating comprehensive curricula designed for learners of all backgrounds. No experience required, no tuition fees, just relevant skills that open doors.
-              </p>
-            </div>
           </div>
         </div>
 
