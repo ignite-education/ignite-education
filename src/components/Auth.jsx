@@ -605,7 +605,7 @@ const Auth = () => {
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="w-full" style={{ minHeight: '280px', marginTop: '19.2px' }}>
+              <div className="w-full" style={{ minHeight: '280px', marginTop: '13.44px' }}>
                 <div className="space-y-3 text-left">
                   {isEducationTypingComplete && (
                     <>
@@ -709,7 +709,7 @@ const Auth = () => {
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:scale-110 hover:shadow-2xl"
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:scale-106 hover:shadow-2xl"
                         style={{ padding: '16px' }}
                       >
                         <div>
