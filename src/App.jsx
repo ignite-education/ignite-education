@@ -7,6 +7,7 @@ import AuthDesign from './components/AuthDesign'
 import ProtectedRoute from './components/ProtectedRoute'
 import CurriculumUploadNew from './pages/CurriculumUploadNew'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
+import CoursesDashboard from './pages/CoursesDashboard'
 import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
@@ -39,6 +40,11 @@ function App() {
           <Route path="/admin/analytics" element={
             <ProtectedRoute>
               <AnalyticsDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/courses" element={
+            <ProtectedRoute>
+              <CoursesDashboard />
             </ProtectedRoute>
           } />
           <Route path="/auth/reddit/callback" element={<RedditCallback />} />

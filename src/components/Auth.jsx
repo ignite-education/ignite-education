@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 const ProgressHub = lazy(() => import('./ProgressHub'));
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -24,6 +25,7 @@ const Auth = () => {
   const coursesSectionRef = useRef(null);
   const learningModelSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
+  const [courses, setCourses] = useState([]);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -64,6 +66,25 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateWords]);
+
+  // Fetch courses from Supabase
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        setCourses(data || []);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -542,55 +563,40 @@ const Auth = () => {
               {/* Right Column - 2x2 Course Grid with Navigation */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-2 gap-4 flex-1">
-                  {/* Course Card 1 - Product Manager */}
-                  <div
-                    onClick={() => setSelectedCourseModal('product-manager')}
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
-                    style={{ padding: '32px' }}
-                  >
-                    <div>
-                      <h4 className="text-xl font-semibold mb-2">Product Manager</h4>
-                      <p className="text-sm text-gray-600 mb-2">3 modules</p>
-                    </div>
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>
-                  </div>
+                  {courses.slice(0, 4).map((course) => {
+                    const getStatusBadge = (status) => {
+                      if (status === 'live') {
+                        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>;
+                      } else if (status === 'coming_soon') {
+                        return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>;
+                      } else {
+                        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs inline-block self-start">Requested</span>;
+                      }
+                    };
 
-                  {/* Course Card 2 - Cyber Security Analyst */}
-                  <div
-                    onClick={() => setSelectedCourseModal('cyber-security')}
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
-                    style={{ padding: '32px' }}
-                  >
-                    <div>
-                      <h4 className="text-xl font-semibold mb-2">Cyber Security Analyst</h4>
-                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
-                    </div>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
-                  </div>
+                    const getModulesText = (modules) => {
+                      if (!modules) return '';
+                      if (modules.toLowerCase() === 'multiple') return 'Multiple modules';
+                      return `${modules} modules`;
+                    };
 
-                  {/* Course Card 3 - Data Analyst */}
-                  <div
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
-                    style={{ padding: '32px' }}
-                  >
-                    <div>
-                      <h4 className="text-xl font-semibold mb-2">Data Analyst</h4>
-                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
-                    </div>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
-                  </div>
-
-                  {/* Course Card 4 - UX Designer */}
-                  <div
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
-                    style={{ padding: '32px' }}
-                  >
-                    <div>
-                      <h4 className="text-xl font-semibold mb-2">UX Designer</h4>
-                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
-                    </div>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
-                  </div>
+                    return (
+                      <div
+                        key={course.id}
+                        onClick={() => course.status === 'live' && setSelectedCourseModal(course.id)}
+                        className={`bg-white text-black rounded transition-transform aspect-square flex flex-col justify-between ${
+                          course.status === 'live' ? 'cursor-pointer hover:scale-105' : 'cursor-default'
+                        }`}
+                        style={{ padding: '32px' }}
+                      >
+                        <div>
+                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
+                          <p className="text-sm text-gray-600 mb-2">{getModulesText(course.modules)}</p>
+                        </div>
+                        {getStatusBadge(course.status)}
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Navigation Arrow */}
@@ -802,10 +808,16 @@ const Auth = () => {
         onClick={() => setSelectedCourseModal(null)}
       >
         <div className="relative">
-          {/* Title above the box */}
-          <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-            {selectedCourseModal === 'product-manager' ? 'Product Manager' : 'Cyber Security Analyst'}
-          </h2>
+          {(() => {
+            const selectedCourse = courses.find(c => c.id === selectedCourseModal);
+            if (!selectedCourse) return null;
+
+            return (
+              <>
+                {/* Title above the box */}
+                <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+                  {selectedCourse.title}
+                </h2>
 
           <div
             className="bg-white relative flex flex-col"
@@ -830,108 +842,57 @@ const Auth = () => {
               className="flex-1 overflow-y-auto px-8 py-8"
               style={{ scrollbarWidth: 'thin' }}
             >
-              {selectedCourseModal === 'product-manager' ? (
-                <div>
-                  <div className="mb-6">
+              <div>
+                <div className="mb-6">
+                  {selectedCourse.status === 'live' && (
                     <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">Available Now</span>
-                  </div>
-
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
-                  <p className="text-gray-700 mb-6 leading-relaxed">
-                    Master the fundamentals of product management, from strategy to execution. This comprehensive course is designed for complete beginners and will take you through everything you need to know to start your career as a Product Manager.
-                  </p>
-
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">What You'll Learn</h3>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Complete beginner-friendly curriculum covering all PM fundamentals</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Real-world case studies from leading tech companies</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Interactive exercises and hands-on projects</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Product strategy, roadmapping, and prioritization</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Working with engineering, design, and stakeholders</span>
-                    </li>
-                  </ul>
-
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
-                  <div className="space-y-2 mb-6">
-                    <p className="text-gray-700"><strong>3 comprehensive modules</strong></p>
-                    <p className="text-gray-700">Taught by industry expert instructors</p>
-                    <p className="text-gray-700">Certificate upon completion</p>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedCourseModal(null)}
-                    className="w-full bg-pink-500 text-white font-semibold py-3 rounded-lg hover:bg-pink-600 transition"
-                  >
-                    Get Started
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="mb-6">
+                  )}
+                  {selectedCourse.status === 'coming_soon' && (
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">Coming Soon</span>
-                  </div>
-
-                  <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
-                  <p className="text-gray-700 mb-6 leading-relaxed">
-                    Learn essential cybersecurity skills to protect systems and data from threats. This comprehensive course will prepare you for a career as a Cyber Security Analyst with hands-on training in threat detection, security analysis, and incident response.
-                  </p>
-
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">What You'll Learn</h3>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Comprehensive security fundamentals and best practices</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Threat detection, analysis, and incident response</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Hands-on labs with real security scenarios</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Industry-standard tools and technologies</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-pink-500 mr-2 mt-1">•</span>
-                      <span className="text-gray-700">Network security and vulnerability assessment</span>
-                    </li>
-                  </ul>
-
-                  <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
-                  <div className="space-y-2 mb-6">
-                    <p className="text-gray-700"><strong>Multiple comprehensive modules</strong></p>
-                    <p className="text-gray-700">Taught by cybersecurity professionals</p>
-                    <p className="text-gray-700">Certificate upon completion</p>
-                  </div>
-
-                  <button
-                    onClick={() => setSelectedCourseModal(null)}
-                    className="w-full bg-gray-400 text-white font-semibold py-3 rounded-lg cursor-not-allowed"
-                    disabled
-                  >
-                    Notify Me When Available
-                  </button>
+                  )}
+                  {selectedCourse.status === 'requested' && (
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">Requested</span>
+                  )}
                 </div>
-              )}
+
+                <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
+                <p className="text-gray-700 mb-6 leading-relaxed">
+                  {selectedCourse.description}
+                </p>
+
+                <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                <div className="space-y-2 mb-6">
+                  <p className="text-gray-700">
+                    <strong>
+                      {selectedCourse.modules && selectedCourse.modules.toLowerCase() === 'multiple'
+                        ? 'Multiple comprehensive modules'
+                        : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
+                    </strong>
+                  </p>
+                  {selectedCourse.lessons > 0 && (
+                    <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
+                  )}
+                  <p className="text-gray-700">Taught by industry expert instructors</p>
+                  <p className="text-gray-700">Certificate upon completion</p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedCourseModal(null)}
+                  className={`w-full font-semibold py-3 rounded-lg transition ${
+                    selectedCourse.status === 'live'
+                      ? 'bg-pink-500 text-white hover:bg-pink-600'
+                      : 'bg-gray-400 text-white cursor-not-allowed'
+                  }`}
+                  disabled={selectedCourse.status !== 'live'}
+                >
+                  {selectedCourse.status === 'live' ? 'Get Started' : 'Notify Me When Available'}
+                </button>
+              </div>
             </div>
           </div>
+              </>
+            );
+          })()}
         </div>
       </div>
     )}
