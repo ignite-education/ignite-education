@@ -700,11 +700,9 @@ const Auth = () => {
                     return (
                       <div
                         key={course.id}
-                        onClick={() => course.status === 'live' && setSelectedCourseModal(course.id)}
-                        className={`bg-white text-black rounded transition-transform aspect-square flex flex-col justify-between ${
-                          course.status === 'live' ? 'cursor-pointer hover:scale-105' : 'cursor-default'
-                        }`}
-                        style={{ padding: '32px' }}
+                        onClick={() => setSelectedCourseModal(course.id)}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-between cursor-pointer hover:scale-110 hover:shadow-2xl"
+                        style={{ padding: '16px' }}
                       >
                         <div>
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
