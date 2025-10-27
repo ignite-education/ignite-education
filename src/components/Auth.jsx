@@ -79,9 +79,11 @@ const Auth = () => {
           .order('display_order', { ascending: true });
 
         if (error) throw error;
+        console.log('Fetched courses:', data);
         setCourses(data || []);
       } catch (error) {
         console.error('Error fetching courses:', error);
+        console.error('Full error details:', error);
       }
     };
 
@@ -161,7 +163,7 @@ const Auth = () => {
           setIsCourseTitleTypingComplete(true);
         }
       }, 75); // 75ms per character
-    }, 500); // 500ms delay before starting
+    }, 1000); // 1000ms delay before starting
   };
 
   // Helper to render typed text with pink highlights for key words
@@ -603,7 +605,7 @@ const Auth = () => {
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="mt-8 w-full" style={{ minHeight: '280px' }}>
+              <div className="w-full" style={{ minHeight: '280px', marginTop: '19.2px' }}>
                 <div className="space-y-3 text-left">
                   {isEducationTypingComplete && (
                     <>
@@ -679,7 +681,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center px-12">
-                <h3 className="text-4xl font-bold text-white mb-6" style={{ minHeight: '140px' }}>
+                <h3 className="text-4xl font-bold text-white mb-3" style={{ minHeight: '140px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
