@@ -441,63 +441,61 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white">
-            <div className="px-4 flex flex-col items-center justify-center" style={{ marginTop: '180px' }}>
-              <div style={{ minHeight: '380px' }} className="flex flex-col items-start justify-start w-full max-w-3xl">
-                <h2 className="text-5xl font-bold leading-tight text-left w-full" style={{ minHeight: '140px' }}>
-                  {renderTypedEducation()}
-                </h2>
+          <div className="max-w-4xl w-full text-white flex flex-col items-center justify-center flex-1">
+            <div className="w-full max-w-3xl px-4">
+              <h2 className="text-5xl font-bold leading-tight text-left w-full" style={{ minHeight: '140px' }}>
+                {renderTypedEducation()}
+              </h2>
 
-                {/* Feature bullets - fade in after typing completes - reserve space */}
-                <div className="mt-8 w-full max-w-3xl" style={{ minHeight: '280px' }}>
-                  <div className="space-y-3 text-left">
-                    {isEducationTypingComplete && (
-                      <>
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                          <div className="leading-snug font-light">
-                            <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
-                            <div className="text-base text-white">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
-                          </div>
+              {/* Feature bullets - fade in after typing completes - reserve space */}
+              <div className="mt-8 w-full" style={{ minHeight: '280px' }}>
+                <div className="space-y-3 text-left">
+                  {isEducationTypingComplete && (
+                    <>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
+                          <div className="text-base text-white">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
+                        </div>
+                      </div>
 
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                          <div className="leading-snug font-light">
-                            <div className="text-lg font-semibold text-white">Ignite is Free</div>
-                            <div className="text-base text-white">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
-                          </div>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">Ignite is Free</div>
+                          <div className="text-base text-white">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
+                        </div>
+                      </div>
 
-                        <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
-                          <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                            <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                          <div className="leading-snug font-light">
-                            <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
-                            <div className="text-base text-white">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
-                          </div>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.2s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
                         </div>
-                      </>
-                    )}
-                  </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
+                          <div className="text-base text-white">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           {/* Scroll Down Arrow */}
-          <div className="flex justify-center mt-auto mb-8">
+          <div className="flex justify-center mb-8">
             <button
               onClick={scrollToCourses}
               className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
