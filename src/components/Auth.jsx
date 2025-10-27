@@ -436,14 +436,14 @@ const Auth = () => {
       {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white flex flex-col items-center justify-center flex-1">
-            <div className="w-full max-w-3xl px-4">
+          <div className="max-w-4xl w-full text-white">
+            <div className="w-full max-w-3xl mx-auto px-4">
               <h2 className="text-5xl font-bold leading-tight text-left w-full" style={{ minHeight: '140px' }}>
                 {renderTypedEducation()}
               </h2>
@@ -495,8 +495,8 @@ const Auth = () => {
             </div>
           </div>
 
-          {/* Scroll Down Arrow */}
-          <div className="flex justify-center mb-8">
+          {/* Scroll Down Arrow - Absolutely positioned */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={scrollToCourses}
               className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
