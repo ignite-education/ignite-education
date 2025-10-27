@@ -563,7 +563,7 @@ const Auth = () => {
               {/* Right Column - 2x2 Course Grid with Navigation */}
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-2 gap-4 flex-1">
-                  {courses.slice(0, 4).map((course) => {
+                  {courses.length > 0 ? courses.slice(0, 4).map((course) => {
                     const getStatusBadge = (status) => {
                       if (status === 'live') {
                         return <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>;
@@ -596,7 +596,17 @@ const Auth = () => {
                         {getStatusBadge(course.status)}
                       </div>
                     );
-                  })}
+                  }) : (
+                    // Placeholder when no courses
+                    <>
+                      <div className="bg-white/10 text-white rounded aspect-square flex items-center justify-center" style={{ padding: '32px' }}>
+                        <p className="text-sm">Loading courses...</p>
+                      </div>
+                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
+                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
+                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
+                    </>
+                  )}
                 </div>
 
                 {/* Navigation Arrow */}
@@ -799,7 +809,7 @@ const Auth = () => {
     </div>
 
     {/* Course Details Modal */}
-    {selectedCourseModal && (
+    {selectedCourseModal && courses.find(c => c.id === selectedCourseModal) && (
       <div
         className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
         style={{
