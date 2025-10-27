@@ -726,10 +726,10 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center px-12">
-                <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '3.6px' }}>
+                <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '0px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
-                <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
+                <p className="text-lg text-white leading-relaxed mb-6 max-w-md" style={{ marginTop: '0px' }}>
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
                 <img
@@ -808,7 +808,10 @@ const Auth = () => {
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="text-2xl sm:text-3xl font-semibold text-white text-left mb-6">
-                Building a smarter, more personalised era of education.
+                {typedLearningTagline}
+                {!isLearningTaglineTypingComplete && (
+                  <span className="animate-blink font-bold">|</span>
+                )}
               </h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -818,8 +821,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 0
-                        ? 'bg-pink-900 bg-opacity-30 shadow-xl scale-105 border-2 border-pink-500'
-                        : 'bg-gray-800 border border-gray-700'
+                        ? 'bg-white shadow-xl scale-105 border-2 border-pink-500'
+                        : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
@@ -829,10 +832,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-white">
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Hands-on, interactive courses
                         </h4>
-                        <p className="text-sm text-gray-300">
+                        <p className="text-sm text-gray-700">
                           Short videos are broken up by interactive exercises. Practice new skills immediately to retain information.
                         </p>
                       </div>
@@ -843,8 +846,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 1
-                        ? 'bg-green-900 bg-opacity-30 shadow-xl scale-105 border-2 border-green-500'
-                        : 'bg-gray-800 border border-gray-700'
+                        ? 'bg-white shadow-xl scale-105 border-2 border-green-500'
+                        : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-4">
@@ -854,14 +857,14 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-white">
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Real-world projects
                         </h4>
-                        <p className="text-sm mb-4 text-gray-300">
+                        <p className="text-sm mb-4 text-gray-700">
                           Apply your learning in real situations, perfect for developing practical skills and building up your portfolio.
                         </p>
                         {activeCard === 1 && (
-                          <button className="border-2 border-white text-white font-semibold px-4 py-2 rounded hover:bg-white hover:text-black transition text-sm">
+                          <button className="border-2 border-black text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-white transition text-sm">
                             Explore Projects →
                           </button>
                         )}
@@ -873,8 +876,8 @@ const Auth = () => {
                   <div
                     className={`rounded-lg p-6 transition-all duration-500 ${
                       activeCard === 2
-                        ? 'bg-purple-900 bg-opacity-30 shadow-xl scale-105 border-2 border-purple-500'
-                        : 'bg-gray-800 border border-gray-700'
+                        ? 'bg-white shadow-xl scale-105 border-2 border-purple-500'
+                        : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
                     <div className="flex items-start gap-3 mb-3">
@@ -884,10 +887,10 @@ const Auth = () => {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-white">
+                        <h4 className="font-semibold text-lg mb-2 text-black">
                           Become a certified professional
                         </h4>
-                        <p className="text-sm text-gray-300">
+                        <p className="text-sm text-gray-700">
                           Prove you're job-ready. Earn industry-leading certifications built around in-demand roles.
                         </p>
                       </div>
