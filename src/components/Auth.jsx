@@ -192,7 +192,7 @@ const Auth = () => {
         if (currentPos < lastIndex || !result.length || result[result.length - 1].key !== inPinkWord.word) {
           const pinkChunk = text.substring(i, Math.min(text.length, inPinkWord.end));
           result.push(
-            <span key={`${inPinkWord.word}-${i}`} className="text-pink-500">
+            <span key={`${inPinkWord.word}-${i}`} className="text-pink-500" style={{ display: 'inline', whiteSpace: 'nowrap' }}>
               {pinkChunk}
             </span>
           );
@@ -211,7 +211,7 @@ const Auth = () => {
         const chunk = text.substring(i, Math.min(nextPinkStart, text.length));
         if (chunk) {
           result.push(
-            <span key={`text-${i}`} className="text-white">
+            <span key={`text-${i}`} className="text-white" style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
               {chunk}
             </span>
           );
@@ -596,8 +596,10 @@ const Auth = () => {
         >
           <div className="max-w-4xl w-full text-white">
             <div className="w-full max-w-3xl mx-auto px-4">
-              <h2 className="text-5xl font-bold leading-tight text-left w-full" style={{ minHeight: '140px' }}>
-                {renderTypedEducation()}
+              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block" style={{ minHeight: '240px' }}>
+                <span style={{ display: 'inline', whiteSpace: 'normal' }}>
+                  {renderTypedEducation()}
+                </span>
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
