@@ -28,6 +28,8 @@ const Auth = () => {
   const [courses, setCourses] = useState([]);
   const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
+  const [typedLearningTagline, setTypedLearningTagline] = useState('');
+  const [isLearningTaglineTypingComplete, setIsLearningTaglineTypingComplete] = useState(false);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -114,6 +116,30 @@ const Auth = () => {
     };
   }, [isLogin, isCourseTitleTypingComplete]);
 
+  // Intersection observer for learning model section typing animation
+  useEffect(() => {
+    if (!learningModelSectionRef.current || isLogin) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isLearningTaglineTypingComplete) {
+            startLearningTaglineTyping();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(learningModelSectionRef.current);
+
+    return () => {
+      if (learningModelSectionRef.current) {
+        observer.unobserve(learningModelSectionRef.current);
+      }
+    };
+  }, [isLogin, isLearningTaglineTypingComplete]);
+
   // Typing animation for education text
   const startEducationTyping = () => {
     const fullText = 'Education should be accessible, personalised and integrated for everyone.';
@@ -161,6 +187,25 @@ const Auth = () => {
         } else {
           clearInterval(typingInterval);
           setIsCourseTitleTypingComplete(true);
+        }
+      }, 75); // 75ms per character
+    }, 1000); // 1000ms delay before starting
+  };
+
+  // Typing animation for learning tagline
+  const startLearningTaglineTyping = () => {
+    const fullText = 'Building a smarter, more personalised era of education.';
+    let currentIndex = 0;
+
+    // Add delay before starting typing
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedLearningTagline(fullText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsLearningTaglineTypingComplete(true);
         }
       }, 75); // 75ms per character
     }, 1000); // 1000ms delay before starting
