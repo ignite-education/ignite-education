@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import { Edit2, Plus, Save, X, Trash2 } from 'lucide-react';
+import { Plus, X, Trash2 } from 'lucide-react';
 
 const CoursesDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({});
   const [filter, setFilter] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
   const [newCourse, setNewCourse] = useState({
@@ -37,35 +35,25 @@ const CoursesDashboard = () => {
     }
   };
 
-  const handleEdit = (course) => {
-    setEditingId(course.id);
-    setEditForm({
-      title: course.title,
-      status: course.status,
-      modules: course.modules,
-      lessons: course.lessons,
-      description: course.description
-    });
-  };
-
-  const handleSave = async (id) => {
+  const handleStatusChange = async (courseId, newStatus) => {
     try {
       const { error } = await supabase
         .from('courses')
         .update({
-          ...editForm,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
-        .eq('id', id);
+        .eq('id', courseId);
 
       if (error) throw error;
 
-      setCourses(courses.map(c => c.id === id ? { ...c, ...editForm } : c));
-      setEditingId(null);
-      setEditForm({});
+      // Update local state
+      setCourses(courses.map(c =>
+        c.id === courseId ? { ...c, status: newStatus } : c
+      ));
     } catch (error) {
-      console.error('Error updating course:', error);
-      alert('Failed to update course');
+      console.error('Error updating course status:', error);
+      alert('Failed to update course status');
     }
   };
 
@@ -88,11 +76,21 @@ const CoursesDashboard = () => {
   };
 
   const handleAdd = async () => {
+    if (!newCourse.title.trim()) {
+      alert('Please enter a course title');
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('courses')
         .insert([{
-          ...newCourse,
+          title: newCourse.title,
+          name: newCourse.title, // Also set name for compatibility
+          status: newCourse.status,
+          modules: newCourse.modules,
+          lessons: newCourse.lessons,
+          description: newCourse.description,
           display_order: courses.length + 1
         }])
         .select();
@@ -110,48 +108,111 @@ const CoursesDashboard = () => {
       });
     } catch (error) {
       console.error('Error adding course:', error);
-      alert('Failed to add course');
+      alert('Failed to add course: ' + error.message);
     }
   };
 
-  const filteredCourses = filter === 'all'
-    ? courses
-    : courses.filter(c => c.status === filter);
+  const getFilteredCourses = () => {
+    const liveCourses = courses.filter(c => c.status === 'live');
+    const comingSoonCourses = courses.filter(c => c.status === 'coming_soon');
+    const requestedCourses = courses.filter(c => c.status === 'requested');
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      live: 'bg-green-100 text-green-700',
-      coming_soon: 'bg-blue-100 text-blue-700',
-      requested: 'bg-gray-100 text-gray-700'
+    return { liveCourses, comingSoonCourses, requestedCourses };
+  };
+
+  const getStatusBadgeClasses = (status) => {
+    const classes = {
+      live: 'bg-green-100 text-green-700 hover:bg-green-200',
+      coming_soon: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
+      requested: 'bg-gray-100 text-gray-600 hover:bg-gray-200'
     };
+    return classes[status] || classes.requested;
+  };
+
+  const getStatusLabel = (status) => {
     const labels = {
-      live: 'Live',
+      live: 'Available',
       coming_soon: 'Coming Soon',
       requested: 'Requested'
     };
+    return labels[status] || 'Requested';
+  };
+
+  const StatusBadge = ({ course }) => {
+    const [showDropdown, setShowDropdown] = useState(false);
+
     return (
-      <span className={`px-2 py-1 rounded text-xs font-medium ${styles[status]}`}>
-        {labels[status]}
-      </span>
+      <div className="relative">
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className={`text-xs px-3 py-1.5 rounded-full font-medium transition cursor-pointer ${getStatusBadgeClasses(course.status)}`}
+        >
+          {getStatusLabel(course.status)}
+        </button>
+
+        {showDropdown && (
+          <>
+            <div
+              className="fixed inset-0 z-10"
+              onClick={() => setShowDropdown(false)}
+            />
+            <div className="absolute right-0 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20 min-w-[140px]">
+              <button
+                onClick={() => {
+                  handleStatusChange(course.id, 'live');
+                  setShowDropdown(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span className="w-3 h-3 rounded-full bg-green-500"></span>
+                Available
+              </button>
+              <button
+                onClick={() => {
+                  handleStatusChange(course.id, 'coming_soon');
+                  setShowDropdown(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                Coming Soon
+              </button>
+              <button
+                onClick={() => {
+                  handleStatusChange(course.id, 'requested');
+                  setShowDropdown(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span className="w-3 h-3 rounded-full bg-gray-500"></span>
+                Requested
+              </button>
+            </div>
+          </>
+        )}
+      </div>
     );
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-lg">Loading courses...</div>
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="text-lg text-white">Loading courses...</div>
       </div>
     );
   }
 
+  const { liveCourses, comingSoonCourses, requestedCourses } = getFilteredCourses();
+
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Courses Dashboard</h1>
+    <div className="min-h-screen bg-black text-white p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl font-bold">Courses Dashboard</h1>
           <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
+            className="flex items-center gap-2 bg-pink-500 text-white px-5 py-2.5 rounded-xl hover:bg-pink-600 transition"
           >
             <Plus size={20} />
             Add Course
@@ -159,88 +220,219 @@ const CoursesDashboard = () => {
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-3 mb-8">
           {['all', 'live', 'coming_soon', 'requested'].map((filterOption) => (
             <button
               key={filterOption}
               onClick={() => setFilter(filterOption)}
-              className={`px-4 py-2 rounded-lg font-medium transition ${
+              className={`px-5 py-2 rounded-xl font-medium transition ${
                 filter === filterOption
                   ? 'bg-pink-500 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              {filterOption === 'all' ? 'All' : filterOption === 'coming_soon' ? 'Coming Soon' : filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
+              {filterOption === 'all'
+                ? 'All'
+                : filterOption === 'coming_soon'
+                  ? 'Coming Soon'
+                  : filterOption.charAt(0).toUpperCase() + filterOption.slice(1)}
             </button>
           ))}
         </div>
 
+        {/* Courses List */}
+        <div className="space-y-8">
+          {(filter === 'all' || filter === 'live') && liveCourses.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Available Courses
+              </h2>
+              <div className="space-y-2">
+                {liveCourses.map((course) => (
+                  <div
+                    key={course.id}
+                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
+                      <p className="text-sm text-gray-400">
+                        {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
+                        {course.lessons > 0 && ` • ${course.lessons} lessons`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge course={course} />
+                      <button
+                        onClick={() => handleDelete(course.id)}
+                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(filter === 'all' || filter === 'coming_soon') && comingSoonCourses.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Coming Soon
+              </h2>
+              <div className="space-y-2">
+                {comingSoonCourses.map((course) => (
+                  <div
+                    key={course.id}
+                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
+                      <p className="text-sm text-gray-400">
+                        {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
+                        {course.lessons > 0 && ` • ${course.lessons} lessons`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge course={course} />
+                      <button
+                        onClick={() => handleDelete(course.id)}
+                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {(filter === 'all' || filter === 'requested') && requestedCourses.length > 0 && (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
+                Requested Courses
+              </h2>
+              <div className="space-y-2">
+                {requestedCourses.map((course) => (
+                  <div
+                    key={course.id}
+                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
+                  >
+                    <div className="flex-1">
+                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
+                      <p className="text-sm text-gray-400">
+                        {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
+                        {course.lessons > 0 && ` • ${course.lessons} lessons`}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <StatusBadge course={course} />
+                      <button
+                        onClick={() => handleDelete(course.id)}
+                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {courses.length === 0 && (
+            <div className="text-center py-12 text-gray-400">
+              No courses found. Add your first course to get started!
+            </div>
+          )}
+        </div>
+
         {/* Add Course Modal */}
         {isAdding && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
-              <h2 className="text-2xl font-bold mb-4">Add New Course</h2>
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+            <div className="bg-white text-black rounded-xl p-6 w-full max-w-2xl">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Add New Course</h2>
+                <button
+                  onClick={() => setIsAdding(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Title</label>
+                  <label className="block text-sm font-medium mb-2">Course Title</label>
                   <input
                     type="text"
                     value={newCourse.title}
                     onChange={(e) => setNewCourse({ ...newCourse, title: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    placeholder="e.g., Product Manager"
                   />
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <label className="block text-sm font-medium mb-2">Status</label>
                   <select
                     value={newCourse.status}
                     onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
                   >
-                    <option value="live">Live</option>
+                    <option value="live">Available</option>
                     <option value="coming_soon">Coming Soon</option>
                     <option value="requested">Requested</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Modules</label>
-                  <input
-                    type="text"
-                    value={newCourse.modules}
-                    onChange={(e) => setNewCourse({ ...newCourse, modules: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                    placeholder="e.g., 3 or Multiple"
-                  />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Modules</label>
+                    <input
+                      type="text"
+                      value={newCourse.modules}
+                      onChange={(e) => setNewCourse({ ...newCourse, modules: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="e.g., 3 or Multiple"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Lessons</label>
+                    <input
+                      type="number"
+                      value={newCourse.lessons}
+                      onChange={(e) => setNewCourse({ ...newCourse, lessons: parseInt(e.target.value) || 0 })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                      placeholder="0"
+                    />
+                  </div>
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Lessons</label>
-                  <input
-                    type="number"
-                    value={newCourse.lessons}
-                    onChange={(e) => setNewCourse({ ...newCourse, lessons: parseInt(e.target.value) || 0 })}
-                    className="w-full border rounded-lg px-3 py-2"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-2">Description</label>
                   <textarea
                     value={newCourse.description}
                     onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
-                    className="w-full border rounded-lg px-3 py-2"
-                    rows={3}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    rows={4}
+                    placeholder="Brief description of the course..."
                   />
                 </div>
               </div>
-              <div className="flex gap-2 mt-6">
+
+              <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleAdd}
-                  className="flex-1 bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition"
+                  className="flex-1 bg-pink-500 text-white px-4 py-2.5 rounded-lg hover:bg-pink-600 transition font-medium"
                 >
                   Add Course
                 </button>
                 <button
                   onClick={() => setIsAdding(false)}
-                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition"
+                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2.5 rounded-lg hover:bg-gray-300 transition font-medium"
                 >
                   Cancel
                 </button>
@@ -248,126 +440,6 @@ const CoursesDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Courses Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modules</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lessons</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredCourses.map((course) => (
-                <tr key={course.id} className="hover:bg-gray-50">
-                  {editingId === course.id ? (
-                    // Edit Mode
-                    <>
-                      <td className="px-6 py-4">
-                        <input
-                          type="text"
-                          value={editForm.title}
-                          onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                          className="w-full border rounded px-2 py-1"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={editForm.status}
-                          onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                          className="w-full border rounded px-2 py-1"
-                        >
-                          <option value="live">Live</option>
-                          <option value="coming_soon">Coming Soon</option>
-                          <option value="requested">Requested</option>
-                        </select>
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          type="text"
-                          value={editForm.modules}
-                          onChange={(e) => setEditForm({ ...editForm, modules: e.target.value })}
-                          className="w-full border rounded px-2 py-1"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <input
-                          type="number"
-                          value={editForm.lessons}
-                          onChange={(e) => setEditForm({ ...editForm, lessons: parseInt(e.target.value) || 0 })}
-                          className="w-full border rounded px-2 py-1"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <textarea
-                          value={editForm.description}
-                          onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                          className="w-full border rounded px-2 py-1"
-                          rows={2}
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleSave(course.id)}
-                            className="text-green-600 hover:text-green-800"
-                          >
-                            <Save size={18} />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEditingId(null);
-                              setEditForm({});
-                            }}
-                            className="text-gray-600 hover:text-gray-800"
-                          >
-                            <X size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </>
-                  ) : (
-                    // View Mode
-                    <>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{course.title}</td>
-                      <td className="px-6 py-4">{getStatusBadge(course.status)}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{course.modules}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{course.lessons}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{course.description}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEdit(course)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(course.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {filteredCourses.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              No courses found
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );
