@@ -31,7 +31,7 @@ import {
 } from '../lib/analytics';
 import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabase';
 
 const AnalyticsDashboard = () => {
   const navigate = useNavigate();

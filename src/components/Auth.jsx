@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 const ProgressHub = lazy(() => import('./ProgressHub'));
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../lib/supabase';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
