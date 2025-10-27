@@ -663,7 +663,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center px-12">
-                <h3 className="text-5xl font-bold text-white mb-6" style={{ minHeight: '160px' }}>
+                <h3 className="text-4xl font-bold text-white mb-6" style={{ minHeight: '140px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
