@@ -26,6 +26,8 @@ const Auth = () => {
   const learningModelSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
+  const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
+  const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
 
   const { user, signIn, signUp, signInWithOAuth } = useAuth();
   const navigate = useNavigate();
@@ -86,6 +88,30 @@ const Auth = () => {
     fetchCourses();
   }, []);
 
+  // Intersection observer for courses section typing animation
+  useEffect(() => {
+    if (!coursesSectionRef.current || isLogin) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isCourseTitleTypingComplete) {
+            startCourseTitleTyping();
+          }
+        });
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(coursesSectionRef.current);
+
+    return () => {
+      if (coursesSectionRef.current) {
+        observer.unobserve(coursesSectionRef.current);
+      }
+    };
+  }, [isLogin, isCourseTitleTypingComplete]);
+
   // Typing animation for education text
   const startEducationTyping = () => {
     const fullText = 'Education should be accessible, personalised and integrated for everyone.';
@@ -103,6 +129,25 @@ const Auth = () => {
         }
       }, 75); // 75ms per character for slower typing
     }, 1500); // 1500ms delay before starting
+  };
+
+  // Typing animation for courses title
+  const startCourseTitleTyping = () => {
+    const fullText = 'The best courses.\nFor the best students.';
+    let currentIndex = 0;
+
+    // Add delay before starting typing
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullText.length) {
+          setTypedCoursesTitle(fullText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsCourseTitleTypingComplete(true);
+        }
+      }, 75); // 75ms per character
+    }, 500); // 500ms delay before starting
   };
 
   // Helper to render typed text with pink highlights for key words
@@ -166,6 +211,78 @@ const Auth = () => {
     if (!isEducationTypingComplete) {
       result.push(
         <span key="cursor" className="text-white animate-blink font-light">|</span>
+      );
+    }
+
+    return result;
+  };
+
+  // Helper to render typed courses title with purple highlights
+  const renderTypedCoursesTitle = () => {
+    const text = typedCoursesTitle;
+    const words = ['courses.', 'students.'];
+    const fullText = 'The best courses.\nFor the best students.';
+
+    const wordPositions = words.map(word => ({
+      word,
+      start: fullText.indexOf(word),
+      end: fullText.indexOf(word) + word.length
+    }));
+
+    let result = [];
+    let lastIndex = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // Handle line breaks
+      if (char === '\n') {
+        result.push(<br key={`br-${i}`} />);
+        lastIndex = i + 1;
+        continue;
+      }
+
+      // Check if we're at the start of a purple word
+      const inPurpleWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
+
+      if (inPurpleWord) {
+        if (i < lastIndex || !result.length || result[result.length - 1].key !== inPurpleWord.word) {
+          const purpleChunk = text.substring(i, Math.min(text.length, inPurpleWord.end)).replace(/\n/g, '');
+          result.push(
+            <span key={`${inPurpleWord.word}-${i}`} className="text-purple-600">
+              {purpleChunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, inPurpleWord.end - 1);
+          lastIndex = i + 1;
+        }
+      } else {
+        // Regular text - find the next purple word or end
+        let nextPurpleStart = text.length;
+        for (const wp of wordPositions) {
+          if (wp.start > i && wp.start < nextPurpleStart && wp.start < text.length) {
+            nextPurpleStart = wp.start;
+          }
+        }
+
+        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length));
+        const cleanChunk = chunk.replace(/\n/g, '');
+        if (cleanChunk) {
+          result.push(
+            <span key={`text-${i}`} className="text-white">
+              {cleanChunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, nextPurpleStart - 1);
+          lastIndex = i + 1;
+        }
+      }
+    }
+
+    // Add cursor if typing is not complete
+    if (!isCourseTitleTypingComplete) {
+      result.push(
+        <span key="cursor" className="text-white animate-blink font-bold">|</span>
       );
     }
 
@@ -545,9 +662,9 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
-              <div className="flex flex-col justify-center px-8">
-                <h3 className="text-4xl font-bold text-white mb-6">
-                  The best <span className="text-purple-600">courses.</span><br />For the best <span className="text-purple-600">students.</span>
+              <div className="flex flex-col justify-center px-12">
+                <h3 className="text-5xl font-bold text-white mb-6" style={{ minHeight: '160px' }}>
+                  {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
