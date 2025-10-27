@@ -134,13 +134,27 @@ const Auth = () => {
   // Typing animation for courses title
   const startCourseTitleTyping = () => {
     const fullText = 'The best courses.\nFor the best students.';
+    const firstLineLength = 'The best courses.'.length;
     let currentIndex = 0;
+    let isPaused = false;
 
     // Add delay before starting typing
     setTimeout(() => {
       const typingInterval = setInterval(() => {
+        if (isPaused) return; // Skip typing if paused
+
         if (currentIndex <= fullText.length) {
           setTypedCoursesTitle(fullText.substring(0, currentIndex));
+
+          // Check if we just finished the first line
+          if (currentIndex === firstLineLength) {
+            isPaused = true;
+            // Resume typing after 1 second
+            setTimeout(() => {
+              isPaused = false;
+            }, 1000);
+          }
+
           currentIndex++;
         } else {
           clearInterval(typingInterval);
@@ -681,16 +695,6 @@ const Auth = () => {
               <div className="flex items-center gap-4">
                 <div className="grid grid-cols-2 gap-4 flex-1">
                   {courses.length > 0 ? courses.slice(0, 4).map((course) => {
-                    const getStatusBadge = (status) => {
-                      if (status === 'live') {
-                        return <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>;
-                      } else if (status === 'coming_soon') {
-                        return <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>;
-                      } else {
-                        return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs inline-block self-start">Requested</span>;
-                      }
-                    };
-
                     const getModulesText = (modules) => {
                       if (!modules) return '';
                       if (modules.toLowerCase() === 'multiple') return 'Multiple modules';
@@ -701,14 +705,13 @@ const Auth = () => {
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-between cursor-pointer hover:scale-110 hover:shadow-2xl"
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:scale-110 hover:shadow-2xl"
                         style={{ padding: '16px' }}
                       >
                         <div>
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
-                          <p className="text-sm text-gray-600 mb-2">{getModulesText(course.modules)}</p>
+                          <p className="text-sm text-gray-600">{getModulesText(course.modules)}</p>
                         </div>
-                        {getStatusBadge(course.status)}
                       </div>
                     );
                   }) : (
