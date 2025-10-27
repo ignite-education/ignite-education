@@ -545,11 +545,11 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
-              <div className="flex flex-col justify-center">
+              <div className="flex flex-col justify-center px-8">
                 <h3 className="text-4xl font-bold text-white mb-6">
                   The best <span className="text-purple-600">courses.</span><br />For the best <span className="text-purple-600">students.</span>
                 </h3>
-                <p className="text-lg text-white leading-relaxed mb-6">
+                <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
                 <img
