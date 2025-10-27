@@ -681,7 +681,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center px-12">
-                <h3 className="text-4xl font-bold text-white mb-3" style={{ minHeight: '140px' }}>
+                <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '7.2px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
@@ -730,14 +730,6 @@ const Auth = () => {
                     </>
                   )}
                 </div>
-
-                {/* Navigation Arrow */}
-                <button
-                  className="bg-white rounded-full p-3 hover:bg-gray-100 transition shadow-lg"
-                  aria-label="Next courses"
-                >
-                  <ChevronDown size={24} className="text-black transform rotate-[-90deg]" />
-                </button>
               </div>
             </div>
           </div>
@@ -886,43 +878,6 @@ const Auth = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            {/* About Section - Redefining Education */}
-            <div className="mt-20 px-4 py-16 bg-gray-100 rounded-2xl">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
-                {/* Left Column - Image */}
-                <div>
-                  <div className="relative">
-                    <img
-                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
-                      alt="Ignite Team"
-                      className="w-full h-auto rounded-2xl shadow-2xl"
-                      style={{ maxWidth: '500px', margin: '0 auto' }}
-                    />
-                  </div>
-                </div>
-
-                {/* Right Column - Text Content */}
-                <div>
-                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-black mb-6">
-                    We're re-defining{' '}
-                    <span className="text-purple-600">post-18 education</span>
-                  </h2>
-
-                  <p className="text-gray-700 text-base sm:text-lg mb-6 leading-relaxed">
-                    For too long, the post-18 education landscape has offered fragmented, inaccessible and outdated solutions, often unsuited for modern in-demand careers.
-                  </p>
-
-                  <p className="text-gray-700 text-base sm:text-lg mb-8 leading-relaxed">
-                    We believe education should be accessible, personalised and integrated for everyone.
-                  </p>
-
-                  <button className="bg-pink-500 text-white font-semibold px-8 py-4 rounded-lg hover:bg-pink-600 transition-all shadow-lg hover:shadow-xl text-base sm:text-lg">
-                    About Us
-                  </button>
                 </div>
               </div>
             </div>
