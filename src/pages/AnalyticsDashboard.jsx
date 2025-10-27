@@ -17,7 +17,10 @@ import {
   Shield,
   GraduationCap,
   UserCircle,
-  Trash2
+  Trash2,
+  Edit3,
+  Plus,
+  X
 } from 'lucide-react';
 import {
   getUserAnalytics,
@@ -28,6 +31,7 @@ import {
 } from '../lib/analytics';
 import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../supabaseClient';
 
 const AnalyticsDashboard = () => {
   const navigate = useNavigate();
@@ -78,6 +82,11 @@ const AnalyticsDashboard = () => {
   // Course requests
   const [courseRequests, setCourseRequests] = useState([]);
 
+  // Courses management
+  const [managedCourses, setManagedCourses] = useState([]);
+  const [editingCourse, setEditingCourse] = useState(null);
+  const [courseEditForm, setCourseEditForm] = useState({});
+
   useEffect(() => {
     loadAnalytics();
   }, [timeRange]);
@@ -85,6 +94,7 @@ const AnalyticsDashboard = () => {
   useEffect(() => {
     loadUsers();
     loadCourseRequests();
+    loadManagedCourses();
   }, []);
 
   const loadAnalytics = async () => {
@@ -154,6 +164,94 @@ const AnalyticsDashboard = () => {
     } catch (error) {
       console.error('Error loading course requests:', error);
       setCourseRequests([]);
+    }
+  };
+
+  const loadManagedCourses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('courses')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setManagedCourses(data || []);
+    } catch (error) {
+      console.error('Error loading courses:', error);
+      setManagedCourses([]);
+    }
+  };
+
+  const handleCourseStatusChange = async (courseId, newStatus) => {
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      setManagedCourses(prev =>
+        prev.map(c => c.id === courseId ? { ...c, status: newStatus } : c)
+      );
+    } catch (error) {
+      console.error('Error updating course status:', error);
+      alert('Failed to update course status');
+    }
+  };
+
+  const handleEditCourse = (course) => {
+    setEditingCourse(course.id);
+    setCourseEditForm({
+      title: course.title,
+      modules: course.modules,
+      lessons: course.lessons,
+      description: course.description
+    });
+  };
+
+  const handleSaveCourse = async (courseId) => {
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .update({
+          ...courseEditForm,
+          name: courseEditForm.title, // Also update name for compatibility
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      setManagedCourses(prev =>
+        prev.map(c => c.id === courseId ? { ...c, ...courseEditForm } : c)
+      );
+      setEditingCourse(null);
+      setCourseEditForm({});
+    } catch (error) {
+      console.error('Error saving course:', error);
+      alert('Failed to save course');
+    }
+  };
+
+  const handleDeleteCourse = async (courseId, courseName) => {
+    if (!confirm(`Are you sure you want to delete "${courseName}"?`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('courses')
+        .delete()
+        .eq('id', courseId);
+
+      if (error) throw error;
+
+      setManagedCourses(prev => prev.filter(c => c.id !== courseId));
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      alert('Failed to delete course');
     }
   };
 
@@ -795,6 +893,215 @@ const AnalyticsDashboard = () => {
                       <p className="text-purple-500">Teacher access + Analytics Dashboard</p>
                     </div>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Courses Management Section */}
+            <section>
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ fontSize: '27px', letterSpacing: '0.011em' }}>
+                <BookOpen size={24} className="text-pink-500" />
+                Courses Management
+              </h2>
+              <p className="text-gray-400 mb-6 text-sm">
+                Manage course availability, details, and content
+              </p>
+
+              {/* Course Status Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-green-900/20 rounded-lg p-4 border border-green-700">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-green-900/40 rounded-lg">
+                      <BookOpen className="text-green-400" size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-green-400 font-medium">Available</p>
+                      <p className="text-2xl font-bold text-white">
+                        {managedCourses.filter(c => c.status === 'live').length}
+                      </p>
+                      <p className="text-xs text-green-400">Live courses</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-900/20 rounded-lg p-4 border border-blue-700">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-blue-900/40 rounded-lg">
+                      <Clock className="text-blue-400" size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-blue-400 font-medium">Coming Soon</p>
+                      <p className="text-2xl font-bold text-white">
+                        {managedCourses.filter(c => c.status === 'coming_soon').length}
+                      </p>
+                      <p className="text-xs text-blue-400">In development</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-gray-700 rounded-lg">
+                      <MessageSquare className="text-gray-400" size={24} />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-400 font-medium">Requested</p>
+                      <p className="text-2xl font-bold text-white">
+                        {managedCourses.filter(c => c.status === 'requested').length}
+                      </p>
+                      <p className="text-xs text-gray-400">User requests</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Courses Table */}
+              <div className="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+                  <h3 className="font-semibold text-white">All Courses ({managedCourses.length})</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Course Title</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Modules</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Lessons</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Description</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {managedCourses.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="px-6 py-8 text-center text-gray-400">
+                            No courses found. Add courses in the Courses Dashboard.
+                          </td>
+                        </tr>
+                      ) : (
+                        managedCourses.map((course) => {
+                          const isEditing = editingCourse === course.id;
+
+                          return (
+                            <tr key={course.id} className="hover:bg-gray-800/50">
+                              {isEditing ? (
+                                // Edit Mode
+                                <>
+                                  <td className="px-6 py-4">
+                                    <input
+                                      type="text"
+                                      value={courseEditForm.title}
+                                      onChange={(e) => setCourseEditForm({ ...courseEditForm, title: e.target.value })}
+                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
+                                      course.status === 'live' ? 'bg-green-900/30 text-green-400' :
+                                      course.status === 'coming_soon' ? 'bg-blue-900/30 text-blue-400' :
+                                      'bg-gray-700 text-gray-400'
+                                    }`}>
+                                      {course.status === 'live' ? 'Available' :
+                                       course.status === 'coming_soon' ? 'Coming Soon' :
+                                       'Requested'}
+                                    </span>
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <input
+                                      type="text"
+                                      value={courseEditForm.modules}
+                                      onChange={(e) => setCourseEditForm({ ...courseEditForm, modules: e.target.value })}
+                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      placeholder="e.g., 3 or Multiple"
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <input
+                                      type="number"
+                                      value={courseEditForm.lessons}
+                                      onChange={(e) => setCourseEditForm({ ...courseEditForm, lessons: parseInt(e.target.value) || 0 })}
+                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <textarea
+                                      value={courseEditForm.description}
+                                      onChange={(e) => setCourseEditForm({ ...courseEditForm, description: e.target.value })}
+                                      className="w-full px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white"
+                                      rows={2}
+                                    />
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleSaveCourse(course.id)}
+                                        className="p-2 text-green-400 hover:bg-green-900/20 rounded-lg transition"
+                                        title="Save changes"
+                                      >
+                                        <Plus size={16} className="rotate-45" />
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setEditingCourse(null);
+                                          setCourseEditForm({});
+                                        }}
+                                        className="p-2 text-gray-400 hover:bg-gray-800 rounded-lg transition"
+                                        title="Cancel"
+                                      >
+                                        <X size={16} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </>
+                              ) : (
+                                // View Mode
+                                <>
+                                  <td className="px-6 py-4 text-sm font-medium text-white">
+                                    {course.title || course.name}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <select
+                                      value={course.status}
+                                      onChange={(e) => handleCourseStatusChange(course.id, e.target.value)}
+                                      className={`px-3 py-1.5 rounded-full text-xs font-medium cursor-pointer ${
+                                        course.status === 'live' ? 'bg-green-900/30 text-green-400 hover:bg-green-900/40' :
+                                        course.status === 'coming_soon' ? 'bg-blue-900/30 text-blue-400 hover:bg-blue-900/40' :
+                                        'bg-gray-700 text-gray-400 hover:bg-gray-600'
+                                      }`}
+                                    >
+                                      <option value="live" className="bg-gray-900 text-white">Available</option>
+                                      <option value="coming_soon" className="bg-gray-900 text-white">Coming Soon</option>
+                                      <option value="requested" className="bg-gray-900 text-white">Requested</option>
+                                    </select>
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-gray-300">{course.modules || 'N/A'}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-300">{course.lessons || 0}</td>
+                                  <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">{course.description || 'No description'}</td>
+                                  <td className="px-6 py-4">
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={() => handleEditCourse(course)}
+                                        className="p-2 text-blue-400 hover:bg-blue-900/20 rounded-lg transition"
+                                        title="Edit course"
+                                      >
+                                        <Edit3 size={16} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteCourse(course.id, course.title || course.name)}
+                                        className="p-2 text-red-400 hover:bg-red-900/20 rounded-lg transition"
+                                        title="Delete course"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </>
+                              )}
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </section>
