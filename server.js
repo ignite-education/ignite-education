@@ -36,8 +36,8 @@ const pollyClient = new PollyClient({
   }
 });
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend (optional)
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 app.use(cors());
 app.use(express.json());
@@ -1032,6 +1032,15 @@ app.post('/api/send-email', async (req, res) => {
     }
 
     // Send email with Resend
+    if (!resend) {
+      console.warn('⚠️ Resend not configured - skipping email send');
+      return res.json({
+        success: true,
+        message: 'Email sending disabled (Resend not configured)',
+        emailId: null
+      });
+    }
+
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: 'Ignite <hello@ignite.education>',
       to: userEmail,
