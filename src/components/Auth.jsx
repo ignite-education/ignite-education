@@ -526,7 +526,7 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center">
                 <h3 className="text-4xl font-bold text-white mb-6">
-                  The best courses.<br />For the best students.
+                  The best <span className="text-purple-600">courses.</span><br />For the best <span className="text-purple-600">students.</span>
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6">
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
@@ -534,7 +534,8 @@ const Auth = () => {
                 <img
                   src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
                   alt="Course preview"
-                  className="rounded-lg w-full"
+                  className="rounded-lg"
+                  style={{ width: '70%' }}
                 />
               </div>
 
@@ -547,7 +548,10 @@ const Auth = () => {
                     className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
                     style={{ padding: '32px' }}
                   >
-                    <h4 className="text-xl font-semibold mb-2">Product Manager</h4>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">Product Manager</h4>
+                      <p className="text-sm text-gray-600 mb-2">3 modules</p>
+                    </div>
                     <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>
                   </div>
 
@@ -557,7 +561,10 @@ const Auth = () => {
                     className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
                     style={{ padding: '32px' }}
                   >
-                    <h4 className="text-xl font-semibold mb-2">Cyber Security Analyst</h4>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">Cyber Security Analyst</h4>
+                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
+                    </div>
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
 
@@ -566,7 +573,10 @@ const Auth = () => {
                     className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
                     style={{ padding: '32px' }}
                   >
-                    <h4 className="text-xl font-semibold mb-2">Data Analyst</h4>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">Data Analyst</h4>
+                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
+                    </div>
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
 
@@ -575,7 +585,10 @@ const Auth = () => {
                     className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
                     style={{ padding: '32px' }}
                   >
-                    <h4 className="text-xl font-semibold mb-2">UX Designer</h4>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">UX Designer</h4>
+                      <p className="text-sm text-gray-600 mb-2">Multiple modules</p>
+                    </div>
                     <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
                 </div>
