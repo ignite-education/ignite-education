@@ -526,14 +526,16 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex flex-col justify-center">
                 <h3 className="text-4xl font-bold text-white mb-6">
-                  The best courses. For the best students.
+                  The best courses.<br />For the best students.
                 </h3>
-                <p className="text-lg text-gray-300 leading-relaxed mb-4">
-                  We work backwards from industry professionals to build bespoke courses.
+                <p className="text-lg text-white leading-relaxed mb-6">
+                  We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
-                <p className="text-lg text-gray-300 leading-relaxed">
-                  Because of this, our course content is comprehensive, relevant, and in-demand by employers.
-                </p>
+                <img
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
+                  alt="Course preview"
+                  className="rounded-lg w-full"
+                />
               </div>
 
               {/* Right Column - 2x2 Course Grid with Navigation */}
@@ -542,39 +544,39 @@ const Auth = () => {
                   {/* Course Card 1 - Product Manager */}
                   <div
                     onClick={() => setSelectedCourseModal('product-manager')}
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
-                    style={{ padding: '24px' }}
+                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
+                    style={{ padding: '32px' }}
                   >
-                    <h4 className="text-lg font-semibold mb-2">Product Manager</h4>
-                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block">Available</span>
+                    <h4 className="text-xl font-semibold mb-2">Product Manager</h4>
+                    <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs inline-block self-start">Available</span>
                   </div>
 
                   {/* Course Card 2 - Cyber Security Analyst */}
                   <div
                     onClick={() => setSelectedCourseModal('cyber-security')}
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
-                    style={{ padding: '24px' }}
+                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
+                    style={{ padding: '32px' }}
                   >
-                    <h4 className="text-lg font-semibold mb-2">Cyber Security Analyst</h4>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block">Coming Soon</span>
+                    <h4 className="text-xl font-semibold mb-2">Cyber Security Analyst</h4>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
 
                   {/* Course Card 3 - Data Analyst */}
                   <div
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
-                    style={{ padding: '24px' }}
+                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
+                    style={{ padding: '32px' }}
                   >
-                    <h4 className="text-lg font-semibold mb-2">Data Analyst</h4>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block">Coming Soon</span>
+                    <h4 className="text-xl font-semibold mb-2">Data Analyst</h4>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
 
                   {/* Course Card 4 - UX Designer */}
                   <div
-                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105"
-                    style={{ padding: '24px' }}
+                    className="bg-white text-black rounded cursor-pointer transition-transform hover:scale-105 aspect-square flex flex-col justify-between"
+                    style={{ padding: '32px' }}
                   >
-                    <h4 className="text-lg font-semibold mb-2">UX Designer</h4>
-                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block">Coming Soon</span>
+                    <h4 className="text-xl font-semibold mb-2">UX Designer</h4>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs inline-block self-start">Coming Soon</span>
                   </div>
                 </div>
 
