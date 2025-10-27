@@ -721,15 +721,15 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white flex-1 flex items-center justify-center">
+          <div className="max-w-7xl w-full text-white flex-1 flex items-start justify-center" style={{ paddingTop: '80px' }}>
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
-              <div className="flex flex-col justify-center px-12">
+              <div className="flex flex-col justify-start px-12">
                 <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '0px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
-                <p className="text-lg text-white leading-relaxed mb-6 max-w-md" style={{ marginTop: '0px' }}>
+                <p className="text-lg text-white leading-relaxed mb-6 max-w-md" style={{ marginTop: '-12px' }}>
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
                 <img
@@ -754,8 +754,10 @@ const Auth = () => {
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:scale-106 hover:shadow-2xl"
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:shadow-2xl"
                         style={{ padding: '16px' }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
                         <div>
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
