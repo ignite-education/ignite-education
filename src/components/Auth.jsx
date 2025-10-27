@@ -195,13 +195,24 @@ const Auth = () => {
   // Typing animation for learning tagline
   const startLearningTaglineTyping = () => {
     const fullText = 'Building a smarter, more personalised era of education.';
+    const pauseAfter = 'Building a smarter,'.length;
     let currentIndex = 0;
+    let isPaused = false;
 
     // Add delay before starting typing
     setTimeout(() => {
       const typingInterval = setInterval(() => {
+        if (isPaused) return;
+
         if (currentIndex <= fullText.length) {
           setTypedLearningTagline(fullText.substring(0, currentIndex));
+
+          // Pause after "Building a smarter,"
+          if (currentIndex === pauseAfter) {
+            isPaused = true;
+            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+          }
+
           currentIndex++;
         } else {
           clearInterval(typingInterval);
@@ -821,23 +832,23 @@ const Auth = () => {
                 <div className="space-y-6">
                   {/* Card 1 - Hands-on */}
                   <div
-                    className={`rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-4 transition-all duration-500 ${
                       activeCard === 0
                         ? 'bg-white shadow-xl scale-105 border-2 border-pink-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="bg-pink-500 rounded-full p-2 flex-shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-start gap-2 mb-2">
+                      <div className="bg-pink-500 rounded-full p-1.5 flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-base mb-1 text-black">
                           Hands-on, interactive courses
                         </h4>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-xs text-gray-700">
                           Short videos are broken up by interactive exercises. Practice new skills immediately to retain information.
                         </p>
                       </div>
@@ -846,27 +857,27 @@ const Auth = () => {
 
                   {/* Card 2 - Real-world projects */}
                   <div
-                    className={`rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-4 transition-all duration-500 ${
                       activeCard === 1
                         ? 'bg-white shadow-xl scale-105 border-2 border-green-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
-                    <div className="flex items-start gap-3 mb-4">
-                      <div className="bg-green-500 rounded-full p-2 flex-shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-start gap-2 mb-2">
+                      <div className="bg-green-500 rounded-full p-1.5 flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-base mb-1 text-black">
                           Real-world projects
                         </h4>
-                        <p className="text-sm mb-4 text-gray-700">
+                        <p className="text-xs mb-2 text-gray-700">
                           Apply your learning in real situations, perfect for developing practical skills and building up your portfolio.
                         </p>
                         {activeCard === 1 && (
-                          <button className="border-2 border-black text-black font-semibold px-4 py-2 rounded hover:bg-black hover:text-white transition text-sm">
+                          <button className="border-2 border-black text-black font-semibold px-3 py-1.5 rounded hover:bg-black hover:text-white transition text-xs">
                             Explore Projects →
                           </button>
                         )}
@@ -876,23 +887,23 @@ const Auth = () => {
 
                   {/* Card 3 - Certified professional */}
                   <div
-                    className={`rounded-lg p-6 transition-all duration-500 ${
+                    className={`rounded-lg p-4 transition-all duration-500 ${
                       activeCard === 2
                         ? 'bg-white shadow-xl scale-105 border-2 border-purple-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                   >
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="bg-purple-500 rounded-full p-2 flex-shrink-0">
-                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="flex items-start gap-2 mb-2">
+                      <div className="bg-purple-500 rounded-full p-1.5 flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-lg mb-2 text-black">
+                        <h4 className="font-semibold text-base mb-1 text-black">
                           Become a certified professional
                         </h4>
-                        <p className="text-sm text-gray-700">
+                        <p className="text-xs text-gray-700">
                           Prove you're job-ready. Earn industry-leading certifications built around in-demand roles.
                         </p>
                       </div>
