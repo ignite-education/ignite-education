@@ -15,10 +15,8 @@ const CourseManagement = () => {
     name: '',
     title: '',
     status: 'requested',
-    modules: '',
-    lessons: 0,
-    description: '',
-    display_order: 0
+    modules: [{ name: '', lessons: 0 }], // Array of modules with lesson counts
+    description: ''
   });
 
   useEffect(() => {
@@ -62,29 +60,52 @@ const CourseManagement = () => {
     }
   };
 
+  // Helper function to generate course ID from title
+  const generateCourseId = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .trim()
+      .replace(/\s+/g, '-'); // Replace spaces with hyphens
+  };
+
   const openAddModal = () => {
     setFormData({
       name: '',
       title: '',
       status: 'requested',
-      modules: '',
-      lessons: 0,
-      description: '',
-      display_order: courses.length
+      modules: [{ name: '', lessons: 0 }],
+      description: ''
     });
     setShowAddModal(true);
   };
 
   const openEditModal = (course) => {
     setSelectedCourse(course);
+
+    // Parse existing modules/lessons into array format
+    let modulesArray = [{ name: '', lessons: 0 }];
+    if (course.modules && course.lessons) {
+      // If modules is a number like "3", create that many module entries
+      if (!isNaN(course.modules)) {
+        const moduleCount = parseInt(course.modules);
+        const lessonsPerModule = Math.ceil(course.lessons / moduleCount);
+        modulesArray = Array.from({ length: moduleCount }, (_, i) => ({
+          name: `Module ${i + 1}`,
+          lessons: i === moduleCount - 1 ? course.lessons - (lessonsPerModule * (moduleCount - 1)) : lessonsPerModule
+        }));
+      } else if (course.modules.toLowerCase() === 'multiple') {
+        // For "Multiple", create one entry
+        modulesArray = [{ name: 'Module 1', lessons: course.lessons || 0 }];
+      }
+    }
+
     setFormData({
       name: course.name || '',
       title: course.title || '',
       status: course.status || 'requested',
-      modules: course.modules || '',
-      lessons: course.lessons || 0,
-      description: course.description || '',
-      display_order: course.display_order || 0
+      modules: modulesArray,
+      description: course.description || ''
     });
     setShowEditModal(true);
   };
@@ -97,24 +118,43 @@ const CourseManagement = () => {
       name: '',
       title: '',
       status: 'requested',
-      modules: '',
-      lessons: 0,
-      description: '',
-      display_order: 0
+      modules: [{ name: '', lessons: 0 }],
+      description: ''
     });
   };
 
   const handleAddCourse = async () => {
-    if (!formData.name.trim() || !formData.title.trim()) {
-      alert('Please enter both course name and title');
+    if (!formData.title.trim()) {
+      alert('Please enter a course title');
       return;
     }
 
     try {
       setSaving(true);
+
+      // Auto-generate course ID from title
+      const generatedName = generateCourseId(formData.title);
+
+      // Calculate total modules and lessons
+      const totalModules = formData.modules.length;
+      const totalLessons = formData.modules.reduce((sum, mod) => sum + (parseInt(mod.lessons) || 0), 0);
+
+      // Get next display order
+      const maxOrder = courses.reduce((max, course) => Math.max(max, course.display_order || 0), 0);
+
+      const courseData = {
+        name: generatedName,
+        title: formData.title,
+        status: formData.status,
+        modules: totalModules > 1 ? String(totalModules) : 'Multiple',
+        lessons: totalLessons,
+        description: formData.description,
+        display_order: maxOrder + 1
+      };
+
       const { error } = await supabase
         .from('courses')
-        .insert([formData]);
+        .insert([courseData]);
 
       if (error) throw error;
 
@@ -130,16 +170,29 @@ const CourseManagement = () => {
   };
 
   const handleUpdateCourse = async () => {
-    if (!formData.name.trim() || !formData.title.trim()) {
-      alert('Please enter both course name and title');
+    if (!formData.title.trim()) {
+      alert('Please enter a course title');
       return;
     }
 
     try {
       setSaving(true);
+
+      // Calculate total modules and lessons
+      const totalModules = formData.modules.length;
+      const totalLessons = formData.modules.reduce((sum, mod) => sum + (parseInt(mod.lessons) || 0), 0);
+
+      const courseData = {
+        title: formData.title,
+        status: formData.status,
+        modules: totalModules > 1 ? String(totalModules) : 'Multiple',
+        lessons: totalLessons,
+        description: formData.description
+      };
+
       const { error } = await supabase
         .from('courses')
-        .update(formData)
+        .update(courseData)
         .eq('id', selectedCourse.id);
 
       if (error) throw error;
@@ -325,93 +378,91 @@ const CourseManagement = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Course Name (ID) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., product-management"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Used as the course identifier</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Display Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Product Manager"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Shown to users</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  >
-                    <option value="requested">Requested</option>
-                    <option value="coming_soon">Coming Soon</option>
-                    <option value="live">Live</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Modules</label>
-                  <input
-                    type="text"
-                    value={formData.modules}
-                    onChange={(e) => setFormData({ ...formData, modules: e.target.value })}
-                    placeholder="e.g., 3 or Multiple"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Lessons</label>
-                  <input
-                    type="number"
-                    value={formData.lessons}
-                    onChange={(e) => setFormData({ ...formData, lessons: parseInt(e.target.value) || 0 })}
-                    min="0"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Course Title *
+                </label>
                 <input
-                  type="number"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  min="0"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Product Manager"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
-                <p className="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
+                <p className="text-xs text-gray-500 mt-1">The course ID will be auto-generated from this title</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                >
+                  <option value="requested">Requested</option>
+                  <option value="coming_soon">Coming Soon</option>
+                  <option value="live">Live</option>
+                </select>
+              </div>
+
+              {/* Modules Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
+                {formData.modules.map((module, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <input
+                      type="text"
+                      value={module.name}
+                      onChange={(e) => {
+                        const newModules = [...formData.modules];
+                        newModules[index].name = e.target.value;
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      placeholder={`Module ${index + 1} name (optional)`}
+                      className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                    />
+                    <input
+                      type="number"
+                      value={module.lessons}
+                      onChange={(e) => {
+                        const newModules = [...formData.modules];
+                        newModules[index].lessons = parseInt(e.target.value) || 0;
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      placeholder="# lessons"
+                      min="0"
+                      className="w-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                    />
+                    {formData.modules.length > 1 && (
+                      <button
+                        onClick={() => {
+                          const newModules = formData.modules.filter((_, i) => i !== index);
+                          setFormData({ ...formData, modules: newModules });
+                        }}
+                        className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Remove module"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: 0 }] })}
+                  className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+                >
+                  + Add Another Module
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter course description..."
                   rows="4"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
               </div>
             </div>
@@ -448,93 +499,102 @@ const CourseManagement = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Course Name (ID) *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., product-management"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Used as the course identifier</p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Display Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g., Product Manager"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Shown to users</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  >
-                    <option value="requested">Requested</option>
-                    <option value="coming_soon">Coming Soon</option>
-                    <option value="live">Live</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Modules</label>
-                  <input
-                    type="text"
-                    value={formData.modules}
-                    onChange={(e) => setFormData({ ...formData, modules: e.target.value })}
-                    placeholder="e.g., 3 or Multiple"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Lessons</label>
-                  <input
-                    type="number"
-                    value={formData.lessons}
-                    onChange={(e) => setFormData({ ...formData, lessons: parseInt(e.target.value) || 0 })}
-                    min="0"
-                    className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Course ID (Cannot be changed)
+                </label>
                 <input
-                  type="number"
-                  value={formData.display_order}
-                  onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                  min="0"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  type="text"
+                  value={formData.name}
+                  disabled
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-500 mt-1">Lower numbers appear first</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Course Title *
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g., Product Manager"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                >
+                  <option value="requested">Requested</option>
+                  <option value="coming_soon">Coming Soon</option>
+                  <option value="live">Live</option>
+                </select>
+              </div>
+
+              {/* Modules Section */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
+                {formData.modules.map((module, index) => (
+                  <div key={index} className="flex gap-3 mb-3">
+                    <input
+                      type="text"
+                      value={module.name}
+                      onChange={(e) => {
+                        const newModules = [...formData.modules];
+                        newModules[index].name = e.target.value;
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      placeholder={`Module ${index + 1} name (optional)`}
+                      className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                    />
+                    <input
+                      type="number"
+                      value={module.lessons}
+                      onChange={(e) => {
+                        const newModules = [...formData.modules];
+                        newModules[index].lessons = parseInt(e.target.value) || 0;
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      placeholder="# lessons"
+                      min="0"
+                      className="w-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                    />
+                    {formData.modules.length > 1 && (
+                      <button
+                        onClick={() => {
+                          const newModules = formData.modules.filter((_, i) => i !== index);
+                          setFormData({ ...formData, modules: newModules });
+                        }}
+                        className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Remove module"
+                      >
+                        <Trash2 size={20} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: 0 }] })}
+                  className="text-pink-600 hover:text-pink-700 text-sm font-medium"
+                >
+                  + Add Another Module
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Enter course description..."
                   rows="4"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
               </div>
             </div>
