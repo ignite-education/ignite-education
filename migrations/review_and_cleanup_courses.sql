@@ -1,9 +1,5 @@
--- Safe cleanup script for courses table
--- Run this in your Supabase SQL Editor
-
--- STEP 1: First, let's see what we have
--- Run this first to review your data
-/*
+-- STEP 1: Review all current courses
+-- Run this FIRST to see what you have
 SELECT
   id,
   name,
@@ -13,25 +9,27 @@ SELECT
   lessons,
   display_order,
   CASE
-    WHEN modules IS NULL OR modules = '' OR modules = '-' THEN 'INCOMPLETE'
-    ELSE 'OK'
-  END as data_status
+    WHEN (modules IS NULL OR modules = '' OR modules = '-') AND (lessons = 0 OR lessons IS NULL) AND (description IS NULL OR description = '' OR LENGTH(description) < 50) THEN 'WILL BE DELETED'
+    ELSE 'WILL BE KEPT'
+  END as action,
+  LEFT(COALESCE(description, 'NO DESCRIPTION'), 60) as description_preview
 FROM courses
 ORDER BY display_order, name;
-*/
 
--- STEP 2: Delete incomplete courses (ones with no modules data)
--- These are likely test/duplicate entries
--- BUT preserve courses that have a valid description (not test data)
+-- After reviewing the above results, uncomment and run the sections below one by one
+
+-- STEP 2: Delete ONLY incomplete test entries (no description)
+/*
 DELETE FROM courses
 WHERE (
   (modules IS NULL OR modules = '' OR modules = '-')
   AND (lessons = 0 OR lessons IS NULL)
   AND (description IS NULL OR description = '' OR LENGTH(description) < 50)
 );
+*/
 
--- STEP 3: Remove any remaining duplicates
--- If there are two courses with the same name and title, keep the one with more data
+-- STEP 3: Remove exact duplicates (same name AND title)
+/*
 WITH duplicates AS (
   SELECT
     id,
@@ -39,7 +37,7 @@ WITH duplicates AS (
       PARTITION BY name, title
       ORDER BY
         CASE WHEN description IS NOT NULL AND description != '' THEN 1 ELSE 0 END DESC,
-        CASE WHEN modules IS NOT NULL AND modules != '' THEN 1 ELSE 0 END DESC,
+        CASE WHEN modules IS NOT NULL AND modules != '' AND modules != '-' THEN 1 ELSE 0 END DESC,
         lessons DESC,
         id DESC
     ) as rn
@@ -49,13 +47,17 @@ DELETE FROM courses
 WHERE id IN (
   SELECT id FROM duplicates WHERE rn > 1
 );
+*/
 
--- STEP 4: Fix any NULL or empty modules
+-- STEP 4: Fix modules that show '-' to 'Multiple'
+/*
 UPDATE courses
 SET modules = 'Multiple'
 WHERE modules IS NULL OR modules = '' OR modules = '-';
+*/
 
--- STEP 5: Ensure proper display order
+-- STEP 5: Update display order for main courses
+/*
 UPDATE courses
 SET display_order = CASE
   WHEN LOWER(name) LIKE '%product%' AND LOWER(name) LIKE '%manager%' THEN 1
@@ -69,8 +71,10 @@ SET display_order = CASE
   ELSE display_order
 END
 WHERE display_order IS NULL OR display_order = 0 OR display_order IN (1, 2, 3, 4);
+*/
 
--- STEP 6: View the cleaned up data
+-- STEP 6: View final cleaned data
+/*
 SELECT
   id,
   name,
@@ -79,6 +83,7 @@ SELECT
   modules,
   lessons,
   display_order,
-  LEFT(description, 50) as description_preview
+  LEFT(description, 60) as description_preview
 FROM courses
 ORDER BY display_order, name;
+*/
