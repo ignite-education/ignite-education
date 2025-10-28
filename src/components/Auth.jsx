@@ -737,7 +737,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-start px-12">
-                <h3 className="text-4xl font-bold text-white mb-4" style={{ lineHeight: '1.2', minHeight: '120px' }}>
+                <h3 className="text-4xl font-bold text-white mb-4" style={{ lineHeight: '1.2', minHeight: '100px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
