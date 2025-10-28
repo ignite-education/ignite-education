@@ -820,7 +820,7 @@ const Auth = () => {
           <div className="max-w-4xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-white text-left mb-6">
+              <h3 className="text-2xl sm:text-3xl font-semibold text-white text-left mb-12">
                 {typedLearningTagline}
                 {!isLearningTaglineTypingComplete && (
                   <span className="animate-blink font-bold">|</span>
