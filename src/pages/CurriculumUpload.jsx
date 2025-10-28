@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, MoveUp, MoveDown, Save, Eye, ArrowLeft, Image as ImageIcon, Youtube, PlusCircle } from 'lucide-react';
+import CourseManagement from '../components/CourseManagement';
 
 const CurriculumUpload = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('courses');
   const [courseId, setCourseId] = useState('product-management');
   const [moduleNumber, setModuleNumber] = useState(1);
   const [lessonNumber, setLessonNumber] = useState(1);
@@ -436,29 +438,62 @@ const CurriculumUpload = () => {
             <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-200 rounded-lg">
               <ArrowLeft size={24} />
             </button>
-            <h1 className="text-3xl font-bold">Curriculum Upload</h1>
+            <h1 className="text-3xl font-bold">Curriculum Management</h1>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPreviewMode(!previewMode)}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-            >
-              <Eye size={20} />
-              {previewMode ? 'Edit' : 'Preview'}
-            </button>
-            <button
-              onClick={saveCurriculum}
-              disabled={isUploading}
-              className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50"
-            >
-              <Save size={20} />
-              {isUploading ? 'Saving...' : 'Save Lesson'}
-            </button>
-          </div>
+          {activeTab === 'lessons' && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPreviewMode(!previewMode)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                <Eye size={20} />
+                {previewMode ? 'Edit' : 'Preview'}
+              </button>
+              <button
+                onClick={saveCurriculum}
+                disabled={isUploading}
+                className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50"
+              >
+                <Save size={20} />
+                {isUploading ? 'Saving...' : 'Save Lesson'}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Lesson Metadata */}
-        <div className="bg-white rounded-lg p-6 mb-6 shadow">
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('courses')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+                activeTab === 'courses'
+                  ? 'border-pink-500 text-pink-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Courses
+            </button>
+            <button
+              onClick={() => setActiveTab('lessons')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition ${
+                activeTab === 'lessons'
+                  ? 'border-pink-500 text-pink-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Lesson Content
+            </button>
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'courses' ? (
+          <CourseManagement />
+        ) : (
+          <>
+            {/* Lesson Metadata */}
+            <div className="bg-white rounded-lg p-6 mb-6 shadow">
           <h2 className="text-xl font-semibold mb-4">Lesson Information</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
@@ -700,6 +735,8 @@ const CurriculumUpload = () => {
             ))}
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );
