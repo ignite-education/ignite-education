@@ -732,15 +732,15 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white flex-1 flex items-start justify-center" style={{ paddingTop: '80px' }}>
+          <div className="max-w-7xl w-full text-white flex-1 flex items-start justify-center" style={{ paddingTop: '20px' }}>
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-start px-12">
-                <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '0px' }}>
+                <h3 className="text-4xl font-bold text-white" style={{ minHeight: '140px', marginBottom: '16px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
-                <p className="text-lg text-white leading-relaxed mb-6 max-w-md" style={{ marginTop: '-12px' }}>
+                <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
                 <img
