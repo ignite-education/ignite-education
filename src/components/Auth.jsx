@@ -726,18 +726,18 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white flex-1 flex items-start justify-center" style={{ paddingTop: '20px' }}>
+          <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
               {/* Left Column - Description */}
               <div className="flex flex-col justify-start px-12">
-                <h3 className="text-4xl font-bold text-white mb-4" style={{ lineHeight: '1.2' }}>
+                <h3 className="text-4xl font-bold text-white mb-4" style={{ lineHeight: '1.2', minHeight: '120px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
                 <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
