@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 
 const Onboarding = ({ firstName, userId }) => {
   const [selectedCourse, setSelectedCourse] = useState('');
-  const [courseStatus, setCourseStatus] = useState(''); // 'available', 'upcoming', 'requested', or 'unrecognized'
+  const [courseStatus, setCourseStatus] = useState(''); // 'live', 'coming_soon', 'requested', or 'unrecognized'
   const [displayedName, setDisplayedName] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const [showCourseSelection, setShowCourseSelection] = useState(false);
@@ -13,6 +13,7 @@ const Onboarding = ({ firstName, userId }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [courses, setCourses] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -48,26 +49,31 @@ const Onboarding = ({ firstName, userId }) => {
     }
   }, [firstName]);
 
+  // Fetch courses from database
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('courses')
+          .select('*')
+          .order('display_order', { ascending: true });
+
+        if (error) throw error;
+        console.log('Fetched courses for onboarding:', data);
+        setCourses(data || []);
+      } catch (error) {
+        console.error('Error fetching courses:', error);
+      }
+    };
+
+    fetchCourses();
+  }, []);
+
+  // Organize courses by status
   const courseCategories = {
-    available: ['Product Manager'],
-    upcoming: ['Cyber Security Analyst'],
-    requested: [
-      'Accountant', 'Architect', 'Auditor', 'Backend Developer', 'Brand Manager',
-      'Business Analyst', 'Business Intelligence Analyst', 'Cloud Architect',
-      'Compliance Officer', 'Content Marketer', 'Corporate Lawyer', 'Data Engineer',
-      'Data Scientist', 'Database Administrator', 'DevOps Engineer', 'Digital Marketer',
-      'Financial Analyst', 'Frontend Developer', 'Full Stack Developer', 'Game Developer',
-      'Graphic Designer', 'Growth Marketer', 'Human Resources Manager',
-      'Incident Response Analyst', 'Information Security Analyst', 'Intellectual Property Lawyer',
-      'Interior Designer', 'Investment Banker', 'Legal Counsel', 'Machine Learning Engineer',
-      'Management Consultant', 'Mobile Developer', 'Motion Graphics Designer',
-      'Network Engineer', 'Operations Manager', 'Penetration Tester',
-      'Public Relations Manager', 'Quality Assurance Engineer', 'Risk Manager',
-      'Sales Engineer', 'Site Reliability Engineer', 'Software Engineer',
-      'Strategy Consultant', 'Supply Chain Manager', 'Systems Administrator',
-      'Talent Acquisition Specialist', 'Tax Advisor', 'Technical Writer',
-      'Test Automation Engineer', 'UX Designer'
-    ]
+    live: courses.filter(c => c.status === 'live').map(c => c.title),
+    coming_soon: courses.filter(c => c.status === 'coming_soon').map(c => c.title),
+    requested: courses.filter(c => c.status === 'requested').map(c => c.title)
   };
 
   // Click outside handler for dropdown
@@ -90,8 +96,8 @@ const Onboarding = ({ firstName, userId }) => {
     }
 
     return {
-      available: courseCategories.available.filter(c => c.toLowerCase().includes(query)),
-      upcoming: courseCategories.upcoming.filter(c => c.toLowerCase().includes(query)),
+      live: courseCategories.live.filter(c => c.toLowerCase().includes(query)),
+      coming_soon: courseCategories.coming_soon.filter(c => c.toLowerCase().includes(query)),
       requested: courseCategories.requested.filter(c => c.toLowerCase().includes(query))
     };
   };
@@ -122,8 +128,8 @@ const Onboarding = ({ firstName, userId }) => {
     if (!status) {
       // Check if it's an unrecognized course (typed in but not in dropdown)
       const allCourses = [
-        ...courseCategories.available,
-        ...courseCategories.upcoming,
+        ...courseCategories.live,
+        ...courseCategories.coming_soon,
         ...courseCategories.requested
       ];
       status = allCourses.includes(selectedCourse) ? 'requested' : 'unrecognized';
@@ -131,8 +137,8 @@ const Onboarding = ({ firstName, userId }) => {
 
     console.log('Course status determined:', status);
 
-    // If available course, enroll and proceed to progress hub
-    if (status === 'available') {
+    // If live course, enroll and proceed to progress hub
+    if (status === 'live') {
       console.log('Enrolling in available course:', selectedCourse);
       try {
         // Update user profile with course
@@ -163,7 +169,7 @@ const Onboarding = ({ firstName, userId }) => {
         alert(`There was an error saving your preferences: ${error.message}`);
       }
     } else {
-      // For upcoming, requested, or unrecognized courses, save request and show notification
+      // For coming_soon, requested, or unrecognized courses, save request and show notification
       console.log('Showing notification for unavailable course');
 
       try {
@@ -273,8 +279,8 @@ const Onboarding = ({ firstName, userId }) => {
                         onKeyDown={(e) => {
                           const filtered = getFilteredCourses();
                           const allCourses = [
-                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'available' })),
-                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'upcoming' })),
+                            ...filtered.live.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'live' })),
+                            ...filtered.coming_soon.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'coming_soon' })),
                             ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600', status: 'requested' }))
                           ];
 
@@ -334,8 +340,8 @@ const Onboarding = ({ firstName, userId }) => {
                         {(() => {
                           const filtered = getFilteredCourses();
                           const allCourses = [
-                            ...filtered.available.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'available' })),
-                            ...filtered.upcoming.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'upcoming' })),
+                            ...filtered.live.map(c => ({ name: c, tag: 'Available', tagColor: 'bg-green-100 text-green-700', status: 'live' })),
+                            ...filtered.coming_soon.map(c => ({ name: c, tag: 'Coming Soon', tagColor: 'bg-blue-100 text-blue-700', status: 'coming_soon' })),
                             ...filtered.requested.map(c => ({ name: c, tag: 'Requested', tagColor: 'bg-gray-100 text-gray-600', status: 'requested' }))
                           ];
 
