@@ -361,8 +361,15 @@ const LearningHub = () => {
 
       console.log('📝 Using userId:', userId, 'courseId:', courseId);
 
-      // Set the user's course name for display
-      setUserCourseName(courseId);
+      // Fetch course title from courses table
+      const { data: courseData } = await supabase
+        .from('courses')
+        .select('title, name')
+        .eq('name', courseId)
+        .single();
+
+      // Set the user's course title for display
+      setUserCourseName(courseData?.title || courseId);
 
       console.log('📚 Fetching lessons by module...');
       const lessonsData = await getLessonsByModule(courseId);
