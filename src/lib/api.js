@@ -22,6 +22,48 @@ export async function getLessons(courseId) {
  * @returns {Promise<Array>} Array of lesson metadata objects with bullet points
  */
 export async function getLessonsMetadata(courseId) {
+  console.log('📋 getLessonsMetadata called for courseId:', courseId);
+
+  // First, fetch from the course's module_structure
+  const { data: courseData, error: courseError } = await supabase
+    .from('courses')
+    .select('module_structure, name')
+    .eq('id', courseId)
+    .single();
+
+  if (courseError) {
+    console.error('Error fetching course module_structure:', courseError);
+    return [];
+  }
+
+  console.log('📚 Course data fetched:', courseData);
+
+  // If module_structure exists and has data, transform it to lesson metadata format
+  if (courseData?.module_structure && Array.isArray(courseData.module_structure)) {
+    const lessonsMetadata = [];
+
+    courseData.module_structure.forEach((module, moduleIndex) => {
+      if (module.lessons && Array.isArray(module.lessons)) {
+        module.lessons.forEach((lesson, lessonIndex) => {
+          lessonsMetadata.push({
+            course_id: courseId,
+            module_number: moduleIndex + 1,
+            lesson_number: lessonIndex + 1,
+            lesson_name: lesson.name || `Lesson ${lessonIndex + 1}`,
+            description: lesson.description || '',
+            bullet_points: lesson.bullet_points || ['', '', '']
+          });
+        });
+      }
+    });
+
+    console.log('✅ Transformed module_structure to lessons metadata:', lessonsMetadata);
+    return lessonsMetadata;
+  }
+
+  console.log('⚠️ No module_structure found, falling back to lessons_metadata table');
+
+  // Fallback to old lessons_metadata table if module_structure doesn't exist
   const { data, error } = await supabase
     .from('lessons_metadata')
     .select('*')
