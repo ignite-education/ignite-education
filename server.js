@@ -631,8 +631,8 @@ app.post('/api/text-to-speech', async (req, res) => {
 });
 
 // Reddit posts endpoint with server-side caching and rate limiting
-// Cache is now a Map keyed by subreddit name
-let redditPostsCache = new Map(); // Map<subreddit, { data, timestamp }>
+// Cache is now an object keyed by subreddit name for compatibility
+let redditPostsCache = {}; // Object: { [subreddit]: { data, timestamp } }
 let redditOAuthToken = { token: null, timestamp: 0 };
 let lastRedditRequestTime = 0;
 let redditRequestCount = 0;
@@ -731,7 +731,7 @@ app.get('/api/reddit-posts', async (req, res) => {
     console.log(`📡 Reddit posts requested for r/${subreddit}`);
 
     // Check if we have valid cached data for this specific subreddit
-    const cachedData = redditPostsCache.get(subreddit);
+    const cachedData = redditPostsCache[subreddit];
     const cacheAge = cachedData ? (now - cachedData.timestamp) : Infinity;
     const hasValidCache = cachedData && cacheAge < REDDIT_CACHE_DURATION;
     const canRefresh = cacheAge >= REDDIT_CACHE_MINIMUM_REFRESH;
@@ -796,10 +796,10 @@ app.get('/api/reddit-posts', async (req, res) => {
     });
 
     // Cache the results for this specific subreddit
-    redditPostsCache.set(subreddit, {
+    redditPostsCache[subreddit] = {
       data: posts,
       timestamp: now
-    });
+    };
 
     console.log(`✅ Fetched and cached ${posts.length} Reddit posts from r/${subreddit}`);
     res.json(posts);
@@ -809,7 +809,7 @@ app.get('/api/reddit-posts', async (req, res) => {
     console.error('❌ Error stack:', error.stack);
 
     // If we have stale cache for this subreddit, return it rather than failing
-    const cachedData = redditPostsCache.get(subreddit);
+    const cachedData = redditPostsCache[subreddit];
     if (cachedData && cachedData.data) {
       console.log(`⚠️ Returning stale cache for r/${subreddit} due to error`);
       return res.json(cachedData.data);
