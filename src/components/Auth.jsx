@@ -895,12 +895,12 @@ const Auth = () => {
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
                           {course.description && (
-                            <p className="text-sm text-gray-700 line-clamp-4 mb-1.5">
+                            <p className="text-sm text-gray-700 line-clamp-4 mb-2">
                               {course.description}
                             </p>
                           )}
                           {course.module_names && (
-                            <div className="mt-auto pb-10">
+                            <div className="pb-10">
                               <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
                               <ul className="text-xs text-gray-700 space-y-0.5">
                                 {course.module_names.split(', ').slice(0, 3).map((moduleName, idx) => (
