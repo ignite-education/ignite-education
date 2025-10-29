@@ -495,7 +495,7 @@ const Auth = () => {
       >
       {/* First Section - Auth Form */}
       <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ scrollSnapAlign: 'start' }}>
-      <div className="relative w-full" style={{ maxWidth: '533px' }}>
+      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
           className="mx-auto"
@@ -506,7 +506,6 @@ const Auth = () => {
             backgroundPosition: 'center',
             width: 'clamp(100px, 25vw, 140px)',
             height: 'clamp(32px, 8vw, 44.8px)',
-            marginTop: 'clamp(1.5rem, 5vh, 2.5rem)',
             marginBottom: 'clamp(0.88rem, 4.4vh, 1.76rem)'
           }}
         />
@@ -515,6 +514,8 @@ const Auth = () => {
         <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.5rem, 2.5vh, 1.5rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
           Upskill. Reskill.<br /><span className="text-pink-500">Get ready for what's next.</span>
         </h1>
+
+        <div className="w-full">
 
         {/* Title above the box */}
         <h2 className="text-sm sm:text-base md:text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
@@ -667,6 +668,7 @@ const Auth = () => {
           >
             <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
           </button>
+        </div>
         </div>
       </div>
       </div>
