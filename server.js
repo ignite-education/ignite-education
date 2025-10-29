@@ -775,22 +775,33 @@ app.get('/api/reddit-posts', async (req, res) => {
     }
 
     let json = await response.json();
-    let posts = json.data.children.map(child => {
-      const post = child.data;
 
-      return {
-        id: post.id,
-        author: post.author,
-        author_icon: null, // Don't fetch individual user icons to save API calls
-        created_at: new Date(post.created_utc * 1000).toISOString(),
-        title: post.title,
-        content: post.selftext || '',
-        tag: post.link_flair_text || 'Discussion',
-        upvotes: post.ups,
-        comments: post.num_comments,
-        url: `https://reddit.com${post.permalink}`
-      };
-    });
+    // Filter posts to only include those from the last 60 days
+    const sixtyDaysAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
+
+    let posts = json.data.children
+      .filter(child => {
+        const postDate = child.data.created_utc * 1000;
+        return postDate >= sixtyDaysAgo;
+      })
+      .map(child => {
+        const post = child.data;
+
+        return {
+          id: post.id,
+          author: post.author,
+          author_icon: null, // Don't fetch individual user icons to save API calls
+          created_at: new Date(post.created_utc * 1000).toISOString(),
+          title: post.title,
+          content: post.selftext || '',
+          tag: post.link_flair_text || 'Discussion',
+          upvotes: post.ups,
+          comments: post.num_comments,
+          url: `https://reddit.com${post.permalink}`
+        };
+      });
+
+    console.log(`📊 Filtered to ${posts.length} posts from last 60 days (from ${json.data.children.length} total)`);
 
     // If no posts found with top/year, fallback to hot
     if (posts.length === 0) {
@@ -806,22 +817,27 @@ app.get('/api/reddit-posts', async (req, res) => {
 
       if (hotResponse.ok) {
         const hotJson = await hotResponse.json();
-        posts = hotJson.data.children.map(child => {
-          const post = child.data;
-          return {
-            id: post.id,
-            author: post.author,
-            author_icon: null,
-            created_at: new Date(post.created_utc * 1000).toISOString(),
-            title: post.title,
-            content: post.selftext || '',
-            tag: post.link_flair_text || 'Discussion',
-            upvotes: post.ups,
-            comments: post.num_comments,
-            url: `https://reddit.com${post.permalink}`
-          };
-        });
-        console.log(`✅ Fallback to hot returned ${posts.length} posts`);
+        posts = hotJson.data.children
+          .filter(child => {
+            const postDate = child.data.created_utc * 1000;
+            return postDate >= sixtyDaysAgo;
+          })
+          .map(child => {
+            const post = child.data;
+            return {
+              id: post.id,
+              author: post.author,
+              author_icon: null,
+              created_at: new Date(post.created_utc * 1000).toISOString(),
+              title: post.title,
+              content: post.selftext || '',
+              tag: post.link_flair_text || 'Discussion',
+              upvotes: post.ups,
+              comments: post.num_comments,
+              url: `https://reddit.com${post.permalink}`
+            };
+          });
+        console.log(`✅ Fallback to hot returned ${posts.length} posts from last 60 days`);
       }
     }
 
