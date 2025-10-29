@@ -67,7 +67,8 @@
       "Bash(chmod:*)",
       "Bash(./auto-commit.sh \"Add automatic git commit and push functionality\")",
       "Bash(then grep -E \"VITE_SUPABASE\" .env)",
-      "Bash(else echo \".env file not found\")"
+      "Bash(else echo \".env file not found\")",
+      "Bash(then grep \"REDDIT\" .env)"
     ],
     "deny": [],
     "ask": []
