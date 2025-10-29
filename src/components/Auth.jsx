@@ -506,7 +506,7 @@ const Auth = () => {
             backgroundPosition: 'center',
             width: 'clamp(100px, 25vw, 140px)',
             height: 'clamp(32px, 8vw, 44.8px)',
-            marginBottom: 'clamp(0.88rem, 4.4vh, 1.76rem)'
+            marginBottom: 'clamp(1rem, 3vh, 2rem)'
           }}
         />
 
