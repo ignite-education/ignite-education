@@ -883,7 +883,7 @@ const Auth = () => {
                   </button>
                 )}
 
-                <div className="grid grid-cols-2 gap-4 flex-1">
+                <div className="grid grid-cols-2 gap-4 flex-1" style={{ transform: 'scale(0.85)' }}>
                   {courses.length > 0 ? courses.slice(coursePageIndex * 4, coursePageIndex * 4 + 4).map((course) => {
                     return (
                       <div
@@ -893,29 +893,15 @@ const Auth = () => {
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
-                        {/* Plus Icon */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCourseModal(course.id);
-                          }}
-                          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all shadow-lg"
-                          aria-label="View course details"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                          </svg>
-                        </button>
-
                         <div className="flex flex-col h-full">
-                          <h4 className="text-xl font-semibold mb-2 pr-8">{course.title}</h4>
+                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
                           {course.description && (
                             <p className="text-sm text-gray-700 line-clamp-4 mb-3">
                               {course.description}
                             </p>
                           )}
                           {course.module_names && (
-                            <div className="mt-auto">
+                            <div className="mt-auto pb-10">
                               <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
                               <p className="text-xs text-gray-700 line-clamp-2">
                                 {course.module_names}
@@ -923,6 +909,20 @@ const Auth = () => {
                             </div>
                           )}
                         </div>
+
+                        {/* Plus Icon */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCourseModal(course.id);
+                          }}
+                          className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-full transition-all"
+                          aria-label="View course details"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
                       </div>
                     );
                   }) : (
