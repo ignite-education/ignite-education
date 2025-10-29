@@ -408,26 +408,12 @@ const ProgressHub = () => {
       const CACHE_KEY = `community_posts_cache_${courseId}`;
       const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matches server cache)
 
-      console.log('⚠️ Cache loading disabled - only showing fresh posts');
-
-      // Fetch fresh data (ALWAYS force refresh to bypass server cache during debugging)
+      // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
         const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManager';
         const subreddit = redditChannel.replace(/^r\//, '');
-        console.log('🔍 Fetching Reddit posts for subreddit:', subreddit, 'from reddit_channel:', redditChannel);
-        redditData = await getRedditPosts(40, true, subreddit); // Force refresh = true
-        console.log('✅ Reddit posts fetched:', redditData?.length || 0);
-
-        // Log first 5 posts to verify subreddit
-        if (redditData && redditData.length > 0) {
-          console.log('📝 First 5 Reddit posts from backend:');
-          redditData.slice(0, 5).forEach((post, idx) => {
-            console.log(`  ${idx + 1}. "${post.title}" - subreddit: ${post.subreddit || 'not specified'}`);
-          });
-        } else {
-          console.log('⚠️ No Reddit posts returned from backend!');
-        }
+        redditData = await getRedditPosts(40, false, subreddit);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
         redditData = []; // Ensure it's an empty array
