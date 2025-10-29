@@ -268,6 +268,7 @@ const ProgressHub = () => {
       // Fetch user's enrolled course from database
       const userId = authUser?.id;
       let courseId = 'product-manager'; // Default fallback
+      let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
         const { data: userData, error: userError } = await supabase
@@ -295,6 +296,8 @@ const ProgressHub = () => {
         if (courseError) throw courseError;
 
         if (courseData) {
+          fetchedCourseData = courseData; // Store for later use
+
           setTutorData({
             name: courseData.tutor_name || '',
             position: courseData.tutor_position || '',
@@ -407,9 +410,10 @@ const ProgressHub = () => {
 
       // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
-        // Extract subreddit name from channel (remove 'r/' prefix)
-        const subreddit = courseReddit.channel.replace(/^r\//, '');
-        console.log('🔍 Fetching Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
+        // Use the fetched course data to get the subreddit (not state, as state updates are async)
+        const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManager';
+        const subreddit = redditChannel.replace(/^r\//, '');
+        console.log('🔍 Fetching Reddit posts for subreddit:', subreddit, 'from reddit_channel:', redditChannel);
         redditData = await getRedditPosts(40, false, subreddit);
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
       } catch (err) {
