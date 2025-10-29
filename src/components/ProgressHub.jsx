@@ -419,13 +419,17 @@ const ProgressHub = () => {
         redditData = []; // Ensure it's an empty array
       }
 
-      try {
-        userPostsData = await getCommunityPosts(10);
-        console.log('✅ User posts fetched:', userPostsData?.length || 0);
-      } catch (err) {
-        console.error('❌ Error fetching user posts:', err);
-        userPostsData = []; // Ensure it's an empty array
-      }
+      // Temporarily disable user posts - only show Reddit posts for course-specific content
+      // TODO: Add course_id field to community_posts table to enable course filtering
+      userPostsData = [];
+
+      // try {
+      //   userPostsData = await getCommunityPosts(10);
+      //   console.log('✅ User posts fetched:', userPostsData?.length || 0);
+      // } catch (err) {
+      //   console.error('❌ Error fetching user posts:', err);
+      //   userPostsData = []; // Ensure it's an empty array
+      // }
 
       const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
 
