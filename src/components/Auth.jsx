@@ -1167,35 +1167,94 @@ const Auth = () => {
                   {selectedCourse.description}
                 </p>
 
-                <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
-                <div className="space-y-2 mb-6">
-                  <p className="text-gray-700">
-                    <strong>
-                      {selectedCourse.modules && selectedCourse.modules.toLowerCase() === 'multiple'
-                        ? 'Multiple comprehensive modules'
-                        : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
-                    </strong>
-                  </p>
-                  {selectedCourse.module_names && (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm font-semibold text-gray-900 mb-1">Module Names:</p>
-                      <p className="text-sm text-gray-700">{selectedCourse.module_names}</p>
+                {/* Module and Lesson Details */}
+                {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-4 text-gray-900">Course Content</h3>
+                    <div className="space-y-4">
+                      {selectedCourse.module_structure.map((module, moduleIdx) => (
+                        <div key={moduleIdx} className="border border-gray-200 rounded-lg overflow-hidden">
+                          {/* Module Header */}
+                          <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 border-b border-gray-200">
+                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                              <span className="bg-purple-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                                {moduleIdx + 1}
+                              </span>
+                              {module.name}
+                            </h4>
+                          </div>
+
+                          {/* Lessons List */}
+                          {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
+                            <div className="px-4 py-3 bg-white">
+                              <p className="text-xs text-gray-500 font-medium mb-2">{module.lessons.length} Lesson{module.lessons.length !== 1 ? 's' : ''}</p>
+                              <ul className="space-y-2">
+                                {module.lessons.map((lesson, lessonIdx) => (
+                                  <li key={lessonIdx} className="flex items-start text-sm text-gray-700">
+                                    <svg className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    <span>{lesson.name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  {selectedCourse.lessons > 0 && (
-                    <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
-                  )}
-                  {selectedCourse.lesson_names && (
-                    <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-sm font-semibold text-gray-900 mb-1">Lesson Topics:</p>
-                      <p className="text-sm text-gray-700">{selectedCourse.lesson_names}</p>
+                  </div>
+                ) : (
+                  /* Fallback for courses without module_structure */
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-700">
+                        <strong>
+                          {selectedCourse.modules && selectedCourse.modules.toLowerCase() === 'multiple'
+                            ? 'Multiple comprehensive modules'
+                            : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
+                        </strong>
+                      </p>
+                      {selectedCourse.lessons > 0 && (
+                        <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
+                      )}
+                      {selectedCourse.duration && (
+                        <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
+                      )}
                     </div>
-                  )}
-                  {selectedCourse.duration && (
-                    <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
-                  )}
-                  <p className="text-gray-700">Taught by industry expert instructors</p>
-                  <p className="text-gray-700">Certificate upon completion</p>
+                  </div>
+                )}
+
+                {/* Additional Info */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                  <h4 className="font-semibold text-gray-900 mb-2">What You'll Get:</h4>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start">
+                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                      </svg>
+                      Certificate upon completion
+                    </li>
+                    <li className="flex items-start">
+                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                      Taught by industry expert instructors
+                    </li>
+                    <li className="flex items-start">
+                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Interactive hands-on exercises
+                    </li>
+                    <li className="flex items-start">
+                      <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Self-paced learning
+                    </li>
+                  </ul>
                 </div>
 
                 <button
