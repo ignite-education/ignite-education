@@ -128,6 +128,10 @@ const CurriculumUploadNew = () => {
         .select('*')
         .order('display_order');
       if (error) throw error;
+      console.log('Fetched courses:', data);
+      if (data && data.length > 0) {
+        console.log('First course module_structure:', data[0].module_structure);
+      }
       setCourses(data || []);
       if (data && data.length > 0 && !selectedCourseId) {
         setSelectedCourseId(data[0].name);
@@ -176,6 +180,7 @@ const CurriculumUploadNew = () => {
       }
 
       // Fallback to lessons_metadata table if module_structure doesn't exist
+      console.log('Querying lessons_metadata for:', { courseId, moduleNumber });
       const { data, error } = await supabase
         .from('lessons_metadata')
         .select('*')
@@ -185,10 +190,12 @@ const CurriculumUploadNew = () => {
 
       if (error) {
         console.error('Error loading lessons from lessons_metadata:', error);
+        console.error('Error details:', { code: error.code, message: error.message, details: error.details });
         setLessons([]);
         return;
       }
 
+      console.log('Loaded lessons from lessons_metadata:', data);
       setLessons(data || []);
     } catch (error) {
       console.error('Error loading lessons:', error);
