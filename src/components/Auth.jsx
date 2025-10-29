@@ -993,7 +993,7 @@ const Auth = () => {
           <div className="max-w-4xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2' }}>
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
