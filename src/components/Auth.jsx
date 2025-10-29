@@ -1275,6 +1275,36 @@ const Auth = () => {
                   onClick={async () => {
                     if (selectedCourse.status === 'live' && user) {
                       try {
+                        console.log('📝 Enrolling in course:', {
+                          courseId: selectedCourse.id,
+                          courseName: selectedCourse.name,
+                          courseTitle: selectedCourse.title,
+                          userId: user.id
+                        });
+
+                        // Verify the course has lesson data
+                        const { data: lessonCheck, error: lessonError } = await supabase
+                          .from('lessons')
+                          .select('id')
+                          .eq('course_id', selectedCourse.name)
+                          .limit(1);
+
+                        if (lessonError) {
+                          console.error('Error checking lessons:', lessonError);
+                        }
+
+                        if (!lessonCheck || lessonCheck.length === 0) {
+                          console.warn('⚠️ No lessons found for course:', selectedCourse.name);
+                          console.log('Checking if module_structure exists...');
+
+                          // Check if the course has module_structure data
+                          if (!selectedCourse.module_structure || selectedCourse.module_structure.length === 0) {
+                            alert(`This course doesn't have lesson content yet. Please contact support.`);
+                            setSelectedCourseModal(null);
+                            return;
+                          }
+                        }
+
                         // Enroll user in the course
                         const { error } = await supabase
                           .from('users')
