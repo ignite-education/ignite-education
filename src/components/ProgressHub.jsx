@@ -865,11 +865,12 @@ const ProgressHub = () => {
 
   // Settings Modal Handlers
   const handleOpenSettings = async () => {
-    // Fetch available courses from database
+    // Fetch available courses from database (only live courses)
     try {
       const { data: coursesData, error } = await supabase
         .from('courses')
-        .select('name, title')
+        .select('name, title, status')
+        .eq('status', 'live')
         .order('display_order', { ascending: true });
 
       if (!error && coursesData) {
@@ -982,7 +983,13 @@ const ProgressHub = () => {
         if (courseError) throw courseError;
       }
 
-      alert('Preferences updated successfully! Refresh the page to see changes.');
+      // Show success message and auto-refresh page
+      alert('Preferences updated successfully! The page will now refresh.');
+
+      // Wait a moment for the alert to be visible, then refresh
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (error) {
       console.error('Error updating preferences:', error);
       alert(`Failed to update preferences: ${error.message}`);
