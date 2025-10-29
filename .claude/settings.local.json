@@ -63,7 +63,9 @@
       "Bash(git config:*)",
       "Bash(git push:*)",
       "Bash(npx supabase:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(chmod:*)",
+      "Bash(./auto-commit.sh \"Add automatic git commit and push functionality\")"
     ],
     "deny": [],
     "ask": []
