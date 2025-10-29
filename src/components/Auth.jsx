@@ -861,7 +861,7 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '80px' }}>
+                  <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg text-white mb-6 max-w-md text-left" style={{ lineHeight: '1.425' }}>
