@@ -781,10 +781,23 @@ const Auth = () => {
                 />
               </div>
 
-              {/* Right Column - 2x2 Course Grid with Navigation */}
+              {/* Right Column - 2x1 Course Grid with Swipe Navigation */}
               <div className="flex items-center gap-4">
-                <div className="grid grid-cols-2 gap-4 flex-1">
-                  {courses.length > 0 ? courses.slice(0, 4).map((course) => {
+                {/* Left Arrow */}
+                {coursePageIndex > 0 && courses.length > 2 && (
+                  <button
+                    onClick={() => setCoursePageIndex(Math.max(0, coursePageIndex - 1))}
+                    className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
+                    aria-label="Previous courses"
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                )}
+
+                <div className="grid grid-cols-1 gap-4 flex-1">
+                  {courses.length > 0 ? courses.slice(coursePageIndex * 2, coursePageIndex * 2 + 2).map((course) => {
                     const getModulesText = (modules) => {
                       if (!modules) return '';
                       if (modules.toLowerCase() === 'multiple') return 'Multiple modules';
@@ -795,8 +808,8 @@ const Auth = () => {
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start cursor-pointer hover:shadow-2xl overflow-hidden"
-                        style={{ padding: '16px', minHeight: '200px' }}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start cursor-pointer hover:shadow-2xl overflow-hidden aspect-square"
+                        style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
@@ -809,7 +822,7 @@ const Auth = () => {
                             </p>
                           )}
                           {course.module_names && (
-                            <p className="text-xs text-gray-600 italic">
+                            <p className="text-xs text-gray-600 italic line-clamp-2">
                               Modules: {course.module_names}
                             </p>
                           )}
@@ -823,11 +836,22 @@ const Auth = () => {
                         <p className="text-sm">Loading courses...</p>
                       </div>
                       <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
-                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
-                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
                     </>
                   )}
                 </div>
+
+                {/* Right Arrow */}
+                {coursePageIndex < Math.ceil(courses.length / 2) - 1 && courses.length > 2 && (
+                  <button
+                    onClick={() => setCoursePageIndex(Math.min(Math.ceil(courses.length / 2) - 1, coursePageIndex + 1))}
+                    className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
+                    aria-label="Next courses"
+                  >
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           </div>
