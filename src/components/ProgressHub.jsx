@@ -2010,6 +2010,19 @@ const ProgressHub = () => {
               <h2 className="font-semibold" style={{ fontSize: '25.3px', marginBottom: '0.175rem' }}>Community Forum</h2>
 
               <div className="flex items-center gap-3 mb-2">
+                <button
+                  onClick={() => window.open(courseReddit.url, '_blank')}
+                  className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
+                  style={{
+                    width: '38.4px',
+                    height: '38.4px',
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    borderRadius: '0.3rem'
+                  }}
+                  title={`Post on ${courseReddit.channel}`}
+                >
+                  <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+                </button>
                 <div className="flex-1">
                   <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation on {courseReddit.channel}.</p>
                   <p className="text-white" style={{ fontSize: '14px' }}>Discover discussions, ask questions, and engage with the {user.enrolledCourse} community.</p>
