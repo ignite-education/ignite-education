@@ -421,14 +421,20 @@ const ProgressHub = () => {
         console.error('❌ Error loading cached posts:', err);
       }
 
-      // Fetch fresh data in the background (forceRefresh = false to respect server cache)
+      // Fetch fresh data (ALWAYS force refresh to bypass server cache during debugging)
       try {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
         const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManager';
         const subreddit = redditChannel.replace(/^r\//, '');
         console.log('🔍 Fetching Reddit posts for subreddit:', subreddit, 'from reddit_channel:', redditChannel);
-        redditData = await getRedditPosts(40, false, subreddit);
+        redditData = await getRedditPosts(40, true, subreddit); // Force refresh = true
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
+
+        // Log first post to verify subreddit
+        if (redditData && redditData.length > 0) {
+          console.log('📝 First Reddit post:', redditData[0].title);
+          console.log('📝 First Reddit post subreddit:', redditData[0].subreddit || 'not specified');
+        }
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
         redditData = []; // Ensure it's an empty array
