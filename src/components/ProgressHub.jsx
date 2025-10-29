@@ -207,7 +207,21 @@ const ProgressHub = () => {
       }
 
       const userId = authUser?.id || 'temp-user-id';
-      const courseId = 'product-management';
+
+      // Fetch user's enrolled course
+      let courseId = 'product-manager'; // Default fallback
+      if (authUser?.id) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', authUser.id)
+          .single();
+
+        if (userData?.enrolled_course) {
+          courseId = userData.enrolled_course;
+        }
+      }
+
       console.log('🔄 Fetching completed lessons for userId:', userId);
 
       try {
@@ -246,8 +260,24 @@ const ProgressHub = () => {
     try {
       console.log('🔄 Starting fetchData...');
 
-      // TODO: Replace with actual courseId from user context/auth
-      const courseId = 'product-management'; // This should come from authenticated user data
+      // Fetch user's enrolled course from database
+      const userId = authUser?.id;
+      let courseId = 'product-manager'; // Default fallback
+
+      if (userId) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', userId)
+          .single();
+
+        if (userData?.enrolled_course) {
+          courseId = userData.enrolled_course;
+          console.log('✅ User enrolled in course:', courseId);
+        } else {
+          console.log('⚠️ No enrolled_course found, using default:', courseId);
+        }
+      }
 
       // Fetch course data including tutor information
       try {
