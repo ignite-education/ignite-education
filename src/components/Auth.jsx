@@ -893,7 +893,7 @@ const Auth = () => {
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
                         <div className="flex flex-col h-full">
-                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
+                          <h4 className="text-xl font-semibold mb-2 text-pink-500">{course.title}</h4>
                           {course.description && (
                             <p className="text-sm text-gray-700 line-clamp-4 mb-2">
                               {course.description}
@@ -901,9 +901,9 @@ const Auth = () => {
                           )}
                           {course.module_names && (
                             <div className="pb-10">
-                              <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
+                              <p className="text-xs text-black font-semibold mb-1">Modules:</p>
                               <ul className="text-xs text-gray-700 space-y-0.5">
-                                {course.module_names.split(', ').slice(0, 3).map((moduleName, idx) => (
+                                {course.module_names.split(', ').slice(0, 5).map((moduleName, idx) => (
                                   <li key={idx} className="flex items-start">
                                     <span className="mr-1.5">•</span>
                                     <span className="line-clamp-1">{moduleName}</span>
