@@ -7,6 +7,7 @@ import GoogleAd from './GoogleAd';
 import { useAuth } from '../contexts/AuthContext';
 import KnowledgeCheck from './KnowledgeCheck';
 import Lottie from 'lottie-react';
+import { supabase } from '../lib/supabase';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -15,6 +16,19 @@ const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { firstName, user, isAdFree, userRole } = useAuth();
+
+  // Helper function to get user's enrolled course
+  const getUserCourseId = async () => {
+    if (!user?.id) return 'product-manager'; // Default fallback
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('enrolled_course')
+      .eq('id', user.id)
+      .single();
+
+    return userData?.enrolled_course || 'product-manager';
+  };
   const [loading, setLoading] = useState(true);
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
@@ -101,7 +115,7 @@ const LearningHub = () => {
       if (!user) return;
 
       try {
-        const courseId = 'product-management';
+        const courseId = await getUserCourseId();
         const sections = await getExplainedSections(user.id, courseId, currentModule, currentLesson);
 
         // Transform database format to component state format
@@ -126,7 +140,7 @@ const LearningHub = () => {
       if (!user) return;
 
       try {
-        const courseId = 'product-management';
+        const courseId = await getUserCourseId();
         const rating = await getLessonRating(user.id, courseId, currentModule, currentLesson);
         setLessonRating(rating ? rating.rating : null);
       } catch (error) {
@@ -340,8 +354,10 @@ const LearningHub = () => {
   const fetchLessonData = async () => {
     try {
       console.log('🔄 Starting fetchLessonData...');
-      const courseId = 'product-management';
+
       const userId = user?.id || 'temp-user-id';
+      const courseId = await getUserCourseId();
+
       console.log('📝 Using userId:', userId, 'courseId:', courseId);
 
       console.log('📚 Fetching lessons by module...');
@@ -514,7 +530,7 @@ const LearningHub = () => {
     if (!user) return;
 
     try {
-      const courseId = 'product-management';
+      const courseId = await getUserCourseId();
       await submitLessonRating(user.id, courseId, currentModule, currentLesson, rating);
       setLessonRating(rating);
       setShowRatingFeedback(true);
@@ -539,7 +555,7 @@ const LearningHub = () => {
       setFlashcards([]);
 
       // Fetch flashcards from database (already shuffled)
-      const courseId = 'product-management';
+      const courseId = await getUserCourseId();
       const flashcardsData = await getFlashcards(courseId, currentModule, currentLesson);
 
       if (flashcardsData && flashcardsData.length > 0) {
@@ -613,7 +629,7 @@ const LearningHub = () => {
     // Mark lesson as complete
     try {
       const userId = user?.id || 'temp-user-id';
-      const courseId = 'product-management';
+      const courseId = await getUserCourseId();
       console.log('💾 Marking lesson complete for userId:', userId);
 
       await markLessonComplete(userId, courseId, currentModule, currentLesson);
@@ -707,7 +723,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // If this was explaining a selected text, save it to database and state
         if (currentSelectedText && userMessage.startsWith('Explain \'')) {
           try {
-            const courseId = 'product-management';
+            const courseId = await getUserCourseId();
             const savedSection = await saveExplainedSection(
               user.id,
               courseId,
