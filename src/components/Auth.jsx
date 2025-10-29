@@ -901,7 +901,7 @@ const Auth = () => {
                             <div className="mt-auto pb-10">
                               <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
                               <ul className="text-xs text-gray-700 space-y-0.5">
-                                {course.module_names.split(', ').map((moduleName, idx) => (
+                                {course.module_names.split(', ').slice(0, 3).map((moduleName, idx) => (
                                   <li key={idx} className="flex items-start">
                                     <span className="mr-1.5">•</span>
                                     <span className="line-clamp-1">{moduleName}</span>
