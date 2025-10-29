@@ -631,7 +631,8 @@ app.post('/api/text-to-speech', async (req, res) => {
 });
 
 // Reddit posts endpoint with server-side caching and rate limiting
-let redditPostsCache = { data: null, timestamp: 0 };
+// Cache is now a Map keyed by subreddit name
+let redditPostsCache = new Map(); // Map<subreddit, { data, timestamp }>
 let redditOAuthToken = { token: null, timestamp: 0 };
 let lastRedditRequestTime = 0;
 let redditRequestCount = 0;
@@ -724,28 +725,32 @@ app.get('/api/reddit-posts', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 40;
     const forceRefresh = req.query.refresh === 'true';
+    const subreddit = req.query.subreddit || 'ProductManagement'; // Get subreddit from query param
     const now = Date.now();
 
-    // Check if we have valid cached data
-    const cacheAge = now - redditPostsCache.timestamp;
-    const hasValidCache = redditPostsCache.data && cacheAge < REDDIT_CACHE_DURATION;
+    console.log(`📡 Reddit posts requested for r/${subreddit}`);
+
+    // Check if we have valid cached data for this specific subreddit
+    const cachedData = redditPostsCache.get(subreddit);
+    const cacheAge = cachedData ? (now - cachedData.timestamp) : Infinity;
+    const hasValidCache = cachedData && cacheAge < REDDIT_CACHE_DURATION;
     const canRefresh = cacheAge >= REDDIT_CACHE_MINIMUM_REFRESH;
 
     // Return cache if valid and not forcing refresh, or if too soon to refresh
     if (hasValidCache && (!forceRefresh || !canRefresh)) {
       const cacheMinutesOld = Math.floor(cacheAge / 60000);
-      console.log(`📦 Returning cached Reddit posts (${cacheMinutesOld}m old)`);
-      return res.json(redditPostsCache.data);
+      console.log(`📦 Returning cached Reddit posts for r/${subreddit} (${cacheMinutesOld}m old)`);
+      return res.json(cachedData.data);
     }
 
     // If forcing refresh but too soon, warn and return cache
-    if (forceRefresh && !canRefresh) {
+    if (forceRefresh && !canRefresh && cachedData) {
       const waitSeconds = Math.ceil((REDDIT_CACHE_MINIMUM_REFRESH - cacheAge) / 1000);
       console.log(`⏳ Refresh requested but cache too fresh. Wait ${waitSeconds}s. Returning cached data.`);
-      return res.json(redditPostsCache.data);
+      return res.json(cachedData.data);
     }
 
-    console.log('🔄 Fetching fresh Reddit posts...');
+    console.log(`🔄 Fetching fresh Reddit posts from r/${subreddit}...`);
 
     // Get OAuth access token (cached)
     const accessToken = await getRedditOAuthToken();
@@ -753,8 +758,9 @@ app.get('/api/reddit-posts', async (req, res) => {
     // Rate limit before fetching posts
     await waitForRateLimit();
 
-    // Fetch from Reddit OAuth API
-    const redditUrl = `https://oauth.reddit.com/r/ProductManagement/hot?limit=${limit}`;
+    // Fetch from Reddit OAuth API - use dynamic subreddit
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
+    console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
         'Authorization': `Bearer ${accessToken}`,
@@ -789,23 +795,24 @@ app.get('/api/reddit-posts', async (req, res) => {
       };
     });
 
-    // Cache the results
-    redditPostsCache = {
+    // Cache the results for this specific subreddit
+    redditPostsCache.set(subreddit, {
       data: posts,
       timestamp: now
-    };
+    });
 
-    console.log(`✅ Fetched and cached ${posts.length} Reddit posts`);
+    console.log(`✅ Fetched and cached ${posts.length} Reddit posts from r/${subreddit}`);
     res.json(posts);
 
   } catch (error) {
     console.error('❌ Error fetching Reddit posts:', error.message);
     console.error('❌ Error stack:', error.stack);
 
-    // If we have stale cache, return it rather than failing
-    if (redditPostsCache.data) {
-      console.log('⚠️ Returning stale cache due to error');
-      return res.json(redditPostsCache.data);
+    // If we have stale cache for this subreddit, return it rather than failing
+    const cachedData = redditPostsCache.get(subreddit);
+    if (cachedData && cachedData.data) {
+      console.log(`⚠️ Returning stale cache for r/${subreddit} due to error`);
+      return res.json(cachedData.data);
     }
 
     // Return empty array instead of error to prevent frontend from breaking
