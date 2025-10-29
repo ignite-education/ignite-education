@@ -231,7 +231,7 @@ const Auth = () => {
 
   // Typing animation for learning tagline
   const startLearningTaglineTyping = () => {
-    const fullText = 'Building a smarter, more personalised era of education.';
+    const fullText = 'Building a smarter, \nmore personalised era of education.';
     const pauseAfter = 'Building a smarter,'.length;
     let currentIndex = 0;
     let isPaused = false;
@@ -411,7 +411,7 @@ const Auth = () => {
   const renderTypedLearningTagline = () => {
     const text = typedLearningTagline;
     const words = ['smarter', 'personalised'];
-    const fullText = 'Building a smarter, more personalised era of education.';
+    const fullText = 'Building a smarter, \nmore personalised era of education.';
 
     const wordPositions = words.map(word => ({
       word,
@@ -423,6 +423,15 @@ const Auth = () => {
     let lastIndex = 0;
 
     for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // Handle line breaks
+      if (char === '\n') {
+        result.push(<br key={`br-${i}`} />);
+        lastIndex = i + 1;
+        continue;
+      }
+
       const inPurpleWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
 
       if (inPurpleWord) {
@@ -444,7 +453,7 @@ const Auth = () => {
           }
         }
 
-        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length));
+        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length)).replace(/\n/g, '');
         if (chunk) {
           result.push(
             <span key={`text-${i}`} className="text-white">
