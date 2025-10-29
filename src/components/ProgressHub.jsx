@@ -388,38 +388,27 @@ const ProgressHub = () => {
       let redditData = [];
       let userPostsData = [];
 
-      // Clear old cache format (without course-specific key)
+      // Clear ALL caches (old and new) to ensure fresh data
       try {
+        // Clear old generic cache
         localStorage.removeItem('community_posts_cache');
-        console.log('🗑️ Cleared old generic cache');
+        // Clear all course-specific caches
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('community_posts_cache_')) {
+            localStorage.removeItem(key);
+            console.log('🗑️ Cleared cache:', key);
+          }
+        });
+        console.log('🗑️ Cleared all community post caches');
       } catch (err) {
-        console.error('❌ Error clearing old cache:', err);
+        console.error('❌ Error clearing caches:', err);
       }
 
-      // Try to load cached posts first (cache key includes course to prevent showing wrong subreddit)
+      // CACHE DISABLED - Always fetch fresh data
       const CACHE_KEY = `community_posts_cache_${courseId}`;
       const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matches server cache)
 
-      try {
-        const cachedData = localStorage.getItem(CACHE_KEY);
-        if (cachedData) {
-          const { posts, timestamp, subreddit } = JSON.parse(cachedData);
-          const isExpired = Date.now() - timestamp > CACHE_DURATION;
-          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManager';
-
-          // Only use cache if it matches current course's subreddit
-          if (!isExpired && posts.length > 0 && subreddit === currentSubreddit) {
-            console.log('✅ Using cached community posts:', posts.length, 'for subreddit:', subreddit);
-            // Set cached posts immediately so they show up
-            setCommunityPosts(posts);
-          } else if (subreddit !== currentSubreddit) {
-            console.log('🗑️ Cache subreddit mismatch, clearing:', subreddit, '!==', currentSubreddit);
-            localStorage.removeItem(CACHE_KEY);
-          }
-        }
-      } catch (err) {
-        console.error('❌ Error loading cached posts:', err);
-      }
+      console.log('⚠️ Cache loading disabled - only showing fresh posts');
 
       // Fetch fresh data (ALWAYS force refresh to bypass server cache during debugging)
       try {
