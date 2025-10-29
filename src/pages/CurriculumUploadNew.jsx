@@ -153,33 +153,85 @@ const CurriculumUploadNew = () => {
 
   const loadLessons = async (courseId, moduleNumber) => {
     try {
+      // Get the selected course's module structure
+      const selectedCourse = courses.find(c => c.name === courseId);
+
+      if (selectedCourse?.module_structure && Array.isArray(selectedCourse.module_structure)) {
+        // Use module_structure from the course
+        const moduleData = selectedCourse.module_structure[moduleNumber - 1];
+
+        if (moduleData && moduleData.lessons && Array.isArray(moduleData.lessons)) {
+          // Transform lessons from module_structure format to match expected format
+          const transformedLessons = moduleData.lessons.map((lesson, index) => ({
+            course_id: courseId,
+            module_number: moduleNumber,
+            lesson_number: index + 1,
+            lesson_name: lesson.name || `Lesson ${index + 1}`,
+            description: lesson.description || '',
+            bullet_points: lesson.bullet_points || ['', '', '']
+          }));
+          setLessons(transformedLessons);
+          return;
+        }
+      }
+
+      // Fallback to lessons_metadata table if module_structure doesn't exist
       const { data, error } = await supabase
         .from('lessons_metadata')
         .select('*')
         .eq('course_id', courseId)
         .eq('module_number', moduleNumber)
         .order('lesson_number');
-      if (error) throw error;
+
+      if (error) {
+        console.error('Error loading lessons from lessons_metadata:', error);
+        setLessons([]);
+        return;
+      }
+
       setLessons(data || []);
     } catch (error) {
       console.error('Error loading lessons:', error);
+      setLessons([]);
     }
   };
 
   const loadLessonContent = async (courseId, moduleNumber, lessonNumber) => {
     setIsLoadingContent(true);
     try {
-      // Load lesson metadata
-      const { data: metadata, error: metadataError } = await supabase
-        .from('lessons_metadata')
-        .select('*')
-        .eq('course_id', courseId)
-        .eq('module_number', moduleNumber)
-        .eq('lesson_number', lessonNumber)
-        .single();
+      // Try to load lesson metadata from module_structure first
+      const selectedCourse = courses.find(c => c.name === courseId);
+      let metadata = null;
 
-      if (metadataError && metadataError.code !== 'PGRST116') {
-        console.error('Error loading lesson metadata:', metadataError);
+      if (selectedCourse?.module_structure && Array.isArray(selectedCourse.module_structure)) {
+        const moduleData = selectedCourse.module_structure[moduleNumber - 1];
+        if (moduleData && moduleData.lessons && Array.isArray(moduleData.lessons)) {
+          const lessonData = moduleData.lessons[lessonNumber - 1];
+          if (lessonData) {
+            metadata = {
+              lesson_name: lessonData.name || '',
+              description: lessonData.description || '',
+              bullet_points: lessonData.bullet_points || ['', '', '']
+            };
+          }
+        }
+      }
+
+      // Fallback to lessons_metadata table if not found in module_structure
+      if (!metadata) {
+        const { data: metadataFromTable, error: metadataError } = await supabase
+          .from('lessons_metadata')
+          .select('*')
+          .eq('course_id', courseId)
+          .eq('module_number', moduleNumber)
+          .eq('lesson_number', lessonNumber)
+          .single();
+
+        if (metadataError && metadataError.code !== 'PGRST116') {
+          console.error('Error loading lesson metadata:', metadataError);
+        }
+
+        metadata = metadataFromTable;
       }
 
       if (metadata) {
