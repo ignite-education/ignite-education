@@ -758,8 +758,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     await waitForRateLimit();
 
     // Fetch from Reddit OAuth API - use dynamic subreddit
-    // Using 'top' with time filter 'week' to show recent popular posts
-    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=week&limit=${limit}`;
+    // Using 'top' with time filter 'month' to show recent popular posts
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=month&limit=${limit}`;
     console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
