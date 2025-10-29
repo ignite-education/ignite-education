@@ -193,7 +193,7 @@ const Auth = () => {
           }, 500);
         }
       }, 90); // 90ms per character for slower typing
-    }, 1500); // 1500ms delay before starting
+    }, 2000); // 2000ms delay before starting
   };
 
   // Typing animation for courses title
