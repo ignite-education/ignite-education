@@ -75,15 +75,34 @@ const Auth = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const { data, error } = await supabase
+        const { data: coursesData, error: coursesError } = await supabase
           .from('courses')
           .select('*')
           .in('status', ['live', 'coming_soon'])
           .order('display_order', { ascending: true });
 
-        if (error) throw error;
-        console.log('Fetched courses:', data);
-        setCourses(data || []);
+        if (coursesError) throw coursesError;
+
+        // Fetch modules for each course and add module_names
+        const coursesWithModules = await Promise.all(
+          (coursesData || []).map(async (course) => {
+            const { data: modulesData } = await supabase
+              .from('modules')
+              .select('title, display_order')
+              .eq('course_id', course.name)
+              .order('display_order', { ascending: true });
+
+            const moduleNames = modulesData?.map(m => m.title).join(', ') || '';
+
+            return {
+              ...course,
+              module_names: moduleNames
+            };
+          })
+        );
+
+        console.log('Fetched courses with modules:', coursesWithModules);
+        setCourses(coursesWithModules);
       } catch (error) {
         console.error('Error fetching courses:', error);
         console.error('Full error details:', error);
