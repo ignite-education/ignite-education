@@ -851,11 +851,11 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
               {/* Left Column - Description */}
               <div className="flex items-center justify-center px-12">
-                <div className="flex flex-col items-center text-center">
-                  <h3 className="font-bold text-white mb-4" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '100px' }}>
+                <div className="flex flex-col items-start">
+                  <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '100px' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg text-white mb-6 max-w-md" style={{ lineHeight: '1.425' }}>
+                  <p className="text-lg text-white mb-6 max-w-md text-left" style={{ lineHeight: '1.425' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                   </p>
                   <img
