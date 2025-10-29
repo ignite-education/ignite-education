@@ -893,16 +893,21 @@ const Auth = () => {
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
                           {course.description && (
-                            <p className="text-sm text-gray-700 line-clamp-4 mb-3">
+                            <p className="text-sm text-gray-700 line-clamp-4 mb-1.5">
                               {course.description}
                             </p>
                           )}
                           {course.module_names && (
                             <div className="mt-auto pb-10">
                               <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
-                              <p className="text-xs text-gray-700 line-clamp-2">
-                                {course.module_names}
-                              </p>
+                              <ul className="text-xs text-gray-700 space-y-0.5">
+                                {course.module_names.split(', ').map((moduleName, idx) => (
+                                  <li key={idx} className="flex items-start">
+                                    <span className="mr-1.5">•</span>
+                                    <span className="line-clamp-1">{moduleName}</span>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
                           )}
                         </div>
@@ -913,7 +918,7 @@ const Auth = () => {
                             e.stopPropagation();
                             setSelectedCourseModal(course.id);
                           }}
-                          className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-full transition-all"
+                          className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-white rounded-full transition-all"
                           aria-label="View course details"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
