@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getRedditComments } from '../lib/reddit';
@@ -2632,7 +2632,7 @@ const ProgressHub = () => {
                 onClick={() => navigate('/admin/curriculum')}
                 className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
               >
-                <Edit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
+                <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
                 <span className="text-sm font-medium">Curriculum Upload</span>
               </button>
 
@@ -2665,7 +2665,7 @@ const ProgressHub = () => {
                   onClick={() => navigate('/auth-design')}
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
                 >
-                  <Edit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
+                  <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
                   <span className="text-sm font-medium">Auth Design Test</span>
                 </button>
               )}
