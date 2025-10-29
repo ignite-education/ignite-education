@@ -900,7 +900,7 @@ const Auth = () => {
                             </p>
                           )}
                           {course.module_names && (
-                            <div className="pb-10">
+                            <div className="pb-5">
                               <p className="text-xs text-black font-semibold mb-1">Modules:</p>
                               <ul className="text-xs text-gray-700 space-y-0.5">
                                 {course.module_names.split(', ').slice(0, 6).map((moduleName, idx) => (
