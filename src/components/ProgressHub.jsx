@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments } from '../lib/api';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getRedditComments } from '../lib/reddit';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments } from '../lib/api';
+import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Lottie from 'lottie-react';
@@ -1457,7 +1457,9 @@ const ProgressHub = () => {
       setLoadingComments(prev => ({ ...prev, [post.id]: true }));
       console.log(`🔄 Fetching Reddit comments for post: ${post.redditId}`);
 
-      const redditComments = await getRedditComments('ProductManagement', post.redditId);
+      // Get the subreddit name from courseReddit (remove 'r/' prefix if present)
+      const subredditName = courseReddit.channel.replace(/^r\//, '');
+      const redditComments = await getRedditComments(subredditName, post.redditId);
       console.log(`📦 Raw Reddit comments received:`, redditComments);
 
       if (redditComments && redditComments.length > 0) {
@@ -1493,21 +1495,12 @@ const ProgressHub = () => {
     } catch (error) {
       console.error(`❌ Error fetching Reddit comments for post ${post.redditId}:`, error);
 
-      // Check if it's an authentication error
-      if (error.message.includes('403') || error.message.includes('Forbidden') || error.message.includes('authentication')) {
-        console.log('🔐 Reddit authentication required to view comments');
-        // Set a special marker to show auth is needed
-        setPostComments(prev => ({
-          ...prev,
-          [post.id]: 'AUTH_REQUIRED'
-        }));
-      } else {
-        // Set empty array so we don't keep trying to fetch
-        setPostComments(prev => ({
-          ...prev,
-          [post.id]: []
-        }));
-      }
+      // Set empty array so we don't keep trying to fetch
+      // Backend handles authentication, so no need to show AUTH_REQUIRED
+      setPostComments(prev => ({
+        ...prev,
+        [post.id]: []
+      }));
     } finally {
       setLoadingComments(prev => ({ ...prev, [post.id]: false }));
     }

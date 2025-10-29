@@ -822,6 +822,69 @@ app.get('/api/reddit-posts', async (req, res) => {
   }
 });
 
+// Fetch Reddit comments for a specific post
+app.get('/api/reddit-comments', async (req, res) => {
+  try {
+    const { subreddit, postId } = req.query;
+
+    if (!subreddit || !postId) {
+      return res.status(400).json({ error: 'subreddit and postId are required' });
+    }
+
+    console.log(`📡 Reddit comments requested for r/${subreddit}/comments/${postId}`);
+
+    // Get OAuth access token (cached)
+    const accessToken = await getRedditOAuthToken();
+
+    // Rate limit before fetching comments
+    await waitForRateLimit();
+
+    // Fetch from Reddit OAuth API
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/comments/${postId}`;
+    console.log(`🌐 Fetching comments from: ${redditUrl}`);
+    const response = await fetch(redditUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Reddit API error: ${response.status}`, errorText);
+      throw new Error(`Reddit API error: ${response.status}`);
+    }
+
+    const json = await response.json();
+
+    // Reddit returns [post_data, comments_data]
+    const commentsData = json[1]?.data?.children || [];
+
+    // Transform comment data
+    const comments = commentsData
+      .filter(child => child.kind === 't1') // Only include actual comments (not "more" objects)
+      .map(child => ({
+        id: child.data.id,
+        name: child.data.name,
+        author: child.data.author,
+        body: child.data.body,
+        created_utc: child.data.created_utc,
+        score: child.data.score
+      }));
+
+    console.log(`✅ Fetched ${comments.length} Reddit comments for post ${postId}`);
+    res.json(comments);
+
+  } catch (error) {
+    console.error('❌ Error fetching Reddit comments:', error.message);
+    console.error('❌ Error stack:', error.stack);
+
+    // Return empty array instead of error to prevent frontend from breaking
+    console.log('⚠️ Returning empty array due to Reddit API error');
+    res.json([]);
+  }
+});
+
 // Fetch real jobs endpoint using LinkedIn job search
 app.post('/api/fetch-jobs', async (req, res) => {
   try {

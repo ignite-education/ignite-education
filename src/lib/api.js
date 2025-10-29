@@ -260,6 +260,30 @@ export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit
 }
 
 /**
+ * Get comments for a Reddit post via backend API (no authentication required)
+ * @param {string} subreddit - Subreddit name (without r/)
+ * @param {string} postId - Reddit post ID
+ * @returns {Promise<Array>} Array of comment objects
+ */
+export async function getRedditComments(subreddit, postId) {
+  try {
+    // Use backend endpoint which handles authentication and avoids CORS issues
+    const url = `https://ignite-education-api.onrender.com/api/reddit-comments?subreddit=${subreddit}&postId=${postId}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Reddit comments API error: ${response.status}`);
+    }
+
+    const comments = await response.json();
+    return comments;
+  } catch (error) {
+    console.error('Error fetching Reddit comments:', error);
+    throw error;
+  }
+}
+
+/**
  * Get user data by ID
  * @param {string} userId - The user ID to fetch
  * @returns {Promise<Object>} User object
