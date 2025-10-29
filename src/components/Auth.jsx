@@ -189,7 +189,7 @@ const Auth = () => {
           clearInterval(typingInterval);
           setIsEducationTypingComplete(true);
         }
-      }, 100); // 100ms per character for slower typing
+      }, 90); // 90ms per character for slower typing
     }, 1500); // 1500ms delay before starting
   };
 
