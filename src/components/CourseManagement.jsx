@@ -226,7 +226,7 @@ const CourseManagement = () => {
       const { data, error } = await supabase
         .from('courses')
         .update(courseData)
-        .eq('id', selectedCourse.id)
+        .eq('name', selectedCourse.name)
         .select();
 
       if (error) {
