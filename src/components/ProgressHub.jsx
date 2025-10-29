@@ -312,7 +312,15 @@ const ProgressHub = () => {
           }));
 
           // Update reddit data for community forum
+          console.log('📱 Reddit data from DB:', {
+            reddit_channel: courseData.reddit_channel,
+            reddit_url: courseData.reddit_url
+          });
           setCourseReddit({
+            channel: courseData.reddit_channel || 'r/ProductManager',
+            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManager/'
+          });
+          console.log('📱 courseReddit state updated to:', {
             channel: courseData.reddit_channel || 'r/ProductManager',
             url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManager/'
           });
@@ -401,6 +409,7 @@ const ProgressHub = () => {
       try {
         // Extract subreddit name from channel (remove 'r/' prefix)
         const subreddit = courseReddit.channel.replace(/^r\//, '');
+        console.log('🔍 Fetching Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
         redditData = await getRedditPosts(40, false, subreddit);
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
       } catch (err) {
@@ -1241,6 +1250,7 @@ const ProgressHub = () => {
         // Force refresh = true to bypass cache (but respects minimum 2-min refresh on server)
         // Extract subreddit name from channel (remove 'r/' prefix)
         const subreddit = courseReddit.channel.replace(/^r\//, '');
+        console.log('🔄 Refreshing Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
         redditData = await getRedditPosts(40, true, subreddit);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
