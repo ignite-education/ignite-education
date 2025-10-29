@@ -850,7 +850,7 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
               {/* Left Column - Description */}
-              <div className="flex items-center justify-center px-12">
+              <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
                   <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '100px' }}>
                     {renderTypedCoursesTitle()}
