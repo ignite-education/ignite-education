@@ -180,7 +180,6 @@ const CurriculumUploadNew = () => {
       }
 
       // Fallback to lessons_metadata table if module_structure doesn't exist
-      console.log('Querying lessons_metadata for:', { courseId, moduleNumber });
       const { data, error } = await supabase
         .from('lessons_metadata')
         .select('*')
@@ -190,12 +189,10 @@ const CurriculumUploadNew = () => {
 
       if (error) {
         console.error('Error loading lessons from lessons_metadata:', error);
-        console.error('Error details:', { code: error.code, message: error.message, details: error.details });
         setLessons([]);
         return;
       }
 
-      console.log('Loaded lessons from lessons_metadata:', data);
       setLessons(data || []);
     } catch (error) {
       console.error('Error loading lessons:', error);
@@ -226,18 +223,16 @@ const CurriculumUploadNew = () => {
 
       // Fallback to lessons_metadata table if not found in module_structure
       if (!metadata) {
-        console.log('Querying lessons_metadata (single) for:', { courseId, moduleNumber, lessonNumber });
         const { data: metadataFromTable, error: metadataError } = await supabase
           .from('lessons_metadata')
           .select('*')
           .eq('course_id', courseId)
           .eq('module_number', moduleNumber)
           .eq('lesson_number', lessonNumber)
-          .maybeSingle();
+          .single();
 
-        if (metadataError) {
+        if (metadataError && metadataError.code !== 'PGRST116') {
           console.error('Error loading lesson metadata:', metadataError);
-          console.error('Error details:', { code: metadataError.code, message: metadataError.message, details: metadataError.details });
         }
 
         metadata = metadataFromTable;

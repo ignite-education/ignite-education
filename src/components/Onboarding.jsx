@@ -70,10 +70,11 @@ const Onboarding = ({ firstName, userId }) => {
   }, []);
 
   // Organize courses by status
+  // Treat courses without a status as 'live' to ensure they appear in onboarding
   const courseCategories = {
-    live: courses.filter(c => c.status === 'live').map(c => c.title),
-    coming_soon: courses.filter(c => c.status === 'coming_soon').map(c => c.title),
-    requested: courses.filter(c => c.status === 'requested').map(c => c.title)
+    live: courses.filter(c => c.status === 'live' || !c.status).map(c => c.title || c.name),
+    coming_soon: courses.filter(c => c.status === 'coming_soon').map(c => c.title || c.name),
+    requested: courses.filter(c => c.status === 'requested').map(c => c.title || c.name)
   };
 
   // Click outside handler for dropdown
