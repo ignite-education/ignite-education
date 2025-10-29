@@ -642,7 +642,7 @@ const REDDIT_CACHE_MINIMUM_REFRESH = 2 * 60 * 1000; // 2 minutes minimum between
 const REDDIT_TOKEN_DURATION = 55 * 60 * 1000; // 55 minutes (tokens last 60min, refresh early)
 const REDDIT_REQUEST_DELAY = 1100; // 1.1 seconds between requests (stay under 60/min limit)
 const REDDIT_MAX_REQUESTS_PER_MINUTE = 55; // Conservative limit (Reddit allows 60)
-const REDDIT_CACHE_VERSION = 2; // Increment this to invalidate all caches (added 60-day filter)
+const REDDIT_CACHE_VERSION = 3; // Increment this to invalidate all caches (changed to 30-day filter, top posts)
 
 // Rate limiter: ensures we don't exceed Reddit's rate limits
 async function waitForRateLimit() {
@@ -760,8 +760,9 @@ app.get('/api/reddit-posts', async (req, res) => {
     await waitForRateLimit();
 
     // Fetch from Reddit OAuth API - use dynamic subreddit
-    // Using 'top' with time filter 'year' to show popular posts from past year
-    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=year&limit=${limit}`;
+    // Fetch more posts than needed (100) so we can filter and still have enough
+    const fetchLimit = 100;
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=year&limit=${fetchLimit}`;
     console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
@@ -778,13 +779,13 @@ app.get('/api/reddit-posts', async (req, res) => {
 
     let json = await response.json();
 
-    // Filter posts to only include those from the last 60 days
-    const sixtyDaysAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
+    // Filter posts to only include those from the last 30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
 
     let posts = json.data.children
       .filter(child => {
         const postDate = child.data.created_utc * 1000;
-        return postDate >= sixtyDaysAgo;
+        return postDate >= thirtyDaysAgo;
       })
       .map(child => {
         const post = child.data;
@@ -801,15 +802,16 @@ app.get('/api/reddit-posts', async (req, res) => {
           comments: post.num_comments,
           url: `https://reddit.com${post.permalink}`
         };
-      });
+      })
+      .slice(0, limit); // Return only the requested number of posts (default 40)
 
-    console.log(`📊 Filtered to ${posts.length} posts from last 60 days (from ${json.data.children.length} total)`);
+    console.log(`📊 Filtered to ${posts.length} posts from last 30 days (from ${json.data.children.length} fetched, returning ${limit} max)`);
 
     // If no posts found with top/year, fallback to hot
     if (posts.length === 0) {
-      console.log(`⚠️ No posts found with top/year for r/${subreddit}, trying hot...`);
+      console.log(`⚠️ No posts found with top/year from last 30 days for r/${subreddit}, trying hot...`);
       await waitForRateLimit();
-      const hotUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
+      const hotUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${fetchLimit}`;
       const hotResponse = await fetch(hotUrl, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -822,7 +824,7 @@ app.get('/api/reddit-posts', async (req, res) => {
         posts = hotJson.data.children
           .filter(child => {
             const postDate = child.data.created_utc * 1000;
-            return postDate >= sixtyDaysAgo;
+            return postDate >= thirtyDaysAgo;
           })
           .map(child => {
             const post = child.data;
@@ -838,8 +840,9 @@ app.get('/api/reddit-posts', async (req, res) => {
               comments: post.num_comments,
               url: `https://reddit.com${post.permalink}`
             };
-          });
-        console.log(`✅ Fallback to hot returned ${posts.length} posts from last 60 days`);
+          })
+          .slice(0, limit); // Return only the requested number of posts
+        console.log(`✅ Fallback to hot returned ${posts.length} posts from last 30 days`);
       }
     }
 
