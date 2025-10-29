@@ -2094,8 +2094,8 @@ const ProgressHub = () => {
                   <Edit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
                 <div className="flex-1">
-                  <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the Product Management conversation.</p>
-                  <p className="text-white" style={{ fontSize: '14px' }}>Ask a question and contribute your expertise to Ignite users and r/ProductManagement.</p>
+                  <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation.</p>
+                  <p className="text-white" style={{ fontSize: '14px' }}>Ask a question and contribute your expertise to Ignite users and r/{user.enrolledCourse.replace(/\s+/g, '')}.</p>
                 </div>
               </div>
             </div>
