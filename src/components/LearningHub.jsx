@@ -363,6 +363,16 @@ const LearningHub = () => {
       console.log('📚 Fetching lessons by module...');
       const lessonsData = await getLessonsByModule(courseId);
       console.log('✅ Lessons data received:', lessonsData);
+
+      // Debug: Show the lesson names for Module 1 to verify correct course content
+      if (lessonsData.module_1) {
+        console.log('🔍 Module 1 lessons from database:');
+        Object.keys(lessonsData.module_1).forEach(lessonKey => {
+          const lesson = lessonsData.module_1[lessonKey];
+          console.log(`  ${lessonKey}: ${lesson.lessonName || 'No name'}`);
+        });
+      }
+
       setGroupedLessons(lessonsData);
 
       // Fetch lessons metadata (for upcoming lessons carousel)
@@ -399,6 +409,14 @@ const LearningHub = () => {
 
   const currentLessonSections = getCurrentLessonData();
   const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
+
+  // Debug: Log the lesson being displayed
+  console.log('📖 Displaying lesson:', {
+    module: currentModule,
+    lesson: currentLesson,
+    lessonName: lessonName,
+    sectionsCount: Array.isArray(currentLessonSections) ? currentLessonSections.length : 0
+  });
 
   // Helper to determine if a section is high-priority for question generation
   // Get suggested question for section (only uses custom questions from H2 headings)
