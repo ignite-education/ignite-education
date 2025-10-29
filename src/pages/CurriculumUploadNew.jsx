@@ -1716,25 +1716,6 @@ ${contentBlocks.map((block, index) => {
                 <div className="bg-gray-800 border border-gray-700 p-4 rounded-lg space-y-3">
                   <h3 className="text-md font-semibold text-white mb-3">Lesson Information</h3>
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Lesson Name</label>
-                    <input
-                      type="text"
-                      value={lessonName}
-                      onChange={(e) => setLessonName(e.target.value)}
-                      placeholder="e.g., What is a Product Manager?"
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
-                    <textarea
-                      value={lessonDescription}
-                      onChange={(e) => setLessonDescription(e.target.value)}
-                      placeholder="Lesson description..."
-                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none min-h-[80px]"
-                    />
-                  </div>
-                  <div>
                     <label className="block text-sm font-medium mb-1 text-gray-300">Bullet Points (for Upcoming Lessons Card)</label>
                     <p className="text-xs text-gray-500 mb-2">Add 3 bullet points that will appear on the upcoming lessons card</p>
                     {lessonBulletPoints.map((bp, idx) => (
