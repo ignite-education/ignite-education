@@ -142,14 +142,32 @@ const Auth = () => {
 
   // Typing animation for education text
   const startEducationTyping = () => {
-    const fullText = 'Education should be accessible, personalised and integrated for everyone.';
+    const fullText = 'Education should be accessible, personalised and integrated.';
+    const pausePositions = [
+      { after: 'Education should be accessible,'.length, duration: 500 },
+      { after: 'Education should be accessible, personalised'.length, duration: 500 },
+      { after: 'Education should be accessible, personalised and integrated.'.length, duration: 500 }
+    ];
     let currentIndex = 0;
+    let isPaused = false;
 
     // Add delay before starting typing
     setTimeout(() => {
       const typingInterval = setInterval(() => {
+        if (isPaused) return; // Skip typing if paused
+
         if (currentIndex <= fullText.length) {
           setTypedEducationText(fullText.substring(0, currentIndex));
+
+          // Check if we should pause at this position
+          const pausePoint = pausePositions.find(p => currentIndex === p.after);
+          if (pausePoint) {
+            isPaused = true;
+            setTimeout(() => {
+              isPaused = false;
+            }, pausePoint.duration);
+          }
+
           currentIndex++;
         } else {
           clearInterval(typingInterval);
@@ -226,7 +244,7 @@ const Auth = () => {
   const renderTypedEducation = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
-    const fullText = 'Education should be accessible, personalised and integrated for everyone.';
+    const fullText = 'Education should be accessible, personalised and integrated.';
 
     // Split text into parts and highlight the key words
     let result = [];
