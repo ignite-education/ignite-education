@@ -388,6 +388,14 @@ const ProgressHub = () => {
       let redditData = [];
       let userPostsData = [];
 
+      // Clear old cache format (without course-specific key)
+      try {
+        localStorage.removeItem('community_posts_cache');
+        console.log('🗑️ Cleared old generic cache');
+      } catch (err) {
+        console.error('❌ Error clearing old cache:', err);
+      }
+
       // Try to load cached posts first (cache key includes course to prevent showing wrong subreddit)
       const CACHE_KEY = `community_posts_cache_${courseId}`;
       const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matches server cache)
@@ -395,13 +403,18 @@ const ProgressHub = () => {
       try {
         const cachedData = localStorage.getItem(CACHE_KEY);
         if (cachedData) {
-          const { posts, timestamp } = JSON.parse(cachedData);
+          const { posts, timestamp, subreddit } = JSON.parse(cachedData);
           const isExpired = Date.now() - timestamp > CACHE_DURATION;
+          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManager';
 
-          if (!isExpired && posts.length > 0) {
-            console.log('✅ Using cached community posts:', posts.length);
+          // Only use cache if it matches current course's subreddit
+          if (!isExpired && posts.length > 0 && subreddit === currentSubreddit) {
+            console.log('✅ Using cached community posts:', posts.length, 'for subreddit:', subreddit);
             // Set cached posts immediately so they show up
             setCommunityPosts(posts);
+          } else if (subreddit !== currentSubreddit) {
+            console.log('🗑️ Cache subreddit mismatch, clearing:', subreddit, '!==', currentSubreddit);
+            localStorage.removeItem(CACHE_KEY);
           }
         }
       } catch (err) {
@@ -474,14 +487,16 @@ const ProgressHub = () => {
 
       console.log('📊 Total posts to display:', allPosts.length, '(Reddit:', redditPosts.length, 'User:', userPosts.length, ')');
 
-      // Cache posts if we have any
+      // Cache posts if we have any (include subreddit to validate cache)
       if (allPosts.length > 0) {
         try {
+          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManager';
           localStorage.setItem(CACHE_KEY, JSON.stringify({
             posts: allPosts,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            subreddit: currentSubreddit
           }));
-          console.log('💾 Cached community posts for future loads');
+          console.log('💾 Cached community posts for future loads, subreddit:', currentSubreddit);
         } catch (err) {
           console.error('❌ Error caching posts:', err);
         }
