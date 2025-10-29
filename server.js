@@ -758,8 +758,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     await waitForRateLimit();
 
     // Fetch from Reddit OAuth API - use dynamic subreddit
-    // Using 'top' with time filter 'month' to show recent popular posts
-    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=month&limit=${limit}`;
+    // Using 'top' with time filter 'year' to show popular posts from past year
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=year&limit=${limit}`;
     console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
@@ -792,9 +792,9 @@ app.get('/api/reddit-posts', async (req, res) => {
       };
     });
 
-    // If no posts found with top/month, fallback to hot
+    // If no posts found with top/year, fallback to hot
     if (posts.length === 0) {
-      console.log(`⚠️ No posts found with top/month for r/${subreddit}, trying hot...`);
+      console.log(`⚠️ No posts found with top/year for r/${subreddit}, trying hot...`);
       await waitForRateLimit();
       const hotUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
       const hotResponse = await fetch(hotUrl, {
