@@ -407,6 +407,65 @@ const Auth = () => {
     return result;
   };
 
+  // Helper to render typed learning tagline with purple highlights
+  const renderTypedLearningTagline = () => {
+    const text = typedLearningTagline;
+    const words = ['smarter', 'personalised'];
+    const fullText = 'Building a smarter, more personalised era of education.';
+
+    const wordPositions = words.map(word => ({
+      word,
+      start: fullText.indexOf(word),
+      end: fullText.indexOf(word) + word.length
+    }));
+
+    let result = [];
+    let lastIndex = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      const inPurpleWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
+
+      if (inPurpleWord) {
+        if (i < lastIndex || !result.length || result[result.length - 1].key !== inPurpleWord.word) {
+          const purpleChunk = text.substring(i, Math.min(text.length, inPurpleWord.end));
+          result.push(
+            <span key={`${inPurpleWord.word}-${i}`} className="text-purple-600">
+              {purpleChunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, inPurpleWord.end - 1);
+          lastIndex = i + 1;
+        }
+      } else {
+        let nextPurpleStart = text.length;
+        for (const wp of wordPositions) {
+          if (wp.start > i && wp.start < nextPurpleStart && wp.start < text.length) {
+            nextPurpleStart = wp.start;
+          }
+        }
+
+        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length));
+        if (chunk) {
+          result.push(
+            <span key={`text-${i}`} className="text-white">
+              {chunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, nextPurpleStart - 1);
+          lastIndex = i + 1;
+        }
+      }
+    }
+
+    if (!isLearningTaglineTypingComplete) {
+      result.push(
+        <span key="cursor" className="text-white animate-blink font-bold">|</span>
+      );
+    }
+
+    return result;
+  };
+
   // Auto-rotate through cards
   useEffect(() => {
     if (!animateWords || isLogin) return;
@@ -912,11 +971,8 @@ const Auth = () => {
           <div className="max-w-4xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="text-2xl sm:text-3xl font-semibold text-white text-left mb-12">
-                {typedLearningTagline}
-                {!isLearningTaglineTypingComplete && (
-                  <span className="animate-blink font-bold">|</span>
-                )}
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2' }}>
+                {renderTypedLearningTagline()}
               </h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
