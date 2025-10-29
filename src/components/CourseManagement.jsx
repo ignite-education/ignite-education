@@ -16,7 +16,9 @@ const CourseManagement = () => {
     title: '',
     status: 'requested',
     modules: [{ name: '', lessons: [{ name: '' }] }], // Array of modules with nested lessons
-    description: ''
+    description: '',
+    reddit_channel: '',
+    reddit_url: ''
   });
 
   useEffect(() => {
@@ -77,7 +79,9 @@ const CourseManagement = () => {
       title: '',
       status: 'requested',
       modules: [{ name: '', lessons: [{ name: '' }] }],
-      description: ''
+      description: '',
+      reddit_channel: '',
+      reddit_url: ''
     });
     setShowAddModal(true);
   };
@@ -121,7 +125,9 @@ const CourseManagement = () => {
       title: course.title || '',
       status: course.status || 'requested',
       modules: modulesArray,
-      description: course.description || ''
+      description: course.description || '',
+      reddit_channel: course.reddit_channel || '',
+      reddit_url: course.reddit_url || ''
     });
     setShowEditModal(true);
   };
@@ -135,7 +141,9 @@ const CourseManagement = () => {
       title: '',
       status: 'requested',
       modules: [{ name: '', lessons: [{ name: '' }] }],
-      description: ''
+      description: '',
+      reddit_channel: '',
+      reddit_url: ''
     });
   };
 
@@ -166,7 +174,9 @@ const CourseManagement = () => {
         lessons: totalLessons,
         description: formData.description,
         display_order: maxOrder + 1,
-        module_structure: formData.modules // Save the full nested structure
+        module_structure: formData.modules, // Save the full nested structure
+        reddit_channel: formData.reddit_channel,
+        reddit_url: formData.reddit_url
       };
 
       const { error } = await supabase
@@ -205,7 +215,9 @@ const CourseManagement = () => {
         modules: totalModules > 1 ? String(totalModules) : 'Multiple',
         lessons: totalLessons,
         description: formData.description,
-        module_structure: formData.modules // Save the full nested structure
+        module_structure: formData.modules, // Save the full nested structure
+        reddit_channel: formData.reddit_channel,
+        reddit_url: formData.reddit_url
       };
 
       console.log('Saving course data:', courseData);
@@ -526,6 +538,30 @@ const CourseManagement = () => {
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel</label>
+                <input
+                  type="text"
+                  value={formData.reddit_channel}
+                  onChange={(e) => setFormData({ ...formData, reddit_channel: e.target.value })}
+                  placeholder="e.g., r/ProductManager"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: r/channelname (will be displayed in community forum)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL</label>
+                <input
+                  type="text"
+                  value={formData.reddit_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/ProductManager/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -691,6 +727,30 @@ const CourseManagement = () => {
                   rows="4"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel</label>
+                <input
+                  type="text"
+                  value={formData.reddit_channel}
+                  onChange={(e) => setFormData({ ...formData, reddit_channel: e.target.value })}
+                  placeholder="e.g., r/ProductManager"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Format: r/channelname (will be displayed in community forum)</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL</label>
+                <input
+                  type="text"
+                  value={formData.reddit_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/ProductManager/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
               </div>
             </div>
 
