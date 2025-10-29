@@ -142,11 +142,10 @@ const Auth = () => {
 
   // Typing animation for education text
   const startEducationTyping = () => {
-    const fullText = 'Education should be \naccessible, personalised and integrated for everyone.';
+    const fullText = 'Education should be\naccessible, personalised and integrated for everyone.';
     const pausePositions = [
-      { after: 'Education should be \naccessible,'.length, duration: 500 },
-      { after: 'Education should be \naccessible, personalised'.length, duration: 500 },
-      { after: 'Education should be \naccessible, personalised and integrated'.length, duration: 500 }
+      { after: 'Education should be\naccessible,'.length, duration: 500 },
+      { after: 'Education should be\naccessible, personalised'.length, duration: 500 }
     ];
     let currentIndex = 0;
     let isPaused = false;
@@ -244,7 +243,7 @@ const Auth = () => {
   const renderTypedEducation = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
-    const fullText = 'Education should be \naccessible, personalised and integrated for everyone.';
+    const fullText = 'Education should be\naccessible, personalised and integrated for everyone.';
 
     // Split text into parts and highlight the key words
     let result = [];
@@ -691,7 +690,7 @@ const Auth = () => {
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="w-full" style={{ minHeight: '280px', marginTop: '9.408px' }}>
+              <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left">
                   {isEducationTypingComplete && (
                     <>
