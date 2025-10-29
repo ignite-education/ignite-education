@@ -85,10 +85,13 @@ export async function getLessonsMetadata(courseId) {
  * @returns {Promise<Object>} Nested object structure: { module_1: { lesson_1: [...], lesson_2: [...] }, ... }
  */
 export async function getLessonsByModule(courseId) {
-  // First, try to fetch without course_id filter to see what data exists
+  console.log('🔍 getLessonsByModule: Fetching lessons for courseId:', courseId);
+
+  // Fetch lessons filtered by course_id
   const { data, error } = await supabase
     .from('lessons')
     .select('*')
+    .eq('course_id', courseId)
     .order('module_number', { ascending: true })
     .order('lesson_number', { ascending: true })
     .order('section_number', { ascending: true });
