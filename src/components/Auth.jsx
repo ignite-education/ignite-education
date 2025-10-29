@@ -798,33 +798,42 @@ const Auth = () => {
 
                 <div className="grid grid-cols-1 gap-4 flex-1">
                   {courses.length > 0 ? courses.slice(coursePageIndex * 2, coursePageIndex * 2 + 2).map((course) => {
-                    const getModulesText = (modules) => {
-                      if (!modules) return '';
-                      if (modules.toLowerCase() === 'multiple') return 'Multiple modules';
-                      return `${modules} modules`;
-                    };
-
                     return (
                       <div
                         key={course.id}
-                        onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start cursor-pointer hover:shadow-2xl overflow-hidden aspect-square"
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative"
                         style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
-                        <div>
-                          <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
-                          <p className="text-xs text-gray-500 mb-2">{getModulesText(course.modules)}</p>
+                        {/* Plus Icon */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedCourseModal(course.id);
+                          }}
+                          className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-pink-500 hover:bg-pink-600 text-white rounded-full transition-all shadow-lg"
+                          aria-label="View course details"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+
+                        <div className="flex flex-col h-full">
+                          <h4 className="text-xl font-semibold mb-2 pr-8">{course.title}</h4>
                           {course.description && (
-                            <p className="text-sm text-gray-700 line-clamp-3 mb-2">
+                            <p className="text-sm text-gray-700 line-clamp-4 mb-3">
                               {course.description}
                             </p>
                           )}
                           {course.module_names && (
-                            <p className="text-xs text-gray-600 italic line-clamp-2">
-                              Modules: {course.module_names}
-                            </p>
+                            <div className="mt-auto">
+                              <p className="text-xs text-gray-500 font-medium mb-1">Modules:</p>
+                              <p className="text-xs text-gray-700 line-clamp-2">
+                                {course.module_names}
+                              </p>
+                            </div>
                           )}
                         </div>
                       </div>
