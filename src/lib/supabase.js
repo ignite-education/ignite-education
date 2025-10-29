@@ -8,10 +8,24 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true
   },
+  db: {
+    schema: 'public'
+  },
   global: {
     headers: {
       'Accept': 'application/json',
+      'Accept-Profile': 'public',
       'Content-Type': 'application/json'
+    },
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      })
     }
   }
 })

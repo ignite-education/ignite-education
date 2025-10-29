@@ -226,16 +226,18 @@ const CurriculumUploadNew = () => {
 
       // Fallback to lessons_metadata table if not found in module_structure
       if (!metadata) {
+        console.log('Querying lessons_metadata (single) for:', { courseId, moduleNumber, lessonNumber });
         const { data: metadataFromTable, error: metadataError } = await supabase
           .from('lessons_metadata')
           .select('*')
           .eq('course_id', courseId)
           .eq('module_number', moduleNumber)
           .eq('lesson_number', lessonNumber)
-          .single();
+          .maybeSingle();
 
-        if (metadataError && metadataError.code !== 'PGRST116') {
+        if (metadataError) {
           console.error('Error loading lesson metadata:', metadataError);
+          console.error('Error details:', { code: metadataError.code, message: metadataError.message, details: metadataError.details });
         }
 
         metadata = metadataFromTable;
