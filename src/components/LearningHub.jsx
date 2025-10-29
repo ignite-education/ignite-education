@@ -33,6 +33,7 @@ const LearningHub = () => {
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [userCourseName, setUserCourseName] = useState('Product Management');
   const [currentModule, setCurrentModule] = useState(parseInt(searchParams.get('module')) || 1);
   const [currentLesson, setCurrentLesson] = useState(parseInt(searchParams.get('lesson')) || 1);
   const [chatMessages, setChatMessages] = useState([
@@ -359,6 +360,9 @@ const LearningHub = () => {
       const courseId = await getUserCourseId();
 
       console.log('📝 Using userId:', userId, 'courseId:', courseId);
+
+      // Set the user's course name for display
+      setUserCourseName(courseId);
 
       console.log('📚 Fetching lessons by module...');
       const lessonsData = await getLessonsByModule(courseId);
@@ -1717,7 +1721,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               onClick={() => navigate('/')}
             />
           </div>
-          <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>Product Management</h2>
+          <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
         </div>
 
         {/* Upcoming Lessons */}
