@@ -24,6 +24,10 @@ const ProgressHub = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const [cardOffset, setCardOffset] = useState(0);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [isClosingModal, setIsClosingModal] = useState(false);
+  const [newPost, setNewPost] = useState({ title: '', content: '', shareToReddit: true });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [redditAuthenticated, setRedditAuthenticated] = useState(false);
   const [redditUsername, setRedditUsername] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -539,6 +543,58 @@ const ProgressHub = () => {
   };
 
   // Handle modal close with animation
+  const handleCloseModal = () => {
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setShowPostModal(false);
+      setIsClosingModal(false);
+    }, 200);
+  };
+
+  // Handle post submission - posts directly to Reddit
+  const handleSubmitPost = async (e) => {
+    e.preventDefault();
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+      alert('Please fill in both title and content');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // Check Reddit authentication
+      if (!isRedditAuthenticated()) {
+        console.log('🔐 Not authenticated with Reddit, initiating OAuth flow...');
+        localStorage.setItem('pending_reddit_post', JSON.stringify({
+          title: newPost.title,
+          content: newPost.content
+        }));
+        initiateRedditAuth();
+        return;
+      }
+
+      // Post to Reddit
+      console.log('📤 Posting to Reddit...');
+      const contextLine = `\n\n_Posted from [Ignite Education](https://ignite.education) - ${user.enrolledCourse} course_`;
+      const redditContent = newPost.content + contextLine;
+      const subreddit = courseReddit.channel.replace(/^r\//, '');
+      const redditResult = await postToReddit(subreddit, newPost.title, redditContent);
+      console.log('✅ Posted to Reddit successfully:', redditResult.url);
+
+      // Reset form and close modal
+      setNewPost({ title: '', content: '', shareToReddit: true });
+      handleCloseModal();
+
+      // Refresh posts
+      await fetchData();
+
+      alert('Posted successfully to Reddit!');
+    } catch (error) {
+      console.error('❌ Error posting to Reddit:', error);
+      alert(`Failed to post to Reddit: ${error.message || 'Please try again.'}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Navigate to next lesson
   const goToNextLesson = () => {
@@ -2011,7 +2067,7 @@ const ProgressHub = () => {
 
               <div className="flex items-center gap-3 mb-2">
                 <button
-                  onClick={() => window.open(courseReddit.url, '_blank')}
+                  onClick={() => setShowPostModal(true)}
                   className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
                   style={{
                     width: '38.4px',
@@ -2019,7 +2075,6 @@ const ProgressHub = () => {
                     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                     borderRadius: '0.3rem'
                   }}
-                  title={`Post on ${courseReddit.channel}`}
                 >
                   <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
@@ -2275,6 +2330,108 @@ const ProgressHub = () => {
           </div>
         </div>
 
+      {/* Post Creation Modal */}
+      {showPostModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseModal}
+        >
+          <div className="relative w-full px-4" style={{ maxWidth: '700px' }}>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>What's on your mind?</h2>
+
+            <div
+              className="bg-white text-black relative"
+              style={{
+                animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                padding: '1.5rem',
+                maxHeight: '70vh',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-4 right-4 text-gray-600 hover:text-black"
+              >
+                <X size={24} />
+              </button>
+
+              <form onSubmit={handleSubmitPost}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>Title</label>
+                    <input
+                      type="text"
+                      value={newPost.title}
+                      onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                      className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                      style={{ borderRadius: '0.3rem' }}
+                      placeholder="Enter your post title..."
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>Content</label>
+                    <textarea
+                      value={newPost.content}
+                      onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                      className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500 resize-none"
+                      style={{ height: '187.2px', borderRadius: '0.3rem' }}
+                      placeholder="What's on your mind?"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-4 bg-gray-100" style={{ borderRadius: '0.3rem' }}>
+                      <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#FF4500">
+                        <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
+                      </svg>
+                      <span className="text-black text-sm font-medium flex-1">
+                        This will be posted to {courseReddit.channel}
+                      </span>
+                      {redditAuthenticated && (
+                        <span className="text-xs text-green-600 flex items-center gap-1">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          Connected as u/{redditUsername}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3 justify-end mt-6">
+                    <button
+                      type="button"
+                      onClick={handleCloseModal}
+                      className="px-6 py-2 bg-gray-300 text-black font-semibold hover:bg-gray-400 transition"
+                      style={{ borderRadius: '0.3rem' }}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-pink-500 text-white font-semibold hover:bg-pink-600 transition disabled:opacity-50"
+                      style={{ borderRadius: '0.3rem' }}
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? 'Posting...' : 'Post'}
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Settings Modal */}
       {showSettingsModal && (
