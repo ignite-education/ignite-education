@@ -399,7 +399,9 @@ const ProgressHub = () => {
 
       // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
-        redditData = await getRedditPosts(40, false);
+        // Extract subreddit name from channel (remove 'r/' prefix)
+        const subreddit = courseReddit.channel.replace(/^r\//, '');
+        redditData = await getRedditPosts(40, false, subreddit);
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
@@ -1237,7 +1239,9 @@ const ProgressHub = () => {
 
       try {
         // Force refresh = true to bypass cache (but respects minimum 2-min refresh on server)
-        redditData = await getRedditPosts(40, true);
+        // Extract subreddit name from channel (remove 'r/' prefix)
+        const subreddit = courseReddit.channel.replace(/^r\//, '');
+        redditData = await getRedditPosts(40, true, subreddit);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error refreshing Reddit posts:', err);

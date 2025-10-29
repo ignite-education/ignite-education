@@ -235,15 +235,16 @@ export async function createCommunityPost(postData) {
 }
 
 /**
- * Get live posts from Reddit's r/ProductManagement subreddit via backend
+ * Get live posts from Reddit subreddit via backend
  * @param {number} limit - Number of posts to fetch (default: 10)
  * @param {boolean} forceRefresh - Whether to force a cache refresh (default: false)
+ * @param {string} subreddit - Subreddit to fetch from (without 'r/' prefix, default: 'ProductManagement')
  * @returns {Promise<Array>} Array of Reddit post objects
  */
-export async function getRedditPosts(limit = 10, forceRefresh = false) {
+export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit = 'ProductManagement') {
   try {
     // Use backend endpoint which handles caching and avoids CORS/rate limit issues
-    const url = `https://ignite-education-api.onrender.com/api/reddit-posts?limit=${limit}${forceRefresh ? '&refresh=true' : ''}`;
+    const url = `https://ignite-education-api.onrender.com/api/reddit-posts?limit=${limit}${forceRefresh ? '&refresh=true' : ''}&subreddit=${subreddit}`;
     const response = await fetch(url);
 
     if (!response.ok) {
