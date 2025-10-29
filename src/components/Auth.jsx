@@ -840,7 +840,7 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -956,8 +956,8 @@ const Auth = () => {
             </div>
           </div>
 
-          {/* Scroll Down Arrow */}
-          <div className="flex justify-center mb-8">
+          {/* Scroll Down Arrow - Absolutely positioned */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={scrollToLearningModel}
               className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
