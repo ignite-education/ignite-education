@@ -301,22 +301,26 @@ const Auth = () => {
           lastIndex = i + 1;
         }
       } else {
-        // Regular text - find the next pink word or end
+        // Regular text - find the next pink word, line break, or end
         let nextPinkStart = text.length;
+        let nextLineBreak = text.indexOf('\n', i);
+        if (nextLineBreak === -1) nextLineBreak = text.length;
+
         for (const wp of wordPositions) {
           if (wp.start > i && wp.start < nextPinkStart && wp.start < text.length) {
             nextPinkStart = wp.start;
           }
         }
 
-        const chunk = text.substring(i, Math.min(nextPinkStart, text.length)).replace(/\n/g, '');
+        const endPos = Math.min(nextPinkStart, nextLineBreak, text.length);
+        const chunk = text.substring(i, endPos);
         if (chunk) {
           result.push(
             <span key={`text-${i}`} className="text-white" style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
               {chunk}
             </span>
           );
-          i = Math.min(text.length - 1, nextPinkStart - 1);
+          i = endPos - 1;
           lastIndex = i + 1;
         }
       }
