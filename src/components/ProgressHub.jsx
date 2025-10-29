@@ -1875,6 +1875,12 @@ const ProgressHub = () => {
                                   marginRight: '10px'
                                 }}
                                 onClick={() => {
+                                  console.log('🎯 Navigating to lesson:', {
+                                    module: lesson.module_number,
+                                    lesson: lesson.lesson_number,
+                                    userEnrolledCourse: user.enrolledCourse,
+                                    lessonCourseId: lesson.course_id
+                                  });
                                   navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
                                 }}
                               >
