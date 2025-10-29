@@ -32,6 +32,8 @@ const CourseManagement = () => {
         .order('display_order', { ascending: true });
 
       if (error) throw error;
+      console.log('Fetched courses:', data);
+      console.log('First course module_structure:', data?.[0]?.module_structure);
       setCourses(data || []);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -83,10 +85,19 @@ const CourseManagement = () => {
   const openEditModal = (course) => {
     setSelectedCourse(course);
 
+    console.log('Opening edit modal for course:', course);
+    console.log('Course module_structure:', course.module_structure);
+
     // Parse existing modules/lessons into array format with nested lessons
     let modulesArray = [{ name: '', lessons: [{ name: '' }] }];
-    if (course.modules && course.lessons) {
-      // If modules is a number like "3", create that many module entries
+
+    // First, check if we have the detailed module_structure
+    if (course.module_structure && Array.isArray(course.module_structure)) {
+      console.log('Loading from module_structure');
+      modulesArray = course.module_structure;
+    } else if (course.modules && course.lessons) {
+      console.log('Loading from old format (modules/lessons count)');
+      // Fall back to old format: If modules is a number like "3", create that many module entries
       if (!isNaN(course.modules)) {
         const moduleCount = parseInt(course.modules);
         const lessonsPerModule = Math.ceil(course.lessons / moduleCount);
@@ -154,7 +165,8 @@ const CourseManagement = () => {
         modules: totalModules > 1 ? String(totalModules) : 'Multiple',
         lessons: totalLessons,
         description: formData.description,
-        display_order: maxOrder + 1
+        display_order: maxOrder + 1,
+        module_structure: formData.modules // Save the full nested structure
       };
 
       const { error } = await supabase
@@ -192,15 +204,25 @@ const CourseManagement = () => {
         status: formData.status,
         modules: totalModules > 1 ? String(totalModules) : 'Multiple',
         lessons: totalLessons,
-        description: formData.description
+        description: formData.description,
+        module_structure: formData.modules // Save the full nested structure
       };
 
-      const { error } = await supabase
+      console.log('Saving course data:', courseData);
+      console.log('Module structure being saved:', JSON.stringify(formData.modules, null, 2));
+
+      const { data, error } = await supabase
         .from('courses')
         .update(courseData)
-        .eq('id', selectedCourse.id);
+        .eq('id', selectedCourse.id)
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+
+      console.log('Updated course data from database:', data);
 
       alert('Course updated successfully!');
       closeModals();
