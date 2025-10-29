@@ -78,6 +78,7 @@ const Auth = () => {
         const { data, error } = await supabase
           .from('courses')
           .select('*')
+          .in('status', ['live', 'coming_soon'])
           .order('display_order', { ascending: true });
 
         if (error) throw error;
@@ -769,7 +770,7 @@ const Auth = () => {
                 <h3 className="font-bold text-white mb-4" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '100px' }}>
                   {renderTypedCoursesTitle()}
                 </h3>
-                <p className="text-lg text-white leading-relaxed mb-6 max-w-md">
+                <p className="text-lg text-white mb-6 max-w-md" style={{ lineHeight: '1.425' }}>
                   We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                 </p>
                 <img
