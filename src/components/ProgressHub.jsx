@@ -983,13 +983,8 @@ const ProgressHub = () => {
         if (courseError) throw courseError;
       }
 
-      // Show success message and auto-refresh page
-      alert('Preferences updated successfully! The page will now refresh.');
-
-      // Wait a moment for the alert to be visible, then refresh
-      setTimeout(() => {
-        window.location.reload();
-      }, 500);
+      // Auto-refresh page to reflect changes
+      window.location.reload();
     } catch (error) {
       console.error('Error updating preferences:', error);
       alert(`Failed to update preferences: ${error.message}`);
