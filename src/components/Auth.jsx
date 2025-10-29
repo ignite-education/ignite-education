@@ -781,10 +781,10 @@ const Auth = () => {
                 />
               </div>
 
-              {/* Right Column - 2x1 Course Grid with Swipe Navigation */}
+              {/* Right Column - 2x2 Course Grid with Swipe Navigation */}
               <div className="flex items-center gap-4">
                 {/* Left Arrow */}
-                {coursePageIndex > 0 && courses.length > 2 && (
+                {coursePageIndex > 0 && courses.length > 4 && (
                   <button
                     onClick={() => setCoursePageIndex(Math.max(0, coursePageIndex - 1))}
                     className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
@@ -796,8 +796,8 @@ const Auth = () => {
                   </button>
                 )}
 
-                <div className="grid grid-cols-1 gap-4 flex-1">
-                  {courses.length > 0 ? courses.slice(coursePageIndex * 2, coursePageIndex * 2 + 2).map((course) => {
+                <div className="grid grid-cols-2 gap-4 flex-1">
+                  {courses.length > 0 ? courses.slice(coursePageIndex * 4, coursePageIndex * 4 + 4).map((course) => {
                     return (
                       <div
                         key={course.id}
@@ -850,9 +850,9 @@ const Auth = () => {
                 </div>
 
                 {/* Right Arrow */}
-                {coursePageIndex < Math.ceil(courses.length / 2) - 1 && courses.length > 2 && (
+                {coursePageIndex < Math.ceil(courses.length / 4) - 1 && courses.length > 4 && (
                   <button
-                    onClick={() => setCoursePageIndex(Math.min(Math.ceil(courses.length / 2) - 1, coursePageIndex + 1))}
+                    onClick={() => setCoursePageIndex(Math.min(Math.ceil(courses.length / 4) - 1, coursePageIndex + 1))}
                     className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
                     aria-label="Next courses"
                   >
