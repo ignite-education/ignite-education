@@ -1712,6 +1712,55 @@ ${contentBlocks.map((block, index) => {
                   </div>
                 )}
 
+                {/* Lesson Metadata Section */}
+                <div className="bg-gray-800 border border-gray-700 p-4 rounded-lg space-y-3">
+                  <h3 className="text-md font-semibold text-white mb-3">Lesson Information</h3>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Lesson Name</label>
+                    <input
+                      type="text"
+                      value={lessonName}
+                      onChange={(e) => setLessonName(e.target.value)}
+                      placeholder="e.g., What is a Product Manager?"
+                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
+                    <textarea
+                      value={lessonDescription}
+                      onChange={(e) => setLessonDescription(e.target.value)}
+                      placeholder="Lesson description..."
+                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none min-h-[80px]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Bullet Points (for Upcoming Lessons Card)</label>
+                    <p className="text-xs text-gray-500 mb-2">Add 3 bullet points that will appear on the upcoming lessons card</p>
+                    {lessonBulletPoints.map((bp, idx) => (
+                      <input
+                        key={idx}
+                        type="text"
+                        value={bp}
+                        onChange={(e) => {
+                          const newBps = [...lessonBulletPoints];
+                          newBps[idx] = e.target.value;
+                          setLessonBulletPoints(newBps);
+                        }}
+                        placeholder={`Bullet point ${idx + 1}...`}
+                        className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none mb-2"
+                      />
+                    ))}
+                  </div>
+                  <button
+                    onClick={saveLessonMetadata}
+                    disabled={isUploading}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+                  >
+                    {isUploading ? 'Saving...' : 'Save Lesson Info'}
+                  </button>
+                </div>
+
                 {/* Content Block Buttons - Sticky */}
                 <div className="sticky top-0 z-10 bg-gray-900 border border-gray-800 py-3 -mx-8 px-8 shadow-sm flex gap-2 flex-wrap items-center justify-between">
                   <div className="flex gap-2 flex-wrap">
