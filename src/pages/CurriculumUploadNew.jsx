@@ -20,9 +20,11 @@ const CurriculumUploadNew = () => {
   const [linkedinLink, setLinkedinLink] = useState('');
   const [calendlyLink, setCalendlyLink] = useState('');
 
-  // Module state
+  // Module state (from module_structure in courses table)
+  const [moduleStructure, setModuleStructure] = useState([]);
   const [modules, setModules] = useState([]);
   const [selectedModuleNumber, setSelectedModuleNumber] = useState(1);
+  const [selectedModuleIndex, setSelectedModuleIndex] = useState(0);
   const [moduleName, setModuleName] = useState('');
   const [moduleDescription, setModuleDescription] = useState('');
   const [moduleBulletPoints, setModuleBulletPoints] = useState(['']);
@@ -30,6 +32,7 @@ const CurriculumUploadNew = () => {
   // Lesson state
   const [lessons, setLessons] = useState([]);
   const [selectedLessonNumber, setSelectedLessonNumber] = useState(1);
+  const [selectedLessonIndex, setSelectedLessonIndex] = useState(0);
   const [lessonName, setLessonName] = useState('');
   const [lessonDescription, setLessonDescription] = useState('');
   const [lessonBulletPoints, setLessonBulletPoints] = useState(['', '', '']); // 3 bullet points for cards
@@ -64,6 +67,24 @@ const CurriculumUploadNew = () => {
         setTutorImage(selectedCourse.tutor_image || '');
         setLinkedinLink(selectedCourse.linkedin_link || '');
         setCalendlyLink(selectedCourse.calendly_link || '');
+
+        // Load module structure from course
+        if (selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure)) {
+          console.log('Loading module_structure from course:', selectedCourse.module_structure);
+          setModuleStructure(selectedCourse.module_structure);
+
+          // Reset selections to first module and lesson
+          if (selectedCourse.module_structure.length > 0) {
+            setSelectedModuleIndex(0);
+            setSelectedModuleNumber(1);
+            if (selectedCourse.module_structure[0].lessons && selectedCourse.module_structure[0].lessons.length > 0) {
+              setSelectedLessonIndex(0);
+              setSelectedLessonNumber(1);
+            }
+          }
+        } else {
+          setModuleStructure([]);
+        }
       }
     }
   }, [selectedCourseId, courses]);
@@ -1382,7 +1403,7 @@ ${contentBlocks.map((block, index) => {
         {/* Tabs */}
         <div className="bg-gray-900 rounded-lg border border-gray-800 mb-6">
           <div className="flex border-b border-gray-800">
-            {['courses', 'modules', 'lessons', 'content'].map((tab) => (
+            {['courses', 'content'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -1401,246 +1422,6 @@ ${contentBlocks.map((block, index) => {
             {/* Courses Tab */}
             {activeTab === 'courses' && (
               <CourseManagement />
-            )}
-
-            {/* Modules Tab */}
-            {activeTab === 'modules' && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-4 text-white">Manage Modules</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Course</label>
-                    <select
-                      value={selectedCourseId}
-                      onChange={(e) => setSelectedCourseId(e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    >
-                      {courses.map((course) => (
-                        <option key={course.id} value={course.id}>
-                          {course.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Module Number</label>
-                    <input
-                      type="number"
-                      value={selectedModuleNumber}
-                      onChange={(e) => setSelectedModuleNumber(parseInt(e.target.value))}
-                      min="1"
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Module Name</label>
-                    <input
-                      type="text"
-                      value={moduleName}
-                      onChange={(e) => setModuleName(e.target.value)}
-                      placeholder="e.g., Introduction to Product Manager"
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
-                    <textarea
-                      value={moduleDescription}
-                      onChange={(e) => setModuleDescription(e.target.value)}
-                      placeholder="Module description..."
-                      className="w-full px-4 py-2 border rounded-lg min-h-[100px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Bullet Points</label>
-                    {moduleBulletPoints.map((bp, idx) => (
-                      <div key={idx} className="flex gap-2 mb-2">
-                        <input
-                          type="text"
-                          value={bp}
-                          onChange={(e) => {
-                            const newBps = [...moduleBulletPoints];
-                            newBps[idx] = e.target.value;
-                            setModuleBulletPoints(newBps);
-                          }}
-                          placeholder={`Bullet point ${idx + 1}...`}
-                          className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                        />
-                        {idx === moduleBulletPoints.length - 1 && (
-                          <button
-                            onClick={() => setModuleBulletPoints([...moduleBulletPoints, ''])}
-                            className="px-3 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition"
-                          >
-                            +
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    onClick={saveModule}
-                    disabled={isUploading}
-                    className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 transition"
-                  >
-                    {isUploading ? 'Saving...' : 'Save Module'}
-                  </button>
-                </div>
-
-                {/* Existing Modules */}
-                {modules.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold mb-4 text-white">Existing Modules</h3>
-                    <div className="space-y-2">
-                      {modules.map((module) => (
-                        <div key={module.id} className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-750 flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="font-medium text-white">Module {module.module_number}: {module.name}</div>
-                            {module.description && (
-                              <div className="text-sm text-gray-600 mt-1">{module.description}</div>
-                            )}
-                            {module.bullet_points && module.bullet_points.length > 0 && (
-                              <ul className="text-sm text-gray-600 mt-2 list-disc list-inside">
-                                {module.bullet_points.map((bp, idx) => (
-                                  <li key={idx}>{bp}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => deleteModule(module.id, module.name)}
-                            className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Lessons Tab */}
-            {activeTab === 'lessons' && (
-              <div className="space-y-4">
-                <h2 className="text-xl font-semibold mb-4 text-white">Manage Lessons</h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Course</label>
-                    <select
-                      value={selectedCourseId}
-                      onChange={(e) => setSelectedCourseId(e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    >
-                      {courses.map((course) => (
-                        <option key={course.id} value={course.id}>
-                          {course.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Module</label>
-                    <select
-                      value={selectedModuleNumber}
-                      onChange={(e) => setSelectedModuleNumber(parseInt(e.target.value))}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    >
-                      {modules.map((module) => (
-                        <option key={module.module_number} value={module.module_number}>
-                          Module {module.module_number}: {module.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Lesson Number</label>
-                    <input
-                      type="number"
-                      value={selectedLessonNumber}
-                      onChange={(e) => setSelectedLessonNumber(parseInt(e.target.value))}
-                      min="1"
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Lesson Name</label>
-                    <input
-                      type="text"
-                      value={lessonName}
-                      onChange={(e) => setLessonName(e.target.value)}
-                      placeholder="e.g., What is a Product Manager?"
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
-                    <textarea
-                      value={lessonDescription}
-                      onChange={(e) => setLessonDescription(e.target.value)}
-                      placeholder="Lesson description..."
-                      className="w-full px-4 py-2 border rounded-lg min-h-[100px]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Bullet Points (for Upcoming Lessons Card)</label>
-                    <p className="text-xs text-gray-500 mb-2">Add 3 bullet points that will appear on the upcoming lessons card</p>
-                    {lessonBulletPoints.map((bp, idx) => (
-                      <input
-                        key={idx}
-                        type="text"
-                        value={bp}
-                        onChange={(e) => {
-                          const newBps = [...lessonBulletPoints];
-                          newBps[idx] = e.target.value;
-                          setLessonBulletPoints(newBps);
-                        }}
-                        placeholder={`Bullet point ${idx + 1}...`}
-                        className="w-full px-4 py-2 border rounded-lg mb-2"
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={saveLessonMetadata}
-                    disabled={isUploading}
-                    className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 transition"
-                  >
-                    {isUploading ? 'Saving...' : 'Save Lesson Info'}
-                  </button>
-                </div>
-
-                {/* Existing Lessons */}
-                {lessons.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="text-lg font-semibold mb-4 text-white">Existing Lessons</h3>
-                    <div className="space-y-2">
-                      {lessons.map((lesson) => (
-                        <div key={lesson.id} className="p-4 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-750 flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="font-medium text-white">Lesson {lesson.lesson_number}: {lesson.lesson_name}</div>
-                            {lesson.description && (
-                              <div className="text-sm text-gray-600 mt-1">{lesson.description}</div>
-                            )}
-                            {lesson.bullet_points && lesson.bullet_points.length > 0 && (
-                              <ul className="text-sm text-gray-600 mt-2 list-disc list-inside">
-                                {lesson.bullet_points.map((bp, idx) => (
-                                  <li key={idx}>{bp}</li>
-                                ))}
-                              </ul>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => deleteLesson(lesson.id, lesson.lesson_name)}
-                            className="ml-4 px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
             )}
 
             {/* Content Tab */}
@@ -1668,13 +1449,22 @@ ${contentBlocks.map((block, index) => {
                     <div>
                       <label className="block text-sm font-medium mb-1 text-gray-300">Module</label>
                       <select
-                        value={selectedModuleNumber}
-                        onChange={(e) => setSelectedModuleNumber(parseInt(e.target.value))}
+                        value={selectedModuleIndex}
+                        onChange={(e) => {
+                          const moduleIdx = parseInt(e.target.value);
+                          setSelectedModuleIndex(moduleIdx);
+                          setSelectedModuleNumber(moduleIdx + 1);
+                          // Reset lesson selection to first lesson in this module
+                          if (moduleStructure[moduleIdx]?.lessons?.length > 0) {
+                            setSelectedLessonIndex(0);
+                            setSelectedLessonNumber(1);
+                          }
+                        }}
                         className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       >
-                        {modules.map((module) => (
-                          <option key={module.module_number} value={module.module_number}>
-                            Module {module.module_number}
+                        {moduleStructure.map((module, idx) => (
+                          <option key={idx} value={idx}>
+                            {module.name || `Module ${idx + 1}`}
                           </option>
                         ))}
                       </select>
@@ -1682,17 +1472,18 @@ ${contentBlocks.map((block, index) => {
                     <div>
                       <label className="block text-sm font-medium mb-1 text-gray-300">Lesson</label>
                       <select
-                        value={selectedLessonNumber}
+                        value={selectedLessonIndex}
                         onChange={(e) => {
-                          const lessonNum = parseInt(e.target.value);
-                          setSelectedLessonNumber(lessonNum);
+                          const lessonIdx = parseInt(e.target.value);
+                          setSelectedLessonIndex(lessonIdx);
+                          setSelectedLessonNumber(lessonIdx + 1);
                           // Content will be loaded automatically by useEffect
                         }}
                         className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       >
-                        {lessons.map((lesson) => (
-                          <option key={lesson.lesson_number} value={lesson.lesson_number}>
-                            Lesson {lesson.lesson_number}
+                        {moduleStructure[selectedModuleIndex]?.lessons?.map((lesson, idx) => (
+                          <option key={idx} value={idx}>
+                            {lesson.name || `Lesson ${idx + 1}`}
                           </option>
                         ))}
                       </select>
