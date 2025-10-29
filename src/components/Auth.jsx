@@ -544,7 +544,7 @@ const Auth = () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-xs sm:text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+              <span className="px-2 bg-white text-gray-500">Or</span>
             </div>
           </div>
 
@@ -621,7 +621,7 @@ const Auth = () => {
               className="text-black hover:text-pink-500 transition"
               style={{ fontSize: '0.85em' }}
             >
-              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              {isLogin ? "Don't have an account?" : 'Already have an account?'}
             </button>
           </div>
         </div>
