@@ -759,7 +759,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     await waitForRateLimit();
 
     // Fetch from Reddit OAuth API - use dynamic subreddit
-    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
+    // Using 'new' instead of 'hot' to show recent posts only
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/new?limit=${limit}`;
     console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
