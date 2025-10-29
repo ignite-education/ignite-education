@@ -5,7 +5,6 @@ import Anthropic from '@anthropic-ai/sdk';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
-import { Resend } from 'resend';
 import { render } from '@react-email/render';
 import React from 'react';
 
@@ -36,8 +35,8 @@ const pollyClient = new PollyClient({
   }
 });
 
-// Initialize Resend (optional)
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+// Initialize Resend (optional) - will be loaded dynamically when needed
+let resend = null;
 
 app.use(cors());
 app.use(express.json());
@@ -1102,14 +1101,20 @@ app.post('/api/send-email', async (req, res) => {
         throw new Error(`Unknown email type: ${type}`);
     }
 
-    // Send email with Resend
-    if (!resend) {
+    // Send email with Resend (dynamically import if not already loaded)
+    if (!process.env.RESEND_API_KEY) {
       console.warn('⚠️ Resend not configured - skipping email send');
       return res.json({
         success: true,
         message: 'Email sending disabled (Resend not configured)',
         emailId: null
       });
+    }
+
+    // Dynamically import Resend only when needed
+    if (!resend) {
+      const { Resend } = await import('resend');
+      resend = new Resend(process.env.RESEND_API_KEY);
     }
 
     const { data: emailData, error: emailError } = await resend.emails.send({
