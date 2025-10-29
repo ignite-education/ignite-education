@@ -314,8 +314,7 @@ const ProgressHub = () => {
       console.log('📋 Fetched lessons metadata:', metadataData);
       setLessonsMetadata(metadataData);
 
-      // Get userId from authenticated user
-      const userId = authUser?.id || 'temp-user-id';
+      // userId is already declared above, reuse it
       console.log('👤 Using userId for progress:', userId);
 
       // Fetch completed lessons for this user
