@@ -447,21 +447,26 @@ const Auth = () => {
           lastIndex = i + 1;
         }
       } else {
+        // Regular text - find the next purple word, line break, or end
         let nextPurpleStart = text.length;
+        let nextLineBreak = text.indexOf('\n', i);
+        if (nextLineBreak === -1) nextLineBreak = text.length;
+
         for (const wp of wordPositions) {
           if (wp.start > i && wp.start < nextPurpleStart && wp.start < text.length) {
             nextPurpleStart = wp.start;
           }
         }
 
-        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length)).replace(/\n/g, '');
+        const endPos = Math.min(nextPurpleStart, nextLineBreak, text.length);
+        const chunk = text.substring(i, endPos);
         if (chunk) {
           result.push(
             <span key={`text-${i}`} className="text-white">
               {chunk}
             </span>
           );
-          i = Math.min(text.length - 1, nextPurpleStart - 1);
+          i = endPos - 1;
           lastIndex = i + 1;
         }
       }
