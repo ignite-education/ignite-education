@@ -642,7 +642,7 @@ const REDDIT_CACHE_MINIMUM_REFRESH = 2 * 60 * 1000; // 2 minutes minimum between
 const REDDIT_TOKEN_DURATION = 55 * 60 * 1000; // 55 minutes (tokens last 60min, refresh early)
 const REDDIT_REQUEST_DELAY = 1100; // 1.1 seconds between requests (stay under 60/min limit)
 const REDDIT_MAX_REQUESTS_PER_MINUTE = 55; // Conservative limit (Reddit allows 60)
-const REDDIT_CACHE_VERSION = 4; // Increment this to invalidate all caches (changed to 90-day filter for more content)
+const REDDIT_CACHE_VERSION = 5; // Increment this to invalidate all caches (reverted to simple hot posts)
 
 // Rate limiter: ensures we don't exceed Reddit's rate limits
 async function waitForRateLimit() {
@@ -760,9 +760,7 @@ app.get('/api/reddit-posts', async (req, res) => {
     await waitForRateLimit();
 
     // Fetch from Reddit OAuth API - use dynamic subreddit
-    // Fetch more posts than needed (100) so we can filter and still have enough
-    const fetchLimit = 100;
-    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/top?t=year&limit=${fetchLimit}`;
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
     console.log(`🌐 Fetching from: ${redditUrl}`);
     const response = await fetch(redditUrl, {
       headers: {
@@ -777,74 +775,26 @@ app.get('/api/reddit-posts', async (req, res) => {
       throw new Error(`Reddit API error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
-    let json = await response.json();
+    const json = await response.json();
 
-    // Filter posts to only include those from the last 90 days (more flexible to ensure content)
-    const ninetyDaysAgo = Date.now() - (90 * 24 * 60 * 60 * 1000);
+    // Transform Reddit data WITHOUT fetching individual user icons
+    // This eliminates 40+ additional API requests per fetch
+    const posts = json.data.children.map(child => {
+      const post = child.data;
 
-    let posts = json.data.children
-      .filter(child => {
-        const postDate = child.data.created_utc * 1000;
-        return postDate >= ninetyDaysAgo;
-      })
-      .map(child => {
-        const post = child.data;
-
-        return {
-          id: post.id,
-          author: post.author,
-          author_icon: null, // Don't fetch individual user icons to save API calls
-          created_at: new Date(post.created_utc * 1000).toISOString(),
-          title: post.title,
-          content: post.selftext || '',
-          tag: post.link_flair_text || 'Discussion',
-          upvotes: post.ups,
-          comments: post.num_comments,
-          url: `https://reddit.com${post.permalink}`
-        };
-      })
-      .slice(0, limit); // Return only the requested number of posts (default 40)
-
-    console.log(`📊 Filtered to ${posts.length} posts from last 90 days (from ${json.data.children.length} fetched, returning ${limit} max)`);
-
-    // If no posts found with top/year, fallback to hot
-    if (posts.length === 0) {
-      console.log(`⚠️ No posts found with top/year from last 90 days for r/${subreddit}, trying hot...`);
-      await waitForRateLimit();
-      const hotUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${fetchLimit}`;
-      const hotResponse = await fetch(hotUrl, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
-        }
-      });
-
-      if (hotResponse.ok) {
-        const hotJson = await hotResponse.json();
-        posts = hotJson.data.children
-          .filter(child => {
-            const postDate = child.data.created_utc * 1000;
-            return postDate >= ninetyDaysAgo;
-          })
-          .map(child => {
-            const post = child.data;
-            return {
-              id: post.id,
-              author: post.author,
-              author_icon: null,
-              created_at: new Date(post.created_utc * 1000).toISOString(),
-              title: post.title,
-              content: post.selftext || '',
-              tag: post.link_flair_text || 'Discussion',
-              upvotes: post.ups,
-              comments: post.num_comments,
-              url: `https://reddit.com${post.permalink}`
-            };
-          })
-          .slice(0, limit); // Return only the requested number of posts
-        console.log(`✅ Fallback to hot returned ${posts.length} posts from last 90 days`);
-      }
-    }
+      return {
+        id: post.id,
+        author: post.author,
+        author_icon: null, // Don't fetch individual user icons to save API calls
+        created_at: new Date(post.created_utc * 1000).toISOString(),
+        title: post.title,
+        content: post.selftext || '',
+        tag: post.link_flair_text || 'Discussion',
+        upvotes: post.ups,
+        comments: post.num_comments,
+        url: `https://reddit.com${post.permalink}`
+      };
+    });
 
     // Cache the results for this specific subreddit
     redditPostsCache[subreddit] = {
