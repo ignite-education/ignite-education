@@ -642,6 +642,7 @@ const REDDIT_CACHE_MINIMUM_REFRESH = 2 * 60 * 1000; // 2 minutes minimum between
 const REDDIT_TOKEN_DURATION = 55 * 60 * 1000; // 55 minutes (tokens last 60min, refresh early)
 const REDDIT_REQUEST_DELAY = 1100; // 1.1 seconds between requests (stay under 60/min limit)
 const REDDIT_MAX_REQUESTS_PER_MINUTE = 55; // Conservative limit (Reddit allows 60)
+const REDDIT_CACHE_VERSION = 2; // Increment this to invalidate all caches (added 60-day filter)
 
 // Rate limiter: ensures we don't exceed Reddit's rate limits
 async function waitForRateLimit() {
@@ -732,7 +733,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     // Check if we have valid cached data for this specific subreddit
     const cachedData = redditPostsCache[subreddit];
     const cacheAge = cachedData ? (now - cachedData.timestamp) : Infinity;
-    const hasValidCache = cachedData && cacheAge < REDDIT_CACHE_DURATION;
+    const hasCorrectVersion = cachedData && cachedData.version === REDDIT_CACHE_VERSION;
+    const hasValidCache = cachedData && cacheAge < REDDIT_CACHE_DURATION && hasCorrectVersion;
     const canRefresh = cacheAge >= REDDIT_CACHE_MINIMUM_REFRESH;
 
     // Return cache if valid and not forcing refresh, or if too soon to refresh
@@ -844,7 +846,8 @@ app.get('/api/reddit-posts', async (req, res) => {
     // Cache the results for this specific subreddit
     redditPostsCache[subreddit] = {
       data: posts,
-      timestamp: now
+      timestamp: now,
+      version: REDDIT_CACHE_VERSION
     };
 
     console.log(`✅ Fetched and cached ${posts.length} Reddit posts from r/${subreddit}`);
