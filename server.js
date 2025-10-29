@@ -774,11 +774,8 @@ app.get('/api/reddit-posts', async (req, res) => {
       throw new Error(`Reddit API error: ${response.status} - ${errorText.substring(0, 200)}`);
     }
 
-    const json = await response.json();
-
-    // Transform Reddit data WITHOUT fetching individual user icons
-    // This eliminates 40+ additional API requests per fetch
-    const posts = json.data.children.map(child => {
+    let json = await response.json();
+    let posts = json.data.children.map(child => {
       const post = child.data;
 
       return {
@@ -794,6 +791,39 @@ app.get('/api/reddit-posts', async (req, res) => {
         url: `https://reddit.com${post.permalink}`
       };
     });
+
+    // If no posts found with top/month, fallback to hot
+    if (posts.length === 0) {
+      console.log(`⚠️ No posts found with top/month for r/${subreddit}, trying hot...`);
+      await waitForRateLimit();
+      const hotUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${limit}`;
+      const hotResponse = await fetch(hotUrl, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+        }
+      });
+
+      if (hotResponse.ok) {
+        const hotJson = await hotResponse.json();
+        posts = hotJson.data.children.map(child => {
+          const post = child.data;
+          return {
+            id: post.id,
+            author: post.author,
+            author_icon: null,
+            created_at: new Date(post.created_utc * 1000).toISOString(),
+            title: post.title,
+            content: post.selftext || '',
+            tag: post.link_flair_text || 'Discussion',
+            upvotes: post.ups,
+            comments: post.num_comments,
+            url: `https://reddit.com${post.permalink}`
+          };
+        });
+        console.log(`✅ Fallback to hot returned ${posts.length} posts`);
+      }
+    }
 
     // Cache the results for this specific subreddit
     redditPostsCache[subreddit] = {
