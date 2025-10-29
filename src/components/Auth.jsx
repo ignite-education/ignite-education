@@ -83,23 +83,20 @@ const Auth = () => {
 
         if (coursesError) throw coursesError;
 
-        // Fetch modules for each course and add module_names
-        const coursesWithModules = await Promise.all(
-          (coursesData || []).map(async (course) => {
-            const { data: modulesData } = await supabase
-              .from('modules')
-              .select('title, display_order')
-              .eq('course_id', course.name)
-              .order('display_order', { ascending: true });
+        // Add module_names from module_structure or modules table
+        const coursesWithModules = (coursesData || []).map((course) => {
+          let moduleNames = '';
 
-            const moduleNames = modulesData?.map(m => m.title).join(', ') || '';
+          // First try to get modules from module_structure field
+          if (course.module_structure && Array.isArray(course.module_structure)) {
+            moduleNames = course.module_structure.map(m => m.name).join(', ');
+          }
 
-            return {
-              ...course,
-              module_names: moduleNames
-            };
-          })
-        );
+          return {
+            ...course,
+            module_names: moduleNames
+          };
+        });
 
         console.log('Fetched courses with modules:', coursesWithModules);
         setCourses(coursesWithModules);
