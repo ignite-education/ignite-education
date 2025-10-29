@@ -1272,7 +1272,28 @@ const Auth = () => {
                 </div>
 
                 <button
-                  onClick={() => setSelectedCourseModal(null)}
+                  onClick={async () => {
+                    if (selectedCourse.status === 'live' && user) {
+                      try {
+                        // Enroll user in the course
+                        const { error } = await supabase
+                          .from('users')
+                          .update({ enrolled_course: selectedCourse.name })
+                          .eq('id', user.id);
+
+                        if (error) throw error;
+
+                        console.log('✅ User enrolled in course:', selectedCourse.name);
+
+                        // Navigate to progress hub
+                        window.location.href = '/progress';
+                      } catch (error) {
+                        console.error('Error enrolling in course:', error);
+                        alert('Failed to enroll in course. Please try again.');
+                      }
+                    }
+                    setSelectedCourseModal(null);
+                  }}
                   className={`w-full font-semibold py-3 rounded-lg transition ${
                     selectedCourse.status === 'live'
                       ? 'bg-pink-500 text-white hover:bg-pink-600'
