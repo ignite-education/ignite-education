@@ -24,11 +24,11 @@ export async function getLessons(courseId) {
 export async function getLessonsMetadata(courseId) {
   console.log('📋 getLessonsMetadata called for courseId:', courseId);
 
-  // First, fetch from the course's module_structure
+  // Fetch from the course's module_structure using name as primary key
   const { data: courseData, error: courseError } = await supabase
     .from('courses')
-    .select('module_structure, name')
-    .eq('id', courseId)
+    .select('module_structure, name, title')
+    .eq('name', courseId)
     .single();
 
   if (courseError) {
@@ -290,14 +290,15 @@ export async function getAllCourses() {
 
 /**
  * Get course information by ID
- * @param {string} courseId - The course ID to fetch
+ * @param {string} courseId - The course ID or name to fetch
  * @returns {Promise<Object>} Course object
  */
 export async function getCourse(courseId) {
+  // Query by name (primary key)
   const { data, error } = await supabase
     .from('courses')
     .select('*')
-    .eq('id', courseId)
+    .eq('name', courseId)
     .single();
 
   if (error) throw error;

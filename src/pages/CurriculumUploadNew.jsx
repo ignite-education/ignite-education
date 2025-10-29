@@ -57,7 +57,7 @@ const CurriculumUploadNew = () => {
     if (selectedCourseId) {
       loadModules(selectedCourseId);
       // Load course details when course is selected
-      const selectedCourse = courses.find(c => c.id === selectedCourseId);
+      const selectedCourse = courses.find(c => c.name === selectedCourseId);
       if (selectedCourse) {
         setCourseName(selectedCourse.name || '');
         setCourseDescription(selectedCourse.description || '');
@@ -126,11 +126,11 @@ const CurriculumUploadNew = () => {
       const { data, error } = await supabase
         .from('courses')
         .select('*')
-        .order('id');
+        .order('display_order');
       if (error) throw error;
       setCourses(data || []);
       if (data && data.length > 0 && !selectedCourseId) {
-        setSelectedCourseId(data[0].id);
+        setSelectedCourseId(data[0].name);
       }
     } catch (error) {
       console.error('Error loading courses:', error);
@@ -280,8 +280,8 @@ const CurriculumUploadNew = () => {
       const { error } = await supabase
         .from('courses')
         .upsert({
-          id: selectedCourseId,
-          name: courseName,
+          name: selectedCourseId,
+          title: courseName,
           description: courseDescription,
           tutor_name: tutorName,
           tutor_position: tutorPosition,
@@ -1440,8 +1440,8 @@ ${contentBlocks.map((block, index) => {
                         className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       >
                         {courses.map((course) => (
-                          <option key={course.id} value={course.id}>
-                            {course.name}
+                          <option key={course.name} value={course.name}>
+                            {course.title || course.name}
                           </option>
                         ))}
                       </select>
