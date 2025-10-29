@@ -474,25 +474,73 @@ const CurriculumUploadNew = () => {
 
     setIsUploading(true);
     try {
-      const { error } = await supabase
-        .from('lessons_metadata')
-        .upsert({
-          course_id: selectedCourseId,
-          module_number: selectedModuleNumber,
-          lesson_number: selectedLessonNumber,
-          lesson_name: lessonName,
-          description: lessonDescription,
-          bullet_points: lessonBulletPoints.filter(bp => bp.trim())
-        }, {
-          onConflict: 'course_id,module_number,lesson_number'
-        });
+      // Get the current course data
+      const selectedCourse = courses.find(c => c.name === selectedCourseId);
 
-      if (error) throw error;
-      alert('Lesson metadata saved successfully!');
-      await loadLessons(selectedCourseId, selectedModuleNumber);
-      setLessonName('');
-      setLessonDescription('');
-      setLessonBulletPoints(['', '', '']);
+      if (!selectedCourse) {
+        throw new Error('Course not found');
+      }
+
+      // Check if we should update module_structure or lessons_metadata table
+      if (selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure)) {
+        // Update module_structure in courses table
+        const updatedModuleStructure = [...selectedCourse.module_structure];
+
+        // Ensure the module exists
+        if (!updatedModuleStructure[selectedModuleNumber - 1]) {
+          throw new Error(`Module ${selectedModuleNumber} not found in course structure`);
+        }
+
+        // Ensure lessons array exists
+        if (!updatedModuleStructure[selectedModuleNumber - 1].lessons) {
+          updatedModuleStructure[selectedModuleNumber - 1].lessons = [];
+        }
+
+        // Update or create the lesson in the module structure
+        const lessonIndex = selectedLessonNumber - 1;
+        const lessonsArray = updatedModuleStructure[selectedModuleNumber - 1].lessons;
+
+        // Ensure the lesson slot exists
+        while (lessonsArray.length <= lessonIndex) {
+          lessonsArray.push({ name: '', description: '', bullet_points: ['', '', ''] });
+        }
+
+        // Update the lesson data
+        lessonsArray[lessonIndex] = {
+          name: lessonName,
+          description: lessonDescription,
+          bullet_points: lessonBulletPoints
+        };
+
+        // Save back to database
+        const { error: updateError } = await supabase
+          .from('courses')
+          .update({ module_structure: updatedModuleStructure })
+          .eq('name', selectedCourseId);
+
+        if (updateError) throw updateError;
+
+        alert('Lesson metadata saved successfully!');
+        await loadCourses(); // Reload courses to get updated module_structure
+      } else {
+        // Fallback to old lessons_metadata table
+        const { error } = await supabase
+          .from('lessons_metadata')
+          .upsert({
+            course_id: selectedCourseId,
+            module_number: selectedModuleNumber,
+            lesson_number: selectedLessonNumber,
+            lesson_name: lessonName,
+            description: lessonDescription,
+            bullet_points: lessonBulletPoints.filter(bp => bp.trim())
+          }, {
+            onConflict: 'course_id,module_number,lesson_number'
+          });
+
+        if (error) throw error;
+        alert('Lesson metadata saved successfully!');
+        await loadLessons(selectedCourseId, selectedModuleNumber);
+      }
     } catch (error) {
       console.error('Error saving lesson metadata:', error);
       alert(`Failed to save lesson: ${error.message}`);
