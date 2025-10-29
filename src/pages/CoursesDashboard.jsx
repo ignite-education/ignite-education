@@ -113,9 +113,18 @@ const CoursesDashboard = () => {
   };
 
   const getFilteredCourses = () => {
-    const liveCourses = courses.filter(c => c.status === 'live');
-    const comingSoonCourses = courses.filter(c => c.status === 'coming_soon');
-    const requestedCourses = courses.filter(c => c.status === 'requested');
+    // Sort alphabetically by title within each status category
+    const liveCourses = courses
+      .filter(c => c.status === 'live')
+      .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+    const comingSoonCourses = courses
+      .filter(c => c.status === 'coming_soon')
+      .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+
+    const requestedCourses = courses
+      .filter(c => c.status === 'requested')
+      .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
     return { liveCourses, comingSoonCourses, requestedCourses };
   };
