@@ -299,6 +299,12 @@ const ProgressHub = () => {
             calendlyLink: courseData.calendly_link || ''
           });
           console.log('✅ Fetched tutor data:', courseData);
+
+          // Update user state with enrolled course title
+          setUser(prev => ({
+            ...prev,
+            enrolledCourse: courseData.title || courseData.name || 'Product Manager'
+          }));
         }
       } catch (error) {
         console.error('❌ Error fetching course/tutor data:', error);
