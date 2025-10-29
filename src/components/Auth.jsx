@@ -792,14 +792,24 @@ const Auth = () => {
                       <div
                         key={course.id}
                         onClick={() => setSelectedCourseModal(course.id)}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out aspect-square flex flex-col justify-start cursor-pointer hover:shadow-2xl"
-                        style={{ padding: '16px' }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start cursor-pointer hover:shadow-2xl overflow-hidden"
+                        style={{ padding: '16px', minHeight: '200px' }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                       >
                         <div>
                           <h4 className="text-xl font-semibold mb-2">{course.title}</h4>
-                          <p className="text-sm text-gray-600">{getModulesText(course.modules)}</p>
+                          <p className="text-xs text-gray-500 mb-2">{getModulesText(course.modules)}</p>
+                          {course.description && (
+                            <p className="text-sm text-gray-700 line-clamp-3 mb-2">
+                              {course.description}
+                            </p>
+                          )}
+                          {course.module_names && (
+                            <p className="text-xs text-gray-600 italic">
+                              Modules: {course.module_names}
+                            </p>
+                          )}
                         </div>
                       </div>
                     );
@@ -1044,8 +1054,23 @@ const Auth = () => {
                         : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
                     </strong>
                   </p>
+                  {selectedCourse.module_names && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">Module Names:</p>
+                      <p className="text-sm text-gray-700">{selectedCourse.module_names}</p>
+                    </div>
+                  )}
                   {selectedCourse.lessons > 0 && (
                     <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
+                  )}
+                  {selectedCourse.lesson_names && (
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-sm font-semibold text-gray-900 mb-1">Lesson Topics:</p>
+                      <p className="text-sm text-gray-700">{selectedCourse.lesson_names}</p>
+                    </div>
+                  )}
+                  {selectedCourse.duration && (
+                    <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
                   )}
                   <p className="text-gray-700">Taught by industry expert instructors</p>
                   <p className="text-gray-700">Certificate upon completion</p>
