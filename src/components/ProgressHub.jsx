@@ -419,10 +419,14 @@ const ProgressHub = () => {
         redditData = await getRedditPosts(40, true, subreddit); // Force refresh = true
         console.log('✅ Reddit posts fetched:', redditData?.length || 0);
 
-        // Log first post to verify subreddit
+        // Log first 5 posts to verify subreddit
         if (redditData && redditData.length > 0) {
-          console.log('📝 First Reddit post:', redditData[0].title);
-          console.log('📝 First Reddit post subreddit:', redditData[0].subreddit || 'not specified');
+          console.log('📝 First 5 Reddit posts from backend:');
+          redditData.slice(0, 5).forEach((post, idx) => {
+            console.log(`  ${idx + 1}. "${post.title}" - subreddit: ${post.subreddit || 'not specified'}`);
+          });
+        } else {
+          console.log('⚠️ No Reddit posts returned from backend!');
         }
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
