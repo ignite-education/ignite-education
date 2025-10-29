@@ -388,8 +388,8 @@ const ProgressHub = () => {
       let redditData = [];
       let userPostsData = [];
 
-      // Try to load cached posts first
-      const CACHE_KEY = 'community_posts_cache';
+      // Try to load cached posts first (cache key includes course to prevent showing wrong subreddit)
+      const CACHE_KEY = `community_posts_cache_${courseId}`;
       const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matches server cache)
 
       try {
