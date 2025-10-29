@@ -142,11 +142,11 @@ const Auth = () => {
 
   // Typing animation for education text
   const startEducationTyping = () => {
-    const fullText = 'Education should be accessible, personalised and integrated.';
+    const fullText = 'Education should be accessible,\npersonalised and integrated for everyone.';
     const pausePositions = [
       { after: 'Education should be accessible,'.length, duration: 500 },
-      { after: 'Education should be accessible, personalised'.length, duration: 500 },
-      { after: 'Education should be accessible, personalised and integrated.'.length, duration: 500 }
+      { after: 'Education should be accessible,\npersonalised'.length, duration: 500 },
+      { after: 'Education should be accessible,\npersonalised and integrated'.length, duration: 500 }
     ];
     let currentIndex = 0;
     let isPaused = false;
@@ -244,7 +244,7 @@ const Auth = () => {
   const renderTypedEducation = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
-    const fullText = 'Education should be accessible, personalised and integrated.';
+    const fullText = 'Education should be accessible,\npersonalised and integrated for everyone.';
 
     // Split text into parts and highlight the key words
     let result = [];
@@ -260,6 +260,15 @@ const Auth = () => {
     let currentPos = 0;
 
     for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // Handle line breaks
+      if (char === '\n') {
+        result.push(<br key={`br-${i}`} />);
+        lastIndex = i + 1;
+        continue;
+      }
+
       // Check if we're at the start of a pink word
       const inPinkWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
 
@@ -284,7 +293,7 @@ const Auth = () => {
           }
         }
 
-        const chunk = text.substring(i, Math.min(nextPinkStart, text.length));
+        const chunk = text.substring(i, Math.min(nextPinkStart, text.length)).replace(/\n/g, '');
         if (chunk) {
           result.push(
             <span key={`text-${i}`} className="text-white" style={{ display: 'inline', whiteSpace: 'pre-wrap' }}>
