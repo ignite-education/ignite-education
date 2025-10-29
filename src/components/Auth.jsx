@@ -494,7 +494,7 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ scrollSnapAlign: 'start', paddingTop: '2rem' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
