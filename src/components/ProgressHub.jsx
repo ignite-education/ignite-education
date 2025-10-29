@@ -70,6 +70,7 @@ const ProgressHub = () => {
     selectedCourse: 'product-management',
     marketingEmails: true
   });
+  const [availableCourses, setAvailableCourses] = useState([]);
 
   // Scroll container ref for lesson cards
   const scrollContainerRef = useRef(null);
@@ -863,7 +864,35 @@ const ProgressHub = () => {
   const progressPercentage = hasLessonData ? calculateProgressPercentage() : user.progress;
 
   // Settings Modal Handlers
-  const handleOpenSettings = () => {
+  const handleOpenSettings = async () => {
+    // Fetch available courses from database
+    try {
+      const { data: coursesData, error } = await supabase
+        .from('courses')
+        .select('name, title')
+        .order('display_order', { ascending: true });
+
+      if (!error && coursesData) {
+        setAvailableCourses(coursesData);
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    }
+
+    // Fetch user's current enrolled course
+    let userEnrolledCourse = 'product-manager';
+    if (authUser?.id) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('enrolled_course')
+        .eq('id', authUser.id)
+        .single();
+
+      if (userData?.enrolled_course) {
+        userEnrolledCourse = userData.enrolled_course;
+      }
+    }
+
     // Populate form with current user data
     setSettingsForm({
       firstName: authUser?.user_metadata?.first_name || '',
@@ -872,7 +901,7 @@ const ProgressHub = () => {
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-      selectedCourse: 'product-management',
+      selectedCourse: userEnrolledCourse,
       marketingEmails: authUser?.user_metadata?.marketing_emails !== false
     });
     setShowSettingsModal(true);
@@ -938,10 +967,22 @@ const ProgressHub = () => {
   const handleUpdatePreferences = async (e) => {
     e.preventDefault();
     try {
+      // Update marketing email preferences
       await updateProfile({
         marketing_emails: settingsForm.marketingEmails
       });
-      alert('Preferences updated successfully!');
+
+      // Update enrolled course in users table
+      if (authUser?.id) {
+        const { error: courseError } = await supabase
+          .from('users')
+          .update({ enrolled_course: settingsForm.selectedCourse })
+          .eq('id', authUser.id);
+
+        if (courseError) throw courseError;
+      }
+
+      alert('Preferences updated successfully! Refresh the page to see changes.');
     } catch (error) {
       console.error('Error updating preferences:', error);
       alert(`Failed to update preferences: ${error.message}`);
@@ -2672,8 +2713,15 @@ const ProgressHub = () => {
                         className="w-full bg-gray-100 text-black px-4 py-3 pr-10 focus:outline-none focus:ring-1 focus:ring-pink-500 appearance-none cursor-pointer font-medium"
                         style={{ borderRadius: '0.3rem' }}
                       >
-                        <option value="product-management">Product Management</option>
-                        <option value="coming-soon" disabled>More courses coming soon...</option>
+                        {availableCourses.length > 0 ? (
+                          availableCourses.map((course) => (
+                            <option key={course.name} value={course.name}>
+                              {course.title || course.name}
+                            </option>
+                          ))
+                        ) : (
+                          <option value="product-manager">Product Manager</option>
+                        )}
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
                         <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
