@@ -1370,22 +1370,6 @@ const Auth = () => {
                               scrollSnapStop: 'always'
                             }}
                           >
-                            {/* Translucency gradient overlay for the card immediately to the right */}
-                            {moduleIdx === snappedModuleIndex + 1 && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.4))',
-                                  borderRadius: '0.5rem',
-                                  pointerEvents: 'none',
-                                  transition: 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
-                                }}
-                              />
-                            )}
                             {/* Opacity overlay for non-snapped cards */}
                             {moduleIdx !== snappedModuleIndex && (
                               <div
@@ -1400,7 +1384,25 @@ const Auth = () => {
                                   WebkitBackdropFilter: 'blur(0.75px)',
                                   borderRadius: '0.5rem',
                                   pointerEvents: 'none',
-                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                  zIndex: 1
+                                }}
+                              />
+                            )}
+                            {/* Translucency gradient overlay for the card immediately to the right - applied on top */}
+                            {moduleIdx === snappedModuleIndex + 1 && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))',
+                                  borderRadius: '0.5rem',
+                                  pointerEvents: 'none',
+                                  transition: 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                  zIndex: 2
                                 }}
                               />
                             )}
@@ -1408,7 +1410,7 @@ const Auth = () => {
                               {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
                                 <ul style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                   {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
-                                    <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100">
+                                    <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-semibold">
                                       <span className="mt-0.5 text-purple-200">•</span>
                                       <span>{lesson.name}</span>
                                     </li>
