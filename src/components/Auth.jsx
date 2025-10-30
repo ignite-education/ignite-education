@@ -1269,9 +1269,10 @@ const Auth = () => {
     {/* Course Details Modal */}
     {selectedCourseModal && courses.find(c => c.name === selectedCourseModal) && (
       <div
-        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
         style={{
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+          animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
         onClick={() => setSelectedCourseModal(null)}
       >
@@ -1292,7 +1293,7 @@ const Auth = () => {
             style={{
               width: '600px',
               height: '70vh',
-              animation: 'scaleUp 0.2s ease-out',
+              animation: 'scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               borderRadius: '0.3rem',
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1354,7 +1355,7 @@ const Auth = () => {
                         setSnappedModuleIndex(newIndex);
                       }}
                     >
-                      <div className="flex gap-4" style={{ height: '84.15px' }}>
+                      <div className="flex gap-4" style={{ height: '110px' }}>
                         {selectedCourse.module_structure.map((module, moduleIdx) => (
                           <div
                             key={moduleIdx}
@@ -1365,7 +1366,7 @@ const Auth = () => {
                               padding: '14px',
                               borderRadius: '0.5rem',
                               background: '#7714E0',
-                              height: '84.15px',
+                              height: '110px',
                               scrollSnapAlign: 'start',
                               scrollSnapStop: 'always'
                             }}
