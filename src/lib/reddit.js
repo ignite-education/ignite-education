@@ -284,13 +284,20 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
   if (flairText) {
     try {
       const flairs = await getSubredditFlairs(subreddit);
+
+      // Debug: Log all available flair texts
+      console.log(`🔍 Available flair texts for r/${subreddit}:`, flairs.map(f => f.text));
+      console.log(`🔍 Looking for flair: "${flairText}"`);
+
       const matchingFlair = flairs.find(f => f.text === flairText);
 
       if (matchingFlair) {
         params.flair_id = matchingFlair.id;
         console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}" (ID: ${matchingFlair.id})`);
       } else {
-        console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}, posting without flair`);
+        console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}`);
+        console.warn(`Available flairs:`, flairs.map(f => ({ text: f.text, id: f.id })));
+        console.log(`ℹ️ Posting without flair`);
       }
     } catch (error) {
       console.error(`❌ Error fetching flairs:`, error);
