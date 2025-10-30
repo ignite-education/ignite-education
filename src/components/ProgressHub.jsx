@@ -603,8 +603,6 @@ const ProgressHub = () => {
       setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
       handleCloseModal();
       await fetchData();
-
-      alert('Posted successfully to Reddit!');
     } catch (error) {
       console.error('❌ Error posting:', error);
       alert(`Failed to post: ${error.message || 'Please try again.'}`);
