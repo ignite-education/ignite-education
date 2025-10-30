@@ -333,12 +333,12 @@ const ProgressHub = () => {
             reddit_url: courseData.reddit_url
           });
           setCourseReddit({
-            channel: courseData.reddit_channel || 'r/ProductManager',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManager/'
+            channel: courseData.reddit_channel || 'r/ProductManagement',
+            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
           });
           console.log('📱 courseReddit state updated to:', {
-            channel: courseData.reddit_channel || 'r/ProductManager',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManager/'
+            channel: courseData.reddit_channel || 'r/ProductManagement',
+            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
           });
         }
       } catch (error) {
@@ -434,7 +434,7 @@ const ProgressHub = () => {
       // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
-        const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManager';
+        const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
         const subreddit = redditChannel.replace(/^r\//, '');
         redditData = await getRedditPosts(20, false, subreddit);
       } catch (err) {
@@ -483,7 +483,7 @@ const ProgressHub = () => {
       // Cache posts if we have any (include subreddit to validate cache)
       if (allPosts.length > 0) {
         try {
-          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManager';
+          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
           localStorage.setItem(CACHE_KEY, JSON.stringify({
             posts: allPosts,
             timestamp: Date.now(),
