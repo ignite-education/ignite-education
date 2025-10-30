@@ -200,11 +200,13 @@ async function getValidAccessToken() {
  */
 export const SUBREDDIT_FLAIRS = {
   'cybersecurity': [
-    { value: 'Question', label: 'Question' },
-    { value: 'Discussion', label: 'Discussion' },
-    { value: 'News', label: 'News' },
-    { value: 'Career', label: 'Career' },
-    { value: 'Education', label: 'Education' }
+    { value: 'Career Questions & Discussion', label: 'Career Questions & Discussion' },
+    { value: 'Certification / Training Questions', label: 'Certification / Training Questions' },
+    { value: 'Starting Cybersecurity Career', label: 'Starting Cybersecurity Career' },
+    { value: 'Personal Support & Help!', label: 'Personal Support & Help!' },
+    { value: 'Business Security Questions & Discussion', label: 'Business Security Questions & Discussion' },
+    { value: 'News - General', label: 'News - General' },
+    { value: 'Other', label: 'Other' }
   ],
   'productmanagement': [
     { value: 'Discussion', label: 'Discussion' },
@@ -285,18 +287,26 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
     try {
       const flairs = await getSubredditFlairs(subreddit);
 
+      // Helper function to decode HTML entities (e.g., &amp; -> &)
+      const decodeHTML = (html) => {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
+      };
+
       // Debug: Log all available flair texts
-      console.log(`🔍 Available flair texts for r/${subreddit}:`, flairs.map(f => f.text));
+      console.log(`🔍 Available flair texts for r/${subreddit}:`, flairs.map(f => decodeHTML(f.text)));
       console.log(`🔍 Looking for flair: "${flairText}"`);
 
-      const matchingFlair = flairs.find(f => f.text === flairText);
+      // Match flair by decoding HTML entities first
+      const matchingFlair = flairs.find(f => decodeHTML(f.text) === flairText);
 
       if (matchingFlair) {
         params.flair_id = matchingFlair.id;
         console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}" (ID: ${matchingFlair.id})`);
       } else {
         console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}`);
-        console.warn(`Available flairs:`, flairs.map(f => ({ text: f.text, id: f.id })));
+        console.warn(`Available flairs:`, flairs.map(f => ({ text: decodeHTML(f.text), id: f.id })));
         console.log(`ℹ️ Posting without flair`);
       }
     } catch (error) {
