@@ -395,9 +395,15 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
     throw new Error(`Reddit API error: ${errorMessage}`);
   }
 
+  // The Reddit API returns a URL path that starts with /r/...
+  // We need to construct the full URL
+  const redditUrl = data.json.data.url.startsWith('http')
+    ? data.json.data.url
+    : `https://www.reddit.com${data.json.data.url}`;
+
   return {
     success: true,
-    url: `https://reddit.com${data.json.data.url}`,
+    url: redditUrl,
     id: data.json.data.id,
     name: data.json.data.name
   };
