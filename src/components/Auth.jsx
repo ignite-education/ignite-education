@@ -1307,8 +1307,8 @@ const Auth = () => {
 
             {/* Content */}
             <div
-              className="flex-1 overflow-y-auto px-8 py-8"
-              style={{ scrollbarWidth: 'thin' }}
+              className="flex-1 overflow-y-auto px-8"
+              style={{ scrollbarWidth: 'thin', paddingTop: '25.6px', paddingBottom: '32px' }}
             >
               <div>
                 {selectedCourse.status === 'coming_soon' && (
@@ -1408,7 +1408,7 @@ const Auth = () => {
                             )}
                             <div className="relative">
                               {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
-                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                                   {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
                                     <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-semibold">
                                       <span className="mt-0.5 text-purple-200">•</span>
@@ -1563,10 +1563,13 @@ const Auth = () => {
                         console.error('Error enrolling in course:', error);
                         alert('Failed to enroll in course. Please try again.');
                       }
+                    } else {
+                      // Close modal and scroll to top of sign-in page
+                      setSelectedCourseModal(null);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }
-                    setSelectedCourseModal(null);
                   }}
-                  className={`w-full font-semibold py-3 rounded-lg transition ${
+                  className={`w-full font-semibold py-3 rounded-lg transition mb-4 ${
                     selectedCourse.status === 'live'
                       ? 'bg-pink-500 text-white hover:bg-pink-600'
                       : 'bg-gray-400 text-white cursor-not-allowed'
