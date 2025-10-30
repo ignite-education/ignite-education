@@ -30,8 +30,11 @@ const Auth = () => {
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
   const [isLearningTaglineTypingComplete, setIsLearningTaglineTypingComplete] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSuccess, setResetSuccess] = useState(false);
 
-  const { user, signIn, signUp, signInWithOAuth } = useAuth();
+  const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
 
   // Redirect authenticated users away from auth page
@@ -529,6 +532,21 @@ const Auth = () => {
     }
   };
 
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await resetPassword(resetEmail);
+      setResetSuccess(true);
+      setLoading(false);
+    } catch (err) {
+      setError(err.message || 'An error occurred sending reset email');
+      setLoading(false);
+    }
+  };
+
   const scrollToMarketing = () => {
     marketingSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
@@ -725,6 +743,20 @@ const Auth = () => {
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="••••••••"
                 />
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResetPassword(true);
+                      setResetEmail(email);
+                      setResetSuccess(false);
+                      setError('');
+                    }}
+                    className="text-xs text-pink-500 hover:text-pink-600 transition mt-1"
+                  >
+                    Forgot password?
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1118,6 +1150,110 @@ const Auth = () => {
           </div>
         </div>
     </div>
+
+    {/* Password Reset Modal */}
+    {showResetPassword && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+        }}
+        onClick={() => {
+          setShowResetPassword(false);
+          setResetSuccess(false);
+          setError('');
+        }}
+      >
+        <div className="relative">
+          <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+            Reset Password
+          </h2>
+
+          <div
+            className="bg-white relative"
+            style={{
+              width: '450px',
+              maxWidth: '90vw',
+              animation: 'scaleUp 0.2s ease-out',
+              borderRadius: '0.3rem',
+              padding: '2rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setShowResetPassword(false);
+                setResetSuccess(false);
+                setError('');
+              }}
+              className="absolute top-4 right-4 text-gray-600 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+
+            {!resetSuccess ? (
+              <>
+                <p className="text-gray-700 mb-4 text-sm">
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
+
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleResetPassword}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-black">Email</label>
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                      className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-pink-500 text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-black mb-2">Check Your Email</h3>
+                <p className="text-gray-700 text-sm mb-4">
+                  We've sent a password reset link to <strong>{resetEmail}</strong>
+                </p>
+                <p className="text-gray-600 text-xs mb-4">
+                  Click the link in the email to reset your password. The link will expire in 1 hour.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResetPassword(false);
+                    setResetSuccess(false);
+                  }}
+                  className="text-pink-500 hover:text-pink-600 text-sm font-medium"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Course Details Modal */}
     {selectedCourseModal && courses.find(c => c.id === selectedCourseModal) && (

@@ -170,6 +170,26 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  // Reset password - sends password reset email
+  const resetPassword = async (email) => {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+    return data;
+  };
+
+  // Update password after reset
+  const updatePassword = async (newPassword) => {
+    const { data, error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) throw error;
+    return data;
+  };
+
   const value = {
     user,
     loading,
@@ -178,6 +198,8 @@ export const AuthProvider = ({ children }) => {
     signOut,
     updateProfile,
     signInWithOAuth,
+    resetPassword,
+    updatePassword,
     firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
     isAdFree: user?.user_metadata?.is_ad_free || false,
