@@ -1322,13 +1322,13 @@ const Auth = () => {
                   </div>
                 )}
 
-                <p className="text-gray-700 mb-6 leading-relaxed">
+                <p className="text-black mb-6 leading-relaxed">
                   {selectedCourse.description}
                 </p>
 
                 {/* Module and Lesson Details - Swipable Cards */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
-                  <div className="mb-6">
+                  <div className="mb-6 relative">
                     <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
                       {selectedCourse.module_structure.length > 0 && snappedModuleIndex < selectedCourse.module_structure.length
                         ? `Module ${snappedModuleIndex + 1} - ${selectedCourse.module_structure[snappedModuleIndex].name}`
@@ -1354,7 +1354,7 @@ const Auth = () => {
                         setSnappedModuleIndex(newIndex);
                       }}
                     >
-                      <div className="flex gap-4" style={{ minHeight: '110px' }}>
+                      <div className="flex gap-4" style={{ minHeight: '93.5px' }}>
                         {selectedCourse.module_structure.map((module, moduleIdx) => (
                           <div
                             key={moduleIdx}
@@ -1365,13 +1365,13 @@ const Auth = () => {
                               padding: '14px',
                               borderRadius: '0.5rem',
                               background: '#7714E0',
-                              minHeight: '110px',
+                              minHeight: '93.5px',
                               scrollSnapAlign: 'start',
                               scrollSnapStop: 'always'
                             }}
                           >
-                            {/* Translucency gradient overlay for upcoming cards */}
-                            {moduleIdx > snappedModuleIndex && (
+                            {/* Translucency gradient overlay for the card immediately to the right */}
+                            {moduleIdx === snappedModuleIndex + 1 && (
                               <div
                                 style={{
                                   position: 'absolute',
@@ -1425,6 +1425,39 @@ const Auth = () => {
                         ))}
                       </div>
                     </div>
+
+                    {/* Back to First Module Button - Show when not viewing first module */}
+                    {snappedModuleIndex > 0 && (
+                      <button
+                        onClick={() => {
+                          if (modalScrollContainerRef.current) {
+                            modalScrollContainerRef.current.scrollTo({
+                              left: 0,
+                              behavior: 'smooth'
+                            });
+                          }
+                        }}
+                        className="absolute bg-white text-black hover:bg-purple-50 transition-all"
+                        style={{
+                          right: '16px',
+                          top: '50%',
+                          transform: 'translateY(-20%)',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                          zIndex: 10,
+                          opacity: 0.7
+                        }}
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 ) : (
                   /* Fallback for courses without module_structure */
