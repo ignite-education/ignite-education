@@ -436,7 +436,7 @@ const ProgressHub = () => {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
         const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManager';
         const subreddit = redditChannel.replace(/^r\//, '');
-        redditData = await getRedditPosts(40, false, subreddit);
+        redditData = await getRedditPosts(20, false, subreddit);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
         redditData = []; // Ensure it's an empty array
@@ -643,7 +643,16 @@ const ProgressHub = () => {
       setMyRedditPosts(posts);
     } catch (error) {
       console.error('❌ Error fetching user posts:', error);
-      alert('Failed to load your posts. Please try again.');
+
+      // Check if it's a 403 error (missing permissions)
+      if (error.message.includes('403') || error.message.includes('Forbidden')) {
+        alert('Reddit permissions need to be updated. Please disconnect and reconnect your Reddit account in Settings to view your posts.');
+      } else {
+        alert('Failed to load your posts. Please try again.');
+      }
+
+      // Close the modal since we couldn't load posts
+      handleCloseMyPostsModal();
     } finally {
       setLoadingMyPosts(false);
     }
@@ -1278,7 +1287,7 @@ const ProgressHub = () => {
         // Extract subreddit name from channel (remove 'r/' prefix)
         const subreddit = courseReddit.channel.replace(/^r\//, '');
         console.log('🔄 Refreshing Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
-        redditData = await getRedditPosts(40, true, subreddit);
+        redditData = await getRedditPosts(20, true, subreddit);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error refreshing Reddit posts:', err);
@@ -2215,29 +2224,6 @@ const ProgressHub = () => {
                   {communityPosts.map(post => (
                     <div
                       key={post.id}
-                      onMouseEnter={() => {
-                        console.log('🖱️ Mouse entered post:', post.id, post.title, 'Source:', post.source);
-                        setHoveredPostId(post.id);
-                        // Fetch Reddit comments if needed
-                        console.log('📞 About to call fetchRedditCommentsForPost');
-                        fetchRedditCommentsForPost(post);
-                        console.log('📞 Called fetchRedditCommentsForPost');
-                        // Set 1.5 second delay before expanding comments
-                        const timer = setTimeout(() => {
-                          console.log('⏰ 1.5 seconds passed, expanding comments for:', post.id);
-                          setExpandedPostId(post.id);
-                        }, 1500);
-                        setHoverTimer(timer);
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredPostId(null);
-                        setExpandedPostId(null);
-                        // Clear timer if user leaves before 1 second
-                        if (hoverTimer) {
-                          clearTimeout(hoverTimer);
-                          setHoverTimer(null);
-                        }
-                      }}
                     >
                     <div
                       className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
@@ -2280,12 +2266,16 @@ const ProgressHub = () => {
                             </div>
                             <button
                               className="flex items-center gap-1 hover:text-white transition"
-                              onClick={() => console.log('🔍 Comment Debug:', {
-                                postId: post.id,
-                                postCommentsForThisPost: postComments[post.id],
-                                commentCount: post.comments || 0,
-                                allPostComments: Object.keys(postComments)
-                              })}
+                              onClick={() => {
+                                // Toggle expanded state
+                                if (expandedPostId === post.id) {
+                                  setExpandedPostId(null);
+                                } else {
+                                  setExpandedPostId(post.id);
+                                  // Fetch comments if not already loaded
+                                  fetchRedditCommentsForPost(post);
+                                }
+                              }}
                             >
                               <MessageSquare size={14} />
                               <span className="text-xs">{post.comments || 0}</span>

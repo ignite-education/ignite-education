@@ -1245,6 +1245,306 @@ app.post('/api/send-email', async (req, res) => {
   }
 });
 
+// ============================================================================
+// REDDIT CACHE SYSTEM - Database-backed daily caching
+// ============================================================================
+
+const SUBREDDITS_TO_CACHE = ['ProductManagement', 'cybersecurity', 'ProductManager'];
+const POSTS_PER_SUBREDDIT = 50;
+const COMMENTS_PER_POST = 50;
+
+// Fetch and cache Reddit data for a specific subreddit
+async function fetchAndCacheRedditData(subreddit) {
+  try {
+    console.log(`\n🔄 Starting Reddit cache refresh for r/${subreddit}...`);
+
+    const accessToken = await getRedditOAuthToken();
+    await waitForRateLimit();
+
+    // Fetch posts
+    const postsUrl = `https://oauth.reddit.com/r/${subreddit}/hot?limit=${POSTS_PER_SUBREDDIT}`;
+    const postsResponse = await fetch(postsUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+      }
+    });
+
+    if (!postsResponse.ok) {
+      throw new Error(`Failed to fetch posts: ${postsResponse.status}`);
+    }
+
+    const postsJson = await postsResponse.json();
+    const posts = postsJson.data.children.map(child => child.data);
+
+    console.log(`✅ Fetched ${posts.length} posts from r/${subreddit}`);
+
+    // Store posts in database
+    let postsStored = 0;
+    let commentsStored = 0;
+
+    for (const post of posts) {
+      // Insert or update post
+      const { error: postError } = await supabase
+        .from('reddit_posts_cache')
+        .upsert({
+          id: post.id,
+          subreddit: subreddit,
+          author: post.author,
+          author_icon: post.sr_detail?.icon_img || (post.thumbnail?.startsWith('http') ? post.thumbnail : null),
+          created_at: new Date(post.created_utc * 1000).toISOString(),
+          title: post.title,
+          content: post.selftext || '',
+          tag: post.link_flair_text || 'Discussion',
+          upvotes: post.ups,
+          comments_count: post.num_comments,
+          url: `https://reddit.com${post.permalink}`,
+          fetched_at: new Date().toISOString()
+        }, {
+          onConflict: 'id,subreddit'
+        });
+
+      if (postError) {
+        console.error(`Error storing post ${post.id}:`, postError);
+        continue;
+      }
+
+      postsStored++;
+
+      // Fetch and store comments for this post (limit to top posts to save API calls)
+      if (postsStored <= 20) { // Only fetch comments for top 20 posts
+        try {
+          await waitForRateLimit();
+
+          const commentsUrl = `https://oauth.reddit.com/r/${subreddit}/comments/${post.id}`;
+          const commentsResponse = await fetch(commentsUrl, {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+              'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+            }
+          });
+
+          if (commentsResponse.ok) {
+            const commentsJson = await commentsResponse.json();
+            const commentsData = commentsJson[1]?.data?.children || [];
+
+            const comments = commentsData
+              .filter(child => child.kind === 't1')
+              .slice(0, COMMENTS_PER_POST);
+
+            // Store comments
+            for (const comment of comments) {
+              const { error: commentError } = await supabase
+                .from('reddit_comments_cache')
+                .upsert({
+                  id: comment.data.id,
+                  post_id: post.id,
+                  subreddit: subreddit,
+                  author: comment.data.author,
+                  author_icon: null,
+                  body: comment.data.body,
+                  created_utc: comment.data.created_utc,
+                  score: comment.data.score,
+                  fetched_at: new Date().toISOString()
+                }, {
+                  onConflict: 'id'
+                });
+
+              if (!commentError) commentsStored++;
+            }
+
+            console.log(`  ✅ Stored ${comments.length} comments for post ${post.id}`);
+          }
+        } catch (err) {
+          console.error(`  ⚠️ Error fetching comments for post ${post.id}:`, err.message);
+        }
+      }
+    }
+
+    // Update fetch log
+    await supabase
+      .from('reddit_fetch_log')
+      .upsert({
+        subreddit: subreddit,
+        last_fetch_at: new Date().toISOString(),
+        posts_count: postsStored,
+        comments_count: commentsStored,
+        status: 'success'
+      }, {
+        onConflict: 'subreddit'
+      });
+
+    console.log(`✅ Cache refresh complete for r/${subreddit}: ${postsStored} posts, ${commentsStored} comments\n`);
+
+    return { success: true, posts: postsStored, comments: commentsStored };
+
+  } catch (error) {
+    console.error(`❌ Error caching Reddit data for r/${subreddit}:`, error);
+
+    // Log failure
+    await supabase
+      .from('reddit_fetch_log')
+      .upsert({
+        subreddit: subreddit,
+        last_fetch_at: new Date().toISOString(),
+        posts_count: 0,
+        comments_count: 0,
+        status: `error: ${error.message}`
+      }, {
+        onConflict: 'subreddit'
+      });
+
+    return { success: false, error: error.message };
+  }
+}
+
+// Endpoint to manually trigger cache refresh (for testing and cron)
+app.post('/api/reddit-cache/refresh', async (req, res) => {
+  try {
+    const results = [];
+
+    for (const subreddit of SUBREDDITS_TO_CACHE) {
+      const result = await fetchAndCacheRedditData(subreddit);
+      results.push({ subreddit, ...result });
+    }
+
+    res.json({
+      success: true,
+      message: 'Reddit cache refresh completed',
+      results
+    });
+
+  } catch (error) {
+    console.error('Error in cache refresh:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// New endpoint: Get cached Reddit posts from database
+app.get('/api/reddit-posts-cached', async (req, res) => {
+  try {
+    const subreddit = req.query.subreddit || 'ProductManagement';
+    const limit = parseInt(req.query.limit) || 20;
+
+    console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit})`);
+
+    const { data, error} = await supabase
+      .from('reddit_posts_cache')
+      .select('*')
+      .eq('subreddit', subreddit)
+      .order('upvotes', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      throw error;
+    }
+
+    // Transform to match frontend expected format
+    const posts = (data || []).map(post => ({
+      id: post.id,
+      author: post.author,
+      author_icon: post.author_icon,
+      created_at: post.created_at,
+      title: post.title,
+      content: post.content,
+      tag: post.tag,
+      upvotes: post.upvotes,
+      comments: post.comments_count,
+      url: post.url
+    }));
+
+    console.log(`✅ Returned ${posts.length} cached posts from database`);
+    res.json(posts);
+
+  } catch (error) {
+    console.error('Error fetching cached posts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// New endpoint: Get cached Reddit comments from database
+app.get('/api/reddit-comments-cached', async (req, res) => {
+  try {
+    const { postId } = req.query;
+
+    if (!postId) {
+      return res.status(400).json({ error: 'postId is required' });
+    }
+
+    console.log(`📦 Fetching cached comments for post ${postId}`);
+
+    const { data, error } = await supabase
+      .from('reddit_comments_cache')
+      .select('*')
+      .eq('post_id', postId)
+      .order('score', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    // Transform to match frontend expected format
+    const comments = (data || []).map(comment => ({
+      id: comment.id,
+      name: `t1_${comment.id}`,
+      author: comment.author,
+      author_icon: comment.author_icon,
+      body: comment.body,
+      created_utc: comment.created_utc,
+      score: comment.score
+    }));
+
+    console.log(`✅ Returned ${comments.length} cached comments from database`);
+    res.json(comments);
+
+  } catch (error) {
+    console.error('Error fetching cached comments:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Run initial cache on startup (async, don't block server start)
+setTimeout(async () => {
+  console.log('\n🚀 Running initial Reddit cache refresh...');
+  for (const subreddit of SUBREDDITS_TO_CACHE) {
+    await fetchAndCacheRedditData(subreddit);
+  }
+}, 5000); // Wait 5 seconds after startup
+
+// Schedule daily cache refresh at 6 AM UTC
+const scheduleNextRefresh = () => {
+  const now = new Date();
+  const next6AM = new Date();
+  next6AM.setUTCHours(6, 0, 0, 0);
+
+  // If it's past 6 AM today, schedule for tomorrow
+  if (now >= next6AM) {
+    next6AM.setDate(next6AM.getDate() + 1);
+  }
+
+  const msUntilNext = next6AM.getTime() - now.getTime();
+
+  console.log(`⏰ Next Reddit cache refresh scheduled for: ${next6AM.toISOString()}`);
+
+  setTimeout(async () => {
+    console.log('\n⏰ Daily Reddit cache refresh triggered');
+    for (const subreddit of SUBREDDITS_TO_CACHE) {
+      await fetchAndCacheRedditData(subreddit);
+    }
+    // Schedule next refresh
+    scheduleNextRefresh();
+  }, msUntilNext);
+};
+
+scheduleNextRefresh();
+
+// ============================================================================
+// END REDDIT CACHE SYSTEM
+// ============================================================================
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);

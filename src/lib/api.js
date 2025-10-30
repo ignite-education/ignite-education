@@ -246,8 +246,9 @@ export async function createCommunityPost(postData) {
  */
 export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit = 'ProductManagement') {
   try {
-    // Use backend endpoint which handles caching and avoids CORS/rate limit issues
-    const url = `https://ignite-education-api.onrender.com/api/reddit-posts?limit=${limit}${forceRefresh ? '&refresh=true' : ''}&subreddit=${subreddit}`;
+    // Use new cached endpoint - posts are fetched daily by server and stored in database
+    // This drastically reduces Reddit API calls from every user to once per day
+    const url = `https://ignite-education-api.onrender.com/api/reddit-posts-cached?limit=${limit}&subreddit=${subreddit}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -270,8 +271,8 @@ export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit
  */
 export async function getRedditComments(subreddit, postId) {
   try {
-    // Use backend endpoint which handles authentication and avoids CORS issues
-    const url = `https://ignite-education-api.onrender.com/api/reddit-comments?subreddit=${subreddit}&postId=${postId}`;
+    // Use new cached endpoint - comments are fetched daily by server and stored in database
+    const url = `https://ignite-education-api.onrender.com/api/reddit-comments-cached?postId=${postId}`;
     const response = await fetch(url);
 
     if (!response.ok) {

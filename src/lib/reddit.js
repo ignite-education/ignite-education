@@ -93,7 +93,7 @@ export function initiateRedditAuth() {
     state: state,
     redirect_uri: REDDIT_REDIRECT_URI,
     duration: 'permanent', // Request refresh token
-    scope: 'submit identity vote read flair' // Permissions: submit posts, read user identity, vote, read comments, manage flairs
+    scope: 'submit identity vote read flair history' // Permissions: submit posts, read user identity, vote, read comments, manage flairs, read user history
   });
 
   const authUrl = `${REDDIT_AUTH_URL}?${params.toString()}`;
