@@ -1370,7 +1370,7 @@ const Auth = () => {
                               scrollSnapStop: 'always'
                             }}
                           >
-                            {/* Opacity overlay for non-snapped cards - exact same as ProgressHub */}
+                            {/* Opacity overlay for non-snapped cards */}
                             {moduleIdx !== snappedModuleIndex && (
                               <div
                                 style={{
@@ -1384,7 +1384,25 @@ const Auth = () => {
                                   WebkitBackdropFilter: 'blur(0.75px)',
                                   borderRadius: '0.5rem',
                                   pointerEvents: 'none',
-                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                  zIndex: 1
+                                }}
+                              />
+                            )}
+                            {/* White translucent overlay for the card immediately to the right */}
+                            {moduleIdx === snappedModuleIndex + 1 && (
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.3) 100%)',
+                                  borderRadius: '0.5rem',
+                                  pointerEvents: 'none',
+                                  transition: 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                  zIndex: 2
                                 }}
                               />
                             )}
