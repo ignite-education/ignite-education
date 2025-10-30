@@ -794,7 +794,7 @@ const Auth = () => {
         <div className="flex justify-center mt-10 sm:mt-12 mb-2">
           <button
             onClick={scrollToMarketing}
-            className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
+            className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
             style={{
               animation: 'subtleBounce 2s infinite',
               padding: '11px'
