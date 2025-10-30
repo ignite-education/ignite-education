@@ -590,7 +590,7 @@ const ProgressHub = () => {
 
       // Post to Reddit
       console.log('📤 Posting to Reddit...');
-      const contextLine = `\n\nFor context, I'm on the ${user.enrolledCourse} course at Ignite.`;
+      const contextLine = `\n\nFor context, I'm on the ${user.enrolledCourse} course at [Ignite](https://ignite.education).`;
       const redditContent = newPost.content + contextLine;
       const subreddit = courseReddit.channel.replace(/^r\//, '');
       const redditResult = await postToReddit(subreddit, newPost.title, redditContent, newPost.flair || null);
