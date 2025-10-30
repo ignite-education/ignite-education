@@ -431,6 +431,47 @@ export async function getRedditUsername() {
 }
 
 /**
+ * Get the authenticated user's Reddit posts
+ * @param {number} limit - Number of posts to fetch (default: 25)
+ * @returns {Promise<Array>} Array of user's posts with score and comment count
+ */
+export async function getUserRedditPosts(limit = 25) {
+  const accessToken = await getValidAccessToken();
+  const username = await getRedditUsername();
+
+  const response = await fetch(`${REDDIT_API_URL}/user/${username}/submitted?limit=${limit}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': REDDIT_USER_AGENT
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch user posts from Reddit');
+  }
+
+  const data = await response.json();
+
+  // Transform Reddit API response to our format
+  const posts = data.data.children.map(child => {
+    const post = child.data;
+    return {
+      id: post.id,
+      title: post.title,
+      subreddit: post.subreddit,
+      score: post.score,
+      num_comments: post.num_comments,
+      created_utc: post.created_utc,
+      url: `https://www.reddit.com${post.permalink}`,
+      selftext: post.selftext || '',
+      thumbnail: post.thumbnail !== 'self' && post.thumbnail !== 'default' ? post.thumbnail : null
+    };
+  });
+
+  return posts;
+}
+
+/**
  * Vote on a Reddit post or comment
  * @param {string} thingId - Full ID of the thing to vote on (e.g., 't3_abc123' for posts, 't1_def456' for comments)
  * @param {number} direction - Vote direction: 1 (upvote), -1 (downvote), 0 (remove vote)

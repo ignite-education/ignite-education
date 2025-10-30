@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost } from '../lib/api';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, SUBREDDIT_FLAIRS } from '../lib/reddit';
+import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Lottie from 'lottie-react';
@@ -86,6 +86,10 @@ const ProgressHub = () => {
   const hasInitializedScrollRef = useRef(false);
   const [enableSmoothScroll, setEnableSmoothScroll] = useState(false);
   const [lottieData, setLottieData] = useState(null);
+  const [showMyPostsModal, setShowMyPostsModal] = useState(false);
+  const [isClosingMyPostsModal, setIsClosingMyPostsModal] = useState(false);
+  const [myRedditPosts, setMyRedditPosts] = useState([]);
+  const [loadingMyPosts, setLoadingMyPosts] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -609,6 +613,36 @@ const ProgressHub = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle My Posts modal
+  const handleOpenMyPosts = async () => {
+    if (!isRedditAuthenticated()) {
+      alert('Please connect your Reddit account in Settings to view your posts.');
+      return;
+    }
+
+    setShowMyPostsModal(true);
+    setLoadingMyPosts(true);
+
+    try {
+      const posts = await getUserRedditPosts(25);
+      setMyRedditPosts(posts);
+    } catch (error) {
+      console.error('❌ Error fetching user posts:', error);
+      alert('Failed to load your posts. Please try again.');
+    } finally {
+      setLoadingMyPosts(false);
+    }
+  };
+
+  const handleCloseMyPostsModal = () => {
+    setIsClosingMyPostsModal(true);
+    setTimeout(() => {
+      setShowMyPostsModal(false);
+      setIsClosingMyPostsModal(false);
+      setMyRedditPosts([]);
+    }, 200);
   };
 
   // Navigate to next lesson
@@ -2092,6 +2126,18 @@ const ProgressHub = () => {
                 >
                   <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
+                <button
+                  onClick={handleOpenMyPosts}
+                  className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
+                  style={{
+                    width: '38.4px',
+                    height: '38.4px',
+                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                    borderRadius: '0.3rem'
+                  }}
+                >
+                  <User size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+                </button>
                 <div className="flex-1">
                   <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation.</p>
                   <p className="text-white" style={{ fontSize: '14px' }}>Discover discussions, ask questions and engage with the {courseReddit.channel} community.</p>
@@ -2494,6 +2540,95 @@ const ProgressHub = () => {
                   </div>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* My Posts Modal */}
+      {showMyPostsModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingMyPostsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseMyPostsModal}
+        >
+          <div className="relative w-full px-4" style={{ maxWidth: '800px' }}>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+              My Reddit Posts
+            </h2>
+
+            <div
+              className="bg-white text-black relative"
+              style={{
+                animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                padding: '1.5rem',
+                maxHeight: '85vh',
+                overflowY: 'auto'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCloseMyPostsModal}
+                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {loadingMyPosts ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="text-gray-600">Loading your posts...</div>
+                </div>
+              ) : myRedditPosts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-gray-600 mb-2">No posts found</p>
+                  <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {myRedditPosts.map((post) => (
+                    <div
+                      key={post.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 mb-1">{post.title}</h3>
+                          <p className="text-sm text-gray-600 mb-2">r/{post.subreddit}</p>
+                          {post.selftext && (
+                            <p className="text-sm text-gray-700 mb-3 line-clamp-2">{post.selftext}</p>
+                          )}
+                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <ThumbsUp size={16} />
+                              <span className="font-medium">{post.score}</span>
+                              <span>upvotes</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <MessageSquare size={16} />
+                              <span className="font-medium">{post.num_comments}</span>
+                              <span>comments</span>
+                            </div>
+                            <span>•</span>
+                            <span>{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <a
+                          href={post.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded hover:bg-purple-700 transition flex-shrink-0"
+                        >
+                          View on Reddit
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
