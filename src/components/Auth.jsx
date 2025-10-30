@@ -759,19 +759,18 @@ const Auth = () => {
           </form>
 
           <div className="text-center" style={{ marginTop: '0.5rem' }}>
-            <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-              }}
-              className="text-black hover:text-pink-500 transition"
-              style={{ fontSize: '0.85em' }}
-            >
-              {isLogin ? "Don't have an account?" : 'Already have an account?'}
-            </button>
-            {isLogin && (
-              <>
-                <br />
+            {isLogin ? (
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                  }}
+                  className="text-black hover:text-pink-500 transition"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  Don't have an account?
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -781,11 +780,22 @@ const Auth = () => {
                     setError('');
                   }}
                   className="text-black hover:text-pink-500 transition"
-                  style={{ fontSize: '0.85em', marginTop: '0.25rem' }}
+                  style={{ fontSize: '0.85em' }}
                 >
                   Reset password
                 </button>
-              </>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+                className="text-black hover:text-pink-500 transition"
+                style={{ fontSize: '0.85em' }}
+              >
+                Already have an account?
+              </button>
             )}
           </div>
         </div>
@@ -876,7 +886,7 @@ const Auth = () => {
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={scrollToCourses}
-              className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
+              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
               style={{
                 animation: 'subtleBounce 2s infinite',
                 padding: '11px'
@@ -1011,7 +1021,7 @@ const Auth = () => {
           <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
             <button
               onClick={scrollToLearningModel}
-              className="bg-white rounded-full hover:bg-gray-100 transition shadow-lg group"
+              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
               style={{
                 animation: 'subtleBounce 2s infinite',
                 padding: '11px'
