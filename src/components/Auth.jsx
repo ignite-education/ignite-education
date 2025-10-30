@@ -1329,7 +1329,7 @@ const Auth = () => {
                 {/* Module and Lesson Details - Swipable Cards */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6 relative">
-                    <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
+                    <h3 className="font-semibold text-gray-900 mb-1.5" style={{ fontSize: '17px' }}>
                       {selectedCourse.module_structure.length > 0 && snappedModuleIndex < selectedCourse.module_structure.length
                         ? `Module ${snappedModuleIndex + 1} - ${selectedCourse.module_structure[snappedModuleIndex].name}`
                         : 'Course Modules'}
@@ -1370,7 +1370,7 @@ const Auth = () => {
                               scrollSnapStop: 'always'
                             }}
                           >
-                            {/* Opacity overlay for non-snapped cards */}
+                            {/* Opacity overlay for non-snapped cards - exact same as ProgressHub */}
                             {moduleIdx !== snappedModuleIndex && (
                               <div
                                 style={{
@@ -1384,25 +1384,7 @@ const Auth = () => {
                                   WebkitBackdropFilter: 'blur(0.75px)',
                                   borderRadius: '0.5rem',
                                   pointerEvents: 'none',
-                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                  zIndex: 1
-                                }}
-                              />
-                            )}
-                            {/* Translucency gradient overlay for the card immediately to the right - applied on top */}
-                            {moduleIdx === snappedModuleIndex + 1 && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: 'linear-gradient(to right, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.5))',
-                                  borderRadius: '0.5rem',
-                                  pointerEvents: 'none',
-                                  transition: 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                  zIndex: 2
+                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
                                 }}
                               />
                             )}
@@ -1484,7 +1466,7 @@ const Auth = () => {
                 )}
 
                 {/* Course Benefits - 2 Column Layout */}
-                <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <div className="mb-6">
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm text-gray-700">
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
