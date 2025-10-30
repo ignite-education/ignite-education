@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost } from '../lib/api';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit } from '../lib/reddit';
+import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Lottie from 'lottie-react';
@@ -26,7 +26,7 @@ const ProgressHub = () => {
   const [cardOffset, setCardOffset] = useState(0);
   const [showPostModal, setShowPostModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
-  const [newPost, setNewPost] = useState({ title: '', content: '', shareToReddit: true });
+  const [newPost, setNewPost] = useState({ title: '', content: '', shareToReddit: true, flair: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [redditAuthenticated, setRedditAuthenticated] = useState(false);
   const [redditUsername, setRedditUsername] = useState(null);
@@ -566,8 +566,14 @@ const ProgressHub = () => {
         console.log('🔐 Not authenticated with Reddit, initiating OAuth flow...');
         localStorage.setItem('pending_reddit_post', JSON.stringify({
           title: newPost.title,
-          content: newPost.content
+          content: newPost.content,
+          flair: newPost.flair
         }));
+
+        // Reset form and close modal before redirect
+        setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
+        handleCloseModal();
+
         initiateRedditAuth();
         return;
       }
@@ -577,20 +583,18 @@ const ProgressHub = () => {
       const contextLine = `\n\n_Posted from [Ignite Education](https://ignite.education) - ${user.enrolledCourse} course_`;
       const redditContent = newPost.content + contextLine;
       const subreddit = courseReddit.channel.replace(/^r\//, '');
-      const redditResult = await postToReddit(subreddit, newPost.title, redditContent);
+      const redditResult = await postToReddit(subreddit, newPost.title, redditContent, newPost.flair || null);
       console.log('✅ Posted to Reddit successfully:', redditResult.url);
 
       // Reset form and close modal
-      setNewPost({ title: '', content: '', shareToReddit: true });
+      setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
       handleCloseModal();
-
-      // Refresh posts
       await fetchData();
 
       alert('Posted successfully to Reddit!');
     } catch (error) {
-      console.error('❌ Error posting to Reddit:', error);
-      alert(`Failed to post to Reddit: ${error.message || 'Please try again.'}`);
+      console.error('❌ Error posting:', error);
+      alert(`Failed to post: ${error.message || 'Please try again.'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -2401,6 +2405,38 @@ const ProgressHub = () => {
                       disabled={isSubmitting}
                     />
                   </div>
+
+                  {/* Flair Selector */}
+                  {(() => {
+                    const subreddit = courseReddit.channel.replace(/^r\//, '');
+                    const availableFlairs = SUBREDDIT_FLAIRS[subreddit];
+
+                    if (availableFlairs && availableFlairs.length > 0) {
+                      return (
+                        <div>
+                          <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>
+                            Post Flair <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={newPost.flair}
+                            onChange={(e) => setNewPost({ ...newPost, flair: e.target.value })}
+                            className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                            style={{ borderRadius: '0.3rem' }}
+                            disabled={isSubmitting}
+                            required
+                          >
+                            <option value="">Select a flair...</option>
+                            {availableFlairs.map((flair) => (
+                              <option key={flair.value} value={flair.value}>
+                                {flair.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-4 bg-gray-100" style={{ borderRadius: '0.3rem' }}>

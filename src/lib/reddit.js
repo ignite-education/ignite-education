@@ -194,19 +194,42 @@ async function getValidAccessToken() {
 }
 
 /**
- * Hardcoded flair mapping for common subreddits
- * Maps subreddit names to default flair text
- * Using flair_text instead of flair_id doesn't require special OAuth permissions
+ * Available flair options for different subreddits
+ * Maps subreddit name to array of flair options
  */
-const SUBREDDIT_FLAIR_MAP = {
-  'cybersecurity': 'Question',
-  'productmanagement': 'Discussion',
-  'ProductManagement': 'Discussion',
-  'ProductManager': 'Discussion',
-  'cscareerquestions': 'Student',
-  'learnprogramming': 'Question',
-  'ITCareerQuestions': 'Seeking Advice',
-  // Add more subreddits as needed for new courses
+export const SUBREDDIT_FLAIRS = {
+  'cybersecurity': [
+    { value: 'Question', label: 'Question' },
+    { value: 'Discussion', label: 'Discussion' },
+    { value: 'News', label: 'News' },
+    { value: 'Career', label: 'Career' },
+    { value: 'Education', label: 'Education' }
+  ],
+  'productmanagement': [
+    { value: 'Discussion', label: 'Discussion' },
+    { value: 'Question', label: 'Question' },
+    { value: 'Career', label: 'Career' },
+    { value: 'Resources', label: 'Resources' }
+  ],
+  'ProductManagement': [
+    { value: 'Discussion', label: 'Discussion' },
+    { value: 'Question', label: 'Question' },
+    { value: 'Career', label: 'Career' }
+  ],
+  'ProductManager': [
+    { value: 'Discussion', label: 'Discussion' },
+    { value: 'Question', label: 'Question' }
+  ],
+  'cscareerquestions': [
+    { value: 'Student', label: 'Student' },
+    { value: 'Experienced', label: 'Experienced' },
+    { value: 'Big N Discussion', label: 'Big N Discussion' }
+  ],
+  'learnprogramming': [
+    { value: 'Question', label: 'Question' },
+    { value: 'Resource', label: 'Resource' },
+    { value: 'Discussion', label: 'Discussion' }
+  ]
 };
 
 /**
@@ -214,9 +237,10 @@ const SUBREDDIT_FLAIR_MAP = {
  * @param {string} subreddit - Subreddit name (without r/)
  * @param {string} title - Post title
  * @param {string} text - Post content (for text posts)
+ * @param {string} flairText - Optional flair text to apply to the post
  * @returns {Promise<Object>} Post data including URL
  */
-export async function postToReddit(subreddit, title, text) {
+export async function postToReddit(subreddit, title, text, flairText = null) {
   const accessToken = await getValidAccessToken();
 
   // Note: Context should be added by the caller (e.g., ProgressHub adds course-specific context)
@@ -229,14 +253,12 @@ export async function postToReddit(subreddit, title, text) {
     api_type: 'json'
   };
 
-  // Add flair_text from hardcoded mapping if available
-  // Using flair_text instead of flair_id works without special OAuth permissions
-  const flairText = SUBREDDIT_FLAIR_MAP[subreddit];
+  // Add flair if provided
   if (flairText) {
     params.flair_text = flairText;
-    console.log(`📌 Using flair: "${flairText}" for r/${subreddit}`);
+    console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}"`);
   } else {
-    console.log(`ℹ️ No flair mapping for r/${subreddit}, posting without flair`);
+    console.log(`ℹ️ Posting to r/${subreddit} without flair (subreddit may reject if flair is required)`);
   }
 
   const response = await fetch(`${REDDIT_API_URL}/api/submit`, {
@@ -258,7 +280,14 @@ export async function postToReddit(subreddit, title, text) {
 
   // Check for Reddit API errors
   if (data.json?.errors?.length > 0) {
-    throw new Error(`Reddit API error: ${data.json.errors[0][1]}`);
+    const errorMessage = data.json.errors[0][1];
+
+    // Provide helpful message for flair-related errors
+    if (errorMessage.includes('post flair') || errorMessage.includes('flair')) {
+      throw new Error(`r/${subreddit} requires post flair. Your post was saved to the Community Forum but could not be shared to Reddit. To share to Reddit, please post directly on r/${subreddit}.`);
+    }
+
+    throw new Error(`Reddit API error: ${errorMessage}`);
   }
 
   return {
