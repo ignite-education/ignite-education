@@ -948,10 +948,11 @@ const Auth = () => {
                     return (
                       <div
                         key={course.id}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative"
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
                         style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onClick={() => setSelectedCourseModal(course.id)}
                       >
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2 text-pink-500">{course.title}</h4>
@@ -976,18 +977,11 @@ const Auth = () => {
                         </div>
 
                         {/* Plus Icon */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedCourseModal(course.id);
-                          }}
-                          className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 hover:bg-gray-300 text-white rounded-full transition-all"
-                          aria-label="View course details"
-                        >
+                        <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                           </svg>
-                        </button>
+                        </div>
                       </div>
                     );
                   }) : (
