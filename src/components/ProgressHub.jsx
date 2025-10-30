@@ -1704,7 +1704,7 @@ const ProgressHub = () => {
       {/* Left Sidebar - Fixed */}
       <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
-        <div className="flex-shrink-0" style={{ paddingTop: '19.38px', paddingBottom: '5px', paddingLeft: '32px', paddingRight: '32px' }}>
+        <div className="flex-shrink-0" style={{ paddingTop: '19.38px', paddingBottom: '5px', paddingLeft: '42px', paddingRight: '32px' }}>
           <div className="flex items-center">
             <div
               className="w-auto cursor-pointer"
@@ -1724,7 +1724,7 @@ const ProgressHub = () => {
         </div>
 
         {/* Content - Scrollable */}
-        <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: 'calc(31.56px + 10px)', paddingRight: '12px' }}>
+        <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: 'calc(41.56px + 10px)', paddingRight: '12px' }}>
           <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px', paddingTop: '12px' }}>
