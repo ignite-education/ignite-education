@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost } from '../lib/api';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, SUBREDDIT_FLAIRS } from '../lib/reddit';
+import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getSubredditFlairs } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import Lottie from 'lottie-react';
@@ -28,6 +28,8 @@ const ProgressHub = () => {
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [newPost, setNewPost] = useState({ title: '', content: '', shareToReddit: true, flair: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableFlairs, setAvailableFlairs] = useState([]);
+  const [loadingFlairs, setLoadingFlairs] = useState(false);
   const [redditAuthenticated, setRedditAuthenticated] = useState(false);
   const [redditUsername, setRedditUsername] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -540,6 +542,37 @@ const ProgressHub = () => {
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays === 1) return '1 day ago';
     return `${diffInDays} days ago`;
+  };
+
+  // Handle opening post modal and fetch flairs
+  const handleOpenPostModal = async () => {
+    setShowPostModal(true);
+
+    // Fetch flairs dynamically from Reddit (with 24hr cache)
+    if (courseReddit?.channel) {
+      const subreddit = courseReddit.channel.replace(/^r\//, '');
+      setLoadingFlairs(true);
+
+      try {
+        const flairs = await getSubredditFlairs(subreddit);
+
+        // Transform Reddit flairs to our dropdown format
+        const flairOptions = flairs
+          .filter(f => f.allowable_content === 'all' || f.allowable_content === 'link')
+          .map(f => ({
+            value: f.text,
+            label: f.text
+          }));
+
+        setAvailableFlairs(flairOptions);
+        console.log(`📋 Loaded ${flairOptions.length} flairs for r/${subreddit}`);
+      } catch (error) {
+        console.error('Error fetching flairs:', error);
+        setAvailableFlairs([]); // No flairs available
+      } finally {
+        setLoadingFlairs(false);
+      }
+    }
   };
 
   // Handle modal close with animation
@@ -2070,7 +2103,7 @@ const ProgressHub = () => {
 
               <div className="flex items-center gap-3 mb-2">
                 <button
-                  onClick={() => setShowPostModal(true)}
+                  onClick={handleOpenPostModal}
                   className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
                   style={{
                     width: '38.4px',
@@ -2406,37 +2439,31 @@ const ProgressHub = () => {
                     />
                   </div>
 
-                  {/* Flair Selector */}
-                  {(() => {
-                    const subreddit = courseReddit.channel.replace(/^r\//, '');
-                    const availableFlairs = SUBREDDIT_FLAIRS[subreddit];
-
-                    if (availableFlairs && availableFlairs.length > 0) {
-                      return (
-                        <div>
-                          <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>
-                            Post Flair <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            value={newPost.flair}
-                            onChange={(e) => setNewPost({ ...newPost, flair: e.target.value })}
-                            className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
-                            style={{ borderRadius: '0.3rem' }}
-                            disabled={isSubmitting}
-                            required
-                          >
-                            <option value="">Select a flair...</option>
-                            {availableFlairs.map((flair) => (
-                              <option key={flair.value} value={flair.value}>
-                                {flair.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      );
-                    }
-                    return null;
-                  })()}
+                  {/* Flair Selector - Dynamically loaded from Reddit */}
+                  {availableFlairs.length > 0 && (
+                    <div>
+                      <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>
+                        Post Flair <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={newPost.flair}
+                        onChange={(e) => setNewPost({ ...newPost, flair: e.target.value })}
+                        className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                        style={{ borderRadius: '0.3rem' }}
+                        disabled={isSubmitting || loadingFlairs}
+                        required
+                      >
+                        <option value="">
+                          {loadingFlairs ? 'Loading flairs...' : 'Select a flair...'}
+                        </option>
+                        {availableFlairs.map((flair) => (
+                          <option key={flair.value} value={flair.value}>
+                            {flair.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-4 bg-gray-100" style={{ borderRadius: '0.3rem' }}>

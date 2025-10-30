@@ -236,12 +236,36 @@ export const SUBREDDIT_FLAIRS = {
 };
 
 /**
- * Get available link flairs for a subreddit
+ * Get available link flairs for a subreddit with 24-hour caching
  * Now works with the 'flair' OAuth scope
  * @param {string} subreddit - Subreddit name (without r/)
+ * @param {boolean} skipCache - Force fresh fetch, ignoring cache
  * @returns {Promise<Array>} Array of flair objects with id and text
  */
-export async function getSubredditFlairs(subreddit) {
+export async function getSubredditFlairs(subreddit, skipCache = false) {
+  const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+  const cacheKey = `reddit_flairs_${subreddit}`;
+  const cacheTimeKey = `reddit_flairs_${subreddit}_timestamp`;
+
+  // Check cache first (unless skipCache is true)
+  if (!skipCache) {
+    const cachedFlairs = localStorage.getItem(cacheKey);
+    const cacheTime = localStorage.getItem(cacheTimeKey);
+
+    if (cachedFlairs && cacheTime) {
+      const age = Date.now() - parseInt(cacheTime);
+      if (age < CACHE_DURATION) {
+        const flairs = JSON.parse(cachedFlairs);
+        const hoursOld = Math.floor(age / (60 * 60 * 1000));
+        console.log(`💾 Using cached flairs for r/${subreddit} (${hoursOld}h old)`);
+        return flairs;
+      } else {
+        console.log(`🔄 Cache expired for r/${subreddit}, fetching fresh flairs`);
+      }
+    }
+  }
+
+  // Fetch fresh flairs from Reddit
   const accessToken = await getValidAccessToken();
 
   const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
@@ -253,11 +277,23 @@ export async function getSubredditFlairs(subreddit) {
 
   if (!response.ok) {
     console.error(`Failed to fetch flairs for r/${subreddit}: ${response.status}`);
+    // Return cached flairs if available, even if expired
+    const cachedFlairs = localStorage.getItem(cacheKey);
+    if (cachedFlairs) {
+      console.log(`⚠️ Using stale cache due to fetch error`);
+      return JSON.parse(cachedFlairs);
+    }
     return [];
   }
 
   const flairs = await response.json();
-  console.log(`📋 Fetched ${flairs.length} flairs for r/${subreddit}:`, flairs);
+  console.log(`📋 Fetched ${flairs.length} fresh flairs for r/${subreddit}`);
+
+  // Cache the flairs
+  localStorage.setItem(cacheKey, JSON.stringify(flairs));
+  localStorage.setItem(cacheTimeKey, Date.now().toString());
+  console.log(`💾 Cached flairs for r/${subreddit} (valid for 24h)`);
+
   return flairs || [];
 }
 
