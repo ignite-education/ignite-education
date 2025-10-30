@@ -332,36 +332,14 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
   };
 
   // If flair text is provided, fetch flair IDs and find matching one
+  // NOTE: This requires 'flair' OAuth scope - user must re-authenticate to get this permission
   if (flairText) {
-    try {
-      const flairs = await getSubredditFlairs(subreddit);
+    console.log(`⚠️ Flair requested but OAuth token missing 'flair' permission.`);
+    console.log(`ℹ️ To post with flairs, please disconnect and reconnect to Reddit in Settings.`);
+    console.log(`ℹ️ Attempting to post without flair...`);
 
-      // Helper function to decode HTML entities (e.g., &amp; -> &)
-      const decodeHTML = (html) => {
-        const txt = document.createElement('textarea');
-        txt.innerHTML = html;
-        return txt.value;
-      };
-
-      // Debug: Log all available flair texts
-      console.log(`🔍 Available flair texts for r/${subreddit}:`, flairs.map(f => decodeHTML(f.text)));
-      console.log(`🔍 Looking for flair: "${flairText}"`);
-
-      // Match flair by decoding HTML entities first
-      const matchingFlair = flairs.find(f => decodeHTML(f.text) === flairText);
-
-      if (matchingFlair) {
-        params.flair_id = matchingFlair.id;
-        console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}" (ID: ${matchingFlair.id})`);
-      } else {
-        console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}`);
-        console.warn(`Available flairs:`, flairs.map(f => ({ text: decodeHTML(f.text), id: f.id })));
-        console.log(`ℹ️ Posting without flair`);
-      }
-    } catch (error) {
-      console.error(`❌ Error fetching flairs:`, error);
-      console.log(`ℹ️ Posting without flair due to error`);
-    }
+    // Don't try to fetch flairs - will get 403 without proper OAuth scope
+    // User needs to re-authenticate with Reddit to get 'flair' permission
   } else {
     console.log(`ℹ️ Posting to r/${subreddit} without flair`);
   }

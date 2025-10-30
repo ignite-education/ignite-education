@@ -333,14 +333,24 @@ const ProgressHub = () => {
       }
 
       // Fetch lessons grouped by module using the new API function
-      const lessonsData = await getLessonsByModule(courseId);
-      console.log('📚 Fetched grouped lessons:', lessonsData);
-      setGroupedLessons(lessonsData);
+      try {
+        const lessonsData = await getLessonsByModule(courseId);
+        console.log('📚 Fetched grouped lessons:', lessonsData);
+        setGroupedLessons(lessonsData);
+      } catch (error) {
+        console.error('❌ Error fetching lessons by module:', error);
+        setGroupedLessons({}); // Default to empty object
+      }
 
       // Fetch lessons metadata (for upcoming lessons carousel)
-      const metadataData = await getLessonsMetadata(courseId);
-      console.log('📋 Fetched lessons metadata:', metadataData);
-      setLessonsMetadata(metadataData);
+      try {
+        const metadataData = await getLessonsMetadata(courseId);
+        console.log('📋 Fetched lessons metadata:', metadataData);
+        setLessonsMetadata(metadataData);
+      } catch (error) {
+        console.error('❌ Error fetching lessons metadata:', error);
+        setLessonsMetadata([]); // Default to empty array
+      }
 
       // userId is already declared above, reuse it
       console.log('👤 Using userId for progress:', userId);
