@@ -548,14 +548,20 @@ const ProgressHub = () => {
   const handleOpenPostModal = async () => {
     setShowPostModal(true);
 
-    // Fetch flairs dynamically from Reddit (with 24hr cache)
-    // Will use cache if available, even without authentication
+    // Fetch flairs from centralized server cache (24hr cache, no auth required)
     if (courseReddit?.channel) {
       const subreddit = courseReddit.channel.replace(/^r\//, '');
       setLoadingFlairs(true);
 
       try {
-        const flairs = await getSubredditFlairs(subreddit);
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const response = await fetch(`${API_URL}/api/reddit-flairs?subreddit=${subreddit}`);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch flairs: ${response.status}`);
+        }
+
+        const flairs = await response.json();
 
         // Transform Reddit flairs to our dropdown format
         const flairOptions = flairs
@@ -566,7 +572,7 @@ const ProgressHub = () => {
           }));
 
         setAvailableFlairs(flairOptions);
-        console.log(`📋 Loaded ${flairOptions.length} flairs for r/${subreddit}`);
+        console.log(`📋 Loaded ${flairOptions.length} flairs for r/${subreddit} from server cache`);
       } catch (error) {
         console.error('Error fetching flairs:', error);
         setAvailableFlairs([]); // No flairs available

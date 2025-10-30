@@ -16,8 +16,8 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Initialize Stripe (optional - only if key is provided)
+const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // Initialize Supabase (for updating user metadata)
 // Using service role key to have admin permissions for updating user metadata
@@ -901,6 +901,89 @@ app.get('/api/reddit-comments', async (req, res) => {
     console.error('❌ Error stack:', error.stack);
 
     // Return empty array instead of error to prevent frontend from breaking
+    console.log('⚠️ Returning empty array due to Reddit API error');
+    res.json([]);
+  }
+});
+
+// Reddit flairs cache - centralized for all users
+let redditFlairsCache = {}; // Object: { [subreddit]: { flairs, timestamp } }
+const REDDIT_FLAIRS_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
+// Fetch Reddit flairs for a subreddit (cached centrally)
+app.get('/api/reddit-flairs', async (req, res) => {
+  try {
+    const { subreddit } = req.query;
+
+    if (!subreddit) {
+      return res.status(400).json({ error: 'subreddit parameter is required' });
+    }
+
+    console.log(`📡 Reddit flairs requested for r/${subreddit}`);
+
+    // Check cache first
+    const cachedData = redditFlairsCache[subreddit];
+    const now = Date.now();
+    const cacheAge = cachedData ? now - cachedData.timestamp : Infinity;
+
+    if (cachedData && cacheAge < REDDIT_FLAIRS_CACHE_DURATION) {
+      const hoursOld = Math.floor(cacheAge / (60 * 60 * 1000));
+      console.log(`💾 Returning cached flairs for r/${subreddit} (${hoursOld}h old)`);
+      return res.json(cachedData.flairs);
+    }
+
+    // Fetch fresh flairs from Reddit
+    console.log(`🔄 Fetching fresh flairs from r/${subreddit}...`);
+
+    await waitForRateLimit();
+    const accessToken = await getRedditOAuthToken();
+
+    const redditUrl = `https://oauth.reddit.com/r/${subreddit}/api/link_flair_v2`;
+    console.log(`🌐 Fetching flairs from: ${redditUrl}`);
+
+    const response = await fetch(redditUrl, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Reddit API error: ${response.status}`, errorText);
+
+      // Return stale cache if available
+      if (cachedData) {
+        console.log(`⚠️ Returning stale cache for r/${subreddit} due to error`);
+        return res.json(cachedData.flairs);
+      }
+
+      throw new Error(`Reddit API error: ${response.status}`);
+    }
+
+    const flairs = await response.json();
+    console.log(`✅ Fetched ${flairs.length} flairs for r/${subreddit}`);
+
+    // Cache the flairs
+    redditFlairsCache[subreddit] = {
+      flairs: flairs,
+      timestamp: now
+    };
+
+    console.log(`💾 Cached flairs for r/${subreddit} (valid for 24h)`);
+    res.json(flairs);
+
+  } catch (error) {
+    console.error('❌ Error fetching Reddit flairs:', error.message);
+
+    // Return stale cache if available
+    const cachedData = redditFlairsCache[req.query.subreddit];
+    if (cachedData) {
+      console.log(`⚠️ Returning stale cache due to error`);
+      return res.json(cachedData.flairs);
+    }
+
+    // Return empty array instead of error
     console.log('⚠️ Returning empty array due to Reddit API error');
     res.json([]);
   }
