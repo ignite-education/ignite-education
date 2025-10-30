@@ -93,7 +93,7 @@ export function initiateRedditAuth() {
     state: state,
     redirect_uri: REDDIT_REDIRECT_URI,
     duration: 'permanent', // Request refresh token
-    scope: 'submit identity vote read' // Permissions: submit posts, read user identity, vote, read comments
+    scope: 'submit identity vote read flair' // Permissions: submit posts, read user identity, vote, read comments, manage flairs
   });
 
   const authUrl = `${REDDIT_AUTH_URL}?${params.toString()}`;
@@ -196,6 +196,7 @@ async function getValidAccessToken() {
 /**
  * Available flair options for different subreddits
  * Maps subreddit name to array of flair options
+ * These are used as fallback display options in the UI
  */
 export const SUBREDDIT_FLAIRS = {
   'cybersecurity': [
@@ -233,11 +234,37 @@ export const SUBREDDIT_FLAIRS = {
 };
 
 /**
+ * Get available link flairs for a subreddit
+ * Now works with the 'flair' OAuth scope
+ * @param {string} subreddit - Subreddit name (without r/)
+ * @returns {Promise<Array>} Array of flair objects with id and text
+ */
+export async function getSubredditFlairs(subreddit) {
+  const accessToken = await getValidAccessToken();
+
+  const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': REDDIT_USER_AGENT
+    }
+  });
+
+  if (!response.ok) {
+    console.error(`Failed to fetch flairs for r/${subreddit}: ${response.status}`);
+    return [];
+  }
+
+  const flairs = await response.json();
+  console.log(`📋 Fetched ${flairs.length} flairs for r/${subreddit}:`, flairs);
+  return flairs || [];
+}
+
+/**
  * Post to Reddit
  * @param {string} subreddit - Subreddit name (without r/)
  * @param {string} title - Post title
  * @param {string} text - Post content (for text posts)
- * @param {string} flairText - Optional flair text to apply to the post
+ * @param {string} flairText - Optional flair text to use (will be matched to flair ID)
  * @returns {Promise<Object>} Post data including URL
  */
 export async function postToReddit(subreddit, title, text, flairText = null) {
@@ -253,12 +280,24 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
     api_type: 'json'
   };
 
-  // Add flair if provided
+  // If flair text is provided, fetch flair IDs and find matching one
   if (flairText) {
-    params.flair_text = flairText;
-    console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}"`);
+    try {
+      const flairs = await getSubredditFlairs(subreddit);
+      const matchingFlair = flairs.find(f => f.text === flairText);
+
+      if (matchingFlair) {
+        params.flair_id = matchingFlair.id;
+        console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}" (ID: ${matchingFlair.id})`);
+      } else {
+        console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}, posting without flair`);
+      }
+    } catch (error) {
+      console.error(`❌ Error fetching flairs:`, error);
+      console.log(`ℹ️ Posting without flair due to error`);
+    }
   } else {
-    console.log(`ℹ️ Posting to r/${subreddit} without flair (subreddit may reject if flair is required)`);
+    console.log(`ℹ️ Posting to r/${subreddit} without flair`);
   }
 
   const response = await fetch(`${REDDIT_API_URL}/api/submit`, {
