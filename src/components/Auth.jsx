@@ -952,10 +952,7 @@ const Auth = () => {
                         style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        onClick={() => {
-                          console.log('Course tile clicked:', course.name, course.title);
-                          setSelectedCourseModal(course.name);
-                        }}
+                        onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2 text-pink-500">{course.title}</h4>
@@ -1258,12 +1255,7 @@ const Auth = () => {
     )}
 
     {/* Course Details Modal */}
-    {(() => {
-      console.log('Modal check - selectedCourseModal:', selectedCourseModal);
-      console.log('Modal check - courses:', courses.length);
-      console.log('Modal check - found course:', courses.find(c => c.name === selectedCourseModal));
-      return selectedCourseModal && courses.find(c => c.name === selectedCourseModal);
-    })() && (
+    {selectedCourseModal && courses.find(c => c.name === selectedCourseModal) && (
       <div
         className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
         style={{
@@ -1307,19 +1299,17 @@ const Auth = () => {
               style={{ scrollbarWidth: 'thin' }}
             >
               <div>
-                <div className="mb-6">
-                  {selectedCourse.status === 'live' && (
-                    <span className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium">Available Now</span>
-                  )}
-                  {selectedCourse.status === 'coming_soon' && (
+                {selectedCourse.status === 'coming_soon' && (
+                  <div className="mb-6">
                     <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">Coming Soon</span>
-                  )}
-                  {selectedCourse.status === 'requested' && (
+                  </div>
+                )}
+                {selectedCourse.status === 'requested' && (
+                  <div className="mb-6">
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">Requested</span>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <h3 className="text-2xl font-bold mb-4 text-gray-900">Course Overview</h3>
                 <p className="text-gray-700 mb-6 leading-relaxed">
                   {selectedCourse.description}
                 </p>
@@ -1327,35 +1317,24 @@ const Auth = () => {
                 {/* Module and Lesson Details */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6">
-                    <h3 className="text-xl font-bold mb-4 text-gray-900">Course Content</h3>
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {selectedCourse.module_structure.map((module, moduleIdx) => (
-                        <div key={moduleIdx} className="border border-gray-200 rounded-lg overflow-hidden">
-                          {/* Module Header */}
-                          <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-4 py-3 border-b border-gray-200">
-                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                              <span className="bg-purple-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                                {moduleIdx + 1}
-                              </span>
-                              {module.name}
-                            </h4>
-                          </div>
+                        <div key={moduleIdx}>
+                          {/* Module Title */}
+                          <h4 className="font-semibold text-gray-900 mb-2">
+                            Module {moduleIdx + 1} - {module.name}
+                          </h4>
 
                           {/* Lessons List */}
                           {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
-                            <div className="px-4 py-3 bg-white">
-                              <p className="text-xs text-gray-500 font-medium mb-2">{module.lessons.length} Lesson{module.lessons.length !== 1 ? 's' : ''}</p>
-                              <ul className="space-y-2">
-                                {module.lessons.map((lesson, lessonIdx) => (
-                                  <li key={lessonIdx} className="flex items-start text-sm text-gray-700">
-                                    <svg className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    <span>{lesson.name}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                            <ul className="space-y-1 ml-4 mb-4">
+                              {module.lessons.map((lesson, lessonIdx) => (
+                                <li key={lessonIdx} className="flex items-start text-sm text-gray-700">
+                                  <span className="mr-2">•</span>
+                                  <span>{lesson.name}</span>
+                                </li>
+                              ))}
+                            </ul>
                           )}
                         </div>
                       ))}
