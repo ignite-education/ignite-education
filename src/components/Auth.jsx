@@ -1564,9 +1564,12 @@ const Auth = () => {
                         alert('Failed to enroll in course. Please try again.');
                       }
                     } else {
-                      // Close modal and scroll to top of sign-in page
+                      // Close modal first
                       setSelectedCourseModal(null);
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      // Wait for modal close animation, then scroll to top
+                      setTimeout(() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }, 100);
                     }
                   }}
                   className={`w-full font-semibold py-3 rounded-lg transition mb-4 ${
