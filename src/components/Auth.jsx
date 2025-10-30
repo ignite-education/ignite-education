@@ -746,20 +746,6 @@ const Auth = () => {
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="••••••••"
                 />
-                {isLogin && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowResetPassword(true);
-                      setResetEmail(email);
-                      setResetSuccess(false);
-                      setError('');
-                    }}
-                    className="text-xs text-pink-500 hover:text-pink-600 transition mt-1"
-                  >
-                    Forgot password?
-                  </button>
-                )}
               </div>
             </div>
 
@@ -783,6 +769,24 @@ const Auth = () => {
             >
               {isLogin ? "Don't have an account?" : 'Already have an account?'}
             </button>
+            {isLogin && (
+              <>
+                <br />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetPassword(true);
+                    setResetEmail(email);
+                    setResetSuccess(false);
+                    setError('');
+                  }}
+                  className="text-black hover:text-pink-500 transition"
+                  style={{ fontSize: '0.85em', marginTop: '0.25rem' }}
+                >
+                  Reset password
+                </button>
+              </>
+            )}
           </div>
         </div>
 
