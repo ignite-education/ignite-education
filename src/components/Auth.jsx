@@ -952,7 +952,10 @@ const Auth = () => {
                         style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                        onClick={() => setSelectedCourseModal(course.id)}
+                        onClick={() => {
+                          console.log('Course tile clicked:', course.id, course.title);
+                          setSelectedCourseModal(course.id);
+                        }}
                       >
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2 text-pink-500">{course.title}</h4>
@@ -1255,7 +1258,12 @@ const Auth = () => {
     )}
 
     {/* Course Details Modal */}
-    {selectedCourseModal && courses.find(c => c.id === selectedCourseModal) && (
+    {(() => {
+      console.log('Modal check - selectedCourseModal:', selectedCourseModal);
+      console.log('Modal check - courses:', courses.length);
+      console.log('Modal check - found course:', courses.find(c => c.id === selectedCourseModal));
+      return selectedCourseModal && courses.find(c => c.id === selectedCourseModal);
+    })() && (
       <div
         className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
         style={{
