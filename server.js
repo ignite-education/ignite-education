@@ -777,15 +777,25 @@ app.get('/api/reddit-posts', async (req, res) => {
 
     const json = await response.json();
 
-    // Transform Reddit data WITHOUT fetching individual user icons
-    // This eliminates 40+ additional API requests per fetch
+    // Transform Reddit data including user profile pictures
+    // Reddit includes snoovatar/profile images in post data via sr_detail.icon_img
     const posts = json.data.children.map(child => {
       const post = child.data;
+
+      // Extract author profile picture from various possible fields
+      // Reddit provides these in the post data, no extra API calls needed
+      let authorIcon = null;
+      if (post.sr_detail?.icon_img) {
+        authorIcon = post.sr_detail.icon_img;
+      } else if (post.thumbnail && post.thumbnail.startsWith('http')) {
+        // Sometimes Reddit puts user avatars in thumbnail for user posts
+        authorIcon = post.thumbnail;
+      }
 
       return {
         id: post.id,
         author: post.author,
-        author_icon: null, // Don't fetch individual user icons to save API calls
+        author_icon: authorIcon,
         created_at: new Date(post.created_utc * 1000).toISOString(),
         title: post.title,
         content: post.selftext || '',
@@ -862,17 +872,26 @@ app.get('/api/reddit-comments', async (req, res) => {
     // Reddit returns [post_data, comments_data]
     const commentsData = json[1]?.data?.children || [];
 
-    // Transform comment data
+    // Transform comment data including author icons
     const comments = commentsData
       .filter(child => child.kind === 't1') // Only include actual comments (not "more" objects)
-      .map(child => ({
-        id: child.data.id,
-        name: child.data.name,
-        author: child.data.author,
-        body: child.data.body,
-        created_utc: child.data.created_utc,
-        score: child.data.score
-      }));
+      .map(child => {
+        // Extract author icon if available
+        let authorIcon = null;
+        if (child.data.author_flair_background_color) {
+          authorIcon = child.data.author_flair_background_color;
+        }
+
+        return {
+          id: child.data.id,
+          name: child.data.name,
+          author: child.data.author,
+          author_icon: authorIcon,
+          body: child.data.body,
+          created_utc: child.data.created_utc,
+          score: child.data.score
+        };
+      });
 
     console.log(`✅ Fetched ${comments.length} Reddit comments for post ${postId}`);
     res.json(comments);

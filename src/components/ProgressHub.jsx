@@ -2304,12 +2304,27 @@ const ProgressHub = () => {
 
                                 return (
                                   <div key={comment.id} className="flex gap-2">
-                                    <div className={`w-6 h-6 ${avatarColor} rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+                                    {comment.author_icon ? (
+                                      <img
+                                        src={comment.author_icon}
+                                        alt={commentAuthor}
+                                        className="w-6 h-6 rounded-full flex-shrink-0 object-cover"
+                                        onError={(e) => {
+                                          // Fallback to colored circle if image fails to load
+                                          e.target.style.display = 'none';
+                                          e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                      />
+                                    ) : null}
+                                    <div
+                                      className={`w-6 h-6 ${avatarColor} rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0`}
+                                      style={{ display: comment.author_icon ? 'none' : 'flex' }}
+                                    >
                                       {commentAuthor.charAt(0).toUpperCase()}
                                     </div>
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs text-gray-400">u/</span><span className="text-xs text-gray-400">{commentAuthor}</span>
+                                        <span className="text-xs text-gray-400">u/{commentAuthor}</span>
                                         <span className="text-xs text-gray-500">• {timeAgo}</span>
                                       </div>
                                       <p className="text-xs text-gray-300">{comment.content}</p>
