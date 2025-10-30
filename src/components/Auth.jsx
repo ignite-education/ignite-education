@@ -1354,7 +1354,7 @@ const Auth = () => {
                         setSnappedModuleIndex(newIndex);
                       }}
                     >
-                      <div className="flex gap-4" style={{ minHeight: '93.5px' }}>
+                      <div className="flex gap-4" style={{ height: '93.5px' }}>
                         {selectedCourse.module_structure.map((module, moduleIdx) => (
                           <div
                             key={moduleIdx}
@@ -1365,7 +1365,7 @@ const Auth = () => {
                               padding: '14px',
                               borderRadius: '0.5rem',
                               background: '#7714E0',
-                              minHeight: '93.5px',
+                              height: '93.5px',
                               scrollSnapAlign: 'start',
                               scrollSnapStop: 'always'
                             }}
