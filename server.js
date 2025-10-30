@@ -1249,7 +1249,7 @@ app.post('/api/send-email', async (req, res) => {
 // REDDIT CACHE SYSTEM - Database-backed daily caching
 // ============================================================================
 
-const SUBREDDITS_TO_CACHE = ['ProductManagement', 'cybersecurity', 'ProductManager'];
+const SUBREDDITS_TO_CACHE = ['ProductManagement', 'cybersecurity'];
 const POSTS_PER_SUBREDDIT = 50;
 const COMMENTS_PER_POST = 50;
 
