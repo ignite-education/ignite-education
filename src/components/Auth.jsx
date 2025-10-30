@@ -1239,18 +1239,6 @@ const Auth = () => {
                 <p className="text-gray-700 text-sm mb-4">
                   We've sent a password reset link to <strong>{resetEmail}</strong>
                 </p>
-                <p className="text-gray-600 text-xs mb-4">
-                  Click the link in the email to reset your password. The link will expire in 1 hour.
-                </p>
-                <button
-                  onClick={() => {
-                    setShowResetPassword(false);
-                    setResetSuccess(false);
-                  }}
-                  className="text-pink-500 hover:text-pink-600 text-sm font-medium"
-                >
-                  Back to Sign In
-                </button>
               </div>
             )}
           </div>
