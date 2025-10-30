@@ -596,6 +596,9 @@ const ProgressHub = () => {
       const redditResult = await postToReddit(subreddit, newPost.title, redditContent, newPost.flair || null);
       console.log('✅ Posted to Reddit successfully:', redditResult.url);
 
+      // Open the Reddit post in a new tab
+      window.open(redditResult.url, '_blank');
+
       // Reset form and close modal
       setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
       handleCloseModal();
