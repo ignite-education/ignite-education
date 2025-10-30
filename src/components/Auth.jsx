@@ -1354,7 +1354,7 @@ const Auth = () => {
                         setSnappedModuleIndex(newIndex);
                       }}
                     >
-                      <div className="flex gap-4" style={{ height: '93.5px' }}>
+                      <div className="flex gap-4" style={{ height: '84.15px' }}>
                         {selectedCourse.module_structure.map((module, moduleIdx) => (
                           <div
                             key={moduleIdx}
@@ -1365,7 +1365,7 @@ const Auth = () => {
                               padding: '14px',
                               borderRadius: '0.5rem',
                               background: '#7714E0',
-                              height: '93.5px',
+                              height: '84.15px',
                               scrollSnapAlign: 'start',
                               scrollSnapStop: 'always'
                             }}
@@ -1490,25 +1490,25 @@ const Auth = () => {
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
                       </svg>
-                      <span className="leading-tight">Certificate upon<br/>completion</span>
+                      <span className="leading-relaxed">Certificate upon<br/>completion</span>
                     </div>
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                       </svg>
-                      <span className="leading-tight">Taught by industry<br/>expert instructors</span>
+                      <span className="leading-relaxed">Taught by industry<br/>expert instructors</span>
                     </div>
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span className="leading-tight">Interactive<br/>hands-on exercises</span>
+                      <span className="leading-relaxed">Interactive<br/>hands-on exercises</span>
                     </div>
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span className="leading-tight">Self-paced<br/>learning</span>
+                      <span className="leading-relaxed">Self-paced<br/>learning</span>
                     </div>
                   </div>
                 </div>
@@ -1516,7 +1516,7 @@ const Auth = () => {
             </div>
 
             {/* Fixed Button at Bottom */}
-            <div className="px-8 py-4 border-t border-gray-200 bg-white" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
+            <div className="px-8 py-4 bg-white" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
               <button
                 onClick={async () => {
                   if (selectedCourse.status === 'live' && user) {
