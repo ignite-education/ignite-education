@@ -1291,7 +1291,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col"
             style={{
               width: '600px',
-              maxHeight: '70vh',
+              height: '70vh',
               animation: 'scaleUp 0.2s ease-out',
               borderRadius: '0.3rem',
             }}
@@ -1305,10 +1305,10 @@ const Auth = () => {
               <X size={24} />
             </button>
 
-            {/* Content */}
+            {/* Scrollable Content */}
             <div
               className="flex-1 overflow-y-auto px-8"
-              style={{ scrollbarWidth: 'thin', paddingTop: '25.6px', paddingBottom: '32px' }}
+              style={{ scrollbarWidth: 'thin', paddingTop: '25.6px', paddingBottom: '20px' }}
             >
               <div>
                 {selectedCourse.status === 'coming_soon' && (
@@ -1483,9 +1483,9 @@ const Auth = () => {
                   </div>
                 )}
 
-                {/* Course Benefits - 2 Column Layout */}
-                <div className="mb-6">
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700 font-medium">
+                {/* Course Benefits - 2 Column Layout - Vertically Centered */}
+                <div className="flex items-center" style={{ minHeight: '80px' }}>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700 font-medium w-full">
                     <div className="flex items-start">
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
@@ -1512,76 +1512,79 @@ const Auth = () => {
                     </div>
                   </div>
                 </div>
-
-                <button
-                  onClick={async () => {
-                    if (selectedCourse.status === 'live' && user) {
-                      try {
-                        console.log('📝 Enrolling in course:', {
-                          courseId: selectedCourse.id,
-                          courseName: selectedCourse.name,
-                          courseTitle: selectedCourse.title,
-                          userId: user.id
-                        });
-
-                        // Verify the course has lesson data
-                        const { data: lessonCheck, error: lessonError } = await supabase
-                          .from('lessons')
-                          .select('id')
-                          .eq('course_id', selectedCourse.name)
-                          .limit(1);
-
-                        if (lessonError) {
-                          console.error('Error checking lessons:', lessonError);
-                        }
-
-                        if (!lessonCheck || lessonCheck.length === 0) {
-                          console.warn('⚠️ No lessons found for course:', selectedCourse.name);
-                          console.log('Checking if module_structure exists...');
-
-                          // Check if the course has module_structure data
-                          if (!selectedCourse.module_structure || selectedCourse.module_structure.length === 0) {
-                            alert(`This course doesn't have lesson content yet. Please contact support.`);
-                            setSelectedCourseModal(null);
-                            return;
-                          }
-                        }
-
-                        // Enroll user in the course
-                        const { error } = await supabase
-                          .from('users')
-                          .update({ enrolled_course: selectedCourse.name })
-                          .eq('id', user.id);
-
-                        if (error) throw error;
-
-                        console.log('✅ User enrolled in course:', selectedCourse.name);
-
-                        // Navigate to progress hub
-                        window.location.href = '/progress';
-                      } catch (error) {
-                        console.error('Error enrolling in course:', error);
-                        alert('Failed to enroll in course. Please try again.');
-                      }
-                    } else {
-                      // Close modal first
-                      setSelectedCourseModal(null);
-                      // Wait for modal close animation, then scroll to top
-                      setTimeout(() => {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }, 100);
-                    }
-                  }}
-                  className={`w-full font-semibold py-3 rounded-lg transition mb-4 ${
-                    selectedCourse.status === 'live'
-                      ? 'bg-pink-500 text-white hover:bg-pink-600'
-                      : 'bg-gray-400 text-white cursor-not-allowed'
-                  }`}
-                  disabled={selectedCourse.status !== 'live'}
-                >
-                  {selectedCourse.status === 'live' ? 'Get Started' : 'Notify Me When Available'}
-                </button>
               </div>
+            </div>
+
+            {/* Fixed Button at Bottom */}
+            <div className="px-8 py-4 border-t border-gray-200 bg-white" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
+              <button
+                onClick={async () => {
+                  if (selectedCourse.status === 'live' && user) {
+                    try {
+                      console.log('📝 Enrolling in course:', {
+                        courseId: selectedCourse.id,
+                        courseName: selectedCourse.name,
+                        courseTitle: selectedCourse.title,
+                        userId: user.id
+                      });
+
+                      // Verify the course has lesson data
+                      const { data: lessonCheck, error: lessonError } = await supabase
+                        .from('lessons')
+                        .select('id')
+                        .eq('course_id', selectedCourse.name)
+                        .limit(1);
+
+                      if (lessonError) {
+                        console.error('Error checking lessons:', lessonError);
+                      }
+
+                      if (!lessonCheck || lessonCheck.length === 0) {
+                        console.warn('⚠️ No lessons found for course:', selectedCourse.name);
+                        console.log('Checking if module_structure exists...');
+
+                        // Check if the course has module_structure data
+                        if (!selectedCourse.module_structure || selectedCourse.module_structure.length === 0) {
+                          alert(`This course doesn't have lesson content yet. Please contact support.`);
+                          setSelectedCourseModal(null);
+                          return;
+                        }
+                      }
+
+                      // Enroll user in the course
+                      const { error } = await supabase
+                        .from('users')
+                        .update({ enrolled_course: selectedCourse.name })
+                        .eq('id', user.id);
+
+                      if (error) throw error;
+
+                      console.log('✅ User enrolled in course:', selectedCourse.name);
+
+                      // Navigate to progress hub
+                      window.location.href = '/progress';
+                    } catch (error) {
+                      console.error('Error enrolling in course:', error);
+                      alert('Failed to enroll in course. Please try again.');
+                    }
+                  } else {
+                    // Close modal first
+                    setSelectedCourseModal(null);
+                    // Wait for modal close animation, then scroll to top
+                    setTimeout(() => {
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 100);
+                  }
+                }}
+                className={`w-full font-semibold py-3 rounded-lg transition ${
+                  selectedCourse.status === 'live'
+                    ? 'bg-pink-500 text-white hover:bg-pink-600'
+                    : 'bg-gray-400 text-white cursor-not-allowed'
+                }`}
+                disabled={selectedCourse.status !== 'live'}
+              >
+                {selectedCourse.status === 'live' ? 'Get Started' : 'Notify Me When Available'}
+              </button>
             </div>
           </div>
               </>
