@@ -2440,33 +2440,31 @@ const ProgressHub = () => {
                   </div>
 
                   {/* Flair Selector - Dynamically loaded from Reddit */}
-                  {availableFlairs.length > 0 && (
-                    <div>
-                      <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>
-                        Post Flair
-                      </label>
-                      <select
-                        value={newPost.flair}
-                        onChange={(e) => setNewPost({ ...newPost, flair: e.target.value })}
-                        className="w-full bg-gray-100 px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
-                        style={{
-                          borderRadius: '0.3rem',
-                          color: newPost.flair ? 'black' : '#9CA3AF'
-                        }}
-                        disabled={isSubmitting || loadingFlairs}
-                        required
-                      >
-                        <option value="" style={{ color: '#9CA3AF' }}>
-                          {loadingFlairs ? 'Loading flairs...' : 'Select a flair...'}
+                  <div>
+                    <label className="block font-semibold text-gray-700" style={{ marginBottom: '0.1rem' }}>
+                      Post Flair
+                    </label>
+                    <select
+                      value={newPost.flair}
+                      onChange={(e) => setNewPost({ ...newPost, flair: e.target.value })}
+                      className="w-full bg-gray-100 px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                      style={{
+                        borderRadius: '0.3rem',
+                        color: newPost.flair ? 'black' : '#9CA3AF'
+                      }}
+                      disabled={isSubmitting || loadingFlairs || availableFlairs.length === 0}
+                      required={availableFlairs.length > 0}
+                    >
+                      <option value="" style={{ color: '#9CA3AF' }}>
+                        {loadingFlairs ? 'Loading flairs...' : availableFlairs.length === 0 ? 'No flairs available' : 'Select a flair...'}
+                      </option>
+                      {availableFlairs.map((flair) => (
+                        <option key={flair.value} value={flair.value} style={{ color: 'black' }}>
+                          {flair.label}
                         </option>
-                        {availableFlairs.map((flair) => (
-                          <option key={flair.value} value={flair.value} style={{ color: 'black' }}>
-                            {flair.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                      ))}
+                    </select>
+                  </div>
 
                   <div>
                     <div className="flex items-center gap-3 p-3 bg-gray-100" style={{ borderRadius: '0.3rem' }}>
