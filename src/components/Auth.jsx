@@ -538,10 +538,13 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      await resetPassword(resetEmail);
+      console.log('Attempting to send password reset email to:', resetEmail);
+      const result = await resetPassword(resetEmail);
+      console.log('Password reset response:', result);
       setResetSuccess(true);
       setLoading(false);
     } catch (err) {
+      console.error('Password reset error:', err);
       setError(err.message || 'An error occurred sending reset email');
       setLoading(false);
     }
