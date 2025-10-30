@@ -331,10 +331,27 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
     api_type: 'json'
   };
 
-  // If flair text is provided, fetch flair ID from cache or API
+  // If flair text is provided, look up flair ID from hardcoded mapping first,
+  // then try cache, then fetch from API as fallback
   if (flairText) {
     try {
-      // Check localStorage cache first (24 hour cache)
+      // First, check hardcoded SUBREDDIT_FLAIRS for flair ID
+      const hardcodedFlairs = SUBREDDIT_FLAIRS[subreddit];
+      let flairIdFound = false;
+
+      if (hardcodedFlairs) {
+        const matchingFlair = hardcodedFlairs.find(f => f.value === flairText);
+        if (matchingFlair && matchingFlair.id) {
+          params.flair_id = matchingFlair.id;
+          console.log(`📌 Using hardcoded flair ID: ${matchingFlair.id} (${flairText})`);
+          flairIdFound = true; // Skip cache/API lookup
+        }
+      }
+
+      // Only try cache/API if we didn't find hardcoded ID
+      if (!flairIdFound) {
+
+      // Fallback: Check localStorage cache (24 hour cache)
       const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
       const cacheKey = `reddit_flairs_${subreddit}`;
       const cacheTimeKey = `reddit_flairs_${subreddit}_timestamp`;
@@ -353,7 +370,7 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
         }
       }
 
-      // Fetch fresh flairs if no valid cache
+      // Last resort: Fetch fresh flairs if no valid cache
       if (!flairs) {
         console.log(`🔄 Fetching fresh flairs for r/${subreddit}...`);
         const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
@@ -379,7 +396,7 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
         }
       }
 
-      // Match flair text to flair ID
+      // Match flair text to flair ID from cache/API
       if (flairs && flairs.length > 0) {
         // Helper function to decode HTML entities (e.g., &amp; -> &)
         const decodeHTML = (html) => {
@@ -399,6 +416,7 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
           console.log(`Available flairs:`, flairs.map(f => decodeHTML(f.text)));
         }
       }
+      } // Close !flairIdFound block
     } catch (error) {
       console.error(`❌ Error processing flair:`, error);
     }
