@@ -947,14 +947,14 @@ const Auth = () => {
                   {courses.length > 0 ? courses.slice(coursePageIndex * 4, coursePageIndex * 4 + 4).map((course) => {
                     return (
                       <div
-                        key={course.id}
+                        key={course.name}
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
                         style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => {
-                          console.log('Course tile clicked:', course.id, course.title);
-                          setSelectedCourseModal(course.id);
+                          console.log('Course tile clicked:', course.name, course.title);
+                          setSelectedCourseModal(course.name);
                         }}
                       >
                         <div className="flex flex-col h-full">
@@ -1261,8 +1261,8 @@ const Auth = () => {
     {(() => {
       console.log('Modal check - selectedCourseModal:', selectedCourseModal);
       console.log('Modal check - courses:', courses.length);
-      console.log('Modal check - found course:', courses.find(c => c.id === selectedCourseModal));
-      return selectedCourseModal && courses.find(c => c.id === selectedCourseModal);
+      console.log('Modal check - found course:', courses.find(c => c.name === selectedCourseModal));
+      return selectedCourseModal && courses.find(c => c.name === selectedCourseModal);
     })() && (
       <div
         className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
@@ -1273,7 +1273,7 @@ const Auth = () => {
       >
         <div className="relative">
           {(() => {
-            const selectedCourse = courses.find(c => c.id === selectedCourseModal);
+            const selectedCourse = courses.find(c => c.name === selectedCourseModal);
             if (!selectedCourse) return null;
 
             return (
