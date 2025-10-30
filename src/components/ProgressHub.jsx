@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
@@ -90,6 +90,7 @@ const ProgressHub = () => {
   const [isClosingMyPostsModal, setIsClosingMyPostsModal] = useState(false);
   const [myRedditPosts, setMyRedditPosts] = useState([]);
   const [loadingMyPosts, setLoadingMyPosts] = useState(false);
+  const [hasPostedToReddit, setHasPostedToReddit] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -98,6 +99,14 @@ const ProgressHub = () => {
   useEffect(() => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  // Check if user has posted to Reddit before
+  useEffect(() => {
+    const hasPosted = localStorage.getItem('hasPostedToReddit');
+    if (hasPosted === 'true') {
+      setHasPostedToReddit(true);
     }
   }, []);
 
@@ -602,6 +611,10 @@ const ProgressHub = () => {
 
       // Open the Reddit post in a new tab
       window.open(redditResult.url, '_blank');
+
+      // Mark that user has posted to Reddit
+      localStorage.setItem('hasPostedToReddit', 'true');
+      setHasPostedToReddit(true);
 
       // Reset form and close modal
       setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
@@ -2126,18 +2139,20 @@ const ProgressHub = () => {
                 >
                   <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
-                <button
-                  onClick={handleOpenMyPosts}
-                  className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
-                  style={{
-                    width: '38.4px',
-                    height: '38.4px',
-                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                    borderRadius: '0.3rem'
-                  }}
-                >
-                  <User size={20} className="text-black group-hover:text-pink-500 transition-colors" />
-                </button>
+                {hasPostedToReddit && (
+                  <button
+                    onClick={handleOpenMyPosts}
+                    className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
+                    style={{
+                      width: '38.4px',
+                      height: '38.4px',
+                      transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      borderRadius: '0.3rem'
+                    }}
+                  >
+                    <Inbox size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+                  </button>
+                )}
                 <div className="flex-1">
                   <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation.</p>
                   <p className="text-white" style={{ fontSize: '14px' }}>Discover discussions, ask questions and engage with the {courseReddit.channel} community.</p>
