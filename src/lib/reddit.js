@@ -194,28 +194,20 @@ async function getValidAccessToken() {
 }
 
 /**
- * Get available post flairs for a subreddit
- * @param {string} subreddit - Subreddit name (without r/)
- * @returns {Promise<Array>} Array of available flairs
+ * Hardcoded flair mapping for common subreddits
+ * Maps subreddit names to default flair text
+ * Using flair_text instead of flair_id doesn't require special OAuth permissions
  */
-export async function getSubredditFlairs(subreddit) {
-  const accessToken = await getValidAccessToken();
-
-  const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`,
-      'User-Agent': REDDIT_USER_AGENT
-    }
-  });
-
-  if (!response.ok) {
-    console.error('Failed to fetch flairs, subreddit may not have flairs');
-    return [];
-  }
-
-  const flairs = await response.json();
-  return flairs || [];
-}
+const SUBREDDIT_FLAIR_MAP = {
+  'cybersecurity': 'Question',
+  'productmanagement': 'Discussion',
+  'ProductManagement': 'Discussion',
+  'ProductManager': 'Discussion',
+  'cscareerquestions': 'Student',
+  'learnprogramming': 'Question',
+  'ITCareerQuestions': 'Seeking Advice',
+  // Add more subreddits as needed for new courses
+};
 
 /**
  * Post to Reddit
@@ -229,19 +221,6 @@ export async function postToReddit(subreddit, title, text) {
 
   // Note: Context should be added by the caller (e.g., ProgressHub adds course-specific context)
 
-  // Try to get available flairs for this subreddit
-  let flairId = null;
-  try {
-    const flairs = await getSubredditFlairs(subreddit);
-    // Use the first available flair if any exist
-    if (flairs.length > 0) {
-      flairId = flairs[0].id;
-      console.log(`📌 Using flair: ${flairs[0].text} (${flairId})`);
-    }
-  } catch (error) {
-    console.log('⚠️ Could not fetch flairs, posting without flair');
-  }
-
   const params = {
     sr: subreddit,
     kind: 'self', // Text post
@@ -250,9 +229,14 @@ export async function postToReddit(subreddit, title, text) {
     api_type: 'json'
   };
 
-  // Add flair if available
-  if (flairId) {
-    params.flair_id = flairId;
+  // Add flair_text from hardcoded mapping if available
+  // Using flair_text instead of flair_id works without special OAuth permissions
+  const flairText = SUBREDDIT_FLAIR_MAP[subreddit];
+  if (flairText) {
+    params.flair_text = flairText;
+    console.log(`📌 Using flair: "${flairText}" for r/${subreddit}`);
+  } else {
+    console.log(`ℹ️ No flair mapping for r/${subreddit}, posting without flair`);
   }
 
   const response = await fetch(`${REDDIT_API_URL}/api/submit`, {
