@@ -331,94 +331,36 @@ export async function postToReddit(subreddit, title, text, flairText = null) {
     api_type: 'json'
   };
 
-  // If flair text is provided, look up flair ID from hardcoded mapping first,
-  // then try cache, then fetch from API as fallback
+  // If flair text is provided, fetch flair IDs and find matching one
   if (flairText) {
     try {
-      // First, check hardcoded SUBREDDIT_FLAIRS for flair ID
-      const hardcodedFlairs = SUBREDDIT_FLAIRS[subreddit];
-      let flairIdFound = false;
+      const flairs = await getSubredditFlairs(subreddit);
 
-      if (hardcodedFlairs) {
-        const matchingFlair = hardcodedFlairs.find(f => f.value === flairText);
-        if (matchingFlair && matchingFlair.id) {
-          params.flair_id = matchingFlair.id;
-          console.log(`📌 Using hardcoded flair ID: ${matchingFlair.id} (${flairText})`);
-          flairIdFound = true; // Skip cache/API lookup
-        }
+      // Helper function to decode HTML entities (e.g., &amp; -> &)
+      const decodeHTML = (html) => {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = html;
+        return txt.value;
+      };
+
+      // Debug: Log all available flair texts
+      console.log(`🔍 Available flair texts for r/${subreddit}:`, flairs.map(f => decodeHTML(f.text)));
+      console.log(`🔍 Looking for flair: "${flairText}"`);
+
+      // Match flair by decoding HTML entities first
+      const matchingFlair = flairs.find(f => decodeHTML(f.text) === flairText);
+
+      if (matchingFlair) {
+        params.flair_id = matchingFlair.id;
+        console.log(`📌 Posting to r/${subreddit} with flair: "${flairText}" (ID: ${matchingFlair.id})`);
+      } else {
+        console.warn(`⚠️ Flair "${flairText}" not found for r/${subreddit}`);
+        console.warn(`Available flairs:`, flairs.map(f => ({ text: decodeHTML(f.text), id: f.id })));
+        console.log(`ℹ️ Posting without flair`);
       }
-
-      // Only try cache/API if we didn't find hardcoded ID
-      if (!flairIdFound) {
-
-      // Fallback: Check localStorage cache (24 hour cache)
-      const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
-      const cacheKey = `reddit_flairs_${subreddit}`;
-      const cacheTimeKey = `reddit_flairs_${subreddit}_timestamp`;
-
-      let flairs = null;
-      const cachedFlairs = localStorage.getItem(cacheKey);
-      const cacheTime = localStorage.getItem(cacheTimeKey);
-
-      // Use cache if valid
-      if (cachedFlairs && cacheTime) {
-        const age = Date.now() - parseInt(cacheTime);
-        if (age < CACHE_DURATION) {
-          flairs = JSON.parse(cachedFlairs);
-          const hoursOld = Math.floor(age / (60 * 60 * 1000));
-          console.log(`💾 Using cached flairs for r/${subreddit} (${hoursOld}h old)`);
-        }
-      }
-
-      // Last resort: Fetch fresh flairs if no valid cache
-      if (!flairs) {
-        console.log(`🔄 Fetching fresh flairs for r/${subreddit}...`);
-        const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'User-Agent': REDDIT_USER_AGENT
-          }
-        });
-
-        if (response.ok) {
-          flairs = await response.json();
-          // Cache the flairs
-          localStorage.setItem(cacheKey, JSON.stringify(flairs));
-          localStorage.setItem(cacheTimeKey, Date.now().toString());
-          console.log(`💾 Cached ${flairs.length} flairs for r/${subreddit} (valid for 24h)`);
-        } else {
-          console.error(`Failed to fetch flairs: ${response.status}`);
-          // Try to use stale cache if available
-          if (cachedFlairs) {
-            flairs = JSON.parse(cachedFlairs);
-            console.log(`⚠️ Using stale cache due to fetch error`);
-          }
-        }
-      }
-
-      // Match flair text to flair ID from cache/API
-      if (flairs && flairs.length > 0) {
-        // Helper function to decode HTML entities (e.g., &amp; -> &)
-        const decodeHTML = (html) => {
-          const txt = document.createElement('textarea');
-          txt.innerHTML = html;
-          return txt.value;
-        };
-
-        console.log(`🔍 Looking for flair: "${flairText}"`);
-        const matchingFlair = flairs.find(f => decodeHTML(f.text) === flairText);
-
-        if (matchingFlair) {
-          params.flair_id = matchingFlair.id;
-          console.log(`📌 Posting with flair ID: ${matchingFlair.id} (${flairText})`);
-        } else {
-          console.warn(`⚠️ Flair "${flairText}" not found`);
-          console.log(`Available flairs:`, flairs.map(f => decodeHTML(f.text)));
-        }
-      }
-      } // Close !flairIdFound block
     } catch (error) {
-      console.error(`❌ Error processing flair:`, error);
+      console.error(`❌ Error fetching flairs:`, error);
+      console.log(`ℹ️ Posting without flair due to error`);
     }
   } else {
     console.log(`ℹ️ Posting to r/${subreddit} without flair`);
