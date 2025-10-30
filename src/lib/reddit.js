@@ -266,7 +266,20 @@ export async function getSubredditFlairs(subreddit, skipCache = false) {
   }
 
   // Fetch fresh flairs from Reddit
-  const accessToken = await getValidAccessToken();
+  let accessToken = null;
+  try {
+    accessToken = await getValidAccessToken();
+  } catch (error) {
+    console.log(`ℹ️ Not authenticated yet, checking for cached flairs for r/${subreddit}`);
+    // Return stale cache if available
+    const cachedFlairs = localStorage.getItem(cacheKey);
+    if (cachedFlairs) {
+      console.log(`💾 Using cached flairs (authentication required for fresh data)`);
+      return JSON.parse(cachedFlairs);
+    }
+    console.log(`⚠️ No cached flairs available and not authenticated`);
+    return [];
+  }
 
   const response = await fetch(`${REDDIT_API_URL}/r/${subreddit}/api/link_flair_v2`, {
     headers: {

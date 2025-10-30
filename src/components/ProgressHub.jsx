@@ -549,6 +549,7 @@ const ProgressHub = () => {
     setShowPostModal(true);
 
     // Fetch flairs dynamically from Reddit (with 24hr cache)
+    // Will use cache if available, even without authentication
     if (courseReddit?.channel) {
       const subreddit = courseReddit.channel.replace(/^r\//, '');
       setLoadingFlairs(true);
@@ -2456,7 +2457,7 @@ const ProgressHub = () => {
                       required={availableFlairs.length > 0}
                     >
                       <option value="" style={{ color: '#9CA3AF' }}>
-                        {loadingFlairs ? 'Loading flairs...' : availableFlairs.length === 0 ? 'No flairs available' : 'Select a flair...'}
+                        {loadingFlairs ? 'Loading flairs...' : 'Select a flair...'}
                       </option>
                       {availableFlairs.map((flair) => (
                         <option key={flair.value} value={flair.value} style={{ color: 'black' }}>
