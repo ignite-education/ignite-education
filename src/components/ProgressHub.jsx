@@ -1829,38 +1829,34 @@ const ProgressHub = () => {
           </div>
         </div>
 
-        {/* Sticky Course Title and Progress Bar */}
-        <div className="flex-shrink-0" style={{ paddingLeft: 'calc(41.56px + 15px)', paddingRight: '12px', paddingBottom: '8px', backgroundColor: '#000000', zIndex: 10 }}>
-          <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
-          <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
-            {completedLessons.length === 0 ? (
-              `Ready when you are, ${user.firstName}.`
-            ) : (
-              <>
-                You're <span className="text-white font-semibold">{progressPercentage}%</span> through the {user.enrolledCourse} course.
-              </>
-            )}
-          </p>
-          <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '14px' }}>
-            <div
-              className="rounded-full transition-all duration-500"
-              style={{
-                width: `${progressPercentage === 0 ? 3 : progressPercentage}%`,
-                height: '14px',
-                background: 'linear-gradient(to right, #7714E0, #7714E0)'
-              }}
-            />
-          </div>
-        </div>
-
         {/* Content - Scrollable */}
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: 'calc(41.56px + 15px)', paddingRight: '12px' }}>
           <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
               {/* Welcome Section */}
-              <div className="flex-shrink-0" style={{ paddingTop: '12px' }}>
+              <div className="flex-shrink-0" style={{ minHeight: '165px', paddingTop: '12px' }}>
                 <h1 className="font-semibold" style={{ fontSize: '34px', marginBottom: '8px' }}>
                   Welcome, <span className="text-pink-500">{user.firstName}</span>
                 </h1>
+                <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
+                  {completedLessons.length === 0 ? (
+                    `Ready when you are, ${user.firstName}.`
+                  ) : (
+                    <>
+                      You're <span className="text-white font-semibold">{progressPercentage}%</span> through the {user.enrolledCourse} course.
+                    </>
+                  )}
+                </p>
+                <div className="w-full bg-white rounded-full overflow-hidden" style={{ height: '14px' }}>
+                  <div
+                    className="rounded-full transition-all duration-500"
+                    style={{
+                      width: `${progressPercentage === 0 ? 3 : progressPercentage}%`,
+                      height: '14px',
+                      background: 'linear-gradient(to right, #7714E0, #7714E0)'
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Upcoming Lessons */}
