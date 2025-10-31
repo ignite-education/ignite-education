@@ -1920,7 +1920,7 @@ const ProgressHub = () => {
                             width: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
                             minWidth: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
                             flexShrink: 0,
-                            paddingTop: '4px',
+                            paddingTop: '5.618px',
                             paddingRight: '5.618px',
                             paddingBottom: '5.618px',
                             paddingLeft: '14px',
