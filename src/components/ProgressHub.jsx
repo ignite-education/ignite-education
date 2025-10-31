@@ -2144,7 +2144,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Footer Links */}
-              <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '14px', paddingTop: '2px', marginTop: '4px' }}>
+              <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '14px', paddingTop: '2px', marginTop: '1px' }}>
                 <button
                   className="hover:text-pink-500 transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
