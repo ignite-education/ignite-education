@@ -433,9 +433,10 @@ export async function getRedditUsername() {
  */
 export async function getUserRedditPosts(limit = 25) {
   const accessToken = await getValidAccessToken();
-  const username = await getRedditUsername();
 
-  const response = await fetch(`${REDDIT_API_URL}/user/${username}/submitted?limit=${limit}`, {
+  // Use the OAuth-compatible endpoint for authenticated user's posts
+  // /api/v1/me/submitted is the correct endpoint for OAuth tokens
+  const response = await fetch(`${REDDIT_API_URL}/api/v1/me/submitted?limit=${limit}`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'User-Agent': REDDIT_USER_AGENT
@@ -443,7 +444,13 @@ export async function getUserRedditPosts(limit = 25) {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch user posts from Reddit');
+    const status = response.status;
+    if (status === 403) {
+      throw new Error('Failed to fetch user posts from Reddit: 403 Forbidden - Please reconnect your Reddit account');
+    } else if (status === 401) {
+      throw new Error('Failed to fetch user posts from Reddit: 401 Unauthorized - Authentication expired');
+    }
+    throw new Error(`Failed to fetch user posts from Reddit: ${status} ${response.statusText}`);
   }
 
   const data = await response.json();
