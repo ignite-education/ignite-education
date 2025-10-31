@@ -609,7 +609,7 @@ const CurriculumUpload = () => {
                 type="text"
                 value={newCourseId}
                 onChange={(e) => setNewCourseId(e.target.value)}
-                placeholder="Enter course ID (e.g., product-management)"
+                placeholder="Enter course ID (e.g., product-manager)"
                 className="w-full px-3 py-2 border rounded-lg mb-4"
                 onKeyPress={(e) => e.key === 'Enter' && createNewCourse()}
               />

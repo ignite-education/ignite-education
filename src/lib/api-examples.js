@@ -8,7 +8,7 @@ import { getLessons, getLessonsByModule, getCommunityPosts } from './api';
 // Example 1: Get all lessons for a course (flat list)
 export async function exampleGetLessons() {
   try {
-    const courseId = 'product-management';
+    const courseId = 'product-manager';
     const lessons = await getLessons(courseId);
 
     console.log('All lessons:', lessons);
@@ -23,7 +23,7 @@ export async function exampleGetLessons() {
 // Example 2: Get lessons grouped by module and lesson number
 export async function exampleGetLessonsByModule() {
   try {
-    const courseId = 'product-management';
+    const courseId = 'product-manager';
     const groupedLessons = await getLessonsByModule(courseId);
 
     console.log('Grouped lessons:', groupedLessons);
@@ -68,7 +68,7 @@ export function exampleReactUsage() {
     useEffect(() => {
       async function loadCourse() {
         try {
-          const courseId = 'product-management';
+          const courseId = 'product-manager';
           const data = await getLessonsByModule(courseId);
           setModules(data);
         } catch (error) {

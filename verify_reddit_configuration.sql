@@ -15,7 +15,7 @@ SELECT
     ELSE '✅ Configured correctly'
   END as configuration_status
 FROM courses
-WHERE status = 'live' OR name IN ('product-manager', 'product-management', 'cyber-security-analyst', 'cybersecurity-analyst')
+WHERE status = 'live' OR name IN ('product-manager', 'cyber-security-analyst', 'cybersecurity-analyst')
 ORDER BY display_order;
 
 -- Show reddit_posts_cache statistics

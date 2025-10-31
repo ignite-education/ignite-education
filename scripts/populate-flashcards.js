@@ -5,7 +5,7 @@
  * node scripts/populate-flashcards.js <courseId> <moduleNumber> <lessonNumber>
  *
  * Example:
- * node scripts/populate-flashcards.js product-management 1 1
+ * node scripts/populate-flashcards.js product-manager 1 1
  */
 
 import { createClient } from '@supabase/supabase-js';
@@ -137,7 +137,7 @@ async function main() {
 
   if (args.length < 3) {
     console.error('Usage: node scripts/populate-flashcards.js <courseId> <moduleNumber> <lessonNumber>');
-    console.error('Example: node scripts/populate-flashcards.js product-management 1 1');
+    console.error('Example: node scripts/populate-flashcards.js product-manager 1 1');
     process.exit(1);
   }
 

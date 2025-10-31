@@ -230,7 +230,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
 
     // Log the knowledge check results
     try {
-      const courseId = 'product-management';
+      const courseId = 'product-manager';
       const userIdToLog = userId || 'temp-user-id';
 
       await logKnowledgeCheck(

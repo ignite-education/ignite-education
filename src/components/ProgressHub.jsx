@@ -71,7 +71,7 @@ const ProgressHub = () => {
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    selectedCourse: 'product-management',
+    selectedCourse: 'product-manager',
     marketingEmails: true
   });
   const [availableCourses, setAvailableCourses] = useState([]);
