@@ -1504,6 +1504,15 @@ const ProgressHub = () => {
     };
   }, [isMouseDown, handlePullMove]);
 
+  // Cleanup hover timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimer) {
+        clearTimeout(hoverTimer);
+      }
+    };
+  }, [hoverTimer]);
+
   // Fetch Reddit comments for a specific post
   const fetchRedditCommentsForPost = async (post) => {
     console.log(`🔍 fetchRedditCommentsForPost called for post:`, post.id, `source:`, post.source);
@@ -1574,6 +1583,30 @@ const ProgressHub = () => {
       }));
     } finally {
       setLoadingComments(prev => ({ ...prev, [post.id]: false }));
+    }
+  };
+
+  // Handle post hover with debounce
+  const handlePostHover = (post) => {
+    // Clear any existing timer
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+    }
+
+    // Set new timer - only load after 400ms hover
+    const timer = setTimeout(() => {
+      setExpandedPostId(post.id);
+      fetchRedditCommentsForPost(post);
+    }, 400);
+
+    setHoverTimer(timer);
+  };
+
+  // Handle mouse leave - clear timer
+  const handlePostLeave = () => {
+    if (hoverTimer) {
+      clearTimeout(hoverTimer);
+      setHoverTimer(null);
     }
   };
 
@@ -2224,6 +2257,8 @@ const ProgressHub = () => {
                   {communityPosts.map(post => (
                     <div
                       key={post.id}
+                      onMouseEnter={() => handlePostHover(post)}
+                      onMouseLeave={handlePostLeave}
                     >
                     <div
                       className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
