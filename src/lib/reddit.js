@@ -433,10 +433,11 @@ export async function getRedditUsername() {
  */
 export async function getUserRedditPosts(limit = 25) {
   const accessToken = await getValidAccessToken();
+  const username = await getRedditUsername();
 
-  // Use the OAuth-compatible endpoint for authenticated user's posts
-  // /api/v1/me/submitted is the correct endpoint for OAuth tokens
-  const response = await fetch(`${REDDIT_API_URL}/api/v1/me/submitted?limit=${limit}`, {
+  // Use the correct OAuth endpoint for user's submitted posts
+  // Reddit requires /user/{username}/submitted.json format (not /api/v1/me/submitted)
+  const response = await fetch(`${REDDIT_API_URL}/user/${username}/submitted.json?limit=${limit}`, {
     headers: {
       'Authorization': `Bearer ${accessToken}`,
       'User-Agent': REDDIT_USER_AGENT
