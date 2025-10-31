@@ -69,7 +69,8 @@
       "Bash(then grep -E \"VITE_SUPABASE\" .env)",
       "Bash(else echo \".env file not found\")",
       "Bash(then grep \"REDDIT\" .env)",
-      "Bash(then grep \"STRIPE\" .env)"
+      "Bash(then grep \"STRIPE\" .env)",
+      "Bash(then grep -E \"VITE_SUPABASE|SUPABASE\" .env)"
     ],
     "deny": [],
     "ask": []

@@ -241,10 +241,10 @@ export async function createCommunityPost(postData) {
  * Get live posts from Reddit subreddit via backend
  * @param {number} limit - Number of posts to fetch (default: 10)
  * @param {boolean} forceRefresh - Whether to force a cache refresh (default: false)
- * @param {string} subreddit - Subreddit to fetch from (without 'r/' prefix, default: 'productmanagement')
+ * @param {string} subreddit - Subreddit to fetch from (without 'r/' prefix, default: 'ProductManagement')
  * @returns {Promise<Array>} Array of Reddit post objects
  */
-export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit = 'productmanagement') {
+export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit = 'ProductManagement') {
   try {
     // Use new cached endpoint - posts are fetched daily by server and stored in database
     // This drastically reduces Reddit API calls from every user to once per day

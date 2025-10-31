@@ -725,7 +725,7 @@ app.get('/api/reddit-posts', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 40;
     const forceRefresh = req.query.refresh === 'true';
-    const subreddit = req.query.subreddit || 'productmanagement'; // Get subreddit from query param
+    const subreddit = req.query.subreddit || 'ProductManagement'; // Get subreddit from query param
     const now = Date.now();
 
     console.log(`📡 Reddit posts requested for r/${subreddit}`);
@@ -1249,7 +1249,7 @@ app.post('/api/send-email', async (req, res) => {
 // REDDIT CACHE SYSTEM - Database-backed daily caching
 // ============================================================================
 
-const SUBREDDITS_TO_CACHE = ['productmanagement', 'cybersecurity'];
+const SUBREDDITS_TO_CACHE = ['ProductManagement', 'cybersecurity'];
 const POSTS_PER_SUBREDDIT = 50;
 const COMMENTS_PER_POST = 50;
 
@@ -1426,7 +1426,7 @@ app.post('/api/reddit-cache/refresh', async (req, res) => {
 // New endpoint: Get cached Reddit posts from database
 app.get('/api/reddit-posts-cached', async (req, res) => {
   try {
-    const subreddit = req.query.subreddit || 'productmanagement';
+    const subreddit = req.query.subreddit || 'ProductManagement';
     const limit = parseInt(req.query.limit) || 20;
 
     console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit})`);
