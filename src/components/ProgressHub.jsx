@@ -2053,7 +2053,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Office Hours */}
-              <div className="flex-shrink-0" style={{ marginTop: '-34px', minHeight: '160px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '-28px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
                 <div className="rounded-lg" style={{ padding: '12px', height: '100px', background: '#7714E0' }}>
