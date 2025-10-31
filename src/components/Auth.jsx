@@ -716,7 +716,6 @@ const Auth = () => {
                   onChange={(e) => setFirstName(e.target.value)}
                   required={!isLogin}
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
-                  placeholder="John"
                   disabled={isLogin}
                 />
               </div>
@@ -728,7 +727,6 @@ const Auth = () => {
                   onChange={(e) => setLastName(e.target.value)}
                   required={!isLogin}
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
-                  placeholder="Doe"
                   disabled={isLogin}
                 />
               </div>
@@ -743,7 +741,6 @@ const Auth = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
-                  placeholder="you@example.com"
                 />
               </div>
 
@@ -756,7 +753,6 @@ const Auth = () => {
                   required
                   minLength={6}
                   className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
-                  placeholder="••••••••"
                 />
               </div>
             </div>
