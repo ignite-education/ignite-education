@@ -2022,7 +2022,7 @@ const ProgressHub = () => {
                       style={{
                         right: '16px',
                         top: '50%',
-                        transform: 'translateY(-50%)',
+                        transform: 'translateY(calc(-50% - 5px))',
                         width: '40px',
                         height: '40px',
                         borderRadius: '50%',
