@@ -142,11 +142,17 @@ const Onboarding = ({ firstName, userId }) => {
     if (status === 'live') {
       console.log('Enrolling in available course:', selectedCourse);
       try {
-        // Update user profile with course
+        // Find the course in the database to get its kebab-case identifier (name field)
+        const courseData = courses.find(c => c.title === selectedCourse || c.name === selectedCourse);
+        const courseIdentifier = courseData?.name || selectedCourse;
+
+        console.log('Course lookup:', { selectedCourse, courseIdentifier, courseData });
+
+        // Update user profile with course identifier (not title)
         const { data, error } = await supabase
           .from('users')
           .update({
-            enrolled_course: selectedCourse,
+            enrolled_course: courseIdentifier,
             onboarding_completed: true,
             updated_at: new Date().toISOString()
           })
