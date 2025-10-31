@@ -2115,7 +2115,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Merchandise */}
-              <div className="flex-shrink-0" style={{ marginTop: '16px', minHeight: '160px' }}>
+              <div className="flex-shrink-0" style={{ marginTop: '13.6px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Merchandise</h2>
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '100px' }}>
