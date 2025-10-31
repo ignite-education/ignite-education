@@ -51,8 +51,8 @@ const ProgressHub = () => {
     calendlyLink: ''
   });
   const [courseReddit, setCourseReddit] = useState({
-    channel: 'r/ProductManager',
-    url: 'https://www.reddit.com/r/ProductManager/'
+    channel: 'r/productmanagement',
+    url: 'https://www.reddit.com/r/productmanagement/'
   });
   const [userRole, setUserRole] = useState(null); // 'student', 'teacher', 'admin'
 
@@ -164,7 +164,7 @@ const ProgressHub = () => {
               console.log('📮 Resuming pending Reddit post...');
 
               // Post to Reddit
-              const redditResult = await postToReddit('ProductManagement', postData.title, postData.content);
+              const redditResult = await postToReddit('productmanagement', postData.title, postData.content);
               console.log('✅ Posted to Reddit successfully:', redditResult.url);
 
               // Post to Supabase
@@ -333,12 +333,12 @@ const ProgressHub = () => {
             reddit_url: courseData.reddit_url
           });
           setCourseReddit({
-            channel: courseData.reddit_channel || 'r/ProductManagement',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
+            channel: courseData.reddit_channel || 'r/productmanagement',
+            url: courseData.reddit_url || 'https://www.reddit.com/r/productmanagement/'
           });
           console.log('📱 courseReddit state updated to:', {
-            channel: courseData.reddit_channel || 'r/ProductManagement',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
+            channel: courseData.reddit_channel || 'r/productmanagement',
+            url: courseData.reddit_url || 'https://www.reddit.com/r/productmanagement/'
           });
         }
       } catch (error) {
@@ -434,7 +434,7 @@ const ProgressHub = () => {
       // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
-        const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
+        const redditChannel = fetchedCourseData?.reddit_channel || 'r/productmanagement';
         const subreddit = redditChannel.replace(/^r\//, '');
         redditData = await getRedditPosts(20, false, subreddit);
       } catch (err) {
@@ -483,7 +483,7 @@ const ProgressHub = () => {
       // Cache posts if we have any (include subreddit to validate cache)
       if (allPosts.length > 0) {
         try {
-          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
+          const currentSubreddit = fetchedCourseData?.reddit_channel || 'r/productmanagement';
           localStorage.setItem(CACHE_KEY, JSON.stringify({
             posts: allPosts,
             timestamp: Date.now(),

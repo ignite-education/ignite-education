@@ -545,7 +545,7 @@ const CourseManagement = () => {
                   type="text"
                   value={formData.reddit_channel}
                   onChange={(e) => setFormData({ ...formData, reddit_channel: e.target.value })}
-                  placeholder="e.g., r/ProductManager"
+                  placeholder="e.g., r/productmanagement"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">Format: r/channelname (will be displayed in community forum)</p>
@@ -557,7 +557,7 @@ const CourseManagement = () => {
                   type="text"
                   value={formData.reddit_url}
                   onChange={(e) => setFormData({ ...formData, reddit_url: e.target.value })}
-                  placeholder="e.g., https://www.reddit.com/r/ProductManager/"
+                  placeholder="e.g., https://www.reddit.com/r/productmanagement/"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
@@ -735,7 +735,7 @@ const CourseManagement = () => {
                   type="text"
                   value={formData.reddit_channel}
                   onChange={(e) => setFormData({ ...formData, reddit_channel: e.target.value })}
-                  placeholder="e.g., r/ProductManager"
+                  placeholder="e.g., r/productmanagement"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">Format: r/channelname (will be displayed in community forum)</p>
@@ -747,7 +747,7 @@ const CourseManagement = () => {
                   type="text"
                   value={formData.reddit_url}
                   onChange={(e) => setFormData({ ...formData, reddit_url: e.target.value })}
-                  placeholder="e.g., https://www.reddit.com/r/ProductManager/"
+                  placeholder="e.g., https://www.reddit.com/r/productmanagement/"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>

@@ -219,10 +219,6 @@ export const SUBREDDIT_FLAIRS = {
     { value: 'Question', label: 'Question' },
     { value: 'Career', label: 'Career' }
   ],
-  'ProductManager': [
-    { value: 'Discussion', label: 'Discussion' },
-    { value: 'Question', label: 'Question' }
-  ],
   'cscareerquestions': [
     { value: 'Student', label: 'Student' },
     { value: 'Experienced', label: 'Experienced' },
