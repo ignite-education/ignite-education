@@ -1312,7 +1312,7 @@ async function fetchAndCacheRedditData(subreddit) {
       postsStored++;
 
       // Fetch and store comments for this post (limit to top posts to save API calls)
-      if (postsStored <= 20) { // Only fetch comments for top 20 posts
+      if (postsStored <= 50) { // Fetch comments for all displayed posts
         try {
           await waitForRateLimit();
 
