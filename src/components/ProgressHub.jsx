@@ -1593,21 +1593,23 @@ const ProgressHub = () => {
       clearTimeout(hoverTimer);
     }
 
-    // Set new timer - only load after 400ms hover
+    // Set new timer - only load after 1000ms hover
     const timer = setTimeout(() => {
       setExpandedPostId(post.id);
       fetchRedditCommentsForPost(post);
-    }, 400);
+    }, 1000);
 
     setHoverTimer(timer);
   };
 
-  // Handle mouse leave - clear timer
+  // Handle mouse leave - clear timer and close post
   const handlePostLeave = () => {
     if (hoverTimer) {
       clearTimeout(hoverTimer);
       setHoverTimer(null);
     }
+    // Close the expanded post when mouse leaves
+    setExpandedPostId(null);
   };
 
   // Handle post like/unlike
