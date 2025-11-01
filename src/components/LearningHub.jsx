@@ -1638,7 +1638,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           />
         ) : (
           <div className="w-32 h-32 flex items-center justify-center">
-            <div className="animate-pulse text-white">Loading...</div>
+            {/* Empty placeholder - no text shown while animation loads */}
           </div>
         )}
       </div>
