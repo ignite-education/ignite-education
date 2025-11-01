@@ -2628,7 +2628,7 @@ const ProgressHub = () => {
             </h2>
 
             <div
-              className="bg-black text-white relative"
+              className="bg-white text-black relative"
               style={{
                 animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
@@ -2640,18 +2640,18 @@ const ProgressHub = () => {
             >
               <button
                 onClick={handleCloseMyPostsModal}
-                className="absolute top-6 right-6 text-gray-400 hover:text-white z-10"
+                className="absolute top-8 right-8 text-gray-600 hover:text-black z-10"
               >
                 <X size={24} />
               </button>
 
               {loadingMyPosts ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-400">Loading your posts...</div>
+                  <div className="text-gray-600">Loading your posts...</div>
                 </div>
               ) : myRedditPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-gray-400 mb-2">No posts found</p>
+                  <p className="text-gray-600 mb-2">No posts found</p>
                   <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
                 </div>
               ) : (
@@ -2665,11 +2665,11 @@ const ProgressHub = () => {
                       >
                         <div className="flex items-start gap-2 mb-2">
                           <div className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
-                            {post.author?.charAt(0).toUpperCase() || 'U'}
+                            {(post.author || redditUsername || user.firstName)?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs text-white">{post.author || 'User'}</span>
+                              <span className="text-xs text-white">{post.author || redditUsername || user.firstName || 'User'}</span>
                               <span className="text-xs text-white">• {new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                             </div>
                             <h3 className="font-bold mb-1 text-sm text-white">{post.title}</h3>
