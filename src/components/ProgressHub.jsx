@@ -2628,7 +2628,7 @@ const ProgressHub = () => {
             </h2>
 
             <div
-              className="bg-white text-black relative"
+              className="bg-black text-white relative"
               style={{
                 animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
@@ -2640,18 +2640,18 @@ const ProgressHub = () => {
             >
               <button
                 onClick={handleCloseMyPostsModal}
-                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+                className="absolute top-6 right-6 text-gray-400 hover:text-white z-10"
               >
                 <X size={24} />
               </button>
 
               {loadingMyPosts ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-600">Loading your posts...</div>
+                  <div className="text-gray-400">Loading your posts...</div>
                 </div>
               ) : myRedditPosts.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-gray-600 mb-2">No posts found</p>
+                  <p className="text-gray-400 mb-2">No posts found</p>
                   <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
                 </div>
               ) : (
@@ -2659,30 +2659,33 @@ const ProgressHub = () => {
                   {myRedditPosts.map((post) => (
                     <div key={post.id}>
                       <div
-                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
                         onMouseEnter={() => handleMyPostHover(post)}
                         onMouseLeave={handleMyPostLeave}
                       >
-                        <div className="flex items-start gap-4">
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 mb-1">{post.title}</h3>
-                            <p className="text-sm text-gray-600 mb-2">r/{post.subreddit}</p>
+                        <div className="flex items-start gap-2 mb-2">
+                          <div className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                            {post.author?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-white">{post.author || 'User'}</span>
+                              <span className="text-xs text-white">• {new Date(post.created_utc * 1000).toLocaleDateString()}</span>
+                            </div>
+                            <h3 className="font-bold mb-1 text-sm text-white">{post.title}</h3>
+                            <p className="text-xs text-gray-400 mb-2">r/{post.subreddit}</p>
                             {post.selftext && (
-                              <p className={`text-sm text-gray-700 mb-3 ${expandedMyPostId === post.id ? '' : 'line-clamp-2'}`}>{post.selftext}</p>
+                              <p className={`text-xs text-white leading-relaxed mb-2 ${expandedMyPostId === post.id ? '' : 'line-clamp-3'}`}>{post.selftext}</p>
                             )}
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <ThumbsUp size={16} />
-                                <span className="font-medium">{post.score}</span>
-                                <span>upvotes</span>
+                            <div className="flex items-center gap-4 text-xs text-white">
+                              <div className="flex items-center gap-1.5">
+                                <ThumbsUp size={14} />
+                                <span className="font-semibold text-xs">{post.score}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <MessageSquare size={16} />
-                                <span className="font-medium">{post.num_comments}</span>
-                                <span>comments</span>
+                                <MessageSquare size={14} />
+                                <span className="font-semibold text-xs">{post.num_comments}</span>
                               </div>
-                              <span>•</span>
-                              <span>{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
@@ -2697,9 +2700,9 @@ const ProgressHub = () => {
                             animation: 'slideDown 0.3s ease-out'
                           }}
                         >
-                          <div className={`bg-gray-100 rounded-lg border border-gray-200 ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
+                          <div className={`bg-gray-800 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
                             {postComments[post.id] !== 'AUTH_REQUIRED' && (
-                              <h4 className="text-xs font-semibold text-gray-600 mb-3">
+                              <h4 className="text-xs font-semibold text-gray-400 mb-3">
                                 Comments ({postComments[post.id]?.length || 0})
                               </h4>
                             )}
@@ -2707,7 +2710,7 @@ const ProgressHub = () => {
                             {/* Loading indicator */}
                             {loadingComments[post.id] && (
                               <div className="flex justify-center py-4">
-                                <div className="text-gray-600 text-xs">Loading comments...</div>
+                                <div className="text-gray-400 text-xs">Loading comments...</div>
                               </div>
                             )}
 
@@ -2717,13 +2720,13 @@ const ProgressHub = () => {
                               style={{
                                 maxHeight: postComments[post.id] === 'AUTH_REQUIRED' ? '60px' : '200px',
                                 scrollbarWidth: 'thin',
-                                scrollbarColor: '#9CA3AF #F3F4F6'
+                                scrollbarColor: '#4B5563 #1F2937'
                               }}
                             >
                               {/* Display actual comments from Reddit */}
                               {postComments[post.id] === 'AUTH_REQUIRED' ? (
                                 <div className="flex items-center justify-center gap-3 py-2">
-                                  <p className="text-xs text-gray-600">Connect your Reddit account to view comments</p>
+                                  <p className="text-xs text-gray-400">Connect your Reddit account to view comments</p>
                                   <button
                                     onClick={() => initiateRedditAuth()}
                                     className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg font-semibold transition"
@@ -2738,21 +2741,21 @@ const ProgressHub = () => {
                                   const avatarColor = avatarColors[commentAuthor.charCodeAt(0) % avatarColors.length];
 
                                   return (
-                                    <div key={index} className="flex items-start gap-2 bg-white p-2 rounded">
+                                    <div key={index} className="flex items-start gap-2">
                                       <div className={`w-6 h-6 ${avatarColor} rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
                                         {commentAuthor.charAt(0).toUpperCase()}
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                          <span className="text-xs font-semibold text-gray-900">{commentAuthor}</span>
+                                          <span className="text-xs font-semibold text-white">{commentAuthor}</span>
                                         </div>
-                                        <p className="text-xs text-gray-700 break-words">{comment.body}</p>
+                                        <p className="text-xs text-gray-300 break-words">{comment.body}</p>
                                       </div>
                                     </div>
                                   );
                                 })
                               ) : !loadingComments[post.id] && (
-                                <p className="text-xs text-gray-500 text-center py-4">No comments yet</p>
+                                <p className="text-xs text-gray-400 text-center py-4">No comments yet</p>
                               )}
                             </div>
                           </div>
