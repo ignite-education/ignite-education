@@ -24,12 +24,14 @@ const Auth = () => {
   const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
   const coursesSectionRef = useRef(null);
   const learningModelSectionRef = useRef(null);
+  const testimonialsSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
   const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
   const [isLearningTaglineTypingComplete, setIsLearningTaglineTypingComplete] = useState(false);
+  const [animateTestimonials, setAnimateTestimonials] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
@@ -171,6 +173,30 @@ const Auth = () => {
       }
     };
   }, [isLogin, isLearningTaglineTypingComplete]);
+
+  // Intersection observer for testimonials section animation
+  useEffect(() => {
+    if (!testimonialsSectionRef.current || isLogin) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !animateTestimonials) {
+            setAnimateTestimonials(true);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(testimonialsSectionRef.current);
+
+    return () => {
+      if (testimonialsSectionRef.current) {
+        observer.unobserve(testimonialsSectionRef.current);
+      }
+    };
+  }, [isLogin, animateTestimonials]);
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -578,6 +604,13 @@ const Auth = () => {
 
   const scrollToLearningModel = () => {
     learningModelSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  const scrollToTestimonials = () => {
+    testimonialsSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
@@ -1166,6 +1199,177 @@ const Auth = () => {
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll Down Arrow - Absolutely positioned */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <button
+              onClick={scrollToTestimonials}
+              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to testimonials"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+            </button>
+          </div>
+        </div>
+
+      {/* Fifth Section - Testimonials */}
+        <div
+          ref={testimonialsSectionRef}
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-7xl w-full text-white">
+            <div className="px-4 text-center mb-16">
+              <h2 className="text-5xl font-bold text-white mb-6">
+                Learning That Drives Results
+              </h2>
+              <p className="text-xl text-gray-300 max-w-4xl mx-auto">
+                Explore how professionals are upskilling with Ignite to unlock growth, adapt to change, and stay ahead in a rapidly evolving world of work.
+              </p>
+            </div>
+
+            {/* Testimonials Grid - 2x3 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-7xl mx-auto">
+              {/* Testimonial 1 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.1s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "As a manager, Ignite helps me show my team new packages and new ways to solve problems."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                    GL
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Gabriel Lages</div>
+                    <div className="text-sm text-gray-400">Business Intelligence and Analytics Manager</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 2 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.2s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
+                    RA
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Rachel Alt-Simmons</div>
+                    <div className="text-sm text-gray-400">Head Of Strategic Design, Data, Pricing And Analytics</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 3 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.3s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
+                    OL
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Ofentswe Lebogo</div>
+                    <div className="text-sm text-gray-400">Data Scientist, Council for Scientific and Industrial Research (CSIR)</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 4 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-lg">
+                    EN
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Ebuka Nwaformo</div>
+                    <div className="text-sm text-gray-400">Graduate Student, University College Dublin</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 5 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.5s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center text-white font-bold text-lg">
+                    SS
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Sarah Schlobohm</div>
+                    <div className="text-sm text-gray-400">Senior Analytics Manager, Global Risk Analytics, HSBC</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Testimonial 6 */}
+              <div
+                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.6s forwards' : 'none'
+                }}
+              >
+                <p className="text-gray-300 mb-6 italic">
+                  "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with."
+                </p>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
+                    DE
+                  </div>
+                  <div>
+                    <div className="font-semibold text-white">Devon Edwards Joseph</div>
+                    <div className="text-sm text-gray-400">Lloyds Banking Group</div>
                   </div>
                 </div>
               </div>
