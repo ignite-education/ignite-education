@@ -156,36 +156,37 @@ const ProgressHub = () => {
           const username = await getRedditUsername();
           setRedditUsername(username);
 
-          // Check for pending Reddit post after OAuth
+          // Check if we should reopen the post modal after OAuth
+          const shouldReopenModal = localStorage.getItem('reopen_post_modal');
           const pendingPost = localStorage.getItem('pending_reddit_post');
-          if (pendingPost) {
+
+          if (shouldReopenModal && pendingPost) {
             try {
               const postData = JSON.parse(pendingPost);
-              console.log('📮 Resuming pending Reddit post...');
+              console.log('📮 Restoring pending post to modal...');
 
-              // Post to Reddit
-              const redditResult = await postToReddit('ProductManagement', postData.title, postData.content);
-              console.log('✅ Posted to Reddit successfully:', redditResult.url);
-
-              // Post to Supabase
-              await createCommunityPost({
+              // Restore the post data to the form
+              setNewPost({
                 title: postData.title,
                 content: postData.content,
-                author: `u/${user.firstName}`,
-                user_id: authUser.id,
-                author_icon: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
-                tag: postData.tag || null
+                shareToReddit: true,
+                flair: postData.flair || ''
               });
 
-              // Clear pending post
+              // Reopen the modal
+              setShowPostModal(true);
+
+              // Clear the flags
+              localStorage.removeItem('reopen_post_modal');
               localStorage.removeItem('pending_reddit_post');
 
-              // Refresh posts
-              await fetchData();
-
-              alert('Successfully posted to Reddit and Ignite!');
+              // Show success message that Reddit is now connected
+              setTimeout(() => {
+                alert('Reddit account connected! You can now submit your post.');
+              }, 500);
             } catch (error) {
-              console.error('Error posting pending Reddit post:', error);
+              console.error('Error restoring pending post:', error);
+              localStorage.removeItem('reopen_post_modal');
               localStorage.removeItem('pending_reddit_post');
             }
           }
@@ -593,10 +594,11 @@ const ProgressHub = () => {
           flair: newPost.flair
         }));
 
-        // Reset form and close modal before redirect
-        setNewPost({ title: '', content: '', shareToReddit: true, flair: '' });
-        handleCloseModal();
+        // Mark that we should reopen the modal after OAuth
+        localStorage.setItem('reopen_post_modal', 'true');
 
+        // Don't reset form or close modal - just initiate auth
+        // The redirect will happen automatically
         initiateRedditAuth();
         return;
       }

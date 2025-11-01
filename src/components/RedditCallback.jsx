@@ -31,8 +31,19 @@ const RedditCallback = () => {
         setStatus('Connecting to Reddit...');
         await handleRedditCallback(code, state);
 
-        // Redirect back to main page immediately
-        navigate('/');
+        // Check if we should show success message based on pending post
+        const hasPendingPost = localStorage.getItem('reopen_post_modal');
+
+        if (hasPendingPost) {
+          setStatus('Reddit connected! Returning to your post...');
+        } else {
+          setStatus('Reddit connected successfully!');
+        }
+
+        // Small delay to show success message, then redirect back to main page
+        setTimeout(() => {
+          navigate('/');
+        }, 1000);
 
       } catch (err) {
         console.error('Reddit callback error:', err);
