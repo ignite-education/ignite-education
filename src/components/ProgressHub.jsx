@@ -179,11 +179,6 @@ const ProgressHub = () => {
               // Clear the flags
               localStorage.removeItem('reopen_post_modal');
               localStorage.removeItem('pending_reddit_post');
-
-              // Show success message that Reddit is now connected
-              setTimeout(() => {
-                alert('Reddit account connected! You can now submit your post.');
-              }, 500);
             } catch (error) {
               console.error('Error restoring pending post:', error);
               localStorage.removeItem('reopen_post_modal');
