@@ -91,6 +91,8 @@ const ProgressHub = () => {
   const [myRedditPosts, setMyRedditPosts] = useState([]);
   const [loadingMyPosts, setLoadingMyPosts] = useState(false);
   const [hasPostedToReddit, setHasPostedToReddit] = useState(false);
+  const [expandedMyPostId, setExpandedMyPostId] = useState(null);
+  const [myPostHoverTimer, setMyPostHoverTimer] = useState(null);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -1609,6 +1611,32 @@ const ProgressHub = () => {
     setExpandedPostId(null);
   };
 
+  // Handle My Posts modal hover with debounce
+  const handleMyPostHover = (post) => {
+    // Clear any existing timer
+    if (myPostHoverTimer) {
+      clearTimeout(myPostHoverTimer);
+    }
+
+    // Set new timer - only load after 1000ms hover
+    const timer = setTimeout(() => {
+      setExpandedMyPostId(post.id);
+      fetchRedditCommentsForPost(post);
+    }, 1000);
+
+    setMyPostHoverTimer(timer);
+  };
+
+  // Handle My Posts mouse leave - clear timer and close post
+  const handleMyPostLeave = () => {
+    if (myPostHoverTimer) {
+      clearTimeout(myPostHoverTimer);
+      setMyPostHoverTimer(null);
+    }
+    // Close the expanded post when mouse leaves
+    setExpandedMyPostId(null);
+  };
+
   // Handle post like/unlike
   const handleLikePost = async (postId) => {
     const post = communityPosts.find(p => p.id === postId);
@@ -2596,7 +2624,7 @@ const ProgressHub = () => {
         >
           <div className="relative w-full px-4" style={{ maxWidth: '800px' }}>
             <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-              My Reddit Posts
+              My Posts
             </h2>
 
             <div
@@ -2604,7 +2632,7 @@ const ProgressHub = () => {
               style={{
                 animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                padding: '1.5rem',
+                padding: '2rem',
                 maxHeight: '85vh',
                 overflowY: 'auto'
               }}
@@ -2612,7 +2640,7 @@ const ProgressHub = () => {
             >
               <button
                 onClick={handleCloseMyPostsModal}
-                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
+                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
               >
                 <X size={24} />
               </button>
@@ -2629,41 +2657,107 @@ const ProgressHub = () => {
               ) : (
                 <div className="space-y-4">
                   {myRedditPosts.map((post) => (
-                    <div
-                      key={post.id}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{post.title}</h3>
-                          <p className="text-sm text-gray-600 mb-2">r/{post.subreddit}</p>
-                          {post.selftext && (
-                            <p className="text-sm text-gray-700 mb-3 line-clamp-2">{post.selftext}</p>
-                          )}
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <ThumbsUp size={16} />
-                              <span className="font-medium">{post.score}</span>
-                              <span>upvotes</span>
+                    <div key={post.id}>
+                      <div
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        onMouseEnter={() => handleMyPostHover(post)}
+                        onMouseLeave={handleMyPostLeave}
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-gray-900 mb-1">{post.title}</h3>
+                            <p className="text-sm text-gray-600 mb-2">r/{post.subreddit}</p>
+                            {post.selftext && (
+                              <p className={`text-sm text-gray-700 mb-3 ${expandedMyPostId === post.id ? '' : 'line-clamp-2'}`}>{post.selftext}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <div className="flex items-center gap-1">
+                                <ThumbsUp size={16} />
+                                <span className="font-medium">{post.score}</span>
+                                <span>upvotes</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MessageSquare size={16} />
+                                <span className="font-medium">{post.num_comments}</span>
+                                <span>comments</span>
+                              </div>
+                              <span>•</span>
+                              <span>{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <MessageSquare size={16} />
-                              <span className="font-medium">{post.num_comments}</span>
-                              <span>comments</span>
-                            </div>
-                            <span>•</span>
-                            <span>{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                           </div>
                         </div>
-                        <a
-                          href={post.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-4 py-2 bg-purple-600 text-white text-sm font-semibold rounded hover:bg-purple-700 transition flex-shrink-0"
-                        >
-                          View on Reddit
-                        </a>
                       </div>
+
+                      {/* Comments Section */}
+                      {expandedMyPostId === post.id && (
+                        <div
+                          className="ml-auto mt-2 animate-fadeIn"
+                          style={{
+                            width: '90%',
+                            animation: 'slideDown 0.3s ease-out'
+                          }}
+                        >
+                          <div className={`bg-gray-100 rounded-lg border border-gray-200 ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
+                            {postComments[post.id] !== 'AUTH_REQUIRED' && (
+                              <h4 className="text-xs font-semibold text-gray-600 mb-3">
+                                Comments ({postComments[post.id]?.length || 0})
+                              </h4>
+                            )}
+
+                            {/* Loading indicator */}
+                            {loadingComments[post.id] && (
+                              <div className="flex justify-center py-4">
+                                <div className="text-gray-600 text-xs">Loading comments...</div>
+                              </div>
+                            )}
+
+                            {/* Scrollable comments area */}
+                            <div
+                              className="space-y-3 overflow-y-auto"
+                              style={{
+                                maxHeight: postComments[post.id] === 'AUTH_REQUIRED' ? '60px' : '200px',
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: '#9CA3AF #F3F4F6'
+                              }}
+                            >
+                              {/* Display actual comments from Reddit */}
+                              {postComments[post.id] === 'AUTH_REQUIRED' ? (
+                                <div className="flex items-center justify-center gap-3 py-2">
+                                  <p className="text-xs text-gray-600">Connect your Reddit account to view comments</p>
+                                  <button
+                                    onClick={() => initiateRedditAuth()}
+                                    className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg font-semibold transition"
+                                  >
+                                    Connect Reddit
+                                  </button>
+                                </div>
+                              ) : postComments[post.id] && postComments[post.id].length > 0 ? (
+                                postComments[post.id].map((comment, index) => {
+                                  const commentAuthor = comment.author || 'User';
+                                  const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500', 'bg-blue-600', 'bg-green-600', 'bg-red-600'];
+                                  const avatarColor = avatarColors[commentAuthor.charCodeAt(0) % avatarColors.length];
+
+                                  return (
+                                    <div key={index} className="flex items-start gap-2 bg-white p-2 rounded">
+                                      <div className={`w-6 h-6 ${avatarColor} rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}>
+                                        {commentAuthor.charAt(0).toUpperCase()}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="text-xs font-semibold text-gray-900">{commentAuthor}</span>
+                                        </div>
+                                        <p className="text-xs text-gray-700 break-words">{comment.body}</p>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              ) : !loadingComments[post.id] && (
+                                <p className="text-xs text-gray-500 text-center py-4">No comments yet</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
