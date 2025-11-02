@@ -1200,7 +1200,7 @@ const ProgressHub = () => {
         const lesson = upcomingLessons[i];
         const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
         const isCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || isCurrentLesson) ? 450 : 350; // Completed and current lessons are wider
+        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06; // Match actual card widths
         scrollPosition += width + gap;
       }
 
@@ -1245,7 +1245,7 @@ const ProgressHub = () => {
         const lesson = upcomingLessons[i];
         const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
         const isCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || isCurrentLesson) ? 450 : 350; // Completed and current lessons are wider
+        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06; // Match actual card widths
         scrollPosition += width + gap;
       }
 
