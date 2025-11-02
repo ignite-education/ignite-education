@@ -12,6 +12,18 @@ import { supabase } from '../lib/supabase';
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
+// Helper to remove formatting markers from text
+const stripFormattingMarkers = (text) => {
+  if (!text) return '';
+  // Remove bold (**), underline (__), italic (*), and bullet markers
+  return text
+    .replace(/\*\*/g, '') // Remove bold markers
+    .replace(/__/g, '')   // Remove underline markers
+    .replace(/(?<!\*)\*(?!\*)/g, '') // Remove italic markers (single asterisks)
+    .replace(/^[•\-]\s/gm, '') // Remove bullet points
+    .trim();
+};
+
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -120,8 +132,9 @@ const LearningHub = () => {
         const sections = await getExplainedSections(user.id, courseId, currentModule, currentLesson);
 
         // Transform database format to component state format
+        // Strip formatting markers from legacy data that might have them
         const transformedSections = sections.map(section => ({
-          text: section.selected_text,
+          text: stripFormattingMarkers(section.selected_text),
           explanation: section.explanation,
           id: section.id
         }));
@@ -753,18 +766,20 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         if (currentSelectedText && userMessage.startsWith('Explain \'')) {
           try {
             const courseId = await getUserCourseId();
+            // Strip formatting markers from selected text before saving
+            const cleanText = stripFormattingMarkers(currentSelectedText);
             const savedSection = await saveExplainedSection(
               user.id,
               courseId,
               currentModule,
               currentLesson,
-              currentSelectedText,
+              cleanText,
               data.response
             );
 
             // Add to local state with database ID
             setExplainedSections(prev => [...prev, {
-              text: currentSelectedText,
+              text: cleanText,
               explanation: data.response,
               id: savedSection.id
             }]);
@@ -772,8 +787,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           } catch (error) {
             console.error('Error saving explained section:', error);
             // Still add to local state even if save fails
+            const cleanText = stripFormattingMarkers(currentSelectedText);
             setExplainedSections(prev => [...prev, {
-              text: currentSelectedText,
+              text: cleanText,
               explanation: data.response,
               id: Date.now()
             }]);
@@ -1203,12 +1219,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const extractTextFromSection = (section) => {
     if (section.content_type === 'heading') {
       const text = section.content?.text || section.title || '';
-      return text.replace(/__/g, '').trim();
+      return stripFormattingMarkers(text);
     }
 
     if (section.content_type === 'paragraph') {
       const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text || '';
-      return text.replace(/\*\*/g, '').replace(/__/g, '').replace(/(?<!\*)\*(?!\*)/g, '').replace(/^[•\-]\s/gm, '').trim();
+      return stripFormattingMarkers(text);
     }
 
     return '';
