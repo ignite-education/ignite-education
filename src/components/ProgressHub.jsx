@@ -1916,7 +1916,7 @@ const ProgressHub = () => {
                     willChange: 'scroll-position',
                     opacity: isCarouselReady ? 1 : 0,
                     visibility: isCarouselReady ? 'visible' : 'hidden',
-                    transition: 'opacity 0.2s ease-in'
+                    transition: 'opacity 0.3s ease-in'
                   }}
                   onMouseDown={handleScrollMouseDown}
                   onMouseMove={handleScrollMouseMove}
