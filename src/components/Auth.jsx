@@ -1204,21 +1204,6 @@ const Auth = () => {
               </div>
             </div>
           </div>
-
-          {/* Scroll Down Arrow - Absolutely positioned */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <button
-              onClick={scrollToTestimonials}
-              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-              style={{
-                animation: 'subtleBounce 2s infinite',
-                padding: '11px'
-              }}
-              aria-label="Scroll to testimonials"
-            >
-              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
-            </button>
-          </div>
         </div>
 
       {/* Fifth Section - Testimonials */}
