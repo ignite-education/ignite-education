@@ -236,7 +236,9 @@ const Auth = () => {
           if (entry.isIntersecting && !animateLinkedInFAQ) {
             setAnimateLinkedInFAQ(true);
             // Fetch LinkedIn posts when section becomes visible
-            fetchLinkedInPosts();
+            fetchLinkedInPosts().catch(err => {
+              console.error('Failed to fetch LinkedIn posts:', err);
+            });
           }
         });
       },

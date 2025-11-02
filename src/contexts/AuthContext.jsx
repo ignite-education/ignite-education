@@ -18,11 +18,25 @@ export const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    // Check active sessions and sets the user
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+    // Add timeout to prevent infinite loading
+    const loadingTimeout = setTimeout(() => {
+      console.warn('Auth session check timed out after 10 seconds');
       setLoading(false);
-    });
+    }, 10000); // 10 second timeout
+
+    // Check active sessions and sets the user
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        clearTimeout(loadingTimeout);
+        setUser(session?.user ?? null);
+        setLoading(false);
+      })
+      .catch((error) => {
+        clearTimeout(loadingTimeout);
+        console.error('Error getting session:', error);
+        setUser(null);
+        setLoading(false);
+      });
 
     // Listen for changes on auth state (login, logout, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -30,7 +44,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Fetch user role from database

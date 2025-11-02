@@ -20,6 +20,7 @@ const Privacy = lazy(() => import('./pages/Privacy'))
 // Loading fallback component with Ignite branded animation
 const LoadingFallback = () => {
   const [lottieData, setLottieData] = useState(null);
+  const [showTimeout, setShowTimeout] = useState(false);
 
   useEffect(() => {
     // Load Ignite animation for loading screen
@@ -27,7 +28,34 @@ const LoadingFallback = () => {
       .then(response => response.json())
       .then(data => setLottieData(data))
       .catch(error => console.error('Error loading animation:', error));
+
+    // Show timeout message after 15 seconds
+    const timeoutTimer = setTimeout(() => {
+      console.warn('Loading took longer than expected');
+      setShowTimeout(true);
+    }, 15000);
+
+    return () => clearTimeout(timeoutTimer);
   }, []);
+
+  if (showTimeout) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-center px-6">
+          <div className="text-white text-xl mb-4">Taking longer than expected...</div>
+          <div className="text-gray-400 text-sm mb-6">
+            There might be a connection issue. Please check your internet connection.
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black flex items-center justify-center">

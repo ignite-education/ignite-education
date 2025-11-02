@@ -35,12 +35,19 @@ const ProtectedRoute = ({ children }) => {
       }
 
       try {
-        // Check if user has completed onboarding
-        const { data, error } = await supabase
+        // Create a timeout promise
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Onboarding check timed out')), 8000);
+        });
+
+        // Check if user has completed onboarding with timeout
+        const onboardingPromise = supabase
           .from('users')
           .select('onboarding_completed, enrolled_course, seniority_level')
           .eq('id', user.id)
           .single();
+
+        const { data, error } = await Promise.race([onboardingPromise, timeoutPromise]);
 
         console.log('Onboarding check:', { data, error });
 
@@ -59,6 +66,7 @@ const ProtectedRoute = ({ children }) => {
         }
       } catch (err) {
         console.error('Exception checking onboarding:', err);
+        // On timeout or error, default to showing onboarding (safe fallback)
         setNeedsOnboarding(true);
       } finally {
         setLoading(false);
