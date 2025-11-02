@@ -32,6 +32,8 @@ const Auth = () => {
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
   const [isLearningTaglineTypingComplete, setIsLearningTaglineTypingComplete] = useState(false);
+  const [typedTestimonialsHeading, setTypedTestimonialsHeading] = useState('');
+  const [isTestimonialsHeadingTypingComplete, setIsTestimonialsHeadingTypingComplete] = useState(false);
   const [animateTestimonials, setAnimateTestimonials] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -191,8 +193,13 @@ const Auth = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !animateTestimonials) {
-            setAnimateTestimonials(true);
+          if (entry.isIntersecting) {
+            if (!animateTestimonials) {
+              setAnimateTestimonials(true);
+            }
+            if (!isTestimonialsHeadingTypingComplete) {
+              startTestimonialsHeadingTyping();
+            }
           }
         });
       },
@@ -206,7 +213,7 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials]);
+  }, [isLogin, animateTestimonials, isTestimonialsHeadingTypingComplete]);
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
@@ -363,6 +370,36 @@ const Auth = () => {
         } else {
           clearInterval(typingInterval);
           setIsLearningTaglineTypingComplete(true);
+        }
+      }, 75); // 75ms per character
+    }, 1000); // 1000ms delay before starting
+  };
+
+  // Typing animation for testimonials heading
+  const startTestimonialsHeadingTyping = () => {
+    const fullText = 'Ignite is for everyone and their mother.';
+    const pauseAfter = 'Ignite is for everyone'.length;
+    let currentIndex = 0;
+    let isPaused = false;
+
+    // Add delay before starting typing
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (isPaused) return;
+
+        if (currentIndex <= fullText.length) {
+          setTypedTestimonialsHeading(fullText.substring(0, currentIndex));
+
+          // Pause after "everyone"
+          if (currentIndex === pauseAfter) {
+            isPaused = true;
+            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+          }
+
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTestimonialsHeadingTypingComplete(true);
         }
       }, 75); // 75ms per character
     }, 1000); // 1000ms delay before starting
@@ -585,6 +622,67 @@ const Auth = () => {
     }
 
     if (!isLearningTaglineTypingComplete) {
+      result.push(
+        <span key="cursor" className="text-white animate-blink font-bold">|</span>
+      );
+    }
+
+    return result;
+  };
+
+  // Helper to render typed testimonials heading with pink highlight on 'everyone'
+  const renderTypedTestimonialsHeading = () => {
+    const text = typedTestimonialsHeading;
+    const pinkWord = 'everyone';
+    const fullText = 'Ignite is for everyone and their mother.';
+
+    const wordPosition = {
+      word: pinkWord,
+      start: fullText.indexOf(pinkWord),
+      end: fullText.indexOf(pinkWord) + pinkWord.length
+    };
+
+    let result = [];
+    let lastIndex = 0;
+
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+
+      // Check if we're at the start of the pink word
+      const inPinkWord = i >= wordPosition.start && i < wordPosition.end;
+
+      if (inPinkWord) {
+        if (i < lastIndex || !result.length || result[result.length - 1].key !== pinkWord) {
+          const pinkChunk = text.substring(i, Math.min(text.length, wordPosition.end));
+          result.push(
+            <span key={`${pinkWord}-${i}`} className="text-pink-500">
+              {pinkChunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, wordPosition.end - 1);
+          lastIndex = i + 1;
+        }
+      } else {
+        // Regular text - find the next pink word or end
+        let nextPinkStart = text.length;
+        if (wordPosition.start > i && wordPosition.start < text.length) {
+          nextPinkStart = wordPosition.start;
+        }
+
+        const chunk = text.substring(i, Math.min(nextPinkStart, text.length));
+        if (chunk) {
+          result.push(
+            <span key={`text-${i}`} className="text-white">
+              {chunk}
+            </span>
+          );
+          i = Math.min(text.length - 1, nextPinkStart - 1);
+          lastIndex = i + 1;
+        }
+      }
+    }
+
+    if (!isTestimonialsHeadingTypingComplete) {
       result.push(
         <span key="cursor" className="text-white animate-blink font-bold">|</span>
       );
@@ -1285,12 +1383,9 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             <div className="px-4 text-center mb-12">
-              <h2 className="text-5xl font-bold text-white mb-3">
-                Learning That Drives Results
+              <h2 className="font-bold text-white" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+                {renderTypedTestimonialsHeading()}
               </h2>
-              <p className="text-2xl text-purple-400 font-semibold">
-                Ignite is for everyone
-              </p>
             </div>
 
             {/* Two Column Layout */}
