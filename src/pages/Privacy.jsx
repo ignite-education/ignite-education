@@ -29,14 +29,14 @@ const Privacy = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16" style={{ paddingLeft: 'calc(1rem + 5px)' }}>
         <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
 
         {/* Policy Content */}
         <div className="space-y-8 text-gray-100 leading-relaxed">
 
           {/* Version Info */}
-          <div className="text-sm text-gray-400">
+          <div className="text-sm text-white">
             <p><strong>Version Number:</strong> v1</p>
             <p><strong>Last Updated:</strong> November 2, 2025</p>
             <p><strong>Effective Date:</strong> November 2, 2025</p>
