@@ -30,10 +30,11 @@ const Privacy = () => {
 
       {/* Content */}
       <div className="max-w-4xl px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-        <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
+        <div style={{ marginLeft: '48px' }}>
+          <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
 
-        {/* Policy Content */}
-        <div className="space-y-8 text-gray-100 leading-relaxed">
+          {/* Policy Content */}
+          <div className="space-y-8 text-gray-100 leading-relaxed">
 
           {/* Version Info */}
           <div className="text-sm text-white">
@@ -349,6 +350,7 @@ const Privacy = () => {
               This Privacy Policy was created to comply with UK GDPR and data protection laws. For specific legal advice regarding your data rights or our practices, please consult with a legal professional.
             </p>
           </section>
+          </div>
         </div>
       </div>
     </div>
