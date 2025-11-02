@@ -5,6 +5,7 @@ const ProgressHub = lazy(() => import('./ProgressHub'));
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { getOrganizationPosts } from '../lib/linkedin';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -40,6 +41,12 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
+  const [expandedFAQ, setExpandedFAQ] = useState(null);
+  const [linkedInPosts, setLinkedInPosts] = useState([]);
+  const [linkedInLoading, setLinkedInLoading] = useState(false);
+  const [linkedInError, setLinkedInError] = useState(null);
+  const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
+  const linkedInFAQSectionRef = useRef(null);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -211,6 +218,53 @@ const Auth = () => {
 
     return () => clearInterval(interval);
   }, [animateTestimonials, isTestimonialHovered, isLogin]);
+
+  // Intersection observer for LinkedIn & FAQ section animation
+  useEffect(() => {
+    if (!linkedInFAQSectionRef.current || isLogin) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !animateLinkedInFAQ) {
+            setAnimateLinkedInFAQ(true);
+            // Fetch LinkedIn posts when section becomes visible
+            fetchLinkedInPosts();
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(linkedInFAQSectionRef.current);
+
+    return () => {
+      if (linkedInFAQSectionRef.current) {
+        observer.unobserve(linkedInFAQSectionRef.current);
+      }
+    };
+  }, [isLogin, animateLinkedInFAQ]);
+
+  // Fetch LinkedIn posts
+  const fetchLinkedInPosts = async () => {
+    if (linkedInPosts.length > 0) return; // Already fetched
+
+    setLinkedInLoading(true);
+    setLinkedInError(null);
+
+    try {
+      const posts = await getOrganizationPosts('104616735', 3); // Fetch 3 posts
+      setLinkedInPosts(posts);
+    } catch (error) {
+      console.error('Error fetching LinkedIn posts:', error);
+      setLinkedInError(error.message);
+      // Fallback posts are returned by the library
+      const fallbackPosts = await getOrganizationPosts();
+      setLinkedInPosts(fallbackPosts);
+    } finally {
+      setLinkedInLoading(false);
+    }
+  };
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -1402,6 +1456,149 @@ const Auth = () => {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+      {/* Sixth Section - LinkedIn & FAQs */}
+        <div
+          ref={linkedInFAQSectionRef}
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-7xl w-full text-white">
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 max-w-7xl mx-auto mb-12">
+              {/* Left Column - LinkedIn Posts (2 cols) */}
+              <div className="lg:col-span-2 space-y-4">
+                <h3 className="text-2xl font-bold text-white mb-6">Latest from LinkedIn</h3>
+
+                {linkedInLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                    <p className="text-gray-400 mt-4">Loading posts...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {linkedInPosts.map((post, idx) => (
+                      <div
+                        key={post.id}
+                        className="bg-white rounded-lg p-5 text-gray-800"
+                        style={{
+                          opacity: 0,
+                          animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.15}s forwards` : 'none'
+                        }}
+                      >
+                        <p className="text-sm leading-relaxed mb-3">{post.text}</p>
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>{new Date(post.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          <div className="flex gap-4">
+                            <span>👍 {post.likes}</span>
+                            <span>💬 {post.comments}</span>
+                            <span>🔁 {post.shares}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Right Column - FAQs (3 cols) */}
+              <div className="lg:col-span-3 space-y-3">
+                <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
+
+                {[
+                  {
+                    question: 'What is Ignite?',
+                    answer: 'Ignite is a free, online learning platform offering industry-leading courses in high-demand fields like Product Management, Cybersecurity, and more. Our courses are built by experts and designed to help you gain practical skills through real-world projects.'
+                  },
+                  {
+                    question: 'Who is Ignite for?',
+                    answer: 'Ignite is for everyone! Whether you\'re a recent graduate, career changer, returning to work after a break, or looking to upskill in your current role, our courses are designed to meet you where you are and help you reach your goals.'
+                  },
+                  {
+                    question: 'How much does Ignite cost?',
+                    answer: 'Ignite is completely free! We believe education should be accessible to everyone. Our platform is funded by limited, non-intrusive advertising, so you can focus on learning without worrying about subscription fees or hidden costs.'
+                  },
+                  {
+                    question: 'What can I learn on Ignite?',
+                    answer: 'We offer comprehensive courses in Product Management, Cybersecurity, and more fields are coming soon! Each course includes interactive lessons, hands-on projects, knowledge checks, and a certification upon completion.'
+                  },
+                  {
+                    question: 'Can I learn at my own pace?',
+                    answer: 'Absolutely! Ignite courses are self-paced, so you can learn when and where it works best for you. Whether you have 10 minutes or 2 hours, you can pick up right where you left off and progress at your own speed.'
+                  },
+                  {
+                    question: 'Who created Ignite?',
+                    answer: 'Ignite was founded by a team of educators and industry professionals passionate about making high-quality education accessible to everyone. Our courses are developed in collaboration with subject matter experts from leading companies.'
+                  }
+                ].map((faq, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
+                    style={{
+                      background: '#D84A8C',
+                      opacity: 0,
+                      animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
+                    }}
+                    onMouseEnter={() => setExpandedFAQ(idx)}
+                    onMouseLeave={() => setExpandedFAQ(null)}
+                  >
+                    <div className="px-6 py-4 flex items-center justify-between">
+                      <h4 className="text-lg font-bold text-white">{faq.question}</h4>
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300"
+                        style={{
+                          background: '#7B2D4E',
+                          transform: expandedFAQ === idx ? 'rotate(45deg)' : 'rotate(0deg)'
+                        }}
+                      >
+                        <span className="text-white text-2xl font-light">+</span>
+                      </div>
+                    </div>
+                    <div
+                      className="px-6 overflow-hidden transition-all duration-300 ease-in-out"
+                      style={{
+                        maxHeight: expandedFAQ === idx ? '300px' : '0px',
+                        paddingTop: expandedFAQ === idx ? '0px' : '0px',
+                        paddingBottom: expandedFAQ === idx ? '16px' : '0px'
+                      }}
+                    >
+                      <p className="text-white text-sm leading-relaxed">{faq.answer}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer Links */}
+            <div className="flex justify-center gap-8 px-4 pb-12">
+              <a
+                href="mailto:hello@ignite.education"
+                className="text-white hover:text-purple-400 transition text-sm font-medium"
+              >
+                Contact
+              </a>
+              <a
+                href="https://www.linkedin.com/school/ignite-courses/jobs/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-purple-400 transition text-sm font-medium"
+              >
+                Careers
+              </a>
+              <a
+                href="https://www.linkedin.com/school/ignite-courses/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-purple-400 transition text-sm font-medium"
+              >
+                LinkedIn
+              </a>
             </div>
           </div>
         </div>

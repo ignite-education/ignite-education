@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import ProgressHub from './components/ProgressHub'
 import RedditCallback from './components/RedditCallback'
+import LinkedInCallback from './components/LinkedInCallback'
 import LearningHub from './components/LearningHub'
 import Auth from './components/Auth'
 import AuthDesign from './components/AuthDesign'
@@ -50,6 +51,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/auth/reddit/callback" element={<RedditCallback />} />
+          <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>
