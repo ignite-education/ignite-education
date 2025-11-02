@@ -656,7 +656,7 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8" style={{ scrollSnapAlign: 'start', paddingTop: '1.5rem' }}>
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative" style={{ scrollSnapAlign: 'start' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
@@ -668,12 +668,12 @@ const Auth = () => {
             backgroundPosition: 'center',
             width: 'clamp(100px, 25vw, 140px)',
             height: 'clamp(32px, 8vw, 44.8px)',
-            marginBottom: 'clamp(1rem, 3vh, 2rem)'
+            marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
           }}
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.5rem, 2.5vh, 1.5rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
+        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
           Upskill. Reskill.<br /><span className="text-pink-500">Get ready for what's next.</span>
         </h1>
 
@@ -844,6 +844,21 @@ const Auth = () => {
             )}
           </div>
         </div>
+        </div>
+
+        {/* Scroll Down Arrow */}
+        <div className="mt-8">
+          <button
+            onClick={scrollToMarketing}
+            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+            style={{
+              animation: 'subtleBounce 2s infinite',
+              padding: '11px'
+            }}
+            aria-label="Scroll to learn more"
+          >
+            <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+          </button>
         </div>
       </div>
       </div>
