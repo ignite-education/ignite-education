@@ -3,4 +3,29 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Missing Supabase environment variables. Please check your .env file:\n' +
+    '- VITE_SUPABASE_URL should be set to your Supabase project URL\n' +
+    '- VITE_SUPABASE_ANON_KEY should be set to your Supabase anon key'
+  )
+}
+
+// Check for placeholder values
+if (
+  supabaseUrl.includes('your-project') ||
+  supabaseUrl.includes('your_project') ||
+  supabaseAnonKey.includes('your_supabase') ||
+  supabaseAnonKey === 'your_supabase_anon_key'
+) {
+  throw new Error(
+    'Supabase credentials are still using placeholder values. Please update your .env file with actual credentials from your Supabase dashboard.\n\n' +
+    'Current values:\n' +
+    `- VITE_SUPABASE_URL: ${supabaseUrl}\n` +
+    `- VITE_SUPABASE_ANON_KEY: ${supabaseAnonKey.substring(0, 20)}...\n\n` +
+    'Get your credentials from: https://supabase.com/dashboard → Project Settings → API'
+  )
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
