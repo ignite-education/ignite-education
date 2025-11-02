@@ -844,21 +844,6 @@ const Auth = () => {
             )}
           </div>
         </div>
-
-        {/* Scroll Down Arrow - visible on both sign in and create account */}
-        <div className="flex justify-center mt-10 sm:mt-12 mb-2">
-          <button
-            onClick={scrollToMarketing}
-            className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-            style={{
-              animation: 'subtleBounce 2s infinite',
-              padding: '11px'
-            }}
-            aria-label="Scroll to learn more"
-          >
-            <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
-          </button>
-        </div>
         </div>
       </div>
       </div>
