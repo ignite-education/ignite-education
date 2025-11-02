@@ -1705,6 +1705,12 @@ const Auth = () => {
               >
                 LinkedIn
               </a>
+              <a
+                href="https://ignite.education/policy"
+                className="text-white hover:text-purple-400 transition text-sm font-medium"
+              >
+                Policy
+              </a>
             </div>
           </div>
         </div>
