@@ -10,6 +10,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import CurriculumUploadNew from './pages/CurriculumUploadNew'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
 import CoursesDashboard from './pages/CoursesDashboard'
+import Privacy from './pages/Privacy'
 import { AuthProvider } from './contexts/AuthContext'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/welcome" element={<Auth />} />
           <Route path="/auth-design" element={<AuthDesign />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="/" element={
             <ProtectedRoute>
               <ProgressHub />
