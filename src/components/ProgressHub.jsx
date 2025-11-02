@@ -113,8 +113,8 @@ const ProgressHub = () => {
   }, []);
 
   useEffect(() => {
-    // Fetch Lottie animation data
-    fetch('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/icon%20v1.json')
+    // Load Lottie animation data from local file (optimized for performance)
+    fetch('/icon-animation.json')
       .then(response => response.json())
       .then(data => setLottieData(data))
       .catch(error => console.error('Error loading Lottie animation:', error));
