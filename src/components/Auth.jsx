@@ -37,6 +37,8 @@ const Auth = () => {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [snappedModuleIndex, setSnappedModuleIndex] = useState(0);
   const modalScrollContainerRef = useRef(null);
+  const [animateForEveryone, setAnimateForEveryone] = useState(false);
+  const forEveryoneSectionRef = useRef(null);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -197,6 +199,30 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateTestimonials]);
+
+  // Intersection observer for "for everyone" section animation
+  useEffect(() => {
+    if (!forEveryoneSectionRef.current || isLogin) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !animateForEveryone) {
+            setAnimateForEveryone(true);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+
+    observer.observe(forEveryoneSectionRef.current);
+
+    return () => {
+      if (forEveryoneSectionRef.current) {
+        observer.unobserve(forEveryoneSectionRef.current);
+      }
+    };
+  }, [isLogin, animateForEveryone]);
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -1357,6 +1383,97 @@ const Auth = () => {
                     <div className="text-sm text-gray-400">Lloyds Banking Group</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      {/* Sixth Section - Ignite is for everyone */}
+        <div
+          ref={forEveryoneSectionRef}
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-7xl w-full text-white">
+            <div className="px-4 text-center mb-16">
+              <h2 className="text-5xl font-bold text-white mb-6">
+                Ignite is for everyone
+              </h2>
+            </div>
+
+            {/* Cards Grid - 5 cards in responsive layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-7xl mx-auto">
+              {/* Card 1 - Recent graduates */}
+              <div
+                className="bg-gray-200 rounded-lg p-6"
+                style={{
+                  opacity: 0,
+                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.1s forwards' : 'none'
+                }}
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">Recent graduates</h3>
+                <p className="text-gray-800 leading-relaxed">
+                  Finished university or college and wondering what's next? With <span className="font-bold text-pink-600">no experience required</span>, you'll gain real-world skills, build a portfolio and get job-ready.
+                </p>
+              </div>
+
+              {/* Card 2 - Career break returners */}
+              <div
+                className="bg-gray-200 rounded-lg p-6"
+                style={{
+                  opacity: 0,
+                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.2s forwards' : 'none'
+                }}
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">Career break returners</h3>
+                <p className="text-gray-800 leading-relaxed">
+                  Taken time off recently? Pick up where you left off with <span className="font-bold text-pink-600">flexible and self-paced courses</span>, that will help rebuild confidence and step back into the job market with a new edge.
+                </p>
+              </div>
+
+              {/* Card 3 - Pivoting careers */}
+              <div
+                className="bg-gray-200 rounded-lg p-6"
+                style={{
+                  opacity: 0,
+                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.3s forwards' : 'none'
+                }}
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">Pivoting careers</h3>
+                <p className="text-gray-800 leading-relaxed">
+                  Whatever your professional background, we'll help identify your transferable strengths and <span className="font-bold text-pink-600">learn in-demand skills</span> to help you make the transition.
+                </p>
+              </div>
+
+              {/* Card 4 - Upskilling in role */}
+              <div
+                className="bg-gray-200 rounded-lg p-6"
+                style={{
+                  opacity: 0,
+                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
+                }}
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">Upskilling in role</h3>
+                <p className="text-gray-800 leading-relaxed">
+                  Whether you're aiming for a promotion or taking on new responsibilities, learn on your own schedule with <span className="font-bold text-pink-600">personalised support</span> to apply insights directly at work.
+                </p>
+              </div>
+
+              {/* Card 5 - Learning something new */}
+              <div
+                className="bg-gray-200 rounded-lg p-6"
+                style={{
+                  opacity: 0,
+                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.5s forwards' : 'none'
+                }}
+              >
+                <h3 className="text-xl font-bold text-purple-600 mb-4">Learning something new</h3>
+                <p className="text-gray-800 leading-relaxed">
+                  If you're looking for your next steps, our courses are <span className="font-bold text-pink-600">completely free</span>, and designed to help you learn through real-world projects.
+                </p>
               </div>
             </div>
           </div>
