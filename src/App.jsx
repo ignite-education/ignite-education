@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState, useEffect } from 'react'
+import Lottie from 'lottie-react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 
@@ -16,15 +17,33 @@ const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 
-// Loading fallback component
-const LoadingFallback = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50">
-    <div className="text-center">
-      <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mb-4"></div>
-      <p className="text-gray-600 font-medium">Loading...</p>
+// Loading fallback component with Ignite branded animation
+const LoadingFallback = () => {
+  const [lottieData, setLottieData] = useState(null);
+
+  useEffect(() => {
+    // Load Ignite animation for loading screen
+    fetch('/icon-animation.json')
+      .then(response => response.json())
+      .then(data => setLottieData(data))
+      .catch(error => console.error('Error loading animation:', error));
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-black flex items-center justify-center">
+      {lottieData && Object.keys(lottieData).length > 0 ? (
+        <Lottie
+          animationData={lottieData}
+          loop={true}
+          autoplay={true}
+          style={{ width: 200, height: 200 }}
+        />
+      ) : (
+        <div className="w-32 h-32 flex items-center justify-center" />
+      )}
     </div>
-  </div>
-)
+  );
+}
 
 function App() {
   return (
