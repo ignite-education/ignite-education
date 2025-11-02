@@ -29,7 +29,7 @@ const Privacy = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16">
+      <div className="max-w-6xl mx-auto px-2 sm:px-3 lg:px-4 pt-24 pb-16">
         <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
 
         {/* Policy Content */}
