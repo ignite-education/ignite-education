@@ -37,8 +37,9 @@ const Auth = () => {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [snappedModuleIndex, setSnappedModuleIndex] = useState(0);
   const modalScrollContainerRef = useRef(null);
-  const [animateForEveryone, setAnimateForEveryone] = useState(false);
-  const forEveryoneSectionRef = useRef(null);
+  const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
+  const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
+  const [hoveredUseCase, setHoveredUseCase] = useState(null);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -200,29 +201,16 @@ const Auth = () => {
     };
   }, [isLogin, animateTestimonials]);
 
-  // Intersection observer for "for everyone" section animation
+  // Auto-rotate testimonials carousel
   useEffect(() => {
-    if (!forEveryoneSectionRef.current || isLogin) return;
+    if (!animateTestimonials || isTestimonialHovered || isLogin) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !animateForEveryone) {
-            setAnimateForEveryone(true);
-          }
-        });
-      },
-      { threshold: 0.2 }
-    );
+    const interval = setInterval(() => {
+      setCurrentTestimonialIndex((prev) => (prev + 1) % 6); // 6 testimonials total
+    }, 5000); // Rotate every 5 seconds
 
-    observer.observe(forEveryoneSectionRef.current);
-
-    return () => {
-      if (forEveryoneSectionRef.current) {
-        observer.unobserve(forEveryoneSectionRef.current);
-      }
-    };
-  }, [isLogin, animateForEveryone]);
+    return () => clearInterval(interval);
+  }, [animateTestimonials, isTestimonialHovered, isLogin]);
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -1232,7 +1220,7 @@ const Auth = () => {
           </div>
         </div>
 
-      {/* Fifth Section - Testimonials */}
+      {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
           className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
@@ -1242,238 +1230,177 @@ const Auth = () => {
           }}
         >
           <div className="max-w-7xl w-full text-white">
-            <div className="px-4 text-center mb-16">
-              <h2 className="text-5xl font-bold text-white mb-6">
+            <div className="px-4 text-center mb-12">
+              <h2 className="text-5xl font-bold text-white mb-3">
                 Learning That Drives Results
               </h2>
-              <p className="text-xl text-gray-300 max-w-4xl mx-auto">
-                Explore how professionals are upskilling with Ignite to unlock growth, adapt to change, and stay ahead in a rapidly evolving world of work.
+              <p className="text-2xl text-purple-400 font-semibold">
+                Ignite is for everyone
               </p>
             </div>
 
-            {/* Testimonials Grid - 2x3 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-7xl mx-auto">
-              {/* Testimonial 1 */}
-              <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.1s forwards' : 'none'
-                }}
-              >
-                <p className="text-gray-300 mb-6 italic">
-                  "As a manager, Ignite helps me show my team new packages and new ways to solve problems."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
-                    GL
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 max-w-7xl mx-auto">
+              {/* Left Column - Use Cases Accordion (2 cols) */}
+              <div className="lg:col-span-2 space-y-3">
+                {[
+                  {
+                    title: 'Recent graduates',
+                    description: 'Finished university or college and wondering what\'s next? With <strong>no experience required</strong>, you\'ll gain real-world skills, build a portfolio and get job-ready.'
+                  },
+                  {
+                    title: 'Career break returners',
+                    description: 'Taken time off recently? Pick up where you left off with <strong>flexible and self-paced courses</strong>, that will help rebuild confidence and step back into the job market with a new edge.'
+                  },
+                  {
+                    title: 'Pivoting careers',
+                    description: 'Whatever your professional background, we\'ll help identify your transferable strengths and <strong>learn in-demand skills</strong> to help you make the transition.'
+                  },
+                  {
+                    title: 'Upskilling in role',
+                    description: 'Whether you\'re aiming for a promotion or taking on new responsibilities, learn on your own schedule with <strong>personalised support</strong> to apply insights directly at work.'
+                  },
+                  {
+                    title: 'Learning something new',
+                    description: 'If you\'re looking for your next steps, our courses are <strong>completely free</strong>, and designed to help you learn through real-world projects.'
+                  }
+                ].map((useCase, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-gray-200 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer"
+                    style={{
+                      opacity: 0,
+                      animation: animateTestimonials ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.1}s forwards` : 'none'
+                    }}
+                    onMouseEnter={() => setHoveredUseCase(idx)}
+                    onMouseLeave={() => setHoveredUseCase(null)}
+                  >
+                    <div className="bg-purple-600 px-4 py-3">
+                      <h3 className="text-lg font-bold text-white">{useCase.title}</h3>
+                    </div>
+                    <div
+                      className="px-4 transition-all duration-300 ease-in-out overflow-hidden"
+                      style={{
+                        maxHeight: hoveredUseCase === idx ? '200px' : '0px',
+                        paddingTop: hoveredUseCase === idx ? '12px' : '0px',
+                        paddingBottom: hoveredUseCase === idx ? '12px' : '0px'
+                      }}
+                    >
+                      <p
+                        className="text-gray-800 leading-relaxed text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: useCase.description.replace(
+                            /<strong>(.*?)<\/strong>/g,
+                            '<span class="font-bold text-pink-600">$1</span>'
+                          )
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-white">Gabriel Lages</div>
-                    <div className="text-sm text-gray-400">Business Intelligence and Analytics Manager</div>
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* Testimonial 2 */}
+              {/* Right Column - Rotating Testimonial (3 cols) */}
               <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.2s forwards' : 'none'
-                }}
-              >
-                <p className="text-gray-300 mb-6 italic">
-                  "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white font-bold text-lg">
-                    RA
-                  </div>
-                  <div>
-                    <div className="font-semibold text-white">Rachel Alt-Simmons</div>
-                    <div className="text-sm text-gray-400">Head Of Strategic Design, Data, Pricing And Analytics</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 3 */}
-              <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.3s forwards' : 'none'
-                }}
-              >
-                <p className="text-gray-300 mb-6 italic">
-                  "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white font-bold text-lg">
-                    OL
-                  </div>
-                  <div>
-                    <div className="font-semibold text-white">Ofentswe Lebogo</div>
-                    <div className="text-sm text-gray-400">Data Scientist, Council for Scientific and Industrial Research (CSIR)</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 4 */}
-              <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
-                }}
-              >
-                <p className="text-gray-300 mb-6 italic">
-                  "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-lg">
-                    EN
-                  </div>
-                  <div>
-                    <div className="font-semibold text-white">Ebuka Nwaformo</div>
-                    <div className="text-sm text-gray-400">Graduate Student, University College Dublin</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 5 */}
-              <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.5s forwards' : 'none'
-                }}
-              >
-                <p className="text-gray-300 mb-6 italic">
-                  "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-amber-500 flex items-center justify-center text-white font-bold text-lg">
-                    SS
-                  </div>
-                  <div>
-                    <div className="font-semibold text-white">Sarah Schlobohm</div>
-                    <div className="text-sm text-gray-400">Senior Analytics Manager, Global Risk Analytics, HSBC</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Testimonial 6 */}
-              <div
-                className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 border border-slate-700"
+                className="lg:col-span-3 flex items-center justify-center"
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.6s forwards' : 'none'
                 }}
               >
-                <p className="text-gray-300 mb-6 italic">
-                  "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                    DE
-                  </div>
-                  <div>
-                    <div className="font-semibold text-white">Devon Edwards Joseph</div>
-                    <div className="text-sm text-gray-400">Lloyds Banking Group</div>
+                <div
+                  className="relative w-full"
+                  onMouseEnter={() => setIsTestimonialHovered(true)}
+                  onMouseLeave={() => setIsTestimonialHovered(false)}
+                >
+                  {[
+                    {
+                      quote: "As a manager, Ignite helps me show my team new packages and new ways to solve problems.",
+                      name: "Gabriel Lages",
+                      role: "Business Intelligence and Analytics Manager",
+                      initials: "GL",
+                      gradient: "from-purple-500 to-pink-500"
+                    },
+                    {
+                      quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
+                      name: "Rachel Alt-Simmons",
+                      role: "Head Of Strategic Design, Data, Pricing And Analytics",
+                      initials: "RA",
+                      gradient: "from-blue-500 to-cyan-500"
+                    },
+                    {
+                      quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
+                      name: "Ofentswe Lebogo",
+                      role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)",
+                      initials: "OL",
+                      gradient: "from-green-500 to-emerald-500"
+                    },
+                    {
+                      quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
+                      name: "Ebuka Nwaformo",
+                      role: "Graduate Student, University College Dublin",
+                      initials: "EN",
+                      gradient: "from-orange-500 to-red-500"
+                    },
+                    {
+                      quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
+                      name: "Sarah Schlobohm",
+                      role: "Senior Analytics Manager, Global Risk Analytics, HSBC",
+                      initials: "SS",
+                      gradient: "from-yellow-500 to-amber-500"
+                    },
+                    {
+                      quote: "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with.",
+                      name: "Devon Edwards Joseph",
+                      role: "Lloyds Banking Group",
+                      initials: "DE",
+                      gradient: "from-indigo-500 to-purple-500"
+                    }
+                  ].map((testimonial, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-slate-700 transition-opacity duration-500"
+                      style={{
+                        position: idx === 0 ? 'relative' : 'absolute',
+                        top: idx === 0 ? 'auto' : 0,
+                        left: idx === 0 ? 'auto' : 0,
+                        right: idx === 0 ? 'auto' : 0,
+                        opacity: currentTestimonialIndex === idx ? 1 : 0,
+                        pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
+                        transition: 'opacity 0.5s ease-in-out'
+                      }}
+                    >
+                      <p className="text-gray-300 mb-6 italic text-lg leading-relaxed">
+                        "{testimonial.quote}"
+                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.gradient} flex items-center justify-center text-white font-bold text-xl`}>
+                          {testimonial.initials}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-white text-lg">{testimonial.name}</div>
+                          <div className="text-sm text-gray-400">{testimonial.role}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Carousel Indicators */}
+                  <div className="flex justify-center gap-2 mt-6">
+                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                          currentTestimonialIndex === idx
+                            ? 'bg-purple-500 w-8'
+                            : 'bg-gray-500 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Go to testimonial ${idx + 1}`}
+                      />
+                    ))}
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      {/* Sixth Section - Ignite is for everyone */}
-        <div
-          ref={forEveryoneSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
-          style={{
-            background: 'black',
-            scrollSnapAlign: 'start'
-          }}
-        >
-          <div className="max-w-7xl w-full text-white">
-            <div className="px-4 text-center mb-16">
-              <h2 className="text-5xl font-bold text-white mb-6">
-                Ignite is for everyone
-              </h2>
-            </div>
-
-            {/* Cards Grid - 5 cards in responsive layout */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 max-w-7xl mx-auto">
-              {/* Card 1 - Recent graduates */}
-              <div
-                className="bg-gray-200 rounded-lg p-6"
-                style={{
-                  opacity: 0,
-                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.1s forwards' : 'none'
-                }}
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">Recent graduates</h3>
-                <p className="text-gray-800 leading-relaxed">
-                  Finished university or college and wondering what's next? With <span className="font-bold text-pink-600">no experience required</span>, you'll gain real-world skills, build a portfolio and get job-ready.
-                </p>
-              </div>
-
-              {/* Card 2 - Career break returners */}
-              <div
-                className="bg-gray-200 rounded-lg p-6"
-                style={{
-                  opacity: 0,
-                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.2s forwards' : 'none'
-                }}
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">Career break returners</h3>
-                <p className="text-gray-800 leading-relaxed">
-                  Taken time off recently? Pick up where you left off with <span className="font-bold text-pink-600">flexible and self-paced courses</span>, that will help rebuild confidence and step back into the job market with a new edge.
-                </p>
-              </div>
-
-              {/* Card 3 - Pivoting careers */}
-              <div
-                className="bg-gray-200 rounded-lg p-6"
-                style={{
-                  opacity: 0,
-                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.3s forwards' : 'none'
-                }}
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">Pivoting careers</h3>
-                <p className="text-gray-800 leading-relaxed">
-                  Whatever your professional background, we'll help identify your transferable strengths and <span className="font-bold text-pink-600">learn in-demand skills</span> to help you make the transition.
-                </p>
-              </div>
-
-              {/* Card 4 - Upskilling in role */}
-              <div
-                className="bg-gray-200 rounded-lg p-6"
-                style={{
-                  opacity: 0,
-                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
-                }}
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">Upskilling in role</h3>
-                <p className="text-gray-800 leading-relaxed">
-                  Whether you're aiming for a promotion or taking on new responsibilities, learn on your own schedule with <span className="font-bold text-pink-600">personalised support</span> to apply insights directly at work.
-                </p>
-              </div>
-
-              {/* Card 5 - Learning something new */}
-              <div
-                className="bg-gray-200 rounded-lg p-6"
-                style={{
-                  opacity: 0,
-                  animation: animateForEveryone ? 'fadeInUp 0.8s ease-out 0.5s forwards' : 'none'
-                }}
-              >
-                <h3 className="text-xl font-bold text-purple-600 mb-4">Learning something new</h3>
-                <p className="text-gray-800 leading-relaxed">
-                  If you're looking for your next steps, our courses are <span className="font-bold text-pink-600">completely free</span>, and designed to help you learn through real-world projects.
-                </p>
               </div>
             </div>
           </div>
