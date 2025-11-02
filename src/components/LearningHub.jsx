@@ -1208,7 +1208,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     if (section.content_type === 'paragraph') {
       const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text || '';
-      return text.replace(/\*\*/g, '').replace(/__/g, '').replace(/^[•\-]\s/gm, '').trim();
+      return text.replace(/\*\*/g, '').replace(/__/g, '').replace(/(?<!\*)\*(?!\*)/g, '').replace(/^[•\-]\s/gm, '').trim();
     }
 
     return '';
