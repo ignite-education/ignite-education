@@ -377,7 +377,7 @@ const Auth = () => {
 
   // Typing animation for testimonials heading
   const startTestimonialsHeadingTyping = () => {
-    const fullText = 'Ignite is for everyone and their mother.';
+    const fullText = 'Ignite is for everyone \nand their mother.';
     const pauseAfter = 'Ignite is for everyone'.length;
     let currentIndex = 0;
     let isPaused = false;
@@ -634,7 +634,7 @@ const Auth = () => {
   const renderTypedTestimonialsHeading = () => {
     const text = typedTestimonialsHeading;
     const pinkWord = 'everyone';
-    const fullText = 'Ignite is for everyone and their mother.';
+    const fullText = 'Ignite is for everyone \nand their mother.';
 
     const wordPosition = {
       word: pinkWord,
@@ -647,6 +647,13 @@ const Auth = () => {
 
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
+
+      // Handle line breaks
+      if (char === '\n') {
+        result.push(<br key={`br-${i}`} />);
+        lastIndex = i + 1;
+        continue;
+      }
 
       // Check if we're at the start of the pink word
       const inPinkWord = i >= wordPosition.start && i < wordPosition.end;
@@ -663,20 +670,24 @@ const Auth = () => {
           lastIndex = i + 1;
         }
       } else {
-        // Regular text - find the next pink word or end
+        // Regular text - find the next pink word, line break, or end
         let nextPinkStart = text.length;
+        let nextLineBreak = text.indexOf('\n', i);
+        if (nextLineBreak === -1) nextLineBreak = text.length;
+
         if (wordPosition.start > i && wordPosition.start < text.length) {
           nextPinkStart = wordPosition.start;
         }
 
-        const chunk = text.substring(i, Math.min(nextPinkStart, text.length));
+        const endPos = Math.min(nextPinkStart, nextLineBreak, text.length);
+        const chunk = text.substring(i, endPos);
         if (chunk) {
           result.push(
             <span key={`text-${i}`} className="text-white">
               {chunk}
             </span>
           );
-          i = Math.min(text.length - 1, nextPinkStart - 1);
+          i = endPos - 1;
           lastIndex = i + 1;
         }
       }
@@ -1381,11 +1392,11 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white">
-            <div className="px-4 text-center mb-12">
-              <h2 className="font-bold text-white" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+          <div className="max-w-4xl w-full text-white text-left">
+            <div className="px-4">
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
-              </h2>
+              </h3>
             </div>
 
             {/* Two Column Layout */}
