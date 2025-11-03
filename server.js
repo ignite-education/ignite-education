@@ -430,22 +430,22 @@ Based on this section content, generate ONE suggested question that would help s
 2. Focus on understanding key concepts or practical application
 3. Be answerable based on the section content provided
 4. Be conversational and natural (avoid overly academic language)
-5. Be MAXIMUM 60 characters long (this is strict - count carefully)
+5. Be MAXIMUM 55 characters long (this is strict - count carefully)
 6. Be 5-12 words long
 
-Examples of good questions (all under 60 characters):
+Examples of good questions (all under 55 characters):
 - "How would you apply this to your product?" (47 chars)
 - "What makes this approach effective?" (36 chars)
 - "Why is this concept important for PMs?" (39 chars)
-- "How does this differ from traditional methods?" (48 chars)
+- "How does this differ from other methods?" (41 chars)
 
-Respond with ONLY the question text, nothing else. No introduction, no explanation, just the question. Keep it under 60 characters.`;
+Respond with ONLY the question text, nothing else. No introduction, no explanation, just the question. Keep it under 55 characters.`;
 
     let question = '';
     let attempts = 0;
     const maxAttempts = 3;
 
-    // Try up to 3 times to get a question under 60 characters
+    // Try up to 3 times to get a question under 55 characters
     while (attempts < maxAttempts) {
       const message = await anthropic.messages.create({
         model: 'claude-3-haiku-20240307',
@@ -456,14 +456,14 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
             role: 'user',
             content: attempts === 0
               ? 'Generate a suggested question for this section.'
-              : `Generate a shorter suggested question for this section. Make it under 60 characters. Previous attempt was ${question.length} characters.`
+              : `Generate a shorter suggested question for this section. Make it under 55 characters. Previous attempt was ${question.length} characters.`
           }
         ],
       });
 
       question = message.content[0].text.trim();
 
-      if (question.length <= 60) {
+      if (question.length <= 55) {
         break;
       }
 
@@ -471,7 +471,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
     }
 
     // If still too long after 3 attempts, use a generic fallback
-    if (question.length > 60) {
+    if (question.length > 55) {
       question = "What are the key concepts here?";
     }
 

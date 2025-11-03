@@ -1854,7 +1854,7 @@ ${contentBlocks.map((block, index) => {
                           <input
                             type="text"
                             value={block.suggestedQuestion || ''}
-                            maxLength={60}
+                            maxLength={55}
                             onChange={(e) => {
                               const newBlocks = contentBlocks.map(b =>
                                 b.id === block.id ? { ...b, suggestedQuestion: e.target.value } : b
@@ -1865,7 +1865,7 @@ ${contentBlocks.map((block, index) => {
                             className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/60 characters)
+                            This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
                           </p>
                         </div>
                       )}
