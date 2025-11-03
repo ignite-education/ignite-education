@@ -1935,9 +1935,8 @@ const ProgressHub = () => {
                     upcomingLessons.map((lesson, index) => {
                       const isAccessible = isLessonAccessible(lesson.module_number, lesson.lesson_number);
                       const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-                      // Find the first incomplete lesson (this is the current lesson)
-                      const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-                      const isCurrentLesson = index === firstIncompleteIndex;
+                      // Check if this is the current lesson by comparing with state variables
+                      const isCurrentLesson = lesson.module_number === currentModule && lesson.lesson_number === currentLesson;
 
                       return (
                         <div
