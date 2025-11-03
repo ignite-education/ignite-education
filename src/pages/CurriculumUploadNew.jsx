@@ -73,13 +73,43 @@ const CurriculumUploadNew = () => {
           console.log('Loading module_structure from course:', selectedCourse.module_structure);
           setModuleStructure(selectedCourse.module_structure);
 
-          // Reset selections to first module and lesson
+          // Only reset selections if we don't have a current selection (initial load)
           if (selectedCourse.module_structure.length > 0) {
-            setSelectedModuleIndex(0);
-            setSelectedModuleNumber(1);
-            if (selectedCourse.module_structure[0].lessons && selectedCourse.module_structure[0].lessons.length > 0) {
-              setSelectedLessonIndex(0);
-              setSelectedLessonNumber(1);
+            // Preserve current selections if they exist and are valid
+            const hasCurrentModuleSelection = selectedModuleIndex !== null && selectedModuleIndex >= 0;
+            const hasCurrentLessonSelection = selectedLessonIndex !== null && selectedLessonIndex >= 0;
+
+            if (!hasCurrentModuleSelection) {
+              // No current module selected, initialize to first module
+              setSelectedModuleIndex(0);
+              setSelectedModuleNumber(1);
+            } else {
+              // Validate current module selection is still valid
+              if (selectedModuleIndex >= selectedCourse.module_structure.length) {
+                setSelectedModuleIndex(0);
+                setSelectedModuleNumber(1);
+              }
+            }
+
+            // Handle lesson selection
+            const currentModuleIdx = hasCurrentModuleSelection && selectedModuleIndex < selectedCourse.module_structure.length
+              ? selectedModuleIndex
+              : 0;
+            const currentModule = selectedCourse.module_structure[currentModuleIdx];
+
+            if (currentModule?.lessons && currentModule.lessons.length > 0) {
+              if (!hasCurrentLessonSelection) {
+                // No current lesson selected, initialize to first lesson
+                setSelectedLessonIndex(0);
+                setSelectedLessonNumber(1);
+              } else {
+                // Validate current lesson selection is still valid
+                if (selectedLessonIndex >= currentModule.lessons.length) {
+                  setSelectedLessonIndex(0);
+                  setSelectedLessonNumber(1);
+                }
+                // Otherwise keep current lesson selection unchanged
+              }
             }
           }
         } else {
