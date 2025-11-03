@@ -972,7 +972,7 @@ ${contentBlocks.map((block, index) => {
 
             // Helper function to render text with bold, underline, italic, and link formatting
             const renderTextWithBold = (text) => {
-              const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[([^\]]+)\]\(([^)]+)\)|(?<!\*)\*(?!\*)([^*]+)\*(?!\*))/g);
+              const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)([^*]+)\*(?!\*))/g);
 
               return parts.map((part, i) => {
                 if (part === undefined) return null;
