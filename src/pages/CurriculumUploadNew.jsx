@@ -102,23 +102,43 @@ const CurriculumUploadNew = () => {
     }
   }, [selectedCourseId, selectedModuleNumber, selectedLessonNumber]);
 
-  // Auto-resize all paragraph textareas when content loads
+  // Auto-resize textareas using ResizeObserver to avoid layout shifts
   useEffect(() => {
-    const resizeTextareas = () => {
-      contentBlocks.forEach((block) => {
-        if (block.type === 'paragraph') {
-          const textarea = document.getElementById(`paragraph-${block.id}`);
-          if (textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = textarea.scrollHeight + 'px';
-          }
-        }
-      });
+    const resizeObserverMap = new Map();
+
+    const resizeTextarea = (textarea) => {
+      // Store current scroll position to prevent jumping
+      const scrollY = window.scrollY;
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+      // Restore scroll position
+      window.scrollTo(0, scrollY);
     };
 
-    // Delay to ensure DOM is ready
-    const timer = setTimeout(resizeTextareas, 100);
-    return () => clearTimeout(timer);
+    contentBlocks.forEach((block) => {
+      if (block.type === 'paragraph') {
+        const textarea = document.getElementById(`paragraph-${block.id}`);
+        if (textarea && !resizeObserverMap.has(textarea)) {
+          // Initial resize
+          resizeTextarea(textarea);
+
+          // Create ResizeObserver for this textarea
+          const observer = new ResizeObserver(() => {
+            // Only resize if content changed, not if we're the ones changing height
+            if (textarea.scrollHeight > parseInt(textarea.style.height || '0')) {
+              resizeTextarea(textarea);
+            }
+          });
+
+          observer.observe(textarea);
+          resizeObserverMap.set(textarea, observer);
+        }
+      }
+    });
+
+    return () => {
+      resizeObserverMap.forEach((observer) => observer.disconnect());
+    };
   }, [contentBlocks]);
 
   const loadCourses = async () => {
@@ -1030,6 +1050,8 @@ ${contentBlocks.map((block, index) => {
                       src={imageData.url}
                       alt={imageData.alt || ''}
                       className={`${widthClass} rounded-lg shadow-lg`}
+                      style={{ aspectRatio: 'auto', maxWidth: '100%', height: 'auto' }}
+                      loading="lazy"
                     />
                     {imageData.caption && (
                       <p className="text-sm text-gray-600 mt-2 italic">{imageData.caption}</p>
@@ -1050,13 +1072,14 @@ ${contentBlocks.map((block, index) => {
                   <h3 className="text-xl font-bold mb-4">{videoData.title}</h3>
                 )}
                 {videoId && (
-                  <div className="aspect-w-16 aspect-h-9">
+                  <div className="aspect-w-16 aspect-h-9" style={{ minHeight: '384px' }}>
                     <iframe
                       src={`https://www.youtube.com/embed/${videoId}`}
                       title={videoData.title || 'YouTube video'}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       className="w-full h-96 rounded-lg shadow-lg"
+                      loading="lazy"
                     />
                   </div>
                 )}
@@ -1115,10 +1138,12 @@ ${contentBlocks.map((block, index) => {
                       level: typeof block.content === 'object' ? block.content.level : 2
                     });
 
-                    // Restore cursor position after the underline markers
+                    // Restore cursor position after the underline markers - prevent scroll
                     setTimeout(() => {
-                      input.focus();
+                      const scrollY = window.scrollY;
+                      input.focus({ preventScroll: true });
                       input.setSelectionRange(end + 4, end + 4);
+                      window.scrollTo(0, scrollY);
                     }, 0);
                   } else {
                     // Insert underline markers at cursor position
@@ -1128,10 +1153,12 @@ ${contentBlocks.map((block, index) => {
                       level: typeof block.content === 'object' ? block.content.level : 2
                     });
 
-                    // Place cursor between the markers
+                    // Place cursor between the markers - prevent scroll
                     setTimeout(() => {
-                      input.focus();
+                      const scrollY = window.scrollY;
+                      input.focus({ preventScroll: true });
                       input.setSelectionRange(start + 2, start + 2);
+                      window.scrollTo(0, scrollY);
                     }, 0);
                   }
                 }}
@@ -1155,16 +1182,15 @@ ${contentBlocks.map((block, index) => {
               value={block.content}
               onChange={(e) => {
                 updateBlock(block.id, e.target.value);
-                // Auto-resize textarea
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
               }}
               onInput={(e) => {
-                // Auto-resize on input as well
+                // Auto-resize on input - store scroll position to prevent jumping
+                const scrollY = window.scrollY;
                 e.target.style.height = 'auto';
                 e.target.style.height = e.target.scrollHeight + 'px';
+                window.scrollTo(0, scrollY);
               }}
-              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none min-h-[100px] resize-none overflow-hidden"
+              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none min-h-[100px] resize-none overflow-hidden transition-[height] duration-75 ease-out"
               style={{ height: 'auto' }}
             />
             <div className="text-xs text-gray-400 space-y-1">
@@ -1199,20 +1225,24 @@ ${contentBlocks.map((block, index) => {
                       const newText = text.substring(0, start) + '**' + selectedText + '**' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Restore cursor position after the bold markers
+                      // Restore cursor position after the bold markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(end + 4, end + 4);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     } else {
                       // Insert bold markers at cursor position
                       const newText = text.substring(0, start) + '****' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Place cursor between the markers
+                      // Place cursor between the markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(start + 2, start + 2);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     }
                   }}
@@ -1234,20 +1264,24 @@ ${contentBlocks.map((block, index) => {
                       const newText = text.substring(0, start) + '*' + selectedText + '*' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Restore cursor position after the italic markers
+                      // Restore cursor position after the italic markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(end + 2, end + 2);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     } else {
                       // Insert italic markers at cursor position
                       const newText = text.substring(0, start) + '**' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Place cursor between the markers
+                      // Place cursor between the markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(start + 1, start + 1);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     }
                   }}
@@ -1269,20 +1303,24 @@ ${contentBlocks.map((block, index) => {
                       const newText = text.substring(0, start) + '__' + selectedText + '__' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Restore cursor position after the underline markers
+                      // Restore cursor position after the underline markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(end + 4, end + 4);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     } else {
                       // Insert underline markers at cursor position
                       const newText = text.substring(0, start) + '____' + text.substring(end);
                       updateBlock(block.id, newText);
 
-                      // Place cursor between the markers
+                      // Place cursor between the markers - prevent scroll
                       setTimeout(() => {
-                        textarea.focus();
+                        const scrollY = window.scrollY;
+                        textarea.focus({ preventScroll: true });
                         textarea.setSelectionRange(start + 2, start + 2);
+                        window.scrollTo(0, scrollY);
                       }, 0);
                     }
                   }}
@@ -1307,11 +1345,13 @@ ${contentBlocks.map((block, index) => {
                         const newText = text.substring(0, start) + '[' + selectedText + '](' + url + ')' + text.substring(end);
                         updateBlock(block.id, newText);
 
-                        // Restore cursor position after the link
+                        // Restore cursor position after the link - prevent scroll
                         setTimeout(() => {
-                          textarea.focus();
+                          const scrollY = window.scrollY;
+                          textarea.focus({ preventScroll: true });
                           const newPos = start + selectedText.length + url.length + 4;
                           textarea.setSelectionRange(newPos, newPos);
+                          window.scrollTo(0, scrollY);
                         }, 0);
                       }
                     } else {
@@ -1322,11 +1362,13 @@ ${contentBlocks.map((block, index) => {
                         const newText = text.substring(0, start) + '[' + linkText + '](' + url + ')' + text.substring(end);
                         updateBlock(block.id, newText);
 
-                        // Place cursor after the inserted link
+                        // Place cursor after the inserted link - prevent scroll
                         setTimeout(() => {
-                          textarea.focus();
+                          const scrollY = window.scrollY;
+                          textarea.focus({ preventScroll: true });
                           const newPos = start + linkText.length + url.length + 4;
                           textarea.setSelectionRange(newPos, newPos);
+                          window.scrollTo(0, scrollY);
                         }, 0);
                       }
                     }
@@ -1426,6 +1468,8 @@ ${contentBlocks.map((block, index) => {
                     block.content.width === 'full' ? 'max-w-full' :
                     'max-w-md'
                   }`}
+                  style={{ aspectRatio: 'auto', maxWidth: '100%', height: 'auto' }}
+                  loading="lazy"
                 />
                 <input
                   type="text"
@@ -1464,12 +1508,13 @@ ${contentBlocks.map((block, index) => {
               className="w-full px-4 py-2 border rounded-lg"
             />
             {block.content.videoId && (
-              <div className="aspect-w-16 aspect-h-9">
+              <div className="aspect-w-16 aspect-h-9" style={{ minHeight: '256px' }}>
                 <iframe
                   src={`https://www.youtube.com/embed/${block.content.videoId}`}
                   title={block.content.title || 'YouTube video'}
                   className="w-full h-64 rounded-lg"
                   allowFullScreen
+                  loading="lazy"
                 />
               </div>
             )}
