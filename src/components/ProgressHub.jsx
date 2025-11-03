@@ -1150,11 +1150,6 @@ const ProgressHub = () => {
     const scrollPosition = scrollContainerRef.current.scrollLeft;
     const gap = 16; // Gap between cards (gap-4 = 1rem = 16px)
 
-    // Find the first incomplete lesson index (current lesson)
-    const firstIncompleteIndex = upcomingLessons.findIndex(
-      l => !isLessonCompleted(l.module_number, l.lesson_number)
-    );
-
     // Calculate which card is currently snapped based on variable widths
     let cumulativeWidth = 0;
     let index = 0;
@@ -1162,8 +1157,8 @@ const ProgressHub = () => {
     for (let i = 0; i < upcomingLessons.length; i++) {
       const lesson = upcomingLessons[i];
       const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-      const isCurrentLesson = i === firstIncompleteIndex;
-      const cardWidth = (lessonIsCompleted || isCurrentLesson) ? 450 : 350;
+      const lessonIsCurrentLesson = lesson.module_number === currentModule && lesson.lesson_number === currentLesson;
+      const cardWidth = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06; // Match actual card widths
 
       // Check if scroll position is within this card's range
       if (scrollPosition < cumulativeWidth + cardWidth / 2) {
@@ -1199,8 +1194,8 @@ const ProgressHub = () => {
       for (let i = 0; i < currentLessonIndex; i++) {
         const lesson = upcomingLessons[i];
         const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-        const isCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06; // Match actual card widths
+        const lessonIsCurrentLesson = lesson.module_number === currentModule && lesson.lesson_number === currentLesson;
+        const width = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06; // Match actual card widths
         scrollPosition += width + gap;
       }
 
@@ -1244,8 +1239,8 @@ const ProgressHub = () => {
       for (let i = 0; i < currentLessonIndex; i++) {
         const lesson = upcomingLessons[i];
         const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-        const isCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06; // Match actual card widths
+        const lessonIsCurrentLesson = lesson.module_number === currentModule && lesson.lesson_number === currentLesson;
+        const width = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06; // Match actual card widths
         scrollPosition += width + gap;
       }
 
@@ -1891,9 +1886,8 @@ const ProgressHub = () => {
                     (() => {
                       const snappedLesson = upcomingLessons[snappedCardIndex];
                       const isCompleted = isLessonCompleted(snappedLesson.module_number, snappedLesson.lesson_number);
-                      // Find the first incomplete lesson (this is the current lesson)
-                      const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-                      const isCurrentLesson = snappedCardIndex === firstIncompleteIndex;
+                      // Check if this is the current lesson by comparing with state variables
+                      const isCurrentLesson = snappedLesson.module_number === currentModule && snappedLesson.lesson_number === currentLesson;
 
                       if (isCompleted) return 'Completed Lesson';
                       if (isCurrentLesson) return 'Current Lesson';
