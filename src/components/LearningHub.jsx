@@ -2203,7 +2203,19 @@ ${currentLessonSections.map((section) => {
           <div className="max-w-4xl mx-auto space-y-0" style={{ position: 'relative', zIndex: 2 }}>
             {/* Lesson Title */}
             <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
-              <p className="text-xl font-medium" style={{ color: '#EF0B72', marginBottom: '0.25rem' }}>Lesson {currentLesson}</p>
+              <p className="text-xl font-medium" style={{ color: '#EF0B72', marginBottom: '0.25rem' }}>
+                Lesson {(() => {
+                  // Calculate global lesson number across all modules
+                  const sortedLessons = [...lessonsMetadata].sort((a, b) => {
+                    if (a.module_number !== b.module_number) return a.module_number - b.module_number;
+                    return a.lesson_number - b.lesson_number;
+                  });
+                  const globalIndex = sortedLessons.findIndex(
+                    l => l.module_number === currentModule && l.lesson_number === currentLesson
+                  );
+                  return globalIndex !== -1 ? globalIndex + 1 : currentLesson;
+                })()}
+              </p>
               <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
                 <h1 className="text-3xl font-medium text-left">{lessonName}</h1>
               </div>
