@@ -1545,6 +1545,175 @@ scheduleNextRefresh();
 // END REDDIT CACHE SYSTEM
 // ============================================================================
 
+// ============================================================================
+// CERTIFICATE ENDPOINTS
+// ============================================================================
+
+// Generate a certificate for a user when they complete a course
+app.post('/api/certificate/generate', async (req, res) => {
+  try {
+    const { userId, courseId } = req.body;
+
+    if (!userId || !courseId) {
+      return res.status(400).json({ error: 'userId and courseId are required' });
+    }
+
+    // Get user information
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('first_name, last_name, enrolled_course')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !userData) {
+      console.error('Error fetching user data:', userError);
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Map course IDs to readable course names
+    const courseNames = {
+      'product-management': 'Product Manager',
+      'product-manager': 'Product Manager'
+      // Add more course mappings as needed
+    };
+
+    const courseName = courseNames[courseId] || courseId;
+    const userName = `${userData.first_name} ${userData.last_name}`;
+
+    // Generate a unique certificate number (format: IGN-YYYY-XXXXXX)
+    const year = new Date().getFullYear();
+    const randomNum = Math.floor(100000 + Math.random() * 900000);
+    const certificateNumber = `IGN-${year}-${randomNum}`;
+
+    // Check if certificate already exists
+    const { data: existingCert } = await supabase
+      .from('certificates')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .single();
+
+    if (existingCert) {
+      // Certificate already exists, return it
+      return res.json({
+        success: true,
+        certificate: existingCert
+      });
+    }
+
+    // Create certificate record
+    const { data: certificate, error: certError } = await supabase
+      .from('certificates')
+      .insert({
+        user_id: userId,
+        course_id: courseId,
+        certificate_number: certificateNumber,
+        user_name: userName,
+        course_name: courseName,
+        issued_date: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (certError) {
+      console.error('Error creating certificate:', certError);
+      return res.status(500).json({ error: 'Failed to create certificate' });
+    }
+
+    res.json({
+      success: true,
+      certificate: certificate
+    });
+
+  } catch (error) {
+    console.error('Error generating certificate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a specific certificate by certificate ID
+app.get('/api/certificate/:certificateId', async (req, res) => {
+  try {
+    const { certificateId } = req.params;
+
+    const { data: certificate, error } = await supabase
+      .from('certificates')
+      .select('*')
+      .eq('id', certificateId)
+      .single();
+
+    if (error || !certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+
+    res.json({
+      success: true,
+      certificate: certificate
+    });
+
+  } catch (error) {
+    console.error('Error fetching certificate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get a certificate by certificate number (for public verification)
+app.get('/api/certificate/verify/:certificateNumber', async (req, res) => {
+  try {
+    const { certificateNumber } = req.params;
+
+    const { data: certificate, error } = await supabase
+      .from('certificates')
+      .select('*')
+      .eq('certificate_number', certificateNumber)
+      .single();
+
+    if (error || !certificate) {
+      return res.status(404).json({ error: 'Certificate not found' });
+    }
+
+    res.json({
+      success: true,
+      certificate: certificate
+    });
+
+  } catch (error) {
+    console.error('Error verifying certificate:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get all certificates for a user
+app.get('/api/certificate/user/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const { data: certificates, error } = await supabase
+      .from('certificates')
+      .select('*')
+      .eq('user_id', userId)
+      .order('issued_date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching user certificates:', error);
+      return res.status(500).json({ error: 'Failed to fetch certificates' });
+    }
+
+    res.json({
+      success: true,
+      certificates: certificates || []
+    });
+
+  } catch (error) {
+    console.error('Error fetching user certificates:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================================================
+// END CERTIFICATE ENDPOINTS
+// ============================================================================
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);

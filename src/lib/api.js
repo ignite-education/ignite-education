@@ -1205,3 +1205,157 @@ export async function getCourseRequestAnalytics() {
     return [];
   }
 }
+
+// ============================================================================
+// CERTIFICATE FUNCTIONS
+// ============================================================================
+
+/**
+ * Generate a certificate for a user when they complete a course
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @returns {Promise<Object>} Certificate data
+ */
+export async function generateCertificate(userId, courseId) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  try {
+    const response = await fetch(`${API_URL}/api/certificate/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, courseId }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate certificate');
+    }
+
+    return data.certificate;
+  } catch (error) {
+    console.error('Error generating certificate:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a specific certificate by ID
+ * @param {string} certificateId - The certificate ID
+ * @returns {Promise<Object>} Certificate data
+ */
+export async function getCertificate(certificateId) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  try {
+    const response = await fetch(`${API_URL}/api/certificate/${certificateId}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to fetch certificate');
+    }
+
+    return data.certificate;
+  } catch (error) {
+    console.error('Error fetching certificate:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all certificates for a user
+ * @param {string} userId - The user's ID
+ * @returns {Promise<Array>} Array of certificate objects
+ */
+export async function getUserCertificates(userId) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  try {
+    const response = await fetch(`${API_URL}/api/certificate/user/${userId}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to fetch certificates');
+    }
+
+    return data.certificates || [];
+  } catch (error) {
+    console.error('Error fetching user certificates:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verify a certificate by certificate number (for public verification)
+ * @param {string} certificateNumber - The certificate number
+ * @returns {Promise<Object>} Certificate data
+ */
+export async function verifyCertificate(certificateNumber) {
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+  try {
+    const response = await fetch(`${API_URL}/api/certificate/verify/${certificateNumber}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to verify certificate');
+    }
+
+    return data.certificate;
+  } catch (error) {
+    console.error('Error verifying certificate:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if a user has completed a course (all lessons marked complete)
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @returns {Promise<boolean>} True if course is completed
+ */
+export async function checkCourseCompletion(userId, courseId) {
+  try {
+    // Get all completed lessons for this course
+    const completedLessons = await getCompletedLessons(userId, courseId);
+
+    // Get all lessons in the course from the database
+    const { data: allLessons, error } = await supabase
+      .from('lessons')
+      .select('module_number, lesson_number')
+      .eq('course_id', courseId);
+
+    if (error) {
+      console.error('Error fetching course lessons:', error);
+      return false;
+    }
+
+    // Create a set of unique lesson identifiers for comparison
+    const completedSet = new Set(
+      completedLessons.map(l => `${l.module_number}-${l.lesson_number}`)
+    );
+
+    const allLessonsSet = new Set(
+      allLessons.map(l => `${l.module_number}-${l.lesson_number}`)
+    );
+
+    // Check if all lessons are completed
+    const isComplete = allLessons.every(lesson =>
+      completedSet.has(`${lesson.module_number}-${lesson.lesson_number}`)
+    );
+
+    console.log('Course completion check:', {
+      courseId,
+      totalLessons: allLessons.length,
+      completedLessons: completedLessons.length,
+      isComplete
+    });
+
+    return isComplete;
+  } catch (error) {
+    console.error('Error checking course completion:', error);
+    return false;
+  }
+}

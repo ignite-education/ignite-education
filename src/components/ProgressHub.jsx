@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -94,6 +94,8 @@ const ProgressHub = () => {
   const [hasPostedToReddit, setHasPostedToReddit] = useState(false);
   const [expandedMyPostId, setExpandedMyPostId] = useState(null);
   const [myPostHoverTimer, setMyPostHoverTimer] = useState(null);
+  const [userCertificate, setUserCertificate] = useState(null);
+  const [certificateGenerated, setCertificateGenerated] = useState(false);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -272,6 +274,42 @@ const ProgressHub = () => {
     }
   }, [isRefreshing, pullDistance]);
 
+  // Check for course completion and generate certificate
+  useEffect(() => {
+    const checkAndGenerateCertificate = async () => {
+      if (!authUser?.id || certificateGenerated || !completedLessons.length) return;
+
+      const totalLessons = getTotalLessonsCount();
+      const completedCount = getCompletedLessonsCount();
+
+      // Check if course is 100% complete
+      if (totalLessons > 0 && completedCount >= totalLessons) {
+        try {
+          console.log('🎓 Course 100% complete! Generating certificate...');
+
+          // Get user's enrolled course
+          const { data: userData } = await supabase
+            .from('users')
+            .select('enrolled_course')
+            .eq('id', authUser.id)
+            .single();
+
+          const courseId = userData?.enrolled_course || 'product-manager';
+
+          // Generate certificate
+          const certificate = await generateCertificate(authUser.id, courseId);
+          setUserCertificate(certificate);
+          setCertificateGenerated(true);
+          console.log('✅ Certificate generated:', certificate);
+        } catch (error) {
+          console.error('❌ Error generating certificate:', error);
+        }
+      }
+    };
+
+    checkAndGenerateCertificate();
+  }, [completedLessons, authUser, certificateGenerated]);
+
 
   const fetchData = async () => {
     try {
@@ -377,6 +415,19 @@ const ProgressHub = () => {
       } catch (error) {
         console.error('❌ Error fetching completed lessons (table may not exist yet):', error);
         setCompletedLessons([]); // Default to no completed lessons
+      }
+
+      // Check for certificate (after course completion)
+      try {
+        const certificates = await getUserCertificates(userId);
+        const courseCertificate = certificates.find(cert => cert.course_id === courseId);
+        if (courseCertificate) {
+          setUserCertificate(courseCertificate);
+          setCertificateGenerated(true);
+          console.log('🎓 Certificate found:', courseCertificate);
+        }
+      } catch (error) {
+        console.error('❌ Error fetching certificates:', error);
       }
 
       // Calculate current lesson based on completed lessons
@@ -1883,6 +1934,18 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
                     `Ready when you are, ${user.firstName}.`
+                  ) : progressPercentage >= 100 && userCertificate ? (
+                    <>
+                      You completed the {user.enrolledCourse} course.{' '}
+                      <a
+                        href={`/certificate/${userCertificate.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-pink-500 hover:text-pink-400 underline font-medium"
+                      >
+                        View your certificate
+                      </a>
+                    </>
                   ) : (
                     <>
                       You're <span className="text-white font-semibold">{progressPercentage}%</span> through the {user.enrolledCourse} course.

@@ -16,6 +16,7 @@ const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const Certificate = lazy(() => import('./components/Certificate'))
 
 // Loading fallback component with Ignite branded animation
 const LoadingFallback = () => {
@@ -115,6 +116,7 @@ function App() {
             } />
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+            <Route path="/certificate/:certificateId" element={<Certificate />} />
           </Routes>
         </Suspense>
       </AuthProvider>
