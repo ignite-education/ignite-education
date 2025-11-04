@@ -1217,7 +1217,7 @@ export async function getCourseRequestAnalytics() {
  * @returns {Promise<Object>} Certificate data
  */
 export async function generateCertificate(userId, courseId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
   try {
     const response = await fetch(`${API_URL}/api/certificate/generate`, {
@@ -1247,7 +1247,7 @@ export async function generateCertificate(userId, courseId) {
  * @returns {Promise<Object>} Certificate data
  */
 export async function getCertificate(certificateId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
   try {
     const response = await fetch(`${API_URL}/api/certificate/${certificateId}`);
@@ -1270,7 +1270,7 @@ export async function getCertificate(certificateId) {
  * @returns {Promise<Array>} Array of certificate objects
  */
 export async function getUserCertificates(userId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
   try {
     const response = await fetch(`${API_URL}/api/certificate/user/${userId}`);
@@ -1293,7 +1293,7 @@ export async function getUserCertificates(userId) {
  * @returns {Promise<Object>} Certificate data
  */
 export async function verifyCertificate(certificateNumber) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
   try {
     const response = await fetch(`${API_URL}/api/certificate/verify/${certificateNumber}`);
