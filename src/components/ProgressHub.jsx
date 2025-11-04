@@ -1510,7 +1510,7 @@ const ProgressHub = () => {
 
   // Track container width for dynamic padding
   useEffect(() => {
-    if (!scrollContainerRef.current) return;
+    if (!scrollContainerRef.current || !isCarouselReady) return;
 
     const updateContainerWidth = () => {
       if (scrollContainerRef.current) {
@@ -1527,7 +1527,7 @@ const ProgressHub = () => {
     return () => {
       window.removeEventListener('resize', updateContainerWidth);
     };
-  }, [scrollContainerRef.current, upcomingLessons.length]);
+  }, [upcomingLessons.length, isCarouselReady]);
 
   // Fetch Reddit comments for a specific post
   const fetchRedditCommentsForPost = async (post) => {

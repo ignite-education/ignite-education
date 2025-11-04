@@ -1218,7 +1218,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Track container width for dynamic padding
   useEffect(() => {
-    if (!scrollContainerRef.current) return;
+    if (!scrollContainerRef.current || !isCarouselReady) return;
 
     const updateContainerWidth = () => {
       if (scrollContainerRef.current) {
@@ -1235,7 +1235,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return () => {
       window.removeEventListener('resize', updateContainerWidth);
     };
-  }, [scrollContainerRef.current, upcomingLessonsToShow.length]);
+  }, [upcomingLessonsToShow.length, isCarouselReady]);
 
   // Extract text content from sections for read-aloud
   const extractTextFromSection = (section) => {
