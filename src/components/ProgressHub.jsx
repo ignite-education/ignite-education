@@ -1941,7 +1941,7 @@ const ProgressHub = () => {
                         href={`/certificate/${userCertificate.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-pink-500 hover:text-pink-400 underline font-medium"
+                        className="text-pink-500 hover:text-pink-400 font-medium"
                       >
                         View your certificate.
                       </a>
