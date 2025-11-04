@@ -63,6 +63,7 @@ const LearningHub = () => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollStartX, setScrollStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
@@ -1215,6 +1216,27 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
   }, [upcomingLessonsToShow, loading, currentModule, currentLesson, completedLessons]);
 
+  // Track container width for dynamic padding
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const updateContainerWidth = () => {
+      if (scrollContainerRef.current) {
+        setContainerWidth(scrollContainerRef.current.clientWidth);
+      }
+    };
+
+    // Initial measurement
+    updateContainerWidth();
+
+    // Update on window resize
+    window.addEventListener('resize', updateContainerWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateContainerWidth);
+    };
+  }, [scrollContainerRef.current, upcomingLessonsToShow.length]);
+
   // Extract text content from sections for read-aloud
   const extractTextFromSection = (section) => {
     if (section.content_type === 'heading') {
@@ -1784,7 +1806,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             onMouseLeave={handleScrollMouseLeave}
             onScroll={handleScroll}
           >
-            <div className="flex gap-4" style={{ minHeight: '100px', height: '100px' }}>
+            <div className="flex gap-4" style={{
+              minHeight: '100px',
+              height: '100px',
+              paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 390 - 16)}px` : '0px'
+            }}>
               {upcomingLessonsToShow.length > 0 ? (
                 upcomingLessonsToShow.map((lesson, index) => {
                   const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);

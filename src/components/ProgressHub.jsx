@@ -85,6 +85,7 @@ const ProgressHub = () => {
   const [isCarouselReady, setIsCarouselReady] = useState(false);
   const hasInitializedScrollRef = useRef(false);
   const [enableSmoothScroll, setEnableSmoothScroll] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(0);
   const [lottieData, setLottieData] = useState(null);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
   const [isClosingMyPostsModal, setIsClosingMyPostsModal] = useState(false);
@@ -1507,6 +1508,27 @@ const ProgressHub = () => {
     };
   }, [hoverTimer]);
 
+  // Track container width for dynamic padding
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+
+    const updateContainerWidth = () => {
+      if (scrollContainerRef.current) {
+        setContainerWidth(scrollContainerRef.current.clientWidth);
+      }
+    };
+
+    // Initial measurement
+    updateContainerWidth();
+
+    // Update on window resize
+    window.addEventListener('resize', updateContainerWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateContainerWidth);
+    };
+  }, [scrollContainerRef.current, upcomingLessons.length]);
+
   // Fetch Reddit comments for a specific post
   const fetchRedditCommentsForPost = async (post) => {
     console.log(`🔍 fetchRedditCommentsForPost called for post:`, post.id, `source:`, post.source);
@@ -1923,7 +1945,8 @@ const ProgressHub = () => {
                     className="flex gap-4"
                     style={{
                       minHeight: '100px',
-                      height: '100px'
+                      height: '100px',
+                      paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 390 - 16)}px` : '0px'
                     }}
                   >
                   {upcomingLessons.length > 0 ? (
