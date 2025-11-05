@@ -2196,15 +2196,15 @@ const ProgressHub = () => {
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="font-semibold text-white hover:text-[#EF0B72] transition block truncate w-full"
-                                      style={{ fontSize: '11px', lineHeight: '1.2' }}
+                                      style={{ fontSize: '12px', lineHeight: '1.2' }}
                                     >
                                       {coach.name}
                                     </a>
                                   ) : (
-                                    <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '11px', lineHeight: '1.2' }}>{coach.name}</h3>
+                                    <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
                                   )}
                                   {coach.position && (
-                                    <p className="text-white truncate w-full" style={{ fontSize: '9px', marginTop: '2px', lineHeight: '1.2', opacity: 0.9 }}>{coach.position}</p>
+                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '2px', lineHeight: '1.2', opacity: 0.9 }}>{coach.position}</p>
                                   )}
                                 </>
                               ) : (
