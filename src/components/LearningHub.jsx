@@ -1905,8 +1905,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             </div>
           </div>
 
-          {/* Back to Current Lesson Button - Hide only when viewing the current lesson */}
+          {/* Back to Current Lesson Button - Hide when viewing current lesson or when all lessons are completed */}
           {(() => {
+            // Check if all lessons in the course are completed
+            const allLessonsCompleted = completedLessons.length === upcomingLessonsToShow.length && upcomingLessonsToShow.length > 0;
+
             // Find the index of the first incomplete lesson (current lesson)
             const currentLessonIndex = upcomingLessonsToShow.findIndex(
               l => !isLessonCompleted(l.module_number, l.lesson_number)
@@ -1916,7 +1919,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
             const isViewingCompletedLesson = activeCardIndex < currentLessonIndex;
 
-            return isNotViewingCurrentLesson && (
+            return isNotViewingCurrentLesson && !allLessonsCompleted && (
               <button
                 onClick={scrollToCurrentLesson}
                 className="absolute bg-white text-black hover:bg-purple-50 transition-all"

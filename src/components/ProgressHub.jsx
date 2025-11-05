@@ -1936,14 +1936,14 @@ const ProgressHub = () => {
                     `Ready when you are, ${user.firstName}.`
                   ) : progressPercentage >= 100 && userCertificate ? (
                     <>
-                      You completed the {user.enrolledCourse} course.{' '}
+                      You've completed the {user.enrolledCourse} course.{' '}
                       <a
                         href={`/certificate/${userCertificate.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-pink-500 hover:text-pink-400 font-medium"
                       >
-                        View your certificate.
+                        View your certificate &gt;
                       </a>
                     </>
                   ) : (
@@ -2112,8 +2112,11 @@ const ProgressHub = () => {
                   </div>
                 </div>
 
-                {/* Back to Current Lesson Button - Hide only when viewing the current lesson */}
+                {/* Back to Current Lesson Button - Hide when viewing current lesson or when all lessons are completed */}
                 {(() => {
+                  // Check if all lessons in the course are completed
+                  const allLessonsCompleted = completedLessons.length === upcomingLessons.length && upcomingLessons.length > 0;
+
                   // Find the index of the first incomplete lesson (current lesson)
                   const currentLessonIndex = upcomingLessons.findIndex(
                     l => !isLessonCompleted(l.module_number, l.lesson_number)
@@ -2123,7 +2126,7 @@ const ProgressHub = () => {
                   // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
                   const isViewingCompletedLesson = snappedCardIndex < currentLessonIndex;
 
-                  return isNotViewingCurrentLesson && (
+                  return isNotViewingCurrentLesson && !allLessonsCompleted && (
                     <button
                       onClick={scrollToCurrentLesson}
                       className="absolute bg-white text-black hover:bg-purple-50 transition-all"
