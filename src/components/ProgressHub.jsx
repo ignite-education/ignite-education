@@ -2165,7 +2165,7 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
-                    <div className="flex gap-2.5 h-full items-start" style={{ paddingTop: '0px' }}>
+                    <div className="flex gap-2.5 h-full items-center">
                       <div className="flex-1 grid grid-cols-4 gap-2">
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
@@ -2195,7 +2195,7 @@ const ProgressHub = () => {
                                       href={coach.linkedin_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="font-semibold text-white hover:text-[#EF0B72] transition block truncate w-full"
+                                      className="font-semibold text-white hover:text-black transition block truncate w-full"
                                       style={{ fontSize: '12px', lineHeight: '1.2' }}
                                     >
                                       {coach.name}
@@ -2219,7 +2219,7 @@ const ProgressHub = () => {
                         })()}
                       </div>
                       {calendlyLink && (
-                        <div className="flex items-center" style={{ marginTop: '10px' }}>
+                        <div className="flex items-center">
                           <button
                             onClick={handleOpenCalendly}
                             className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
