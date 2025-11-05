@@ -17,7 +17,7 @@ const LoadingScreen = ({ message = null, showTimeoutMessage = false, timeoutDura
   }, [showTimeoutMessage, timeoutDuration]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 via-white to-purple-50">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
       <div
         className="loading-animation-container"
         style={{
@@ -49,7 +49,7 @@ const LoadingScreen = ({ message = null, showTimeoutMessage = false, timeoutDura
 
       {message && (
         <p
-          className="mt-6 text-gray-600 text-lg animate-pulse"
+          className="mt-6 text-gray-400 text-lg animate-pulse"
           style={{
             transform: 'translateZ(0)',
             backfaceVisibility: 'hidden'
@@ -60,11 +60,11 @@ const LoadingScreen = ({ message = null, showTimeoutMessage = false, timeoutDura
       )}
 
       {showTimeout && (
-        <div className="mt-4 p-4 bg-orange-100 border border-orange-300 rounded-lg max-w-md text-center">
-          <p className="text-orange-800 font-medium mb-2">
+        <div className="mt-4 p-4 bg-gray-900 border border-gray-700 rounded-lg max-w-md text-center">
+          <p className="text-white font-medium mb-2">
             This is taking longer than expected...
           </p>
-          <p className="text-orange-700 text-sm">
+          <p className="text-gray-400 text-sm">
             Please check your internet connection. If the problem persists, try refreshing the page.
           </p>
         </div>
