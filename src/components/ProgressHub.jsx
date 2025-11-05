@@ -2165,7 +2165,7 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
-                    <div className="flex gap-2.5 h-full items-start" style={{ paddingTop: '8px' }}>
+                    <div className="flex gap-2.5 h-full items-start" style={{ paddingTop: '4px' }}>
                       <div className="flex-1 grid grid-cols-4 gap-2">
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
