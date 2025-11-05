@@ -2182,29 +2182,45 @@ const ProgressHub = () => {
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1 transition-transform group-hover:scale-105"
+                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1 transition-all duration-200 group-hover:scale-105"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
                                     />
                                   ) : (
-                                    <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1 transition-transform group-hover:scale-105" />
+                                    <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1 transition-all duration-200 group-hover:scale-105" />
                                   )}
                                   {coach.linkedin_url ? (
                                     <a
                                       href={coach.linkedin_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="font-semibold text-white transition-transform block truncate w-full group-hover:scale-105"
-                                      style={{ fontSize: '12px', lineHeight: '1.2' }}
+                                      className="font-semibold text-white transition-all duration-200 block truncate w-full"
+                                      style={{ fontSize: '12px', lineHeight: '1.2', display: 'inline-block', transform: 'scale(1)' }}
+                                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                                     >
                                       {coach.name}
                                     </a>
                                   ) : (
-                                    <h3 className="font-semibold text-white mb-0 truncate w-full transition-transform group-hover:scale-105" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
+                                    <h3
+                                      className="font-semibold text-white mb-0 truncate w-full transition-all duration-200"
+                                      style={{ fontSize: '12px', lineHeight: '1.2', display: 'inline-block', transform: 'scale(1)' }}
+                                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                      {coach.name}
+                                    </h3>
                                   )}
                                   {coach.position && (
-                                    <p className="text-white truncate w-full transition-transform group-hover:scale-105" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
+                                    <p
+                                      className="text-white truncate w-full transition-all duration-200"
+                                      style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px', display: 'inline-block', transform: 'scale(1)' }}
+                                      onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                                      onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                                    >
+                                      {coach.position}
+                                    </p>
                                   )}
                                 </>
                               ) : (
