@@ -2166,7 +2166,7 @@ const ProgressHub = () => {
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
                     <div className="flex gap-2.5 h-full items-center">
-                      <div className="flex-1 grid grid-cols-4" style={{ gap: '2px' }}>
+                      <div className="flex-1 grid grid-cols-4" style={{ gap: '-1px' }}>
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
                           const displayCoaches = [];
@@ -2219,7 +2219,7 @@ const ProgressHub = () => {
                         })()}
                       </div>
                       {calendlyLink && (
-                        <div className="flex items-center">
+                        <div className="flex items-center" style={{ paddingRight: '2px' }}>
                           <button
                             onClick={handleOpenCalendly}
                             className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
