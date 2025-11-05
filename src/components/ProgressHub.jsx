@@ -2175,36 +2175,36 @@ const ProgressHub = () => {
                           }
 
                           return displayCoaches.map((coach, index) => (
-                            <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center">
+                            <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer">
                               {coach ? (
                                 <>
                                   {coach.image_url ? (
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
+                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1 transition-transform group-hover:scale-105"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
                                     />
                                   ) : (
-                                    <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                    <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1 transition-transform group-hover:scale-105" />
                                   )}
                                   {coach.linkedin_url ? (
                                     <a
                                       href={coach.linkedin_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="font-semibold text-white hover:text-black transition block truncate w-full"
+                                      className="font-semibold text-white transition-transform block truncate w-full group-hover:scale-105"
                                       style={{ fontSize: '12px', lineHeight: '1.2' }}
                                     >
                                       {coach.name}
                                     </a>
                                   ) : (
-                                    <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
+                                    <h3 className="font-semibold text-white mb-0 truncate w-full transition-transform group-hover:scale-105" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
                                   )}
                                   {coach.position && (
-                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
+                                    <p className="text-white truncate w-full transition-transform group-hover:scale-105" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
                                   )}
                                 </>
                               ) : (
