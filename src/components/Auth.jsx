@@ -1177,7 +1177,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - 2x2 Course Grid with Swipe Navigation */}
-              <div className="flex items-center gap-4" style={{ marginLeft: '-25px' }}>
+              <div className="flex items-center gap-4" style={{ marginLeft: '-50px' }}>
                 {/* Left Arrow */}
                 {coursePageIndex > 0 && courses.length > 4 && (
                   <button
