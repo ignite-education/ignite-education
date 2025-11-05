@@ -2165,8 +2165,8 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
-                    <div className="flex gap-2.5 h-full">
-                      <div className="flex-1 flex flex-col gap-3">
+                    <div className="flex gap-2.5 h-full items-center">
+                      <div className="flex-1 grid grid-cols-2 gap-2.5">
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
                           const displayCoaches = [];
@@ -2175,14 +2175,14 @@ const ProgressHub = () => {
                           }
 
                           return displayCoaches.map((coach, index) => (
-                            <div key={coach?.id || `placeholder-${index}`} className="flex gap-2.5 items-start">
+                            <div key={coach?.id || `placeholder-${index}`} className="flex gap-2 items-center">
                               {coach ? (
                                 <>
                                   {coach.image_url && (
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
+                                      className="w-[36px] h-[36px] rounded object-cover flex-shrink-0"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
@@ -2194,25 +2194,25 @@ const ProgressHub = () => {
                                         href={coach.linkedin_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="font-semibold text-white hover:text-gray-200 transition underline decoration-white/40 hover:decoration-white/80"
-                                        style={{ fontSize: '14px', marginBottom: '0' }}
+                                        className="font-semibold text-white hover:text-gray-200 transition underline decoration-white/40 hover:decoration-white/80 block truncate"
+                                        style={{ fontSize: '12px', lineHeight: '1.2' }}
                                       >
                                         {coach.name}
                                       </a>
                                     ) : (
-                                      <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
+                                      <h3 className="font-semibold text-white mb-0 truncate" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
                                     )}
                                     {coach.position && (
-                                      <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
+                                      <p className="text-white truncate" style={{ fontSize: '10px', marginTop: '1px', lineHeight: '1.2' }}>{coach.position}</p>
                                     )}
                                   </div>
                                 </>
                               ) : (
                                 <>
-                                  <div className="w-[60px] h-[60px] rounded bg-white/10 flex-shrink-0" />
+                                  <div className="w-[36px] h-[36px] rounded bg-white/10 flex-shrink-0" />
                                   <div className="flex-1 min-w-0">
-                                    <div className="h-4 bg-white/10 rounded mb-1" style={{ width: '120px' }} />
-                                    <div className="h-3 bg-white/10 rounded" style={{ width: '90px' }} />
+                                    <div className="h-3 bg-white/10 rounded mb-0.5" style={{ width: '70px' }} />
+                                    <div className="h-2 bg-white/10 rounded" style={{ width: '50px' }} />
                                   </div>
                                 </>
                               )}
