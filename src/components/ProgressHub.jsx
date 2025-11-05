@@ -2176,7 +2176,7 @@ const ProgressHub = () => {
 
                           return displayCoaches.map((coach, index) => (
                             <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer">
-                              <div className="transition-transform duration-200 group-hover:scale-[1.03] flex flex-col items-center text-center">
+                              <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
                                 {coach ? (
                                   <>
                                     {coach.image_url ? (
