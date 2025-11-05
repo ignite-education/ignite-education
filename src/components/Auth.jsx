@@ -6,6 +6,7 @@ import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getOrganizationPosts } from '../lib/linkedin';
+import { getCoachesForCourse } from '../lib/api';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(false);
@@ -49,6 +50,7 @@ const Auth = () => {
   const [linkedInError, setLinkedInError] = useState(null);
   const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
   const linkedInFAQSectionRef = useRef(null);
+  const [courseCoaches, setCourseCoaches] = useState({});
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -128,12 +130,32 @@ const Auth = () => {
     fetchCourses();
   }, []);
 
-  // Reset snapped module index when modal opens
+  // Reset snapped module index when modal opens and fetch coaches
   useEffect(() => {
     if (selectedCourseModal) {
       setSnappedModuleIndex(0);
       if (modalScrollContainerRef.current) {
         modalScrollContainerRef.current.scrollLeft = 0;
+      }
+
+      // Fetch coaches for the selected course if not already loaded
+      if (!courseCoaches[selectedCourseModal]) {
+        const fetchCoaches = async () => {
+          try {
+            const coaches = await getCoachesForCourse(selectedCourseModal);
+            setCourseCoaches(prev => ({
+              ...prev,
+              [selectedCourseModal]: coaches || []
+            }));
+          } catch (error) {
+            console.error('Error fetching coaches for course:', error);
+            setCourseCoaches(prev => ({
+              ...prev,
+              [selectedCourseModal]: []
+            }));
+          }
+        };
+        fetchCoaches();
       }
     }
   }, [selectedCourseModal]);
@@ -1954,7 +1976,7 @@ const Auth = () => {
                             <div className="relative">
                               {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
                                 <>
-                                  <div className="text-xs font-medium text-purple-200 mb-2">Lessons</div>
+                                  <div className="text-base font-medium text-purple-200 mb-2">Lessons</div>
                                   <ul style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                                     {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
                                       <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-medium">
@@ -2027,6 +2049,85 @@ const Auth = () => {
                       {selectedCourse.duration && (
                         <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Course Coaches Section */}
+                {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-2" style={{ fontSize: '17px' }}>
+                      Course Leaders
+                    </h3>
+                    <div className="rounded-lg" style={{ padding: '12px', background: '#7714E0' }}>
+                      <div className="flex gap-2.5 items-center">
+                        <div className="flex-1 grid grid-cols-4" style={{ gap: '12px' }}>
+                          {(() => {
+                            // Create array of 4 slots, fill with coaches or placeholders
+                            const displayCoaches = [];
+                            for (let i = 0; i < 4; i++) {
+                              displayCoaches.push(courseCoaches[selectedCourseModal][i] || null);
+                            }
+
+                            return displayCoaches.map((coach, index) => (
+                              <div key={index} className="group">
+                                {coach && coach.linkedin_url ? (
+                                  <a
+                                    href={coach.linkedin_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center cursor-pointer"
+                                  >
+                                    {coach.image_url ? (
+                                      <img
+                                        src={coach.image_url}
+                                        alt={coach.name}
+                                        className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                    )}
+                                    <span className="font-semibold text-white block truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>
+                                      {coach.name}
+                                    </span>
+                                    {coach.position && (
+                                      <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
+                                    )}
+                                  </a>
+                                ) : (
+                                  <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
+                                    {coach ? (
+                                      <>
+                                        {coach.image_url ? (
+                                          <img
+                                            src={coach.image_url}
+                                            alt={coach.name}
+                                            className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
+                                            onError={(e) => {
+                                              e.target.style.display = 'none';
+                                            }}
+                                          />
+                                        ) : (
+                                          <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                        )}
+                                        <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
+                                        {coach.position && (
+                                          <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
