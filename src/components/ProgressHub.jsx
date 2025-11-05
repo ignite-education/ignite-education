@@ -1940,7 +1940,7 @@ const ProgressHub = () => {
               </div>
 
               {/* Upcoming Lessons */}
-              <div className="flex-shrink-0 relative" style={{ marginTop: '6px', minHeight: '160px' }}>
+              <div className="flex-shrink-0 relative" style={{ marginTop: '3px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '0.05rem' }}>
                   {upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length && upcomingLessons[snappedCardIndex] ? (
                     (() => {
