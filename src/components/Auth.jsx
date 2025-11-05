@@ -51,6 +51,7 @@ const Auth = () => {
   const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
+  const authScrollContainerRef = useRef(null);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
@@ -847,6 +848,7 @@ const Auth = () => {
 
       {/* Auth Overlay - Scrollable Container */}
       <div
+        ref={authScrollContainerRef}
         className="fixed inset-0 backdrop-blur-sm animate-fadeIn overflow-y-auto"
         style={{
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75))',
@@ -2223,7 +2225,9 @@ const Auth = () => {
                     setIsLogin(false);
                     // Wait for modal close animation, then scroll to top
                     setTimeout(() => {
-                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                      if (authScrollContainerRef.current) {
+                        authScrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
                     }, 100);
                   }
                 }}
