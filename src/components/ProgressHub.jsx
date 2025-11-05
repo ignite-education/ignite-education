@@ -2182,20 +2182,20 @@ const ProgressHub = () => {
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[48px] h-[48px] rounded-full object-cover mb-1.5"
+                                      className="w-[48px] h-[48px] rounded object-cover mb-1.5"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
                                     />
                                   ) : (
-                                    <div className="w-[48px] h-[48px] rounded-full bg-white/10 mb-1.5" />
+                                    <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1.5" />
                                   )}
                                   {coach.linkedin_url ? (
                                     <a
                                       href={coach.linkedin_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="font-semibold text-white hover:text-gray-200 transition underline decoration-white/40 hover:decoration-white/80 block truncate w-full"
+                                      className="font-semibold text-white hover:text-[#EF0B72] transition block truncate w-full"
                                       style={{ fontSize: '11px', lineHeight: '1.2' }}
                                     >
                                       {coach.name}
@@ -2209,7 +2209,7 @@ const ProgressHub = () => {
                                 </>
                               ) : (
                                 <>
-                                  <div className="w-[48px] h-[48px] rounded-full bg-white/10 mb-1.5" />
+                                  <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1.5" />
                                   <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
                                   <div className="h-2 bg-white/10 rounded w-12" />
                                 </>
