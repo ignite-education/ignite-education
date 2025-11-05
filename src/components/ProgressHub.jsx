@@ -2166,7 +2166,7 @@ const ProgressHub = () => {
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
                     <div className="flex gap-2.5 h-full items-center">
-                      <div className="flex-1 grid grid-cols-4 gap-2">
+                      <div className="flex-1 grid grid-cols-4" style={{ gap: '6.8px' }}>
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
                           const displayCoaches = [];
