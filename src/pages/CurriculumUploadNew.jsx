@@ -54,6 +54,8 @@ const CurriculumUploadNew = () => {
   const [coaches, setCoaches] = useState([]);
   const [isLoadingCoaches, setIsLoadingCoaches] = useState(false);
   const [editingCoach, setEditingCoach] = useState(null);
+  const [coachImageFile, setCoachImageFile] = useState(null);
+  const [isUploadingCoachImage, setIsUploadingCoachImage] = useState(false);
   const [coachForm, setCoachForm] = useState({
     name: '',
     position: '',
@@ -1159,6 +1161,39 @@ ${contentBlocks.map((block, index) => {
     }
   };
 
+  const handleCoachImageUpload = async (file) => {
+    try {
+      setIsUploadingCoachImage(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `coach_${Date.now()}.${fileExt}`;
+      const filePath = `coaches/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
+          throw new Error('Permission denied: Please configure Row-Level Security policies in Supabase for the assets bucket.');
+        }
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('assets')
+        .getPublicUrl(filePath);
+
+      setCoachForm({ ...coachForm, image_url: data.publicUrl });
+      setCoachImageFile(null);
+      alert('Image uploaded successfully!');
+    } catch (error) {
+      console.error('Error uploading coach image:', error);
+      alert(`Failed to upload image: ${error.message}`);
+    } finally {
+      setIsUploadingCoachImage(false);
+    }
+  };
+
   const handleCoachSubmit = async (e) => {
     e.preventDefault();
 
@@ -1168,6 +1203,12 @@ ${contentBlocks.map((block, index) => {
     }
 
     try {
+      // Upload image if a new file is selected
+      if (coachImageFile) {
+        await handleCoachImageUpload(coachImageFile);
+        return; // The form will be submitted after image upload via state update
+      }
+
       if (editingCoach) {
         // Update existing coach
         await updateCoach(editingCoach.id, coachForm);
@@ -1188,6 +1229,7 @@ ${contentBlocks.map((block, index) => {
         course_id: ''
       });
       setEditingCoach(null);
+      setCoachImageFile(null);
       await loadCoaches();
     } catch (error) {
       console.error('Error saving coach:', error);
@@ -1224,6 +1266,7 @@ ${contentBlocks.map((block, index) => {
 
   const handleCancelEdit = () => {
     setEditingCoach(null);
+    setCoachImageFile(null);
     setCoachForm({
       name: '',
       position: '',
@@ -2170,16 +2213,50 @@ ${contentBlocks.map((block, index) => {
                     />
                   </div>
 
-                  {/* Image URL */}
+                  {/* Image Upload/URL */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Image URL</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Coach Image</label>
+                    <div className="flex gap-2 mb-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setCoachImageFile(e.target.files[0]);
+                            // Create preview URL
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              setCoachForm({ ...coachForm, image_url: event.target.result });
+                            };
+                            reader.readAsDataURL(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                        id="coach-image-upload"
+                      />
+                      <label
+                        htmlFor="coach-image-upload"
+                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition cursor-pointer flex items-center gap-2"
+                      >
+                        <ImageIcon size={16} />
+                        {isUploadingCoachImage ? 'Uploading...' : 'Upload Image'}
+                      </label>
+                      <span className="text-gray-400 text-sm flex items-center">or enter URL below</span>
+                    </div>
                     <input
                       type="url"
-                      value={coachForm.image_url}
-                      onChange={(e) => setCoachForm({ ...coachForm, image_url: e.target.value })}
+                      value={coachImageFile ? '' : coachForm.image_url}
+                      onChange={(e) => {
+                        setCoachImageFile(null);
+                        setCoachForm({ ...coachForm, image_url: e.target.value });
+                      }}
                       className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       placeholder="https://example.com/photo.jpg"
+                      disabled={coachImageFile !== null}
                     />
+                    {coachImageFile && (
+                      <p className="text-sm text-gray-400 mt-1">Selected file: {coachImageFile.name}</p>
+                    )}
                     {coachForm.image_url && (
                       <img
                         src={coachForm.image_url}

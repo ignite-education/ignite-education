@@ -3185,7 +3185,7 @@ const ProgressHub = () => {
         >
           <div className="relative w-full px-4" style={{ maxWidth: '900px' }}>
             {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Book Office Hours</h2>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Office Hours</h2>
 
             {/* Calendly Card */}
             <div
