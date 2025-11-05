@@ -18,7 +18,8 @@ const CourseManagement = () => {
     modules: [{ name: '', lessons: [{ name: '' }] }], // Array of modules with nested lessons
     description: '',
     reddit_channel: '',
-    reddit_url: ''
+    reddit_url: '',
+    calendly_url: ''
   });
 
   useEffect(() => {
@@ -81,7 +82,8 @@ const CourseManagement = () => {
       modules: [{ name: '', lessons: [{ name: '' }] }],
       description: '',
       reddit_channel: '',
-      reddit_url: ''
+      reddit_url: '',
+      calendly_url: ''
     });
     setShowAddModal(true);
   };
@@ -127,7 +129,8 @@ const CourseManagement = () => {
       modules: modulesArray,
       description: course.description || '',
       reddit_channel: course.reddit_channel || '',
-      reddit_url: course.reddit_url || ''
+      reddit_url: course.reddit_url || '',
+      calendly_url: course.calendly_link || ''
     });
     setShowEditModal(true);
   };
@@ -143,7 +146,8 @@ const CourseManagement = () => {
       modules: [{ name: '', lessons: [{ name: '' }] }],
       description: '',
       reddit_channel: '',
-      reddit_url: ''
+      reddit_url: '',
+      calendly_url: ''
     });
   };
 
@@ -176,7 +180,8 @@ const CourseManagement = () => {
         display_order: maxOrder + 1,
         module_structure: formData.modules, // Save the full nested structure
         reddit_channel: formData.reddit_channel,
-        reddit_url: formData.reddit_url
+        reddit_url: formData.reddit_url,
+        calendly_link: formData.calendly_url
       };
 
       const { error } = await supabase
@@ -217,7 +222,8 @@ const CourseManagement = () => {
         description: formData.description,
         module_structure: formData.modules, // Save the full nested structure
         reddit_channel: formData.reddit_channel,
-        reddit_url: formData.reddit_url
+        reddit_url: formData.reddit_url,
+        calendly_link: formData.calendly_url
       };
 
       console.log('Saving course data:', courseData);
@@ -562,6 +568,18 @@ const CourseManagement = () => {
                 />
                 <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Calendly URL</label>
+                <input
+                  type="text"
+                  value={formData.calendly_url}
+                  onChange={(e) => setFormData({ ...formData, calendly_url: e.target.value })}
+                  placeholder="e.g., https://calendly.com/your-team/office-hours"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Round-robin Calendly link for office hours booking</p>
+              </div>
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -751,6 +769,18 @@ const CourseManagement = () => {
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
                 <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Calendly URL</label>
+                <input
+                  type="text"
+                  value={formData.calendly_url}
+                  onChange={(e) => setFormData({ ...formData, calendly_url: e.target.value })}
+                  placeholder="e.g., https://calendly.com/your-team/office-hours"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Round-robin Calendly link for office hours booking</p>
               </div>
             </div>
 
