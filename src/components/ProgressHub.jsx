@@ -2165,52 +2165,54 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches && coaches.length > 0 ? (
-                    <div className="flex flex-col gap-3">
-                      {coaches.map((coach, index) => (
-                        <div key={coach.id || index} className="flex gap-2.5 items-center">
-                          {coach.image_url && (
-                            <img
-                              src={coach.image_url}
-                              alt={coach.name}
-                              className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
-                            {coach.position && (
-                              <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
+                    <div className="flex gap-2.5 h-full">
+                      <div className="flex-1 flex flex-col gap-3">
+                        {coaches.map((coach, index) => (
+                          <div key={coach.id || index} className="flex gap-2.5 items-start">
+                            {coach.image_url && (
+                              <img
+                                src={coach.image_url}
+                                alt={coach.name}
+                                className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                }}
+                              />
                             )}
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
+                              {coach.position && (
+                                <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
+                              )}
+                              {coach.linkedin_url && (
+                                <a
+                                  href={coach.linkedin_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 mt-1 text-white hover:text-gray-200 transition"
+                                  title="View LinkedIn Profile"
+                                >
+                                  <img
+                                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
+                                    alt="LinkedIn"
+                                    className="h-3 w-auto object-contain opacity-90"
+                                  />
+                                  <span style={{ fontSize: '11px' }}>LinkedIn</span>
+                                </a>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex gap-2 flex-shrink-0">
-                            {coach.linkedin_url && (
-                              <a
-                                href={coach.linkedin_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-2 px-3 rounded transition inline-flex items-center justify-center whitespace-nowrap"
-                                title="View LinkedIn Profile"
-                              >
-                                <img
-                                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
-                                  alt="LinkedIn"
-                                  className="h-4 w-auto object-contain"
-                                />
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                       {calendlyLink && (
-                        <div className="flex justify-center mt-1">
+                        <div className="flex items-center">
                           <button
                             onClick={handleOpenCalendly}
-                            className="bg-white hover:bg-gray-100 py-2 px-4 rounded transition whitespace-nowrap group w-full"
-                            style={{ fontWeight: '600', fontSize: '0.75rem' }}
+                            className="bg-white hover:bg-gray-100 p-3 rounded transition group aspect-square flex items-center justify-center"
+                            style={{ width: '60px', height: '60px' }}
+                            title="Book Office Hours"
                           >
-                            <span className="text-black group-hover:text-[#EF0B72] transition-colors">Book Office Hours</span>
+                            <span className="text-black group-hover:text-[#EF0B72] transition-colors font-semibold" style={{ fontSize: '11px', textAlign: 'center', lineHeight: '1.2' }}>Book</span>
                           </button>
                         </div>
                       )}
