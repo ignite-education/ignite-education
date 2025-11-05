@@ -1867,7 +1867,7 @@ const Auth = () => {
                   </div>
                 )}
 
-                <p className="text-black mb-6 leading-relaxed">
+                <p className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%' }}>
                   {selectedCourse.description}
                 </p>
 
@@ -1953,19 +1953,22 @@ const Auth = () => {
                             )}
                             <div className="relative">
                               {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
-                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                                  {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
-                                    <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-semibold">
-                                      <span className="mt-0.5 text-purple-200">•</span>
-                                      <span>{lesson.name}</span>
-                                    </li>
-                                  ))}
-                                  {module.lessons.length > 5 && (
-                                    <li className="text-sm text-purple-200 ml-4">
-                                      +{module.lessons.length - 5} more lesson{module.lessons.length - 5 !== 1 ? 's' : ''}
-                                    </li>
-                                  )}
-                                </ul>
+                                <>
+                                  <div className="text-xs font-medium text-purple-200 mb-2">Lessons</div>
+                                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                    {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
+                                      <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-medium">
+                                        <span className="mt-0.5 text-purple-200">•</span>
+                                        <span>{lesson.name}</span>
+                                      </li>
+                                    ))}
+                                    {module.lessons.length > 5 && (
+                                      <li className="text-sm text-purple-200 ml-4">
+                                        +{module.lessons.length - 5} more lesson{module.lessons.length - 5 !== 1 ? 's' : ''}
+                                      </li>
+                                    )}
+                                  </ul>
+                                </>
                               )}
                             </div>
                           </div>
