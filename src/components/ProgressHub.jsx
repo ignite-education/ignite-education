@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -42,14 +42,8 @@ const ProgressHub = () => {
   const [isClosingSettingsModal, setIsClosingSettingsModal] = useState(false);
   const [showCalendlyModal, setShowCalendlyModal] = useState(false);
   const [isClosingCalendlyModal, setIsClosingCalendlyModal] = useState(false);
-  const [tutorData, setTutorData] = useState({
-    name: '',
-    position: '',
-    description: '',
-    image: '',
-    linkedinLink: '',
-    calendlyLink: ''
-  });
+  const [coaches, setCoaches] = useState([]);
+  const [calendlyLink, setCalendlyLink] = useState('');
   const [courseReddit, setCourseReddit] = useState({
     channel: 'r/ProductManagement',
     url: 'https://www.reddit.com/r/ProductManagement/'
@@ -348,15 +342,19 @@ const ProgressHub = () => {
         if (courseData) {
           fetchedCourseData = courseData; // Store for later use
 
-          setTutorData({
-            name: courseData.tutor_name || '',
-            position: courseData.tutor_position || '',
-            description: courseData.tutor_description || '',
-            image: courseData.tutor_image || '',
-            linkedinLink: courseData.linkedin_link || '',
-            calendlyLink: courseData.calendly_link || ''
-          });
-          console.log('✅ Fetched tutor data:', courseData);
+          // Fetch coaches for this course
+          try {
+            const coachesData = await getCoachesForCourse(courseId);
+            setCoaches(coachesData || []);
+            console.log('✅ Fetched coaches data:', coachesData);
+          } catch (error) {
+            console.error('Error fetching coaches:', error);
+            setCoaches([]);
+          }
+
+          // Set calendly link from course (round-robin link)
+          setCalendlyLink(courseData.calendly_link || '');
+          console.log('✅ Fetched course data:', courseData);
 
           // Update user state with enrolled course title
           setUser(prev => ({
@@ -2164,51 +2162,58 @@ const ProgressHub = () => {
               {/* Office Hours */}
               <div className="flex-shrink-0" style={{ marginTop: '-28px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
-                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leader.</p>
-                <div className="rounded-lg" style={{ padding: '12px', height: '100px', background: '#7714E0' }}>
-                  {tutorData.name ? (
-                    <div className="flex gap-2.5 h-full items-center">
-                      {tutorData.image && (
-                        <img
-                          src={tutorData.image}
-                          alt={tutorData.name}
-                          className="w-[70px] h-[70px] rounded object-cover"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{tutorData.name}</h3>
-                        {tutorData.position && (
-                          <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{tutorData.position}</p>
-                        )}
-                        {tutorData.description && (
-                          <p className="text-white mt-0.5 line-clamp-3" style={{ fontSize: '11px' }}>{tutorData.description}</p>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2 justify-center mr-1">
-                        {tutorData.linkedinLink && (
-                          <a
-                            href={tutorData.linkedinLink}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-2 px-3 rounded transition inline-flex items-center justify-center whitespace-nowrap overflow-hidden"
-                          >
+                <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
+                <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
+                  {coaches && coaches.length > 0 ? (
+                    <div className="flex flex-col gap-3">
+                      {coaches.map((coach, index) => (
+                        <div key={coach.id || index} className="flex gap-2.5 items-center">
+                          {coach.image_url && (
                             <img
-                              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
-                              alt="LinkedIn"
-                              className="h-4 w-auto object-contain"
+                              src={coach.image_url}
+                              alt={coach.name}
+                              className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                              }}
                             />
-                          </a>
-                        )}
-                        {tutorData.calendlyLink && (
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
+                            {coach.position && (
+                              <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-2 flex-shrink-0">
+                            {coach.linkedin_url && (
+                              <a
+                                href={coach.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-white hover:bg-gray-100 text-black text-xs font-medium py-2 px-3 rounded transition inline-flex items-center justify-center whitespace-nowrap"
+                                title="View LinkedIn Profile"
+                              >
+                                <img
+                                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
+                                  alt="LinkedIn"
+                                  className="h-4 w-auto object-contain"
+                                />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      {calendlyLink && (
+                        <div className="flex justify-center mt-1">
                           <button
                             onClick={handleOpenCalendly}
-                            className="bg-white hover:bg-gray-100 py-2 px-3 rounded transition whitespace-nowrap group"
+                            className="bg-white hover:bg-gray-100 py-2 px-4 rounded transition whitespace-nowrap group w-full"
                             style={{ fontWeight: '600', fontSize: '0.75rem' }}
                           >
-                            <span className="text-black group-hover:text-[#EF0B72] transition-colors">Book Time</span>
+                            <span className="text-black group-hover:text-[#EF0B72] transition-colors">Book Office Hours</span>
                           </button>
-                        )}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="flex items-center justify-center h-full">
@@ -3179,7 +3184,7 @@ const ProgressHub = () => {
 
               {/* Calendly Widget */}
               <InlineWidget
-                url={tutorData.calendlyLink || "https://calendly.com/hello-ignite/30min"}
+                url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
                 styles={{
                   height: '100%',
                   minWidth: '100%'

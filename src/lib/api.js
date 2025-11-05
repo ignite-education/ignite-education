@@ -1207,6 +1207,125 @@ export async function getCourseRequestAnalytics() {
 }
 
 // ============================================================================
+// COACHES FUNCTIONS
+// ============================================================================
+
+/**
+ * Get all coaches for a specific course
+ * @param {string} courseId - The course ID
+ * @returns {Promise<Array>} Array of coach objects
+ */
+export async function getCoachesForCourse(courseId) {
+  const { data, error } = await supabase
+    .from('coaches')
+    .select('*')
+    .eq('course_id', courseId)
+    .eq('is_active', true)
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching coaches for course:', error);
+    throw error;
+  }
+
+  return data || [];
+}
+
+/**
+ * Get all coaches (for admin panel)
+ * @returns {Promise<Array>} Array of all coach objects
+ */
+export async function getAllCoaches() {
+  const { data, error } = await supabase
+    .from('coaches')
+    .select('*')
+    .order('course_id', { ascending: true })
+    .order('display_order', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching all coaches:', error);
+    throw error;
+  }
+
+  return data || [];
+}
+
+/**
+ * Create a new coach
+ * @param {Object} coachData - Coach data
+ * @param {string} coachData.course_id - Course ID
+ * @param {string} coachData.name - Coach name
+ * @param {string} coachData.position - Coach position/title
+ * @param {string} coachData.description - Coach bio/description
+ * @param {string} coachData.image_url - Coach profile image URL
+ * @param {string} coachData.linkedin_url - LinkedIn profile URL
+ * @param {number} coachData.display_order - Display order (optional, defaults to 0)
+ * @returns {Promise<Object>} Created coach object
+ */
+export async function createCoach(coachData) {
+  const { data, error } = await supabase
+    .from('coaches')
+    .insert({
+      course_id: coachData.course_id,
+      name: coachData.name,
+      position: coachData.position || '',
+      description: coachData.description || '',
+      image_url: coachData.image_url || '',
+      linkedin_url: coachData.linkedin_url || '',
+      display_order: coachData.display_order || 0,
+      is_active: true
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating coach:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Update an existing coach
+ * @param {string} coachId - Coach ID
+ * @param {Object} coachData - Updated coach data
+ * @returns {Promise<Object>} Updated coach object
+ */
+export async function updateCoach(coachId, coachData) {
+  const { data, error } = await supabase
+    .from('coaches')
+    .update(coachData)
+    .eq('id', coachId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating coach:', error);
+    throw error;
+  }
+
+  return data;
+}
+
+/**
+ * Delete a coach
+ * @param {string} coachId - Coach ID
+ * @returns {Promise<void>}
+ */
+export async function deleteCoach(coachId) {
+  const { error } = await supabase
+    .from('coaches')
+    .delete()
+    .eq('id', coachId);
+
+  if (error) {
+    console.error('Error deleting coach:', error);
+    throw error;
+  }
+}
+
+// ============================================================================
 // CERTIFICATE FUNCTIONS
 // ============================================================================
 

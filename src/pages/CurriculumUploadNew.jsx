@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
+import { getAllCoaches, createCoach, updateCoach, deleteCoach } from '../lib/api';
 
 const CurriculumUploadNew = () => {
   const navigate = useNavigate();
@@ -49,9 +50,28 @@ const CurriculumUploadNew = () => {
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  // Coaches state
+  const [coaches, setCoaches] = useState([]);
+  const [isLoadingCoaches, setIsLoadingCoaches] = useState(false);
+  const [editingCoach, setEditingCoach] = useState(null);
+  const [coachForm, setCoachForm] = useState({
+    name: '',
+    position: '',
+    description: '',
+    image_url: '',
+    linkedin_url: '',
+    course_id: ''
+  });
+
   useEffect(() => {
     loadCourses();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'coaches') {
+      loadCoaches();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (selectedCourseId) {
@@ -1123,6 +1143,97 @@ ${contentBlocks.map((block, index) => {
     );
   };
 
+  // =====================================================
+  // COACHES FUNCTIONS
+  // =====================================================
+
+  const loadCoaches = async () => {
+    setIsLoadingCoaches(true);
+    try {
+      const data = await getAllCoaches();
+      setCoaches(data);
+    } catch (error) {
+      console.error('Error loading coaches:', error);
+    } finally {
+      setIsLoadingCoaches(false);
+    }
+  };
+
+  const handleCoachSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!coachForm.name || !coachForm.course_id) {
+      alert('Please fill in at least the coach name and select a course');
+      return;
+    }
+
+    try {
+      if (editingCoach) {
+        // Update existing coach
+        await updateCoach(editingCoach.id, coachForm);
+        alert('Coach updated successfully!');
+      } else {
+        // Create new coach
+        await createCoach(coachForm);
+        alert('Coach created successfully!');
+      }
+
+      // Reset form and reload coaches
+      setCoachForm({
+        name: '',
+        position: '',
+        description: '',
+        image_url: '',
+        linkedin_url: '',
+        course_id: ''
+      });
+      setEditingCoach(null);
+      await loadCoaches();
+    } catch (error) {
+      console.error('Error saving coach:', error);
+      alert('Error saving coach: ' + error.message);
+    }
+  };
+
+  const handleEditCoach = (coach) => {
+    setEditingCoach(coach);
+    setCoachForm({
+      name: coach.name,
+      position: coach.position || '',
+      description: coach.description || '',
+      image_url: coach.image_url || '',
+      linkedin_url: coach.linkedin_url || '',
+      course_id: coach.course_id
+    });
+  };
+
+  const handleDeleteCoach = async (coachId) => {
+    if (!confirm('Are you sure you want to delete this coach?')) {
+      return;
+    }
+
+    try {
+      await deleteCoach(coachId);
+      alert('Coach deleted successfully!');
+      await loadCoaches();
+    } catch (error) {
+      console.error('Error deleting coach:', error);
+      alert('Error deleting coach: ' + error.message);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCoach(null);
+    setCoachForm({
+      name: '',
+      position: '',
+      description: '',
+      image_url: '',
+      linkedin_url: '',
+      course_id: ''
+    });
+  };
+
   const renderBlockEditor = (block, index) => {
     switch (block.type) {
       case 'heading':
@@ -1582,7 +1693,7 @@ ${contentBlocks.map((block, index) => {
         {/* Tabs */}
         <div className="bg-gray-900 rounded-lg border border-gray-800 mb-6">
           <div className="flex border-b border-gray-800">
-            {['courses', 'content'].map((tab) => (
+            {['courses', 'content', 'coaches'].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -1982,6 +2093,221 @@ ${contentBlocks.map((block, index) => {
                     )}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Coaches Tab */}
+            {activeTab === 'coaches' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-white">Manage Office Hours Coaches</h2>
+                </div>
+
+                {/* Coach Form */}
+                <form onSubmit={handleCoachSubmit} className="bg-gray-800 border border-gray-700 rounded-lg p-6 space-y-4">
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    {editingCoach ? 'Edit Coach' : 'Add New Coach'}
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Name */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-300">
+                        Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={coachForm.name}
+                        onChange={(e) => setCoachForm({ ...coachForm, name: e.target.value })}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        placeholder="John Smith"
+                        required
+                      />
+                    </div>
+
+                    {/* Position */}
+                    <div>
+                      <label className="block text-sm font-medium mb-1 text-gray-300">Position</label>
+                      <input
+                        type="text"
+                        value={coachForm.position}
+                        onChange={(e) => setCoachForm({ ...coachForm, position: e.target.value })}
+                        className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                        placeholder="Senior Product Manager"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Course Selection */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">
+                      Course <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={coachForm.course_id}
+                      onChange={(e) => setCoachForm({ ...coachForm, course_id: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      required
+                    >
+                      <option value="">Select a course</option>
+                      {courses.map((course) => (
+                        <option key={course.name} value={course.name}>
+                          {course.title || course.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
+                    <textarea
+                      value={coachForm.description}
+                      onChange={(e) => setCoachForm({ ...coachForm, description: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      placeholder="Brief bio about the coach..."
+                      rows={3}
+                    />
+                  </div>
+
+                  {/* Image URL */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">Image URL</label>
+                    <input
+                      type="url"
+                      value={coachForm.image_url}
+                      onChange={(e) => setCoachForm({ ...coachForm, image_url: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      placeholder="https://example.com/photo.jpg"
+                    />
+                    {coachForm.image_url && (
+                      <img
+                        src={coachForm.image_url}
+                        alt="Preview"
+                        className="mt-2 w-20 h-20 rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* LinkedIn URL */}
+                  <div>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">LinkedIn Profile URL</label>
+                    <input
+                      type="url"
+                      value={coachForm.linkedin_url}
+                      onChange={(e) => setCoachForm({ ...coachForm, linkedin_url: e.target.value })}
+                      className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
+                      placeholder="https://linkedin.com/in/username"
+                    />
+                  </div>
+
+                  {/* Form Actions */}
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition flex items-center gap-2"
+                    >
+                      <Save size={16} />
+                      {editingCoach ? 'Update Coach' : 'Add Coach'}
+                    </button>
+                    {editingCoach && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </form>
+
+                {/* Coaches List */}
+                <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Existing Coaches</h3>
+
+                  {isLoadingCoaches ? (
+                    <div className="text-center py-8">
+                      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                      <p className="text-gray-400 mt-2">Loading coaches...</p>
+                    </div>
+                  ) : coaches.length === 0 ? (
+                    <div className="text-center py-8">
+                      <User size={48} className="mx-auto text-gray-600 mb-2" />
+                      <p className="text-gray-400">No coaches added yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {coaches.map((coach) => {
+                        const course = courses.find(c => c.name === coach.course_id);
+                        return (
+                          <div
+                            key={coach.id}
+                            className="bg-gray-900 border border-gray-700 rounded-lg p-4 hover:bg-gray-850 transition"
+                          >
+                            <div className="flex items-start gap-4">
+                              {coach.image_url && (
+                                <img
+                                  src={coach.image_url}
+                                  alt={coach.name}
+                                  className="w-16 h-16 rounded-full object-cover flex-shrink-0"
+                                  onError={(e) => {
+                                    e.target.src = 'https://via.placeholder.com/64';
+                                  }}
+                                />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <h4 className="text-white font-semibold">{coach.name}</h4>
+                                    {coach.position && (
+                                      <p className="text-gray-400 text-sm">{coach.position}</p>
+                                    )}
+                                    <p className="text-pink-400 text-sm mt-1">
+                                      {course?.title || coach.course_id}
+                                    </p>
+                                  </div>
+                                  <div className="flex gap-2 flex-shrink-0">
+                                    <button
+                                      onClick={() => handleEditCoach(coach)}
+                                      className="p-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition"
+                                      title="Edit coach"
+                                    >
+                                      <Edit size={16} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteCoach(coach.id)}
+                                      className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                                      title="Delete coach"
+                                    >
+                                      <Trash2 size={16} />
+                                    </button>
+                                  </div>
+                                </div>
+                                {coach.description && (
+                                  <p className="text-gray-300 text-sm mt-2 line-clamp-2">{coach.description}</p>
+                                )}
+                                {coach.linkedin_url && (
+                                  <a
+                                    href={coach.linkedin_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-pink-400 hover:text-pink-300 text-sm mt-1 inline-block"
+                                  >
+                                    View LinkedIn Profile →
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
