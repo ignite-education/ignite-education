@@ -1155,28 +1155,20 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white">
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
-              {/* Left Column - Description */}
-              <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
-                <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white mb-2 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
-                    {renderTypedCoursesTitle()}
-                  </h3>
-                  <p className="text-lg text-white mb-6 max-w-md text-left" style={{ lineHeight: '1.425' }}>
-                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
-                  </p>
-                  <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
-                    alt="Course preview"
-                    className="rounded-lg"
-                    style={{ width: '70%' }}
-                  />
-                </div>
-              </div>
+          <div className="w-full text-white relative">
+            {/* Title and Description - Centered */}
+            <div className="text-center mb-12 px-4">
+              <h3 className="font-bold text-white mb-4 mx-auto" style={{ fontSize: '2.5rem', lineHeight: '1.2', maxWidth: '800px' }}>
+                {renderTypedCoursesTitle()}
+              </h3>
+              <p className="text-lg text-white mx-auto" style={{ lineHeight: '1.425', maxWidth: '600px' }}>
+                We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
+              </p>
+            </div>
 
-              {/* Right Column - 2x2 Course Grid with Swipe Navigation */}
+            {/* Course Grid - Aligned to center */}
+            <div className="flex items-start" style={{ paddingLeft: 'calc(50vw)' }}>
+              {/* Course Grid with Swipe Navigation */}
               <div className="flex items-center gap-4">
                 {/* Left Arrow */}
                 {coursePageIndex > 0 && courses.length > 4 && (
