@@ -2175,45 +2175,47 @@ const ProgressHub = () => {
                           }
 
                           return displayCoaches.map((coach, index) => (
-                            <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer transition-transform duration-200 hover:scale-[1.03]">
-                              {coach ? (
-                                <>
-                                  {coach.image_url ? (
-                                    <img
-                                      src={coach.image_url}
-                                      alt={coach.name}
-                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
-                                      onError={(e) => {
-                                        e.target.style.display = 'none';
-                                      }}
-                                    />
-                                  ) : (
+                            <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer">
+                              <div className="transition-transform duration-200 group-hover:scale-[1.03] flex flex-col items-center text-center">
+                                {coach ? (
+                                  <>
+                                    {coach.image_url ? (
+                                      <img
+                                        src={coach.image_url}
+                                        alt={coach.name}
+                                        className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                    )}
+                                    {coach.linkedin_url ? (
+                                      <a
+                                        href={coach.linkedin_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold text-white block truncate w-full"
+                                        style={{ fontSize: '12px', lineHeight: '1.2' }}
+                                      >
+                                        {coach.name}
+                                      </a>
+                                    ) : (
+                                      <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
+                                    )}
+                                    {coach.position && (
+                                      <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
+                                    )}
+                                  </>
+                                ) : (
+                                  <>
                                     <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
-                                  )}
-                                  {coach.linkedin_url ? (
-                                    <a
-                                      href={coach.linkedin_url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="font-semibold text-white block truncate w-full"
-                                      style={{ fontSize: '12px', lineHeight: '1.2' }}
-                                    >
-                                      {coach.name}
-                                    </a>
-                                  ) : (
-                                    <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
-                                  )}
-                                  {coach.position && (
-                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
-                                  <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
-                                  <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
-                                </>
-                              )}
+                                    <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
+                                    <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
+                                  </>
+                                )}
+                              </div>
                             </div>
                           ));
                         })()}
