@@ -2164,48 +2164,64 @@ const ProgressHub = () => {
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
-                  {coaches && coaches.length > 0 ? (
+                  {coaches || calendlyLink ? (
                     <div className="flex gap-2.5 h-full">
                       <div className="flex-1 flex flex-col gap-3">
-                        {coaches.map((coach, index) => (
-                          <div key={coach.id || index} className="flex gap-2.5 items-start">
-                            {coach.image_url && (
-                              <img
-                                src={coach.image_url}
-                                alt={coach.name}
-                                className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                }}
-                              />
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
-                              {coach.position && (
-                                <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
-                              )}
-                              {coach.linkedin_url && (
-                                <a
-                                  href={coach.linkedin_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 mt-1 text-white hover:text-gray-200 transition"
-                                  title="View LinkedIn Profile"
-                                >
-                                  <img
-                                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-18%20at%2018.04.53.png"
-                                    alt="LinkedIn"
-                                    className="h-3 w-auto object-contain opacity-90"
-                                  />
-                                  <span style={{ fontSize: '11px' }}>LinkedIn</span>
-                                </a>
+                        {(() => {
+                          // Create array of 4 slots, fill with coaches or placeholders
+                          const displayCoaches = [];
+                          for (let i = 0; i < 4; i++) {
+                            displayCoaches.push(coaches && coaches[i] ? coaches[i] : null);
+                          }
+
+                          return displayCoaches.map((coach, index) => (
+                            <div key={coach?.id || `placeholder-${index}`} className="flex gap-2.5 items-start">
+                              {coach ? (
+                                <>
+                                  {coach.image_url && (
+                                    <img
+                                      src={coach.image_url}
+                                      alt={coach.name}
+                                      className="w-[60px] h-[60px] rounded object-cover flex-shrink-0"
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                      }}
+                                    />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    {coach.linkedin_url ? (
+                                      <a
+                                        href={coach.linkedin_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="font-semibold text-white hover:text-gray-200 transition underline decoration-white/40 hover:decoration-white/80"
+                                        style={{ fontSize: '14px', marginBottom: '0' }}
+                                      >
+                                        {coach.name}
+                                      </a>
+                                    ) : (
+                                      <h3 className="font-semibold text-white mb-0" style={{ fontSize: '14px' }}>{coach.name}</h3>
+                                    )}
+                                    {coach.position && (
+                                      <p className="text-white" style={{ fontSize: '12px', marginTop: '2px' }}>{coach.position}</p>
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-[60px] h-[60px] rounded bg-white/10 flex-shrink-0" />
+                                  <div className="flex-1 min-w-0">
+                                    <div className="h-4 bg-white/10 rounded mb-1" style={{ width: '120px' }} />
+                                    <div className="h-3 bg-white/10 rounded" style={{ width: '90px' }} />
+                                  </div>
+                                </>
                               )}
                             </div>
-                          </div>
-                        ))}
+                          ));
+                        })()}
                       </div>
                       {calendlyLink && (
-                        <div className="flex items-center">
+                        <div className="flex items-center" style={{ marginTop: '10px' }}>
                           <button
                             onClick={handleOpenCalendly}
                             className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
