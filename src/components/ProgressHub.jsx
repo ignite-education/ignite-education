@@ -6,7 +6,7 @@ import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLes
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
-import Lottie from 'lottie-react';
+import LoadingScreen from './LoadingScreen';
 
 const ProgressHub = () => {
   const navigate = useNavigate();
@@ -80,7 +80,6 @@ const ProgressHub = () => {
   const hasInitializedScrollRef = useRef(false);
   const [enableSmoothScroll, setEnableSmoothScroll] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [lottieData, setLottieData] = useState(null);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
   const [isClosingMyPostsModal, setIsClosingMyPostsModal] = useState(false);
   const [myRedditPosts, setMyRedditPosts] = useState([]);
@@ -109,13 +108,6 @@ const ProgressHub = () => {
     }
   }, []);
 
-  useEffect(() => {
-    // Load Lottie animation data from local file (optimized for performance)
-    fetch('/icon-animation.json')
-      .then(response => response.json())
-      .then(data => setLottieData(data))
-      .catch(error => console.error('Error loading Lottie animation:', error));
-  }, []);
 
   // Fetch user role
   useEffect(() => {
@@ -1878,22 +1870,7 @@ const ProgressHub = () => {
   };
 
   if (loading) {
-    return (
-      <div className="h-screen bg-black text-white flex items-center justify-center">
-        {lottieData ? (
-          <Lottie
-            animationData={lottieData}
-            loop={true}
-            autoplay={true}
-            style={{ width: 200, height: 200 }}
-          />
-        ) : (
-          <div className="w-32 h-32 flex items-center justify-center">
-            {/* Empty placeholder - no text shown while animation loads */}
-          </div>
-        )}
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (

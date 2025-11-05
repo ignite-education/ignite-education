@@ -6,7 +6,7 @@ import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getComplete
 import GoogleAd from './GoogleAd';
 import { useAuth } from '../contexts/AuthContext';
 import KnowledgeCheck from './KnowledgeCheck';
-import Lottie from 'lottie-react';
+import LoadingScreen from './LoadingScreen';
 import { supabase } from '../lib/supabase';
 
 // Initialize Stripe
@@ -103,17 +103,8 @@ const LearningHub = () => {
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
   const audioRef = React.useRef(null);
   const isPausedRef = React.useRef(false); // Track if user manually paused
-  const [lottieData, setLottieData] = useState(null);
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
-
-  useEffect(() => {
-    // Load Lottie animation data from local file (optimized for performance)
-    fetch('/icon-animation.json')
-      .then(response => response.json())
-      .then(data => setLottieData(data))
-      .catch(error => console.error('Error loading Lottie animation:', error));
-  }, []);
 
   useEffect(() => {
     fetchLessonData();
@@ -1665,22 +1656,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   }, [hoveredExplanation]);
 
   if (loading) {
-    return (
-      <div className="h-screen bg-black text-white flex items-center justify-center">
-        {lottieData ? (
-          <Lottie
-            animationData={lottieData}
-            loop={true}
-            autoplay={true}
-            style={{ width: 200, height: 200 }}
-          />
-        ) : (
-          <div className="w-32 h-32 flex items-center justify-center">
-            {/* Empty placeholder - no text shown while animation loads */}
-          </div>
-        )}
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Check if user is trying to access a lesson ahead of their progress

@@ -3,29 +3,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import Onboarding from './Onboarding';
-import Lottie from 'lottie-react';
+import LoadingScreen from './LoadingScreen';
 
 const ProtectedRoute = ({ children }) => {
   const { user, firstName, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
-  const [lottieData, setLottieData] = useState(null);
-
-  useEffect(() => {
-    // Preload Lottie animation data immediately
-    const loadAnimation = async () => {
-      try {
-        const response = await fetch('https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/icon%20v1.json');
-        const data = await response.json();
-        setLottieData(data);
-      } catch (error) {
-        console.error('Error loading Lottie animation:', error);
-        // Set a placeholder to prevent showing "Loading..." text
-        setLottieData({});
-      }
-    };
-    loadAnimation();
-  }, []);
 
   useEffect(() => {
     const checkOnboarding = async () => {
@@ -78,22 +61,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Wait for auth context to finish loading
   if (authLoading || loading) {
-    return (
-      <div className="fixed inset-0 bg-black flex items-center justify-center">
-        {lottieData && Object.keys(lottieData).length > 0 ? (
-          <Lottie
-            animationData={lottieData}
-            loop={true}
-            autoplay={true}
-            style={{ width: 200, height: 200 }}
-          />
-        ) : (
-          <div className="w-32 h-32 flex items-center justify-center">
-            {/* Empty div - no text shown while animation loads */}
-          </div>
-        )}
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
