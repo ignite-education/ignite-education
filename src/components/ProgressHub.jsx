@@ -2288,7 +2288,13 @@ const ProgressHub = () => {
                 <button className="hover:text-pink-500 transition" onClick={handleOpenSettings}>Settings</button>
                 <button
                   className="hover:text-pink-500 transition"
-                  onClick={() => window.location.href = `mailto:hello@ignite.education?subject=Support Request: ${user.firstName} ${user.lastName}`}
+                  onClick={() => window.location.href = `mailto:feedback@ignite.education?subject=Feedback: ${user.firstName} ${user.lastName}`}
+                >
+                  Feedback
+                </button>
+                <button
+                  className="hover:text-pink-500 transition"
+                  onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.firstName} ${user.lastName}`}
                 >
                   Support
                 </button>
