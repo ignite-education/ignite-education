@@ -2182,13 +2182,13 @@ const ProgressHub = () => {
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[48px] h-[48px] rounded object-cover mb-1"
+                                      className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
                                     />
                                   ) : (
-                                    <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1" />
+                                    <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
                                   )}
                                   {coach.linkedin_url ? (
                                     <a
@@ -2204,14 +2204,14 @@ const ProgressHub = () => {
                                     <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
                                   )}
                                   {coach.position && (
-                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9 }}>{coach.position}</p>
+                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
                                   )}
                                 </>
                               ) : (
                                 <>
-                                  <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1" />
+                                  <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
                                   <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
-                                  <div className="h-2 bg-white/10 rounded w-12" />
+                                  <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
                                 </>
                               )}
                             </div>
