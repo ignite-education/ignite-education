@@ -2208,11 +2208,20 @@ const ProgressHub = () => {
                         <div className="flex items-center">
                           <button
                             onClick={handleOpenCalendly}
-                            className="bg-white hover:bg-gray-100 p-3 rounded transition group aspect-square flex items-center justify-center"
-                            style={{ width: '60px', height: '60px' }}
+                            className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: '0.3rem'
+                            }}
                             title="Book Office Hours"
                           >
-                            <span className="text-black group-hover:text-[#EF0B72] transition-colors font-semibold" style={{ fontSize: '11px', textAlign: 'center', lineHeight: '1.2' }}>Book</span>
+                            <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
                           </button>
                         </div>
                       )}
