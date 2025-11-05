@@ -2228,7 +2228,7 @@ const Auth = () => {
                       if (authScrollContainerRef.current) {
                         authScrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
                       }
-                    }, 100);
+                    }, 300);
                   }
                 }}
                 className={`w-full font-semibold py-3 rounded-lg transition ${
