@@ -1912,7 +1912,7 @@ const ProgressHub = () => {
                 backgroundPosition: 'left center',
                 width: '108.8px',
                 height: '36px',
-                marginBottom: '10px',
+                marginBottom: '9px',
                 marginLeft: '-5.44px'
               }}
               onClick={() => navigate('/')}
