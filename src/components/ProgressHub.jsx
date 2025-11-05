@@ -2165,7 +2165,7 @@ const ProgressHub = () => {
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
                 <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
-                    <div className="flex gap-2.5 h-full items-center">
+                    <div className="flex gap-2.5 h-full items-start" style={{ paddingTop: '8px' }}>
                       <div className="flex-1 grid grid-cols-4 gap-2">
                         {(() => {
                           // Create array of 4 slots, fill with coaches or placeholders
@@ -2182,13 +2182,13 @@ const ProgressHub = () => {
                                     <img
                                       src={coach.image_url}
                                       alt={coach.name}
-                                      className="w-[48px] h-[48px] rounded object-cover mb-1.5"
+                                      className="w-[48px] h-[48px] rounded object-cover mb-1"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                       }}
                                     />
                                   ) : (
-                                    <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1.5" />
+                                    <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1" />
                                   )}
                                   {coach.linkedin_url ? (
                                     <a
@@ -2204,12 +2204,12 @@ const ProgressHub = () => {
                                     <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
                                   )}
                                   {coach.position && (
-                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '2px', lineHeight: '1.2', opacity: 0.9 }}>{coach.position}</p>
+                                    <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '1px', lineHeight: '1.2', opacity: 0.9 }}>{coach.position}</p>
                                   )}
                                 </>
                               ) : (
                                 <>
-                                  <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1.5" />
+                                  <div className="w-[48px] h-[48px] rounded bg-white/10 mb-1" />
                                   <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
                                   <div className="h-2 bg-white/10 rounded w-12" />
                                 </>
