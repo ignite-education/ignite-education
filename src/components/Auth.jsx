@@ -1914,7 +1914,9 @@ const Auth = () => {
                         cursor: 'grab',
                         scrollSnapType: 'x mandatory',
                         scrollSnapStop: 'always',
-                        scrollPaddingLeft: '0px'
+                        scrollPaddingLeft: '0px',
+                        marginLeft: '-300px',
+                        paddingLeft: '300px'
                       }}
                       onScroll={(e) => {
                         const scrollLeft = e.target.scrollLeft;
@@ -2051,6 +2053,53 @@ const Auth = () => {
                       {selectedCourse.duration && (
                         <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Other Courses Section */}
+                {courses.filter(c => (c.status === 'live' || c.status === 'coming_soon') && c.name !== selectedCourse.name).length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-2" style={{ fontSize: '17px' }}>
+                      Other Courses
+                    </h3>
+                    <div
+                      className="overflow-x-auto overflow-y-hidden"
+                      style={{
+                        scrollbarWidth: 'none',
+                        msOverflowStyle: 'none',
+                        scrollBehavior: 'smooth',
+                        WebkitOverflowScrolling: 'touch',
+                        marginLeft: '-300px',
+                        paddingLeft: '300px'
+                      }}
+                    >
+                      <div className="flex gap-4">
+                        {courses.filter(c => (c.status === 'live' || c.status === 'coming_soon') && c.name !== selectedCourse.name).map((course) => (
+                          <div
+                            key={course.name}
+                            onClick={() => setSelectedCourseModal(course.name)}
+                            className="flex-shrink-0 bg-white border-2 border-gray-200 rounded-lg cursor-pointer hover:border-pink-500 hover:shadow-lg transition-all duration-200"
+                            style={{
+                              width: '200px',
+                              minWidth: '200px',
+                              padding: '12px'
+                            }}
+                          >
+                            <h4 className="text-sm font-semibold text-pink-500 mb-2 line-clamp-2">{course.title}</h4>
+                            {course.description && (
+                              <p className="text-xs text-gray-600 line-clamp-3 mb-2">
+                                {course.description}
+                              </p>
+                            )}
+                            {course.status === 'coming_soon' && (
+                              <span className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                Coming Soon
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
