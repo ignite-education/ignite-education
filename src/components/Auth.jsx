@@ -1859,7 +1859,7 @@ const Auth = () => {
           <div
             className="bg-white relative flex flex-col"
             style={{
-              width: '600px',
+              width: '720px',
               height: '70vh',
               animation: 'scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               borderRadius: '0.3rem',
@@ -1898,6 +1898,24 @@ const Auth = () => {
                     const firstSentenceEnd = description.indexOf('. ');
                     if (firstSentenceEnd !== -1) {
                       const firstSentence = description.substring(0, firstSentenceEnd + 1);
+                      // Highlight "leading products from concept to launch" in pink
+                      const pinkPhrase = 'leading products from concept to launch';
+                      const pinkIndex = firstSentence.toLowerCase().indexOf(pinkPhrase);
+
+                      if (pinkIndex !== -1) {
+                        const before = firstSentence.substring(0, pinkIndex);
+                        const pink = firstSentence.substring(pinkIndex, pinkIndex + pinkPhrase.length);
+                        const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
+
+                        return (
+                          <span style={{ fontWeight: 600, fontSize: '20px' }}>
+                            {before}
+                            <span style={{ color: '#EC4899' }}>{pink}</span>
+                            {after}
+                          </span>
+                        );
+                      }
+
                       return <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>;
                     }
                     return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
