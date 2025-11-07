@@ -1877,7 +1877,7 @@ const Auth = () => {
             {/* Scrollable Content */}
             <div
               className="flex-1 overflow-y-auto px-8"
-              style={{ scrollbarWidth: 'thin', paddingTop: '25.6px', paddingBottom: '20px' }}
+              style={{ scrollbarWidth: 'none', paddingTop: '25.6px', paddingBottom: '20px' }}
             >
               <div>
                 {selectedCourse.status === 'coming_soon' && (
@@ -2186,12 +2186,10 @@ const Auth = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Fixed Button at Bottom */}
-            <div className="px-8 py-4 bg-white" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
-              <button
+                {/* Get Started Button */}
+                <div className="mt-6">
+                  <button
                 onClick={async () => {
                   if (selectedCourse.status === 'live' && user) {
                     try {
@@ -2286,6 +2284,8 @@ const Auth = () => {
               >
                 {selectedCourse.status === 'live' ? 'Get Started' : 'Notify Me When Available'}
               </button>
+                </div>
+              </div>
             </div>
           </div>
               </>
