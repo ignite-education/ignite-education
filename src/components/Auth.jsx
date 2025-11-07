@@ -1899,9 +1899,23 @@ const Auth = () => {
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6 relative">
                     <h3 className="font-semibold text-gray-900 mb-1.5" style={{ fontSize: '17px' }}>
-                      {selectedCourse.module_structure.length > 0 && snappedModuleIndex < selectedCourse.module_structure.length
-                        ? `Module ${snappedModuleIndex + 1} - ${selectedCourse.module_structure[snappedModuleIndex].name}`
-                        : 'Course Modules'}
+                      {(() => {
+                        // Flatten all lessons from all modules
+                        const allLessons = selectedCourse.module_structure.flatMap((module, modIdx) =>
+                          (module.lessons || []).map((lesson, lesIdx) => ({
+                            ...lesson,
+                            moduleIndex: modIdx + 1,
+                            moduleName: module.name,
+                            lessonIndex: lesIdx + 1
+                          }))
+                        );
+
+                        if (allLessons.length > 0 && snappedModuleIndex < allLessons.length && allLessons[snappedModuleIndex]) {
+                          const currentLesson = allLessons[snappedModuleIndex];
+                          return `${currentLesson.name || `Lesson ${currentLesson.lessonIndex}`}`;
+                        }
+                        return 'Course Lessons';
+                      })()}
                     </h3>
                     <div
                       ref={modalScrollContainerRef}
@@ -1918,89 +1932,81 @@ const Auth = () => {
                       }}
                       onScroll={(e) => {
                         const scrollLeft = e.target.scrollLeft;
-                        const cardWidth = 396; // Approximate card width + gap (380 + 16)
+                        const cardWidth = 406; // Approximate card width + gap (390 + 16)
                         const newIndex = Math.round(scrollLeft / cardWidth);
                         setSnappedModuleIndex(newIndex);
                       }}
                     >
-                      <div className="flex gap-4" style={{ height: '110px' }}>
-                        {selectedCourse.module_structure.map((module, moduleIdx) => (
-                          <div
-                            key={moduleIdx}
-                            className="relative flex-shrink-0"
-                            style={{
-                              width: '380px',
-                              minWidth: '380px',
-                              padding: '14px',
-                              borderRadius: '0.5rem',
-                              background: '#7714E0',
-                              height: '110px',
-                              scrollSnapAlign: 'start',
-                              scrollSnapStop: 'always'
-                            }}
-                          >
-                            {/* Opacity overlay for non-snapped cards */}
-                            {moduleIdx !== snappedModuleIndex && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                  backdropFilter: 'blur(0.75px)',
-                                  WebkitBackdropFilter: 'blur(0.75px)',
-                                  borderRadius: '0.5rem',
-                                  pointerEvents: 'none',
-                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                  zIndex: 1
-                                }}
-                              />
-                            )}
-                            {/* White translucent overlay for the card immediately to the right */}
-                            {moduleIdx === snappedModuleIndex + 1 && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  background: 'linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.3) 100%)',
-                                  borderRadius: '0.5rem',
-                                  pointerEvents: 'none',
-                                  transition: 'opacity 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
-                                  zIndex: 2
-                                }}
-                              />
-                            )}
-                            <div className="relative" style={{ marginTop: '-7px' }}>
-                              {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
-                                <>
-                                  <div className="text-sm font-medium text-white mb-1">Lessons</div>
-                                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5px' }}>
-                                    {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
-                                      <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-normal">
+                      <div className="flex gap-4" style={{ minHeight: '100px', height: '100px' }}>
+                        {(() => {
+                          // Flatten all lessons from all modules
+                          const allLessons = selectedCourse.module_structure.flatMap((module, modIdx) =>
+                            (module.lessons || []).map((lesson, lesIdx) => ({
+                              ...lesson,
+                              moduleIndex: modIdx + 1,
+                              moduleName: module.name,
+                              lessonIndex: lesIdx + 1
+                            }))
+                          );
+
+                          return allLessons.map((lesson, index) => (
+                            <div
+                              key={`${lesson.moduleIndex}-${lesson.lessonIndex}`}
+                              className="relative flex items-center gap-3 flex-shrink-0"
+                              style={{
+                                width: '390px',
+                                minWidth: '390px',
+                                paddingTop: '5.618px',
+                                paddingRight: '5.618px',
+                                paddingBottom: '5.618px',
+                                paddingLeft: '14px',
+                                borderRadius: '0.3rem',
+                                background: '#7714E0',
+                                height: '90px',
+                                scrollSnapAlign: 'start',
+                                scrollSnapStop: 'always'
+                              }}
+                            >
+                              {/* Opacity overlay for non-snapped cards */}
+                              {index !== snappedModuleIndex && (
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                    backdropFilter: 'blur(0.75px)',
+                                    WebkitBackdropFilter: 'blur(0.75px)',
+                                    borderRadius: '0.3rem',
+                                    pointerEvents: 'none',
+                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                  }}
+                                />
+                              )}
+                              <div className="flex-1 relative" style={{ zIndex: 3 }}>
+                                <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
+                                  {lesson.name || `Lesson ${lesson.lessonIndex}`}
+                                </h4>
+                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
+                                  {(lesson.bullet_points || [])
+                                    .slice(0, 3)
+                                    .map((bulletPoint, idx) => (
+                                      <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
                                         <span className="mt-0.5 text-purple-200">•</span>
-                                        <span>{lesson.name}</span>
+                                        <span>{bulletPoint}</span>
                                       </li>
                                     ))}
-                                    {module.lessons.length > 5 && (
-                                      <li className="text-sm text-purple-200 ml-4">
-                                        +{module.lessons.length - 5} more lesson{module.lessons.length - 5 !== 1 ? 's' : ''}
-                                      </li>
-                                    )}
-                                  </ul>
-                                </>
-                              )}
+                                </ul>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ));
+                        })()}
                       </div>
                     </div>
 
-                    {/* Back to First Module Button - Show when not viewing first module */}
+                    {/* Back to First Lesson Button - Show when not viewing first lesson */}
                     {snappedModuleIndex > 0 && (
                       <button
                         onClick={() => {
