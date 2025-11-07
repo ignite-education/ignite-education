@@ -1912,9 +1912,9 @@ const Auth = () => {
 
                         if (allLessons.length > 0 && snappedModuleIndex < allLessons.length && allLessons[snappedModuleIndex]) {
                           const currentLesson = allLessons[snappedModuleIndex];
-                          return `${currentLesson.name || `Lesson ${currentLesson.lessonIndex}`}`;
+                          return `Module ${currentLesson.moduleIndex} - ${currentLesson.moduleName}`;
                         }
-                        return 'Course Lessons';
+                        return 'Course Modules';
                       })()}
                     </h3>
                     <div
