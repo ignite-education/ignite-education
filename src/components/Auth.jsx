@@ -1892,15 +1892,15 @@ const Auth = () => {
                 )}
 
                 {/* First sentence of description */}
-                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%' }}>
+                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%', marginTop: '1.5rem' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
                     const firstSentenceEnd = description.indexOf('. ');
                     if (firstSentenceEnd !== -1) {
                       const firstSentence = description.substring(0, firstSentenceEnd + 1);
-                      return <span style={{ fontWeight: 600, fontSize: '17px' }}>{firstSentence}</span>;
+                      return <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>;
                     }
-                    return <span style={{ fontWeight: 600, fontSize: '17px' }}>{description}</span>;
+                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
                   })()}
                 </div>
 
