@@ -1891,6 +1891,19 @@ const Auth = () => {
                   </div>
                 )}
 
+                {/* First sentence of description */}
+                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%' }}>
+                  {(() => {
+                    const description = selectedCourse.description || '';
+                    const firstSentenceEnd = description.indexOf('. ');
+                    if (firstSentenceEnd !== -1) {
+                      const firstSentence = description.substring(0, firstSentenceEnd + 1);
+                      return <span style={{ fontWeight: 600, fontSize: '17px' }}>{firstSentence}</span>;
+                    }
+                    return <span style={{ fontWeight: 600, fontSize: '17px' }}>{description}</span>;
+                  })()}
+                </div>
+
                 {/* Module and Lesson Details - Swipable Cards */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6 relative">
@@ -2058,23 +2071,16 @@ const Auth = () => {
                   </div>
                 )}
 
+                {/* Rest of description */}
                 <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
-                    // Split by first period followed by space to get first sentence
                     const firstSentenceEnd = description.indexOf('. ');
                     if (firstSentenceEnd !== -1) {
-                      const firstSentence = description.substring(0, firstSentenceEnd + 1);
                       const restOfText = description.substring(firstSentenceEnd + 2);
-                      return (
-                        <>
-                          <span style={{ fontWeight: 600, fontSize: '17px' }}>{firstSentence}</span>
-                          <br />
-                          <div style={{ marginTop: '0.6rem' }}>{restOfText}</div>
-                        </>
-                      );
+                      return restOfText;
                     }
-                    return description;
+                    return '';
                   })()}
                 </div>
 
