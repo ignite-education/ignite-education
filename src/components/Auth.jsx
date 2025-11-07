@@ -1978,8 +1978,8 @@ const Auth = () => {
                             <div className="relative" style={{ marginTop: '-7px' }}>
                               {module.lessons && Array.isArray(module.lessons) && module.lessons.length > 0 && (
                                 <>
-                                  <div className="text-base font-medium text-white mb-1">Lessons</div>
-                                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '1.8px' }}>
+                                  <div className="text-sm font-medium text-white mb-1">Lessons</div>
+                                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.5px' }}>
                                     {module.lessons.slice(0, 5).map((lesson, lessonIdx) => (
                                       <li key={lessonIdx} className="text-sm flex items-start gap-2 text-purple-100 font-normal">
                                         <span className="mt-0.5 text-purple-200">•</span>
@@ -2058,7 +2058,7 @@ const Auth = () => {
                 {/* Course Coaches Section */}
                 {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-2" style={{ fontSize: '17px' }}>
+                    <h3 className="font-semibold text-gray-900 mb-1" style={{ fontSize: '17px' }}>
                       Course Leaders
                     </h3>
                     <div className="rounded-lg" style={{ padding: '12px', background: '#7714E0' }}>
