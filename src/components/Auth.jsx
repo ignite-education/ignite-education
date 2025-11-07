@@ -1901,9 +1901,9 @@ const Auth = () => {
                       const restOfText = description.substring(firstSentenceEnd + 2);
                       return (
                         <>
-                          <span style={{ fontWeight: 600 }}>{firstSentence}</span>
-                          <br /><br />
-                          {restOfText}
+                          <span style={{ fontWeight: 600, fontSize: '17px' }}>{firstSentence}</span>
+                          <br />
+                          <div style={{ marginTop: '0.6rem' }}>{restOfText}</div>
                         </>
                       );
                     }
