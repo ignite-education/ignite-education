@@ -1976,16 +1976,17 @@ const Auth = () => {
                                     left: 0,
                                     right: 0,
                                     bottom: 0,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                    backdropFilter: 'blur(0.75px)',
-                                    WebkitBackdropFilter: 'blur(0.75px)',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                    backdropFilter: 'blur(2px)',
+                                    WebkitBackdropFilter: 'blur(2px)',
                                     borderRadius: '0.3rem',
                                     pointerEvents: 'none',
-                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                                    zIndex: 1
                                   }}
                                 />
                               )}
-                              <div className="flex-1 relative" style={{ zIndex: 3 }}>
+                              <div className="flex-1 relative" style={{ zIndex: 2 }}>
                                 <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                                   {lesson.name || `Lesson ${lesson.lessonIndex}`}
                                 </h4>
