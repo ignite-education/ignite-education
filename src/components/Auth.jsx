@@ -1852,7 +1852,7 @@ const Auth = () => {
             return (
               <>
                 {/* Title above the box */}
-                <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+                <h2 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
                   {selectedCourse.title}
                 </h2>
 
