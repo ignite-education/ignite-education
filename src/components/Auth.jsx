@@ -1933,7 +1933,7 @@ const Auth = () => {
                 )}
 
                 {/* First sentence of description */}
-                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%', marginTop: '1.05rem' }}>
+                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%', marginTop: '0.735rem' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
                     const firstSentenceEnd = description.indexOf('. ');
