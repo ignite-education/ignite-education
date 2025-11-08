@@ -229,3 +229,25 @@ body {
 .animate-expandUnderline {
   animation: expandUnderline 0.4s ease-out forwards;
 }
+
+/* Respect users' reduced motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-fadeIn,
+  .animate-fadeInUp,
+  .animate-slideUp,
+  .animate-blink,
+  .animate-colorFade,
+  .animate-expandUnderline {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

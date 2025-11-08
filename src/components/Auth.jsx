@@ -131,6 +131,19 @@ const Auth = () => {
     fetchCourses();
   }, []);
 
+  // Preload images to prevent flickering/pop-in
+  useEffect(() => {
+    const imagesToPreload = [
+      'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
+      'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png'
+    ];
+
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
+
   // Reset snapped module index when modal opens and fetch coaches
   useEffect(() => {
     if (selectedCourseModal) {
@@ -1086,7 +1099,21 @@ const Auth = () => {
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left">
-                  {isEducationTypingComplete && (
+                  {!isEducationTypingComplete ? (
+                    <>
+                      {/* Skeleton placeholders */}
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center gap-3 animate-pulse">
+                          <div className="bg-white/20 rounded-full p-1.5 w-6 h-6 flex-shrink-0" style={{ transform: 'scale(0.8)' }} />
+                          <div className="flex-1">
+                            <div className="bg-white/20 h-5 w-3/4 rounded mb-2"></div>
+                            <div className="bg-white/20 h-4 w-full rounded mb-1"></div>
+                            <div className="bg-white/20 h-4 w-5/6 rounded"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
@@ -1233,12 +1260,26 @@ const Auth = () => {
                       </div>
                     );
                   }) : (
-                    // Placeholder when no courses
+                    // Skeleton cards while loading
                     <>
-                      <div className="bg-white/10 text-white rounded aspect-square flex items-center justify-center" style={{ padding: '32px' }}>
-                        <p className="text-sm">Loading courses...</p>
-                      </div>
-                      <div className="bg-white/10 text-white rounded aspect-square" style={{ padding: '32px' }}></div>
+                      {[...Array(4)].map((_, i) => (
+                        <div
+                          key={i}
+                          className="bg-white/10 rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
+                          style={{ padding: '16px' }}
+                        >
+                          <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
+                          <div className="h-4 bg-white/20 rounded w-full mb-1"></div>
+                          <div className="h-4 bg-white/20 rounded w-5/6 mb-1"></div>
+                          <div className="h-4 bg-white/20 rounded w-4/5 mb-3"></div>
+                          <div className="h-3 bg-white/20 rounded w-1/2 mb-2"></div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-white/20 rounded w-full"></div>
+                            <div className="h-3 bg-white/20 rounded w-11/12"></div>
+                            <div className="h-3 bg-white/20 rounded w-full"></div>
+                          </div>
+                        </div>
+                      ))}
                     </>
                   )}
                 </div>
@@ -1296,11 +1337,15 @@ const Auth = () => {
                 <div className="space-y-6">
                   {/* Card 1 - Hands-on */}
                   <div
-                    className={`rounded-lg p-4 transition-all duration-500 ${
+                    className={`rounded-lg p-4 ${
                       activeCard === 0
                         ? 'bg-white shadow-xl scale-105 border-2 border-pink-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      willChange: 'transform'
+                    }}
                   >
                     <div className="flex items-start gap-2 mb-2">
                       <div className="bg-pink-500 rounded-full p-1.5 flex-shrink-0">
@@ -1321,11 +1366,15 @@ const Auth = () => {
 
                   {/* Card 2 - Real-world projects */}
                   <div
-                    className={`rounded-lg p-4 transition-all duration-500 ${
+                    className={`rounded-lg p-4 ${
                       activeCard === 1
                         ? 'bg-white shadow-xl scale-105 border-2 border-green-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      willChange: 'transform'
+                    }}
                   >
                     <div className="flex items-start gap-2 mb-2">
                       <div className="bg-green-500 rounded-full p-1.5 flex-shrink-0">
@@ -1351,11 +1400,15 @@ const Auth = () => {
 
                   {/* Card 3 - Certified professional */}
                   <div
-                    className={`rounded-lg p-4 transition-all duration-500 ${
+                    className={`rounded-lg p-4 ${
                       activeCard === 2
                         ? 'bg-white shadow-xl scale-105 border-2 border-purple-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      willChange: 'transform'
+                    }}
                   >
                     <div className="flex items-start gap-2 mb-2">
                       <div className="bg-purple-500 rounded-full p-1.5 flex-shrink-0">
@@ -1545,15 +1598,16 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-slate-700 transition-opacity duration-500"
+                      className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-slate-700"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
                         left: idx === 0 ? 'auto' : 0,
                         right: idx === 0 ? 'auto' : 0,
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
+                        transform: currentTestimonialIndex === idx ? 'scale(1)' : 'scale(0.95)',
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                        transition: 'opacity 0.5s ease-in-out'
+                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     >
                       <p className="text-gray-300 mb-6 italic text-lg leading-relaxed">
@@ -1620,8 +1674,9 @@ const Auth = () => {
                         key={post.id}
                         className="bg-white rounded-lg p-5 text-gray-800"
                         style={{
-                          opacity: 0,
-                          animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.15}s forwards` : 'none'
+                          opacity: 1,
+                          transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                          transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${0.1 + idx * 0.15}s`
                         }}
                       >
                         <p className="text-sm leading-relaxed mb-3">{post.text}</p>
