@@ -1908,7 +1908,7 @@ const Auth = () => {
                         const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
 
                         return (
-                          <span style={{ fontWeight: 600, fontSize: '24px' }}>
+                          <span style={{ fontWeight: 600, fontSize: '20px' }}>
                             {before}
                             <span style={{ color: '#EC4899' }}>{pink}</span>
                             {after}
@@ -1916,9 +1916,9 @@ const Auth = () => {
                         );
                       }
 
-                      return <span style={{ fontWeight: 600, fontSize: '24px' }}>{firstSentence}</span>;
+                      return <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>;
                     }
-                    return <span style={{ fontWeight: 600, fontSize: '24px' }}>{description}</span>;
+                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
                   })()}
                 </div>
 
