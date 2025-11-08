@@ -1957,7 +1957,10 @@ const Auth = () => {
                               {after}
                             </span>
                             {restOfDescription && (
-                              <span style={{ fontWeight: 400, fontSize: '16px' }}> {restOfDescription}</span>
+                              <>
+                                <br /><br />
+                                <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
+                              </>
                             )}
                           </>
                         );
@@ -1967,7 +1970,10 @@ const Auth = () => {
                         <>
                           <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
                           {restOfDescription && (
-                            <span style={{ fontWeight: 400, fontSize: '16px' }}> {restOfDescription}</span>
+                            <>
+                              <br /><br />
+                              <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
+                            </>
                           )}
                         </>
                       );
@@ -2171,19 +2177,6 @@ const Auth = () => {
                       <span className="leading-relaxed">Self-paced<br/>learning</span>
                     </div>
                   </div>
-                </div>
-
-                {/* Rest of description */}
-                <div className="text-black mb-6 leading-relaxed" style={{ maxWidth: '90%' }}>
-                  {(() => {
-                    const description = selectedCourse.description || '';
-                    const firstSentenceEnd = description.indexOf('. ');
-                    if (firstSentenceEnd !== -1) {
-                      const restOfText = description.substring(firstSentenceEnd + 2);
-                      return restOfText;
-                    }
-                    return '';
-                  })()}
                 </div>
 
                 {/* Course Coaches Section */}
