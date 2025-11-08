@@ -1965,7 +1965,7 @@ const Auth = () => {
 
                 {/* Course Benefits - 2 Column Layout - Vertically Centered */}
                 <div className="flex items-center mb-6" style={{ minHeight: '80px' }}>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-sm text-black font-medium w-full">
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-base text-black font-medium w-full">
                     <div className="flex items-start" style={{ paddingLeft: '3.5rem' }}>
                       <svg className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
