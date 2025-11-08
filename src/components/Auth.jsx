@@ -1099,21 +1099,7 @@ const Auth = () => {
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left">
-                  {!isEducationTypingComplete ? (
-                    <>
-                      {/* Skeleton placeholders */}
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="flex items-center gap-3 animate-pulse">
-                          <div className="bg-white/20 rounded-full p-1.5 w-6 h-6 flex-shrink-0" style={{ transform: 'scale(0.8)' }} />
-                          <div className="flex-1">
-                            <div className="bg-white/20 h-5 w-3/4 rounded mb-2"></div>
-                            <div className="bg-white/20 h-4 w-full rounded mb-1"></div>
-                            <div className="bg-white/20 h-4 w-5/6 rounded"></div>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  ) : (
+                  {isEducationTypingComplete && (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
