@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProgressHub from './ProgressHub';
@@ -65,6 +65,12 @@ const Auth = () => {
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
 
+  // Memoize selected course to avoid duplicate finds and reduce re-renders
+  const selectedCourse = useMemo(() => {
+    if (!selectedCourseModal) return null;
+    return courses.find(c => c.name === selectedCourseModal);
+  }, [selectedCourseModal, courses]);
+
   // Clean up OAuth hash fragments before paint to prevent flicker
   useLayoutEffect(() => {
     if (window.location.hash) {
@@ -100,7 +106,7 @@ const Auth = () => {
     };
   }, [isLogin, animateWords]);
 
-  // Fetch courses from Supabase
+  // Fetch courses from Supabase and preload coach data
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -129,6 +135,21 @@ const Auth = () => {
 
         console.log('Fetched courses with modules:', coursesWithModules);
         setCourses(coursesWithModules);
+
+        // Preload coaches for all courses to prevent flickering when modal opens
+        const coachesCache = {};
+        await Promise.all(
+          coursesWithModules.map(async (course) => {
+            try {
+              const coaches = await getCoachesForCourse(course.name);
+              coachesCache[course.name] = coaches || [];
+            } catch (error) {
+              console.error(`Error fetching coaches for ${course.name}:`, error);
+              coachesCache[course.name] = [];
+            }
+          })
+        );
+        setCourseCoaches(coachesCache);
       } catch (error) {
         console.error('Error fetching courses:', error);
         console.error('Full error details:', error);
@@ -151,32 +172,12 @@ const Auth = () => {
     });
   }, []);
 
-  // Reset snapped module index when modal opens and fetch coaches
-  useEffect(() => {
+  // Reset snapped module index and scroll when modal opens
+  useLayoutEffect(() => {
     if (selectedCourseModal) {
       setSnappedModuleIndex(0);
       if (modalScrollContainerRef.current) {
         modalScrollContainerRef.current.scrollLeft = 0;
-      }
-
-      // Fetch coaches for the selected course if not already loaded
-      if (!courseCoaches[selectedCourseModal]) {
-        const fetchCoaches = async () => {
-          try {
-            const coaches = await getCoachesForCourse(selectedCourseModal);
-            setCourseCoaches(prev => ({
-              ...prev,
-              [selectedCourseModal]: coaches || []
-            }));
-          } catch (error) {
-            console.error('Error fetching coaches for course:', error);
-            setCourseCoaches(prev => ({
-              ...prev,
-              [selectedCourseModal]: []
-            }));
-          }
-        };
-        fetchCoaches();
       }
     }
   }, [selectedCourseModal]);
@@ -1883,7 +1884,7 @@ const Auth = () => {
     )}
 
     {/* Course Details Modal */}
-    {selectedCourseModal && courses.find(c => c.name === selectedCourseModal) && (
+    {selectedCourse && (
       <div
         className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
         style={{
@@ -1893,16 +1894,11 @@ const Auth = () => {
         onClick={() => setSelectedCourseModal(null)}
       >
         <div className="relative">
-          {(() => {
-            const selectedCourse = courses.find(c => c.name === selectedCourseModal);
-            if (!selectedCourse) return null;
-
-            return (
-              <>
-                {/* Title above the box */}
-                <h2 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
-                  {selectedCourse.title}
-                </h2>
+          <>
+            {/* Title above the box */}
+            <h2 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
+              {selectedCourse.title}
+            </h2>
 
           <div
             className="bg-white relative flex flex-col"
@@ -2179,14 +2175,15 @@ const Auth = () => {
                   </div>
                 </div>
 
-                {/* Course Coaches Section */}
-                {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
-                      Course Leaders
-                    </h3>
-                    <div className="flex flex-col gap-4">
-                      {courseCoaches[selectedCourseModal].map((coach, index) => (
+                {/* Course Coaches Section - Always rendered with min-height to prevent layout shift */}
+                <div className="mb-6" style={{ minHeight: courseCoaches[selectedCourseModal]?.length > 0 ? 'auto' : '0' }}>
+                  {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
+                    <>
+                      <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
+                        Course Leaders
+                      </h3>
+                      <div className="flex flex-col gap-4">
+                        {courseCoaches[selectedCourseModal].map((coach, index) => (
                         <div key={index} className="flex gap-4 items-start">
                           {/* Left side - Coach info */}
                           <div className="flex items-start gap-3 flex-shrink-0">
@@ -2261,10 +2258,11 @@ const Auth = () => {
                             )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
 
                 {/* Get Started Button */}
                 <div className="mt-6">
@@ -2367,9 +2365,7 @@ const Auth = () => {
               </div>
             </div>
           </div>
-              </>
-            );
-          })()}
+          </>
         </div>
       </div>
     )}
