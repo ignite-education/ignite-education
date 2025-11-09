@@ -2192,7 +2192,7 @@ const Auth = () => {
                                 href={coach.linkedin_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-start gap-3 hover:opacity-80 transition-opacity"
+                                className="flex items-start gap-3 group transition-all"
                               >
                                 {coach.image_url ? (
                                   <img
@@ -2208,16 +2208,16 @@ const Auth = () => {
                                   <div className="w-16 h-16 rounded-lg bg-gray-200" />
                                 )}
                                 <div>
-                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px' }}>
+                                  <h4 className="font-semibold text-black group-hover:text-[#FF1CF7] transition-colors" style={{ fontSize: '14px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
-                                    <p className="text-gray-600 text-sm">{coach.position}</p>
+                                    <p className="text-black text-sm group-hover:text-[#FF1CF7] transition-colors">{coach.position}</p>
                                   )}
                                 </div>
                               </a>
                             ) : (
-                              <div className="flex items-start gap-3">
+                              <div className="flex items-start gap-3 group">
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
@@ -2232,11 +2232,11 @@ const Auth = () => {
                                   <div className="w-16 h-16 rounded-lg bg-gray-200" />
                                 )}
                                 <div>
-                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px' }}>
+                                  <h4 className="font-semibold text-black group-hover:text-[#FF1CF7] transition-colors" style={{ fontSize: '14px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
-                                    <p className="text-gray-600 text-sm">{coach.position}</p>
+                                    <p className="text-black text-sm group-hover:text-[#FF1CF7] transition-colors">{coach.position}</p>
                                   )}
                                 </div>
                               </div>
