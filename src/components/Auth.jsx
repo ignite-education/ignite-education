@@ -2180,31 +2180,31 @@ const Auth = () => {
                     </h3>
                     <div className="flex flex-col gap-4">
                       {courseCoaches[selectedCourseModal].map((coach, index) => (
-                        <div key={index} className="flex gap-4">
+                        <div key={index} className="flex gap-4 items-start">
                           {/* Left side - Coach info */}
-                          <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-start gap-3 flex-shrink-0">
                             {coach.linkedin_url ? (
                               <a
                                 href={coach.linkedin_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                className="flex items-start gap-3 hover:opacity-80 transition-opacity"
                               >
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
                                     alt={coach.name}
-                                    className="w-16 h-16 rounded-full object-cover"
+                                    className="w-16 h-16 rounded-lg object-cover"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';
                                     }}
                                   />
                                 ) : (
-                                  <div className="w-16 h-16 rounded-full bg-gray-200" />
+                                  <div className="w-16 h-16 rounded-lg bg-gray-200" />
                                 )}
                                 <div>
-                                  <h4 className="font-semibold text-gray-900" style={{ fontSize: '14px' }}>
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
@@ -2213,22 +2213,22 @@ const Auth = () => {
                                 </div>
                               </a>
                             ) : (
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-start gap-3">
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
                                     alt={coach.name}
-                                    className="w-16 h-16 rounded-full object-cover"
+                                    className="w-16 h-16 rounded-lg object-cover"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';
                                     }}
                                   />
                                 ) : (
-                                  <div className="w-16 h-16 rounded-full bg-gray-200" />
+                                  <div className="w-16 h-16 rounded-lg bg-gray-200" />
                                 )}
                                 <div>
-                                  <h4 className="font-semibold text-gray-900" style={{ fontSize: '14px' }}>
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
@@ -2240,9 +2240,9 @@ const Auth = () => {
                           </div>
 
                           {/* Right side - Description or skeleton */}
-                          <div className="flex-1">
+                          <div className="flex-1 pt-0.5">
                             {coach.description ? (
-                              <p className="text-gray-700 text-sm leading-relaxed">
+                              <p className="text-black text-sm leading-relaxed">
                                 {coach.description}
                               </p>
                             ) : (
