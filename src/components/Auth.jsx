@@ -50,6 +50,7 @@ const Auth = () => {
   const [resetSuccess, setResetSuccess] = useState(false);
   const [snappedModuleIndex, setSnappedModuleIndex] = useState(0);
   const modalScrollContainerRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
@@ -76,6 +77,19 @@ const Auth = () => {
     if (!selectedCourseModal) return [];
     return courseCoaches[selectedCourseModal] || [];
   }, [selectedCourseModal, courseCoaches]);
+
+  // Memoize allLessons to avoid expensive flatMap calculations on every render
+  const allLessons = useMemo(() => {
+    if (!selectedCourse?.module_structure) return [];
+    return selectedCourse.module_structure.flatMap((module, modIdx) =>
+      (module.lessons || []).map((lesson, lesIdx) => ({
+        ...lesson,
+        moduleIndex: modIdx + 1,
+        moduleName: module.name,
+        lessonIndex: lesIdx + 1
+      }))
+    );
+  }, [selectedCourse]);
 
   // Clean up OAuth hash fragments before paint to prevent flicker
   useLayoutEffect(() => {
@@ -186,6 +200,13 @@ const Auth = () => {
         modalScrollContainerRef.current.scrollLeft = 0;
       }
     }
+
+    // Cleanup scroll timeout when modal closes
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [selectedCourseModal]);
 
   // Intersection observer for courses section typing animation
@@ -1994,16 +2015,6 @@ const Auth = () => {
                   <div className="mb-6 relative">
                     <h3 className="font-semibold text-gray-900 mb-1.5" style={{ fontSize: '17px' }}>
                       {(() => {
-                        // Flatten all lessons from all modules
-                        const allLessons = selectedCourse.module_structure.flatMap((module, modIdx) =>
-                          (module.lessons || []).map((lesson, lesIdx) => ({
-                            ...lesson,
-                            moduleIndex: modIdx + 1,
-                            moduleName: module.name,
-                            lessonIndex: lesIdx + 1
-                          }))
-                        );
-
                         if (allLessons.length > 0 && snappedModuleIndex < allLessons.length && allLessons[snappedModuleIndex]) {
                           const currentLesson = allLessons[snappedModuleIndex];
                           return `Module ${currentLesson.moduleIndex} - ${currentLesson.moduleName}`;
@@ -2028,22 +2039,19 @@ const Auth = () => {
                         const scrollLeft = e.target.scrollLeft;
                         const cardWidth = 406; // Approximate card width + gap (390 + 16)
                         const newIndex = Math.round(scrollLeft / cardWidth);
-                        setSnappedModuleIndex(newIndex);
+
+                        // Throttle updates to avoid excessive re-renders during scroll
+                        if (scrollTimeoutRef.current) {
+                          clearTimeout(scrollTimeoutRef.current);
+                        }
+
+                        scrollTimeoutRef.current = setTimeout(() => {
+                          setSnappedModuleIndex(newIndex);
+                        }, 50); // Update only after 50ms of no scrolling
                       }}
                     >
                       <div className="flex gap-4" style={{ minHeight: '100px', height: '100px' }}>
-                        {(() => {
-                          // Flatten all lessons from all modules
-                          const allLessons = selectedCourse.module_structure.flatMap((module, modIdx) =>
-                            (module.lessons || []).map((lesson, lesIdx) => ({
-                              ...lesson,
-                              moduleIndex: modIdx + 1,
-                              moduleName: module.name,
-                              lessonIndex: lesIdx + 1
-                            }))
-                          );
-
-                          return allLessons.map((lesson, index) => (
+                        {allLessons.map((lesson, index) => (
                             <div
                               key={`${lesson.moduleIndex}-${lesson.lessonIndex}`}
                               className="relative flex items-center gap-3 flex-shrink-0"
@@ -2061,24 +2069,24 @@ const Auth = () => {
                                 scrollSnapStop: 'always'
                               }}
                             >
-                              {/* Opacity overlay for non-snapped cards */}
-                              {index !== snappedModuleIndex && (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                    backdropFilter: 'blur(0.75px)',
-                                    WebkitBackdropFilter: 'blur(0.75px)',
-                                    borderRadius: '0.3rem',
-                                    pointerEvents: 'none',
-                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
-                                  }}
-                                />
-                              )}
+                              {/* Opacity overlay for non-snapped cards - Always rendered, controlled by CSS opacity */}
+                              <div
+                                style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  bottom: 0,
+                                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                  backdropFilter: 'blur(0.75px)',
+                                  WebkitBackdropFilter: 'blur(0.75px)',
+                                  borderRadius: '0.3rem',
+                                  pointerEvents: 'none',
+                                  opacity: index === snappedModuleIndex ? 0 : 1,
+                                  transition: 'opacity 0.2s ease-out',
+                                  willChange: 'opacity'
+                                }}
+                              />
                               <div className="flex-1">
                                 <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                                   {lesson.name || `Lesson ${lesson.lessonIndex}`}
@@ -2095,8 +2103,7 @@ const Auth = () => {
                                 </ul>
                               </div>
                             </div>
-                          ));
-                        })()}
+                          ))}
                       </div>
                     </div>
 
