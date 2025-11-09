@@ -6,21 +6,24 @@ import Onboarding from './Onboarding';
 import LoadingScreen from './LoadingScreen';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, firstName, loading: authLoading } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const { user, firstName, isInitialized } = useAuth();
+  const [onboardingLoading, setOnboardingLoading] = useState(false);
   const [needsOnboarding, setNeedsOnboarding] = useState(false);
 
   useEffect(() => {
     const checkOnboarding = async () => {
       if (!user) {
-        setLoading(false);
+        setNeedsOnboarding(false);
+        setOnboardingLoading(false);
         return;
       }
 
+      setOnboardingLoading(true);
+
       try {
-        // Create a timeout promise
+        // Create a timeout promise (reduced from 8s to 5s for faster response)
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Onboarding check timed out')), 8000);
+          setTimeout(() => reject(new Error('Onboarding check timed out')), 5000);
         });
 
         // Check if user has completed onboarding with timeout
@@ -52,15 +55,15 @@ const ProtectedRoute = ({ children }) => {
         // On timeout or error, default to showing onboarding (safe fallback)
         setNeedsOnboarding(true);
       } finally {
-        setLoading(false);
+        setOnboardingLoading(false);
       }
     };
 
     checkOnboarding();
   }, [user]);
 
-  // Wait for auth context to finish loading
-  if (authLoading || loading) {
+  // Wait for auth to be initialized first
+  if (!isInitialized || onboardingLoading) {
     return <LoadingScreen />;
   }
 

@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-const ProgressHub = lazy(() => import('./ProgressHub'));
+import ProgressHub from './ProgressHub';
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -9,6 +9,15 @@ import { getOrganizationPosts } from '../lib/linkedin';
 import { getCoachesForCourse } from '../lib/api';
 
 const Auth = () => {
+  // Debounce helper to prevent rapid state updates
+  const debounceTimeouts = useRef({});
+  const debounce = (key, callback, delay = 100) => {
+    if (debounceTimeouts.current[key]) {
+      clearTimeout(debounceTimeouts.current[key]);
+    }
+    debounceTimeouts.current[key] = setTimeout(callback, delay);
+  };
+
   const [isLogin, setIsLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,16 +65,12 @@ const Auth = () => {
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect authenticated users away from auth page
-  useEffect(() => {
-    if (user && !showOnboarding) {
-      // Clean up any hash fragments from OAuth redirect
-      if (window.location.hash) {
-        window.history.replaceState(null, '', window.location.pathname);
-      }
-      navigate('/progress', { replace: true });
+  // Clean up OAuth hash fragments before paint to prevent flicker
+  useLayoutEffect(() => {
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
     }
-  }, [user, navigate, showOnboarding]);
+  }, []);
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
@@ -75,9 +80,11 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !animateWords) {
-            setAnimateWords(true);
-            // Start typing animation
-            startEducationTyping();
+            debounce('marketingAnimation', () => {
+              setAnimateWords(true);
+              // Start typing animation
+              startEducationTyping();
+            }, 50);
           }
         });
       },
@@ -182,7 +189,9 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isCourseTitleTypingComplete) {
-            startCourseTitleTyping();
+            debounce('coursesAnimation', () => {
+              startCourseTitleTyping();
+            }, 50);
           }
         });
       },
@@ -206,7 +215,9 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !isLearningTaglineTypingComplete) {
-            startLearningTaglineTyping();
+            debounce('learningAnimation', () => {
+              startLearningTaglineTyping();
+            }, 50);
           }
         });
       },
@@ -230,12 +241,14 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            if (!animateTestimonials) {
-              setAnimateTestimonials(true);
-            }
-            if (!isTestimonialsHeadingTypingComplete) {
-              startTestimonialsHeadingTyping();
-            }
+            debounce('testimonialsAnimation', () => {
+              if (!animateTestimonials) {
+                setAnimateTestimonials(true);
+              }
+              if (!isTestimonialsHeadingTypingComplete) {
+                startTestimonialsHeadingTyping();
+              }
+            }, 50);
           }
         });
       },
@@ -270,11 +283,13 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !animateLinkedInFAQ) {
-            setAnimateLinkedInFAQ(true);
-            // Fetch LinkedIn posts when section becomes visible
-            fetchLinkedInPosts().catch(err => {
-              console.error('Failed to fetch LinkedIn posts:', err);
-            });
+            debounce('linkedInAnimation', () => {
+              setAnimateLinkedInFAQ(true);
+              // Fetch LinkedIn posts when section becomes visible
+              fetchLinkedInPosts().catch(err => {
+                console.error('Failed to fetch LinkedIn posts:', err);
+              });
+            }, 50);
           }
         });
       },
@@ -848,15 +863,7 @@ const Auth = () => {
           background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
         }}
       >
-        <Suspense fallback={
-          <div style={{
-            width: '100%',
-            height: '100vh',
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-          }} />
-        }>
-          <ProgressHub />
-        </Suspense>
+        <ProgressHub />
       </div>
 
       {/* Auth Overlay - Scrollable Container */}

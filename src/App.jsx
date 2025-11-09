@@ -1,7 +1,7 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
-import { AuthProvider } from './contexts/AuthContext'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
 import LoadingScreen from './components/LoadingScreen'
 
@@ -19,6 +19,24 @@ const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Certificate = lazy(() => import('./components/Certificate'))
 
+// Component to redirect authenticated users away from auth pages
+function AuthRoute({ children }) {
+  const { user, isInitialized } = useAuth();
+
+  // Don't render anything until auth is initialized to prevent flicker
+  if (!isInitialized) {
+    return <LoadingScreen showTimeoutMessage={false} />;
+  }
+
+  // If user is authenticated, redirect to progress page
+  if (user) {
+    return <Navigate to="/progress" replace />;
+  }
+
+  // User is not authenticated, show the auth page
+  return children;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -26,8 +44,16 @@ function App() {
         <AuthProvider>
           <Suspense fallback={<LoadingScreen showTimeoutMessage={true} />}>
           <Routes>
-            <Route path="/welcome" element={<Auth />} />
-            <Route path="/auth-design" element={<AuthDesign />} />
+            <Route path="/welcome" element={
+              <AuthRoute>
+                <Auth />
+              </AuthRoute>
+            } />
+            <Route path="/auth-design" element={
+              <AuthRoute>
+                <AuthDesign />
+              </AuthRoute>
+            } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/" element={

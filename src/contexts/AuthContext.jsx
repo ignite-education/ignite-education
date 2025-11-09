@@ -15,6 +15,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export const AuthProvider = ({ children }) => {
     const loadingTimeout = setTimeout(() => {
       console.warn('Auth session check timed out after 10 seconds');
       setLoading(false);
+      setIsInitialized(true);
     }, 10000); // 10 second timeout
 
     // Check active sessions and sets the user
@@ -30,12 +32,14 @@ export const AuthProvider = ({ children }) => {
         clearTimeout(loadingTimeout);
         setUser(session?.user ?? null);
         setLoading(false);
+        setIsInitialized(true);
       })
       .catch((error) => {
         clearTimeout(loadingTimeout);
         console.error('Error getting session:', error);
         setUser(null);
         setLoading(false);
+        setIsInitialized(true);
       });
 
     // Listen for changes on auth state (login, logout, etc.)
@@ -220,6 +224,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     loading,
+    isInitialized,
     signUp,
     signIn,
     signOut,
@@ -235,7 +240,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
