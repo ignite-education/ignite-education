@@ -2175,78 +2175,86 @@ const Auth = () => {
                 {/* Course Coaches Section */}
                 {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-1" style={{ fontSize: '17px' }}>
+                    <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
                       Course Leaders
                     </h3>
-                    <div className="rounded-lg" style={{ padding: '12px', background: '#7714E0' }}>
-                      <div className="flex gap-2.5 items-center">
-                        <div className="flex-1 grid grid-cols-4" style={{ gap: '12px' }}>
-                          {(() => {
-                            // Create array of 4 slots, fill with coaches or placeholders
-                            const displayCoaches = [];
-                            for (let i = 0; i < 4; i++) {
-                              displayCoaches.push(courseCoaches[selectedCourseModal][i] || null);
-                            }
-
-                            return displayCoaches.map((coach, index) => (
-                              <div key={index} className="group">
-                                {coach && coach.linkedin_url ? (
-                                  <a
-                                    href={coach.linkedin_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center cursor-pointer"
-                                  >
-                                    {coach.image_url ? (
-                                      <img
-                                        src={coach.image_url}
-                                        alt={coach.name}
-                                        className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
-                                        onError={(e) => {
-                                          e.target.style.display = 'none';
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
-                                    )}
-                                    <span className="font-semibold text-white block truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>
-                                      {coach.name}
-                                    </span>
-                                    {coach.position && (
-                                      <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
-                                    )}
-                                  </a>
+                    <div className="flex flex-col gap-4">
+                      {courseCoaches[selectedCourseModal].map((coach, index) => (
+                        <div key={index} className="flex gap-4">
+                          {/* Left side - Coach info */}
+                          <div className="flex items-center gap-3 flex-shrink-0">
+                            {coach.linkedin_url ? (
+                              <a
+                                href={coach.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                              >
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={coach.name}
+                                    className="w-16 h-16 rounded-full object-cover"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
                                 ) : (
-                                  <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
-                                    {coach ? (
-                                      <>
-                                        {coach.image_url ? (
-                                          <img
-                                            src={coach.image_url}
-                                            alt={coach.name}
-                                            className="w-[50.4px] h-[50.4px] rounded object-cover mb-1"
-                                            onError={(e) => {
-                                              e.target.style.display = 'none';
-                                            }}
-                                          />
-                                        ) : (
-                                          <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
-                                        )}
-                                        <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '12px', lineHeight: '1.2' }}>{coach.name}</h3>
-                                        {coach.position && (
-                                          <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>
-                                        )}
-                                      </>
-                                    ) : (
-                                      <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
-                                    )}
-                                  </div>
+                                  <div className="w-16 h-16 rounded-full bg-gray-200" />
                                 )}
+                                <div>
+                                  <h4 className="font-semibold text-gray-900" style={{ fontSize: '14px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-gray-600 text-sm">{coach.position}</p>
+                                  )}
+                                </div>
+                              </a>
+                            ) : (
+                              <div className="flex items-center gap-3">
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={coach.name}
+                                    className="w-16 h-16 rounded-full object-cover"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded-full bg-gray-200" />
+                                )}
+                                <div>
+                                  <h4 className="font-semibold text-gray-900" style={{ fontSize: '14px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-gray-600 text-sm">{coach.position}</p>
+                                  )}
+                                </div>
                               </div>
-                            ));
-                          })()}
+                            )}
+                          </div>
+
+                          {/* Right side - Description or skeleton */}
+                          <div className="flex-1">
+                            {coach.description ? (
+                              <p className="text-gray-700 text-sm leading-relaxed">
+                                {coach.description}
+                              </p>
+                            ) : (
+                              <div className="space-y-2">
+                                <div className="h-3 bg-gray-200 rounded animate-pulse w-full" />
+                                <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6" />
+                                <div className="h-3 bg-gray-200 rounded animate-pulse w-4/6" />
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 )}
