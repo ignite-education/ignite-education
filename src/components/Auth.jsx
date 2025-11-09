@@ -1177,7 +1177,7 @@ const Auth = () => {
                   <h3 className="font-bold text-white mb-2 text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg text-white mb-6 max-w-md text-left" style={{ lineHeight: '1.425' }}>
+                  <p className="text-lg text-white mb-6 max-w-2xl text-left" style={{ lineHeight: '1.425' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
                   </p>
                   <img
@@ -1933,7 +1933,7 @@ const Auth = () => {
                 )}
 
                 {/* Full description */}
-                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '90%', marginTop: '0.3rem' }}>
+                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
                     const firstSentenceEnd = description.indexOf('. ');
