@@ -2186,7 +2186,7 @@ const Auth = () => {
                         {courseCoaches[selectedCourseModal].map((coach, index) => (
                         <div key={index} className="flex gap-4 items-start">
                           {/* Left side - Coach info */}
-                          <div className="flex items-start gap-3 flex-shrink-0">
+                          <div className="flex items-start gap-3 flex-shrink-0" style={{ width: '240px' }}>
                             {coach.linkedin_url ? (
                               <a
                                 href={coach.linkedin_url}
