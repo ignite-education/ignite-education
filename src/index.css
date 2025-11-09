@@ -61,6 +61,11 @@ body {
   }
 }
 
+.animate-fadeIn {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -107,6 +112,11 @@ body {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 @keyframes fadeOut {

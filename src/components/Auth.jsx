@@ -71,6 +71,12 @@ const Auth = () => {
     return courses.find(c => c.name === selectedCourseModal);
   }, [selectedCourseModal, courses]);
 
+  // Memoize selected course coaches to avoid recalculating on every render
+  const selectedCourseCoaches = useMemo(() => {
+    if (!selectedCourseModal) return [];
+    return courseCoaches[selectedCourseModal] || [];
+  }, [selectedCourseModal, courseCoaches]);
+
   // Clean up OAuth hash fragments before paint to prevent flicker
   useLayoutEffect(() => {
     if (window.location.hash) {
@@ -267,14 +273,14 @@ const Auth = () => {
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
-    if (!animateTestimonials || isTestimonialHovered || isLogin) return;
+    if (!animateTestimonials || isTestimonialHovered || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % 6); // 6 testimonials total
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(interval);
-  }, [animateTestimonials, isTestimonialHovered, isLogin]);
+  }, [animateTestimonials, isTestimonialHovered, isLogin, selectedCourseModal]);
 
   // Intersection observer for LinkedIn & FAQ section animation
   useEffect(() => {
@@ -758,14 +764,14 @@ const Auth = () => {
 
   // Auto-rotate through cards
   useEffect(() => {
-    if (!animateWords || isLogin) return;
+    if (!animateWords || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
       setActiveCard((prev) => (prev + 1) % 3); // Rotate through 0, 1, 2
     }, 4000); // Change every 4 seconds
 
     return () => clearInterval(interval);
-  }, [animateWords, isLogin]);
+  }, [animateWords, isLogin, selectedCourseModal]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1886,10 +1892,9 @@ const Auth = () => {
     {/* Course Details Modal */}
     {selectedCourse && (
       <div
-        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
+        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
         style={{
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
-          animation: 'fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
         onClick={() => setSelectedCourseModal(null)}
       >
@@ -1901,11 +1906,10 @@ const Auth = () => {
             </h2>
 
           <div
-            className="bg-white relative flex flex-col"
+            className="bg-white relative flex flex-col animate-scaleUp"
             style={{
               width: '720px',
               height: '70vh',
-              animation: 'scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
               borderRadius: '0.3rem',
             }}
             onClick={(e) => e.stopPropagation()}
@@ -2176,14 +2180,14 @@ const Auth = () => {
                 </div>
 
                 {/* Course Coaches Section - Always rendered with min-height to prevent layout shift */}
-                <div className="mb-6" style={{ minHeight: courseCoaches[selectedCourseModal]?.length > 0 ? 'auto' : '0' }}>
-                  {courseCoaches[selectedCourseModal] && courseCoaches[selectedCourseModal].length > 0 && (
+                <div className="mb-6" style={{ minHeight: selectedCourseCoaches.length > 0 ? 'auto' : '0' }}>
+                  {selectedCourseCoaches.length > 0 && (
                     <>
                       <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
                         Course Leaders
                       </h3>
                       <div className="flex flex-col gap-4">
-                        {courseCoaches[selectedCourseModal].map((coach, index) => (
+                        {selectedCourseCoaches.map((coach, index) => (
                         <div key={index} className="flex gap-4 items-start">
                           {/* Left side - Coach info */}
                           <div className="flex items-start gap-3 flex-shrink-0" style={{ width: '240px' }}>
