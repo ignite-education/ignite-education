@@ -2152,7 +2152,7 @@ const Auth = () => {
                 )}
 
                 {/* Course Benefits - Single Row Layout */}
-                <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-4.8px', marginBottom: '19.2px' }}>
+                <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-7.2px', marginBottom: '19.2px' }}>
                   <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full">
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <svg className="w-6.5 h-6.5 text-purple-600 flex-shrink-0" style={{ marginRight: '9.6px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
