@@ -1098,7 +1098,7 @@ const Auth = () => {
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
-                <div className="space-y-3 text-left">
+                <div className="text-left" style={{ display: 'flex', flexDirection: 'column', gap: '8.4px' }}>
                   {isEducationTypingComplete && (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
