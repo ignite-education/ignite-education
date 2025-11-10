@@ -46,11 +46,11 @@ export default function Certificate() {
     html2pdf().set(opt).from(element).save();
   };
   const handleShare = () => {
-    const shareText = `I've just completed the ${certificate.course_name} course at Ignite!`;
-    const igniteLinkedInUrl = 'https://www.linkedin.com/company/ignite-education';
+    const certificateUrl = window.location.href;
+    const shareText = `I've just completed the ${certificate.course_name} course at Ignite.\n\n${certificateUrl}`;
     
     // Open LinkedIn post creation with prefilled text
-    const linkedInText = encodeURIComponent(`${shareText}\n\nCheck out ${igniteLinkedInUrl}`);
+    const linkedInText = encodeURIComponent(shareText);
     window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${linkedInText}`, '_blank', 'width=600,height=700');
   };
   const formatDate = (dateString) => {
