@@ -66,10 +66,11 @@ export default function Certificate() {
           foreignObjectRendering: true,
         },
         jsPDF: {
-          unit: 'mm',
-          format: [pdfWidth, pdfHeight],
+          unit: 'px',
+          format: [1100, 650],
           orientation: 'landscape',
-          compress: true
+          compress: true,
+          hotfixes: ['px_scaling']
         },
         pagebreak: { mode: 'avoid-all' }
       };
