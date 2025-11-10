@@ -139,7 +139,7 @@ export default function Certificate() {
         >
           <div className="flex h-full">
             {/* Left Panel - Black */}
-            <div className="w-2/5 bg-black flex flex-col items-end justify-center -mt-[110px] p-6 md:p-12 text-white">
+            <div className="w-[390px] bg-black flex flex-col items-end justify-center -mt-[110px] p-6 md:p-12 text-white">
               {/* Ignite Logo */}
               <div className="mb-2 mr-[-10px]">
                 <div
@@ -166,7 +166,7 @@ export default function Certificate() {
             </div>
 
             {/* Right Panel - White */}
-            <div className="w-3/5 bg-white flex flex-col justify-center p-8 md:p-16 text-black">
+            <div className="w-[710px] bg-white flex flex-col justify-center p-8 md:p-16 text-black">
               {/* Certification Text */}
               <p className="text-sm md:text-lg mb-2 mr-[-10px] md:mb-2 text-gray-700">
                 Ignite certifies that
