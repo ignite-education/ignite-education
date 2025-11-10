@@ -168,7 +168,7 @@ export default function Certificate() {
             {/* Right Panel - White */}
             <div className="w-[710px] bg-white flex flex-col justify-center -mt-[150px] p-8 md:p-16 text-black">
               {/* Certification Text */}
-              <p className="pt-[250px] text-sm md:text-lg mb-2 mr-[-10px] md:mb-2 text-gray-700">
+              <p className="pt-[250px] text-xs md:text-base mb-2 mr-[-10px] md:mb-2 text-gray-800">
                 Ignite certifies that
               </p>
 
