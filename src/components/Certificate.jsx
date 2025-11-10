@@ -130,8 +130,12 @@ export default function Certificate() {
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div
           ref={certificateRef}
-          className="w-full max-w-6xl bg-white rounded-lg overflow-hidden shadow-2xl"
-          style={{ maxHeight: 'calc(100vh - 120px)' }}
+          className="w-full bg-white rounded-lg overflow-hidden shadow-2xl"
+          style={{
+            maxWidth: '800px',
+            aspectRatio: '1 / 1.41',
+            maxHeight: 'calc(100vh - 120px)'
+          }}
         >
           <div className="flex h-full">
             {/* Left Panel - Black */}
