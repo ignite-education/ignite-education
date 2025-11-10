@@ -100,7 +100,7 @@ const Auth = () => {
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
-    if (!marketingSectionRef.current || isLogin) return;
+    if (!marketingSectionRef.current || isLogin || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -124,7 +124,7 @@ const Auth = () => {
         observer.unobserve(marketingSectionRef.current);
       }
     };
-  }, [isLogin, animateWords]);
+  }, [isLogin, animateWords, selectedCourseModal]);
 
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
@@ -211,7 +211,7 @@ const Auth = () => {
 
   // Intersection observer for courses section typing animation
   useEffect(() => {
-    if (!coursesSectionRef.current || isLogin) return;
+    if (!coursesSectionRef.current || isLogin || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -233,11 +233,11 @@ const Auth = () => {
         observer.unobserve(coursesSectionRef.current);
       }
     };
-  }, [isLogin, isCourseTitleTypingComplete]);
+  }, [isLogin, isCourseTitleTypingComplete, selectedCourseModal]);
 
   // Intersection observer for learning model section typing animation
   useEffect(() => {
-    if (!learningModelSectionRef.current || isLogin) return;
+    if (!learningModelSectionRef.current || isLogin || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -259,11 +259,11 @@ const Auth = () => {
         observer.unobserve(learningModelSectionRef.current);
       }
     };
-  }, [isLogin, isLearningTaglineTypingComplete]);
+  }, [isLogin, isLearningTaglineTypingComplete, selectedCourseModal]);
 
   // Intersection observer for testimonials section animation
   useEffect(() => {
-    if (!testimonialsSectionRef.current || isLogin) return;
+    if (!testimonialsSectionRef.current || isLogin || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -290,7 +290,7 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials, isTestimonialsHeadingTypingComplete]);
+  }, [isLogin, animateTestimonials, isTestimonialsHeadingTypingComplete, selectedCourseModal]);
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
@@ -305,7 +305,7 @@ const Auth = () => {
 
   // Intersection observer for LinkedIn & FAQ section animation
   useEffect(() => {
-    if (!linkedInFAQSectionRef.current || isLogin) return;
+    if (!linkedInFAQSectionRef.current || isLogin || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -331,7 +331,7 @@ const Auth = () => {
         observer.unobserve(linkedInFAQSectionRef.current);
       }
     };
-  }, [isLogin, animateLinkedInFAQ]);
+  }, [isLogin, animateLinkedInFAQ, selectedCourseModal]);
 
   // Fetch LinkedIn posts
   const fetchLinkedInPosts = async () => {
@@ -903,7 +903,9 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: 'y mandatory'
+          scrollSnapType: 'y mandatory',
+          overflow: selectedCourseModal ? 'hidden' : 'auto',
+          pointerEvents: selectedCourseModal ? 'none' : 'auto'
         }}
       >
       {/* First Section - Auth Form */}
@@ -1364,8 +1366,7 @@ const Auth = () => {
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      willChange: 'transform'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     <div className="flex items-start gap-2 mb-2">
@@ -1393,8 +1394,7 @@ const Auth = () => {
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      willChange: 'transform'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     <div className="flex items-start gap-2 mb-2">
@@ -1427,8 +1427,7 @@ const Auth = () => {
                         : 'bg-gray-300 border border-gray-400'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      willChange: 'transform'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
                     <div className="flex items-start gap-2 mb-2">
