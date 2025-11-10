@@ -74,7 +74,10 @@
       "Bash(timeout 30 npm run build:*)",
       "Bash(then grep \"SUPABASE_SERVICE_ROLE_KEY\" .env)",
       "Bash(git hash-object:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(cd:*)",
+      "Bash(git update-index:*)",
+      "Bash(md5:*)"
     ],
     "deny": [],
     "ask": []
