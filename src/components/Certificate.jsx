@@ -36,18 +36,28 @@ export default function Certificate() {
     }
   };
 
-  const handleDownloadPDF = () => {
-    const element = certificateRef.current;
+  const handleDownloadPDF = async () => {
+    try {
+      const element = certificateRef.current;
 
-    const opt = {
-      margin: 0,
-      filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f3f4f6' },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-    };
+      if (!element) {
+        console.error('Certificate element not found');
+        return;
+      }
 
-    html2pdf().set(opt).from(element).save();
+      const opt = {
+        margin: 0,
+        filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f3f4f6' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to download certificate. Please try again.');
+    }
   };
   const handleShare = () => {
     const certificateUrl = window.location.href;
