@@ -45,6 +45,7 @@ export default function Certificate() {
         return;
       }
 
+      // Try using foreignObjectRendering which might handle modern CSS better
       const opt = {
         margin: 0,
         filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
@@ -55,20 +56,7 @@ export default function Certificate() {
           backgroundColor: '#f3f4f6',
           windowWidth: 1200,
           windowHeight: 800,
-          onclone: (clonedDoc) => {
-            // Inject CSS to override all oklch colors
-            const styleEl = clonedDoc.createElement('style');
-            styleEl.innerHTML = `
-              :root {
-                color-scheme: light !important;
-              }
-              * {
-                accent-color: #ec4899 !important;
-                scrollbar-color: #ec4899 #e5e7eb !important;
-              }
-            `;
-            clonedDoc.head.insertBefore(styleEl, clonedDoc.head.firstChild);
-          }
+          foreignObjectRendering: true,
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
@@ -76,7 +64,37 @@ export default function Certificate() {
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Failed to download certificate. Please try again.');
+      
+      // If foreignObjectRendering fails, try without it but with CSS stripping
+      try {
+        console.log('Retrying without foreignObjectRendering...');
+        const opt2 = {
+          margin: 0,
+          filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#f3f4f6',
+            onclone: (clonedDoc) => {
+              // Find all elements and force their computed styles to avoid oklch
+              const all = clonedDoc.querySelectorAll('*');
+              all.forEach(el => {
+                try {
+                  el.style.accentColor = 'transparent';
+                } catch (e) {
+                  // Ignore errors
+                }
+              });
+            }
+          },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+        await html2pdf().set(opt2).from(element).save();
+      } catch (retryError) {
+        console.error('Retry also failed:', retryError);
+        alert('Failed to download certificate. Please try again or contact support.');
+      }
     }
   };
   const handleShare = () => {
