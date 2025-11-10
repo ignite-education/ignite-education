@@ -46,6 +46,11 @@ export default function Certificate() {
       }
 
       // Try using foreignObjectRendering which might handle modern CSS better
+      // Certificate dimensions: 1100px x 650px
+      // Convert to mm for PDF (1px ≈ 0.264583mm at 96 DPI)
+      const pdfWidth = 1100 * 0.264583; // ~291mm
+      const pdfHeight = 650 * 0.264583; // ~172mm
+
       const opt = {
         margin: 0,
         filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
@@ -54,11 +59,17 @@ export default function Certificate() {
           scale: 2,
           useCORS: true,
           backgroundColor: '#f3f4f6',
+          width: 1100,
+          height: 650,
           windowWidth: 1200,
           windowHeight: 800,
           foreignObjectRendering: true,
         },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        jsPDF: {
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight],
+          orientation: 'landscape'
+        }
       };
 
       await html2pdf().set(opt).from(element).save();
