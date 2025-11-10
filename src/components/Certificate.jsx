@@ -171,7 +171,7 @@ export default function Certificate() {
               </p>
 
               {/* User Name */}
-              <h2 className="text-2xl md:text-4xl font-bold mb-2 mr-[-10px] md:mb-4 text-[#ec4899]">
+              <h2 className="text-xl md:text-3xl font-bold mb-2 mr-[-10px] md:mb-4 text-[#ec4899]">
                 {certificate.user_name}
               </h2>
 
