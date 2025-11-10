@@ -205,12 +205,12 @@ export default function Certificate() {
               <div className="border-t w-[45%] border-gray-200 pt-4 md:pt-6">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 text-xs md:text-sm">
                   <div>
-                    <p className="text-gray-600">Certification Number:</p>
-                    <p className="font-mono text-black">{certificate.certificate_number}</p>
+                    <p className="text-gray-600 whitespace-nowrap">Certification Number:</p>
+                    <p className="font-mono text-black whitespace-nowrap">{certificate.certificate_number}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Date of Issue:</p>
-                    <p className="text-black">{formatDate(certificate.issued_date)}</p>
+                    <p className="text-gray-600 whitespace-nowrap">Date of Issue:</p>
+                    <p className="text-black whitespace-nowrap">{formatDate(certificate.issued_date)}</p>
                   </div>
                 </div>
               </div>
