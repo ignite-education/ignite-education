@@ -61,19 +61,29 @@ export default function Certificate() {
           backgroundColor: '#f3f4f6',
           width: 1100,
           height: 650,
-          windowWidth: 1100,
-          windowHeight: 650,
-          logging: true,
-          foreignObjectRendering: true,
+          onclone: (clonedDoc) => {
+            // Override any problematic CSS properties that might use oklch
+            const style = clonedDoc.createElement('style');
+            style.textContent = `
+              @supports not (color: oklch(0% 0 0)) {
+                * {
+                  accent-color: transparent !important;
+                  color-scheme: light !important;
+                }
+              }
+              * {
+                accent-color: #ec4899 !important;
+                scrollbar-color: #ec4899 #f3f4f6 !important;
+              }
+            `;
+            clonedDoc.head.appendChild(style);
+          }
         },
         jsPDF: {
-          unit: 'px',
-          format: [1100, 650],
-          orientation: 'landscape',
-          compress: true,
-          hotfixes: ['px_scaling']
-        },
-        pagebreak: { mode: 'avoid-all' }
+          unit: 'mm',
+          format: [pdfWidth, pdfHeight],
+          orientation: 'landscape'
+        }
       };
 
       await html2pdf().set(opt).from(element).save();
