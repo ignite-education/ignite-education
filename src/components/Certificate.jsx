@@ -123,10 +123,10 @@ export default function Certificate() {
               </>
             ) : (
               <button
-                onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank')}
+                onClick={() => navigate('/')}
                 className="px-4 md:px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-sm md:text-base"
               >
-                <span>Discover Ignite</span>
+                <span>Explore Ignite</span>
               </button>
             )}
           </div>
