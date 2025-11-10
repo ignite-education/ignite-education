@@ -132,7 +132,7 @@ export default function Certificate() {
           ref={certificateRef}
           className="w-full bg-white rounded-lg overflow-hidden shadow-2xl"
           style={{
-            maxWidth: '720px',
+            maxWidth: '800px',
             aspectRatio: '1 / 1.41',
             maxHeight: 'calc(100vh - 120px)'
           }}
