@@ -72,7 +72,9 @@
       "Bash(then grep \"STRIPE\" .env)",
       "Bash(then grep -E \"VITE_SUPABASE|SUPABASE\" .env)",
       "Bash(timeout 30 npm run build:*)",
-      "Bash(then grep \"SUPABASE_SERVICE_ROLE_KEY\" .env)"
+      "Bash(then grep \"SUPABASE_SERVICE_ROLE_KEY\" .env)",
+      "Bash(git hash-object:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []
