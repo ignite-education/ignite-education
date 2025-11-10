@@ -156,7 +156,7 @@ export default function Certificate() {
 
               {/* Certificate Title */}
               <div className="text-right">
-                <h1 className="text-lg md:text-2xl font-medium mb-1">
+                <h1 className="text-lg md:text-2xl font-medium mb-0">
                   {certificate.course_name}
                 </h1>
                 <h2 className="text-lg md:text-2xl font-medium">
