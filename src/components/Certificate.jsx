@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCertificate } from '../lib/api';
 import html2pdf from 'html2pdf.js';
+import html2canvas from 'html2canvas';
+
 import LoadingScreen from './LoadingScreen';
 
 
@@ -44,18 +46,51 @@ export default function Certificate() {
 
     html2pdf().set(opt).from(element).save();
   };
-
-  const handleShare = () => {
-    const certificateUrl = window.location.href;
-    const shareText = `I'm excited to share that I've completed the ${certificate.course_name} course at Ignite! 🎓\n\nCertificate: ${certificateUrl}`;
-
-    // LinkedIn share URL
-    const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(certificateUrl)}`;
-
-    // Open LinkedIn share in new window
-    window.open(linkedInUrl, '_blank', 'width=600,height=600');
+  const handleShare = async () => {
+    try {
+      const element = certificateRef.current;
+      
+      // Generate canvas from certificate
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f3f4f6'
+      });
+      
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          // Create share text with Ignite LinkedIn link
+          const shareText = `I've just completed the ${certificate.course_name} course at Ignite!`;
+          const igniteLinkedInUrl = 'https://www.linkedin.com/company/ignite-education';
+          
+          // For browsers that support Web Share API with files
+          if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], 'certificate.png', { type: 'image/png' })] })) {
+            const file = new File([blob], 'certificate.png', { type: 'image/png' });
+            await navigator.share({
+              text: shareText,
+              files: [file]
+            });
+          } else {
+            // Fallback: Download image and open LinkedIn
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${certificate.user_name.replace(/\s+/g, '_')}_Certificate.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+            
+            // Open LinkedIn post creation with text
+            const linkedInText = encodeURIComponent(`${shareText}\n\nCheck out ${igniteLinkedInUrl}`);
+            window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${linkedInText}`, '_blank', 'width=600,height=700');
+          }
+        }
+      }, 'image/png');
+    } catch (error) {
+      console.error('Error sharing certificate:', error);
+      alert('Unable to share certificate. Please try again.');
+    }
   };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-GB', {
