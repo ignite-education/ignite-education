@@ -139,7 +139,7 @@ export default function Certificate() {
         >
           <div className="flex h-full">
             {/* Left Panel - Black */}
-            <div className="w-2/5 bg-black flex flex-col items-end justify-center p-6 md:p-12 text-white">
+            <div className="w-2/5 bg-black flex flex-col items-end justify-center -mt-10 p-6 md:p-12 text-white">
               {/* Ignite Logo */}
               <div className="mb-2 mr-[-10px]">
                 <div
