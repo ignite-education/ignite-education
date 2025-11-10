@@ -54,7 +54,11 @@ export default function Certificate() {
       const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#f3f4f6'
+        allowTaint: true,
+        backgroundColor: '#f3f4f6',
+        logging: false,
+        foreignObjectRendering: true,
+        removeContainer: true
       });
       
       // Convert canvas to blob
