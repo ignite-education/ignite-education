@@ -45,41 +45,35 @@ export default function Certificate() {
         return;
       }
 
-      // Clone the element to avoid modifying the original
-      const clone = element.cloneNode(true);
-      document.body.appendChild(clone);
-
-      // Remove any elements that might have problematic colors
-      const allElements = clone.getElementsByTagName('*');
-      for (let el of allElements) {
-        const computedStyle = window.getComputedStyle(el);
-        // Reset any problematic CSS properties to safe values
-        el.style.accentColor = '';
-      }
-
       const opt = {
         margin: 0,
         filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
           backgroundColor: '#f3f4f6',
-          logging: false,
+          windowWidth: 1200,
+          windowHeight: 800,
           onclone: (clonedDoc) => {
-            // Remove any CSS custom properties that might use oklch
-            const style = clonedDoc.createElement('style');
-            style.textContent = `* { accent-color: auto !important; }`;
-            clonedDoc.head.appendChild(style);
+            // Inject CSS to override all oklch colors
+            const styleEl = clonedDoc.createElement('style');
+            styleEl.innerHTML = `
+              :root {
+                color-scheme: light !important;
+              }
+              * {
+                accent-color: #ec4899 !important;
+                scrollbar-color: #ec4899 #e5e7eb !important;
+              }
+            `;
+            clonedDoc.head.insertBefore(styleEl, clonedDoc.head.firstChild);
           }
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
       };
 
-      await html2pdf().set(opt).from(clone).save();
-      
-      // Clean up the clone
-      document.body.removeChild(clone);
+      await html2pdf().set(opt).from(element).save();
     } catch (error) {
       console.error('Error generating PDF:', error);
       alert('Failed to download certificate. Please try again.');
