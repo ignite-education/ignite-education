@@ -191,7 +191,7 @@ export default function Certificate() {
               </div>
 
               {/* Certificate Details */}
-              <div className="border-t w-1/2 border-gray-200 pt-4 md:pt-6">
+              <div className="border-t w-[30%] border-gray-200 pt-4 md:pt-6">
                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 text-xs md:text-sm">
                   <div>
                     <p className="text-gray-600">Certification Number:</p>
