@@ -141,7 +141,7 @@ export default function Certificate() {
             {/* Left Panel - Black */}
             <div className="w-2/5 bg-black flex flex-col items-end justify-center p-6 md:p-12 text-white">
               {/* Ignite Logo */}
-              <div className="mb-4">
+              <div className="mb-2">
                 <div
                   style={{
                     backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
@@ -168,12 +168,12 @@ export default function Certificate() {
             {/* Right Panel - White */}
             <div className="w-3/5 bg-white flex flex-col justify-center p-8 md:p-16 text-black">
               {/* Certification Text */}
-              <p className="text-sm md:text-lg mb-2 md:mb-4 text-gray-700">
+              <p className="text-sm md:text-lg mb-2 md:mb-2 text-gray-700">
                 Ignite certifies that
               </p>
 
               {/* User Name */}
-              <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-4 text-[#ec4899]">
+              <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4 text-[#ec4899]">
                 {certificate.user_name}
               </h2>
 
