@@ -139,17 +139,23 @@ export default function Certificate() {
         >
           <div className="flex h-full">
             {/* Left Panel - Black */}
-            <div className="w-2/5 bg-black flex flex-col items-center justify-center p-6 md:p-12 text-white">
+            <div className="w-2/5 bg-black flex flex-col items-end justify-center p-6 md:p-12 text-white">
               {/* Ignite Logo */}
               <div className="mb-8">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-3 h-3 bg-[#ec4899] rounded-sm"></div>
-                  <span className="text-lg font-light">ignite</span>
-                </div>
+                <div
+                  style={{
+                    backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+                    backgroundSize: 'contain',
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'center',
+                    width: '120px',
+                    height: '40px',
+                  }}
+                />
               </div>
 
               {/* Certificate Title */}
-              <div className="text-center">
+              <div className="text-right">
                 <h1 className="text-2xl md:text-4xl font-bold mb-2">
                   {certificate.course_name}
                 </h1>
