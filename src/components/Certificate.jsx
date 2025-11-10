@@ -178,7 +178,7 @@ export default function Certificate() {
               </h2>
 
               {/* Achievement Description */}
-              <p className="text-sm md:text-lg mb-6 md:mb-12 leading-relaxed text-gray-800">
+              <p className="text-xs md:text-base mb-6 md:mb-12 leading-tight text-gray-800">
                 Has successfully passed the {certificate.course_name} course at Ignite,
                 and has demonstrated all of the necessary knowledge, skills and
                 full course requirements.
