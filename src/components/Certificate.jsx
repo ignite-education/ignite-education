@@ -26,6 +26,7 @@ export default function Certificate() {
       setLoading(true);
       const data = await getCertificate(certificateId);
       setCertificate(data);
+      console.log('Certificate loaded:', { user, certificate: data, match: user?.id === data?.user_id });
       setError(null);
     } catch (err) {
       console.error('Error loading certificate:', err);
@@ -99,7 +100,7 @@ export default function Certificate() {
             />
           {/* Action Buttons */}
           <div className="flex gap-3">
-            {user && certificate && user.id === certificate.user_id ? (
+            {(user && certificate && user.id === certificate.user_id) ? (
               <>
                 <button
                   onClick={handleShare}
