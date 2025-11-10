@@ -63,6 +63,7 @@ export default function Certificate() {
           height: 650,
           windowWidth: 1100,
           windowHeight: 650,
+          logging: true,
           foreignObjectRendering: true,
         },
         jsPDF: {
