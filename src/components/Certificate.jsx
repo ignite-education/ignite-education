@@ -65,8 +65,24 @@ export default function Certificate() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-black text-xl">Loading certificate...</div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center">
+        <div className="flex flex-col items-center gap-8">
+          <div
+            style={{
+              backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+              backgroundSize: 'contain',
+              backgroundRepeat: 'no-repeat',
+              backgroundPosition: 'center',
+              width: '200px',
+              height: '67px',
+            }}
+          />
+          <div className="flex gap-2">
+            <div className="w-3 h-3 bg-[#ec4899] rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-3 h-3 bg-[#ec4899] rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-3 h-3 bg-[#ec4899] rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
+        </div>
       </div>
     );
   }
