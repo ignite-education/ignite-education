@@ -36,7 +36,7 @@ export default function Certificate() {
       margin: 0,
       filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#000000' },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f3f4f6' },
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
     };
 
@@ -65,28 +65,28 @@ export default function Certificate() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading certificate...</div>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-black text-xl">Loading certificate...</div>
       </div>
     );
   }
 
   if (error || !certificate) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">{error || 'Certificate not found'}</div>
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-black text-xl">{error || 'Certificate not found'}</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col p-4 md:p-8">
+    <div className="min-h-screen bg-gray-100 flex flex-col p-4 md:p-8">
       {/* Header with Logo and Action Buttons */}
       <div className="w-full max-w-6xl mx-auto mb-4 flex items-center justify-between">
         {/* Logo - Links back to Progress Hub */}
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 text-black hover:opacity-80 transition-opacity"
         >
           <div className="w-3 h-3 bg-[#ec4899] rounded-sm"></div>
           <span className="text-lg font-light">ignite</span>
@@ -188,12 +188,6 @@ export default function Certificate() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Verification Info */}
-      <div className="mt-4 text-center text-gray-400 text-xs md:text-sm">
-        <p>Certificate ID: {certificate.id}</p>
-        <p className="mt-1">This certificate can be verified at ignite.education/certificate/{certificate.id}</p>
       </div>
     </div>
   );
