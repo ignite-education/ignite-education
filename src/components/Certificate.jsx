@@ -61,15 +61,17 @@ export default function Certificate() {
           backgroundColor: '#f3f4f6',
           width: 1100,
           height: 650,
-          windowWidth: 1200,
-          windowHeight: 800,
+          windowWidth: 1100,
+          windowHeight: 650,
           foreignObjectRendering: true,
         },
         jsPDF: {
           unit: 'mm',
           format: [pdfWidth, pdfHeight],
-          orientation: 'landscape'
-        }
+          orientation: 'landscape',
+          compress: true
+        },
+        pagebreak: { mode: 'avoid-all' }
       };
 
       await html2pdf().set(opt).from(element).save();
