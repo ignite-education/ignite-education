@@ -1854,7 +1854,7 @@ app.get('/api/linkedin/admin/auth', (req, res) => {
     `client_id=${process.env.VITE_LINKEDIN_CLIENT_ID}&` +
     `redirect_uri=${encodeURIComponent(process.env.VITE_LINKEDIN_REDIRECT_URI)}&` +
     `state=${state}&` +
-    `scope=r_organization_social%20r_basicprofile`;
+    `scope=r_organization_social%20profile%20openid%20email`;
 
   res.redirect(authUrl);
 });
