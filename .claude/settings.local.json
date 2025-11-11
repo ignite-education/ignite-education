@@ -9,7 +9,11 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(git log:*)",
-      "Bash(node -e:*)"
+      "Bash(node -e:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)"
     ],
     "deny": [],
     "ask": []
