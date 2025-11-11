@@ -1521,6 +1521,17 @@ const Auth = () => {
                               <p className="text-pink-300 font-semibold mb-1">AI Recommendation:</p>
                               <p className="text-gray-300 text-xs">Based on your progress, focus on Product Roadmapping next.</p>
                             </div>
+                            <div className="mt-4">
+                              <video
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                className="w-full rounded-lg border border-gray-700"
+                              >
+                                <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
+                              </video>
+                            </div>
                           </div>
                         </div>
                       </>
