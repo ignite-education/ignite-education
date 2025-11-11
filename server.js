@@ -1849,12 +1849,16 @@ function getMockLinkedInPosts() {
 // Admin: Initiate LinkedIn OAuth (call this once to authenticate)
 app.get('/api/linkedin/admin/auth', (req, res) => {
   const state = Math.random().toString(36).substring(7);
+
+  // Scopes needed:
+  // - r_organization_social: Read organization posts (requires Community Management API product)
+  // - profile, openid, email: Basic profile info (available with Sign In with LinkedIn)
   const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
     `response_type=code&` +
     `client_id=${process.env.VITE_LINKEDIN_CLIENT_ID}&` +
     `redirect_uri=${encodeURIComponent(process.env.VITE_LINKEDIN_REDIRECT_URI)}&` +
     `state=${state}&` +
-    `scope=r_organization_social%20profile%20openid%20email`;
+    `scope=profile%20email`;
 
   res.redirect(authUrl);
 });
