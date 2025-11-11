@@ -1361,7 +1361,7 @@ const Auth = () => {
       {/* Fourth Section - Learning Model */}
         <div
           ref={learningModelSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-20"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1374,9 +1374,9 @@ const Auth = () => {
                 {renderTypedLearningTagline()}
               </h3>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                 {/* Left Column - Feature Cards */}
-                <div className="space-y-6">
+                <div className="space-y-6 flex-shrink-0">
                   {/* Card 1 - AI smarts */}
                   <div
                     onClick={() => {
