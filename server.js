@@ -1725,10 +1725,16 @@ let linkedInPostsCache = {
   expiresIn: 15 * 60 * 1000 // Cache for 15 minutes
 };
 
+// LinkedIn admin token storage (in production, store in database)
+let linkedInAdminToken = {
+  accessToken: null,
+  refreshToken: null,
+  expiresAt: null
+};
+
 // Get LinkedIn organization posts
 app.get('/api/linkedin/posts', async (req, res) => {
   try {
-    const orgId = req.query.orgId || '104616735'; // Default to Ignite Courses
     const count = parseInt(req.query.count) || 3;
 
     // Check cache first
@@ -1740,68 +1746,65 @@ app.get('/api/linkedin/posts', async (req, res) => {
       return res.json(linkedInPostsCache.data);
     }
 
-    console.log('🔗 Fetching LinkedIn posts for org:', orgId);
+    console.log('🔗 Attempting to fetch LinkedIn posts via API...');
 
-    // First, get an access token using client credentials
-    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        grant_type: 'client_credentials',
-        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
-        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
-      })
-    });
+    // Try to fetch from LinkedIn API using admin token
+    try {
+      const accessToken = await getValidLinkedInToken();
+      const orgId = '104616735'; // Ignite Courses organization ID
 
-    if (!tokenResponse.ok) {
-      console.error('❌ Failed to get LinkedIn access token:', tokenResponse.status);
-      // Return mock data if authentication fails
-      return res.json(getMockLinkedInPosts());
-    }
-
-    const tokenData = await tokenResponse.json();
-    const accessToken = tokenData.access_token;
-
-    // Fetch organization posts
-    const postsResponse = await fetch(
-      `https://api.linkedin.com/v2/organizations/${orgId}/shares?q=owners&count=${count}&sortBy=LAST_MODIFIED`,
-      {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'X-Restli-Protocol-Version': '2.0.0'
+      const postsResponse = await fetch(
+        `https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${orgId}&count=${count}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'X-Restli-Protocol-Version': '2.0.0'
+          }
         }
-      }
-    );
+      );
 
-    if (!postsResponse.ok) {
-      console.error('❌ Failed to fetch LinkedIn posts:', postsResponse.status);
-      // Return mock data if API call fails
-      return res.json(getMockLinkedInPosts());
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json();
+
+        // Transform LinkedIn API response to our format
+        const posts = (postsData.elements || []).map((post, idx) => ({
+          id: post.organizationalEntity || `post-${idx}`,
+          text: post.commentary || post.text?.text || '',
+          created: post.lastModified?.time || Date.now(),
+          author: 'Ignite Education',
+          likes: post.totalShareStatistics?.likeCount || 0,
+          comments: post.totalShareStatistics?.commentCount || 0,
+          shares: post.totalShareStatistics?.shareCount || 0
+        }));
+
+        if (posts.length > 0) {
+          // Update cache
+          linkedInPostsCache = {
+            data: posts,
+            timestamp: now
+          };
+
+          console.log('✅ Successfully fetched', posts.length, 'LinkedIn posts from API');
+          return res.json(posts);
+        }
+      } else {
+        console.error('❌ LinkedIn API returned:', postsResponse.status, await postsResponse.text());
+      }
+    } catch (apiError) {
+      console.log('📋 LinkedIn API fetch failed:', apiError.message);
     }
 
-    const postsData = await postsResponse.json();
+    // Fallback to mock data
+    console.log('📋 Using mock LinkedIn posts (RSS not available)');
+    const mockPosts = getMockLinkedInPosts();
 
-    // Transform LinkedIn API response to our format
-    const posts = (postsData.elements || []).map(post => ({
-      id: post.id,
-      text: post.text?.text || '',
-      created: post.created?.time || Date.now(),
-      author: post.owner || '',
-      likes: post.totalSocialActivityCounts?.numLikes || 0,
-      comments: post.totalSocialActivityCounts?.numComments || 0,
-      shares: post.totalSocialActivityCounts?.numShares || 0
-    }));
-
-    // Update cache
+    // Update cache with mock data
     linkedInPostsCache = {
-      data: posts,
+      data: mockPosts,
       timestamp: now
     };
 
-    console.log('✅ Successfully fetched', posts.length, 'LinkedIn posts');
-    res.json(posts);
+    res.json(mockPosts);
 
   } catch (error) {
     console.error('❌ Error fetching LinkedIn posts:', error);
@@ -1841,6 +1844,142 @@ function getMockLinkedInPosts() {
       shares: 34
     }
   ];
+}
+
+// Admin: Initiate LinkedIn OAuth (call this once to authenticate)
+app.get('/api/linkedin/admin/auth', (req, res) => {
+  const state = Math.random().toString(36).substring(7);
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
+    `response_type=code&` +
+    `client_id=${process.env.VITE_LINKEDIN_CLIENT_ID}&` +
+    `redirect_uri=${encodeURIComponent(process.env.VITE_LINKEDIN_REDIRECT_URI)}&` +
+    `state=${state}&` +
+    `scope=r_organization_social%20r_basicprofile`;
+
+  res.redirect(authUrl);
+});
+
+// Admin: Handle LinkedIn OAuth callback
+app.get('/api/linkedin/admin/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    return res.status(400).send(`LinkedIn OAuth error: ${error}`);
+  }
+
+  if (!code) {
+    return res.status(400).send('No authorization code received');
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.VITE_LINKEDIN_REDIRECT_URI,
+        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
+        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('LinkedIn token exchange failed:', errorData);
+      return res.status(500).send(`Failed to exchange code for token: ${errorData}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    // Store the token
+    linkedInAdminToken = {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresAt: Date.now() + (tokenData.expires_in * 1000)
+    };
+
+    console.log('✅ LinkedIn admin token stored successfully');
+    console.log('   Expires at:', new Date(linkedInAdminToken.expiresAt).toLocaleString());
+
+    res.send(`
+      <html>
+        <head><title>LinkedIn Auth Success</title></head>
+        <body style="font-family: Arial; padding: 40px; text-align: center;">
+          <h1 style="color: #0077b5;">✅ LinkedIn Authentication Successful!</h1>
+          <p>Your LinkedIn posts will now appear on the auth page.</p>
+          <p>Token expires: ${new Date(linkedInAdminToken.expiresAt).toLocaleString()}</p>
+          <p><a href="/">Return to homepage</a></p>
+        </body>
+      </html>
+    `);
+
+    // Clear the posts cache to fetch fresh data
+    linkedInPostsCache = { data: null, timestamp: null, expiresIn: 15 * 60 * 1000 };
+
+  } catch (error) {
+    console.error('Error in LinkedIn callback:', error);
+    res.status(500).send(`Error: ${error.message}`);
+  }
+});
+
+// Helper: Get valid LinkedIn access token (with refresh if needed)
+async function getValidLinkedInToken() {
+  // Check if we have a token
+  if (!linkedInAdminToken.accessToken) {
+    throw new Error('No LinkedIn admin token available. Please authenticate first.');
+  }
+
+  // Check if token is still valid (with 5 min buffer)
+  const now = Date.now();
+  if (linkedInAdminToken.expiresAt && now < linkedInAdminToken.expiresAt - (5 * 60 * 1000)) {
+    return linkedInAdminToken.accessToken;
+  }
+
+  // Token expired or about to expire, try to refresh
+  if (!linkedInAdminToken.refreshToken) {
+    throw new Error('LinkedIn token expired and no refresh token available. Please re-authenticate.');
+  }
+
+  console.log('🔄 Refreshing LinkedIn access token...');
+
+  try {
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: linkedInAdminToken.refreshToken,
+        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
+        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to refresh LinkedIn token');
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    // Update stored token
+    linkedInAdminToken = {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token || linkedInAdminToken.refreshToken,
+      expiresAt: Date.now() + (tokenData.expires_in * 1000)
+    };
+
+    console.log('✅ LinkedIn token refreshed successfully');
+    return linkedInAdminToken.accessToken;
+
+  } catch (error) {
+    console.error('❌ Failed to refresh LinkedIn token:', error);
+    throw new Error('Failed to refresh LinkedIn token. Please re-authenticate.');
+  }
 }
 
 // ============================================================================
