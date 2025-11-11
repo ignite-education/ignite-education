@@ -333,7 +333,7 @@ const Auth = () => {
     };
   }, [isLogin, animateLinkedInFAQ, selectedCourseModal]);
 
-  // Fetch LinkedIn posts
+  // Fetch LinkedIn posts from backend API
   const fetchLinkedInPosts = async () => {
     if (linkedInPosts.length > 0) return; // Already fetched
 
@@ -341,12 +341,20 @@ const Auth = () => {
     setLinkedInError(null);
 
     try {
-      const posts = await getOrganizationPosts('104616735', 3); // Fetch 3 posts
+      // Call backend API endpoint instead of direct LinkedIn API
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/linkedin/posts?orgId=104616735&count=3`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const posts = await response.json();
       setLinkedInPosts(posts);
     } catch (error) {
       console.error('Error fetching LinkedIn posts:', error);
       setLinkedInError(error.message);
-      // Fallback posts are returned by the library
+      // Fallback to mock data if API fails
       const fallbackPosts = await getOrganizationPosts();
       setLinkedInPosts(fallbackPosts);
     } finally {

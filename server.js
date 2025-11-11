@@ -1714,10 +1714,144 @@ app.get('/api/certificate/user/:userId', async (req, res) => {
 // END CERTIFICATE ENDPOINTS
 // ============================================================================
 
+// ============================================================================
+// LINKEDIN ENDPOINTS
+// ============================================================================
+
+// Cache for LinkedIn posts to avoid rate limiting
+let linkedInPostsCache = {
+  data: null,
+  timestamp: null,
+  expiresIn: 15 * 60 * 1000 // Cache for 15 minutes
+};
+
+// Get LinkedIn organization posts
+app.get('/api/linkedin/posts', async (req, res) => {
+  try {
+    const orgId = req.query.orgId || '104616735'; // Default to Ignite Courses
+    const count = parseInt(req.query.count) || 3;
+
+    // Check cache first
+    const now = Date.now();
+    if (linkedInPostsCache.data &&
+        linkedInPostsCache.timestamp &&
+        (now - linkedInPostsCache.timestamp) < linkedInPostsCache.expiresIn) {
+      console.log('📦 Returning cached LinkedIn posts');
+      return res.json(linkedInPostsCache.data);
+    }
+
+    console.log('🔗 Fetching LinkedIn posts for org:', orgId);
+
+    // First, get an access token using client credentials
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
+        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      console.error('❌ Failed to get LinkedIn access token:', tokenResponse.status);
+      // Return mock data if authentication fails
+      return res.json(getMockLinkedInPosts());
+    }
+
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+
+    // Fetch organization posts
+    const postsResponse = await fetch(
+      `https://api.linkedin.com/v2/organizations/${orgId}/shares?q=owners&count=${count}&sortBy=LAST_MODIFIED`,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'X-Restli-Protocol-Version': '2.0.0'
+        }
+      }
+    );
+
+    if (!postsResponse.ok) {
+      console.error('❌ Failed to fetch LinkedIn posts:', postsResponse.status);
+      // Return mock data if API call fails
+      return res.json(getMockLinkedInPosts());
+    }
+
+    const postsData = await postsResponse.json();
+
+    // Transform LinkedIn API response to our format
+    const posts = (postsData.elements || []).map(post => ({
+      id: post.id,
+      text: post.text?.text || '',
+      created: post.created?.time || Date.now(),
+      author: post.owner || '',
+      likes: post.totalSocialActivityCounts?.numLikes || 0,
+      comments: post.totalSocialActivityCounts?.numComments || 0,
+      shares: post.totalSocialActivityCounts?.numShares || 0
+    }));
+
+    // Update cache
+    linkedInPostsCache = {
+      data: posts,
+      timestamp: now
+    };
+
+    console.log('✅ Successfully fetched', posts.length, 'LinkedIn posts');
+    res.json(posts);
+
+  } catch (error) {
+    console.error('❌ Error fetching LinkedIn posts:', error);
+    // Return mock data on error
+    res.json(getMockLinkedInPosts());
+  }
+});
+
+// Fallback mock data
+function getMockLinkedInPosts() {
+  return [
+    {
+      id: '1',
+      text: 'Excited to announce our latest course on Product Management! Learn from industry experts and build real-world projects. 🚀',
+      created: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
+      author: 'Ignite Education',
+      likes: 47,
+      comments: 8,
+      shares: 12
+    },
+    {
+      id: '2',
+      text: 'Join thousands of learners upskilling with Ignite. Our courses are completely free and designed for everyone. 💡',
+      created: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
+      author: 'Ignite Education',
+      likes: 63,
+      comments: 15,
+      shares: 21
+    },
+    {
+      id: '3',
+      text: 'New module just dropped in our Cybersecurity course! Dive into threat detection and incident response. 🔒',
+      created: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
+      author: 'Ignite Education',
+      likes: 89,
+      comments: 23,
+      shares: 34
+    }
+  ];
+}
+
+// ============================================================================
+// END LINKEDIN ENDPOINTS
+// ============================================================================
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ Stripe configured: ${process.env.STRIPE_SECRET_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ AWS Polly configured: ${process.env.AWS_ACCESS_KEY_ID ? 'Yes' : 'No'}`);
   console.log(`✅ Resend configured: ${process.env.RESEND_API_KEY ? 'Yes' : 'No'}`);
+  console.log(`✅ LinkedIn configured: ${process.env.VITE_LINKEDIN_CLIENT_ID && process.env.VITE_LINKEDIN_CLIENT_SECRET ? 'Yes' : 'No'}`);
 });
