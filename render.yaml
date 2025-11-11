@@ -1,0 +1,45 @@
+services:
+  # Backend API Server
+  - type: web
+    name: ignite-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: VITE_LINKEDIN_CLIENT_ID
+        sync: false
+      - key: VITE_LINKEDIN_CLIENT_SECRET
+        sync: false
+      - key: VITE_LINKEDIN_REDIRECT_URI
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: VITE_REDDIT_CLIENT_ID
+        sync: false
+      - key: VITE_REDDIT_CLIENT_SECRET
+        sync: false
+      - key: VITE_REDDIT_REDIRECT_URI
+        sync: false
+      - key: VITE_REDDIT_USER_AGENT
+        sync: false
