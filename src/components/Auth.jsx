@@ -796,7 +796,7 @@ const Auth = () => {
     if (!animateWords || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
-      setActiveCard((prev) => (prev + 1) % 3); // Rotate through 0, 1, 2
+      setActiveCard((prev) => (prev + 1) % 4); // Rotate through 0, 1, 2, 3
     }, 4000); // Change every 4 seconds
 
     return () => clearInterval(interval);
@@ -1366,7 +1366,7 @@ const Auth = () => {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                 {/* Left Column - Feature Cards */}
                 <div className="space-y-6">
-                  {/* Card 1 - Hands-on */}
+                  {/* Card 1 - AI smarts */}
                   <div
                     className={`rounded-lg p-4 ${
                       activeCard === 0
@@ -1385,19 +1385,41 @@ const Auth = () => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-base mb-1 text-black">
-                          Hands-on, interactive courses
+                          AI smarts to smash your studies.
                         </h4>
-                        <p className="text-xs text-gray-700">
-                          Short videos are broken up by interactive exercises. Practice new skills immediately to retain information.
-                        </p>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 2 - Real-world projects */}
+                  {/* Card 2 - Personalised support */}
                   <div
                     className={`rounded-lg p-4 ${
                       activeCard === 1
+                        ? 'bg-white shadow-xl scale-105 border-2 border-blue-500'
+                        : 'bg-gray-300 border border-gray-400'
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <div className="flex items-start gap-2 mb-2">
+                      <div className="bg-blue-500 rounded-full p-1.5 flex-shrink-0">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-base mb-1 text-black">
+                          Personalised support with industry professionals.
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 3 - Community */}
+                  <div
+                    className={`rounded-lg p-4 ${
+                      activeCard === 2
                         ? 'bg-white shadow-xl scale-105 border-2 border-green-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
@@ -1408,29 +1430,21 @@ const Auth = () => {
                     <div className="flex items-start gap-2 mb-2">
                       <div className="bg-green-500 rounded-full p-1.5 flex-shrink-0">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-base mb-1 text-black">
-                          Real-world projects
+                          Hear the latest from the community.
                         </h4>
-                        <p className="text-xs mb-2 text-gray-700">
-                          Apply your learning in real situations, perfect for developing practical skills and building up your portfolio.
-                        </p>
-                        {activeCard === 1 && (
-                          <button className="border-2 border-black text-black font-semibold px-3 py-1.5 rounded hover:bg-black hover:text-white transition text-xs">
-                            Explore Projects →
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 3 - Certified professional */}
+                  {/* Card 4 - Get certified */}
                   <div
                     className={`rounded-lg p-4 ${
-                      activeCard === 2
+                      activeCard === 3
                         ? 'bg-white shadow-xl scale-105 border-2 border-purple-500'
                         : 'bg-gray-300 border border-gray-400'
                     }`}
@@ -1446,11 +1460,8 @@ const Auth = () => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-base mb-1 text-black">
-                          Become a certified professional
+                          Get certified to take on your next role.
                         </h4>
-                        <p className="text-xs text-gray-700">
-                          Prove you're job-ready. Earn industry-leading certifications built around in-demand roles.
-                        </p>
                       </div>
                     </div>
                   </div>

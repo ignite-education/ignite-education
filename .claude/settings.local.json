@@ -13,7 +13,8 @@
       "Bash(curl:*)",
       "Bash(lsof:*)",
       "Bash(node:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
