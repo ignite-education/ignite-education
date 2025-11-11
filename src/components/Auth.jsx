@@ -1392,7 +1392,7 @@ const Auth = () => {
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    <h4 className="font-semibold text-base text-black">
+                    <h4 className="font-semibold text-xl text-black">
                       AI smarts to smash your studies.
                     </h4>
                   </div>
@@ -1412,7 +1412,7 @@ const Auth = () => {
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    <h4 className="font-semibold text-base text-black">
+                    <h4 className="font-semibold text-xl text-black">
                       Personalised support with industry professionals.
                     </h4>
                   </div>
@@ -1432,7 +1432,7 @@ const Auth = () => {
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    <h4 className="font-semibold text-base text-black">
+                    <h4 className="font-semibold text-xl text-black">
                       Hear the latest from the community.
                     </h4>
                   </div>
@@ -1452,7 +1452,7 @@ const Auth = () => {
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                     }}
                   >
-                    <h4 className="font-semibold text-base text-black">
+                    <h4 className="font-semibold text-xl text-black">
                       Get certified to take on your next role.
                     </h4>
                   </div>
