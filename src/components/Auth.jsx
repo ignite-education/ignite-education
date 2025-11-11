@@ -1499,39 +1499,20 @@ const Auth = () => {
                   <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-xl p-8 border border-gray-600 w-full max-w-md transition-all duration-500">
                     {activeCard === 0 && (
                       <>
-                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
-                          Study with <span className="text-pink-400">AI-powered tools</span>
-                        </h3>
-                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-                          <div className="mb-4 flex items-center justify-between">
-                            <span className="text-sm text-gray-400">AI Study Assistant</span>
-                            <div className="flex gap-2">
-                              <div className="w-3 h-3 bg-pink-500 rounded-full animate-pulse"></div>
-                            </div>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="bg-gray-800 rounded p-3 text-sm">
-                              <p className="text-gray-300 mb-2">What topic would you like to study today?</p>
-                              <div className="flex gap-2">
-                                <div className="bg-pink-500 px-3 py-1 rounded text-xs">Product Management</div>
-                                <div className="bg-pink-500 px-3 py-1 rounded text-xs">Data Science</div>
-                              </div>
-                            </div>
-                            <div className="bg-pink-500 bg-opacity-20 border border-pink-500 rounded p-3 text-sm">
-                              <p className="text-pink-300 font-semibold mb-1">AI Recommendation:</p>
-                              <p className="text-gray-300 text-xs">Based on your progress, focus on Product Roadmapping next.</p>
-                            </div>
-                            <div className="mt-4">
-                              <video
-                                autoPlay
-                                loop
-                                muted
-                                playsInline
-                                className="w-full rounded-lg border border-gray-700"
-                              >
-                                <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
-                              </video>
-                            </div>
+                        <div className="bg-white rounded-lg p-6 border border-gray-300">
+                          <h3 className="text-2xl sm:text-3xl font-semibold mb-4 text-gray-900">
+                            Study with <span className="text-pink-500">AI-powered tools</span>
+                          </h3>
+                          <div className="mt-4">
+                            <video
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              className="w-full rounded-lg"
+                            >
+                              <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
+                            </video>
                           </div>
                         </div>
                       </>
