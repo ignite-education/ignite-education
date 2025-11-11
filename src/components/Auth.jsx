@@ -1496,24 +1496,24 @@ const Auth = () => {
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
-                  <div className="bg-gray-800 bg-opacity-70 backdrop-blur-sm rounded-xl p-8 border border-gray-600 w-full max-w-md transition-all duration-500">
+                  <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
+                    activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
+                  }`}>
                     {activeCard === 0 && (
                       <>
-                        <div className="bg-white rounded-lg p-6 border border-gray-300">
-                          <h3 className="text-2xl sm:text-3xl font-semibold mb-4 text-gray-900">
-                            Study with <span className="text-pink-500">AI-powered tools</span>
-                          </h3>
-                          <div className="mt-4">
-                            <video
-                              autoPlay
-                              loop
-                              muted
-                              playsInline
-                              className="w-full rounded-lg"
-                            >
-                              <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
-                            </video>
-                          </div>
+                        <h3 className="text-2xl sm:text-3xl font-semibold mb-4 text-gray-900">
+                          Study with <span className="text-pink-500">AI-powered tools</span>
+                        </h3>
+                        <div className="mt-4">
+                          <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full rounded-lg"
+                          >
+                            <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
+                          </video>
                         </div>
                       </>
                     )}
