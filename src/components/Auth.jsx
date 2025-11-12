@@ -1633,7 +1633,7 @@ const Auth = () => {
               >
                 <div
                   className="relative"
-                  style={{ width: '115%' }}
+                  style={{ width: '130%' }}
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}
                 >
@@ -1767,10 +1767,7 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
-                    style={{
-                      minHeight: '200px'
-                    }}
+                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden aspect-square"
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
