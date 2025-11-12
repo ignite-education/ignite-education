@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-16 px-4 max-w-7xl mx-auto">
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1631,12 +1631,6 @@ const Auth = () => {
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.6s forwards' : 'none'
                 }}
               >
-                {/* Subheading */}
-                <h4 className="text-3xl font-bold text-white mb-8">
-                  Levelling up learning<br />
-                  with <span className="text-purple-500">smart AI integration.</span>
-                </h4>
-
                 <div
                   className="relative w-full"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -1688,7 +1682,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-white rounded-xl p-8"
+                      className="bg-white rounded-lg p-8"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1761,7 +1755,7 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-xl p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between hover:shadow-xl relative overflow-hidden"
+                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between hover:shadow-xl relative overflow-hidden"
                     style={{
                       minHeight: '200px'
                     }}
