@@ -1632,7 +1632,8 @@ const Auth = () => {
                 }}
               >
                 <div
-                  className="relative w-full"
+                  className="relative"
+                  style={{ width: '115%' }}
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}
                 >
@@ -1691,10 +1692,10 @@ const Auth = () => {
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                         transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                        minHeight: '280px'
+                        minHeight: '238px'
                       }}
                     >
-                      <p className="text-gray-800 mb-6 text-lg leading-relaxed" style={{ minHeight: '180px' }}>
+                      <p className="text-gray-800 mb-4 text-lg leading-relaxed" style={{ minHeight: '150px' }}>
                         {testimonial.quote}
                       </p>
 
@@ -1763,14 +1764,14 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between hover:shadow-xl relative overflow-hidden"
+                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
                     style={{
                       minHeight: '200px'
                     }}
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
-                    <h4 className="text-xl font-bold text-black whitespace-pre-line">
+                    <h4 className="text-xl font-medium text-black whitespace-pre-line text-center">
                       {useCase.title}
                     </h4>
                     <div
