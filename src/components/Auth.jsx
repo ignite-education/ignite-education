@@ -1608,13 +1608,13 @@ const Auth = () => {
       {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-20"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full max-w-7xl mx-auto text-white text-left" style={{ marginTop: '-75px' }}>
+          <div className="max-w-4xl w-full text-white text-left">
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '24px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '10px' }}>
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1759,7 +1759,7 @@ const Auth = () => {
                   
                   
                   
-                  gap: '24px'
+                  gap: '10px'
                 }}
               >
                 {[
@@ -1782,23 +1782,23 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white p-8 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
-                    style={{ borderRadius: '12px', minHeight: '238px' }}
+                    className="bg-white p-3 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
+                    style={{ borderRadius: '12px', minHeight: '95px' }}
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
-                    <h4 className="font-bold text-black whitespace-pre-line text-center text-xl">
+                    <h4 className="font-bold text-black whitespace-pre-line text-center text-sm">
                       {useCase.title}
                     </h4>
                     <div
-                      className="absolute inset-0 bg-white p-8 flex items-center justify-center transition-all duration-300"
+                      className="absolute inset-0 bg-white p-3 flex items-center justify-center transition-all duration-300"
                       style={{
                         opacity: hoveredUseCase === idx ? 1 : 0,
                         pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
                       }}
                     >
                       <p
-                        className="text-gray-800 leading-relaxed text-base text-center"
+                        className="text-gray-800 leading-relaxed text-xs text-center"
                         dangerouslySetInnerHTML={{
                           __html: useCase.description.replace(
                             /<strong>(.*?)<\/strong>/g,
