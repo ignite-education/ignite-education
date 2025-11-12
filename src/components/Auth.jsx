@@ -532,7 +532,7 @@ const Auth = () => {
         if (currentPos < lastIndex || !result.length || result[result.length - 1].key !== inPinkWord.word) {
           const pinkChunk = text.substring(i, Math.min(text.length, inPinkWord.end));
           result.push(
-            <span key={`${inPinkWord.word}-${i}`} className="text-pink-500" style={{ display: 'inline', whiteSpace: 'nowrap' }}>
+            <span key={`${inPinkWord.word}-${i}`} style={{ display: 'inline', whiteSpace: 'nowrap', color: '#EF0B72' }}>
               {pinkChunk}
             </span>
           );
@@ -610,7 +610,7 @@ const Auth = () => {
         const pinkChunk = text.substring(i, nextBreakOrEnd);
         if (pinkChunk) {
           result.push(
-            <span key={`pink-${i}`} className="text-pink-500">
+            <span key={`pink-${i}`} style={{ color: '#EF0B72' }}>
               {pinkChunk}
             </span>
           );
@@ -685,7 +685,7 @@ const Auth = () => {
         const pinkChunk = text.substring(i, nextBreakOrEnd);
         if (pinkChunk) {
           result.push(
-            <span key={`pink-${i}`} className="text-pink-500">
+            <span key={`pink-${i}`} style={{ color: '#EF0B72' }}>
               {pinkChunk}
             </span>
           );
@@ -952,7 +952,7 @@ const Auth = () => {
 
         {/* Tagline - on both sign in and create account pages */}
         <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
-          Upskill. Reskill.<br /><span className="text-pink-500">Get ready for what's next.</span>
+          Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
         </h1>
 
         <div className="w-full">
@@ -1075,7 +1075,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-pink-500 text-white rounded-xl px-4 py-1.5 sm:py-2 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-1.5 sm:py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
@@ -1089,7 +1089,7 @@ const Auth = () => {
                     setIsLogin(!isLogin);
                     setError('');
                   }}
-                  className="text-black hover:text-pink-500 transition"
+                  className="text-black hover:text-[#EF0B72] transition"
                   style={{ fontSize: '0.85em' }}
                 >
                   Don't have an account?
@@ -1102,7 +1102,7 @@ const Auth = () => {
                     setResetSuccess(false);
                     setError('');
                   }}
-                  className="text-black hover:text-pink-500 transition"
+                  className="text-black hover:text-[#EF0B72] transition"
                   style={{ fontSize: '0.85em' }}
                 >
                   Reset password
@@ -1114,7 +1114,7 @@ const Auth = () => {
                   setIsLogin(!isLogin);
                   setError('');
                 }}
-                className="text-black hover:text-pink-500 transition"
+                className="text-black hover:text-[#EF0B72] transition"
                 style={{ fontSize: '0.85em' }}
               >
                 Already have an account?
@@ -1135,7 +1135,7 @@ const Auth = () => {
             }}
             aria-label="Scroll to learn more"
           >
-            <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
           </button>
         </div>
       </div>
@@ -1216,7 +1216,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to courses"
             >
-              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -1359,7 +1359,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to learning model"
             >
-              <ChevronDown size={24} className="text-black group-hover:text-pink-500 transition" />
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -1472,7 +1472,7 @@ const Auth = () => {
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
-                          Study with <span className="text-pink-500">AI-powered tools</span>
+                          Study with <span style={{ color: '#EF0B72' }}>AI-powered tools</span>
                         </h3>
                         <div className="-mx-8 -mb-8 mt-4">
                           <video
@@ -1726,7 +1726,7 @@ const Auth = () => {
                         onClick={() => setCurrentTestimonialIndex(idx)}
                         className={`h-2 rounded-full transition-all duration-300 ${
                           currentTestimonialIndex === idx
-                            ? 'bg-pink-500 w-8'
+                            ? 'bg-[#EF0B72] w-8'
                             : 'bg-white w-2 hover:bg-gray-300'
                         }`}
                         aria-label={`Go to testimonial ${idx + 1}`}
@@ -1786,7 +1786,7 @@ const Auth = () => {
                         dangerouslySetInnerHTML={{
                           __html: useCase.description.replace(
                             /<strong>(.*?)<\/strong>/g,
-                            '<span class="font-bold text-pink-600">$1</span>'
+                            '<span class="font-bold" style="color: #EF0B72">$1</span>'
                           )
                         }}
                       />
@@ -2017,7 +2017,7 @@ const Auth = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-pink-500 text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Sending...' : 'Send Reset Link'}
                   </button>
@@ -2496,7 +2496,7 @@ const Auth = () => {
                 }}
                 className={`w-full font-semibold py-3 rounded-lg transition ${
                   selectedCourse.status === 'live'
-                    ? 'bg-pink-500 text-white hover:bg-pink-600'
+                    ? 'bg-[#EF0B72] text-white hover:bg-[#D50A65]'
                     : 'bg-gray-400 text-white cursor-not-allowed'
                 }`}
                 disabled={selectedCourse.status !== 'live'}
