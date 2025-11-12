@@ -437,8 +437,8 @@ const Auth = () => {
 
   // Typing animation for learning tagline
   const startLearningTaglineTyping = () => {
-    const fullText = 'Building a smarter, \nmore personalised era of education.';
-    const pauseAfter = 'Building a smarter,'.length;
+    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
+    const pauseAfter = 'Ignite is for everyone.'.length;
     let currentIndex = 0;
     let isPaused = false;
 
@@ -450,7 +450,7 @@ const Auth = () => {
         if (currentIndex <= fullText.length) {
           setTypedLearningTagline(fullText.substring(0, currentIndex));
 
-          // Pause after "Building a smarter,"
+          // Pause after "Ignite is for everyone."
           if (currentIndex === pauseAfter) {
             isPaused = true;
             setTimeout(() => { isPaused = false; }, 500); // 500ms pause
@@ -467,8 +467,8 @@ const Auth = () => {
 
   // Typing animation for testimonials heading
   const startTestimonialsHeadingTyping = () => {
-    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
-    const pauseAfter = 'Ignite is for everyone.'.length;
+    const fullText = 'Building a smarter, \nmore personalised era of education.';
+    const pauseAfter = 'Building a smarter,'.length;
     let currentIndex = 0;
     let isPaused = false;
 
@@ -653,8 +653,8 @@ const Auth = () => {
   // Helper to render typed learning tagline with purple highlights
   const renderTypedLearningTagline = () => {
     const text = typedLearningTagline;
-    const fullText = 'Building a smarter, \nmore personalised era of education.';
-    const firstLineLength = 'Building a smarter, '.length;
+    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
+    const firstLineLength = 'Ignite is for everyone.'.length;
 
     let result = [];
     let lastIndex = 0;
@@ -727,8 +727,8 @@ const Auth = () => {
   // Helper to render typed testimonials heading with white first line and pink second line
   const renderTypedTestimonialsHeading = () => {
     const text = typedTestimonialsHeading;
-    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
-    const firstLineLength = 'Ignite is for everyone.'.length;
+    const fullText = 'Building a smarter, \nmore personalised era of education.';
+    const firstLineLength = 'Building a smarter, '.length;
 
     let result = [];
     let lastIndex = 0;
