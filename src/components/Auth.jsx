@@ -1741,7 +1741,10 @@ const Auth = () => {
                 className="grid grid-cols-2 gap-4"
                 style={{
                   opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
+                  transform: 'scale(0.8)',
+                  marginLeft: '100px',
+                  transformOrigin: 'left center'
                 }}
               >
                 {[
