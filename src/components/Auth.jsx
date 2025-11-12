@@ -1616,13 +1616,11 @@ const Auth = () => {
         >
           <div className="max-w-4xl mx-auto text-white text-left">
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', width: '100%', maxWidth: '800px' }}>
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
-            </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '48px' }}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
