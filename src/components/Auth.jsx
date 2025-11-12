@@ -1704,11 +1704,11 @@ const Auth = () => {
                       <div
                         className="absolute flex items-center gap-3"
                         style={{
-                          bottom: '-30px',
+                          bottom: '-40px',
                           left: '32px'
                         }}
                       >
-                        <div className="w-16 h-16 rounded-lg bg-gray-400 flex items-center justify-center shadow-lg">
+                        <div className="rounded-lg bg-gray-400 flex items-center justify-center shadow-lg" style={{ width: '80px', height: '80px' }}>
                           {/* Placeholder for avatar */}
                         </div>
                         <div className="bg-white px-3 py-2 rounded shadow-lg">
@@ -1720,7 +1720,7 @@ const Auth = () => {
                   ))}
 
                   {/* Carousel Indicators */}
-                  <div className="flex justify-start gap-2 mt-16">
+                  <div className="flex justify-center gap-2 mt-16">
                     {[0, 1, 2, 3, 4, 5].map((idx) => (
                       <button
                         key={idx}
@@ -1739,13 +1739,14 @@ const Auth = () => {
 
               {/* Right Column - Use Cases Grid */}
               <div
-                className="grid grid-cols-2 gap-4"
+                className="grid grid-cols-2"
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
                   transform: 'scale(0.8)',
                   marginLeft: '100px',
-                  transformOrigin: 'left center'
+                  transformOrigin: 'left center',
+                  gap: '12px'
                 }}
               >
                 {[
