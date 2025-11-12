@@ -578,14 +578,8 @@ const Auth = () => {
   // Helper to render typed courses title with purple highlights
   const renderTypedCoursesTitle = () => {
     const text = typedCoursesTitle;
-    const words = ['courses.', 'students.'];
     const fullText = 'The best courses.\nFor the best students.';
-
-    const wordPositions = words.map(word => ({
-      word,
-      start: fullText.indexOf(word),
-      end: fullText.indexOf(word) + word.length
-    }));
+    const firstLineLength = 'The best courses.'.length;
 
     let result = [];
     let lastIndex = 0;
@@ -600,39 +594,48 @@ const Auth = () => {
         continue;
       }
 
-      // Check if we're at the start of a purple word
-      const inPurpleWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
+      // Check if we're in the second line (after the newline character)
+      const isSecondLine = i > firstLineLength;
 
-      if (inPurpleWord) {
-        if (i < lastIndex || !result.length || result[result.length - 1].key !== inPurpleWord.word) {
-          const purpleChunk = text.substring(i, Math.min(text.length, inPurpleWord.end)).replace(/\n/g, '');
-          result.push(
-            <span key={`${inPurpleWord.word}-${i}`} className="text-purple-600">
-              {purpleChunk}
-            </span>
-          );
-          i = Math.min(text.length - 1, inPurpleWord.end - 1);
-          lastIndex = i + 1;
-        }
-      } else {
-        // Regular text - find the next purple word or end
-        let nextPurpleStart = text.length;
-        for (const wp of wordPositions) {
-          if (wp.start > i && wp.start < nextPurpleStart && wp.start < text.length) {
-            nextPurpleStart = wp.start;
+      if (isSecondLine) {
+        // Find the end of current pink section
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
           }
         }
 
-        const chunk = text.substring(i, Math.min(nextPurpleStart, text.length));
-        const cleanChunk = chunk.replace(/\n/g, '');
-        if (cleanChunk) {
+        const pinkChunk = text.substring(i, nextBreakOrEnd);
+        if (pinkChunk) {
           result.push(
-            <span key={`text-${i}`} className="text-white">
-              {cleanChunk}
+            <span key={`pink-${i}`} className="text-pink-500">
+              {pinkChunk}
             </span>
           );
-          i = Math.min(text.length - 1, nextPurpleStart - 1);
-          lastIndex = i + 1;
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
+        }
+      } else {
+        // First line - white text
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
+          }
+        }
+
+        const chunk = text.substring(i, nextBreakOrEnd);
+        if (chunk) {
+          result.push(
+            <span key={`white-${i}`} className="text-white">
+              {chunk}
+            </span>
+          );
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
         }
       }
     }
