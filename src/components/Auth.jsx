@@ -1632,7 +1632,8 @@ const Auth = () => {
                 }}
               >
                 <div
-                  className="relative w-full"
+                  className="relative"
+                  style={{ width: '130%' }}
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}
                 >
@@ -1682,7 +1683,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-white rounded-lg p-8"
+                      className="bg-white rounded-lg p-8 pb-16"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1691,17 +1692,26 @@ const Auth = () => {
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
                         transform: currentTestimonialIndex === idx ? 'scale(1)' : 'scale(0.95)',
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                        minHeight: '280px'
                       }}
                     >
-                      <p className="text-gray-800 mb-6 text-lg leading-relaxed">
+                      <p className="text-gray-800 mb-6 text-lg leading-relaxed" style={{ minHeight: '180px' }}>
                         {testimonial.quote}
                       </p>
-                      <div className="flex items-center gap-3 pt-6 border-t border-gray-200">
-                        <div className="w-12 h-12 rounded-lg bg-gray-400 flex items-center justify-center">
+
+                      {/* Avatar positioned 50% inside, 50% outside at bottom left */}
+                      <div
+                        className="absolute flex items-center gap-3"
+                        style={{
+                          bottom: '-30px',
+                          left: '32px'
+                        }}
+                      >
+                        <div className="w-16 h-16 rounded-lg bg-gray-400 flex items-center justify-center shadow-lg">
                           {/* Placeholder for avatar */}
                         </div>
-                        <div>
+                        <div className="bg-white px-3 py-2 rounded shadow-lg">
                           <div className="font-semibold text-black text-base">{testimonial.name}</div>
                           <div className="text-sm text-gray-600">{testimonial.role}</div>
                         </div>
@@ -1710,7 +1720,7 @@ const Auth = () => {
                   ))}
 
                   {/* Carousel Indicators */}
-                  <div className="flex justify-start gap-2 mt-6">
+                  <div className="flex justify-start gap-2 mt-16">
                     {[0, 1, 2, 3, 4, 5].map((idx) => (
                       <button
                         key={idx}
