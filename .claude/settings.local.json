@@ -14,7 +14,8 @@
       "Bash(lsof:*)",
       "Bash(node:*)",
       "Bash(python3:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []
