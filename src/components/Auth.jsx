@@ -759,7 +759,7 @@ const Auth = () => {
         const pinkChunk = text.substring(i, nextBreakOrEnd);
         if (pinkChunk) {
           result.push(
-            <span key={`pink-${i}`} className="text-pink-500">
+            <span key={`pink-${i}`} style={{ color: '#EF0B72' }}>
               {pinkChunk}
             </span>
           );
