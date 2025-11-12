@@ -1622,74 +1622,21 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 max-w-7xl mx-auto">
-              {/* Left Column - Use Cases Accordion (2 cols) */}
-              <div className="lg:col-span-2 space-y-3">
-                {[
-                  {
-                    title: 'Recent graduates',
-                    description: 'Finished university or college and wondering what\'s next? With <strong>no experience required</strong>, you\'ll gain real-world skills, build a portfolio and get job-ready.'
-                  },
-                  {
-                    title: 'Career break returners',
-                    description: 'Taken time off recently? Pick up where you left off with <strong>flexible and self-paced courses</strong>, that will help rebuild confidence and step back into the job market with a new edge.'
-                  },
-                  {
-                    title: 'Pivoting careers',
-                    description: 'Whatever your professional background, we\'ll help identify your transferable strengths and <strong>learn in-demand skills</strong> to help you make the transition.'
-                  },
-                  {
-                    title: 'Upskilling in role',
-                    description: 'Whether you\'re aiming for a promotion or taking on new responsibilities, learn on your own schedule with <strong>personalised support</strong> to apply insights directly at work.'
-                  },
-                  {
-                    title: 'Learning something new',
-                    description: 'If you\'re looking for your next steps, our courses are <strong>completely free</strong>, and designed to help you learn through real-world projects.'
-                  }
-                ].map((useCase, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-gray-200 rounded-lg overflow-hidden transition-all duration-300 cursor-pointer"
-                    style={{
-                      opacity: 0,
-                      animation: animateTestimonials ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.1}s forwards` : 'none'
-                    }}
-                    onMouseEnter={() => setHoveredUseCase(idx)}
-                    onMouseLeave={() => setHoveredUseCase(null)}
-                  >
-                    <div className="bg-purple-600 px-4 py-3">
-                      <h3 className="text-lg font-bold text-white">{useCase.title}</h3>
-                    </div>
-                    <div
-                      className="px-4 transition-all duration-300 ease-in-out overflow-hidden"
-                      style={{
-                        maxHeight: hoveredUseCase === idx ? '200px' : '0px',
-                        paddingTop: hoveredUseCase === idx ? '12px' : '0px',
-                        paddingBottom: hoveredUseCase === idx ? '12px' : '0px'
-                      }}
-                    >
-                      <p
-                        className="text-gray-800 leading-relaxed text-sm"
-                        dangerouslySetInnerHTML={{
-                          __html: useCase.description.replace(
-                            /<strong>(.*?)<\/strong>/g,
-                            '<span class="font-bold text-pink-600">$1</span>'
-                          )
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Right Column - Rotating Testimonial (3 cols) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 max-w-7xl mx-auto">
+              {/* Left Column - Rotating Testimonial */}
               <div
-                className="lg:col-span-3 flex items-center justify-center"
+                className="flex flex-col items-start justify-center"
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.6s forwards' : 'none'
                 }}
               >
+                {/* Subheading */}
+                <h4 className="text-3xl font-bold text-white mb-8">
+                  Levelling up learning<br />
+                  with <span className="text-purple-500">smart AI integration.</span>
+                </h4>
+
                 <div
                   className="relative w-full"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -1741,7 +1688,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-8 border border-slate-700"
+                      className="bg-white rounded-xl p-8"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1753,37 +1700,96 @@ const Auth = () => {
                         transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     >
-                      <p className="text-gray-300 mb-6 italic text-lg leading-relaxed">
-                        "{testimonial.quote}"
+                      <p className="text-gray-800 mb-6 text-lg leading-relaxed">
+                        {testimonial.quote}
                       </p>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${testimonial.gradient} flex items-center justify-center text-white font-bold text-xl`}>
-                          {testimonial.initials}
+                      <div className="flex items-center gap-3 pt-6 border-t border-gray-200">
+                        <div className="w-12 h-12 rounded-lg bg-gray-400 flex items-center justify-center">
+                          {/* Placeholder for avatar */}
                         </div>
                         <div>
-                          <div className="font-semibold text-white text-lg">{testimonial.name}</div>
-                          <div className="text-sm text-gray-400">{testimonial.role}</div>
+                          <div className="font-semibold text-black text-base">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}</div>
                         </div>
                       </div>
                     </div>
                   ))}
 
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2 mt-6">
+                  <div className="flex justify-start gap-2 mt-6">
                     {[0, 1, 2, 3, 4, 5].map((idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                        className={`h-2 rounded-full transition-all duration-300 ${
                           currentTestimonialIndex === idx
-                            ? 'bg-purple-500 w-8'
-                            : 'bg-gray-500 hover:bg-gray-400'
+                            ? 'bg-pink-500 w-8'
+                            : 'bg-white w-2 hover:bg-gray-300'
                         }`}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
                     ))}
                   </div>
                 </div>
+              </div>
+
+              {/* Right Column - Use Cases Grid */}
+              <div
+                className="grid grid-cols-2 gap-4"
+                style={{
+                  opacity: 0,
+                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none'
+                }}
+              >
+                {[
+                  {
+                    title: 'Recent\nGraduates',
+                    description: 'Finished university or college and wondering what\'s next? With <strong>no experience required</strong>, you\'ll gain real-world skills, build a portfolio and get job-ready.'
+                  },
+                  {
+                    title: 'Career Break\nReturners',
+                    description: 'Taken time off recently? Pick up where you left off with <strong>flexible and self-paced courses</strong>, that will help rebuild confidence and step back into the job market with a new edge.'
+                  },
+                  {
+                    title: 'Upskilling\nIn Role',
+                    description: 'Whether you\'re aiming for a promotion or taking on new responsibilities, learn on your own schedule with <strong>personalised support</strong> to apply insights directly at work.'
+                  },
+                  {
+                    title: 'Pivoting\nCareers',
+                    description: 'Whatever your professional background, we\'ll help identify your transferable strengths and <strong>learn in-demand skills</strong> to help you make the transition.'
+                  }
+                ].map((useCase, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white rounded-xl p-6 cursor-pointer transition-all duration-300 flex flex-col justify-between hover:shadow-xl relative overflow-hidden"
+                    style={{
+                      minHeight: '200px'
+                    }}
+                    onMouseEnter={() => setHoveredUseCase(idx)}
+                    onMouseLeave={() => setHoveredUseCase(null)}
+                  >
+                    <h4 className="text-xl font-bold text-black whitespace-pre-line">
+                      {useCase.title}
+                    </h4>
+                    <div
+                      className="absolute inset-0 bg-white p-6 flex items-center transition-all duration-300"
+                      style={{
+                        opacity: hoveredUseCase === idx ? 1 : 0,
+                        pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
+                      }}
+                    >
+                      <p
+                        className="text-gray-800 leading-relaxed text-sm"
+                        dangerouslySetInnerHTML={{
+                          __html: useCase.description.replace(
+                            /<strong>(.*?)<\/strong>/g,
+                            '<span class="font-bold text-pink-600">$1</span>'
+                          )
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
