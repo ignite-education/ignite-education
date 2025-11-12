@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-16 px-4 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] gap-20 px-4 max-w-7xl mx-auto">
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1632,8 +1632,7 @@ const Auth = () => {
                 }}
               >
                 <div
-                  className="relative"
-                  style={{ width: '130%' }}
+                  className="relative w-full"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}
                 >
@@ -1690,9 +1689,8 @@ const Auth = () => {
                         left: idx === 0 ? 'auto' : 0,
                         right: idx === 0 ? 'auto' : 0,
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
-                        transform: currentTestimonialIndex === idx ? 'scale(1)' : 'scale(0.95)',
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                         minHeight: '280px'
                       }}
                     >
