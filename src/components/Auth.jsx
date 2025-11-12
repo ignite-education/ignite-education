@@ -1373,10 +1373,10 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white text-center">
+          <div className="max-w-7xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-center mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
@@ -1616,7 +1616,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white text-left">
             <div className="px-4">
-              <h3 className="font-bold text-white text-center mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
             </div>
