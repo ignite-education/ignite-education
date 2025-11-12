@@ -1373,7 +1373,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left">
+          <div className="max-w-7xl w-full text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
@@ -1614,7 +1614,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left">
+          <div className="max-w-7xl w-full text-white text-left">
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '10px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '48px' }}>
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1756,7 +1756,7 @@ const Auth = () => {
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
-                  marginLeft: '100px',
+                  transform: 'scale(0.85)',
                   gap: '10px'
                 }}
               >
