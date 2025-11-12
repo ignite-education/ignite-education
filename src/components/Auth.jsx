@@ -1367,16 +1367,16 @@ const Auth = () => {
       {/* Fourth Section - Learning Model */}
         <div
           ref={learningModelSectionRef}
-          className="min-h-screen flex items-start justify-center px-4 sm:px-6 lg:px-8 pt-20"
+          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-7xl w-full text-white text-left">
+          <div className="max-w-7xl w-full text-white text-center">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-center mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
@@ -1616,7 +1616,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white text-left">
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-center mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
             </div>
