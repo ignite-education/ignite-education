@@ -1614,7 +1614,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full text-white text-left" style={{ marginTop: '-75px' }}>
+          <div className="w-full max-w-7xl mx-auto text-white text-left" style={{ marginTop: '-75px' }}>
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] px-4 mx-auto" style={{ gap: '130px', maxWidth: '1280px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '24px' }}>
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1639,10 +1639,10 @@ const Auth = () => {
                 >
                   {[
                     {
-                      quote: "As a manager, Ignite helps me show my team new packages and new ways to solve problems.",
-                      name: "Gabriel Lages",
-                      role: "Business Intelligence and Analytics Manager",
-                      initials: "GL",
+                      quote: "Levelling up learning\nwith smart AI integration.",
+                      name: "Mark Jones",
+                      role: "Student, Kings College",
+                      initials: "MJ",
                       gradient: "from-purple-500 to-pink-500"
                     },
                     {
@@ -1692,22 +1692,37 @@ const Auth = () => {
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                         transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                        minHeight: '262px',
-                        borderRadius: '6px'
+                        minHeight: '500px',
+                        borderRadius: '12px'
                       }}
                     >
-                      <p className="text-gray-800 mb-6 text-lg leading-relaxed" style={{ minHeight: '130px' }}>
-                        {testimonial.quote}
-                      </p>
+                      <div>
+                        <h4 className="text-gray-900 font-semibold text-2xl leading-relaxed mb-8">
+                          {testimonial.quote.split('\n').map((line, i) => (
+                            <React.Fragment key={i}>
+                              {i === 1 && line.includes('smart AI integration') ? (
+                                <>
+                                  {line.substring(0, line.indexOf('smart AI integration'))}
+                                  <span style={{ color: '#8B5CF6' }}>smart AI integration</span>
+                                  {line.substring(line.indexOf('smart AI integration') + 'smart AI integration'.length)}
+                                </>
+                              ) : (
+                                line
+                              )}
+                              {i < testimonial.quote.split('\n').length - 1 && <br />}
+                            </React.Fragment>
+                          ))}
+                        </h4>
+                      </div>
 
                       {/* Avatar and name within the card at bottom */}
-                      <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
-                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '60px', height: '60px', flexShrink: 0 }}>
+                      <div className="flex items-center gap-4">
+                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '100px', height: '100px', flexShrink: 0 }}>
                           {/* Placeholder for avatar */}
                         </div>
                         <div>
-                          <div className="font-semibold text-black text-base">{testimonial.name}</div>
-                          <div className="text-sm text-gray-600">{testimonial.role}</div>
+                          <div className="font-semibold text-black text-lg">{testimonial.name}</div>
+                          <div className="text-base text-gray-600">{testimonial.role}</div>
                         </div>
                       </div>
                     </div>
@@ -1719,14 +1734,14 @@ const Auth = () => {
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`transition-all duration-300 ${
+                        className={`transition-all duration-300 rounded-sm ${
                           currentTestimonialIndex === idx
                             ? 'bg-[#EF0B72]'
                             : 'bg-white hover:bg-gray-300'
                         }`}
                         style={{
-                          width: currentTestimonialIndex === idx ? '32px' : '8px',
-                          height: '8px'
+                          width: currentTestimonialIndex === idx ? '32px' : '10px',
+                          height: '10px'
                         }}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
@@ -1741,10 +1756,10 @@ const Auth = () => {
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
-                  transform: 'scale(0.8)',
-                  marginLeft: '100px',
-                  transformOrigin: 'left center',
-                  gap: '12px'
+                  
+                  
+                  
+                  gap: '24px'
                 }}
               >
                 {[
@@ -1767,23 +1782,23 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden aspect-square"
-                    style={{ borderRadius: '6px' }}
+                    className="bg-white p-8 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
+                    style={{ borderRadius: '12px', minHeight: '238px' }}
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
-                    <h4 className="font-medium text-black whitespace-pre-line text-center" style={{ fontSize: '1.0625rem' }}>
+                    <h4 className="font-bold text-black whitespace-pre-line text-center text-xl">
                       {useCase.title}
                     </h4>
                     <div
-                      className="absolute inset-0 bg-white p-6 flex items-center transition-all duration-300"
+                      className="absolute inset-0 bg-white p-8 flex items-center justify-center transition-all duration-300"
                       style={{
                         opacity: hoveredUseCase === idx ? 1 : 0,
                         pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
                       }}
                     >
                       <p
-                        className="text-gray-800 leading-relaxed text-sm"
+                        className="text-gray-800 leading-relaxed text-base text-center"
                         dangerouslySetInnerHTML={{
                           __html: useCase.description.replace(
                             /<strong>(.*?)<\/strong>/g,
