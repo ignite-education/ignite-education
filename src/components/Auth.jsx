@@ -1633,7 +1633,7 @@ const Auth = () => {
               >
                 <div
                   className="relative"
-                  style={{ width: '130%' }}
+                  style={{ width: '145%' }}
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}
                 >
@@ -1683,7 +1683,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-white rounded-lg p-8 pb-16"
+                      className="bg-white p-8 pb-16"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1692,10 +1692,11 @@ const Auth = () => {
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                         transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                        minHeight: '238px'
+                        minHeight: '262px',
+                        borderRadius: '6px'
                       }}
                     >
-                      <p className="text-gray-800 mb-4 text-lg leading-relaxed" style={{ minHeight: '150px' }}>
+                      <p className="text-gray-800 mb-4 text-lg leading-relaxed" style={{ minHeight: '165px' }}>
                         {testimonial.quote}
                       </p>
 
@@ -1767,7 +1768,8 @@ const Auth = () => {
                 ].map((useCase, idx) => (
                   <div
                     key={idx}
-                    className="bg-white rounded-lg p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden aspect-square"
+                    className="bg-white p-6 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden aspect-square"
+                    style={{ borderRadius: '6px' }}
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
