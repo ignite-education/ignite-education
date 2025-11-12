@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] gap-20 px-4 max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] px-4 max-w-7xl mx-auto" style={{ gap: '130px' }}>
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
@@ -1773,7 +1773,7 @@ const Auth = () => {
                     onMouseEnter={() => setHoveredUseCase(idx)}
                     onMouseLeave={() => setHoveredUseCase(null)}
                   >
-                    <h4 className="text-xl font-medium text-black whitespace-pre-line text-center">
+                    <h4 className="font-medium text-black whitespace-pre-line text-center" style={{ fontSize: '1.0625rem' }}>
                       {useCase.title}
                     </h4>
                     <div
