@@ -1756,9 +1756,7 @@ const Auth = () => {
                 style={{
                   opacity: 0,
                   animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
-                  
-                  
-                  
+                  marginLeft: '100px',
                   gap: '10px'
                 }}
               >
