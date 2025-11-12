@@ -1614,7 +1614,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl w-full text-white text-left" style={{ marginTop: '-75px' }}>
+          <div className="w-full text-white text-left" style={{ marginTop: '-75px' }}>
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedTestimonialsHeading()}
