@@ -1683,7 +1683,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-white p-8 pb-16"
+                      className="bg-white p-8"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1696,22 +1696,16 @@ const Auth = () => {
                         borderRadius: '6px'
                       }}
                     >
-                      <p className="text-gray-800 mb-4 text-lg leading-relaxed" style={{ minHeight: '165px' }}>
+                      <p className="text-gray-800 mb-6 text-lg leading-relaxed" style={{ minHeight: '130px' }}>
                         {testimonial.quote}
                       </p>
 
-                      {/* Avatar positioned 50% inside, 50% outside at bottom left */}
-                      <div
-                        className="absolute flex items-center gap-3"
-                        style={{
-                          bottom: '-40px',
-                          left: '32px'
-                        }}
-                      >
-                        <div className="rounded-lg bg-gray-400 flex items-center justify-center shadow-lg" style={{ width: '80px', height: '80px' }}>
+                      {/* Avatar and name within the card at bottom */}
+                      <div className="flex items-center gap-3 pt-4 border-t border-gray-200">
+                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '60px', height: '60px', flexShrink: 0 }}>
                           {/* Placeholder for avatar */}
                         </div>
-                        <div className="bg-white px-3 py-2 rounded shadow-lg">
+                        <div>
                           <div className="font-semibold text-black text-base">{testimonial.name}</div>
                           <div className="text-sm text-gray-600">{testimonial.role}</div>
                         </div>
@@ -1720,16 +1714,20 @@ const Auth = () => {
                   ))}
 
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2 mt-16">
+                  <div className="flex justify-center gap-2 mt-8">
                     {[0, 1, 2, 3, 4, 5].map((idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`h-2 rounded-full transition-all duration-300 ${
+                        className={`transition-all duration-300 ${
                           currentTestimonialIndex === idx
-                            ? 'bg-[#EF0B72] w-8'
-                            : 'bg-white w-2 hover:bg-gray-300'
+                            ? 'bg-[#EF0B72]'
+                            : 'bg-white hover:bg-gray-300'
                         }`}
+                        style={{
+                          width: currentTestimonialIndex === idx ? '32px' : '8px',
+                          height: '8px'
+                        }}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
                     ))}
