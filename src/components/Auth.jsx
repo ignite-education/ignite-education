@@ -1252,7 +1252,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - 2x2 Course Grid with Swipe Navigation */}
-              <div className="flex items-center gap-4" style={{ marginLeft: '-50px' }}>
+              <div className="flex items-center gap-2" style={{ marginLeft: '-50px' }}>
                 {/* Left Arrow */}
                 {coursePageIndex > 0 && courses.length > 4 && (
                   <button
@@ -1683,7 +1683,7 @@ const Auth = () => {
                   ].map((testimonial, idx) => (
                     <div
                       key={idx}
-                      className="bg-white p-8"
+                      className="bg-white p-5 flex flex-col justify-between"
                       style={{
                         position: idx === 0 ? 'relative' : 'absolute',
                         top: idx === 0 ? 'auto' : 0,
@@ -1692,12 +1692,12 @@ const Auth = () => {
                         opacity: currentTestimonialIndex === idx ? 1 : 0,
                         pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                         transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                        minHeight: '500px',
+                        minHeight: '250px',
                         borderRadius: '12px'
                       }}
                     >
                       <div>
-                        <h4 className="text-gray-900 font-semibold text-2xl leading-relaxed mb-8">
+                        <h4 className="text-gray-900 font-semibold text-xl leading-relaxed mb-4">
                           {testimonial.quote.split('\n').map((line, i) => (
                             <React.Fragment key={i}>
                               {i === 1 && line.includes('smart AI integration') ? (
@@ -1716,13 +1716,13 @@ const Auth = () => {
                       </div>
 
                       {/* Avatar and name within the card at bottom */}
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '100px', height: '100px', flexShrink: 0 }}>
+                      <div className="flex items-center gap-2">
+                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '50px', height: '50px', flexShrink: 0 }}>
                           {/* Placeholder for avatar */}
                         </div>
                         <div>
-                          <div className="font-semibold text-black text-lg">{testimonial.name}</div>
-                          <div className="text-base text-gray-600">{testimonial.role}</div>
+                          <div className="font-semibold text-black text-base">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}</div>
                         </div>
                       </div>
                     </div>
