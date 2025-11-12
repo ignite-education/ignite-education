@@ -1622,7 +1622,7 @@ const Auth = () => {
             </div>
 
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] px-4 max-w-7xl mx-auto" style={{ gap: '130px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1.5fr] px-4 mx-auto" style={{ gap: '130px', maxWidth: 'calc(1280px + 50px)' }}>
               {/* Left Column - Rotating Testimonial */}
               <div
                 className="flex flex-col items-start justify-center"
