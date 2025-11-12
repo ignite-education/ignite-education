@@ -467,8 +467,8 @@ const Auth = () => {
 
   // Typing animation for testimonials heading
   const startTestimonialsHeadingTyping = () => {
-    const fullText = 'Ignite is for everyone \nand their mother.';
-    const pauseAfter = 'Ignite is for everyone'.length;
+    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
+    const pauseAfter = 'Ignite is for everyone.'.length;
     let currentIndex = 0;
     let isPaused = false;
 
@@ -653,14 +653,8 @@ const Auth = () => {
   // Helper to render typed learning tagline with purple highlights
   const renderTypedLearningTagline = () => {
     const text = typedLearningTagline;
-    const words = ['smarter', 'personalised'];
     const fullText = 'Building a smarter, \nmore personalised era of education.';
-
-    const wordPositions = words.map(word => ({
-      word,
-      start: fullText.indexOf(word),
-      end: fullText.indexOf(word) + word.length
-    }));
+    const firstLineLength = 'Building a smarter, '.length;
 
     let result = [];
     let lastIndex = 0;
@@ -675,41 +669,48 @@ const Auth = () => {
         continue;
       }
 
-      const inPurpleWord = wordPositions.find(wp => i >= wp.start && i < wp.end);
+      // Check if we're in the second line (after the newline character)
+      const isSecondLine = i > firstLineLength;
 
-      if (inPurpleWord) {
-        if (i < lastIndex || !result.length || result[result.length - 1].key !== inPurpleWord.word) {
-          const purpleChunk = text.substring(i, Math.min(text.length, inPurpleWord.end));
-          result.push(
-            <span key={`${inPurpleWord.word}-${i}`} className="text-purple-600">
-              {purpleChunk}
-            </span>
-          );
-          i = Math.min(text.length - 1, inPurpleWord.end - 1);
-          lastIndex = i + 1;
-        }
-      } else {
-        // Regular text - find the next purple word, line break, or end
-        let nextPurpleStart = text.length;
-        let nextLineBreak = text.indexOf('\n', i);
-        if (nextLineBreak === -1) nextLineBreak = text.length;
-
-        for (const wp of wordPositions) {
-          if (wp.start > i && wp.start < nextPurpleStart && wp.start < text.length) {
-            nextPurpleStart = wp.start;
+      if (isSecondLine) {
+        // Find the end of current pink section
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
           }
         }
 
-        const endPos = Math.min(nextPurpleStart, nextLineBreak, text.length);
-        const chunk = text.substring(i, endPos);
+        const pinkChunk = text.substring(i, nextBreakOrEnd);
+        if (pinkChunk) {
+          result.push(
+            <span key={`pink-${i}`} className="text-pink-500">
+              {pinkChunk}
+            </span>
+          );
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
+        }
+      } else {
+        // First line - white text
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
+          }
+        }
+
+        const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`text-${i}`} className="text-white">
+            <span key={`white-${i}`} className="text-white">
               {chunk}
             </span>
           );
-          i = endPos - 1;
-          lastIndex = i + 1;
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
         }
       }
     }
@@ -723,17 +724,11 @@ const Auth = () => {
     return result;
   };
 
-  // Helper to render typed testimonials heading with pink highlight on 'everyone'
+  // Helper to render typed testimonials heading with white first line and pink second line
   const renderTypedTestimonialsHeading = () => {
     const text = typedTestimonialsHeading;
-    const pinkWord = 'everyone';
-    const fullText = 'Ignite is for everyone \nand their mother.';
-
-    const wordPosition = {
-      word: pinkWord,
-      start: fullText.indexOf(pinkWord),
-      end: fullText.indexOf(pinkWord) + pinkWord.length
-    };
+    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
+    const firstLineLength = 'Ignite is for everyone.'.length;
 
     let result = [];
     let lastIndex = 0;
@@ -748,40 +743,48 @@ const Auth = () => {
         continue;
       }
 
-      // Check if we're at the start of the pink word
-      const inPinkWord = i >= wordPosition.start && i < wordPosition.end;
+      // Check if we're in the second line (after the newline character)
+      const isSecondLine = i > firstLineLength;
 
-      if (inPinkWord) {
-        if (i < lastIndex || !result.length || result[result.length - 1].key !== pinkWord) {
-          const pinkChunk = text.substring(i, Math.min(text.length, wordPosition.end));
+      if (isSecondLine) {
+        // Find the end of current pink section
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
+          }
+        }
+
+        const pinkChunk = text.substring(i, nextBreakOrEnd);
+        if (pinkChunk) {
           result.push(
-            <span key={`${pinkWord}-${i}`} className="text-pink-500">
+            <span key={`pink-${i}`} className="text-pink-500">
               {pinkChunk}
             </span>
           );
-          i = Math.min(text.length - 1, wordPosition.end - 1);
-          lastIndex = i + 1;
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
         }
       } else {
-        // Regular text - find the next pink word, line break, or end
-        let nextPinkStart = text.length;
-        let nextLineBreak = text.indexOf('\n', i);
-        if (nextLineBreak === -1) nextLineBreak = text.length;
-
-        if (wordPosition.start > i && wordPosition.start < text.length) {
-          nextPinkStart = wordPosition.start;
+        // First line - white text
+        let nextBreakOrEnd = text.length;
+        for (let j = i; j < text.length; j++) {
+          if (text[j] === '\n') {
+            nextBreakOrEnd = j;
+            break;
+          }
         }
 
-        const endPos = Math.min(nextPinkStart, nextLineBreak, text.length);
-        const chunk = text.substring(i, endPos);
+        const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`text-${i}`} className="text-white">
+            <span key={`white-${i}`} className="text-white">
               {chunk}
             </span>
           );
-          i = endPos - 1;
-          lastIndex = i + 1;
+          i = nextBreakOrEnd - 1;
+          lastIndex = nextBreakOrEnd;
         }
       }
     }
