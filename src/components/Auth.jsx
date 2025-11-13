@@ -1612,16 +1612,16 @@ const Auth = () => {
                   <div className="relative">
                     {[
                       {
-                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
-                        name: "Sarah Matthews",
-                        role: "Product Marketing Manager",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
-                      },
-                      {
                         quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
                         name: "Amelia Chen",
                         role: "Junior Designer",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
+                      },
+                      {
+                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
+                        name: "Sarah Matthews",
+                        role: "Product Marketing Manager",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
                         quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
