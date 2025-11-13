@@ -1178,7 +1178,7 @@ const Auth = () => {
                   {isEducationTypingComplete && (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
                           </svg>
@@ -1190,7 +1190,7 @@ const Auth = () => {
                       </div>
 
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.4s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
                           </svg>
@@ -1202,7 +1202,7 @@ const Auth = () => {
                       </div>
 
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.6s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded-full p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
                           </svg>
@@ -1314,7 +1314,7 @@ const Auth = () => {
                         </div>
 
                         {/* Plus Icon */}
-                        <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded-full">
+                        <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                           </svg>
