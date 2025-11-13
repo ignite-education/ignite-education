@@ -1403,7 +1403,7 @@ const Auth = () => {
                       setActiveCard(0);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded p-4 cursor-pointer ${
+                    className={`rounded cursor-pointer ${
                       activeCard === 0
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1411,7 +1411,11 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: activeCard === 0 ? '10rem' : '5rem',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
