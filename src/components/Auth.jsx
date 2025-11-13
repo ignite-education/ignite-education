@@ -1618,7 +1618,7 @@ const Auth = () => {
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
-                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. It's not just about learning skills, it's about understanding yourself. Crazy considering it's free.",
+                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
                         name: "Amelia Chen",
                         role: "Junior Designer",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
@@ -1630,7 +1630,7 @@ const Auth = () => {
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
-                        quote: "Taking a career break left me feeling out of touch. Ignite rebuilt my confidence from the ground up. Following the course and using the AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
+                        quote: "Taking a career break left me feeling out of touch. Following the course and using the neat AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
                         name: "Rebecca Thompson",
                         role: "Former Teacher",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
