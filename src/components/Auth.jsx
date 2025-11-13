@@ -1597,7 +1597,7 @@ const Auth = () => {
           <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '6.5rem', paddingBottom: '3rem' }}>
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}">
+              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
 
@@ -1689,7 +1689,7 @@ const Auth = () => {
                 </div>
 
 
-                {/* Right Column - 2x2 Grid of Cards */}
+                                {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
                   <div className="grid grid-cols-2 gap-3" style={{ width: '24.15rem' }}>
                     {[
@@ -1705,7 +1705,7 @@ const Auth = () => {
                           height: '11.5rem',
                           width: '11.5rem',
                           opacity: animateTestimonials ? 1 : 0,
-                          animation: animateTestimonials ? 'fadeInUp 0.8s ease-out ' + (0.1 + idx * 0.1) + 's forwards' : 'none'
+                          animation: animateTestimonials ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.1}s forwards` : 'none'
                         }}
                       >
                         <h4 className="text-black text-lg font-semibold text-center leading-tight">
@@ -1713,6 +1713,83 @@ const Auth = () => {
                         </h4>
                       </div>
                     ))}
+                  </div>
+                </div>
+              </div>
+                      </>
+                    )}
+
+                    {activeCard === 2 && (
+                      <>
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
+                          Join the <span className="text-green-400">community</span>
+                        </h3>
+                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                          <div className="mb-4">
+                            <span className="text-sm text-gray-400">Latest Updates</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="bg-gray-800 rounded p-3">
+                              <div className="flex items-start gap-2 mb-2">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                  A
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white text-xs font-semibold">Alex Chen</p>
+                                  <p className="text-gray-400 text-xs">Just completed Product Strategy course!</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bg-gray-800 rounded p-3">
+                              <div className="flex items-start gap-2 mb-2">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                  S
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white text-xs font-semibold">Sarah Johnson</p>
+                                  <p className="text-gray-400 text-xs">New project idea: Building an AI chatbot</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bg-green-500 bg-opacity-20 border border-green-500 rounded p-3">
+                              <p className="text-green-300 text-xs font-semibold">125 members online now</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeCard === 3 && (
+                      <>
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
+                          Get <span className="text-purple-400">certified</span>
+                        </h3>
+                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                          <div className="mb-4">
+                            <span className="text-sm text-gray-400">Your Certifications</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="bg-gray-800 rounded p-4">
+                              <div className="flex items-center gap-3 mb-3">
+                                <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                </svg>
+                                <div>
+                                  <p className="text-white text-sm font-semibold">Product Manager Professional</p>
+                                  <p className="text-gray-400 text-xs">In Progress - 75% Complete</p>
+                                </div>
+                              </div>
+                              <div className="w-full bg-gray-700 rounded-full h-2">
+                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                              </div>
+                            </div>
+                            <button className="bg-purple-500 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-purple-600 transition w-full">
+                              Continue Certification
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
