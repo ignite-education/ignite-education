@@ -1753,9 +1753,9 @@ const Auth = () => {
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
-                  <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
+                  <div className={`rounded-xl w-full transition-all duration-500 ${
                     activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
-                  }`} style={{ height: '27.25rem' }}>
+                  }`} style={{ height: '27.25rem', maxWidth: '32.2rem' }}>
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
