@@ -299,7 +299,7 @@ const Auth = () => {
 
     const interval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % 5); // 5 testimonials total
-    }, 5000); // Rotate every 5 seconds
+    }, 6000); // Rotate every 6 seconds
 
     return () => clearInterval(interval);
   }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, isLogin, selectedCourseModal]);
