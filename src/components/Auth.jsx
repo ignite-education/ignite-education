@@ -1566,7 +1566,7 @@ const Auth = () => {
               </div>
 
             {/* Scroll Down Arrow */}
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-center mt-20">
               <button
                 onClick={scrollToTestimonials}
                 className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
@@ -1594,7 +1594,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full text-white text-left" style={{ paddingTop: '6rem', paddingBottom: '8rem' }}>
+          <div className="w-full text-white text-left" style={{ paddingTop: '6rem', paddingBottom: '6rem' }}>
             {/* Title Container */}
             <div className="max-w-4xl mx-auto px-4">
               <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
@@ -1734,7 +1734,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-center mt-20">
                 <button
                   onClick={() => {
                     linkedInFAQSectionRef.current?.scrollIntoView({
