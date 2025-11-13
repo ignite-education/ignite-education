@@ -1654,7 +1654,7 @@ const Auth = () => {
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           width: '576px',
-                          height: '303.6px',
+                          height: '324.8px',
                           overflow: 'visible'
                         }}
                       >
