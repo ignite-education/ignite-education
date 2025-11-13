@@ -1387,7 +1387,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl mx-auto text-white text-left py-12">
+          <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '5.1rem', paddingBottom: '3rem' }}>
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '1.2rem' }}>
