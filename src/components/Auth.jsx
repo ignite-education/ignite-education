@@ -1612,33 +1612,33 @@ const Auth = () => {
                   <div className="relative">
                     {[
                       {
-                        quote: "Levelling up learning with smart AI integration.",
-                        name: "Mark Jones",
-                        role: "Student, Kings College",
+                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
+                        name: "Sarah Matthews",
+                        role: "Product Marketing Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
-                        quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
-                        name: "Rachel Alt-Simmons",
-                        role: "Head Of Strategic Design, Data, Pricing And Analytics",
+                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. It's not just about learning skills, it's about understanding yourself. Crazy considering it's free.",
+                        name: "Amelia Chen",
+                        role: "Junior Designer",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
                       },
                       {
-                        quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
-                        name: "Ofentswe Lebogo",
-                        role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)",
+                        quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
+                        name: "James Patel",
+                        role: "University Student",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
-                        quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
-                        name: "Ebuka Nwaformo",
-                        role: "Graduate Student, University College Dublin",
+                        quote: "Taking a career break left me feeling out of touch. Ignite rebuilt my confidence from the ground up. Following the course and using the AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
+                        name: "Rebecca Thompson",
+                        role: "Former Teacher",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
                       },
                       {
-                        quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
-                        name: "Sarah Schlobohm",
-                        role: "Senior Analytics Manager, Global Risk Analytics, HSBC",
+                        quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
+                        name: "David Morrison",
+                        role: "Sr Product Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
                       }
                     ].map((testimonial, idx) => (
