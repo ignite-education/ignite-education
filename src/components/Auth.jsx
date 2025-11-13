@@ -1686,7 +1686,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2 mt-6">
+                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem' }}>
                     {[0, 1, 2, 3, 4, 5].map((idx) => (
                       <button
                         key={idx}
@@ -1697,7 +1697,7 @@ const Auth = () => {
                             : 'bg-white hover:bg-gray-300'
                         }`}
                         style={{
-                          width: currentTestimonialIndex === idx ? '32px' : '10px',
+                          width: '10px',
                           height: '10px'
                         }}
                         aria-label={`Go to testimonial ${idx + 1}`}
