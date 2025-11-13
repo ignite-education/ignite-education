@@ -1752,15 +1752,11 @@ const Auth = () => {
                           <h4 className={`font-semibold leading-tight transition-colors duration-300 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
                             {card.title}
                           </h4>
-                          <p
-                            className="text-black text-base leading-relaxed transition-opacity duration-300 ease-in-out"
-                            style={{
-                              opacity: hoveredUseCase === idx ? 1 : 0,
-                              pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
-                            }}
-                          >
-                            {card.description}
-                          </p>
+                          {hoveredUseCase === idx && (
+                            <p className="text-black text-base leading-relaxed transition-opacity duration-300 ease-in-out" style={{ opacity: 1 }}>
+                              {card.description}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}
