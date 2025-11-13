@@ -1426,7 +1426,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: activeCard === 0 ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'text-3xl' : 'text-xl'}`}>
+                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '25px' : '20px' }}>
                         Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
                       </h4>
                       {activeCard === 0 && (
@@ -1466,7 +1466,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: activeCard === 1 ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'text-3xl' : 'text-xl'}`}>
+                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '25px' : '20px' }}>
                         Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
                       </h4>
                       {activeCard === 1 && (
@@ -1506,7 +1506,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: activeCard === 2 ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'text-3xl' : 'text-xl'}`}>
+                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '25px' : '20px' }}>
                         Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
                       </h4>
                       {activeCard === 2 && (
@@ -1546,7 +1546,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: activeCard === 3 ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'text-3xl' : 'text-xl'}`}>
+                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '25px' : '20px' }}>
                         Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                       </h4>
                       {activeCard === 3 && (
