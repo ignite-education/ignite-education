@@ -1654,7 +1654,7 @@ const Auth = () => {
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           width: '576px',
-                          height: '276px',
+                          height: '303.6px',
                           overflow: 'visible'
                         }}
                       >
@@ -1666,7 +1666,7 @@ const Auth = () => {
                           className="w-24 h-24 rounded bg-gray-300 flex-shrink-0"
                           style={{
                             position: 'absolute',
-                            bottom: '-48px',
+                            bottom: '-40px',
                             left: '24px'
                           }}
                         ></div>
@@ -1675,7 +1675,7 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '16px',
-                            left: '120px'
+                            left: '125px'
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
