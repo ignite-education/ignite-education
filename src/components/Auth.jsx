@@ -1738,15 +1738,15 @@ const Auth = () => {
                         onMouseLeave={() => setHoveredUseCase(null)}
                         className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
                         style={{
-                          height: hoveredUseCase === idx ? '100%' : '9.775rem',
-                          width: hoveredUseCase === idx ? '100%' : '9.775rem',
+                          height: hoveredUseCase === idx ? '20.05rem' : '9.775rem',
+                          width: hoveredUseCase === idx ? '20.53rem' : '9.775rem',
                           top: hoveredUseCase === idx ? '0' : card.position.top,
                           left: hoveredUseCase === idx ? '0' : card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : (hoveredUseCase !== null ? 0 : 1),
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
                           pointerEvents: hoveredUseCase === null || hoveredUseCase === idx ? 'auto' : 'none',
-                          transition: 'opacity 1s ease-in-out'
+                          transition: 'opacity 1.5s ease-in-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
