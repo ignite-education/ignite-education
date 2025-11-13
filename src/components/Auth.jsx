@@ -468,7 +468,9 @@ const Auth = () => {
   // Typing animation for testimonials heading
   const startTestimonialsHeadingTyping = () => {
     const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
-    const pauseAfter = 'Ignite is for everyone.'.length;
+    const pauseAfterEveryone = 'Ignite is for everyone.'.length;
+    const pauseAfterCurious = 'Ignite is for everyone.\nThe curious,'.length;
+    const pauseAfterCommitted = 'Ignite is for everyone.\nThe curious, the committed,'.length;
     let currentIndex = 0;
     let isPaused = false;
 
@@ -481,7 +483,19 @@ const Auth = () => {
           setTypedTestimonialsHeading(fullText.substring(0, currentIndex));
 
           // Pause after "everyone"
-          if (currentIndex === pauseAfter) {
+          if (currentIndex === pauseAfterEveryone) {
+            isPaused = true;
+            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+          }
+          
+          // Pause after "curious,"
+          if (currentIndex === pauseAfterCurious) {
+            isPaused = true;
+            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+          }
+          
+          // Pause after "committed,"
+          if (currentIndex === pauseAfterCommitted) {
             isPaused = true;
             setTimeout(() => { isPaused = false; }, 500); // 500ms pause
           }
@@ -643,7 +657,7 @@ const Auth = () => {
     // Add cursor if typing is not complete
     if (!isCourseTitleTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-bold">|</span>
+        <span key="cursor" className="text-white animate-blink font-light">|</span>
       );
     }
 
@@ -717,7 +731,7 @@ const Auth = () => {
 
     if (!isLearningTaglineTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-bold">|</span>
+        <span key="cursor" className="text-white animate-blink font-light">|</span>
       );
     }
 
@@ -791,7 +805,7 @@ const Auth = () => {
 
     if (!isTestimonialsHeadingTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-bold">|</span>
+        <span key="cursor" className="text-white animate-blink font-light">|</span>
       );
     }
 
