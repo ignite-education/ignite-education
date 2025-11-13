@@ -1594,7 +1594,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full text-white text-left" style={{ paddingTop: '7rem', paddingBottom: '6rem' }}>
+          <div className="w-full text-white text-left" style={{ paddingTop: '8rem', paddingBottom: '6rem' }}>
             {/* Title Container */}
             <div className="max-w-4xl mx-auto px-4">
               <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
