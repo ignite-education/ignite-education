@@ -1410,7 +1410,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 0 ? '8rem' : '4rem',
+                      height: activeCard === 0 ? '10rem' : '5rem',
                       overflow: 'hidden'
                     }}
                   >
@@ -1432,7 +1432,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 1 ? '8rem' : '4rem',
+                      height: activeCard === 1 ? '10rem' : '5rem',
                       overflow: 'hidden'
                     }}
                   >
@@ -1454,7 +1454,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 2 ? '8rem' : '4rem',
+                      height: activeCard === 2 ? '10rem' : '5rem',
                       overflow: 'hidden'
                     }}
                   >
@@ -1476,7 +1476,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 3 ? '8rem' : '4rem',
+                      height: activeCard === 3 ? '10rem' : '5rem',
                       overflow: 'hidden'
                     }}
                   >
