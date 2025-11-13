@@ -1765,7 +1765,7 @@ const Auth = () => {
                             </div>
                           ) : (
                             <h4 className="font-semibold leading-tight text-lg" style={{
-                              color: '#EF0B72'
+                              color: '#000000'
                             }}>
                               {card.title}
                             </h4>
