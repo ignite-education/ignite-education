@@ -1617,7 +1617,7 @@ const Auth = () => {
           <div className="max-w-4xl mx-auto text-white text-left">
             {/* Testimonials Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', width: '100%' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
 
