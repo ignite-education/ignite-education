@@ -1736,7 +1736,7 @@ const Auth = () => {
                         key={idx}
                         onMouseEnter={() => setHoveredUseCase(idx)}
                         onMouseLeave={() => setHoveredUseCase(null)}
-                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute transition-all duration-300 ease-in-out"
+                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute transition-opacity duration-300 ease-in-out"
                         style={{
                           height: hoveredUseCase === idx ? '100%' : '9.775rem',
                           width: hoveredUseCase === idx ? '100%' : '9.775rem',
@@ -1749,20 +1749,18 @@ const Auth = () => {
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className={`font-semibold leading-tight transition-all duration-300 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
+                          <h4 className={`font-semibold leading-tight transition-colors duration-300 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
                             {card.title}
                           </h4>
-                          <div
-                            className="transition-all duration-300 ease-in-out overflow-hidden"
+                          <p
+                            className="text-black text-base leading-relaxed transition-opacity duration-300 ease-in-out"
                             style={{
-                              maxHeight: hoveredUseCase === idx ? '500px' : '0',
-                              opacity: hoveredUseCase === idx ? 1 : 0
+                              opacity: hoveredUseCase === idx ? 1 : 0,
+                              pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
                             }}
                           >
-                            <p className="text-black text-base leading-relaxed">
-                              {card.description}
-                            </p>
-                          </div>
+                            {card.description}
+                          </p>
                         </div>
                       </div>
                     ))}
