@@ -1745,11 +1745,12 @@ const Auth = () => {
                           zIndex: hoveredUseCase === idx ? 10 : 1,
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
-                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto'
+                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto',
+                          transition: 'opacity 0.2s ease-in-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className={`font-semibold leading-tight ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: '#7714E0' }}>
+                          <h4 className={`font-semibold leading-tight transition-colors duration-200 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
                             {card.title}
                           </h4>
                           {hoveredUseCase === idx && (
