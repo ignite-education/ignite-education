@@ -1736,7 +1736,7 @@ const Auth = () => {
                         key={idx}
                         onMouseEnter={() => setHoveredUseCase(idx)}
                         onMouseLeave={() => setHoveredUseCase(null)}
-                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute transition-all duration-300 ease-in-out"
                         style={{
                           height: hoveredUseCase === idx ? '100%' : '9.775rem',
                           width: hoveredUseCase === idx ? '100%' : '9.775rem',
@@ -1745,19 +1745,24 @@ const Auth = () => {
                           zIndex: hoveredUseCase === idx ? 10 : 1,
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
-                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto',
-                          transition: 'opacity 0.2s ease-in-out'
+                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className={`font-semibold leading-tight transition-colors duration-200 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
+                          <h4 className={`font-semibold leading-tight transition-all duration-300 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{ color: hoveredUseCase === idx ? '#7714E0' : '#000000' }}>
                             {card.title}
                           </h4>
-                          {hoveredUseCase === idx && (
+                          <div
+                            className="transition-all duration-300 ease-in-out overflow-hidden"
+                            style={{
+                              maxHeight: hoveredUseCase === idx ? '500px' : '0',
+                              opacity: hoveredUseCase === idx ? 1 : 0
+                            }}
+                          >
                             <p className="text-black text-base leading-relaxed">
                               {card.description}
                             </p>
-                          )}
+                          </div>
                         </div>
                       </div>
                     ))}
