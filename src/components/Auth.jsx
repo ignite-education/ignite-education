@@ -814,14 +814,14 @@ const Auth = () => {
 
   // Auto-rotate through cards
   useEffect(() => {
-    if (!animateWords || isLogin || selectedCourseModal || isCardManuallySelected) return;
+    if (!animateWords || isLogin || selectedCourseModal || isCardManuallySelected || !isLearningTaglineTypingComplete) return;
 
     const interval = setInterval(() => {
       setActiveCard((prev) => (prev + 1) % 4); // Rotate through 0, 1, 2, 3
     }, 6000); // Change every 6 seconds
 
     return () => clearInterval(interval);
-  }, [animateWords, isLogin, selectedCourseModal, isCardManuallySelected]);
+  }, [animateWords, isLogin, selectedCourseModal, isCardManuallySelected, isLearningTaglineTypingComplete]);
 
   // Resume auto-rotation after manual selection
   useEffect(() => {
@@ -1419,10 +1419,10 @@ const Auth = () => {
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
-                      Levelling up learning<br />with <span style={{ color: '#EF0B72' }}>smart AI integration.</span>
+                      Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
                     </h4>
                     {activeCard === 0 && (
-                      <p className="text-gray-700 text-sm mt-3">
+                      <p className="text-black text-sm mt-3">
                         Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
                       </p>
                     )}
@@ -1434,7 +1434,7 @@ const Auth = () => {
                       setActiveCard(1);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded p-4 cursor-pointer ${
+                    className={`rounded cursor-pointer ${
                       activeCard === 1
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1442,11 +1442,15 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: activeCard === 1 ? '10rem' : '5rem',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
-                      Personalised support<br />from <span style={{ color: '#EF0B72' }}>industry professionals.</span>
+                      Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
                     </h4>
                   </div>
 
@@ -1456,7 +1460,7 @@ const Auth = () => {
                       setActiveCard(2);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded p-4 cursor-pointer ${
+                    className={`rounded cursor-pointer ${
                       activeCard === 2
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1464,11 +1468,15 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: activeCard === 2 ? '10rem' : '5rem',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
-                      Connect with<br />the <span style={{ color: '#EF0B72' }}>global community.</span>
+                      Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
                     </h4>
                   </div>
 
@@ -1478,7 +1486,7 @@ const Auth = () => {
                       setActiveCard(3);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded p-4 cursor-pointer ${
+                    className={`rounded cursor-pointer ${
                       activeCard === 3
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1486,11 +1494,15 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: activeCard === 3 ? '10rem' : '5rem',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
-                      Get certified<br />to <span style={{ color: '#EF0B72' }}>take on your next role.</span>
+                      Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                     </h4>
                   </div>
                 </div>
