@@ -1756,7 +1756,9 @@ const Auth = () => {
                             {card.title}
                           </h4>
                           {hoveredUseCase === idx && (
-                            <p className="text-black text-base leading-relaxed">
+                            <p className="text-black text-base leading-relaxed" style={{
+                              animation: 'fadeIn 0.3s ease-in 0.3s both'
+                            }}>
                               {card.description}
                             </p>
                           )}
