@@ -1742,6 +1742,7 @@ const Auth = () => {
               </div>
             </div>
           </div>
+        </div>
 
       {/* Sixth Section - LinkedIn & FAQs */}
         <div
