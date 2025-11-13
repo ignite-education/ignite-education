@@ -1661,16 +1661,18 @@ const Auth = () => {
                         <p className="text-gray-900 text-lg leading-relaxed mb-4">
                           "{testimonial.quote}"
                         </p>
-                        <div className="flex items-center gap-3 mt-4" style={{ position: 'relative' }}>
-                          <div 
-                            className="w-12 h-12 rounded bg-gray-300 flex-shrink-0"
-                            style={{
-                              position: 'absolute',
-                              bottom: '-30px',
-                              left: '0'
-                            }}
-                          ></div>
-                          <div style={{ marginLeft: '60px' }}>
+                        {/* Avatar positioned on bottom edge */}
+                        <div 
+                          className="w-12 h-12 rounded bg-gray-300 flex-shrink-0"
+                          style={{
+                            position: 'absolute',
+                            bottom: '-24px',
+                            left: '24px'
+                          }}
+                        ></div>
+                        {/* Name and role */}
+                        <div className="flex items-center gap-3 mt-4" style={{ paddingLeft: '60px' }}>
+                          <div>
                             <div className="font-semibold text-black">{testimonial.name}</div>
                             <div className="text-sm text-gray-600">{testimonial.role}</div>
                           </div>
