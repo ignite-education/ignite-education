@@ -1396,7 +1396,7 @@ const Auth = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 {/* Left Column - Feature Cards */}
-                <div className="space-y-6 flex-shrink-0">
+                <div className="space-y-3 flex-shrink-0">
                   {/* Card 1 - AI smarts */}
                   <div
                     onClick={() => {
@@ -1405,7 +1405,7 @@ const Auth = () => {
                     }}
                     className={`rounded-lg p-4 cursor-pointer ${
                       activeCard === 0
-                        ? 'bg-white shadow-xl scale-105'
+                        ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
                     }`}
                     style={{
@@ -1427,7 +1427,7 @@ const Auth = () => {
                     }}
                     className={`rounded-lg p-4 cursor-pointer ${
                       activeCard === 1
-                        ? 'bg-white shadow-xl scale-105'
+                        ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
                     }`}
                     style={{
@@ -1449,7 +1449,7 @@ const Auth = () => {
                     }}
                     className={`rounded-lg p-4 cursor-pointer ${
                       activeCard === 2
-                        ? 'bg-white shadow-xl scale-105'
+                        ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
                     }`}
                     style={{
@@ -1471,7 +1471,7 @@ const Auth = () => {
                     }}
                     className={`rounded-lg p-4 cursor-pointer ${
                       activeCard === 3
-                        ? 'bg-white shadow-xl scale-105'
+                        ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
                     }`}
                     style={{
@@ -1490,7 +1490,7 @@ const Auth = () => {
                 <div className="flex items-center justify-center">
                   <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
                     activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
-                  }`} style={{ minHeight: '450px' }}>
+                  }`} style={{ height: '27.25rem' }}>
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
@@ -1735,7 +1735,7 @@ const Auth = () => {
                 <div className="flex items-center justify-center">
                   <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
                     activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
-                  }`} style={{ minHeight: '450px' }}>
+                  }`} style={{ height: '27.25rem' }}>
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
