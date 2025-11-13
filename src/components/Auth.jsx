@@ -818,7 +818,7 @@ const Auth = () => {
 
     const interval = setInterval(() => {
       setActiveCard((prev) => (prev + 1) % 4); // Rotate through 0, 1, 2, 3
-    }, 6000); // Change every 6 seconds
+    }, 8000); // Change every 8 seconds
 
     return () => clearInterval(interval);
   }, [animateWords, isLogin, selectedCourseModal, isCardManuallySelected, isLearningTaglineTypingComplete]);
@@ -1415,7 +1415,10 @@ const Auth = () => {
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem'
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: activeCard === 0 ? 'flex-start' : 'center'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
