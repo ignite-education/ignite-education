@@ -1460,6 +1460,11 @@ const Auth = () => {
                     <h4 className="font-semibold text-xl text-black leading-tight">
                       Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
                     </h4>
+                    {activeCard === 1 && (
+                      <p className="text-black text-sm mt-3">
+                        Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 3 - Community */}
@@ -1490,6 +1495,11 @@ const Auth = () => {
                     <h4 className="font-semibold text-xl text-black leading-tight">
                       Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
                     </h4>
+                    {activeCard === 2 && (
+                      <p className="text-black text-sm mt-3">
+                        Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 4 - Get certified */}
@@ -1520,6 +1530,11 @@ const Auth = () => {
                     <h4 className="font-semibold text-xl text-black leading-tight">
                       Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                     </h4>
+                    {activeCard === 3 && (
+                      <p className="text-black text-sm mt-3">
+                        Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                      </p>
+                    )}
                   </div>
                 </div>
 
