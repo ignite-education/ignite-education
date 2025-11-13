@@ -1745,8 +1745,9 @@ const Auth = () => {
                           zIndex: hoveredUseCase === idx ? 10 : 1,
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
-                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto',
-                          transition: 'opacity 0.6s ease-in-out'
+                          pointerEvents: hoveredUseCase === idx ? 'auto' : 'none',
+                          transition: 'opacity 1s ease-in-out',
+                          visibility: hoveredUseCase !== null && hoveredUseCase !== idx ? 'visible' : 'visible'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
