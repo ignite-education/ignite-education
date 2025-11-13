@@ -1615,198 +1615,232 @@ const Auth = () => {
           }}
         >
           <div className="max-w-4xl mx-auto text-white text-left">
+            {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', width: '100%', maxWidth: '800px' }}>
-                {renderTypedTestimonialsHeading()}
+              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+                {renderTypedLearningTagline()}
               </h3>
-            </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 px-4 mx-auto" style={{ gap: '48px' }}>
-              {/* Left Column - Rotating Testimonial */}
-              <div
-                className="flex flex-col items-start justify-center"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.6s forwards' : 'none'
-                }}
-              >
-                <div
-                  className="relative"
-                  style={{ width: '145%' }}
-                  onMouseEnter={() => setIsTestimonialHovered(true)}
-                  onMouseLeave={() => setIsTestimonialHovered(false)}
-                >
-                  {[
-                    {
-                      quote: "Levelling up learning\nwith smart AI integration.",
-                      name: "Mark Jones",
-                      role: "Student, Kings College",
-                      initials: "MJ",
-                      gradient: "from-purple-500 to-pink-500"
-                    },
-                    {
-                      quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
-                      name: "Rachel Alt-Simmons",
-                      role: "Head Of Strategic Design, Data, Pricing And Analytics",
-                      initials: "RA",
-                      gradient: "from-blue-500 to-cyan-500"
-                    },
-                    {
-                      quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
-                      name: "Ofentswe Lebogo",
-                      role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)",
-                      initials: "OL",
-                      gradient: "from-green-500 to-emerald-500"
-                    },
-                    {
-                      quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
-                      name: "Ebuka Nwaformo",
-                      role: "Graduate Student, University College Dublin",
-                      initials: "EN",
-                      gradient: "from-orange-500 to-red-500"
-                    },
-                    {
-                      quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
-                      name: "Sarah Schlobohm",
-                      role: "Senior Analytics Manager, Global Risk Analytics, HSBC",
-                      initials: "SS",
-                      gradient: "from-yellow-500 to-amber-500"
-                    },
-                    {
-                      quote: "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with.",
-                      name: "Devon Edwards Joseph",
-                      role: "Lloyds Banking Group",
-                      initials: "DE",
-                      gradient: "from-indigo-500 to-purple-500"
-                    }
-                  ].map((testimonial, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-white p-5 flex flex-col justify-between"
-                      style={{
-                        position: idx === 0 ? 'relative' : 'absolute',
-                        top: idx === 0 ? 'auto' : 0,
-                        left: idx === 0 ? 'auto' : 0,
-                        right: idx === 0 ? 'auto' : 0,
-                        opacity: currentTestimonialIndex === idx ? 1 : 0,
-                        pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                        transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                        minHeight: '250px',
-                        borderRadius: '12px'
-                      }}
-                    >
-                      <div>
-                        <h4 className="text-gray-900 font-semibold text-xl leading-relaxed mb-4">
-                          {testimonial.quote.split('\n').map((line, i) => (
-                            <React.Fragment key={i}>
-                              {i === 1 && line.includes('smart AI integration') ? (
-                                <>
-                                  {line.substring(0, line.indexOf('smart AI integration'))}
-                                  <span style={{ color: '#8B5CF6' }}>smart AI integration</span>
-                                  {line.substring(line.indexOf('smart AI integration') + 'smart AI integration'.length)}
-                                </>
-                              ) : (
-                                line
-                              )}
-                              {i < testimonial.quote.split('\n').length - 1 && <br />}
-                            </React.Fragment>
-                          ))}
-                        </h4>
-                      </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                {/* Left Column - Feature Cards */}
+                <div className="space-y-6 flex-shrink-0">
+                  {/* Card 1 - AI smarts */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(0);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded-lg p-4 cursor-pointer ${
+                      activeCard === 0
+                        ? 'bg-white shadow-xl scale-105'
+                        : 'bg-gray-300'
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <h4 className="font-semibold text-xl text-black">
+                      AI smarts to smash your studies.
+                    </h4>
+                  </div>
 
-                      {/* Avatar and name within the card at bottom */}
-                      <div className="flex items-center gap-2">
-                        <div className="rounded-lg bg-gray-400 flex items-center justify-center" style={{ width: '50px', height: '50px', flexShrink: 0 }}>
-                          {/* Placeholder for avatar */}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-black text-base">{testimonial.name}</div>
-                          <div className="text-sm text-gray-600">{testimonial.role}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {/* Card 2 - Personalised support */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(1);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded-lg p-4 cursor-pointer ${
+                      activeCard === 1
+                        ? 'bg-white shadow-xl scale-105'
+                        : 'bg-gray-300'
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <h4 className="font-semibold text-xl text-black">
+                      Personalised support with industry professionals.
+                    </h4>
+                  </div>
 
-                  {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2 mt-8">
-                    {[0, 1, 2, 3, 4, 5].map((idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`transition-all duration-300 rounded-sm ${
-                          currentTestimonialIndex === idx
-                            ? 'bg-[#EF0B72]'
-                            : 'bg-white hover:bg-gray-300'
-                        }`}
-                        style={{
-                          width: currentTestimonialIndex === idx ? '32px' : '10px',
-                          height: '10px'
-                        }}
-                        aria-label={`Go to testimonial ${idx + 1}`}
-                      />
-                    ))}
+                  {/* Card 3 - Community */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(2);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded-lg p-4 cursor-pointer ${
+                      activeCard === 2
+                        ? 'bg-white shadow-xl scale-105'
+                        : 'bg-gray-300'
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <h4 className="font-semibold text-xl text-black">
+                      Hear the latest from the community.
+                    </h4>
+                  </div>
+
+                  {/* Card 4 - Get certified */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(3);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded-lg p-4 cursor-pointer ${
+                      activeCard === 3
+                        ? 'bg-white shadow-xl scale-105'
+                        : 'bg-gray-300'
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                    }}
+                  >
+                    <h4 className="font-semibold text-xl text-black">
+                      Get certified to take on your next role.
+                    </h4>
                   </div>
                 </div>
-              </div>
 
-              {/* Right Column - Use Cases Grid */}
-              <div
-                className="grid grid-cols-2"
-                style={{
-                  opacity: 0,
-                  animation: animateTestimonials ? 'fadeInUp 0.8s ease-out 0.4s forwards' : 'none',
-                  transform: 'scale(0.85)',
-                  gap: '10px'
-                }}
-              >
-                {[
-                  {
-                    title: 'Recent\nGraduates',
-                    description: 'Finished university or college and wondering what\'s next? With <strong>no experience required</strong>, you\'ll gain real-world skills, build a portfolio and get job-ready.'
-                  },
-                  {
-                    title: 'Career Break\nReturners',
-                    description: 'Taken time off recently? Pick up where you left off with <strong>flexible and self-paced courses</strong>, that will help rebuild confidence and step back into the job market with a new edge.'
-                  },
-                  {
-                    title: 'Upskilling\nIn Role',
-                    description: 'Whether you\'re aiming for a promotion or taking on new responsibilities, learn on your own schedule with <strong>personalised support</strong> to apply insights directly at work.'
-                  },
-                  {
-                    title: 'Pivoting\nCareers',
-                    description: 'Whatever your professional background, we\'ll help identify your transferable strengths and <strong>learn in-demand skills</strong> to help you make the transition.'
-                  }
-                ].map((useCase, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white p-3 cursor-pointer transition-all duration-300 flex flex-col justify-center items-center hover:shadow-xl relative overflow-hidden"
-                    style={{ borderRadius: '12px', minHeight: '95px' }}
-                    onMouseEnter={() => setHoveredUseCase(idx)}
-                    onMouseLeave={() => setHoveredUseCase(null)}
-                  >
-                    <h4 className="font-bold text-black whitespace-pre-line text-center text-sm">
-                      {useCase.title}
-                    </h4>
-                    <div
-                      className="absolute inset-0 bg-white p-3 flex items-center justify-center transition-all duration-300"
-                      style={{
-                        opacity: hoveredUseCase === idx ? 1 : 0,
-                        pointerEvents: hoveredUseCase === idx ? 'auto' : 'none'
-                      }}
-                    >
-                      <p
-                        className="text-gray-800 leading-relaxed text-xs text-center"
-                        dangerouslySetInnerHTML={{
-                          __html: useCase.description.replace(
-                            /<strong>(.*?)<\/strong>/g,
-                            '<span class="font-bold" style="color: #EF0B72">$1</span>'
-                          )
-                        }}
-                      />
-                    </div>
+                {/* Right Column - Dynamic Content */}
+                <div className="flex items-center justify-center">
+                  <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
+                    activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
+                  }`} style={{ minHeight: '450px' }}>
+                    {activeCard === 0 && (
+                      <>
+                        <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+                          Study with <span style={{ color: '#EF0B72' }}>AI-powered tools</span>
+                        </h3>
+                        <div className="-mx-8 -mb-8 mt-4">
+                          <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full rounded-b-xl"
+                          >
+                            <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
+                          </video>
+                        </div>
+                      </>
+                    )}
+
+                    {activeCard === 1 && (
+                      <>
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
+                          Connect with <span className="text-blue-400">industry experts</span>
+                        </h3>
+                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                          <div className="mb-4">
+                            <span className="text-sm text-gray-400">Your Mentors</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3 bg-gray-800 rounded p-3">
+                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                JD
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-white text-sm font-semibold">Jane Doe</p>
+                                <p className="text-gray-400 text-xs">Senior Product Manager</p>
+                              </div>
+                              <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
+                                Message
+                              </button>
+                            </div>
+                            <div className="flex items-center gap-3 bg-gray-800 rounded p-3">
+                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                MS
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-white text-sm font-semibold">Mike Smith</p>
+                                <p className="text-gray-400 text-xs">Data Science Lead</p>
+                              </div>
+                              <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
+                                Message
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeCard === 2 && (
+                      <>
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
+                          Join the <span className="text-green-400">community</span>
+                        </h3>
+                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                          <div className="mb-4">
+                            <span className="text-sm text-gray-400">Latest Updates</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="bg-gray-800 rounded p-3">
+                              <div className="flex items-start gap-2 mb-2">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                  A
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white text-xs font-semibold">Alex Chen</p>
+                                  <p className="text-gray-400 text-xs">Just completed Product Strategy course!</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bg-gray-800 rounded p-3">
+                              <div className="flex items-start gap-2 mb-2">
+                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                  S
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-white text-xs font-semibold">Sarah Johnson</p>
+                                  <p className="text-gray-400 text-xs">New project idea: Building an AI chatbot</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="bg-green-500 bg-opacity-20 border border-green-500 rounded p-3">
+                              <p className="text-green-300 text-xs font-semibold">125 members online now</p>
+                            </div>
+                          </div>
+                        </div>
+                      </>
+                    )}
+
+                    {activeCard === 3 && (
+                      <>
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
+                          Get <span className="text-purple-400">certified</span>
+                        </h3>
+                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
+                          <div className="mb-4">
+                            <span className="text-sm text-gray-400">Your Certifications</span>
+                          </div>
+                          <div className="space-y-3">
+                            <div className="bg-gray-800 rounded p-4">
+                              <div className="flex items-center gap-3 mb-3">
+                                <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                </svg>
+                                <div>
+                                  <p className="text-white text-sm font-semibold">Product Manager Professional</p>
+                                  <p className="text-gray-400 text-xs">In Progress - 75% Complete</p>
+                                </div>
+                              </div>
+                              <div className="w-full bg-gray-700 rounded-full h-2">
+                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
+                              </div>
+                            </div>
+                            <button className="bg-purple-500 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-purple-600 transition w-full">
+                              Continue Certification
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>

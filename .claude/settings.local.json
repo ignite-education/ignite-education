@@ -25,7 +25,8 @@
       "Bash(do echo \"Line $line:\")",
       "Bash(done)",
       "Bash(/tmp/old_auth.jsx)",
-      "Bash(src/components/Auth.jsx)"
+      "Bash(src/components/Auth.jsx)",
+      "Bash(/tmp/learning_section.txt)"
     ],
     "deny": [],
     "ask": []
