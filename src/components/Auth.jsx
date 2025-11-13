@@ -298,7 +298,7 @@ const Auth = () => {
     if (!animateTestimonials || !isTestimonialsHeadingTypingComplete || isTestimonialHovered || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => (prev + 1) % 6); // 6 testimonials total
+      setCurrentTestimonialIndex((prev) => (prev + 1) % 5); // 5 testimonials total
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(interval);
@@ -1614,32 +1614,32 @@ const Auth = () => {
                       {
                         quote: "Levelling up learning with smart AI integration.",
                         name: "Mark Jones",
-                        role: "Student, Kings College"
+                        role: "Student, Kings College",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
                         quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
                         name: "Rachel Alt-Simmons",
-                        role: "Head Of Strategic Design, Data, Pricing And Analytics"
+                        role: "Head Of Strategic Design, Data, Pricing And Analytics",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
                       },
                       {
                         quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
                         name: "Ofentswe Lebogo",
-                        role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)"
+                        role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
                         quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
                         name: "Ebuka Nwaformo",
-                        role: "Graduate Student, University College Dublin"
+                        role: "Graduate Student, University College Dublin",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
                       },
                       {
                         quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
                         name: "Sarah Schlobohm",
-                        role: "Senior Analytics Manager, Global Risk Analytics, HSBC"
-                      },
-                      {
-                        quote: "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with.",
-                        name: "Devon Edwards Joseph",
-                        role: "Lloyds Banking Group"
+                        role: "Senior Analytics Manager, Global Risk Analytics, HSBC",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
                       }
                     ].map((testimonial, idx) => (
                       <div
@@ -1662,12 +1662,15 @@ const Auth = () => {
                           "{testimonial.quote}"
                         </p>
                         {/* Avatar positioned on bottom edge */}
-                        <div 
-                          className="w-24 h-24 rounded bg-gray-300 flex-shrink-0"
+                        <div
+                          className="w-24 h-24 rounded flex-shrink-0"
                           style={{
                             position: 'absolute',
                             bottom: '-40px',
-                            left: '24px'
+                            left: '24px',
+                            backgroundImage: `url(${testimonial.avatar})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
                           }}
                         ></div>
                         {/* Name and role positioned at bottom edge */}
@@ -1687,7 +1690,7 @@ const Auth = () => {
                   
                   {/* Carousel Indicators */}
                   <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem' }}>
-                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                    {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
