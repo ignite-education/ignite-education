@@ -485,7 +485,7 @@ const Auth = () => {
           // Pause after "everyone"
           if (currentIndex === pauseAfterEveryone) {
             isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
           }
           
           // Pause after "curious,"
