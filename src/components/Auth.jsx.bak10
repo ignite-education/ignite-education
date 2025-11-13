@@ -1603,7 +1603,7 @@ const Auth = () => {
             </div>
 
             {/* Testimonials and Cards Container */}
-            <div style={{ maxWidth: '70rem' }} className="mx-auto px-4">
+            <div style={{ maxWidth: '65rem' }} className="mx-auto px-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 {/* Left Column - Testimonials Slider */}
                 <div className="flex flex-col justify-center"
@@ -1653,8 +1653,8 @@ const Auth = () => {
                           opacity: currentTestimonialIndex === idx ? 1 : 0,
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                          width: '576px',
-                          height: '276px'
+                          width: '480px',
+                          height: '240px'
                         }}
                       >
                         <p className="text-gray-900 text-lg leading-relaxed mb-4">
@@ -1695,7 +1695,7 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
-                  <div className="grid grid-cols-2 gap-3" style={{ width: '20.53rem' }}>
+                  <div className="grid grid-cols-2 gap-3" style={{ width: '24.15rem' }}>
                     {[
                       { title: 'Recent Graduates' },
                       { title: 'Career Break Returners' },
@@ -1706,8 +1706,10 @@ const Auth = () => {
                         key={idx}
                         className="rounded p-6 flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer bg-white"
                         style={{
-                          height: '9.775rem',
-                          width: '9.775rem'
+                          height: '11.5rem',
+                          width: '11.5rem',
+                          opacity: animateTestimonials ? 1 : 0,
+                          animation: animateTestimonials ? `fadeInUp 0.8s ease-out ${0.1 + idx * 0.1}s forwards` : 'none'
                         }}
                       >
                         <h4 className="text-black text-lg font-semibold text-center leading-tight">
