@@ -1691,24 +1691,24 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
-                  <div className="grid grid-cols-2 gap-3" style={{ width: '24.15rem' }}>
+                  <div className="grid grid-cols-2 gap-4" style={{ width: '32.2rem' }}>
                     {[
-                      { title: 'Recent Graduates' },
-                      { title: 'Career Break Returners' },
-                      { title: 'Upskilling in Role' },
-                      { title: 'Pivotting Careers' }
+                      { title: 'Recent Graduates', color: '#EF0B72' },
+                      { title: 'Career Break Returners', color: '#7B2D4E' },
+                      { title: 'Upskilling in Role', color: '#D84A8C' },
+                      { title: 'Pivotting Careers', color: '#A8266F' }
                     ].map((card, idx) => (
                       <div
                         key={idx}
-                        className="rounded p-6 flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer bg-white"
+                        className="rounded-xl p-6 flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer"
                         style={{
-                          height: '11.5rem',
-                          width: '11.5rem',
+                          backgroundColor: card.color,
+                          height: '13rem',
                           opacity: animateTestimonials ? 1 : 0,
                           animation: animateTestimonials ? 'fadeInUp 0.8s ease-out ' + (0.1 + idx * 0.1) + 's forwards' : 'none'
                         }}
                       >
-                        <h4 className="text-black text-lg font-semibold text-center leading-tight">
+                        <h4 className="text-white text-xl font-bold text-center">
                           {card.title}
                         </h4>
                       </div>
