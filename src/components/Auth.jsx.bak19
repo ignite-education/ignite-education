@@ -1604,7 +1604,7 @@ const Auth = () => {
 
             {/* Testimonials and Cards Container */}
             <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 {/* Left Column - Testimonials Slider */}
                 <div className="flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
