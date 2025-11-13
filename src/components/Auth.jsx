@@ -1414,7 +1414,7 @@ const Auth = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    <h4 className="font-semibold text-xl text-black">
+                    <h4 className="font-semibold text-xl text-black leading-tight">
                       Levelling up learning<br />with <span style={{ color: '#EF0B72' }}>smart AI integration.</span>
                     </h4>
                     {activeCard === 0 && (
@@ -1441,7 +1441,7 @@ const Auth = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    <h4 className="font-semibold text-xl text-black">
+                    <h4 className="font-semibold text-xl text-black leading-tight">
                       Personalised support<br />from <span style={{ color: '#EF0B72' }}>industry professionals.</span>
                     </h4>
                   </div>
@@ -1463,7 +1463,7 @@ const Auth = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    <h4 className="font-semibold text-xl text-black">
+                    <h4 className="font-semibold text-xl text-black leading-tight">
                       Connect with<br />the <span style={{ color: '#EF0B72' }}>global community.</span>
                     </h4>
                   </div>
@@ -1485,7 +1485,7 @@ const Auth = () => {
                       overflow: 'hidden'
                     }}
                   >
-                    <h4 className="font-semibold text-xl text-black">
+                    <h4 className="font-semibold text-xl text-black leading-tight">
                       Get certified<br />to <span style={{ color: '#EF0B72' }}>take on your next role.</span>
                     </h4>
                   </div>
