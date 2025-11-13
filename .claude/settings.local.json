@@ -26,7 +26,8 @@
       "Bash(done)",
       "Bash(/tmp/old_auth.jsx)",
       "Bash(src/components/Auth.jsx)",
-      "Bash(/tmp/learning_section.txt)"
+      "Bash(/tmp/learning_section.txt)",
+      "Bash(/tmp/courses_section.txt)"
     ],
     "deny": [],
     "ask": []

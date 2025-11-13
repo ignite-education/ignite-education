@@ -1403,7 +1403,7 @@ const Auth = () => {
                       setActiveCard(0);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded-lg p-4 cursor-pointer ${
+                    className={`rounded p-4 cursor-pointer ${
                       activeCard === 0
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1425,7 +1425,7 @@ const Auth = () => {
                       setActiveCard(1);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded-lg p-4 cursor-pointer ${
+                    className={`rounded p-4 cursor-pointer ${
                       activeCard === 1
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1447,7 +1447,7 @@ const Auth = () => {
                       setActiveCard(2);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded-lg p-4 cursor-pointer ${
+                    className={`rounded p-4 cursor-pointer ${
                       activeCard === 2
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1469,7 +1469,7 @@ const Auth = () => {
                       setActiveCard(3);
                       setIsCardManuallySelected(true);
                     }}
-                    className={`rounded-lg p-4 cursor-pointer ${
+                    className={`rounded p-4 cursor-pointer ${
                       activeCard === 3
                         ? 'bg-white shadow-xl'
                         : 'bg-gray-300'
@@ -1488,7 +1488,7 @@ const Auth = () => {
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
-                  <div className={`rounded-xl w-full max-w-md transition-all duration-500 ${
+                  <div className={`rounded w-full max-w-md transition-all duration-500 ${
                     activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
                   }`} style={{ height: '27.25rem' }}>
                     {activeCard === 0 && (
@@ -1629,7 +1629,7 @@ const Auth = () => {
 
 
         {/* Scroll Down Arrow */}
-        <div className="mt-8">
+        <div className="mt-8 flex justify-center">
           <button
             onClick={scrollToTestimonials}
             className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
