@@ -1689,32 +1689,6 @@ const Auth = () => {
                 </div>
 
 
-                {/* Right Column - 2x2 Grid of Cards */}
-                <div className="flex items-center justify-center">
-                  <div className="grid grid-cols-2 gap-4" style={{ width: '32.2rem' }}>
-                    {[
-                      { title: 'Recent Graduates', color: '#EF0B72' },
-                      { title: 'Career Break Returners', color: '#7B2D4E' },
-                      { title: 'Upskilling in Role', color: '#D84A8C' },
-                      { title: 'Pivotting Careers', color: '#A8266F' }
-                    ].map((card, idx) => (
-                      <div
-                        key={idx}
-                        className="rounded-xl p-6 flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer"
-                        style={{
-                          backgroundColor: card.color,
-                          height: '13rem',
-                          opacity: animateTestimonials ? 1 : 0,
-                          animation: animateTestimonials ? 'fadeInUp 0.8s ease-out ' + (0.1 + idx * 0.1) + 's forwards' : 'none'
-                        }}
-                      >
-                        <h4 className="text-white text-xl font-bold text-center">
-                          {card.title}
-                        </h4>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="flex justify-center mt-12">
