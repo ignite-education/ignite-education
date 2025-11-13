@@ -1751,19 +1751,12 @@ const Auth = () => {
                       >
                         <div className="flex flex-col items-center justify-center text-center">
                           <h4 className={`font-semibold leading-tight ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{
-                            color: hoveredUseCase === idx ? '#7714E0' : '#000000',
-                            transition: 'color 0.6s ease-in-out, font-size 0.6s ease-in-out, margin-bottom 0.6s ease-in-out'
+                            color: hoveredUseCase === idx ? '#7714E0' : '#000000'
                           }}>
                             {card.title}
                           </h4>
                           {hoveredUseCase === idx && (
-                            <p
-                              className="text-black text-base leading-relaxed"
-                              style={{
-                                animation: 'fadeIn 0.8s ease-in-out',
-                                animationFillMode: 'both'
-                              }}
-                            >
+                            <p className="text-black text-base leading-relaxed">
                               {card.description}
                             </p>
                           )}
