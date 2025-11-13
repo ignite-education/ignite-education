@@ -1409,7 +1409,9 @@ const Auth = () => {
                         : 'bg-gray-300'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 0 ? '8rem' : '4rem',
+                      overflow: 'hidden'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
@@ -1429,7 +1431,9 @@ const Auth = () => {
                         : 'bg-gray-300'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 1 ? '8rem' : '4rem',
+                      overflow: 'hidden'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
@@ -1449,7 +1453,9 @@ const Auth = () => {
                         : 'bg-gray-300'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 2 ? '8rem' : '4rem',
+                      overflow: 'hidden'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
@@ -1469,7 +1475,9 @@ const Auth = () => {
                         : 'bg-gray-300'
                     }`}
                     style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 3 ? '8rem' : '4rem',
+                      overflow: 'hidden'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
