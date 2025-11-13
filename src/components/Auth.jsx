@@ -1744,9 +1744,9 @@ const Auth = () => {
                           left: hoveredUseCase === idx ? '0' : card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : (hoveredUseCase !== null ? 0 : 1),
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
-                          opacity: 1,
+                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
                           pointerEvents: hoveredUseCase === null || hoveredUseCase === idx ? 'auto' : 'none',
-                          transition: 'width 0.3s ease-out, height 0.3s ease-out, top 0.3s ease-out, left 0.3s ease-out'
+                          transition: 'width 0.3s ease-out, height 0.3s ease-out, top 0.3s ease-out, left 0.3s ease-out, opacity 0.3s ease-in-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
