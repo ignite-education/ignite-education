@@ -453,7 +453,7 @@ const Auth = () => {
           // Pause after "Building a smarter,"
           if (currentIndex === pauseAfter) {
             isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
           }
 
           currentIndex++;
