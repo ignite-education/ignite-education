@@ -1405,7 +1405,7 @@ const Auth = () => {
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 0
-                        ? 'bg-white shadow-xl'
+                        ? 'shadow-xl'
                         : ''
                     }`}
                     style={{
@@ -1419,7 +1419,7 @@ const Auth = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: activeCard === 0 ? 'flex-start' : 'center',
-                      backgroundColor: activeCard === 0 ? '' : '#F0F0F2'
+                      backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1440,7 +1440,7 @@ const Auth = () => {
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 1
-                        ? 'bg-white shadow-xl'
+                        ? 'shadow-xl'
                         : ''
                     }`}
                     style={{
@@ -1454,7 +1454,7 @@ const Auth = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: activeCard === 1 ? 'flex-start' : 'center',
-                      backgroundColor: activeCard === 1 ? '' : '#F0F0F2'
+                      backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1470,7 +1470,7 @@ const Auth = () => {
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 2
-                        ? 'bg-white shadow-xl'
+                        ? 'shadow-xl'
                         : ''
                     }`}
                     style={{
@@ -1484,7 +1484,7 @@ const Auth = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: activeCard === 2 ? 'flex-start' : 'center',
-                      backgroundColor: activeCard === 2 ? '' : '#F0F0F2'
+                      backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1500,7 +1500,7 @@ const Auth = () => {
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 3
-                        ? 'bg-white shadow-xl'
+                        ? 'shadow-xl'
                         : ''
                     }`}
                     style={{
@@ -1514,7 +1514,7 @@ const Auth = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: activeCard === 3 ? 'flex-start' : 'center',
-                      backgroundColor: activeCard === 3 ? '' : '#F0F0F2'
+                      backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
