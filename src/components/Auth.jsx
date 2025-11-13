@@ -1724,12 +1724,12 @@ const Auth = () => {
                       {
                         title: 'Upskilling in Role',
                         description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
-                        position: { top: '10.525rem', left: '0' }
+                        position: { top: '10.275rem', left: '0' }
                       },
                       {
                         title: 'Pivotting Careers',
                         description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
-                        position: { top: '10.525rem', left: '10.525rem' }
+                        position: { top: '10.275rem', left: '10.525rem' }
                       }
                     ].map((card, idx) => (
                       <div
