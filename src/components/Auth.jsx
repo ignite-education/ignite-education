@@ -1653,7 +1653,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl mx-auto text-white text-left">
+          <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '6.5rem', paddingBottom: '3rem' }}>
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
@@ -1884,6 +1884,25 @@ const Auth = () => {
                     )}
                   </div>
                 </div>
+              </div>
+
+              <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => {
+                    linkedInFAQSectionRef.current?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+                  style={{
+                    animation: 'subtleBounce 2s infinite',
+                    padding: '11px'
+                  }}
+                  aria-label="Scroll to LinkedIn and FAQs"
+                >
+                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                </button>
               </div>
             </div>
           </div>
