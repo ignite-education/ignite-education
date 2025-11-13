@@ -1406,7 +1406,7 @@ const Auth = () => {
                     className={`rounded cursor-pointer ${
                       activeCard === 0
                         ? 'bg-white shadow-xl'
-                        : 'bg-gray-300'
+                        : ''
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1418,7 +1418,8 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: activeCard === 0 ? 'flex-start' : 'center'
+                      justifyContent: activeCard === 0 ? 'flex-start' : 'center',
+                      backgroundColor: activeCard === 0 ? '' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1440,7 +1441,7 @@ const Auth = () => {
                     className={`rounded cursor-pointer ${
                       activeCard === 1
                         ? 'bg-white shadow-xl'
-                        : 'bg-gray-300'
+                        : ''
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1449,7 +1450,11 @@ const Auth = () => {
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem'
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: activeCard === 1 ? 'flex-start' : 'center',
+                      backgroundColor: activeCard === 1 ? '' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1466,7 +1471,7 @@ const Auth = () => {
                     className={`rounded cursor-pointer ${
                       activeCard === 2
                         ? 'bg-white shadow-xl'
-                        : 'bg-gray-300'
+                        : ''
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1475,7 +1480,11 @@ const Auth = () => {
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem'
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: activeCard === 2 ? 'flex-start' : 'center',
+                      backgroundColor: activeCard === 2 ? '' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1492,7 +1501,7 @@ const Auth = () => {
                     className={`rounded cursor-pointer ${
                       activeCard === 3
                         ? 'bg-white shadow-xl'
-                        : 'bg-gray-300'
+                        : ''
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1501,7 +1510,11 @@ const Auth = () => {
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem'
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: activeCard === 3 ? 'flex-start' : 'center',
+                      backgroundColor: activeCard === 3 ? '' : '#F0F0F2'
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black leading-tight">
@@ -1513,135 +1526,6 @@ const Auth = () => {
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
                   <div className="rounded transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', width: '32.2rem' }}>
-                    {activeCard === 0 && (
-                      <>
-                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4 text-gray-900">
-                          Study with <span style={{ color: '#EF0B72' }}>AI-powered tools</span>
-                        </h3>
-                        <div className="-mx-8 -mb-8 mt-4">
-                          <video
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="w-full rounded-b-xl"
-                          >
-                            <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-11%20at%2021.14.45.mov" type="video/mp4" />
-                          </video>
-                        </div>
-                      </>
-                    )}
-
-                    {activeCard === 1 && (
-                      <>
-                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
-                          Connect with <span className="text-blue-400">industry experts</span>
-                        </h3>
-                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-                          <div className="mb-4">
-                            <span className="text-sm text-gray-400">Your Mentors</span>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="flex items-center gap-3 bg-gray-800 rounded p-3">
-                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                JD
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-white text-sm font-semibold">Jane Doe</p>
-                                <p className="text-gray-400 text-xs">Senior Product Manager</p>
-                              </div>
-                              <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
-                                Message
-                              </button>
-                            </div>
-                            <div className="flex items-center gap-3 bg-gray-800 rounded p-3">
-                              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                MS
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-white text-sm font-semibold">Mike Smith</p>
-                                <p className="text-gray-400 text-xs">Data Science Lead</p>
-                              </div>
-                              <button className="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition">
-                                Message
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {activeCard === 2 && (
-                      <>
-                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
-                          Join the <span className="text-green-400">community</span>
-                        </h3>
-                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-                          <div className="mb-4">
-                            <span className="text-sm text-gray-400">Latest Updates</span>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="bg-gray-800 rounded p-3">
-                              <div className="flex items-start gap-2 mb-2">
-                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                                  A
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-white text-xs font-semibold">Alex Chen</p>
-                                  <p className="text-gray-400 text-xs">Just completed Product Strategy course!</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="bg-gray-800 rounded p-3">
-                              <div className="flex items-start gap-2 mb-2">
-                                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white text-xs font-semibold">
-                                  S
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-white text-xs font-semibold">Sarah Johnson</p>
-                                  <p className="text-gray-400 text-xs">New project idea: Building an AI chatbot</p>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="bg-green-500 bg-opacity-20 border border-green-500 rounded p-3">
-                              <p className="text-green-300 text-xs font-semibold">125 members online now</p>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {activeCard === 3 && (
-                      <>
-                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4">
-                          Get <span className="text-purple-400">certified</span>
-                        </h3>
-                        <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
-                          <div className="mb-4">
-                            <span className="text-sm text-gray-400">Your Certifications</span>
-                          </div>
-                          <div className="space-y-3">
-                            <div className="bg-gray-800 rounded p-4">
-                              <div className="flex items-center gap-3 mb-3">
-                                <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                                </svg>
-                                <div>
-                                  <p className="text-white text-sm font-semibold">Product Manager Professional</p>
-                                  <p className="text-gray-400 text-xs">In Progress - 75% Complete</p>
-                                </div>
-                              </div>
-                              <div className="w-full bg-gray-700 rounded-full h-2">
-                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: '75%' }}></div>
-                              </div>
-                            </div>
-                            <button className="bg-purple-500 text-white px-4 py-2 rounded text-xs font-semibold hover:bg-purple-600 transition w-full">
-                              Continue Certification
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    )}
                   </div>
                 </div>
               </div>
