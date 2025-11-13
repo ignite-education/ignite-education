@@ -1654,15 +1654,23 @@ const Auth = () => {
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           width: '576px',
-                          height: '276px'
+                          height: '276px',
+                          overflow: 'visible'
                         }}
                       >
                         <p className="text-gray-900 text-lg leading-relaxed mb-4">
                           "{testimonial.quote}"
                         </p>
-                        <div className="flex items-center gap-3 mt-4">
-                          <div className="w-12 h-12 rounded-full bg-gray-300 flex-shrink-0"></div>
-                          <div>
+                        <div className="flex items-center gap-3 mt-4" style={{ position: 'relative' }}>
+                          <div 
+                            className="w-12 h-12 rounded bg-gray-300 flex-shrink-0"
+                            style={{
+                              position: 'absolute',
+                              bottom: '-30px',
+                              left: '0'
+                            }}
+                          ></div>
+                          <div style={{ marginLeft: '60px' }}>
                             <div className="font-semibold text-black">{testimonial.name}</div>
                             <div className="text-sm text-gray-600">{testimonial.role}</div>
                           </div>
