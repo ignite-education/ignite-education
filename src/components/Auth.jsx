@@ -1636,88 +1636,92 @@ const Auth = () => {
               </h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-                {/* Left Column - Feature Cards */}
-                <div className="space-y-6 flex-shrink-0">
-                  {/* Card 1 - AI smarts */}
-                  <div
-                    onClick={() => {
-                      setActiveCard(0);
-                      setIsCardManuallySelected(true);
-                    }}
-                    className={`rounded-lg p-4 cursor-pointer ${
-                      activeCard === 0
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-300'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    <h4 className="font-semibold text-xl text-black">
-                      AI smarts to smash your studies.
-                    </h4>
+                {/* Left Column - Testimonials Slider */}
+                <div className="flex flex-col justify-center"
+                  onMouseEnter={() => setIsTestimonialHovered(true)}
+                  onMouseLeave={() => setIsTestimonialHovered(false)}>
+                  <div className="relative">
+                    {[
+                      {
+                        quote: "Levelling up learning with smart AI integration.",
+                        name: "Mark Jones",
+                        role: "Student, Kings College"
+                      },
+                      {
+                        quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
+                        name: "Rachel Alt-Simmons",
+                        role: "Head Of Strategic Design, Data, Pricing And Analytics"
+                      },
+                      {
+                        quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
+                        name: "Ofentswe Lebogo",
+                        role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)"
+                      },
+                      {
+                        quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
+                        name: "Ebuka Nwaformo",
+                        role: "Graduate Student, University College Dublin"
+                      },
+                      {
+                        quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
+                        name: "Sarah Schlobohm",
+                        role: "Senior Analytics Manager, Global Risk Analytics, HSBC"
+                      },
+                      {
+                        quote: "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with.",
+                        name: "Devon Edwards Joseph",
+                        role: "Lloyds Banking Group"
+                      }
+                    ].map((testimonial, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white p-6 rounded-lg"
+                        style={{
+                          position: idx === 0 ? 'relative' : 'absolute',
+                          top: idx === 0 ? 'auto' : 0,
+                          left: idx === 0 ? 'auto' : 0,
+                          right: idx === 0 ? 'auto' : 0,
+                          opacity: currentTestimonialIndex === idx ? 1 : 0,
+                          pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
+                          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                          minHeight: '200px'
+                        }}
+                      >
+                        <p className="text-gray-900 text-lg leading-relaxed mb-4">
+                          "{testimonial.quote}"
+                        </p>
+                        <div className="flex items-center gap-3 mt-4">
+                          <div className="w-12 h-12 rounded-full bg-gray-300 flex-shrink-0"></div>
+                          <div>
+                            <div className="font-semibold text-black">{testimonial.name}</div>
+                            <div className="text-sm text-gray-600">{testimonial.role}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-
-                  {/* Card 2 - Personalised support */}
-                  <div
-                    onClick={() => {
-                      setActiveCard(1);
-                      setIsCardManuallySelected(true);
-                    }}
-                    className={`rounded-lg p-4 cursor-pointer ${
-                      activeCard === 1
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-300'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    <h4 className="font-semibold text-xl text-black">
-                      Personalised support with industry professionals.
-                    </h4>
-                  </div>
-
-                  {/* Card 3 - Community */}
-                  <div
-                    onClick={() => {
-                      setActiveCard(2);
-                      setIsCardManuallySelected(true);
-                    }}
-                    className={`rounded-lg p-4 cursor-pointer ${
-                      activeCard === 2
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-300'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    <h4 className="font-semibold text-xl text-black">
-                      Hear the latest from the community.
-                    </h4>
-                  </div>
-
-                  {/* Card 4 - Get certified */}
-                  <div
-                    onClick={() => {
-                      setActiveCard(3);
-                      setIsCardManuallySelected(true);
-                    }}
-                    className={`rounded-lg p-4 cursor-pointer ${
-                      activeCard === 3
-                        ? 'bg-white shadow-xl scale-105'
-                        : 'bg-gray-300'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                    }}
-                  >
-                    <h4 className="font-semibold text-xl text-black">
-                      Get certified to take on your next role.
-                    </h4>
+                  
+                  {/* Carousel Indicators */}
+                  <div className="flex justify-center gap-2 mt-6">
+                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        className={`transition-all duration-300 rounded-sm ${
+                          currentTestimonialIndex === idx
+                            ? 'bg-[#EF0B72]'
+                            : 'bg-white hover:bg-gray-300'
+                        }`}
+                        style={{
+                          width: currentTestimonialIndex === idx ? '32px' : '10px',
+                          height: '10px'
+                        }}
+                        aria-label={`Go to testimonial ${idx + 1}`}
+                      />
+                    ))}
                   </div>
                 </div>
+
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
