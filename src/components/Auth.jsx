@@ -1671,11 +1671,11 @@ const Auth = () => {
                           }}
                         ></div>
                         {/* Name and role positioned at bottom edge */}
-                        <div 
+                        <div
                           style={{
                             position: 'absolute',
-                            bottom: '16px',
-                            left: '125px'
+                            bottom: '12px',
+                            left: '130px'
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
@@ -1755,7 +1755,7 @@ const Auth = () => {
                               animation: 'fadeIn 0.3s ease-in 0.3s both'
                             }}>
                               <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                                color: '#7714E0'
+                                color: '#EF0B72'
                               }}>
                                 {card.title}
                               </h4>
@@ -1765,7 +1765,7 @@ const Auth = () => {
                             </div>
                           ) : (
                             <h4 className="font-semibold leading-tight text-lg" style={{
-                              color: '#000000'
+                              color: '#EF0B72'
                             }}>
                               {card.title}
                             </h4>
