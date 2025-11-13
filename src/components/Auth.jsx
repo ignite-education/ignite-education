@@ -1627,20 +1627,18 @@ const Auth = () => {
           </div>
 
           {/* Scroll Down Arrow */}
-          <div className="w-full flex flex-col items-center">
-            <div className="mt-8">
-              <button
-                onClick={scrollToTestimonials}
-                className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
-                style={{
-                  animation: 'subtleBounce 2s infinite',
-                  padding: '11px'
-                }}
-                aria-label="Scroll to testimonials"
-              >
-                <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-              </button>
-            </div>
+          <div className="mt-8">
+            <button
+              onClick={scrollToTestimonials}
+              className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to testimonials"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+            </button>
           </div>
 
         </div>
