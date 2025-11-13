@@ -27,7 +27,9 @@
       "Bash(/tmp/old_auth.jsx)",
       "Bash(src/components/Auth.jsx)",
       "Bash(/tmp/learning_section.txt)",
-      "Bash(/tmp/courses_section.txt)"
+      "Bash(/tmp/courses_section.txt)",
+      "Bash(while IFS= read -r line)",
+      "Bash(do printf '%s\\n' \"$line\")"
     ],
     "deny": [],
     "ask": []
