@@ -1644,7 +1644,7 @@ const Auth = () => {
                     ].map((testimonial, idx) => (
                       <div
                         key={idx}
-                        className="bg-white p-6 rounded"
+                        className="bg-white p-6 rounded flex items-center justify-center"
                         style={{
                           position: idx === 0 ? 'relative' : 'absolute',
                           top: idx === 0 ? 'auto' : 0,
@@ -1658,7 +1658,7 @@ const Auth = () => {
                           overflow: 'visible'
                         }}
                       >
-                        <p className="text-gray-900 text-lg leading-relaxed mb-4">
+                        <p className="text-gray-900 text-lg font-medium leading-relaxed text-center" style={{ maxWidth: '80%' }}>
                           "{testimonial.quote}"
                         </p>
                         {/* Avatar positioned on bottom edge */}
