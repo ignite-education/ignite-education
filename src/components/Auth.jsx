@@ -1710,55 +1710,56 @@ const Auth = () => {
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
                   <div className="relative" style={{ width: '20.53rem', height: '20.05rem' }}>
-                    <div className="grid grid-cols-2 gap-3 w-full h-full">
-                      {[
-                        {
-                          title: 'Recent Graduates',
-                          description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.'
-                        },
-                        {
-                          title: 'Career Break Returners',
-                          description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.'
-                        },
-                        {
-                          title: 'Upskilling in Role',
-                          description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.'
-                        },
-                        {
-                          title: 'Pivotting Careers',
-                          description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.'
-                        }
-                      ].map((card, idx) => (
-                        <div
-                          key={idx}
-                          onMouseEnter={() => setHoveredUseCase(idx)}
-                          onMouseLeave={() => setHoveredUseCase(null)}
-                          className="rounded flex items-center justify-center transition-all duration-500 cursor-pointer bg-white"
-                          style={{
-                            height: hoveredUseCase === idx ? '100%' : '9.775rem',
-                            width: hoveredUseCase === idx ? '100%' : '9.775rem',
-                            position: hoveredUseCase === idx ? 'absolute' : 'relative',
-                            top: hoveredUseCase === idx ? '0' : 'auto',
-                            left: hoveredUseCase === idx ? '0' : 'auto',
-                            zIndex: hoveredUseCase === idx ? 10 : 1,
-                            padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
-                            opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
-                            pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto'
-                          }}
-                        >
-                          <div className="flex flex-col items-center justify-center text-center">
-                            <h4 className={`text-black font-semibold leading-tight transition-all duration-500 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`}>
-                              {card.title}
-                            </h4>
-                            {hoveredUseCase === idx && (
-                              <p className="text-black text-base leading-relaxed animate-fadeIn">
-                                {card.description}
-                              </p>
-                            )}
-                          </div>
+                    {[
+                      {
+                        title: 'Recent Graduates',
+                        description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.',
+                        position: { top: '0', left: '0' }
+                      },
+                      {
+                        title: 'Career Break Returners',
+                        description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
+                        position: { top: '0', right: '0' }
+                      },
+                      {
+                        title: 'Upskilling in Role',
+                        description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
+                        position: { bottom: '0', left: '0' }
+                      },
+                      {
+                        title: 'Pivotting Careers',
+                        description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
+                        position: { bottom: '0', right: '0' }
+                      }
+                    ].map((card, idx) => (
+                      <div
+                        key={idx}
+                        onMouseEnter={() => setHoveredUseCase(idx)}
+                        onMouseLeave={() => setHoveredUseCase(null)}
+                        className="rounded flex items-center justify-center transition-all duration-500 cursor-pointer bg-white absolute"
+                        style={{
+                          height: hoveredUseCase === idx ? '100%' : '9.775rem',
+                          width: hoveredUseCase === idx ? '100%' : '9.775rem',
+                          ...(hoveredUseCase === idx ? { top: '0', left: '0', right: 'auto', bottom: 'auto' } : card.position),
+                          zIndex: hoveredUseCase === idx ? 10 : 1,
+                          padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
+                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
+                          pointerEvents: hoveredUseCase !== null && hoveredUseCase !== idx ? 'none' : 'auto',
+                          transition: 'all 0.5s ease-in-out'
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <h4 className={`text-black font-semibold leading-tight transition-all duration-500 ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`}>
+                            {card.title}
+                          </h4>
+                          {hoveredUseCase === idx && (
+                            <p className="text-black text-base leading-relaxed" style={{ animation: 'fadeIn 0.3s ease-in' }}>
+                              {card.description}
+                            </p>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
