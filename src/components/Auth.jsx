@@ -1709,24 +1709,49 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
-                  <div className="grid grid-cols-2 gap-3" style={{ width: '20.53rem' }}>
+                  <div className="relative grid grid-cols-2 gap-3" style={{ width: '20.53rem' }}>
                     {[
-                      { title: 'Recent Graduates' },
-                      { title: 'Career Break Returners' },
-                      { title: 'Upskilling in Role' },
-                      { title: 'Pivotting Careers' }
+                      {
+                        title: 'Recent Graduates',
+                        description: 'Launch your career with industry-relevant skills and hands-on experience that employers value.'
+                      },
+                      {
+                        title: 'Career Break Returners',
+                        description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support.'
+                      },
+                      {
+                        title: 'Upskilling in Role',
+                        description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field.'
+                      },
+                      {
+                        title: 'Pivotting Careers',
+                        description: 'Transform your career path with comprehensive training designed to help you transition successfully.'
+                      }
                     ].map((card, idx) => (
                       <div
                         key={idx}
-                        className="rounded p-6 flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer bg-white"
+                        onMouseEnter={() => setHoveredUseCase(idx)}
+                        onMouseLeave={() => setHoveredUseCase(null)}
+                        className="rounded p-6 flex items-center justify-center transition-all duration-300 cursor-pointer bg-white overflow-hidden"
                         style={{
-                          height: '9.775rem',
-                          width: '9.775rem'
+                          height: hoveredUseCase === idx ? '20.05rem' : '9.775rem',
+                          width: hoveredUseCase === idx ? '20.05rem' : '9.775rem',
+                          position: hoveredUseCase === idx ? 'absolute' : 'relative',
+                          top: hoveredUseCase === idx ? '0' : 'auto',
+                          left: hoveredUseCase === idx ? '0' : 'auto',
+                          zIndex: hoveredUseCase === idx ? 10 : 1
                         }}
                       >
-                        <h4 className="text-black text-lg font-semibold text-center leading-tight">
-                          {card.title}
-                        </h4>
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <h4 className="text-black text-lg font-semibold leading-tight mb-2">
+                            {card.title}
+                          </h4>
+                          {hoveredUseCase === idx && (
+                            <p className="text-black text-sm leading-relaxed mt-2">
+                              {card.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
