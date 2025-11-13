@@ -295,14 +295,14 @@ const Auth = () => {
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
-    if (!animateTestimonials || isTestimonialHovered || isLogin || selectedCourseModal) return;
+    if (!animateTestimonials || !isTestimonialsHeadingTypingComplete || isTestimonialHovered || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % 6); // 6 testimonials total
     }, 5000); // Rotate every 5 seconds
 
     return () => clearInterval(interval);
-  }, [animateTestimonials, isTestimonialHovered, isLogin, selectedCourseModal]);
+  }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, isLogin, selectedCourseModal]);
 
   // Intersection observer for LinkedIn & FAQ section animation
   useEffect(() => {
@@ -1603,7 +1603,7 @@ const Auth = () => {
             </div>
 
             {/* Testimonials and Cards Container */}
-            <div style={{ maxWidth: '70rem' }} className="mx-auto px-4">
+            <div style={{ maxWidth: '70rem', paddingLeft: '1rem', paddingRight: 'calc(1rem + 30px)' }} className="mx-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 {/* Left Column - Testimonials Slider */}
                 <div className="flex flex-col justify-center"
@@ -1652,7 +1652,7 @@ const Auth = () => {
                           right: idx === 0 ? 'auto' : 0,
                           opacity: currentTestimonialIndex === idx ? 1 : 0,
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                          transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           width: '576px',
                           height: '276px'
                         }}
