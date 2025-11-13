@@ -1691,14 +1691,15 @@ const Auth = () => {
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`transition-all duration-300 rounded-sm ${
+                        className={`transition-all duration-300 ${
                           currentTestimonialIndex === idx
                             ? 'bg-[#EF0B72]'
                             : 'bg-white hover:bg-gray-300'
                         }`}
                         style={{
-                          width: '10px',
-                          height: '10px'
+                          width: currentTestimonialIndex === idx ? '32px' : '10px',
+                          height: '10px',
+                          borderRadius: '2px'
                         }}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
