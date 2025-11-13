@@ -1496,7 +1496,7 @@ const Auth = () => {
                   <div className="rounded w-full transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', maxWidth: '32.2rem' }}>
                     {activeCard === 0 && (
                       <>
-                        <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4 text-gray-900">
                           Study with <span style={{ color: '#EF0B72' }}>AI-powered tools</span>
                         </h3>
                         <div className="-mx-8 -mb-8 mt-4">
@@ -1758,7 +1758,7 @@ const Auth = () => {
                   }`} style={{ height: '27.25rem', maxWidth: '32.2rem' }}>
                     {activeCard === 0 && (
                       <>
-                        <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
+                        <h3 className="text-3xl sm:text-4xl font-semibold mb-4 text-gray-900">
                           Study with <span style={{ color: '#EF0B72' }}>AI-powered tools</span>
                         </h3>
                         <div className="-mx-8 -mb-8 mt-4">
