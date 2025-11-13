@@ -1618,7 +1618,7 @@ const Auth = () => {
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
-                {renderTypedLearningTagline()}
+                {renderTypedTestimonialsHeading()}
               </h3>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
