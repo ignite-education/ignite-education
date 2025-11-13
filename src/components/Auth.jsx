@@ -1650,7 +1650,8 @@ const Auth = () => {
                           opacity: currentTestimonialIndex === idx ? 1 : 0,
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                          minHeight: '200px'
+                          width: '480px',
+                          height: '240px'
                         }}
                       >
                         <p className="text-gray-900 text-lg leading-relaxed mb-4">
