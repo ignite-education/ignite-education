@@ -1744,23 +1744,32 @@ const Auth = () => {
                           left: hoveredUseCase === idx ? '0' : card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : (hoveredUseCase !== null ? 0 : 1),
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
-                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
+                          opacity: 1,
                           pointerEvents: hoveredUseCase === null || hoveredUseCase === idx ? 'auto' : 'none',
-                          transition: 'opacity 1.5s ease-in-out, width 0.3s ease-out, height 0.3s ease-out, top 0.3s ease-out, left 0.3s ease-out'
+                          transition: 'width 0.3s ease-out, height 0.3s ease-out, top 0.3s ease-out, left 0.3s ease-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className={`font-semibold leading-tight ${hoveredUseCase === idx ? 'text-2xl mb-4' : 'text-lg'}`} style={{
-                            color: hoveredUseCase === idx ? '#7714E0' : '#000000'
-                          }}>
-                            {card.title}
-                          </h4>
-                          {hoveredUseCase === idx && (
-                            <p className="text-black text-base leading-relaxed" style={{
-                              animation: 'fadeIn 0.3s ease-in 0.3s both'
+                          {hoveredUseCase === idx ? (
+                            <>
+                              <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                                color: '#7714E0',
+                                animation: 'fadeIn 0.3s ease-in 0.3s both'
+                              }}>
+                                {card.title}
+                              </h4>
+                              <p className="text-black text-base leading-relaxed" style={{
+                                animation: 'fadeIn 0.3s ease-in 0.3s both'
+                              }}>
+                                {card.description}
+                              </p>
+                            </>
+                          ) : (
+                            <h4 className="font-semibold leading-tight text-lg" style={{
+                              color: '#000000'
                             }}>
-                              {card.description}
-                            </p>
+                              {card.title}
+                            </h4>
                           )}
                         </div>
                       </div>
