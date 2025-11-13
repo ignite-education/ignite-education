@@ -1746,7 +1746,7 @@ const Auth = () => {
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
                           pointerEvents: hoveredUseCase === null || hoveredUseCase === idx ? 'auto' : 'none',
-                          transition: 'opacity 1.5s ease-in-out'
+                          transition: 'opacity 1.5s ease-in-out, width 0.3s ease-out, height 0.3s ease-out, top 0.3s ease-out, left 0.3s ease-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
