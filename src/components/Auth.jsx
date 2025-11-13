@@ -892,6 +892,13 @@ const Auth = () => {
     });
   };
 
+  const scrollToTestimonials = () => {
+    testimonialsSectionRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
   const scrollToCourses = () => {
     coursesSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
@@ -901,13 +908,6 @@ const Auth = () => {
 
   const scrollToLearningModel = () => {
     learningModelSectionRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
-  const scrollToTestimonials = () => {
-    testimonialsSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
@@ -1390,7 +1390,7 @@ const Auth = () => {
           <div className="max-w-4xl mx-auto text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+              <h3 className="font-bold text-white text-left mb-8" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
@@ -1627,6 +1627,21 @@ const Auth = () => {
           </div>
         </div>
 
+
+        {/* Scroll Down Arrow */}
+        <div className="mt-8">
+          <button
+            onClick={scrollToTestimonials}
+            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+            style={{
+              animation: 'subtleBounce 2s infinite',
+              padding: '11px'
+            }}
+            aria-label="Scroll to testimonials"
+          >
+            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+          </button>
+        </div>
       {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
