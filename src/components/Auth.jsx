@@ -1658,8 +1658,8 @@ const Auth = () => {
                           overflow: 'visible'
                         }}
                       >
-                        <p className="text-gray-900 text-lg font-medium leading-relaxed text-left" style={{ maxWidth: '80%' }}>
-                          <span style={{ fontSize: '1.2em', fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontSize: '1.2em', fontWeight: 'bold' }}>"</span>
+                        <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
+                          <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                         </p>
                         {/* Avatar positioned on bottom edge */}
                         <div
