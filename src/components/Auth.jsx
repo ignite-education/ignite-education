@@ -1292,7 +1292,7 @@ const Auth = () => {
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div className="flex flex-col h-full">
-                          <h4 className="text-xl font-semibold mb-2 text-pink-500">{course.title}</h4>
+                          <h4 className="text-xl font-semibold mb-2" style={{ color: '#7714E0' }}>{course.title}</h4>
                           {course.description && (
                             <p className="text-sm text-gray-700 line-clamp-4 mb-2">
                               {course.description}
