@@ -19,7 +19,13 @@
       "Bash(tree:*)",
       "Bash(git -C /Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education rev-parse --show-toplevel)",
       "Bash(git rev-parse:*)",
-      "Bash(mdfind:*)"
+      "Bash(mdfind:*)",
+      "Bash(git stash:*)",
+      "Bash(for line in 923 937 2056 2063 2070 2088 2092 2156)",
+      "Bash(do echo \"Line $line:\")",
+      "Bash(done)",
+      "Bash(/tmp/old_auth.jsx)",
+      "Bash(src/components/Auth.jsx)"
     ],
     "deny": [],
     "ask": []
