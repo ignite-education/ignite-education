@@ -1719,28 +1719,29 @@ const Auth = () => {
                       {
                         title: 'Career Break Returners',
                         description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
-                        position: { top: '0', right: '0' }
+                        position: { top: '0', left: '10.525rem' }
                       },
                       {
                         title: 'Upskilling in Role',
                         description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
-                        position: { bottom: '0', left: '0' }
+                        position: { top: '10.525rem', left: '0' }
                       },
                       {
                         title: 'Pivotting Careers',
                         description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
-                        position: { bottom: '0', right: '0' }
+                        position: { top: '10.525rem', left: '10.525rem' }
                       }
                     ].map((card, idx) => (
                       <div
                         key={idx}
                         onMouseEnter={() => setHoveredUseCase(idx)}
                         onMouseLeave={() => setHoveredUseCase(null)}
-                        className="rounded flex items-center justify-center transition-all duration-500 cursor-pointer bg-white absolute"
+                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
                         style={{
                           height: hoveredUseCase === idx ? '100%' : '9.775rem',
                           width: hoveredUseCase === idx ? '100%' : '9.775rem',
-                          ...(hoveredUseCase === idx ? { top: '0', left: '0', right: 'auto', bottom: 'auto' } : card.position),
+                          top: hoveredUseCase === idx ? '0' : card.position.top,
+                          left: hoveredUseCase === idx ? '0' : card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : 1,
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
