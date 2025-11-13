@@ -1394,7 +1394,7 @@ const Auth = () => {
                 {renderTypedLearningTagline()}
               </h3>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
                 {/* Left Column - Feature Cards */}
                 <div className="space-y-3 flex-shrink-0">
                   {/* Card 1 - AI smarts */}
@@ -1488,9 +1488,7 @@ const Auth = () => {
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
-                  <div className={`rounded w-full max-w-md transition-all duration-500 ${
-                    activeCard === 0 ? 'bg-white p-8' : 'bg-gray-800 bg-opacity-70 backdrop-blur-sm p-8 border border-gray-600'
-                  }`} style={{ height: '27.25rem' }}>
+                  <div className="rounded w-full max-w-md transition-all duration-500 bg-white p-8" style={{ height: '27.25rem' }}>
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
