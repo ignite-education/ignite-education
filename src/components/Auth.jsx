@@ -1415,8 +1415,13 @@ const Auth = () => {
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
-                      AI smarts to smash your studies.
+                      Levelling up learning<br />with <span style={{ color: '#EF0B72' }}>smart AI integration.</span>
                     </h4>
+                    {activeCard === 0 && (
+                      <p className="text-gray-700 text-sm mt-3">
+                        Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 2 - Personalised support */}
@@ -1437,7 +1442,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
-                      Personalised support with industry professionals.
+                      Personalised support<br />from <span style={{ color: '#EF0B72' }}>industry professionals.</span>
                     </h4>
                   </div>
 
@@ -1459,7 +1464,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
-                      Hear the latest from the community.
+                      Connect with<br />the <span style={{ color: '#EF0B72' }}>global community.</span>
                     </h4>
                   </div>
 
@@ -1481,14 +1486,14 @@ const Auth = () => {
                     }}
                   >
                     <h4 className="font-semibold text-xl text-black">
-                      Get certified to take on your next role.
+                      Get certified<br />to <span style={{ color: '#EF0B72' }}>take on your next role.</span>
                     </h4>
                   </div>
                 </div>
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
-                  <div className="rounded w-full max-w-md transition-all duration-500 bg-white p-8" style={{ height: '27.25rem' }}>
+                  <div className="rounded w-full transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', maxWidth: '32.2rem' }}>
                     {activeCard === 0 && (
                       <>
                         <h3 className="text-2xl sm:text-3xl font-semibold mb-6 text-gray-900">
