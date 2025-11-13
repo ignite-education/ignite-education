@@ -1625,7 +1625,7 @@ const Auth = () => {
               </div>
 
             {/* Scroll Down Arrow */}
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-12">
               <button
                 onClick={scrollToTestimonials}
                 className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
