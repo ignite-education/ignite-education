@@ -1049,9 +1049,21 @@ const ProgressHub = () => {
     }, 200);
   };
 
-  // Shop link handler
+  // Shop link handlers
   const handleOpenShop = () => {
     window.open('https://shop.ignite.education/products/tote-bag-1?variant=53677278495051', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenMug = () => {
+    window.open('https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenNotebook = () => {
+    window.open('https://shop.ignite.education/products/notebook?variant=53241113084235', '_blank', 'noopener,noreferrer');
+  };
+
+  const handleOpenSweatshirt = () => {
+    window.open('https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987', '_blank', 'noopener,noreferrer');
   };
 
   const handleUpdateAccount = async (e) => {
@@ -2354,25 +2366,28 @@ const ProgressHub = () => {
                 <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '100px' }}>
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/tote.jpeg"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                     alt="Tote bag"
                     className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer"
                     onClick={handleOpenShop}
                   />
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/13818598918869851312_2048.jpg.webp"
-                    alt="Merchandise item"
-                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
+                    alt="Black Mug"
+                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer"
+                    onClick={handleOpenMug}
                   />
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15764184527208086102_2048.jpg.webp"
-                    alt="Merchandise item"
-                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
+                    alt="Notebook"
+                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer"
+                    onClick={handleOpenNotebook}
                   />
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/18369186718215311600_2048.jpg.webp"
-                    alt="Merchandise item"
-                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
+                    alt="Sweatshirt"
+                    className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer"
+                    onClick={handleOpenSweatshirt}
                   />
                 </div>
               </div>
