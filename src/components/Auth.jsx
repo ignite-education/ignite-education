@@ -1804,7 +1804,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center mt-12">
                 <button
                   onClick={() => {
                     linkedInFAQSectionRef.current?.scrollIntoView({
