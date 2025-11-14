@@ -1387,7 +1387,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '6.5rem', paddingBottom: '3rem' }}>
+          <div className="max-w-4xl mx-auto text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
               <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '1.2rem' }}>
@@ -1614,7 +1614,7 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full text-white text-left" style={{ paddingTop: '7rem', paddingBottom: '6rem' }}>
+          <div className="w-full text-white text-left">
             {/* Title Container */}
             <div className="max-w-4xl mx-auto px-4">
               <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
