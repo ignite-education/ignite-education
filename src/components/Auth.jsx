@@ -1793,19 +1793,21 @@ const Auth = () => {
                     ))}
 
                     {/* Single overlay card that covers entire grid */}
-                    {hoveredUseCase !== null && (
-                      <div
-                        className="absolute rounded flex items-center justify-center bg-white"
-                        style={{
-                          top: 0,
-                          left: 0,
-                          width: '20.53rem',
-                          height: '20.05rem',
-                          zIndex: 10,
-                          padding: '2rem',
-                          animation: 'fadeIn 0.3s ease-out both'
-                        }}
-                      >
+                    <div
+                      className="absolute rounded flex items-center justify-center bg-white"
+                      style={{
+                        top: 0,
+                        left: 0,
+                        width: '20.53rem',
+                        height: '20.05rem',
+                        zIndex: 10,
+                        padding: '2rem',
+                        opacity: hoveredUseCase !== null ? 1 : 0,
+                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none',
+                        transition: 'opacity 0.3s ease-out'
+                      }}
+                    >
+                      {hoveredUseCase !== null && (
                         <div className="flex flex-col items-center justify-center text-center">
                           <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
                             color: '#EF0B72'
@@ -1826,8 +1828,8 @@ const Auth = () => {
                             ][hoveredUseCase].description}
                           </p>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
