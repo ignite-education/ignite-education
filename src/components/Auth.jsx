@@ -1778,30 +1778,28 @@ const Auth = () => {
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
-                          {hoveredUseCase === idx ? (
-                            <div style={{
-                              animation: 'fadeIn 0.3s ease-in both'
-                            }}>
-                              <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                                color: '#EF0B72'
-                              }}>
-                                {card.title}
-                              </h4>
-                              <p className="text-black text-base leading-relaxed">
-                                {card.description}
-                              </p>
-                            </div>
-                          ) : (
-                            <div style={{
-                              animation: hoveredUseCase !== null && hoveredUseCase !== idx ? 'fadeOut 0.3s ease-out both' : 'none'
-                            }}>
+                          <div style={{
+                            animation: hoveredUseCase === idx ? 'fadeIn 0.3s ease-in both' : (hoveredUseCase !== null ? 'fadeOut 0.3s ease-out both' : 'fadeIn 0.3s ease-in both')
+                          }}>
+                            {hoveredUseCase === idx ? (
+                              <>
+                                <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                                  color: '#EF0B72'
+                                }}>
+                                  {card.title}
+                                </h4>
+                                <p className="text-black text-base leading-relaxed">
+                                  {card.description}
+                                </p>
+                              </>
+                            ) : (
                               <h4 className="font-semibold leading-tight text-lg" style={{
                                 color: '#000000'
                               }}>
                                 {card.title}
                               </h4>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
