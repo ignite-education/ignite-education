@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
+import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
+import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
 
@@ -12,6 +14,7 @@ const ProgressHub = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { firstName, user: authUser, signOut, updateProfile } = useAuth();
+  const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ firstName: firstName || 'User', lastName: 'Smith', enrolledCourse: 'Product Management', progress: 40 });
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -2854,7 +2857,7 @@ const ProgressHub = () => {
               style={{
                 animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                padding: '2rem',
+                padding: '2rem 2rem 1rem 2rem',
                 maxHeight: '68vh',
                 overflowY: 'auto',
                 scrollbarWidth: 'none',
@@ -2872,6 +2875,7 @@ const ProgressHub = () => {
               {/* Reddit Account Section */}
               {redditUsername && (
                 <div className="mb-6 pb-4 border-b border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Account</h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
@@ -2905,7 +2909,19 @@ const ProgressHub = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Posts</h3>
                 {loadingMyPosts ? (
                   <div className="flex items-center justify-center py-12">
-                    <div className="text-gray-600">Loading your posts...</div>
+                    {lottieData && Object.keys(lottieData).length > 0 ? (
+                      <Lottie
+                        animationData={lottieData}
+                        loop={true}
+                        autoplay={true}
+                        style={{
+                          width: 120,
+                          height: 120
+                        }}
+                      />
+                    ) : (
+                      <div className="text-gray-600">Loading your posts...</div>
+                    )}
                   </div>
                 ) : myRedditPosts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
@@ -3039,7 +3055,19 @@ const ProgressHub = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Comments</h3>
                 {loadingMyComments ? (
                   <div className="flex items-center justify-center py-12">
-                    <div className="text-gray-600">Loading your comments...</div>
+                    {lottieData && Object.keys(lottieData).length > 0 ? (
+                      <Lottie
+                        animationData={lottieData}
+                        loop={true}
+                        autoplay={true}
+                        style={{
+                          width: 120,
+                          height: 120
+                        }}
+                      />
+                    ) : (
+                      <div className="text-gray-600">Loading your comments...</div>
+                    )}
                   </div>
                 ) : myRedditComments.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
