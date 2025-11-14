@@ -1654,10 +1654,13 @@ const ProgressHub = () => {
 
         console.log(`✨ Formatted comments:`, formattedComments);
 
+        // Reverse to show newest comments first
+        const sortedComments = formattedComments.reverse();
+
         setPostComments(prev => {
           const updated = {
             ...prev,
-            [post.id]: formattedComments
+            [post.id]: sortedComments
           };
           console.log(`📝 Updated postComments state:`, updated);
           return updated;
@@ -1902,10 +1905,10 @@ const ProgressHub = () => {
           upvotes: 1
         };
 
-        // Update local state
+        // Update local state - add new comment at the top
         setPostComments(prev => ({
           ...prev,
-          [postId]: [...(prev[postId] || []), newComment]
+          [postId]: [newComment, ...(prev[postId] || [])]
         }));
 
         // Update comment count
@@ -1931,7 +1934,7 @@ const ProgressHub = () => {
 
         setPostComments(prev => ({
           ...prev,
-          [postId]: [...(prev[postId] || []), commentWithUser]
+          [postId]: [commentWithUser, ...(prev[postId] || [])]
         }));
 
         setCommunityPosts(prev => prev.map(p =>
