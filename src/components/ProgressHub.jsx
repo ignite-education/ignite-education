@@ -2855,7 +2855,7 @@ const ProgressHub = () => {
                 animation: isClosingMyPostsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '2rem',
-                maxHeight: '85vh',
+                maxHeight: '68vh',
                 overflowY: 'auto'
               }}
               onClick={(e) => e.stopPropagation()}
@@ -2890,6 +2890,7 @@ const ProgressHub = () => {
                         }
                       }}
                       className="text-xs text-gray-600 hover:text-gray-900 underline transition"
+                      style={{ marginRight: '25px' }}
                     >
                       Change Account
                     </button>
@@ -2910,37 +2911,46 @@ const ProgressHub = () => {
                     <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
                   </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                   {myRedditPosts.map((post) => (
                     <div key={post.id}>
                       <div
-                        className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
+                        className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition"
                         onMouseEnter={() => handleMyPostHover(post)}
                         onMouseLeave={handleMyPostLeave}
                       >
-                        <div className="flex items-start gap-2 mb-2">
-                          <div className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                             {(post.author || redditUsername || user.firstName)?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs text-white">{post.author || redditUsername || user.firstName || 'User'}</span>
-                              <span className="text-xs text-white">• {new Date(post.created_utc * 1000).toLocaleDateString()}</span>
+                              <span className="text-xs text-gray-600">{post.author || redditUsername || user.firstName || 'User'}</span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-600">{new Date(post.created_utc * 1000).toLocaleDateString()}</span>
                             </div>
-                            <h3 className="font-bold mb-1 text-sm text-white">{post.title}</h3>
-                            <p className="text-xs text-gray-400 mb-2">r/{post.subreddit}</p>
+                            <h3 className="font-bold mb-1 text-sm text-gray-900">{post.title}</h3>
+                            <p className="text-xs text-gray-600 mb-2">r/{post.subreddit}</p>
                             {post.selftext && (
-                              <p className={`text-xs text-white leading-relaxed mb-2 ${expandedMyPostId === post.id ? '' : 'line-clamp-3'}`}>{post.selftext}</p>
+                              <p className={`text-sm text-gray-900 mb-2 whitespace-pre-wrap ${expandedMyPostId === post.id ? '' : 'line-clamp-3'}`}>{post.selftext}</p>
                             )}
-                            <div className="flex items-center gap-4 text-xs text-white">
-                              <div className="flex items-center gap-1.5">
-                                <ThumbsUp size={14} />
-                                <span className="font-semibold text-xs">{post.score}</span>
+                            <div className="flex items-center gap-3 text-xs text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <ThumbsUp size={12} />
+                                <span>{post.score}</span>
                               </div>
                               <div className="flex items-center gap-1">
-                                <MessageSquare size={14} />
-                                <span className="font-semibold text-xs">{post.num_comments}</span>
+                                <MessageSquare size={12} />
+                                <span>{post.num_comments}</span>
                               </div>
+                              <a
+                                href={post.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-gray-900 underline"
+                              >
+                                View on Reddit
+                              </a>
                             </div>
                           </div>
                         </div>
