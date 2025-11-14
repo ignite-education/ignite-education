@@ -35,6 +35,10 @@ const ProgressHub = () => {
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [hoverTimer, setHoverTimer] = useState(null);
   const [leaveTimer, setLeaveTimer] = useState(null);
+  const [visiblePosts, setVisiblePosts] = useState(new Set());
+  const postRefs = useRef({});
+  const [collapsedHeights, setCollapsedHeights] = useState({});
+  const [isCollapsing, setIsCollapsing] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [postComments, setPostComments] = useState({}); // Store actual comments for each post
@@ -1574,6 +1578,41 @@ const ProgressHub = () => {
     };
   }, [upcomingLessons.length, isCarouselReady]);
 
+  // Track which posts are visible in viewport using IntersectionObserver
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const postId = entry.target.dataset.postId;
+          if (postId) {
+            setVisiblePosts((prev) => {
+              const newSet = new Set(prev);
+              if (entry.isIntersecting) {
+                newSet.add(postId);
+              } else {
+                newSet.delete(postId);
+              }
+              return newSet;
+            });
+          }
+        });
+      },
+      {
+        threshold: 0.1, // Trigger when at least 10% of post is visible
+        rootMargin: '50px' // Add margin to detect posts slightly before they enter viewport
+      }
+    );
+
+    // Observe all post elements
+    Object.values(postRefs.current).forEach((ref) => {
+      if (ref) observer.observe(ref);
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [communityPosts.length]);
+
   // Fetch Reddit comments for a specific post
   const fetchRedditCommentsForPost = async (post) => {
     console.log(`🔍 fetchRedditCommentsForPost called for post:`, post.id, `source:`, post.source);
@@ -1683,7 +1722,32 @@ const ProgressHub = () => {
 
     // Set 1-second delay before closing the expanded post
     const timer = setTimeout(() => {
+      const postId = expandedPostId;
+
+      // Check if post is out of viewport before collapsing
+      if (postId && !visiblePosts.has(postId)) {
+        // Post is out of view - capture current height before collapsing
+        const postElement = postRefs.current[postId];
+        if (postElement) {
+          const currentHeight = postElement.offsetHeight;
+          setCollapsedHeights(prev => ({ ...prev, [postId]: currentHeight }));
+          setIsCollapsing(prev => ({ ...prev, [postId]: true }));
+        }
+      }
+
       setExpandedPostId(null);
+
+      // Clear the collapsed state after animation completes
+      setTimeout(() => {
+        if (postId) {
+          setIsCollapsing(prev => ({ ...prev, [postId]: false }));
+          setCollapsedHeights(prev => {
+            const newHeights = { ...prev };
+            delete newHeights[postId];
+            return newHeights;
+          });
+        }
+      }, 300);
     }, 1000);
 
     setLeaveTimer(timer);
@@ -2419,8 +2483,16 @@ const ProgressHub = () => {
                   {communityPosts.map(post => (
                     <div
                       key={post.id}
+                      ref={(el) => postRefs.current[post.id] = el}
+                      data-post-id={post.id}
                       onMouseEnter={() => handlePostHover(post)}
                       onMouseLeave={handlePostLeave}
+                      style={{
+                        minHeight: isCollapsing[post.id] && collapsedHeights[post.id]
+                          ? `${collapsedHeights[post.id]}px`
+                          : 'auto',
+                        transition: 'min-height 0.3s ease-out'
+                      }}
                     >
                     <div
                       className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
@@ -2484,12 +2556,14 @@ const ProgressHub = () => {
                     </div>
 
                     {/* Comments Section - Separate box below post, aligned right, 90% width */}
-                    {expandedPostId === post.id && (
+                    {(expandedPostId === post.id || (isCollapsing[post.id] && collapsedHeights[post.id])) && (
                       <div
                         className="ml-auto mt-2 animate-fadeIn"
                         style={{
                           width: '90%',
-                          animation: 'slideDown 0.3s ease-out'
+                          animation: 'slideDown 0.3s ease-out',
+                          opacity: expandedPostId === post.id ? 1 : 0,
+                          transition: 'opacity 0.3s ease-out'
                         }}
                       >
                         <div className={`bg-gray-800 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
