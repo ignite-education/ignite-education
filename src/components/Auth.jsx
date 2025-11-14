@@ -1700,7 +1700,8 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '12px',
-                            left: '150px'
+                            left: '155px',
+                            lineHeight: '1.2'
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
