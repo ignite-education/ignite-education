@@ -2738,7 +2738,7 @@ const ProgressHub = () => {
                       onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
                       className="w-full bg-gray-100 text-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
                       style={{ borderRadius: '0.3rem' }}
-                      placeholder="Enter your post title..."
+                      placeholder="Enter your post title"
                       disabled={isSubmitting}
                     />
                   </div>
@@ -2772,14 +2772,14 @@ const ProgressHub = () => {
                             className="w-full bg-gray-100 px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
                             style={{
                               borderRadius: '0.3rem',
-                              color: newPost.flair ? 'black' : '#9CA3AF',
+                              color: newPost.flair ? 'black' : '#6B7280',
                               paddingRight: '2rem',
                               backgroundPosition: 'right 0.5rem center'
                             }}
                             disabled={isSubmitting}
                             required
                           >
-                            <option value="" style={{ color: '#9CA3AF' }}>
+                            <option value="" style={{ color: '#6B7280' }}>
                               Select a flair
                             </option>
                             {availableFlairs.map((flair) => (
