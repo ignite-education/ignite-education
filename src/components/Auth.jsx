@@ -1712,7 +1712,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem' }}>
+                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem', marginLeft: '20px' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
