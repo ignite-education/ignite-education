@@ -2835,29 +2835,9 @@ const ProgressHub = () => {
           onClick={handleCloseMyPostsModal}
         >
           <div className="relative w-full px-4" style={{ maxWidth: '800px' }}>
-            <div className="flex items-center justify-between pl-1 mb-1">
-              <h2 className="text-xl font-semibold text-white">
-                My Posts
-              </h2>
-              {redditUsername && (
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
-                  <span className="text-sm text-white">u/{redditUsername}</span>
-                  <button
-                    onClick={() => {
-                      if (confirm('Disconnect your Reddit account? You will need to reconnect to view and post to Reddit.')) {
-                        clearRedditTokens();
-                        setRedditAuthenticated(false);
-                        setRedditUsername(null);
-                        handleCloseMyPostsModal();
-                      }
-                    }}
-                    className="text-xs text-white/70 hover:text-white underline transition"
-                  >
-                    Change Account
-                  </button>
-                </div>
-              )}
-            </div>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+              My Posts
+            </h2>
 
             <div
               className="bg-white text-black relative"
@@ -2877,17 +2857,50 @@ const ProgressHub = () => {
                 <X size={24} />
               </button>
 
-              {loadingMyPosts ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="text-gray-600">Loading your posts...</div>
+              {/* Reddit Account Section */}
+              {redditUsername && (
+                <div className="mb-6 pb-4 border-b border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                        {redditUsername.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">u/{redditUsername}</p>
+                        <p className="text-xs text-gray-500">Connected Reddit Account</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (confirm('Disconnect your Reddit account? You will need to reconnect to view and post to Reddit.')) {
+                          clearRedditTokens();
+                          setRedditAuthenticated(false);
+                          setRedditUsername(null);
+                          handleCloseMyPostsModal();
+                        }
+                      }}
+                      className="text-xs text-gray-600 hover:text-gray-900 underline transition"
+                    >
+                      Change Account
+                    </button>
+                  </div>
                 </div>
-              ) : myRedditPosts.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-gray-600 mb-2">No posts found</p>
-                  <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
+              )}
+
+              {/* Posts Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Posts</h3>
+                {loadingMyPosts ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-gray-600">Loading your posts...</div>
+                  </div>
+                ) : myRedditPosts.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <p className="text-gray-600 mb-2">No posts found</p>
+                    <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
                   {myRedditPosts.map((post) => (
                     <div key={post.id}>
                       <div
@@ -2996,7 +3009,17 @@ const ProgressHub = () => {
                     </div>
                   ))}
                 </div>
-              )}
+                )}
+              </div>
+
+              {/* Comments Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
+                <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+                  <p className="text-gray-600 mb-2">Comments feature coming soon</p>
+                  <p className="text-gray-500 text-sm">View all your Reddit comments in one place</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
