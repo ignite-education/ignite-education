@@ -55,6 +55,7 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
+  const [previousHoveredUseCase, setPreviousHoveredUseCase] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
@@ -1761,8 +1762,14 @@ const Auth = () => {
                     ].map((card, idx) => (
                       <div
                         key={idx}
-                        onMouseEnter={() => setHoveredUseCase(idx)}
-                        onMouseLeave={() => setHoveredUseCase(null)}
+                        onMouseEnter={() => {
+                          setPreviousHoveredUseCase(hoveredUseCase);
+                          setHoveredUseCase(idx);
+                        }}
+                        onMouseLeave={() => {
+                          setPreviousHoveredUseCase(hoveredUseCase);
+                          setHoveredUseCase(null);
+                        }}
                         className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
                         style={{
                           height: hoveredUseCase === idx ? '20.05rem' : '9.775rem',
@@ -1774,7 +1781,9 @@ const Auth = () => {
                           opacity: 1,
                           pointerEvents: 'auto',
                           transition: 'opacity 0.6s ease-in-out',
-                          animation: hoveredUseCase === idx ? 'fadeIn 0.6s ease-out' : 'none'
+                          animation: hoveredUseCase === idx
+                            ? 'fadeIn 0.6s ease-out'
+                            : (previousHoveredUseCase === idx && hoveredUseCase === null ? 'fadeOut 0.6s ease-out' : 'none')
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
