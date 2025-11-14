@@ -3527,12 +3527,10 @@ const ProgressHub = () => {
               style={{
                 width: '750px',
                 maxHeight: '75vh',
-                overflowY: 'auto',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -3544,8 +3542,8 @@ const ProgressHub = () => {
                 <X size={24} />
               </button>
 
-              {/* Left side - Features section */}
-              <div className="w-1/3 bg-gradient-to-br from-purple-600 to-pink-500 p-8 flex flex-col justify-center" style={{ borderRadius: '0.3rem 0 0 0.3rem' }}>
+              {/* Left side - Features section (fixed) */}
+              <div className="w-1/3 bg-black p-8 flex flex-col justify-center" style={{ borderRadius: '0.3rem 0 0 0.3rem' }}>
                 <h3 className="text-white text-2xl font-bold mb-8">What's Included</h3>
 
                 <div className="space-y-6">
@@ -3569,8 +3567,8 @@ const ProgressHub = () => {
                 </div>
               </div>
 
-              {/* Right side - Stripe checkout */}
-              <div className="w-2/3 relative">
+              {/* Right side - Stripe checkout (scrollable) */}
+              <div className="w-2/3 relative overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {upgradingToAdFree ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="text-center">
