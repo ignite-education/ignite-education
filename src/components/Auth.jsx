@@ -1780,15 +1780,16 @@ const Auth = () => {
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
                           opacity: 1,
                           pointerEvents: 'auto',
-                          transition: 'opacity 0.6s ease-in-out',
-                          animation: hoveredUseCase === idx
-                            ? 'fadeIn 0.6s ease-out'
-                            : (previousHoveredUseCase === idx && hoveredUseCase === null ? 'fadeOut 0.6s ease-out' : 'none')
+                          transition: 'all 0.6s ease-in-out'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
                           <div style={{
-                            animation: hoveredUseCase === idx ? 'fadeIn 0.6s ease-in both' : (hoveredUseCase !== null ? 'fadeOut 0.6s ease-out both' : 'fadeIn 0.6s ease-in both')
+                            animation: hoveredUseCase === idx
+                              ? 'fadeIn 0.6s ease-in both'
+                              : (previousHoveredUseCase === idx && hoveredUseCase === null
+                                  ? 'fadeOut 0.6s ease-out both'
+                                  : 'fadeIn 0.6s ease-in both')
                           }}>
                             {hoveredUseCase === idx ? (
                               <>
