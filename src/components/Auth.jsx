@@ -1804,8 +1804,9 @@ const Auth = () => {
                         padding: '2rem',
                         opacity: hoveredUseCase !== null ? 1 : 0,
                         pointerEvents: hoveredUseCase !== null ? 'auto' : 'none',
-                        transition: 'opacity 0.2s ease-out',
-                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden'
+                        transition: 'opacity 0.25s ease-out, visibility 0s linear 0.25s',
+                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
+                        willChange: 'opacity'
                       }}
                     >
                       <div className="flex flex-col items-center justify-center text-center">
