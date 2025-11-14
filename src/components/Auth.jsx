@@ -1678,7 +1678,7 @@ const Auth = () => {
                           overflow: 'visible'
                         }}
                       >
-                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px' }}>
                           <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
@@ -1689,7 +1689,7 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '-40px',
-                            left: '24px',
+                            left: '34px',
                             backgroundImage: `url(${testimonial.avatar})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
@@ -1700,7 +1700,7 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '12px',
-                            left: '130px'
+                            left: '140px'
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
