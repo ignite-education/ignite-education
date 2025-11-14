@@ -1900,7 +1900,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 onClick={scrollToCurrentLesson}
                 className="absolute bg-white text-black hover:bg-purple-50 transition-all"
                 style={{
-                  right: '37px',
+                  right: '42px',
                   top: '50%',
                   transform: 'translateY(-35%)',
                   width: '40px',
