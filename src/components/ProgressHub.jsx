@@ -282,24 +282,34 @@ const ProgressHub = () => {
 
   // Mount Stripe Checkout when clientSecret is available
   useEffect(() => {
+    let checkout = null;
+
     const mountCheckout = async () => {
       if (clientSecret && checkoutRef.current) {
-        const stripe = await stripePromise;
+        try {
+          const stripe = await stripePromise;
 
-        const checkout = await stripe.initEmbeddedCheckout({
-          clientSecret,
-        });
+          checkout = await stripe.initEmbeddedCheckout({
+            clientSecret,
+          });
 
-        checkout.mount(checkoutRef.current);
-
-        // Cleanup function
-        return () => {
-          checkout.destroy();
-        };
+          checkout.mount(checkoutRef.current);
+        } catch (error) {
+          console.error('Error mounting Stripe checkout:', error);
+          setUpgradingToAdFree(false);
+          alert('Failed to load payment form. Please try again.');
+        }
       }
     };
 
     mountCheckout();
+
+    // Cleanup function
+    return () => {
+      if (checkout) {
+        checkout.destroy();
+      }
+    };
   }, [clientSecret]);
 
   // Check for course completion and generate certificate
@@ -3576,6 +3586,7 @@ const ProgressHub = () => {
                   </div>
                 ) : (
                   <div
+                    key={clientSecret}
                     ref={checkoutRef}
                     style={{
                       minHeight: '350px',
