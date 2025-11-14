@@ -1802,11 +1802,7 @@ const Auth = () => {
                         height: '20.05rem',
                         zIndex: 10,
                         padding: '2rem',
-                        opacity: hoveredUseCase !== null ? 1 : 0,
-                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none',
-                        transition: 'opacity 0.25s ease-out, visibility 0s linear 0.25s',
-                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
-                        willChange: 'opacity'
+                        display: hoveredUseCase !== null ? 'flex' : 'none'
                       }}
                     >
                       <div className="flex flex-col items-center justify-center text-center">
