@@ -250,7 +250,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3, rootMargin: '-100px 0px -100px 0px' }
     );
 
     observer.observe(learningModelSectionRef.current);
@@ -281,7 +281,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2, rootMargin: '-100px 0px -100px 0px' }
     );
 
     observer.observe(testimonialsSectionRef.current);
