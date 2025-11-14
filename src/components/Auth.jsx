@@ -1772,45 +1772,50 @@ const Auth = () => {
                         }}
                         className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
                         style={{
-                          height: hoveredUseCase === idx ? '20.05rem' : '9.775rem',
-                          width: hoveredUseCase === idx ? '20.53rem' : '9.775rem',
-                          top: hoveredUseCase === idx ? '0' : card.position.top,
-                          left: hoveredUseCase === idx ? '0' : card.position.left,
+                          height: '9.775rem',
+                          width: '9.775rem',
+                          top: card.position.top,
+                          left: card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : 1,
-                          padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
-                          opacity: 1,
+                          padding: '1.5rem',
+                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0.3 : 1,
                           pointerEvents: 'auto',
-                          transition: 'all 0.6s ease-in-out'
+                          transition: 'opacity 0.6s ease-in-out'
                         }}
                       >
+                        {/* Default small card content */}
                         <div className="flex flex-col items-center justify-center text-center">
-                          <div style={{
-                            animation: hoveredUseCase === idx
-                              ? 'fadeIn 0.6s ease-in both'
-                              : (previousHoveredUseCase === idx && hoveredUseCase === null
-                                  ? 'fadeOut 0.6s ease-out both'
-                                  : 'fadeIn 0.6s ease-in both')
+                          <h4 className="font-semibold leading-tight text-lg" style={{
+                            color: '#000000',
+                            opacity: hoveredUseCase === idx ? 0 : 1,
+                            transition: 'opacity 0.6s ease-in-out'
                           }}>
-                            {hoveredUseCase === idx ? (
-                              <>
-                                <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                                  color: '#EF0B72'
-                                }}>
-                                  {card.title}
-                                </h4>
-                                <p className="text-black text-base leading-relaxed">
-                                  {card.description}
-                                </p>
-                              </>
-                            ) : (
-                              <h4 className="font-semibold leading-tight text-lg" style={{
-                                color: '#000000'
+                            {card.title}
+                          </h4>
+                        </div>
+
+                        {/* Expanded overlay content */}
+                        {hoveredUseCase === idx && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center rounded"
+                            style={{
+                              background: 'white',
+                              padding: '2rem',
+                              animation: 'fadeIn 0.6s ease-in both'
+                            }}
+                          >
+                            <div className="flex flex-col items-center justify-center text-center">
+                              <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                                color: '#EF0B72'
                               }}>
                                 {card.title}
                               </h4>
-                            )}
+                              <p className="text-black text-base leading-relaxed">
+                                {card.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     ))}
                   </div>
