@@ -1905,7 +1905,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   transform: 'translateY(-35%)',
                   width: '40px',
                   height: '40px',
-                  borderRadius: '50%',
+                  borderRadius: '0.3rem',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
