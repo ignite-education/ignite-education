@@ -2835,9 +2835,29 @@ const ProgressHub = () => {
           onClick={handleCloseMyPostsModal}
         >
           <div className="relative w-full px-4" style={{ maxWidth: '800px' }}>
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-              My Posts
-            </h2>
+            <div className="flex items-center justify-between pl-1 mb-1">
+              <h2 className="text-xl font-semibold text-white">
+                My Posts
+              </h2>
+              {redditUsername && (
+                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
+                  <span className="text-sm text-white">u/{redditUsername}</span>
+                  <button
+                    onClick={() => {
+                      if (confirm('Disconnect your Reddit account? You will need to reconnect to view and post to Reddit.')) {
+                        clearRedditTokens();
+                        setRedditAuthenticated(false);
+                        setRedditUsername(null);
+                        handleCloseMyPostsModal();
+                      }
+                    }}
+                    className="text-xs text-white/70 hover:text-white underline transition"
+                  >
+                    Change Account
+                  </button>
+                </div>
+              )}
+            </div>
 
             <div
               className="bg-white text-black relative"
