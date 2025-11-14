@@ -1429,12 +1429,13 @@ app.get('/api/reddit-posts-cached', async (req, res) => {
     const subreddit = req.query.subreddit || 'ProductManagement';
     const limit = parseInt(req.query.limit) || 20;
 
-    console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit})`);
+    console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit}, last 7 days)`);
 
     const { data, error} = await supabase
       .from('reddit_posts_cache')
       .select('*')
       .eq('subreddit', subreddit)
+      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('upvotes', { ascending: false })
       .limit(limit);
 
