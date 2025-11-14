@@ -1792,11 +1792,15 @@ const Auth = () => {
                               </p>
                             </div>
                           ) : (
-                            <h4 className="font-semibold leading-tight text-lg" style={{
-                              color: '#000000'
+                            <div style={{
+                              animation: hoveredUseCase !== null && hoveredUseCase !== idx ? 'fadeOut 0.3s ease-out both' : 'none'
                             }}>
-                              {card.title}
-                            </h4>
+                              <h4 className="font-semibold leading-tight text-lg" style={{
+                                color: '#000000'
+                              }}>
+                                {card.title}
+                              </h4>
+                            </div>
                           )}
                         </div>
                       </div>
