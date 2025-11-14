@@ -100,6 +100,12 @@ const Auth = () => {
     }
   }, []);
 
+  // Reset loading state when component mounts to handle failed OAuth redirects
+  useEffect(() => {
+    // Reset loading state when returning to the page
+    setLoading(false);
+  }, []);
+
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
     if (!marketingSectionRef.current || isLogin || selectedCourseModal) return;
