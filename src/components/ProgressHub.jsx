@@ -2893,7 +2893,7 @@ const ProgressHub = () => {
                 <>
                   {/* Reddit Account Section */}
                   {redditUsername && (
-                <div className="mb-6 pb-4 border-b border-gray-200">
+                <div className="pb-4 border-b border-gray-200" style={{ marginBottom: '0.9rem' }}>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Account</h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -2936,7 +2936,7 @@ const ProgressHub = () => {
                   {myRedditPosts.map((post) => (
                     <div key={post.id}>
                       <div
-                        className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition"
+                        className="bg-gray-200 rounded-lg p-4 hover:bg-gray-300 transition"
                         onMouseEnter={() => handleMyPostHover(post)}
                         onMouseLeave={handleMyPostLeave}
                       >
@@ -2986,9 +2986,9 @@ const ProgressHub = () => {
                             animation: 'slideDown 0.3s ease-out'
                           }}
                         >
-                          <div className={`bg-gray-800 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
+                          <div className={`bg-gray-200 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
                             {postComments[post.id] !== 'AUTH_REQUIRED' && (
-                              <h4 className="text-xs font-semibold text-gray-400 mb-3">
+                              <h4 className="text-xs font-semibold text-gray-700 mb-3">
                                 Comments ({postComments[post.id]?.length || 0})
                               </h4>
                             )}
@@ -2996,7 +2996,7 @@ const ProgressHub = () => {
                             {/* Loading indicator */}
                             {loadingComments[post.id] && (
                               <div className="flex justify-center py-4">
-                                <div className="text-gray-400 text-xs">Loading comments...</div>
+                                <div className="text-gray-600 text-xs">Loading comments...</div>
                               </div>
                             )}
 
@@ -3012,7 +3012,7 @@ const ProgressHub = () => {
                               {/* Display actual comments from Reddit */}
                               {postComments[post.id] === 'AUTH_REQUIRED' ? (
                                 <div className="flex items-center justify-center gap-3 py-2">
-                                  <p className="text-xs text-gray-400">Connect your Reddit account to view comments</p>
+                                  <p className="text-xs text-gray-600">Connect your Reddit account to view comments</p>
                                   <button
                                     onClick={() => initiateRedditAuth()}
                                     className="bg-orange-500 hover:bg-orange-600 text-white text-xs px-4 py-2 rounded-lg font-semibold transition"
@@ -3033,15 +3033,15 @@ const ProgressHub = () => {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
-                                          <span className="text-xs font-semibold text-white">{commentAuthor}</span>
+                                          <span className="text-xs font-semibold text-gray-900">{commentAuthor}</span>
                                         </div>
-                                        <p className="text-xs text-gray-300 break-words">{comment.body}</p>
+                                        <p className="text-xs text-gray-700 break-words">{comment.body}</p>
                                       </div>
                                     </div>
                                   );
                                 })
                               ) : !loadingComments[post.id] && (
-                                <p className="text-xs text-gray-400 text-center py-4">No comments yet</p>
+                                <p className="text-xs text-gray-600 text-center py-4">No comments yet</p>
                               )}
                             </div>
                           </div>
@@ -3064,7 +3064,7 @@ const ProgressHub = () => {
                 ) : (
                   <div className="space-y-3">
                     {myRedditComments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition">
+                      <div key={comment.id} className="bg-gray-200 rounded-lg p-4 hover:bg-gray-300 transition">
                         {/* Comment metadata */}
                         <div className="flex items-start gap-3 mb-2">
                           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
