@@ -476,6 +476,57 @@ export async function getUserRedditPosts(limit = 25) {
 }
 
 /**
+ * Get user's Reddit comment history
+ * @param {number} limit - Maximum number of comments to fetch (default 25)
+ * @param {string} sort - Sort order: 'new', 'top', 'controversial' (default 'new')
+ * @returns {Promise<Array>} Array of comment objects
+ */
+export async function getUserRedditComments(limit = 25, sort = 'new') {
+  const accessToken = await getValidAccessToken();
+  const username = await getRedditUsername();
+
+  // Use the correct OAuth endpoint for user's comments
+  const response = await fetch(`${REDDIT_API_URL}/user/${username}/comments.json?limit=${limit}&sort=${sort}`, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`,
+      'User-Agent': REDDIT_USER_AGENT
+    }
+  });
+
+  if (!response.ok) {
+    const status = response.status;
+    if (status === 403) {
+      throw new Error('Failed to fetch user comments from Reddit: 403 Forbidden - Please reconnect your Reddit account');
+    } else if (status === 401) {
+      throw new Error('Failed to fetch user comments from Reddit: 401 Unauthorized - Authentication expired');
+    }
+    throw new Error(`Failed to fetch user comments from Reddit: ${status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  // Transform Reddit API response to our format
+  const comments = data.data.children.map(child => {
+    const comment = child.data;
+    return {
+      id: comment.id,
+      name: comment.name, // Full Reddit ID (e.g., 't1_abc123')
+      body: comment.body,
+      subreddit: comment.subreddit,
+      post_title: comment.link_title, // Title of the post this comment is on
+      score: comment.score,
+      created_utc: comment.created_utc,
+      url: `https://www.reddit.com${comment.permalink}`,
+      depth: comment.depth, // Nesting level of the comment
+      parent_id: comment.parent_id, // ID of parent (post or comment)
+      author: comment.author
+    };
+  });
+
+  return comments;
+}
+
+/**
  * Vote on a Reddit post or comment
  * @param {string} thingId - Full ID of the thing to vote on (e.g., 't3_abc123' for posts, 't1_def456' for comments)
  * @param {number} direction - Vote direction: 1 (upvote), -1 (downvote), 0 (remove vote)

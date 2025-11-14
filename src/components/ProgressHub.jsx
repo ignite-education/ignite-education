@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, SUBREDDIT_FLAIRS } from '../lib/reddit';
+import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
@@ -88,7 +88,9 @@ const ProgressHub = () => {
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
   const [isClosingMyPostsModal, setIsClosingMyPostsModal] = useState(false);
   const [myRedditPosts, setMyRedditPosts] = useState([]);
+  const [myRedditComments, setMyRedditComments] = useState([]);
   const [loadingMyPosts, setLoadingMyPosts] = useState(false);
+  const [loadingMyComments, setLoadingMyComments] = useState(false);
   const [hasPostedToReddit, setHasPostedToReddit] = useState(false);
   const [expandedMyPostId, setExpandedMyPostId] = useState(null);
   const [myPostHoverTimer, setMyPostHoverTimer] = useState(null);
@@ -683,24 +685,32 @@ const ProgressHub = () => {
 
     setShowMyPostsModal(true);
     setLoadingMyPosts(true);
+    setLoadingMyComments(true);
 
     try {
-      const posts = await getUserRedditPosts(25);
+      // Fetch both posts and comments in parallel
+      const [posts, comments] = await Promise.all([
+        getUserRedditPosts(25),
+        getUserRedditComments(25)
+      ]);
+
       setMyRedditPosts(posts);
+      setMyRedditComments(comments);
     } catch (error) {
-      console.error('❌ Error fetching user posts:', error);
+      console.error('❌ Error fetching user data:', error);
 
       // Check if it's a 403 error (missing permissions)
       if (error.message.includes('403') || error.message.includes('Forbidden')) {
-        alert('Reddit permissions need to be updated. Please disconnect and reconnect your Reddit account in Settings to view your posts.');
+        alert('Reddit permissions need to be updated. Please disconnect and reconnect your Reddit account in Settings to view your posts and comments.');
       } else {
-        alert('Failed to load your posts. Please try again.');
+        alert('Failed to load your data. Please try again.');
       }
 
-      // Close the modal since we couldn't load posts
+      // Close the modal since we couldn't load data
       handleCloseMyPostsModal();
     } finally {
       setLoadingMyPosts(false);
+      setLoadingMyComments(false);
     }
   };
 
@@ -3015,10 +3025,63 @@ const ProgressHub = () => {
               {/* Comments Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
-                <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
-                  <p className="text-gray-600 mb-2">Comments feature coming soon</p>
-                  <p className="text-gray-500 text-sm">View all your Reddit comments in one place</p>
-                </div>
+                {loadingMyComments ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="text-gray-600">Loading your comments...</div>
+                  </div>
+                ) : myRedditComments.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
+                    <p className="text-gray-600 mb-2">No comments found</p>
+                    <p className="text-gray-500 text-sm">Start engaging with the community!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {myRedditComments.map((comment) => (
+                      <div key={comment.id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition">
+                        {/* Comment metadata */}
+                        <div className="flex items-start gap-3 mb-2">
+                          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                            {(comment.author || redditUsername)?.charAt(0).toUpperCase() || 'U'}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-gray-600">Commented in</span>
+                              <span className="text-xs font-semibold text-gray-900">r/{comment.subreddit}</span>
+                              <span className="text-xs text-gray-400">•</span>
+                              <span className="text-xs text-gray-600">{new Date(comment.created_utc * 1000).toLocaleDateString()}</span>
+                            </div>
+                            {/* Post title */}
+                            <a
+                              href={comment.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-gray-700 hover:text-gray-900 font-medium mb-2 block line-clamp-2"
+                            >
+                              On: "{comment.post_title}"
+                            </a>
+                            {/* Comment body */}
+                            <p className="text-sm text-gray-900 mb-2 whitespace-pre-wrap">{comment.body}</p>
+                            {/* Comment stats */}
+                            <div className="flex items-center gap-3 text-xs text-gray-600">
+                              <div className="flex items-center gap-1">
+                                <ThumbsUp size={12} />
+                                <span>{comment.score}</span>
+                              </div>
+                              <a
+                                href={comment.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-gray-900 underline"
+                              >
+                                View on Reddit
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
