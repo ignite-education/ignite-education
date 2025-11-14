@@ -1771,8 +1771,8 @@ const Auth = () => {
                           left: hoveredUseCase === idx ? '0' : card.position.left,
                           zIndex: hoveredUseCase === idx ? 10 : 1,
                           padding: hoveredUseCase === idx ? '2rem' : '1.5rem',
-                          opacity: hoveredUseCase === idx ? 1 : (hoveredUseCase === null ? 1 : 0),
-                          pointerEvents: hoveredUseCase === null || hoveredUseCase === idx ? 'auto' : 'none',
+                          opacity: 1,
+                          pointerEvents: 'auto',
                           transition: 'opacity 0.3s ease-in-out',
                           animation: hoveredUseCase === idx ? 'fadeIn 0.4s ease-out' : 'none'
                         }}
