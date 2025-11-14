@@ -3519,9 +3519,6 @@ const ProgressHub = () => {
           onClick={handleCloseUpgradeModal}
         >
           <div className="relative">
-            {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Premium Access - 99p</h2>
-
             <div
               className="bg-white relative flex"
               style={{
@@ -3571,9 +3568,10 @@ const ProgressHub = () => {
               <div className="w-2/3 relative overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                 {upgradingToAdFree ? (
                   <div className="flex items-center justify-center py-20">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                      <p className="text-gray-600">Loading checkout...</p>
+                    <div style={{ width: '150px', height: '150px' }}>
+                      {lottieData && (
+                        <Lottie animationData={lottieData} loop={true} />
+                      )}
                     </div>
                   </div>
                 ) : (

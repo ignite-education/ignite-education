@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
+import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating } from '../lib/api';
 import GoogleAd from './GoogleAd';
 import { useAuth } from '../contexts/AuthContext';
+import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
 import LoadingScreen from './LoadingScreen';
 import { supabase } from '../lib/supabase';
@@ -28,6 +30,7 @@ const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { firstName, user, isAdFree, userRole } = useAuth();
+  const { lottieData } = useAnimation();
 
   // Helper function to get user's enrolled course
   const getUserCourseId = async () => {
@@ -2698,20 +2701,15 @@ ${currentLessonSections.map((section) => {
           onClick={handleCloseUpgradeModal}
         >
           <div className="relative">
-            {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Ad-free for 99p</h2>
-
             <div
-              className="bg-white relative"
+              className="bg-white relative flex"
               style={{
-                width: '550px',
-                maxHeight: '85vh',
-                overflowY: 'auto',
+                width: '750px',
+                maxHeight: '75vh',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -2723,25 +2721,54 @@ ${currentLessonSections.map((section) => {
                 <X size={24} />
               </button>
 
-            {upgradingToAdFree ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                  <p className="text-gray-600">Loading checkout...</p>
+              {/* Left side - Features section (fixed) */}
+              <div className="w-1/3 bg-black p-8 flex flex-col justify-center" style={{ borderRadius: '0.3rem 0 0 0.3rem' }}>
+                <h3 className="text-white text-2xl font-bold mb-8">What's Included</h3>
+
+                <div className="space-y-6">
+                  {/* Ad-free feature */}
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="text-white flex-shrink-0" size={24} />
+                    <div>
+                      <h4 className="text-white font-semibold text-lg">Ad-free</h4>
+                      <p className="text-white text-sm opacity-90">Learn without distractions</p>
+                    </div>
+                  </div>
+
+                  {/* Office Hours feature */}
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="text-white flex-shrink-0" size={24} />
+                    <div>
+                      <h4 className="text-white font-semibold text-lg">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
+                    </div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div
-                ref={checkoutRef}
-                style={{
-                  minHeight: '350px',
-                  paddingTop: '10px',
-                  paddingBottom: '10px'
-                }}
-              >
-                {/* Stripe Checkout will be mounted here */}
+
+              {/* Right side - Stripe checkout (scrollable) */}
+              <div className="w-2/3 relative overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {upgradingToAdFree ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div style={{ width: '150px', height: '150px' }}>
+                      {lottieData && (
+                        <Lottie animationData={lottieData} loop={true} />
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    ref={checkoutRef}
+                    style={{
+                      minHeight: '350px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px'
+                    }}
+                  >
+                    {/* Stripe Checkout will be mounted here */}
+                  </div>
+                )}
               </div>
-            )}
             </div>
           </div>
         </div>
