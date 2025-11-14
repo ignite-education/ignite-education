@@ -1776,48 +1776,59 @@ const Auth = () => {
                           width: '9.775rem',
                           top: card.position.top,
                           left: card.position.left,
-                          zIndex: hoveredUseCase === idx ? 10 : 1,
+                          zIndex: 1,
                           padding: '1.5rem',
-                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0.3 : 1,
+                          opacity: hoveredUseCase !== null ? 0.3 : 1,
                           pointerEvents: 'auto',
                           transition: 'opacity 0.6s ease-in-out'
                         }}
                       >
-                        {/* Default small card content */}
                         <div className="flex flex-col items-center justify-center text-center">
                           <h4 className="font-semibold leading-tight text-lg" style={{
-                            color: '#000000',
-                            opacity: hoveredUseCase === idx ? 0 : 1,
-                            transition: 'opacity 0.6s ease-in-out'
+                            color: '#000000'
                           }}>
                             {card.title}
                           </h4>
                         </div>
-
-                        {/* Expanded overlay content */}
-                        {hoveredUseCase === idx && (
-                          <div
-                            className="absolute inset-0 flex items-center justify-center rounded"
-                            style={{
-                              background: 'white',
-                              padding: '2rem',
-                              animation: 'fadeIn 0.6s ease-in both'
-                            }}
-                          >
-                            <div className="flex flex-col items-center justify-center text-center">
-                              <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                                color: '#EF0B72'
-                              }}>
-                                {card.title}
-                              </h4>
-                              <p className="text-black text-base leading-relaxed">
-                                {card.description}
-                              </p>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     ))}
+
+                    {/* Single overlay card that covers entire grid */}
+                    {hoveredUseCase !== null && (
+                      <div
+                        className="absolute rounded flex items-center justify-center bg-white"
+                        style={{
+                          top: 0,
+                          left: 0,
+                          width: '20.53rem',
+                          height: '20.05rem',
+                          zIndex: 10,
+                          padding: '2rem',
+                          animation: 'fadeIn 0.6s ease-in both'
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                            color: '#EF0B72'
+                          }}>
+                            {[
+                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                            ][hoveredUseCase].title}
+                          </h4>
+                          <p className="text-black text-base leading-relaxed">
+                            {[
+                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                            ][hoveredUseCase].description}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
