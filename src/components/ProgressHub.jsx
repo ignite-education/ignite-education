@@ -2856,7 +2856,9 @@ const ProgressHub = () => {
                 borderRadius: '0.3rem',
                 padding: '2rem',
                 maxHeight: '68vh',
-                overflowY: 'auto'
+                overflowY: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -2872,7 +2874,7 @@ const ProgressHub = () => {
                 <div className="mb-6 pb-4 border-b border-gray-200">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
                         {redditUsername.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -2890,7 +2892,7 @@ const ProgressHub = () => {
                         }
                       }}
                       className="text-xs text-gray-600 hover:text-gray-900 underline transition"
-                      style={{ marginRight: '25px' }}
+                      style={{ marginRight: '28px', marginTop: '-3px' }}
                     >
                       Change Account
                     </button>
@@ -2900,7 +2902,7 @@ const ProgressHub = () => {
 
               {/* Posts Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Posts</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Posts</h3>
                 {loadingMyPosts ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="text-gray-600">Loading your posts...</div>
@@ -3034,7 +3036,7 @@ const ProgressHub = () => {
 
               {/* Comments Section */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Comments</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Comments</h3>
                 {loadingMyComments ? (
                   <div className="flex items-center justify-center py-12">
                     <div className="text-gray-600">Loading your comments...</div>
