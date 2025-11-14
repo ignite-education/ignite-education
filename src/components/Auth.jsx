@@ -1803,7 +1803,7 @@ const Auth = () => {
                           height: '20.05rem',
                           zIndex: 10,
                           padding: '2rem',
-                          animation: 'fadeIn 0.6s ease-in both'
+                          animation: 'fadeIn 0.3s ease-out both'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
