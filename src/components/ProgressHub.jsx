@@ -1978,8 +1978,8 @@ const ProgressHub = () => {
       {/* Left Sidebar - Fixed */}
       <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
-        <div className="flex-shrink-0" style={{ paddingTop: '19.38px', paddingBottom: '5px', paddingLeft: '47px', paddingRight: '32px' }}>
-          <div className="flex items-center">
+        <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
+          <div className="flex items-center justify-between">
             <div
               className="w-auto cursor-pointer"
               style={{
@@ -1989,7 +1989,7 @@ const ProgressHub = () => {
                 backgroundPosition: 'left center',
                 width: '108.8px',
                 height: '36px',
-                marginBottom: '9px',
+                marginBottom: '12px',
                 marginLeft: '-5.44px'
               }}
               onClick={() => navigate('/')}
