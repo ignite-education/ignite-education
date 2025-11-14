@@ -486,7 +486,7 @@ const ProgressHub = () => {
         // Use the fetched course data to get the subreddit (not state, as state updates are async)
         const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
         const subreddit = redditChannel.replace(/^r\//, '');
-        redditData = await getRedditPosts(20, false, subreddit);
+        redditData = await getRedditPosts(25, false, subreddit);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
         redditData = []; // Ensure it's an empty array
@@ -1341,7 +1341,7 @@ const ProgressHub = () => {
         // Extract subreddit name from channel (remove 'r/' prefix)
         const subreddit = courseReddit.channel.replace(/^r\//, '');
         console.log('🔄 Refreshing Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
-        redditData = await getRedditPosts(20, true, subreddit);
+        redditData = await getRedditPosts(25, true, subreddit);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
         console.error('❌ Error refreshing Reddit posts:', err);
@@ -2772,13 +2772,15 @@ const ProgressHub = () => {
                             className="w-full bg-gray-100 px-4 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
                             style={{
                               borderRadius: '0.3rem',
-                              color: newPost.flair ? 'black' : '#9CA3AF'
+                              color: newPost.flair ? 'black' : '#9CA3AF',
+                              paddingRight: '2rem',
+                              backgroundPosition: 'right 0.5rem center'
                             }}
                             disabled={isSubmitting}
                             required
                           >
                             <option value="" style={{ color: '#9CA3AF' }}>
-                              Select a flair...
+                              Select a flair
                             </option>
                             {availableFlairs.map((flair) => (
                               <option key={flair.value} value={flair.value} style={{ color: 'black' }}>
