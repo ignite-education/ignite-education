@@ -2872,8 +2872,27 @@ const ProgressHub = () => {
                 <X size={24} />
               </button>
 
-              {/* Reddit Account Section */}
-              {redditUsername && (
+              {/* Show loading animation while any content is loading */}
+              {(loadingMyPosts || loadingMyComments) ? (
+                <div className="flex items-center justify-center" style={{ minHeight: '400px' }}>
+                  {lottieData && Object.keys(lottieData).length > 0 ? (
+                    <Lottie
+                      animationData={lottieData}
+                      loop={true}
+                      autoplay={true}
+                      style={{
+                        width: 150,
+                        height: 150
+                      }}
+                    />
+                  ) : (
+                    <div className="text-gray-600">Loading...</div>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Reddit Account Section */}
+                  {redditUsername && (
                 <div className="mb-6 pb-4 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Account</h3>
                   <div className="flex items-center justify-between">
@@ -2907,23 +2926,7 @@ const ProgressHub = () => {
               {/* Posts Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Posts</h3>
-                {loadingMyPosts ? (
-                  <div className="flex items-center justify-center py-12">
-                    {lottieData && Object.keys(lottieData).length > 0 ? (
-                      <Lottie
-                        animationData={lottieData}
-                        loop={true}
-                        autoplay={true}
-                        style={{
-                          width: 120,
-                          height: 120
-                        }}
-                      />
-                    ) : (
-                      <div className="text-gray-600">Loading your posts...</div>
-                    )}
-                  </div>
-                ) : myRedditPosts.length === 0 ? (
+                {myRedditPosts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12">
                     <p className="text-gray-600 mb-2">No posts found</p>
                     <p className="text-gray-500 text-sm">Start sharing your thoughts with the community!</p>
@@ -3053,23 +3056,7 @@ const ProgressHub = () => {
               {/* Comments Section */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Comments</h3>
-                {loadingMyComments ? (
-                  <div className="flex items-center justify-center py-12">
-                    {lottieData && Object.keys(lottieData).length > 0 ? (
-                      <Lottie
-                        animationData={lottieData}
-                        loop={true}
-                        autoplay={true}
-                        style={{
-                          width: 120,
-                          height: 120
-                        }}
-                      />
-                    ) : (
-                      <div className="text-gray-600">Loading your comments...</div>
-                    )}
-                  </div>
-                ) : myRedditComments.length === 0 ? (
+                {myRedditComments.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg">
                     <p className="text-gray-600 mb-2">No comments found</p>
                     <p className="text-gray-500 text-sm">Start engaging with the community!</p>
@@ -3123,6 +3110,8 @@ const ProgressHub = () => {
                   </div>
                 )}
               </div>
+                </>
+              )}
             </div>
           </div>
         </div>
