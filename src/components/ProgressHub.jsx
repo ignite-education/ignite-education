@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
+import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
@@ -10,10 +11,13 @@ import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
 
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 const ProgressHub = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { firstName, user: authUser, signOut, updateProfile } = useAuth();
+  const { firstName, user: authUser, isAdFree, signOut, updateProfile } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState({ firstName: firstName || 'User', lastName: 'Smith', enrolledCourse: 'Product Management', progress: 40 });
@@ -99,6 +103,12 @@ const ProgressHub = () => {
   const [myPostHoverTimer, setMyPostHoverTimer] = useState(null);
   const [userCertificate, setUserCertificate] = useState(null);
   const [certificateGenerated, setCertificateGenerated] = useState(false);
+
+  // Payment modal state variables
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
+  const checkoutRef = useRef(null);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -269,6 +279,28 @@ const ProgressHub = () => {
       return () => clearTimeout(timer);
     }
   }, [isRefreshing, pullDistance]);
+
+  // Mount Stripe Checkout when clientSecret is available
+  useEffect(() => {
+    const mountCheckout = async () => {
+      if (clientSecret && checkoutRef.current) {
+        const stripe = await stripePromise;
+
+        const checkout = await stripe.initEmbeddedCheckout({
+          clientSecret,
+        });
+
+        checkout.mount(checkoutRef.current);
+
+        // Cleanup function
+        return () => {
+          checkout.destroy();
+        };
+      }
+    };
+
+    mountCheckout();
+  }, [clientSecret]);
 
   // Check for course completion and generate certificate
   useEffect(() => {
@@ -1036,9 +1068,62 @@ const ProgressHub = () => {
     }, 200);
   };
 
+  // Payment Modal Handlers
+  const handleCloseUpgradeModal = () => {
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setShowUpgradeModal(false);
+      setIsClosingModal(false);
+      setClientSecret(null);
+      setUpgradingToAdFree(false);
+    }, 200);
+  };
+
+  const handleOpenUpgradeModal = async () => {
+    if (!authUser) {
+      alert('Please sign in to access office hours');
+      return;
+    }
+
+    setShowUpgradeModal(true);
+    setUpgradingToAdFree(true);
+
+    try {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: authUser.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setUpgradingToAdFree(false);
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start upgrade process. Please try again.');
+      handleCloseUpgradeModal();
+    }
+  };
+
   // Calendly Modal Handlers
-  const handleOpenCalendly = () => {
-    setShowCalendlyModal(true);
+  const handleOpenCalendly = async () => {
+    // Check if user has premium subscription
+    if (!isAdFree) {
+      // User not subscribed - show payment modal
+      await handleOpenUpgradeModal();
+    } else {
+      // User is subscribed - open Calendly
+      setShowCalendlyModal(true);
+    }
   };
 
   const handleCloseCalendly = () => {
@@ -3416,6 +3501,66 @@ const ProgressHub = () => {
                       Delete Account
                     </button>
                   </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment/Upgrade Modal */}
+      {showUpgradeModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseUpgradeModal}
+        >
+          <div className="relative">
+            {/* Title above the box */}
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Premium Access - 99p</h2>
+
+            <div
+              className="bg-white relative"
+              style={{
+                width: '550px',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                padding: '0px',
+                animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={handleCloseUpgradeModal}
+                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {upgradingToAdFree ? (
+                <div className="flex items-center justify-center py-20">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Loading checkout...</p>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  ref={checkoutRef}
+                  style={{
+                    minHeight: '350px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
+                  }}
+                >
+                  {/* Stripe Checkout will be mounted here */}
                 </div>
               )}
             </div>
