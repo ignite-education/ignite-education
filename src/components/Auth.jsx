@@ -1432,8 +1432,8 @@ const Auth = () => {
                       {activeCard === 0 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.42rem',
-                          animation: 'fadeIn 300ms ease-in forwards',
-                          animationDelay: '500ms',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
                           opacity: 0
                         }}>
                           Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
@@ -1477,8 +1477,8 @@ const Auth = () => {
                       {activeCard === 1 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.42rem',
-                          animation: 'fadeIn 300ms ease-in forwards',
-                          animationDelay: '500ms',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
                           opacity: 0
                         }}>
                           Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
@@ -1522,8 +1522,8 @@ const Auth = () => {
                       {activeCard === 2 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.42rem',
-                          animation: 'fadeIn 300ms ease-in forwards',
-                          animationDelay: '500ms',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
                           opacity: 0
                         }}>
                           Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
@@ -1567,8 +1567,8 @@ const Auth = () => {
                       {activeCard === 3 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.42rem',
-                          animation: 'fadeIn 300ms ease-in forwards',
-                          animationDelay: '500ms',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
                           opacity: 0
                         }}>
                           Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
