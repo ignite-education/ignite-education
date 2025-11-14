@@ -2774,7 +2774,7 @@ const ProgressHub = () => {
                               borderRadius: '0.3rem',
                               color: newPost.flair ? 'black' : '#6B7280',
                               paddingRight: '2rem',
-                              backgroundPosition: 'right calc(0.5rem + 10px) center'
+                              backgroundPosition: 'right calc(0.5rem + 20px) center'
                             }}
                             disabled={isSubmitting}
                             required
