@@ -31,7 +31,8 @@
       "Bash(while IFS= read -r line)",
       "Bash(do printf '%s\\n' \"$line\")",
       "Bash(rg:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

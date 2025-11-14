@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
@@ -3523,10 +3523,10 @@ const ProgressHub = () => {
             <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Premium Access - 99p</h2>
 
             <div
-              className="bg-white relative"
+              className="bg-white relative flex"
               style={{
-                width: '550px',
-                maxHeight: '85vh',
+                width: '750px',
+                maxHeight: '75vh',
                 overflowY: 'auto',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
@@ -3544,25 +3544,53 @@ const ProgressHub = () => {
                 <X size={24} />
               </button>
 
-              {upgradingToAdFree ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading checkout...</p>
+              {/* Left side - Features section */}
+              <div className="w-1/3 bg-gradient-to-br from-purple-600 to-pink-500 p-8 flex flex-col justify-center" style={{ borderRadius: '0.3rem 0 0 0.3rem' }}>
+                <h3 className="text-white text-2xl font-bold mb-8">What's Included</h3>
+
+                <div className="space-y-6">
+                  {/* Ad-free feature */}
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="text-white flex-shrink-0" size={24} />
+                    <div>
+                      <h4 className="text-white font-semibold text-lg">Ad-free</h4>
+                      <p className="text-white text-sm opacity-90">Learn without distractions</p>
+                    </div>
+                  </div>
+
+                  {/* Office Hours feature */}
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="text-white flex-shrink-0" size={24} />
+                    <div>
+                      <h4 className="text-white font-semibold text-lg">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
+                    </div>
                   </div>
                 </div>
-              ) : (
-                <div
-                  ref={checkoutRef}
-                  style={{
-                    minHeight: '350px',
-                    paddingTop: '10px',
-                    paddingBottom: '10px'
-                  }}
-                >
-                  {/* Stripe Checkout will be mounted here */}
-                </div>
-              )}
+              </div>
+
+              {/* Right side - Stripe checkout */}
+              <div className="w-2/3 relative">
+                {upgradingToAdFree ? (
+                  <div className="flex items-center justify-center py-20">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                      <p className="text-gray-600">Loading checkout...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    ref={checkoutRef}
+                    style={{
+                      minHeight: '350px',
+                      paddingTop: '10px',
+                      paddingBottom: '10px'
+                    }}
+                  >
+                    {/* Stripe Checkout will be mounted here */}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
