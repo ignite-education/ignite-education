@@ -31,23 +31,57 @@ const ProtectedRoute = ({ children }) => {
           .from('users')
           .select('onboarding_completed, enrolled_course, seniority_level')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         const { data, error } = await Promise.race([onboardingPromise, timeoutPromise]);
 
-        console.log('Onboarding check:', { data, error });
+        console.log('Onboarding check:', { data, error, userId: user.id });
 
         if (error) {
           console.error('Error checking onboarding:', error);
-          // If there's an error, assume they need onboarding
+          // If there's a real database error (not just missing record), assume they need onboarding
           setNeedsOnboarding(true);
         } else if (data) {
-          // Explicitly check if onboarding_completed is true
+          // User record exists - check if onboarding is completed
           const completed = data.onboarding_completed === true;
-          console.log('Onboarding completed:', completed, 'Raw value:', data.onboarding_completed);
-          setNeedsOnboarding(!completed);
+          const hasEnrolledCourse = Boolean(data.enrolled_course);
+
+          console.log('Onboarding status:', {
+            completed,
+            hasEnrolledCourse,
+            enrolledCourse: data.enrolled_course,
+            seniorityLevel: data.seniority_level
+          });
+
+          // Only show onboarding if BOTH conditions are true:
+          // 1. onboarding_completed is not true AND
+          // 2. user doesn't have an enrolled course
+          // This handles OAuth linking - if user already has a course, skip onboarding
+          setNeedsOnboarding(!completed && !hasEnrolledCourse);
         } else {
-          // No data returned, need onboarding
+          // No user record found - this is a new user who needs onboarding
+          console.log('No user record found, creating one and showing onboarding');
+
+          // Try to create the user record from OAuth metadata
+          const metadata = user.user_metadata || {};
+          const firstName = metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '';
+          const lastName = metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '';
+
+          try {
+            await supabase.from('users').insert({
+              id: user.id,
+              first_name: firstName,
+              last_name: lastName,
+              onboarding_completed: false,
+              role: 'student'
+            });
+          } catch (insertError) {
+            // Ignore duplicate key errors (user might have been created by trigger)
+            if (!insertError.message?.includes('duplicate key')) {
+              console.error('Error creating user record:', insertError);
+            }
+          }
+
           setNeedsOnboarding(true);
         }
       } catch (err) {
