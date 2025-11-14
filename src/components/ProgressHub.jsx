@@ -34,6 +34,7 @@ const ProgressHub = () => {
   const [hoveredPostId, setHoveredPostId] = useState(null);
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [hoverTimer, setHoverTimer] = useState(null);
+  const [leaveTimer, setLeaveTimer] = useState(null);
   const [commentInputs, setCommentInputs] = useState({});
   const [likedPosts, setLikedPosts] = useState(new Set());
   const [postComments, setPostComments] = useState({}); // Store actual comments for each post
@@ -1540,14 +1541,17 @@ const ProgressHub = () => {
     };
   }, [isMouseDown, handlePullMove]);
 
-  // Cleanup hover timer on unmount
+  // Cleanup hover and leave timers on unmount
   useEffect(() => {
     return () => {
       if (hoverTimer) {
         clearTimeout(hoverTimer);
       }
+      if (leaveTimer) {
+        clearTimeout(leaveTimer);
+      }
     };
-  }, [hoverTimer]);
+  }, [hoverTimer, leaveTimer]);
 
   // Track container width for dynamic padding
   useEffect(() => {
@@ -1645,9 +1649,15 @@ const ProgressHub = () => {
 
   // Handle post hover with debounce
   const handlePostHover = (post) => {
-    // Clear any existing timer
+    // Clear any existing hover timer
     if (hoverTimer) {
       clearTimeout(hoverTimer);
+    }
+
+    // Clear any existing leave timer (in case user hovers back over)
+    if (leaveTimer) {
+      clearTimeout(leaveTimer);
+      setLeaveTimer(null);
     }
 
     // Set new timer - only load after 1000ms hover
@@ -1659,14 +1669,24 @@ const ProgressHub = () => {
     setHoverTimer(timer);
   };
 
-  // Handle mouse leave - clear timer and close post
+  // Handle mouse leave - clear timer and close post with 1-second delay
   const handlePostLeave = () => {
     if (hoverTimer) {
       clearTimeout(hoverTimer);
       setHoverTimer(null);
     }
-    // Close the expanded post when mouse leaves
-    setExpandedPostId(null);
+
+    // Clear any existing leave timer
+    if (leaveTimer) {
+      clearTimeout(leaveTimer);
+    }
+
+    // Set 1-second delay before closing the expanded post
+    const timer = setTimeout(() => {
+      setExpandedPostId(null);
+    }, 1000);
+
+    setLeaveTimer(timer);
   };
 
   // Handle My Posts modal hover with debounce
