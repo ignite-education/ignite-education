@@ -1778,9 +1778,8 @@ const Auth = () => {
                           left: card.position.left,
                           zIndex: 1,
                           padding: '1.5rem',
-                          opacity: hoveredUseCase !== null ? 0.3 : 1,
-                          pointerEvents: 'auto',
-                          transition: 'opacity 0.6s ease-in-out'
+                          opacity: 1,
+                          pointerEvents: 'auto'
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
