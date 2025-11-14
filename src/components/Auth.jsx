@@ -1804,31 +1804,30 @@ const Auth = () => {
                         padding: '2rem',
                         opacity: hoveredUseCase !== null ? 1 : 0,
                         pointerEvents: hoveredUseCase !== null ? 'auto' : 'none',
-                        transition: 'opacity 0.3s ease-out'
+                        transition: 'opacity 0.2s ease-out',
+                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden'
                       }}
                     >
-                      {hoveredUseCase !== null && (
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                            color: '#EF0B72'
-                          }}>
-                            {[
-                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
-                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
-                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
-                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
-                            ][hoveredUseCase].title}
-                          </h4>
-                          <p className="text-black text-base leading-relaxed">
-                            {[
-                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
-                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
-                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
-                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
-                            ][hoveredUseCase].description}
-                          </p>
-                        </div>
-                      )}
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                          color: '#EF0B72'
+                        }}>
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].title : ''}
+                        </h4>
+                        <p className="text-black text-base leading-relaxed">
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].description : ''}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
