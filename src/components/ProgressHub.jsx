@@ -1699,11 +1699,11 @@ const ProgressHub = () => {
       setLeaveTimer(null);
     }
 
-    // Set new timer - only load after 1000ms hover
+    // Set new timer - only load after 2000ms hover
     const timer = setTimeout(() => {
       setExpandedPostId(post.id);
       fetchRedditCommentsForPost(post);
-    }, 1000);
+    }, 2000);
 
     setHoverTimer(timer);
   };
