@@ -2211,7 +2211,7 @@ const ProgressHub = () => {
                         transform: 'translateY(calc(-50% - 5px))',
                         width: '40px',
                         height: '40px',
-                        borderRadius: '50%',
+                        borderRadius: '0.3rem',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
