@@ -2774,7 +2774,7 @@ const ProgressHub = () => {
                               borderRadius: '0.3rem',
                               color: newPost.flair ? 'black' : '#6B7280',
                               paddingRight: '2rem',
-                              backgroundPosition: 'right 0.5rem center'
+                              backgroundPosition: 'right calc(0.5rem + 10px) center'
                             }}
                             disabled={isSubmitting}
                             required
@@ -2938,7 +2938,7 @@ const ProgressHub = () => {
                   {myRedditPosts.map((post) => (
                     <div key={post.id}>
                       <div
-                        className="bg-gray-200 rounded-lg p-4 hover:bg-gray-300 transition"
+                        className="bg-gray-100 rounded-lg p-4 hover:bg-gray-200 transition"
                         onMouseEnter={() => handleMyPostHover(post)}
                         onMouseLeave={handleMyPostLeave}
                       >
@@ -2988,7 +2988,7 @@ const ProgressHub = () => {
                             animation: 'slideDown 0.3s ease-out'
                           }}
                         >
-                          <div className={`bg-gray-200 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
+                          <div className={`bg-gray-100 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
                             {postComments[post.id] !== 'AUTH_REQUIRED' && (
                               <h4 className="text-xs font-semibold text-gray-700 mb-3">
                                 Comments ({postComments[post.id]?.length || 0})
@@ -3066,7 +3066,7 @@ const ProgressHub = () => {
                 ) : (
                   <div className="space-y-3">
                     {myRedditComments.map((comment) => (
-                      <div key={comment.id} className="bg-gray-200 rounded-lg p-4 hover:bg-gray-300 transition">
+                      <div key={comment.id} className="bg-gray-100 rounded-lg p-4 hover:bg-gray-200 transition">
                         {/* Comment metadata */}
                         <div className="flex items-start gap-3 mb-2">
                           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
