@@ -47,58 +47,90 @@ app.use(cors());
 
 // Stripe webhook endpoint MUST come before express.json() to receive raw body for signature verification
 app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  console.log('\n🔔 ============ WEBHOOK RECEIVED ============');
+  console.log('⏰ Timestamp:', new Date().toISOString());
+  console.log('📍 Headers:', JSON.stringify(req.headers, null, 2));
+
   const sig = req.headers['stripe-signature'];
   let event;
 
   try {
     // Verify webhook signature for security
     if (process.env.STRIPE_WEBHOOK_SECRET) {
+      console.log('🔐 Verifying webhook signature...');
       event = stripe.webhooks.constructEvent(
         req.body,
         sig,
         process.env.STRIPE_WEBHOOK_SECRET
       );
-      console.log('✅ Webhook signature verified');
+      console.log('✅ Webhook signature verified successfully');
     } else {
       // Fallback for development (not recommended for production)
       console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set - skipping signature verification');
       event = JSON.parse(req.body.toString());
     }
 
-    console.log('📨 Received webhook event:', event.type);
+    console.log('📨 Event type:', event.type);
+    console.log('📦 Event ID:', event.id);
   } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err.message);
+    console.error('❌ Webhook signature verification FAILED');
+    console.error('❌ Error:', err.message);
+    console.error('❌ Stack:', err.stack);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   // Handle the event
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const userId = session.metadata.userId;
+    const userId = session.metadata?.userId;
 
-    console.log('💳 Payment successful for user:', userId);
+    console.log('\n💳 ============ PAYMENT COMPLETED ============');
+    console.log('💰 Session ID:', session.id);
+    console.log('👤 User ID from metadata:', userId);
+    console.log('📄 Full session data:', JSON.stringify(session, null, 2));
 
-    if (userId) {
-      try {
-        // Update user metadata in Supabase to mark them as ad-free
-        const { error } = await supabase.auth.admin.updateUserById(
-          userId,
-          {
-            user_metadata: { is_ad_free: true }
-          }
-        );
-
-        if (error) {
-          console.error('Error updating user metadata:', error);
-        } else {
-          console.log(`✅ User ${userId} upgraded to ad-free`);
-        }
-      } catch (error) {
-        console.error('Error updating user in Supabase:', error);
-      }
+    if (!userId) {
+      console.error('❌ ERROR: No userId found in session metadata!');
+      console.error('❌ Metadata received:', JSON.stringify(session.metadata, null, 2));
+      return res.status(400).json({ error: 'Missing userId in metadata' });
     }
+
+    try {
+      console.log('🔄 Attempting to update user in Supabase...');
+      console.log('🔄 User ID:', userId);
+      console.log('🔄 Setting is_ad_free: true');
+
+      const { data, error } = await supabase.auth.admin.updateUserById(
+        userId,
+        {
+          user_metadata: { is_ad_free: true }
+        }
+      );
+
+      if (error) {
+        console.error('❌ Supabase update FAILED');
+        console.error('❌ Error code:', error.code);
+        console.error('❌ Error message:', error.message);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log('✅ ============ USER UPDATED SUCCESSFULLY ============');
+      console.log('✅ User ID:', userId);
+      console.log('✅ Updated data:', JSON.stringify(data, null, 2));
+      console.log('✅ User is now ad-free!\n');
+
+    } catch (error) {
+      console.error('❌ Exception during Supabase update');
+      console.error('❌ Error:', error.message);
+      console.error('❌ Stack:', error.stack);
+      return res.status(500).json({ error: error.message });
+    }
+  } else {
+    console.log('ℹ️  Event type not handled:', event.type);
   }
 
+  console.log('✅ Responding to Stripe with success\n');
   res.json({ received: true });
 });
 

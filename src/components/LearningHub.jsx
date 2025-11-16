@@ -121,18 +121,48 @@ const LearningHub = () => {
   useEffect(() => {
     const refreshUserSession = async () => {
       const params = new URLSearchParams(window.location.search);
+
+      console.log('🔍 Checking URL params:', window.location.search);
+      console.log('🔍 Payment param value:', params.get('payment'));
+
       if (params.get('payment') === 'success') {
-        console.log('Payment successful! Refreshing user session...');
+        console.log('\n✅ ============ PAYMENT SUCCESS DETECTED ============');
+        console.log('⏰ Timestamp:', new Date().toISOString());
+        console.log('⏳ Waiting 3 seconds for webhook to process...');
 
-        // Refresh the session to get updated user metadata
-        const { data, error } = await supabase.auth.refreshSession();
+        // Wait 3 seconds to ensure webhook has time to update user metadata
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
-        if (!error && data?.session) {
-          console.log('User session refreshed successfully');
+        console.log('🔄 Calling supabase.auth.refreshSession()...');
+
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+
+          if (error) {
+            console.error('❌ Session refresh FAILED');
+            console.error('❌ Error:', error.message);
+            console.error('❌ Error details:', JSON.stringify(error, null, 2));
+            return;
+          }
+
+          console.log('✅ Session refreshed successfully');
+          console.log('👤 User data:', JSON.stringify(data.session?.user, null, 2));
+          console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
+          console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
+
           // Remove the query parameter to prevent repeated refreshes
           window.history.replaceState({}, '', window.location.pathname);
-        } else if (error) {
-          console.error('Error refreshing session:', error);
+
+          // Reload the page to ensure all components re-render with new user state
+          console.log('🔄 Reloading page to apply changes...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+
+        } catch (err) {
+          console.error('❌ Exception during session refresh');
+          console.error('❌ Error:', err.message);
+          console.error('❌ Stack:', err.stack);
         }
       }
     };
