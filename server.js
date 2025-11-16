@@ -135,8 +135,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
     const subscription = event.data.object;
     const customerId = subscription.customer;
 
-    console.log('
-🚫 ============ SUBSCRIPTION CANCELED ============');
+    console.log('\n🚫 ============ SUBSCRIPTION CANCELED ============');
     console.log('🔑 Subscription ID:', subscription.id);
     console.log('👤 Customer ID:', customerId);
 
@@ -195,8 +194,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
     const customerId = subscription.customer;
     const status = subscription.status;
 
-    console.log('
-🔄 ============ SUBSCRIPTION UPDATED ============');
+    console.log('\n🔄 ============ SUBSCRIPTION UPDATED ============');
     console.log('🔑 Subscription ID:', subscription.id);
     console.log('👤 Customer ID:', customerId);
     console.log('📊 Status:', status);
@@ -745,8 +743,7 @@ app.post('/api/create-billing-portal-session', async (req, res) => {
   try {
     const { userId } = req.body;
 
-    console.log('
-🎫 ============ CREATING BILLING PORTAL SESSION ============');
+    console.log('\n🎫 ============ CREATING BILLING PORTAL SESSION ============');
     console.log('👤 User ID:', userId);
 
     if (!userId) {
