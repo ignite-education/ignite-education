@@ -3558,7 +3558,7 @@ const ProgressHub = () => {
                   <span className="text-pink-500" style={{ fontSize: '1.6rem' }}>get exclusive access to</span>
                 </h3>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {/* Office Hours feature */}
                   <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.5s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
@@ -3599,7 +3599,7 @@ const ProgressHub = () => {
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-white text-sm mt-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed monthly. Cancel anytime.
                   </p>
                 </div>
