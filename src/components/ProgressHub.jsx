@@ -3554,7 +3554,7 @@ const ProgressHub = () => {
               <div style={{ width: '45.6%', borderRadius: '0.3rem 0 0 0.3rem' }} className="bg-black p-8 flex flex-col justify-center">
                 <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
                   <span className="font-light text-lg">For just 99p/week,</span><br />
-                  <span className="text-pink-500">get exclusive access to</span>
+                  <span className="text-pink-500 text-3xl">get exclusive access to</span>
                 </h3>
 
                 <div className="space-y-2">
@@ -3566,7 +3566,7 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-1">Ad-free</h4>
+                      <h4 className="text-white font-semibold text-lg mb-0.5">Ad-free</h4>
                       <p className="text-white text-sm opacity-90">Learn without distractions</p>
                     </div>
                   </div>
@@ -3579,7 +3579,7 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-1">Office Hours</h4>
+                      <h4 className="text-white font-semibold text-lg mb-0.5">Office Hours</h4>
                       <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
                     </div>
                   </div>
@@ -3592,7 +3592,7 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-1">Weekly Handpicked Roles</h4>
+                      <h4 className="text-white font-semibold text-lg mb-0.5">Weekly Handpicked Roles</h4>
                       <p className="text-white text-sm opacity-90">Every week, we'll send you our top career opportunities to your email.</p>
                     </div>
                   </div>
