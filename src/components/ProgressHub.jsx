@@ -3557,7 +3557,7 @@ const ProgressHub = () => {
                   <span className="text-pink-500 text-3xl">get exclusive access to</span>
                 </h3>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {/* Ad-free feature */}
                   <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.5s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
