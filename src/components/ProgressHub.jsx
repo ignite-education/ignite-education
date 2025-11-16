@@ -133,10 +133,16 @@ const ProgressHub = () => {
 
       console.log('🔍 [ProgressHub] Checking URL params:', window.location.search);
       console.log('🔍 [ProgressHub] Payment param value:', params.get('payment'));
+      console.log('🔍 [ProgressHub] Session ID param:', params.get('session_id'));
 
-      if (params.get('payment') === 'success') {
+      // Check for either payment=success OR session_id (Stripe embedded checkout redirect)
+      const hasPaymentSuccess = params.get('payment') === 'success';
+      const hasSessionId = params.get('session_id');
+
+      if (hasPaymentSuccess || hasSessionId) {
         console.log('\n✅ ============ PAYMENT SUCCESS DETECTED (ProgressHub) ============');
         console.log('⏰ Timestamp:', new Date().toISOString());
+        console.log('🔑 Session ID:', hasSessionId);
         console.log('⏳ Waiting 3 seconds for webhook to process...');
 
         // Wait 3 seconds to ensure webhook has time to update user metadata
@@ -159,7 +165,7 @@ const ProgressHub = () => {
           console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
           console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
 
-          // Remove the query parameter to prevent repeated refreshes
+          // Remove the query parameters to prevent repeated refreshes
           window.history.replaceState({}, '', window.location.pathname);
 
           // Reload the page to ensure all components re-render with new user state
