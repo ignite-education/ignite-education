@@ -2031,38 +2031,46 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
                         if (bulletMatchColon) {
                           // Bullet point with colon
+                          const titleText = bulletMatchColon[1].replace(/\*\*/g, '');
+                          const contentText = bulletMatchColon[2].replace(/\*\*/g, '');
                           return (
                             <p key={i} className={i > 0 ? 'mt-2' : ''}>
                               <span>{bulletMatchColon[0].charAt(0)} </span>
-                              <strong className="font-semibold">{bulletMatchColon[1]}:</strong>
-                              <span> {bulletMatchColon[2]}</span>
+                              <strong className="font-semibold">{titleText}:</strong>
+                              <span> {contentText}</span>
                             </p>
                           );
                         } else if (bulletMatchDash) {
                           // Bullet point with dash
+                          const titleText = bulletMatchDash[1].replace(/\*\*/g, '');
+                          const contentText = bulletMatchDash[2].replace(/\*\*/g, '');
                           return (
                             <p key={i} className={i > 0 ? 'mt-2' : ''}>
                               <span>{bulletMatchDash[0].charAt(0)} </span>
-                              <strong className="font-semibold">{bulletMatchDash[1]}</strong>
-                              <span> - {bulletMatchDash[2]}</span>
+                              <strong className="font-semibold">{titleText}</strong>
+                              <span> - {contentText}</span>
                             </p>
                           );
                         } else if (numberedMatchColon) {
                           // Numbered list with colon
+                          const titleText = numberedMatchColon[2].replace(/\*\*/g, '');
+                          const contentText = numberedMatchColon[3].replace(/\*\*/g, '');
                           return (
                             <p key={i} className={i > 0 ? 'mt-2' : ''}>
                               <span>{numberedMatchColon[1]}. </span>
-                              <strong className="font-semibold">{numberedMatchColon[2]}:</strong>
-                              <span> {numberedMatchColon[3]}</span>
+                              <strong className="font-semibold">{titleText}:</strong>
+                              <span> {contentText}</span>
                             </p>
                           );
                         } else if (numberedMatchDash) {
                           // Numbered list with dash
+                          const titleText = numberedMatchDash[2].replace(/\*\*/g, '');
+                          const contentText = numberedMatchDash[3].replace(/\*\*/g, '');
                           return (
                             <p key={i} className={i > 0 ? 'mt-2' : ''}>
                               <span>{numberedMatchDash[1]}. </span>
-                              <strong className="font-semibold">{numberedMatchDash[2]}</strong>
-                              <span> - {numberedMatchDash[3]}</span>
+                              <strong className="font-semibold">{titleText}</strong>
+                              <span> - {contentText}</span>
                             </p>
                           );
                         } else {
