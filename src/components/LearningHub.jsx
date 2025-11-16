@@ -2790,27 +2790,17 @@ ${currentLessonSections.map((section) => {
 
               {/* Right side - Stripe checkout (scrollable) */}
               <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
-                {upgradingToAdFree ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div style={{ width: '150px', height: '150px' }}>
-                      {lottieData && (
-                        <Lottie animationData={lottieData} loop={true} />
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    key={clientSecret}
-                    ref={checkoutRef}
-                    style={{
-                      minHeight: '350px',
-                      paddingTop: '10px',
-                      paddingBottom: '10px'
-                    }}
-                  >
-                    {/* Stripe Checkout will be mounted here */}
-                  </div>
-                )}
+                <div
+                  key={clientSecret}
+                  ref={checkoutRef}
+                  style={{
+                    minHeight: '350px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
+                  }}
+                >
+                  {/* Stripe Checkout will be mounted here */}
+                </div>
               </div>
             </div>
           </div>
