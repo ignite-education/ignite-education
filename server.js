@@ -503,7 +503,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_1SIDOlRxlg2WD2fjNja32u3w', // Your recurring price ID
+          price: 'price_1SUC1vRxlg2WD2fjH3QYiayu', // Your recurring price ID
           quantity: 1,
         },
       ],
