@@ -21,9 +21,14 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 
 // Initialize Supabase (for updating user metadata)
 // Using service role key to have admin permissions for updating user metadata
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('❌ FATAL: SUPABASE_SERVICE_ROLE_KEY is required for admin operations');
+  process.exit(1);
+}
+
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Initialize AWS Polly client
@@ -522,18 +527,28 @@ app.post('/api/create-checkout-session', async (req, res) => {
 });
 
 // Stripe webhook endpoint to handle successful payments
-app.post('/api/webhook/stripe', async (req, res) => {
-  // For now, we'll skip signature verification in development
-  // In production, you should verify the webhook signature
+app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
   let event;
 
   try {
-    // Get the event from the request body
-    event = req.body;
+    // Verify webhook signature for security
+    if (process.env.STRIPE_WEBHOOK_SECRET) {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+      console.log('✅ Webhook signature verified');
+    } else {
+      // Fallback for development (not recommended for production)
+      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set - skipping signature verification');
+      event = JSON.parse(req.body.toString());
+    }
 
     console.log('📨 Received webhook event:', event.type);
   } catch (err) {
-    console.error('Webhook error:', err.message);
+    console.error('❌ Webhook signature verification failed:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 

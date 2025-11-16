@@ -117,6 +117,29 @@ const LearningHub = () => {
     }, 1500);
   }, []);
 
+  // Refresh user session after successful payment
+  useEffect(() => {
+    const refreshUserSession = async () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        console.log('Payment successful! Refreshing user session...');
+
+        // Refresh the session to get updated user metadata
+        const { data, error } = await supabase.auth.refreshSession();
+
+        if (!error && data?.session) {
+          console.log('User session refreshed successfully');
+          // Remove the query parameter to prevent repeated refreshes
+          window.history.replaceState({}, '', window.location.pathname);
+        } else if (error) {
+          console.error('Error refreshing session:', error);
+        }
+      }
+    };
+
+    refreshUserSession();
+  }, []);
+
   // Load explained sections when lesson changes
   useEffect(() => {
     const loadExplainedSections = async () => {
@@ -2189,7 +2212,7 @@ ${currentLessonSections.map((section) => {
                 adSlot="3322377575"
                 adFormat="auto"
                 style={{ minHeight: '60px' }}
-                isAdFree={false}
+                isAdFree={isAdFree}
               />
             </div>
           </div>

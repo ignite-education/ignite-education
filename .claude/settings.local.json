@@ -32,7 +32,8 @@
       "Bash(do printf '%s\\n' \"$line\")",
       "Bash(rg:*)",
       "Bash(test:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(readlink:*)"
     ],
     "deny": [],
     "ask": []
