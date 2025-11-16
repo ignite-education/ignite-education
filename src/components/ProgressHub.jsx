@@ -3552,11 +3552,11 @@ const ProgressHub = () => {
 
               {/* Left side - Features section (fixed) */}
               <div style={{ width: '45.6%', borderRadius: '0.3rem 0 0 0.3rem' }} className="bg-black p-8 flex flex-col justify-center">
-                <h3 className="text-white text-2xl font-bold mb-8" style={{ whiteSpace: 'nowrap' }}>What's Included</h3>
+                <h3 className="text-white text-2xl font-bold mb-8" style={{ whiteSpace: 'nowrap' }}>Get access to</h3>
 
                 <div className="space-y-6">
                   {/* Ad-free feature */}
-                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.5s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -3569,7 +3569,7 @@ const ProgressHub = () => {
                   </div>
 
                   {/* Office Hours feature */}
-                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
