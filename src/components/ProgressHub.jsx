@@ -3598,7 +3598,7 @@ const ProgressHub = () => {
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-white text-sm mt-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed monthly. Cancel anytime.
                   </p>
                 </div>
