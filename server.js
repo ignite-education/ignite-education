@@ -180,8 +180,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
 
       console.log('✅ ============ SUBSCRIPTION CANCELED SUCCESSFULLY ============');
       console.log('✅ User ID:', user.id);
-      console.log('✅ User is now on free plan
-');
+      console.log('✅ User is now on free plan\n');
 
     } catch (error) {
       console.error('❌ Exception during subscription cancellation');
@@ -238,8 +237,7 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
 
       console.log('✅ ============ SUBSCRIPTION UPDATED SUCCESSFULLY ============');
       console.log('✅ User ID:', user.id);
-      console.log('✅ New status:', status, '
-');
+      console.log('✅ New status:', status, '\n');
 
     } catch (error) {
       console.error('❌ Exception during subscription update');
