@@ -1997,7 +1997,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         </div>
 
         {/* Chat with Will Section - Scrollable */}
-        <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: '17.6px' }}>
+        <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
           <h3 className="flex-shrink-0 font-semibold" style={{ fontSize: '19px', marginBottom: '1px' }}>Chat with Will</h3>
           <div className="flex-1 flex flex-col overflow-hidden">
             <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col justify-end" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
@@ -2226,7 +2226,7 @@ ${currentLessonSections.map((section) => {
             </div>
 
             {/* Google Display Ad */}
-            <div className="flex-shrink-0 mt-8 w-full relative">
+            <div className={`flex-shrink-0 ${isAdFree ? 'mt-2' : 'mt-8'} w-full relative`}>
               {/* Ad-Free Upgrade Banner (only show if not ad-free) */}
               {!isAdFree && (
                 <button
