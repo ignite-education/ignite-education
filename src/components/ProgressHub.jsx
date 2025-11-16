@@ -3593,12 +3593,12 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-1">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90">Every week, we'll send you our handpicked top career opportunities for {user.enrolledCourse}'s to your email.</p>
+                      <p className="text-white text-sm opacity-90">Every week, we'll send you our top career opportunities to your email.</p>
                     </div>
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-gray-300 text-sm mt-4" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed monthly. Cancel anytime.
                   </p>
                 </div>
