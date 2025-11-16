@@ -2458,7 +2458,7 @@ const ProgressHub = () => {
               {/* Merchandise */}
               <div className="flex-shrink-0" style={{ marginTop: '4px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Merchandise</h2>
-                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '2px' }}>All profit supports education projects across the UK.</p>
+                <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '3px' }}>All profit supports education projects across the UK.</p>
                 <div className="bg-white rounded-lg flex justify-between items-center gap-2" style={{ padding: '10px', paddingLeft: '14px', paddingRight: '14px', height: '105px' }}>
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
@@ -3551,7 +3551,7 @@ const ProgressHub = () => {
               </button>
 
               {/* Left side - Features section (fixed) */}
-              <div style={{ width: '45.6%', borderRadius: '0.3rem 0 0 0.3rem' }} className="bg-black p-8 flex flex-col justify-center">
+              <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
                 <div style={{ marginTop: '-50px' }}>
                 <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1' }}>
                   <span className="font-light text-lg">For 99p a week,</span><br />
@@ -3568,7 +3568,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-pink-500 font-semibold text-lg mb-0">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90 m-0">Get personalised, 1:1 support<br />from course leaders when you need it.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Get personalised, 1:1 support<br />from course leaders when you need it.</p>
                     </div>
                   </div>
 
@@ -3581,7 +3581,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-pink-500 font-semibold text-lg mb-0">Completely Ad-free</h4>
-                      <p className="text-white text-sm opacity-90 m-0">Learn without distractions with a<br />completely ad-free experience</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Learn without distractions with a<br />completely ad-free experience</p>
                     </div>
                   </div>
 
@@ -3594,7 +3594,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-pink-500 font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90 m-0">Every week, we'll send you our top<br />career opportunities to your email.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Every week, we'll send you our top<br />career opportunities to your email.</p>
                     </div>
                   </div>
 
