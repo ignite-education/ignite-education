@@ -323,7 +323,12 @@ const LearningHub = () => {
 
         // Add pause after newline characters
         if (fullText[currentIndex] === '\n') {
-          pauseCounter = 15; // Pause for ~450ms (15 * 30ms)
+          pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
+        }
+
+        // Add pause after sentence-ending punctuation (. ! ?)
+        if (fullText[currentIndex] === '.' || fullText[currentIndex] === '!' || fullText[currentIndex] === '?') {
+          pauseCounter = 7; // Pause for ~300ms (7 * 45ms, rounded from 6.67)
         }
 
         currentIndex++;
