@@ -3558,7 +3558,7 @@ const ProgressHub = () => {
                 </h3>
 
                 <div className="space-y-3">
-                  {/* Ad-free feature */}
+                  {/* Office Hours feature */}
                   <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.5s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3566,12 +3566,12 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-0.5">Ad-free</h4>
-                      <p className="text-white text-sm opacity-90">Learn without distractions</p>
+                      <h4 className="text-white font-semibold text-lg mb-0.5">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90">Get personalised, 1:1 support from course leaders when you need it.</p>
                     </div>
                   </div>
 
-                  {/* Office Hours feature */}
+                  {/* Ad-free feature */}
                   <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3579,8 +3579,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-0.5">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
+                      <h4 className="text-white font-semibold text-lg mb-0.5">Ad-free</h4>
+                      <p className="text-white text-sm opacity-90">Learn without distractions with a completely ad-free experience</p>
                     </div>
                   </div>
 
