@@ -3563,7 +3563,7 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg">Ad-free</h4>
+                      <h4 className="text-white font-semibold text-lg mb-1">Ad-free</h4>
                       <p className="text-white text-sm opacity-90">Learn without distractions</p>
                     </div>
                   </div>
@@ -3576,7 +3576,7 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg">Office Hours</h4>
+                      <h4 className="text-white font-semibold text-lg mb-1">Office Hours</h4>
                       <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
                     </div>
                   </div>
