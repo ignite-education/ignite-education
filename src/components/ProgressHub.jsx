@@ -15,6 +15,12 @@ import LoadingScreen from './LoadingScreen';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const ProgressHub = () => {
+  // IMMEDIATE LOGGING - runs before anything else
+  console.log('🚀 ProgressHub component loading');
+  console.log('🔍 Current URL:', window.location.href);
+  console.log('🔍 Search params:', window.location.search);
+  console.log('🔍 Has payment param?:', new URLSearchParams(window.location.search).get('payment'));
+
   const navigate = useNavigate();
   const location = useLocation();
   const { firstName, user: authUser, isAdFree, signOut, updateProfile } = useAuth();
