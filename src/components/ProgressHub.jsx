@@ -3534,7 +3534,7 @@ const ProgressHub = () => {
               style={{
                 width: '850px',
                 height: '75vh',
-                minHeight: '600px',
+                minHeight: '500px',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
@@ -3598,7 +3598,7 @@ const ProgressHub = () => {
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-white text-xs opacity-70 mt-4" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-gray-300 text-sm mt-4" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed monthly. Cancel anytime.
                   </p>
                 </div>
@@ -3606,36 +3606,17 @@ const ProgressHub = () => {
 
               {/* Right side - Stripe checkout (scrollable) */}
               <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
-                {upgradingToAdFree ? (
-                  <div className="p-8 space-y-4">
-                    {/* Skeleton placeholders */}
-                    <div className="space-y-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '60%' }}></div>
-                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '60%' }}></div>
-                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '40%' }}></div>
-                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                    <div className="h-12 bg-gray-300 rounded animate-pulse mt-6"></div>
-                  </div>
-                ) : (
-                  <div
-                    key={clientSecret}
-                    ref={checkoutRef}
-                    style={{
-                      minHeight: '350px',
-                      paddingTop: '10px',
-                      paddingBottom: '10px'
-                    }}
-                  >
-                    {/* Stripe Checkout will be mounted here */}
-                  </div>
-                )}
+                <div
+                  key={clientSecret}
+                  ref={checkoutRef}
+                  style={{
+                    minHeight: '350px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
+                  }}
+                >
+                  {/* Stripe Checkout will be mounted here */}
+                </div>
               </div>
             </div>
           </div>
