@@ -3553,9 +3553,9 @@ const ProgressHub = () => {
               {/* Left side - Features section (fixed) */}
               <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
                 <div style={{ marginTop: '-50px' }}>
-                <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1' }}>
-                  <span className="font-light text-lg">For 99p a week,</span><br />
-                  <span className="text-pink-500" style={{ fontSize: '1.6rem' }}>get exclusive access to</span>
+                <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1' }}>
+                  <span className="font-light text-lg">For just 99p a week,</span><br />
+                  <span className="text-pink-500" style={{ fontSize: '1.4rem' }}>get exclusive access to:</span>
                 </h3>
 
                 <div className="space-y-4">
@@ -3568,7 +3568,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Get personalised, 1:1 support from<br />course leaders when you need it.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Get personalised support from<br />course leaders when you need it.</p>
                     </div>
                   </div>
 
@@ -3581,7 +3581,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Completely Ad-Free</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Learn without distractions with a<br />completely ad-free experience</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Learn without distractions with<br />a completely ad-free experience.</p>
                     </div>
                   </div>
 
@@ -3594,7 +3594,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Every week, we'll send you our top<br />career opportunities to your email.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>We'll send you the top career<br />opportunities to you every week.</p>
                     </div>
                   </div>
 
