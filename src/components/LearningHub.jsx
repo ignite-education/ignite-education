@@ -2714,9 +2714,9 @@ ${currentLessonSections.map((section) => {
             <div
               className="bg-white relative flex"
               style={{
-                width: '750px',
-                height: '75vh',
-                minHeight: '600px',
+                width: '850px',
+                height: '65vh',
+                minHeight: '100px',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
@@ -2733,35 +2733,58 @@ ${currentLessonSections.map((section) => {
               </button>
 
               {/* Left side - Features section (fixed) */}
-              <div style={{ width: '45.6%', borderRadius: '0.3rem 0 0 0.3rem' }} className="bg-black p-8 flex flex-col justify-center">
-                <h3 className="text-white text-2xl font-bold mb-8" style={{ whiteSpace: 'nowrap' }}>What's Included</h3>
+              <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
+                <div style={{ marginTop: '-50px' }}>
+                <h3 className="text-white text-2xl font-medium" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1', marginBottom: '1.8rem' }}>
+                  <span className="font-light text-lg">For just 99p a week,</span><br />
+                  <span className="text-pink-500" style={{ fontSize: '1.4rem' }}>get exclusive access to:</span>
+                </h3>
 
-                <div className="space-y-6">
-                  {/* Ad-free feature */}
-                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.2s', opacity: 0, animationFillMode: 'forwards' }}>
-                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h4 className="text-white font-semibold text-lg">Ad-free</h4>
-                      <p className="text-white text-sm opacity-90">Learn without distractions</p>
-                    </div>
-                  </div>
-
+                <div className="space-y-4">
                   {/* Office Hours feature */}
-                  <div className="flex items-start gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90">Get personalised support from course leaders</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Get personalised support from<br />course leaders when you need it.</p>
                     </div>
                   </div>
+
+                  {/* Ad-free feature */}
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold text-lg mb-0">Completely Ad-Free</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Learn without distractions with<br />a completely ad-free experience.</p>
+                    </div>
+                  </div>
+
+                  {/* Weekly Handpicked Roles feature */}
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                      <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>We'll send you the top career<br />opportunities to you every week.</p>
+                    </div>
+                  </div>
+
+                  {/* Billing info */}
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                    Billed monthly. Cancel anytime.
+                  </p>
+                </div>
                 </div>
               </div>
 
