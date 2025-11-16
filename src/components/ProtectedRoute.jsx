@@ -94,7 +94,7 @@ const ProtectedRoute = ({ children }) => {
     };
 
     checkOnboarding();
-  }, [user]);
+  }, [user?.id]);
 
   // Wait for auth to be initialized first
   if (!isInitialized || onboardingLoading) {

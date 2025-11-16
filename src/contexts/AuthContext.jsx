@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { sendWelcomeEmail } from '../lib/email';
 
@@ -221,7 +221,7 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
-  const value = {
+  const value = useMemo(() => ({
     user,
     loading,
     isInitialized,
@@ -236,7 +236,7 @@ export const AuthProvider = ({ children }) => {
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
     isAdFree: user?.user_metadata?.is_ad_free || false,
     userRole,
-  };
+  }), [user, loading, isInitialized, userRole]);
 
   return (
     <AuthContext.Provider value={value}>

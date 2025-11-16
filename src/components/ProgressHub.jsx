@@ -175,11 +175,9 @@ const ProgressHub = () => {
           // Remove the query parameters to prevent repeated refreshes
           window.history.replaceState({}, '', window.location.pathname);
 
-          // Reload the page to ensure all components re-render with new user state
-          console.log('🔄 Reloading page to apply changes...');
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          // Note: No page reload needed - the auth context will automatically update
+          // when the session is refreshed, causing components to re-render with new user data
+          console.log('✅ Payment processed successfully without page reload');
 
         } catch (err) {
           console.error('❌ Exception during session refresh');
@@ -332,7 +330,7 @@ const ProgressHub = () => {
     };
 
     refetchCompletedLessons();
-  }, [location, authUser]);
+  }, [location.pathname, location.search, authUser?.id]);
 
   // Update user state when firstName from auth changes
   useEffect(() => {
