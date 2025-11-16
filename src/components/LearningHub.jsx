@@ -2067,7 +2067,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                           );
                         } else {
                           // Regular text with inline formatting
-                          const parts = line.split(/(\*\*[^*]+\*\*|\*[^*]+\*|DNA|RNA|Proteins)/g);
+                          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|DNA|RNA|Proteins)/g);
                           return (
                             <p key={i} className={i > 0 ? 'mt-2' : ''}>
                               {parts.map((part, j) => {
