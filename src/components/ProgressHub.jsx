@@ -3567,8 +3567,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-pink-500 font-semibold text-lg mb-0">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Get personalised, 1:1 support<br />from course leaders when you need it.</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Get personalised, 1:1 support from<br />course leaders when you need it.</p>
                     </div>
                   </div>
 
@@ -3580,8 +3580,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-pink-500 font-semibold text-lg mb-0">Completely Ad-free</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Learn without distractions with a<br />completely ad-free experience</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Completely Ad-Free</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Learn without distractions with a<br />completely ad-free experience</p>
                     </div>
                   </div>
 
@@ -3593,13 +3593,13 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-pink-500 font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-5px' }}>Every week, we'll send you our top<br />career opportunities to your email.</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Every week, we'll send you our top<br />career opportunities to your email.</p>
                     </div>
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed monthly. Cancel anytime.
                   </p>
                 </div>
