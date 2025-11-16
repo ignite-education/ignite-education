@@ -2125,7 +2125,7 @@ const ProgressHub = () => {
                         rel="noopener noreferrer"
                         className="text-pink-500 hover:text-pink-400 font-medium"
                       >
-                        View your certificate &gt;
+                        View your certificate.
                       </a>
                     </>
                   ) : (
