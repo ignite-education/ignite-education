@@ -111,21 +111,10 @@ const Auth = () => {
       setError('');
     };
 
-    // Handle page visibility and back/forward cache (bfcache)
-    const handlePageShow = (event) => {
-      // If page is loaded from cache (user pressed back button)
-      if (event.persisted) {
-        setLoading(false);
-        setError('');
-      }
-    };
-
     window.addEventListener('popstate', handlePopState);
-    window.addEventListener('pageshow', handlePageShow);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
-      window.removeEventListener('pageshow', handlePageShow);
     };
   }, []);
 
