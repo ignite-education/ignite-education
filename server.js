@@ -44,6 +44,65 @@ const pollyClient = new PollyClient({
 let resend = null;
 
 app.use(cors());
+
+// Stripe webhook endpoint MUST come before express.json() to receive raw body for signature verification
+app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    // Verify webhook signature for security
+    if (process.env.STRIPE_WEBHOOK_SECRET) {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+      console.log('✅ Webhook signature verified');
+    } else {
+      // Fallback for development (not recommended for production)
+      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set - skipping signature verification');
+      event = JSON.parse(req.body.toString());
+    }
+
+    console.log('📨 Received webhook event:', event.type);
+  } catch (err) {
+    console.error('❌ Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  // Handle the event
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    const userId = session.metadata.userId;
+
+    console.log('💳 Payment successful for user:', userId);
+
+    if (userId) {
+      try {
+        // Update user metadata in Supabase to mark them as ad-free
+        const { error } = await supabase.auth.admin.updateUserById(
+          userId,
+          {
+            user_metadata: { is_ad_free: true }
+          }
+        );
+
+        if (error) {
+          console.error('Error updating user metadata:', error);
+        } else {
+          console.log(`✅ User ${userId} upgraded to ad-free`);
+        }
+      } catch (error) {
+        console.error('Error updating user in Supabase:', error);
+      }
+    }
+  }
+
+  res.json({ received: true });
+});
+
+// Parse JSON for all other routes
 app.use(express.json());
 
 // Chat endpoint
@@ -526,62 +585,6 @@ app.post('/api/create-checkout-session', async (req, res) => {
   }
 });
 
-// Stripe webhook endpoint to handle successful payments
-app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  let event;
-
-  try {
-    // Verify webhook signature for security
-    if (process.env.STRIPE_WEBHOOK_SECRET) {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-      console.log('✅ Webhook signature verified');
-    } else {
-      // Fallback for development (not recommended for production)
-      console.warn('⚠️  STRIPE_WEBHOOK_SECRET not set - skipping signature verification');
-      event = JSON.parse(req.body.toString());
-    }
-
-    console.log('📨 Received webhook event:', event.type);
-  } catch (err) {
-    console.error('❌ Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const userId = session.metadata.userId;
-
-    console.log('💳 Payment successful for user:', userId);
-
-    if (userId) {
-      try {
-        // Update user metadata in Supabase to mark them as ad-free
-        const { error } = await supabase.auth.admin.updateUserById(
-          userId,
-          {
-            user_metadata: { is_ad_free: true }
-          }
-        );
-
-        if (error) {
-          console.error('Error updating user metadata:', error);
-        } else {
-          console.log(`✅ User ${userId} upgraded to ad-free`);
-        }
-      } catch (error) {
-        console.error('Error updating user in Supabase:', error);
-      }
-    }
-  }
-
-  res.json({ received: true });
-});
 
 // Text-to-speech endpoint using Amazon Polly
 app.post('/api/text-to-speech', async (req, res) => {
