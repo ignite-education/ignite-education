@@ -3533,7 +3533,7 @@ const ProgressHub = () => {
               className="bg-white relative flex"
               style={{
                 width: '850px',
-                height: '75vh',
+                height: '65vh',
                 minHeight: '100px',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
@@ -3567,7 +3567,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0.5">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90">Get personalised, 1:1 support from course leaders when you need it.</p>
+                      <p className="text-white text-sm opacity-90">Get personalised, 1:1 support</p>
                     </div>
                   </div>
 
@@ -3580,7 +3580,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0.5">Ad-free</h4>
-                      <p className="text-white text-sm opacity-90">Learn without distractions with a completely ad-free experience</p>
+                      <p className="text-white text-sm opacity-90">Learn without distractions with a</p>
                     </div>
                   </div>
 
@@ -3593,7 +3593,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0.5">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90">Every week, we'll send you our top career opportunities to your email.</p>
+                      <p className="text-white text-sm opacity-90">Every week, we'll send you our top</p>
                     </div>
                   </div>
 
