@@ -1150,6 +1150,35 @@ const ProgressHub = () => {
     }, 200);
   };
 
+  const handleManageSubscription = async () => {
+    try {
+      console.log('🎫 Opening billing portal...');
+      
+      const response = await fetch('https://ignite-education-api.onrender.com/api/create-billing-portal-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: authUser.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        console.log('✅ Redirecting to billing portal:', data.url);
+        // Redirect to Stripe billing portal
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || 'Failed to create billing portal session');
+      }
+    } catch (error) {
+      console.error('❌ Error opening billing portal:', error);
+      alert(`Failed to open subscription management: ${error.message}`);
+    }
+  };
+
   // Payment Modal Handlers
   const handleCloseUpgradeModal = () => {
     setIsClosingModal(true);
@@ -3358,6 +3387,14 @@ const ProgressHub = () => {
                 >
                   Account Actions
                 </button>
+                {isAdFree && (
+                  <button
+                    onClick={() => setSettingsTab('subscription')}
+                    className={`pb-2 px-1 font-medium transition ${settingsTab === 'subscription' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  >
+                    Subscription
+                  </button>
+                )}
               </div>
 
               {/* Account Tab */}
@@ -3584,6 +3621,73 @@ const ProgressHub = () => {
                     >
                       Delete Account
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Subscription Tab */}
+              {settingsTab === 'subscription' && (
+                <div className="space-y-4">
+                  {/* Subscription Status Card */}
+                  <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-purple-900 mb-1">Premium Subscriber ✨</h3>
+                        <p className="text-sm text-purple-700 mb-2">
+                          You have access to exclusive features including office hours and ad-free learning.
+                        </p>
+                        <div className="flex flex-col gap-1 text-xs text-purple-600">
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span>Ad-free experience</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span>Book office hours with industry experts</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            <span>Priority support</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Manage Subscription Section */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <h3 className="font-semibold text-black mb-2">Manage Subscription</h3>
+                    <p className="text-sm text-gray-700 mb-4">
+                      Update your payment method, view billing history, or cancel your subscription through our secure billing portal.
+                    </p>
+                    <button
+                      onClick={handleManageSubscription}
+                      className="w-full bg-purple-600 text-white px-5 py-3 text-sm font-semibold hover:bg-purple-700 transition flex items-center justify-center gap-2"
+                      style={{ borderRadius: '0.3rem' }}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Open Billing Portal
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2 text-center">
+                      You'll be redirected to Stripe's secure portal
+                    </p>
+                  </div>
+
+                  {/* Cancellation Info */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 className="font-semibold text-blue-900 text-sm mb-1">About Cancellation</h4>
+                    <p className="text-xs text-blue-700">
+                      If you cancel your subscription, you'll continue to have access to premium features until the end of your current billing period. After that, your account will revert to the free plan.
+                    </p>
                   </div>
                 </div>
               )}

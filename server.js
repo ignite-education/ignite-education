@@ -103,7 +103,12 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       const { data, error } = await supabase.auth.admin.updateUserById(
         userId,
         {
-          user_metadata: { is_ad_free: true }
+          user_metadata: { 
+            is_ad_free: true,
+            stripe_customer_id: session.customer,
+            stripe_subscription_id: session.subscription,
+            subscription_status: 'active'
+          }
         }
       );
 
@@ -122,6 +127,124 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
 
     } catch (error) {
       console.error('❌ Exception during Supabase update');
+      console.error('❌ Error:', error.message);
+      console.error('❌ Stack:', error.stack);
+      return res.status(500).json({ error: error.message });
+    }
+  } else if (event.type === 'customer.subscription.deleted') {
+    const subscription = event.data.object;
+    const customerId = subscription.customer;
+
+    console.log('
+🚫 ============ SUBSCRIPTION CANCELED ============');
+    console.log('🔑 Subscription ID:', subscription.id);
+    console.log('👤 Customer ID:', customerId);
+
+    try {
+      // Find user by stripe_customer_id
+      console.log('🔍 Finding user with customer ID:', customerId);
+      
+      // Query all users to find the one with this customer_id
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('❌ Error listing users:', listError);
+        return res.status(500).json({ error: listError.message });
+      }
+
+      const user = users.find(u => u.user_metadata?.stripe_customer_id === customerId);
+
+      if (!user) {
+        console.error('❌ No user found with customer ID:', customerId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      console.log('✅ Found user:', user.id);
+      console.log('🔄 Setting is_ad_free: false');
+
+      // Update user to remove ad-free status
+      const { data, error } = await supabase.auth.admin.updateUserById(
+        user.id,
+        {
+          user_metadata: {
+            ...user.user_metadata,
+            is_ad_free: false,
+            subscription_status: 'canceled'
+          }
+        }
+      );
+
+      if (error) {
+        console.error('❌ Failed to update user:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log('✅ ============ SUBSCRIPTION CANCELED SUCCESSFULLY ============');
+      console.log('✅ User ID:', user.id);
+      console.log('✅ User is now on free plan
+');
+
+    } catch (error) {
+      console.error('❌ Exception during subscription cancellation');
+      console.error('❌ Error:', error.message);
+      console.error('❌ Stack:', error.stack);
+      return res.status(500).json({ error: error.message });
+    }
+  } else if (event.type === 'customer.subscription.updated') {
+    const subscription = event.data.object;
+    const customerId = subscription.customer;
+    const status = subscription.status;
+
+    console.log('
+🔄 ============ SUBSCRIPTION UPDATED ============');
+    console.log('🔑 Subscription ID:', subscription.id);
+    console.log('👤 Customer ID:', customerId);
+    console.log('📊 Status:', status);
+
+    try {
+      // Find user by stripe_customer_id
+      const { data: { users }, error: listError } = await supabase.auth.admin.listUsers();
+      
+      if (listError) {
+        console.error('❌ Error listing users:', listError);
+        return res.status(500).json({ error: listError.message });
+      }
+
+      const user = users.find(u => u.user_metadata?.stripe_customer_id === customerId);
+
+      if (!user) {
+        console.error('❌ No user found with customer ID:', customerId);
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Determine if user should be ad-free based on subscription status
+      const isAdFree = ['active', 'trialing'].includes(status);
+
+      console.log('🔄 Updating user status. is_ad_free:', isAdFree, 'subscription_status:', status);
+
+      const { data, error } = await supabase.auth.admin.updateUserById(
+        user.id,
+        {
+          user_metadata: {
+            ...user.user_metadata,
+            is_ad_free: isAdFree,
+            subscription_status: status
+          }
+        }
+      );
+
+      if (error) {
+        console.error('❌ Failed to update user:', error);
+        return res.status(500).json({ error: error.message });
+      }
+
+      console.log('✅ ============ SUBSCRIPTION UPDATED SUCCESSFULLY ============');
+      console.log('✅ User ID:', user.id);
+      console.log('✅ New status:', status, '
+');
+
+    } catch (error) {
+      console.error('❌ Exception during subscription update');
       console.error('❌ Error:', error.message);
       console.error('❌ Stack:', error.stack);
       return res.status(500).json({ error: error.message });
@@ -613,6 +736,58 @@ app.post('/api/create-checkout-session', async (req, res) => {
     res.json({ clientSecret: session.client_secret });
   } catch (error) {
     console.error('Error creating checkout session:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Create Stripe billing portal session for subscription management
+app.post('/api/create-billing-portal-session', async (req, res) => {
+  try {
+    const { userId } = req.body;
+
+    console.log('
+🎫 ============ CREATING BILLING PORTAL SESSION ============');
+    console.log('👤 User ID:', userId);
+
+    if (!userId) {
+      console.error('❌ No userId provided');
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Get user's Stripe customer ID from Supabase
+    console.log('🔍 Fetching user data from Supabase...');
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+
+    if (userError) {
+      console.error('❌ Error fetching user:', userError);
+      return res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+
+    const customerId = userData.user?.user_metadata?.stripe_customer_id;
+    console.log('🔑 Stripe Customer ID:', customerId);
+
+    if (!customerId) {
+      console.error('❌ No stripe_customer_id found for user');
+      return res.status(400).json({ error: 'No active subscription found. Please subscribe first.' });
+    }
+
+    // Create billing portal session
+    console.log('🚀 Creating Stripe billing portal session...');
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: `${req.headers.origin || 'https://www.ignite.education'}/progress`,
+    });
+
+    console.log('✅ ============ PORTAL SESSION CREATED ============');
+    console.log('🔗 Portal URL:', session.url);
+    console.log('');
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error('❌ ============ PORTAL SESSION CREATION FAILED ============');
+    console.error('❌ Error:', error.message);
+    console.error('❌ Stack:', error.stack);
+    console.error('');
     res.status(500).json({ error: error.message });
   }
 });
