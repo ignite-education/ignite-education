@@ -3532,7 +3532,7 @@ const ProgressHub = () => {
             <div
               className="bg-white relative flex"
               style={{
-                width: '750px',
+                width: '850px',
                 height: '75vh',
                 minHeight: '600px',
                 padding: '0px',
