@@ -2548,7 +2548,7 @@ const ProgressHub = () => {
                   </button>
                 )}
                 <div className="flex-1">
-                  <p className="text-pink-500 font-bold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation.</p>
+                  <p className="text-pink-500 font-semibold text-base" style={{ marginBottom: '1px' }}>Join the {user.enrolledCourse} conversation.</p>
                   <p className="text-white" style={{ fontSize: '14px' }}>Discover discussions, ask questions and engage with the {courseReddit.channel} community.</p>
                 </div>
               </div>
