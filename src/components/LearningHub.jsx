@@ -126,9 +126,20 @@ const LearningHub = () => {
       console.log('🔍 Payment param value:', params.get('payment'));
 
       if (params.get('payment') === 'success') {
+        // Check if we've already processed this payment to prevent multiple reloads
+        const hasProcessed = sessionStorage.getItem('payment_processed');
+        if (hasProcessed) {
+          console.log('⏭️ Payment already processed, skipping...');
+          window.history.replaceState({}, '', window.location.pathname);
+          return;
+        }
+
         console.log('\n✅ ============ PAYMENT SUCCESS DETECTED ============');
         console.log('⏰ Timestamp:', new Date().toISOString());
         console.log('⏳ Waiting 3 seconds for webhook to process...');
+
+        // Mark as processed immediately to prevent re-runs
+        sessionStorage.setItem('payment_processed', 'true');
 
         // Wait 3 seconds to ensure webhook has time to update user metadata
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -142,6 +153,7 @@ const LearningHub = () => {
             console.error('❌ Session refresh FAILED');
             console.error('❌ Error:', error.message);
             console.error('❌ Error details:', JSON.stringify(error, null, 2));
+            sessionStorage.removeItem('payment_processed');
             return;
           }
 
@@ -153,16 +165,21 @@ const LearningHub = () => {
           // Remove the query parameter to prevent repeated refreshes
           window.history.replaceState({}, '', window.location.pathname);
 
-          // Reload the page to ensure all components re-render with new user state
-          console.log('🔄 Reloading page to apply changes...');
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          // Only reload if the page is currently visible to prevent issues with tab switching
+          if (document.visibilityState === 'visible') {
+            console.log('🔄 Reloading page to apply changes...');
+            setTimeout(() => {
+              window.location.reload();
+            }, 500);
+          } else {
+            console.log('⏸️ Page not visible, skipping reload');
+          }
 
         } catch (err) {
           console.error('❌ Exception during session refresh');
           console.error('❌ Error:', err.message);
           console.error('❌ Stack:', err.stack);
+          sessionStorage.removeItem('payment_processed');
         }
       }
     };
