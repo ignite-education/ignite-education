@@ -114,7 +114,7 @@ const LearningHub = () => {
     // Start typing animation for initial greeting message with a slight delay
     setTimeout(() => {
       setTypingMessageIndex(0);
-    }, 1500);
+    }, 2500);
   }, []);
 
   // Refresh user session after successful payment
@@ -336,7 +336,7 @@ const LearningHub = () => {
         setTypingMessageIndex(null);
         setDisplayedText('');
       }
-    }, 40); // Adjust speed here (lower = faster)
+    }, 45); // Adjust speed here (lower = faster)
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex, chatMessages]);
