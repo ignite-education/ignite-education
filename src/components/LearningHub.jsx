@@ -336,7 +336,7 @@ const LearningHub = () => {
         setTypingMessageIndex(null);
         setDisplayedText('');
       }
-    }, 30); // Adjust speed here (lower = faster)
+    }, 40); // Adjust speed here (lower = faster)
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex, chatMessages]);
