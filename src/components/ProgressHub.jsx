@@ -3607,12 +3607,21 @@ const ProgressHub = () => {
               {/* Right side - Stripe checkout (scrollable) */}
               <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
                 {upgradingToAdFree ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div style={{ width: '150px', height: '150px' }}>
-                      {lottieData && (
-                        <Lottie animationData={lottieData} loop={true} />
-                      )}
+                  <div className="p-8 space-y-4">
+                    {/* Skeleton placeholders */}
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '60%' }}></div>
+                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
                     </div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '60%' }}></div>
+                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: '40%' }}></div>
+                      <div className="h-10 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                    <div className="h-12 bg-gray-300 rounded animate-pulse mt-6"></div>
                   </div>
                 ) : (
                   <div
