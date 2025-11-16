@@ -604,7 +604,7 @@ app.post('/api/create-checkout-session', async (req, res) => {
         },
       ],
       mode: 'subscription', // Changed from 'payment' to 'subscription'
-      return_url: `${req.headers.origin || 'http://localhost:5173'}/learning?payment=success`,
+      return_url: `${req.headers.origin || 'http://localhost:5173'}/progress?payment=success`,
       metadata: {
         userId: userId,
       },
