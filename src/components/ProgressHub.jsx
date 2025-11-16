@@ -3534,7 +3534,7 @@ const ProgressHub = () => {
               style={{
                 width: '850px',
                 height: '75vh',
-                minHeight: '250px',
+                minHeight: '100px',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
@@ -3552,7 +3552,7 @@ const ProgressHub = () => {
 
               {/* Left side - Features section (fixed) */}
               <div style={{ width: '45.6%', borderRadius: '0.3rem 0 0 0.3rem' }} className="bg-black p-8 flex flex-col justify-center">
-                <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards' }}>
+                <h3 className="text-white text-2xl font-medium mb-8" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1.2' }}>
                   <span className="font-light text-lg">For just 99p/week,</span><br />
                   <span className="text-pink-500" style={{ fontSize: '1.6rem' }}>get exclusive access to</span>
                 </h3>
