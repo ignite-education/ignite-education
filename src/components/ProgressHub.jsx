@@ -3567,8 +3567,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-0.5">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90">Get personalised, 1:1 support<br />from course leaders when you need it.</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Office Hours</h4>
+                      <p className="text-white text-sm opacity-90 m-0">Get personalised, 1:1 support<br />from course leaders when you need it.</p>
                     </div>
                   </div>
 
@@ -3580,8 +3580,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-0.5">Ad-free</h4>
-                      <p className="text-white text-sm opacity-90">Learn without distractions with a<br />completely ad-free experience</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Ad-free</h4>
+                      <p className="text-white text-sm opacity-90 m-0">Learn without distractions with a<br />completely ad-free experience</p>
                     </div>
                   </div>
 
@@ -3593,8 +3593,8 @@ const ProgressHub = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-semibold text-lg mb-0.5">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90">Every week, we'll send you our top<br />career opportunities to your email.</p>
+                      <h4 className="text-white font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
+                      <p className="text-white text-sm opacity-90 m-0">Every week, we'll send you our top<br />career opportunities to your email.</p>
                     </div>
                   </div>
 
