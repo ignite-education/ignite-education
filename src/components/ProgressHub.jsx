@@ -130,19 +130,23 @@ const ProgressHub = () => {
   useEffect(() => {
     const refreshUserSession = async () => {
       const params = new URLSearchParams(window.location.search);
+      const pendingRefresh = localStorage.getItem('pendingPaymentRefresh');
 
       console.log('🔍 [ProgressHub] Checking URL params:', window.location.search);
       console.log('🔍 [ProgressHub] Payment param value:', params.get('payment'));
       console.log('🔍 [ProgressHub] Session ID param:', params.get('session_id'));
+      console.log('🔍 [ProgressHub] Pending refresh flag:', pendingRefresh);
 
-      // Check for either payment=success OR session_id (Stripe embedded checkout redirect)
+      // Check for either payment=success OR session_id (Stripe embedded checkout redirect) OR localStorage flag
       const hasPaymentSuccess = params.get('payment') === 'success';
       const hasSessionId = params.get('session_id');
+      const hasPendingRefresh = pendingRefresh && (Date.now() - parseInt(pendingRefresh)) < 5 * 60 * 1000; // 5 minutes
 
-      if (hasPaymentSuccess || hasSessionId) {
+      if (hasPaymentSuccess || hasSessionId || hasPendingRefresh) {
         console.log('\n✅ ============ PAYMENT SUCCESS DETECTED (ProgressHub) ============');
         console.log('⏰ Timestamp:', new Date().toISOString());
         console.log('🔑 Session ID:', hasSessionId);
+        console.log('🏁 Pending refresh:', hasPendingRefresh);
         console.log('⏳ Waiting 3 seconds for webhook to process...');
 
         // Wait 3 seconds to ensure webhook has time to update user metadata
@@ -164,6 +168,9 @@ const ProgressHub = () => {
           console.log('👤 User data:', JSON.stringify(data.session?.user, null, 2));
           console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
           console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
+
+          // Clear the localStorage flag to prevent repeated refreshes
+          localStorage.removeItem('pendingPaymentRefresh');
 
           // Remove the query parameters to prevent repeated refreshes
           window.history.replaceState({}, '', window.location.pathname);
@@ -1178,6 +1185,8 @@ const ProgressHub = () => {
 
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
+        // Set flag for session refresh after payment
+        localStorage.setItem('pendingPaymentRefresh', Date.now().toString());
         setUpgradingToAdFree(false);
       } else {
         throw new Error('Failed to create checkout session');
