@@ -3869,7 +3869,7 @@ const ProgressHub = () => {
                 animation: isClosingCalendlyModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '0',
-                height: '600px',
+                height: '560px',
                 overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
@@ -3889,7 +3889,7 @@ const ProgressHub = () => {
                 transform: 'scale(0.8)',
                 transformOrigin: 'top left',
                 overflow: 'hidden',
-                marginTop: '20px'
+                marginTop: '25px'
               }}>
                 <InlineWidget
                   url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
