@@ -3888,7 +3888,8 @@ const ProgressHub = () => {
                 height: '750px',
                 transform: 'scale(0.8)',
                 transformOrigin: 'top left',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                marginTop: '20px'
               }}>
                 <InlineWidget
                   url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
