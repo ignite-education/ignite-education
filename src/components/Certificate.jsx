@@ -46,6 +46,38 @@ export default function Certificate() {
     }
 
     try {
+      // Preload and convert logo to high-res data URL
+      const logoUrl = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png';
+      
+      // Create a high-resolution version of the logo
+      const preloadImage = (url) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            // Create canvas at 4x size for super high resolution
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width * 4;
+            canvas.height = img.height * 4;
+            
+            // Enable image smoothing for better quality
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            
+            // Draw image at 4x size
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Convert to data URL
+            resolve(canvas.toDataURL('image/png', 1.0));
+          };
+          img.onerror = reject;
+          img.src = url;
+        });
+      };
+      
+      const logoDataUrl = await preloadImage(logoUrl);
+
       // Use html2canvas to capture the element
       const html2canvas = (await import('html2canvas')).default;
       
@@ -81,27 +113,19 @@ export default function Certificate() {
           `;
           clonedDoc.head.appendChild(style);
           
-          // Replace background-image logos with actual img tags for better quality
-          const logoElements = clonedDoc.querySelectorAll('[style*="backgroundImage"]');
-          logoElements.forEach(el => {
+          // Replace all logo background-images with high-res data URL
+          const allElements = clonedDoc.querySelectorAll('*');
+          allElements.forEach(el => {
             const bgImage = el.style.backgroundImage;
             if (bgImage && bgImage.includes('ignite_Logo_MV_4.png')) {
-              // Extract URL from backgroundImage
-              const urlMatch = bgImage.match(/url\(["']?([^"')]+)["']?\)/);
-              if (urlMatch) {
-                const imageUrl = urlMatch[1];
-                
-                // Create actual img element
-                const img = clonedDoc.createElement('img');
-                img.src = imageUrl;
-                img.style.width = el.style.width || '102px';
-                img.style.height = el.style.height || '34px';
-                img.style.objectFit = 'contain';
-                img.style.display = 'block';
-                
-                // Replace the div with the img
-                el.parentNode.replaceChild(img, el);
-              }
+              // Replace with high-res data URL
+              el.style.backgroundImage = `url(${logoDataUrl})`;
+              el.style.backgroundSize = 'contain';
+              el.style.backgroundRepeat = 'no-repeat';
+              el.style.backgroundPosition = 'center';
+              // Force image rendering quality
+              el.style.imageRendering = 'high-quality';
+              el.style.imageRendering = '-webkit-optimize-contrast';
             }
           });
         }
@@ -125,41 +149,12 @@ export default function Certificate() {
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       
       // Save with filename
-      const filename = `${certificate.user_name.replace(/\s+/g, "_")}_${certificate.course_name.replace(/\s+/g, "_")}_Certificate.pdf`;
+      const filename = `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`;
       pdf.save(filename);
       
     } catch (error) {
       console.error("Error generating PDF:", error);
-      
-      // Fallback to html2pdf if direct method fails
-      if (error.message && error.message.toLowerCase().includes("oklch")) {
-        console.log("OKLCH error detected, retrying with html2pdf...");
-        try {
-          const opt = {
-            margin: 0,
-            filename: `${certificate.user_name.replace(/\s+/g, "_")}_${certificate.course_name.replace(/\s+/g, "_")}_Certificate.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: {
-              scale: 2,
-              useCORS: true,
-              backgroundColor: "#f3f4f6",
-              width: 1100,
-              height: 650
-            },
-            jsPDF: { 
-              unit: "mm", 
-              format: [1100 * 0.264583, 650 * 0.264583], 
-              orientation: "landscape"
-            }
-          };
-          await html2pdf().from(element).set(opt).save();
-        } catch (retryError) {
-          console.error("Retry failed:", retryError);
-          alert("Failed to download certificate. Please try again or contact support.");
-        }
-      } else {
-        alert("Failed to download certificate. Please try again.");
-      }
+      alert("Failed to download certificate. Please try again.");
     }
   };
   const handleShare = () => {
