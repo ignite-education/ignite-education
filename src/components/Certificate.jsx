@@ -146,15 +146,15 @@ export default function Certificate() {
             onClick={() => navigate('/')}
             className="hover:opacity-80 transition-opacity"
           >
-            <div
+            <img
+              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+              alt="Ignite Logo"
               style={{
-                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center',
                 width: '108.8px',
                 height: '36px',
+                objectFit: 'contain',
               }}
+              crossOrigin="anonymous"
             />
           </button>
           {/* Action Buttons */}
@@ -209,15 +209,15 @@ export default function Certificate() {
             <div className="w-[390px] bg-black flex flex-col items-end justify-center -mt-[150px] p-6 md:p-12 text-white">
               {/* Ignite Logo */}
               <div className="mb-2 mr-[-10px]">
-                <div
+                <img
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+                  alt="Ignite Logo"
                   style={{
-                    backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                    backgroundSize: 'contain',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPosition: 'center',
                     width: '102px',
                     height: '34px',
+                    objectFit: 'contain',
                   }}
+                  crossOrigin="anonymous"
                 />
               </div>
 
