@@ -198,9 +198,8 @@ export default function Certificate() {
           ref={certificateRef}
           className="bg-white overflow-hidden shadow-2xl"
           style={{
-            width: 'min(1100px, calc(100vw - 2rem))',
-            aspectRatio: '1100/650',
-            maxHeight: 'calc(100vh - 8rem)',
+            width: '1100px',
+            height: '650px',
           }}
         >
           <div className="flex h-full">
