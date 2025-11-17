@@ -89,6 +89,7 @@ const ProgressHub = () => {
   const [isClosingSettingsModal, setIsClosingSettingsModal] = useState(false);
   const [showCalendlyModal, setShowCalendlyModal] = useState(false);
   const [isClosingCalendlyModal, setIsClosingCalendlyModal] = useState(false);
+  const [calendlyLoaded, setCalendlyLoaded] = useState(false);
   const [coaches, setCoaches] = useState([]);
   const [calendlyLink, setCalendlyLink] = useState('');
   const [courseReddit, setCourseReddit] = useState({
@@ -1262,6 +1263,7 @@ const ProgressHub = () => {
       await handleOpenUpgradeModal();
     } else {
       // User is subscribed - open Calendly
+      setCalendlyLoaded(false); // Reset loading state
       setShowCalendlyModal(true);
     }
   };
@@ -1271,8 +1273,24 @@ const ProgressHub = () => {
     setTimeout(() => {
       setShowCalendlyModal(false);
       setIsClosingCalendlyModal(false);
+      setCalendlyLoaded(false); // Reset loading state when closing
     }, 200);
   };
+
+  // Listen for Calendly events to detect when booking form is fully loaded
+  useEffect(() => {
+    const handleCalendlyEvent = (e) => {
+      if (e.data.event && e.data.event.indexOf('calendly') === 0) {
+        // Calendly has finished loading the booking form
+        if (e.data.event === 'calendly.event_type_viewed') {
+          setCalendlyLoaded(true);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleCalendlyEvent);
+    return () => window.removeEventListener('message', handleCalendlyEvent);
+  }, []);
 
   // Shop link handlers
   const handleOpenShop = () => {
@@ -3886,6 +3904,31 @@ const ProgressHub = () => {
                   name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : ''
                 }}
               />
+
+              {/* Persistent loading overlay until Calendly is fully loaded */}
+              {!calendlyLoaded && (
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  backgroundColor: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  zIndex: 20
+                }}>
+                  {lottieData && Object.keys(lottieData).length > 0 ? (
+                    <Lottie
+                      animationData={lottieData}
+                      loop={true}
+                      autoplay={true}
+                      style={{ width: 100, height: 100 }}
+                    />
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
         </div>
