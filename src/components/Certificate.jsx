@@ -238,10 +238,10 @@ export default function Certificate() {
 
               {/* Certificate Title */}
               <div className="text-right">
-                <h1 className="text-xl md:text-[28px] font-medium mb-0">
+                <h1 className="text-xl md:text-3xl font-semibold mb-0">
                   {certificate.course_name}
                 </h1>
-                <h2 className="text-xl md:text-[28px] font-medium">
+                <h2 className="text-xl md:text-3xl font-semibold">
                   Certification
                 </h2>
               </div>
@@ -255,7 +255,7 @@ export default function Certificate() {
               </p>
 
               {/* User Name */}
-              <h2 className="text-xl md:text-3xl font-bold mb-2 mr-[-10px] md:mb-4 text-[#ec4899]">
+              <h2 className="text-xl md:text-3xl font-semibold mb-2 mr-[-10px] md:mb-4 text-[#ec4899]">
                 {certificate.user_name}
               </h2>
 
