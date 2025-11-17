@@ -3869,7 +3869,7 @@ const ProgressHub = () => {
                 animation: isClosingCalendlyModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '0',
-                height: '545px',
+                height: '530px',
                 overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
