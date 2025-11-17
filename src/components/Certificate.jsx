@@ -50,13 +50,16 @@ export default function Certificate() {
       const html2canvas = (await import('html2canvas')).default;
       
       const canvas = await html2canvas(element, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
+        allowTaint: false,
         backgroundColor: "#f3f4f6",
         width: 1100,
         height: 650,
         scrollY: 0,
         scrollX: 0,
+        imageTimeout: 0,
+        logging: false,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement("style");
           style.textContent = `
