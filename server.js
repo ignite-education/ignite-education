@@ -1511,7 +1511,7 @@ async function fetchAndCacheRedditData(subreddit) {
           id: post.id,
           subreddit: subreddit,
           author: post.author,
-          author_icon: null, // Reddit's public API doesn't include user avatars in post listings - UI will use fallback colored circles
+          author_icon: post.sr_detail?.icon_img || (post.thumbnail?.startsWith('http') ? post.thumbnail : null), // Extract avatar from existing API response data
           created_at: new Date(post.created_utc * 1000).toISOString(),
           title: post.title,
           content: post.selftext || '',
