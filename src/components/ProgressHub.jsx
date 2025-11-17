@@ -24,7 +24,12 @@ const CalendlyLoadingSpinner = () => {
       justifyContent: 'center',
       alignItems: 'center',
       height: '100%',
-      width: '100%'
+      width: '100%',
+      backgroundColor: 'white',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      zIndex: 10
     }}>
       {lottieData && Object.keys(lottieData).length > 0 ? (
         <Lottie
