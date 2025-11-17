@@ -52,7 +52,8 @@
       "Bash(printf:*)",
       "Bash(/tmp/newpdf.js)",
       "Bash(src/components/Certificate.jsx)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" ls-files)"
     ],
     "deny": [],
     "ask": []
