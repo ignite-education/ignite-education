@@ -133,8 +133,8 @@ export default function Certificate() {
       // Y: Vertically centered content with -150px offset ≈ 165px from top
       const logoWidthMm = 102 * 0.264583; // ~27mm
       const logoHeightMm = 34 * 0.264583; // ~9mm
-      const logoXMm = 278 * 0.264583; // ~73.5mm
-      const logoYMm = 165 * 0.264583; // ~43.7mm
+      const logoXMm = 230 * 0.264583; // ~60.9mm
+      const logoYMm = 200 * 0.264583; // ~52.9mm
       
       // Create a canvas with the logo at very high resolution
       const logoCanvas = document.createElement('canvas');
