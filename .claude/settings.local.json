@@ -41,7 +41,9 @@
       "Bash(sqlite3:*)",
       "Bash(pwd:*)",
       "Bash(git update-index:*)",
-      "Bash(xattr:*)"
+      "Bash(xattr:*)",
+      "Bash(git diff-index:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
