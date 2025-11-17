@@ -3869,8 +3869,7 @@ const ProgressHub = () => {
                 animation: isClosingCalendlyModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '0',
-                height: 'calc(100vh - 120px)',
-                maxHeight: '700px',
+                height: '600px',
                 overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
@@ -3888,7 +3887,7 @@ const ProgressHub = () => {
                 url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
                 LoadingSpinner={CalendlyLoadingSpinner}
                 styles={{
-                  height: '100%',
+                  height: '500px',
                   minWidth: '100%'
                 }}
                 pageSettings={{
