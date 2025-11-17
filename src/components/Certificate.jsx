@@ -39,7 +39,7 @@ export default function Certificate() {
   const handleDownloadPDF = async () => {
     const element = certificateRef.current;
 
-    if (\!element) {
+    if (!element) {
       console.error("Certificate element not found");
       return;
     }
@@ -61,19 +61,19 @@ export default function Certificate() {
           const style = clonedDoc.createElement("style");
           style.textContent = `
             * {
-              accent-color: #ec4899 \!important;
-              scrollbar-color: #ec4899 #f3f4f6 \!important;
-              color-scheme: light \!important;
+              accent-color: #ec4899 !important;
+              scrollbar-color: #ec4899 #f3f4f6 !important;
+              color-scheme: light !important;
             }
-            .bg-black { background-color: #000000 \!important; }
-            .bg-white { background-color: #ffffff \!important; }
-            .bg-gray-100 { background-color: #f3f4f6 \!important; }
-            .text-black { color: #000000 \!important; }
-            .text-white { color: #ffffff \!important; }
-            .text-gray-600 { color: #4b5563 \!important; }
-            .text-gray-800 { color: #1f2937 \!important; }
-            .border-gray-200 { border-color: #e5e7eb \!important; }
-            .text-\\[\\#ec4899\\] { color: #ec4899 \!important; }
+            .bg-black { background-color: #000000 !important; }
+            .bg-white { background-color: #ffffff !important; }
+            .bg-gray-100 { background-color: #f3f4f6 !important; }
+            .text-black { color: #000000 !important; }
+            .text-white { color: #ffffff !important; }
+            .text-gray-600 { color: #4b5563 !important; }
+            .text-gray-800 { color: #1f2937 !important; }
+            .border-gray-200 { border-color: #e5e7eb !important; }
+            .text-\\[\\#ec4899\\] { color: #ec4899 !important; }
           `;
           clonedDoc.head.appendChild(style);
         }
