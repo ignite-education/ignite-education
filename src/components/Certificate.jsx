@@ -61,6 +61,7 @@ export default function Certificate() {
         imageTimeout: 0,
         logging: false,
         onclone: (clonedDoc) => {
+          // Add color overrides
           const style = clonedDoc.createElement("style");
           style.textContent = `
             * {
@@ -79,6 +80,30 @@ export default function Certificate() {
             .text-\\[\\#ec4899\\] { color: #ec4899 !important; }
           `;
           clonedDoc.head.appendChild(style);
+          
+          // Replace background-image logos with actual img tags for better quality
+          const logoElements = clonedDoc.querySelectorAll('[style*="backgroundImage"]');
+          logoElements.forEach(el => {
+            const bgImage = el.style.backgroundImage;
+            if (bgImage && bgImage.includes('ignite_Logo_MV_4.png')) {
+              // Extract URL from backgroundImage
+              const urlMatch = bgImage.match(/url\(["']?([^"')]+)["']?\)/);
+              if (urlMatch) {
+                const imageUrl = urlMatch[1];
+                
+                // Create actual img element
+                const img = clonedDoc.createElement('img');
+                img.src = imageUrl;
+                img.style.width = el.style.width || '102px';
+                img.style.height = el.style.height || '34px';
+                img.style.objectFit = 'contain';
+                img.style.display = 'block';
+                
+                // Replace the div with the img
+                el.parentNode.replaceChild(img, el);
+              }
+            }
+          });
         }
       });
 
