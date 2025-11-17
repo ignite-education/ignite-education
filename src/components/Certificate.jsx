@@ -134,7 +134,6 @@ export default function Certificate() {
       }
     }
   };
-  };
   const handleShare = () => {
     const certificateUrl = window.location.href;
     const shareText = `I've just completed the ${certificate.course_name} course at @Ignite\n\n${certificateUrl}`;
