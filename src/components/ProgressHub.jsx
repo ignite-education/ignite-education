@@ -14,6 +14,30 @@ import LoadingScreen from './LoadingScreen';
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
+// Custom Calendly Loading Spinner Component
+const CalendlyLoadingSpinner = () => {
+  const { lottieData } = useAnimation();
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      width: '100%'
+    }}>
+      {lottieData && Object.keys(lottieData).length > 0 ? (
+        <Lottie
+          animationData={lottieData}
+          loop={true}
+          autoplay={true}
+          style={{ width: 100, height: 100 }}
+        />
+      ) : null}
+    </div>
+  );
+};
+
 const ProgressHub = () => {
   // IMMEDIATE LOGGING - runs before anything else
   console.log('🚀 ProgressHub component loading');
@@ -3838,6 +3862,7 @@ const ProgressHub = () => {
               {/* Calendly Widget */}
               <InlineWidget
                 url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
+                LoadingSpinner={CalendlyLoadingSpinner}
                 styles={{
                   height: '100%',
                   minWidth: '100%'
