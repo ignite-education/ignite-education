@@ -124,13 +124,17 @@ export default function Certificate() {
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       
       // Now overlay the high-resolution logo directly on the PDF
-      // Logo position: left panel, near the top
-      // Original: 102px width, 34px height at around x=~250px (right-aligned in 390px panel)
-      // Convert pixel positions to mm
+      // Logo position calculation:
+      // - Certificate: 1100px x 650px
+      // - Left panel: 390px wide, has -mt-[150px] and justify-center
+      // - Logo: 102px x 34px, right-aligned with mr-[-10px]
+      // - Panel has p-6 (24px) or p-12 (48px) padding on desktop
+      // X: Right-aligned in 390px panel = 390 - 102 = 288px
+      // Y: Vertically centered content with -150px offset ≈ 165px from top
       const logoWidthMm = 102 * 0.264583; // ~27mm
       const logoHeightMm = 34 * 0.264583; // ~9mm
-      const logoXMm = (390 - 102 - 10) * 0.264583; // Right-aligned with 10px margin = ~70mm
-      const logoYMm = 80 * 0.264583; // Approximate Y position = ~21mm
+      const logoXMm = 278 * 0.264583; // ~73.5mm
+      const logoYMm = 165 * 0.264583; // ~43.7mm
       
       // Create a canvas with the logo at very high resolution
       const logoCanvas = document.createElement('canvas');
