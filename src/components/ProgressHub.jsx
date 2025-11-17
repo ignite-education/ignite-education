@@ -3858,7 +3858,7 @@ const ProgressHub = () => {
           }}
           onClick={handleCloseCalendly}
         >
-          <div className="relative w-full px-4" style={{ maxWidth: '900px' }}>
+          <div className="relative w-full px-4" style={{ maxWidth: '885px' }}>
             {/* Title above the box */}
             <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Office Hours</h2>
 
