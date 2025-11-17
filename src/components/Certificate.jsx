@@ -37,88 +37,71 @@ export default function Certificate() {
   };
 
   const handleDownloadPDF = async () => {
-    try {
-      const element = certificateRef.current;
+    const element = certificateRef.current;
 
-      if (!element) {
-        console.error('Certificate element not found');
-        return;
-      }
+    if (\!element) {
+      console.error("Certificate element not found");
+      return;
+    }
 
-      // Try using foreignObjectRendering which might handle modern CSS better
-      // Certificate dimensions: 1100px x 650px
-      // Convert to mm for PDF (1px ≈ 0.264583mm at 96 DPI)
-      const pdfWidth = 1100 * 0.264583; // ~291mm
-      const pdfHeight = 650 * 0.264583; // ~172mm
+    const pdfWidth = 1100 * 0.264583;
+    const pdfHeight = 650 * 0.264583;
 
-      const opt = {
-        margin: 0,
-        filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#f3f4f6',
-          width: 1100,
-          height: 650,
-          onclone: (clonedDoc) => {
-            // Override any problematic CSS properties that might use oklch
-            const style = clonedDoc.createElement('style');
-            style.textContent = `
-              @supports not (color: oklch(0% 0 0)) {
-                * {
-                  accent-color: transparent !important;
-                  color-scheme: light !important;
-                }
-              }
-              * {
-                accent-color: #ec4899 !important;
-                scrollbar-color: #ec4899 #f3f4f6 !important;
-              }
-            `;
-            clonedDoc.head.appendChild(style);
-          }
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: [pdfWidth, pdfHeight],
-          orientation: 'landscape'
+    const opt = {
+      margin: 0,
+      filename: `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f3f4f6",
+        width: 1100,
+        height: 650,
+        onclone: (clonedDoc) => {
+          const style = clonedDoc.createElement("style");
+          style.textContent = `
+            * {
+              accent-color: #ec4899 \!important;
+              scrollbar-color: #ec4899 #f3f4f6 \!important;
+              color-scheme: light \!important;
+            }
+            .bg-black { background-color: #000000 \!important; }
+            .bg-white { background-color: #ffffff \!important; }
+            .bg-gray-100 { background-color: #f3f4f6 \!important; }
+            .text-black { color: #000000 \!important; }
+            .text-white { color: #ffffff \!important; }
+            .text-gray-600 { color: #4b5563 \!important; }
+            .text-gray-800 { color: #1f2937 \!important; }
+            .border-gray-200 { border-color: #e5e7eb \!important; }
+            .text-\\[\\#ec4899\\] { color: #ec4899 \!important; }
+          `;
+          clonedDoc.head.appendChild(style);
         }
-      };
+      },
+      jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape" }
+    };
 
+    try {
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      
-      // If foreignObjectRendering fails, try without it but with CSS stripping
-      try {
-        console.log('Retrying without foreignObjectRendering...');
-        const opt2 = {
-          margin: 0,
-          filename: `${certificate.user_name.replace(/\s+/g, '_')}_${certificate.course_name.replace(/\s+/g, '_')}_Certificate.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#f3f4f6',
-            onclone: (clonedDoc) => {
-              // Find all elements and force their computed styles to avoid oklch
-              const all = clonedDoc.querySelectorAll('*');
-              all.forEach(el => {
-                try {
-                  el.style.accentColor = 'transparent';
-                } catch (e) {
-                  // Ignore errors
-                }
-              });
-            }
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-        await html2pdf().set(opt2).from(element).save();
-      } catch (retryError) {
-        console.error('Retry also failed:', retryError);
-        alert('Failed to download certificate. Please try again or contact support.');
+      console.error("Error generating PDF:", error);
+      if (error.message && error.message.toLowerCase().includes("oklch")) {
+        console.log("OKLCH error detected, retrying...");
+        try {
+          const fallbackOpt = {
+            margin: 0,
+            filename: `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`,
+            image: { type: "jpeg", quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, backgroundColor: "#f3f4f6", width: 1100, height: 650, logging: false },
+            jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape" }
+          };
+          await html2pdf().set(fallbackOpt).from(element).save();
+        } catch (retryError) {
+          console.error("Retry failed:", retryError);
+          alert("Failed to download certificate. Please try again or contact support.");
+        }
+      } else {
+        alert("Failed to download certificate. Please try again.");
       }
     }
   };
