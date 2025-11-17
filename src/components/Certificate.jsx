@@ -46,21 +46,6 @@ export default function Certificate() {
     }
 
     try {
-      // First, load the logo as a high-quality image
-      const logoUrl = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png';
-      
-      const loadHighResLogo = () => {
-        return new Promise((resolve, reject) => {
-          const img = new Image();
-          img.crossOrigin = 'anonymous';
-          img.onload = () => resolve(img);
-          img.onerror = reject;
-          img.src = logoUrl;
-        });
-      };
-      
-      const logoImage = await loadHighResLogo();
-
       // Use html2canvas to capture the element
       const html2canvas = (await import('html2canvas')).default;
       
@@ -94,15 +79,6 @@ export default function Certificate() {
             .text-\\[\\#ec4899\\] { color: #ec4899 !important; }
           `;
           clonedDoc.head.appendChild(style);
-          
-          // Hide the logo elements so we can overlay them later at high res
-          const allElements = clonedDoc.querySelectorAll('*');
-          allElements.forEach(el => {
-            const bgImage = el.style.backgroundImage;
-            if (bgImage && bgImage.includes('ignite_Logo_MV_4.png')) {
-              el.style.opacity = '0';
-            }
-          });
         }
       });
 
@@ -113,39 +89,15 @@ export default function Certificate() {
       const pdfWidth = 1100 * 0.264583; // ~291mm
       const pdfHeight = 650 * 0.264583; // ~172mm
       
-      // Create PDF with exact dimensions
+      // Create PDF with exact dimensions - SINGLE PAGE ONLY
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: [pdfWidth, pdfHeight]
       });
       
-      // Add the main certificate image
+      // Add image to fill the entire first (and only) page
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-      
-      // Now overlay the high-resolution logo directly on the PDF
-      // Logo position calculation:
-      // - Certificate: 1100px x 650px
-      // - Left panel: 390px wide, has -mt-[150px] and justify-center
-      // - Logo: 102px x 34px, right-aligned with mr-[-10px]
-      // - Panel has p-6 (24px) or p-12 (48px) padding on desktop
-      // X: Right-aligned in 390px panel = 390 - 102 = 288px
-      // Y: Vertically centered content with -150px offset ≈ 165px from top
-      const logoWidthMm = 102 * 0.264583; // ~27mm
-      const logoHeightMm = 34 * 0.264583; // ~9mm
-      const logoXMm = 230 * 0.264583; // ~60.9mm
-      const logoYMm = 200 * 0.264583; // ~52.9mm
-      
-      // Create a canvas with the logo at very high resolution
-      const logoCanvas = document.createElement('canvas');
-      const logoCtx = logoCanvas.getContext('2d');
-      logoCanvas.width = logoImage.width;
-      logoCanvas.height = logoImage.height;
-      logoCtx.drawImage(logoImage, 0, 0);
-      const logoDataUrl = logoCanvas.toDataURL('image/png', 1.0);
-      
-      // Add high-res logo on top
-      pdf.addImage(logoDataUrl, 'PNG', logoXMm, logoYMm, logoWidthMm, logoHeightMm, undefined, 'FAST');
       
       // Save with filename
       const filename = `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`;
