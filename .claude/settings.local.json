@@ -51,7 +51,8 @@
       "Bash(/tmp/cert_part3.txt)",
       "Bash(printf:*)",
       "Bash(/tmp/newpdf.js)",
-      "Bash(src/components/Certificate.jsx)"
+      "Bash(src/components/Certificate.jsx)",
+      "Bash(git remote add:*)"
     ],
     "deny": [],
     "ask": []

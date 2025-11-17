@@ -204,7 +204,7 @@ export default function Certificate() {
         >
           <div className="flex h-full">
             {/* Left Panel - Black */}
-            <div className="w-[390px] bg-black flex flex-col items-end justify-center -mt-[150px] p-6 md:p-12 text-white">
+            <div className="w-[390px] bg-black flex flex-col items-end justify-center -mt-[150px] p-12 text-white">
               {/* Ignite Logo */}
               <div className="mb-2 mr-[-10px]">
                 <img
@@ -230,7 +230,7 @@ export default function Certificate() {
             </div>
 
             {/* Right Panel - White */}
-            <div className="w-[710px] bg-white flex flex-col justify-center -mt-[150px] p-8 md:p-16 text-black">
+            <div className="w-[710px] bg-white flex flex-col justify-center -mt-[150px] p-16 text-black">
               {/* Certification Text */}
               <p className="pt-[250px] text-xs md:text-base mb-2 mr-[-10px] md:mb-2 text-gray-800">
                 Ignite certifies that
@@ -242,7 +242,7 @@ export default function Certificate() {
               </h2>
 
               {/* Achievement Description */}
-              <p className="text-xs md:text-base mb-6 md:mb-12 leading-tight text-gray-800">
+              <p className="text-base mb-12 leading-tight text-gray-800">
                 Has successfully passed the {certificate.course_name} course at Ignite,
                 and has demonstrated all of the necessary knowledge, skills and
                 full course requirements.
@@ -250,15 +250,15 @@ export default function Certificate() {
 
               {/* Awarded By */}
               <div className="mb-6 md:mb-12">
-                <p className="text-xs md:text-sm text-gray-600 mb-1">Awarded by</p>
-                <p className="text-sm md:text-base font-semibold text-black">
+                <p className="text-sm text-gray-600 mb-1">Awarded by</p>
+                <p className="text-base font-semibold text-black">
                   Max Shillam, Founder of Ignite
                 </p>
               </div>
 
               {/* Certificate Details */}
-              <div className="border-t w-[45%] border-gray-200 pt-4 md:pt-6">
-                <div className="flex flex-col md:flex-row gap-4 md:gap-8 text-xs md:text-sm">
+              <div className="border-t w-[45%] border-gray-200 pt-6">
+                <div className="flex flex-row gap-8 text-sm">
                   <div>
                     <p className="text-gray-600 whitespace-nowrap">Certification Number:</p>
                     <p className="font-mono text-black whitespace-nowrap">{certificate.certificate_number}</p>
