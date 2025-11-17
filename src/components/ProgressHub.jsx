@@ -2634,7 +2634,7 @@ const ProgressHub = () => {
                 >
                   <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
                 </button>
-                {hasPostedToReddit && (
+                {hasPostedToReddit && redditAuthenticated && (
                   <button
                     onClick={handleOpenMyPosts}
                     className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
