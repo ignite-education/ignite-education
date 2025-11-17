@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { getCertificate } from '../lib/api';
 import html2pdf from 'html2pdf.js';
+import { jsPDF } from 'jspdf';
 
 import LoadingScreen from './LoadingScreen';
 
@@ -44,14 +45,11 @@ export default function Certificate() {
       return;
     }
 
-    const pdfWidth = 1100 * 0.264583;
-    const pdfHeight = 650 * 0.264583;
-
-    const opt = {
-      margin: 0,
-      filename: `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
+    try {
+      // Use html2canvas to capture the element
+      const html2canvas = (await import('html2canvas')).default;
+      
+      const canvas = await html2canvas(element, {
         scale: 2,
         useCORS: true,
         backgroundColor: "#f3f4f6",
@@ -79,22 +77,54 @@ export default function Certificate() {
           `;
           clonedDoc.head.appendChild(style);
         }
-      },
-      jsPDF: { 
-        unit: "mm", 
-        format: [pdfWidth, pdfHeight], 
-        orientation: "landscape"
-      }
-    };
+      });
 
-    try {
-      await html2pdf().from(element).set(opt).save();
+      // Convert canvas to image
+      const imgData = canvas.toDataURL('image/jpeg', 0.98);
+      
+      // Calculate PDF dimensions
+      const pdfWidth = 1100 * 0.264583; // ~291mm
+      const pdfHeight = 650 * 0.264583; // ~172mm
+      
+      // Create PDF with exact dimensions - SINGLE PAGE ONLY
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+      
+      // Add image to fill the entire first (and only) page
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
+      
+      // Save with filename
+      const filename = `${certificate.user_name.replace(/\s+/g, "_")}_${certificate.course_name.replace(/\s+/g, "_")}_Certificate.pdf`;
+      pdf.save(filename);
+      
     } catch (error) {
       console.error("Error generating PDF:", error);
+      
+      // Fallback to html2pdf if direct method fails
       if (error.message && error.message.toLowerCase().includes("oklch")) {
-        console.log("OKLCH error detected, retrying...");
+        console.log("OKLCH error detected, retrying with html2pdf...");
         try {
-          await html2pdf().set(opt).from(element).save();
+          const opt = {
+            margin: 0,
+            filename: `${certificate.user_name.replace(/\s+/g, "_")}_${certificate.course_name.replace(/\s+/g, "_")}_Certificate.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              backgroundColor: "#f3f4f6",
+              width: 1100,
+              height: 650
+            },
+            jsPDF: { 
+              unit: "mm", 
+              format: [1100 * 0.264583, 650 * 0.264583], 
+              orientation: "landscape"
+            }
+          };
+          await html2pdf().from(element).set(opt).save();
         } catch (retryError) {
           console.error("Retry failed:", retryError);
           alert("Failed to download certificate. Please try again or contact support.");
@@ -103,6 +133,7 @@ export default function Certificate() {
         alert("Failed to download certificate. Please try again.");
       }
     }
+  };
   };
   const handleShare = () => {
     const certificateUrl = window.location.href;
