@@ -124,7 +124,7 @@ export default function Certificate() {
   };
   const handleShare = () => {
     const certificateUrl = window.location.href;
-    const shareText = `I've just completed the ${certificate.course_name} course at @Ignite.\n\n${certificateUrl}`;
+    const shareText = `I've just completed the ${certificate.course_name} course at @Ignite\n\n${certificateUrl}`;
     // Open LinkedIn post creation with prefilled text
     const linkedInText = encodeURIComponent(shareText);
     window.open(`https://www.linkedin.com/feed/?shareActive=true&text=${linkedInText}`, '_blank', 'width=600,height=700');
