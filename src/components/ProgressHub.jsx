@@ -2729,7 +2729,7 @@ const ProgressHub = () => {
                           <img
                             src={post.author_icon}
                             alt={post.author}
-                            className="w-7 h-7 rounded-full flex-shrink-0 object-cover"
+                            className="w-7 h-7 rounded-lg flex-shrink-0 object-cover"
                             onError={(e) => {
                               // Fallback to colored circle if image fails to load
                               e.target.style.display = 'none';
@@ -2737,7 +2737,7 @@ const ProgressHub = () => {
                             }}
                           />
                         ) : null}
-                        <div className={`w-7 h-7 ${post.avatar} rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${post.author_icon ? 'hidden' : ''}`}>
+                        <div className={`w-7 h-7 ${post.avatar} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${post.author_icon ? 'hidden' : ''}`}>
                           {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -2872,7 +2872,7 @@ const ProgressHub = () => {
                                       <img
                                         src={comment.author_icon}
                                         alt={commentAuthor}
-                                        className="w-6 h-6 rounded-full flex-shrink-0 object-cover"
+                                        className="w-6 h-6 rounded-lg flex-shrink-0 object-cover"
                                         onError={(e) => {
                                           // Fallback to colored circle if image fails to load
                                           e.target.style.display = 'none';
@@ -2881,7 +2881,7 @@ const ProgressHub = () => {
                                       />
                                     ) : null}
                                     <div
-                                      className={`w-6 h-6 ${avatarColor} rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0`}
+                                      className={`w-6 h-6 ${avatarColor} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}
                                       style={{ display: comment.author_icon ? 'none' : 'flex' }}
                                     >
                                       {commentAuthor.charAt(0).toUpperCase()}
