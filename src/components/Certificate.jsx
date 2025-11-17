@@ -192,8 +192,8 @@ export default function Certificate() {
         </div>
       </div>
 
-      {/* Certificate Container - Fits viewport */}
-      <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+      {/* Certificate Container - Fixed size */}
+      <div className="flex-1 flex items-center justify-center p-8">
         <div
           ref={certificateRef}
           className="bg-white overflow-hidden shadow-2xl"
@@ -249,7 +249,7 @@ export default function Certificate() {
               </p>
 
               {/* Awarded By */}
-              <div className="mb-6 md:mb-12">
+              <div className="mb-12">
                 <p className="text-sm text-gray-600 mb-1">Awarded by</p>
                 <p className="text-base font-semibold text-black">
                   Max Shillam, Founder of Ignite
