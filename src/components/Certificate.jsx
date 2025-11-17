@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 import { getCertificate } from '../lib/api';
-import html2pdf from 'html2pdf.js';
+import { jsPDF } from 'jspdf';
 import { jsPDF } from 'jspdf';
 
 import LoadingScreen from './LoadingScreen';
@@ -38,14 +38,29 @@ export default function Certificate() {
   };
 
   const handleDownloadPDF = async () => {
-    const element = certificateRef.current;
-
-    if (!element) {
-      console.error("Certificate element not found");
-      return;
-    }
-
     try {
+      const element = certificateRef.current;
+
+      if (!element) {
+        console.error('Certificate element not found');
+        return;
+      }
+
+      // Preload logo image to ensure it's fully loaded at high resolution
+      const logoUrl = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png';
+      await new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = logoUrl;
+      });
+
+      // Certificate dimensions: 1100px x 650px
+      // Convert to mm for PDF (1px ≈ 0.264583mm at 96 DPI)
+      const pdfWidth = 1100 * 0.264583; // ~291mm
+      const pdfHeight = 650 * 0.264583; // ~172mm
+
       // Use html2canvas to capture the element
       const html2canvas = (await import('html2canvas')).default;
       
@@ -76,7 +91,7 @@ export default function Certificate() {
             .text-gray-600 { color: #4b5563 !important; }
             .text-gray-800 { color: #1f2937 !important; }
             .border-gray-200 { border-color: #e5e7eb !important; }
-            .text-\\[\\#ec4899\\] { color: #ec4899 !important; }
+            .text-\[\#ec4899\] { color: #ec4899 !important; }
           `;
           clonedDoc.head.appendChild(style);
         }
@@ -84,10 +99,6 @@ export default function Certificate() {
 
       // Convert canvas to image
       const imgData = canvas.toDataURL('image/jpeg', 0.98);
-      
-      // Calculate PDF dimensions
-      const pdfWidth = 1100 * 0.264583; // ~291mm
-      const pdfHeight = 650 * 0.264583; // ~172mm
       
       // Create PDF with exact dimensions - SINGLE PAGE ONLY
       const pdf = new jsPDF({
@@ -100,7 +111,7 @@ export default function Certificate() {
       pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       
       // Save with filename
-      const filename = `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`;
+      const filename = `${certificate.user_name.replace(/\s+/g, "_")}_${certificate.course_name.replace(/\s+/g, "_")}_Certificate.pdf`;
       pdf.save(filename);
       
     } catch (error) {
@@ -140,7 +151,7 @@ export default function Certificate() {
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Black Header Bar */}
       <div className="bg-black w-full">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
           {/* Logo - Links back to Progress Hub */}
           <button
             onClick={() => navigate('/')}
@@ -162,28 +173,28 @@ export default function Certificate() {
               <>
                 <button
                   onClick={handleShare}
-                  className="px-4 md:px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-sm md:text-base"
+                  className="px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-base"
                 >
-                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
                   </svg>
-                  <span className="hidden md:inline">Share</span>
+                  <span>Share</span>
                 </button>
 
                 <button
                   onClick={handleDownloadPDF}
-                  className="px-4 md:px-6 py-2 bg-white hover:bg-gray-100 text-black font-medium rounded-lg border-2 border-gray-300 transition-colors flex items-center gap-2 text-sm md:text-base"
+                  className="px-6 py-2 bg-white hover:bg-gray-100 text-black font-medium rounded-lg border-2 border-gray-300 transition-colors flex items-center gap-2 text-base"
                 >
-                  <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  <span className="hidden md:inline">Download</span>
+                  <span>Download</span>
                 </button>
               </>
             ) : (
               <button
                 onClick={() => navigate('/')}
-                className="px-4 md:px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-sm md:text-base"
+                className="px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-base"
               >
                 <span>Explore Ignite</span>
               </button>
@@ -193,13 +204,15 @@ export default function Certificate() {
       </div>
 
       {/* Certificate Container - Fixed size */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
         <div
           ref={certificateRef}
-          className="bg-white overflow-hidden shadow-2xl"
+          className="bg-white overflow-hidden shadow-2xl flex-shrink-0"
           style={{
             width: '1100px',
+            minWidth: '1100px',
             height: '650px',
+            minHeight: '650px',
           }}
         >
           <div className="flex h-full">
@@ -220,10 +233,10 @@ export default function Certificate() {
 
               {/* Certificate Title */}
               <div className="text-right">
-                <h1 className="text-xl md:text-3xl font-semibold mb-0">
+                <h1 className="text-3xl font-semibold mb-0">
                   {certificate.course_name}
                 </h1>
-                <h2 className="text-xl md:text-3xl font-semibold">
+                <h2 className="text-3xl font-semibold">
                   Certification
                 </h2>
               </div>
@@ -232,12 +245,12 @@ export default function Certificate() {
             {/* Right Panel - White */}
             <div className="w-[710px] bg-white flex flex-col justify-center -mt-[150px] p-16 text-black">
               {/* Certification Text */}
-              <p className="pt-[250px] text-xs md:text-base mb-2 mr-[-10px] md:mb-2 text-gray-800">
+              <p className="pt-[250px] text-base mb-2 mr-[-10px]  text-gray-800">
                 Ignite certifies that
               </p>
 
               {/* User Name */}
-              <h2 className="text-xl md:text-3xl font-semibold mt-[7px] mb-2 mr-[-10px] md:mb-4 text-[#ec4899]">
+              <h2 className="text-3xl font-semibold mt-[7px] mb-2 mr-[-10px]  text-[#ec4899]">
                 {certificate.user_name}
               </h2>
 
