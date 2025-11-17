@@ -57,6 +57,8 @@ export default function Certificate() {
         backgroundColor: "#f3f4f6",
         width: 1100,
         height: 650,
+        windowWidth: 1100,
+        windowHeight: 650,
         onclone: (clonedDoc) => {
           const style = clonedDoc.createElement("style");
           style.textContent = `
@@ -78,7 +80,8 @@ export default function Certificate() {
           clonedDoc.head.appendChild(style);
         }
       },
-      jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape" }
+      jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape", compress: true },
+      pagebreak: { mode: "avoid-all" }
     };
 
     try {
@@ -93,7 +96,8 @@ export default function Certificate() {
             filename: `${certificate.user_name.replace(/\\s+/g, "_")}_${certificate.course_name.replace(/\\s+/g, "_")}_Certificate.pdf`,
             image: { type: "jpeg", quality: 0.95 },
             html2canvas: { scale: 2, useCORS: true, backgroundColor: "#f3f4f6", width: 1100, height: 650, logging: false },
-            jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape" }
+            jsPDF: { unit: "mm", format: [pdfWidth, pdfHeight], orientation: "landscape", compress: true },
+      pagebreak: { mode: "avoid-all" }
           };
           await html2pdf().set(fallbackOpt).from(element).save();
         } catch (retryError) {
