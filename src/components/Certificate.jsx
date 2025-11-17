@@ -212,11 +212,11 @@ export default function Certificate() {
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div
           ref={certificateRef}
-          className="w-full bg-white rounded-lg overflow-hidden shadow-2xl"
+          className="bg-white rounded-lg overflow-hidden shadow-2xl"
           style={{
-            width: '1100px',
-            height: '650px',
-            maxWidth: '100%',
+            width: 'min(1100px, calc(100vw - 2rem))',
+            aspectRatio: '1100/650',
+            maxHeight: 'calc(100vh - 8rem)',
           }}
         >
           <div className="flex h-full">
@@ -238,10 +238,10 @@ export default function Certificate() {
 
               {/* Certificate Title */}
               <div className="text-right">
-                <h1 className="text-xl md:text-2xl font-medium mb-0">
+                <h1 className="text-xl md:text-4xl font-medium mb-0">
                   {certificate.course_name}
                 </h1>
-                <h2 className="text-xl md:text-2xl font-medium">
+                <h2 className="text-xl md:text-4xl font-medium">
                   Certification
                 </h2>
               </div>

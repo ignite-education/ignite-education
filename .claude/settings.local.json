@@ -39,7 +39,9 @@
       "Bash(/bin/cat \"./Documents - Max''''s MacBook Pro/GitHub/ignite-education/server.js\")",
       "Bash(xargs:*)",
       "Bash(sqlite3:*)",
-      "Bash(pwd:*)"
+      "Bash(pwd:*)",
+      "Bash(git update-index:*)",
+      "Bash(xattr:*)"
     ],
     "deny": [],
     "ask": []
