@@ -2803,7 +2803,7 @@ const ProgressHub = () => {
                           {/* Comment Input - Only show if Reddit is authenticated */}
                           {postComments[post.id] !== 'AUTH_REQUIRED' && (
                             <div className="flex gap-2 mb-4">
-                              <div className={`w-6 h-6 ${post.avatar} rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0`}>
+                              <div className={`w-6 h-6 ${post.avatar} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}>
                                 {user.firstName.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1 flex gap-2">
