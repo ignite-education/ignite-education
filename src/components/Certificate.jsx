@@ -151,8 +151,7 @@ export default function Certificate() {
               alt="Ignite Logo"
               style={{
                 width: '108.8px',
-                height: '36px',
-                objectFit: 'contain',
+                height: 'auto',
               }}
               crossOrigin="anonymous"
             />
@@ -214,8 +213,7 @@ export default function Certificate() {
                   alt="Ignite Logo"
                   style={{
                     width: '102px',
-                    height: '34px',
-                    objectFit: 'contain',
+                    height: 'auto',
                   }}
                   crossOrigin="anonymous"
                 />
