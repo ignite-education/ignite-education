@@ -3882,44 +3882,35 @@ const ProgressHub = () => {
                 <X size={24} />
               </button>
 
-              {/* Centering wrapper for Calendly */}
+              {/* Calendly Widget Container with scaling */}
               <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                height: '100%',
-                width: '100%'
+                width: '125%',
+                height: '750px',
+                transform: 'scale(0.8)',
+                transformOrigin: 'top left',
+                overflow: 'hidden'
               }}>
-                {/* Calendly Widget Container with scaling */}
-                <div style={{
-                  width: '125%',
-                  height: '750px',
-                  transform: 'scale(0.8)',
-                  transformOrigin: 'center center',
-                  overflow: 'hidden'
-                }}>
-                  <InlineWidget
-                    url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
-                    LoadingSpinner={CalendlyLoadingSpinner}
-                    styles={{
-                      height: '100%',
-                      minWidth: '100%'
-                    }}
-                    pageSettings={{
-                      backgroundColor: 'ffffff',
-                      hideEventTypeDetails: false,
-                      hideLandingPageDetails: false,
-                      primaryColor: 'ec4899',
-                      textColor: '1f2937'
-                    }}
-                    prefill={{
-                      email: authUser?.email || '',
-                      firstName: user?.firstName || '',
-                      lastName: user?.lastName || '',
-                      name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : ''
-                    }}
-                  />
-                </div>
+                <InlineWidget
+                  url={calendlyLink || "https://calendly.com/hello-ignite/30min"}
+                  LoadingSpinner={CalendlyLoadingSpinner}
+                  styles={{
+                    height: '100%',
+                    minWidth: '100%'
+                  }}
+                  pageSettings={{
+                    backgroundColor: 'ffffff',
+                    hideEventTypeDetails: false,
+                    hideLandingPageDetails: false,
+                    primaryColor: 'ec4899',
+                    textColor: '1f2937'
+                  }}
+                  prefill={{
+                    email: authUser?.email || '',
+                    firstName: user?.firstName || '',
+                    lastName: user?.lastName || '',
+                    name: user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : ''
+                  }}
+                />
               </div>
 
               {/* Persistent loading overlay until Calendly is fully loaded */}
