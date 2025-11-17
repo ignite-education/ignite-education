@@ -4,7 +4,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 import { getCertificate } from '../lib/api';
 import { jsPDF } from 'jspdf';
-import { jsPDF } from 'jspdf';
 
 import LoadingScreen from './LoadingScreen';
 
