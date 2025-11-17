@@ -1511,7 +1511,7 @@ async function fetchAndCacheRedditData(subreddit) {
           id: post.id,
           subreddit: subreddit,
           author: post.author,
-          author_icon: post.sr_detail?.icon_img || (post.thumbnail?.startsWith('http') ? post.thumbnail : null),
+          author_icon: null, // Reddit's public API doesn't include user avatars in post listings - UI will use fallback colored circles
           created_at: new Date(post.created_utc * 1000).toISOString(),
           title: post.title,
           content: post.selftext || '',
@@ -1561,7 +1561,7 @@ async function fetchAndCacheRedditData(subreddit) {
                   post_id: post.id,
                   subreddit: subreddit,
                   author: comment.data.author,
-                  author_icon: null,
+                  author_icon: null, // User avatars not available from Reddit API - UI uses fallback avatars
                   body: comment.data.body,
                   created_utc: comment.data.created_utc,
                   score: comment.data.score,

@@ -37,7 +37,9 @@
       "Bash(git config:*)",
       "Bash(git ls-tree:*)",
       "Bash(/bin/cat \"./Documents - Max''''s MacBook Pro/GitHub/ignite-education/server.js\")",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(sqlite3:*)",
+      "Bash(pwd:*)"
     ],
     "deny": [],
     "ask": []
