@@ -36,7 +36,7 @@ const CalendlyLoadingSpinner = () => {
           animationData={lottieData}
           loop={true}
           autoplay={true}
-          style={{ width: 100, height: 100 }}
+          style={{ width: 125, height: 125 }}
         />
       ) : null}
     </div>
@@ -3924,7 +3924,7 @@ const ProgressHub = () => {
                       animationData={lottieData}
                       loop={true}
                       autoplay={true}
-                      style={{ width: 100, height: 100 }}
+                      style={{ width: 125, height: 125 }}
                     />
                   ) : null}
                 </div>
