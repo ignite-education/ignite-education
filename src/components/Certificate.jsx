@@ -196,7 +196,7 @@ export default function Certificate() {
       <div className="flex-1 flex items-center justify-center p-4 md:p-8">
         <div
           ref={certificateRef}
-          className="bg-white rounded-lg overflow-hidden shadow-2xl"
+          className="bg-white overflow-hidden shadow-2xl"
           style={{
             width: 'min(1100px, calc(100vw - 2rem))',
             aspectRatio: '1100/650',
