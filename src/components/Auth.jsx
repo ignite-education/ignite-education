@@ -55,7 +55,6 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
-  const [previousHoveredUseCase, setPreviousHoveredUseCase] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(null);
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
@@ -1780,11 +1779,9 @@ const Auth = () => {
                       <div
                         key={idx}
                         onMouseEnter={() => {
-                          setPreviousHoveredUseCase(hoveredUseCase);
                           setHoveredUseCase(idx);
                         }}
                         onMouseLeave={() => {
-                          setPreviousHoveredUseCase(hoveredUseCase);
                           setHoveredUseCase(null);
                         }}
                         className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
@@ -1795,7 +1792,8 @@ const Auth = () => {
                           left: card.position.left,
                           zIndex: 1,
                           padding: '1.5rem',
-                          opacity: 1,
+                          opacity: hoveredUseCase !== null ? 0 : 1,
+                          transition: 'opacity 300ms ease-in-out',
                           pointerEvents: 'auto'
                         }}
                       >
@@ -1819,7 +1817,10 @@ const Auth = () => {
                         height: '20.05rem',
                         zIndex: 10,
                         padding: '2rem',
-                        display: hoveredUseCase !== null ? 'flex' : 'none'
+                        opacity: hoveredUseCase !== null ? 1 : 0,
+                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
+                        transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
+                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
                       }}
                     >
                       <div className="flex flex-col items-center justify-center text-center">
