@@ -1831,7 +1831,11 @@ const Auth = () => {
                         pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
                       }}
                     >
-                      <div className="flex flex-col items-center justify-center text-center">
+                      <div className="flex flex-col items-center justify-center text-center" style={{
+                        animation: hoveredUseCase !== null ? 'fadeIn 400ms ease-in forwards' : 'none',
+                        animationDelay: '100ms',
+                        opacity: 0
+                      }}>
                         <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
                           color: '#EF0B72'
                         }}>
