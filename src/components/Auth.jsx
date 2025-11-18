@@ -2066,7 +2066,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: expandedFAQ === idx ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: expandedFAQ === idx ? '23px' : '20px' }}>
+                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: '#7714E0' }}>
                         {faq.question}
                       </h4>
                       {expandedFAQ === idx && (
