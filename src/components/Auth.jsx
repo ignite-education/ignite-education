@@ -59,6 +59,7 @@ const Auth = () => {
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInError, setLinkedInError] = useState(null);
+  const [currentLinkedInPost, setCurrentLinkedInPost] = useState(0);
   const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
@@ -351,6 +352,17 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateLinkedInFAQ, selectedCourseModal]);
+
+  // Auto-rotate LinkedIn posts every 5 seconds
+  useEffect(() => {
+    if (linkedInPosts.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length);
+    }, 5000); // Rotate every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [linkedInPosts.length]);
 
   // Fetch LinkedIn posts from backend API
   const fetchLinkedInPosts = async () => {
@@ -1907,38 +1919,62 @@ const Auth = () => {
                     <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {linkedInPosts.map((post, idx) => (
-                      <div
-                        key={post.id}
-                        className="bg-white rounded-lg p-5 text-gray-800"
-                        style={{
-                          opacity: 1,
-                          transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
-                          transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${0.1 + idx * 0.15}s`
-                        }}
-                      >
-                        <p className="text-sm leading-relaxed mb-3">{post.text}</p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{new Date(post.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          <div className="flex gap-4">
-                            <span>👍 {post.likes}</span>
-                            <span>💬 {post.comments}</span>
-                            <span>🔁 {post.shares}</span>
-                          </div>
+                ) : linkedInPosts.length > 0 ? (
+                  <div className="flex flex-col items-center">
+                    {/* Single Post Display */}
+                    <div
+                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        opacity: 1,
+                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
+                        {linkedInPosts[currentLinkedInPost]?.text}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <div className="flex gap-4">
+                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
+                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
+                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Pink Indicator Dots */}
+                    <div className="flex gap-2 mt-4">
+                      {linkedInPosts.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentLinkedInPost(idx)}
+                          className="transition-all duration-300"
+                          style={{
+                            width: currentLinkedInPost === idx ? '24px' : '8px',
+                            height: '8px',
+                            borderRadius: '4px',
+                            backgroundColor: currentLinkedInPost === idx ? '#D84A8C' : '#666',
+                            cursor: 'pointer',
+                            border: 'none'
+                          }}
+                          aria-label={`View post ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
               {/* Right Column - FAQs */}
               <div>
                 <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Frequently Asked Questions</h3>
 
-                <div className="space-y-3" style={{ height: '30.5rem' }}>
+                <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
                 {[
                   {
                     question: 'What is Ignite?',
