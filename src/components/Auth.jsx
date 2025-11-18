@@ -1950,7 +1950,7 @@ const Auth = () => {
               {/* Left Column - LinkedIn Posts */}
               <div className="space-y-4">
                 <div className="flex justify-center">
-                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedLinkedInHeading}</h3>
+                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px', width: '320px' }}>{typedLinkedInHeading}</h3>
                 </div>
 
                 {linkedInLoading ? (
@@ -2012,7 +2012,7 @@ const Auth = () => {
               {/* Right Column - FAQs */}
               <div>
                 <div className="flex justify-center">
-                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedFAQHeading}</h3>
+                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px', width: '80px' }}>{typedFAQHeading}</h3>
                 </div>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
