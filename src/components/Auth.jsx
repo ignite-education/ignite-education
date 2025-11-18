@@ -1753,7 +1753,7 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
-                  <div className="relative" style={{ width: '20.53rem', height: '20.3rem' }}>
+                  <div className="relative" style={{ width: '21.35rem', height: '20.3rem' }}>
                     {[
                       {
                         title: 'Recent Graduates',
@@ -1763,7 +1763,7 @@ const Auth = () => {
                       {
                         title: 'Career Break Returners',
                         description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
-                        position: { top: '0', left: '10.525rem' }
+                        position: { top: '0', left: '11.05rem' }
                       },
                       {
                         title: 'Upskilling in Role',
@@ -1773,7 +1773,7 @@ const Auth = () => {
                       {
                         title: 'Pivotting Careers',
                         description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
-                        position: { top: '10.525rem', left: '10.525rem' }
+                        position: { top: '10.525rem', left: '11.05rem' }
                       }
                     ].map((card, idx) => (
                       <div
@@ -1787,7 +1787,7 @@ const Auth = () => {
                         className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
                         style={{
                           height: '9.775rem',
-                          width: '9.775rem',
+                          width: '10.3rem',
                           top: card.position.top,
                           left: card.position.left,
                           zIndex: 1,
@@ -1825,7 +1825,7 @@ const Auth = () => {
                       style={{
                         top: 0,
                         left: 0,
-                        width: '20.53rem',
+                        width: '21.35rem',
                         height: '20.3rem',
                         zIndex: 10,
                         padding: '2rem',
