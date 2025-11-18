@@ -61,6 +61,8 @@ const Auth = () => {
   const [linkedInError, setLinkedInError] = useState(null);
   const [currentLinkedInPost, setCurrentLinkedInPost] = useState(0);
   const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
+  const [typedLinkedInHeading, setTypedLinkedInHeading] = useState('');
+  const [typedFAQHeading, setTypedFAQHeading] = useState('');
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
@@ -333,6 +335,8 @@ const Auth = () => {
           if (entry.isIntersecting && !animateLinkedInFAQ) {
             debounce('linkedInAnimation', () => {
               setAnimateLinkedInFAQ(true);
+              // Start typing animations for headings
+              startLinkedInFAQHeadingsTyping();
               // Fetch LinkedIn posts when section becomes visible
               fetchLinkedInPosts().catch(err => {
                 console.error('Failed to fetch LinkedIn posts:', err);
@@ -391,6 +395,36 @@ const Auth = () => {
     } finally {
       setLinkedInLoading(false);
     }
+  };
+
+  // Typing animation for LinkedIn and FAQ headings
+  const startLinkedInFAQHeadingsTyping = () => {
+    const linkedInText = 'Latest from Ignite';
+    const faqText = 'FAQs';
+    let linkedInIndex = 0;
+    let faqIndex = 0;
+
+    // Type LinkedIn heading first
+    const linkedInInterval = setInterval(() => {
+      if (linkedInIndex <= linkedInText.length) {
+        setTypedLinkedInHeading(linkedInText.substring(0, linkedInIndex));
+        linkedInIndex++;
+      } else {
+        clearInterval(linkedInInterval);
+
+        // Wait 1 second, then type FAQ heading
+        setTimeout(() => {
+          const faqInterval = setInterval(() => {
+            if (faqIndex <= faqText.length) {
+              setTypedFAQHeading(faqText.substring(0, faqIndex));
+              faqIndex++;
+            } else {
+              clearInterval(faqInterval);
+            }
+          }, 75); // 75ms per character
+        }, 1000); // 1 second delay
+      }
+    }, 75); // 75ms per character
   };
 
   // Typing animation for education text
@@ -1912,7 +1946,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
               {/* Left Column - LinkedIn Posts */}
               <div className="space-y-4">
-                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Latest from Ignite</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem' }}>{typedLinkedInHeading}</h3>
 
                 {linkedInLoading ? (
                   <div className="text-center py-8">
@@ -1972,7 +2006,7 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>FAQs</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem' }}>{typedFAQHeading}</h3>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
                 {[
