@@ -1966,38 +1966,41 @@ const Auth = () => {
                 ].map((faq, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl overflow-hidden cursor-pointer"
+                    className="rounded cursor-pointer"
                     style={{
                       backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: expandedFAQ === idx ? '10rem' : '5rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
                       opacity: 0,
                       animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
                     }}
                     onMouseEnter={() => setExpandedFAQ(idx)}
                   >
-                    <div className="px-6 py-4 flex items-center justify-between">
-                      <h4 className="text-lg font-bold text-black">{faq.question}</h4>
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{
-                          background: '#7714E0',
-                          transform: expandedFAQ === idx ? 'rotate(45deg)' : 'rotate(0deg)',
-                          transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      >
-                        <span className="text-white text-2xl font-light">+</span>
-                      </div>
-                    </div>
-                    <div
-                      className="px-6 overflow-hidden"
-                      style={{
-                        maxHeight: expandedFAQ === idx ? '300px' : '0px',
-                        paddingTop: expandedFAQ === idx ? '0px' : '0px',
-                        paddingBottom: expandedFAQ === idx ? '16px' : '0px',
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                    >
-                      <p className="text-black text-sm leading-relaxed">{faq.answer}</p>
+                    <div style={{
+                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: expandedFAQ === idx ? 'translateY(0)' : 'translateY(0)'
+                    }}>
+                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: expandedFAQ === idx ? '23px' : '20px' }}>
+                        {faq.question}
+                      </h4>
+                      {expandedFAQ === idx && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: '0.2rem',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}>
+                          {faq.answer}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
