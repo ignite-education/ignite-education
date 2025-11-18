@@ -1897,9 +1897,9 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 max-w-7xl mx-auto mb-12">
-              {/* Left Column - LinkedIn Posts (2 cols) */}
-              <div className="lg:col-span-2 space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
+              {/* Left Column - LinkedIn Posts */}
+              <div className="space-y-4">
                 <h3 className="text-2xl font-bold text-white mb-6">Latest from LinkedIn</h3>
 
                 {linkedInLoading ? (
@@ -1934,8 +1934,8 @@ const Auth = () => {
                 )}
               </div>
 
-              {/* Right Column - FAQs (3 cols) */}
-              <div className="lg:col-span-3 space-y-3">
+              {/* Right Column - FAQs */}
+              <div className="space-y-3">
                 <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
 
                 {[
