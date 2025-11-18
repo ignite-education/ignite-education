@@ -1801,7 +1801,11 @@ const Auth = () => {
                           <h4 className="font-semibold leading-tight text-lg" style={{
                             color: '#000000'
                           }}>
-                            {card.title}
+                            {card.title === 'Career Break Returners' ? (
+                              <>Career Break<br />Returners</>
+                            ) : card.title === 'Upskilling in Role' ? (
+                              <>Upskilling<br />in Role</>
+                            ) : card.title}
                           </h4>
                         </div>
                       </div>
