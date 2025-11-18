@@ -1695,7 +1695,7 @@ const Auth = () => {
                           overflow: 'visible'
                         }}
                       >
-                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-35px' }}>
+                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
@@ -1799,7 +1799,7 @@ const Auth = () => {
                       >
                         <div className="flex flex-col items-center justify-center text-center">
                           <h4 className="font-semibold leading-tight text-lg" style={{
-                            color: '#000000'
+                            color: '#7714E0'
                           }}>
                             {card.title === 'Career Break Returners' ? (
                               <>Career Break<br />Returners</>
