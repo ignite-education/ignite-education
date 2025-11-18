@@ -999,8 +999,7 @@ const Auth = () => {
         <div
           className="bg-white text-black px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4"
           style={{
-            animation: 'scaleUp 0.2s ease-out',
-            borderRadius: '0.3rem'
+            animation: 'scaleUp 0.2s ease-out'
           }}
         >
 
@@ -2045,7 +2044,6 @@ const Auth = () => {
               width: '450px',
               maxWidth: '90vw',
               animation: 'scaleUp 0.2s ease-out',
-              borderRadius: '0.3rem',
               padding: '2rem'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -2133,8 +2131,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp"
             style={{
               width: '720px',
-              height: '70vh',
-              borderRadius: '0.3rem',
+              height: '70vh'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -2265,7 +2262,6 @@ const Auth = () => {
                                 paddingRight: '5.618px',
                                 paddingBottom: '5.618px',
                                 paddingLeft: '14px',
-                                borderRadius: '0.3rem',
                                 background: '#7714E0',
                                 height: '90px',
                                 scrollSnapAlign: 'start',
@@ -2283,7 +2279,6 @@ const Auth = () => {
                                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                                   backdropFilter: 'blur(0.75px)',
                                   WebkitBackdropFilter: 'blur(0.75px)',
-                                  borderRadius: '0.3rem',
                                   pointerEvents: 'none',
                                   opacity: index === snappedModuleIndex ? 0 : 1,
                                   transition: 'opacity 0.2s ease-out',
