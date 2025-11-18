@@ -1272,7 +1272,7 @@ const Auth = () => {
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg text-white mb-6 max-w-2xl text-left" style={{ lineHeight: '1.425' }}>
-                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
+                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
