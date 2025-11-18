@@ -1900,7 +1900,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
               {/* Left Column - LinkedIn Posts */}
               <div className="space-y-4">
-                <h3 className="text-5xl font-bold leading-tight text-white mb-6 text-center">Latest from LinkedIn</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Latest from LinkedIn</h3>
 
                 {linkedInLoading ? (
                   <div className="text-center py-8">
@@ -1936,7 +1936,7 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2.5rem', lineHeight: '1.2' }}>Frequently Asked Questions</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Frequently Asked Questions</h3>
 
                 <div className="space-y-3" style={{ height: '30.5rem' }}>
                 {[
