@@ -1935,9 +1935,10 @@ const Auth = () => {
               </div>
 
               {/* Right Column - FAQs */}
-              <div className="space-y-3">
+              <div>
                 <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
 
+                <div className="space-y-3" style={{ height: '30.5rem' }}>
                 {[
                   {
                     question: 'What is Ignite?',
@@ -2004,6 +2005,7 @@ const Auth = () => {
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
             </div>
 
