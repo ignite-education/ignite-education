@@ -55,7 +55,7 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
-  const [expandedFAQ, setExpandedFAQ] = useState(null);
+  const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInError, setLinkedInError] = useState(null);
@@ -1966,36 +1966,38 @@ const Auth = () => {
                 ].map((faq, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
+                    className="rounded-2xl overflow-hidden cursor-pointer"
                     style={{
-                      background: '#D84A8C',
+                      backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       opacity: 0,
                       animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
                     }}
                     onMouseEnter={() => setExpandedFAQ(idx)}
-                    onMouseLeave={() => setExpandedFAQ(null)}
                   >
                     <div className="px-6 py-4 flex items-center justify-between">
-                      <h4 className="text-lg font-bold text-white">{faq.question}</h4>
+                      <h4 className="text-lg font-bold text-black">{faq.question}</h4>
                       <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300"
+                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{
-                          background: '#7B2D4E',
-                          transform: expandedFAQ === idx ? 'rotate(45deg)' : 'rotate(0deg)'
+                          background: '#7714E0',
+                          transform: expandedFAQ === idx ? 'rotate(45deg)' : 'rotate(0deg)',
+                          transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                         }}
                       >
                         <span className="text-white text-2xl font-light">+</span>
                       </div>
                     </div>
                     <div
-                      className="px-6 overflow-hidden transition-all duration-300 ease-in-out"
+                      className="px-6 overflow-hidden"
                       style={{
                         maxHeight: expandedFAQ === idx ? '300px' : '0px',
                         paddingTop: expandedFAQ === idx ? '0px' : '0px',
-                        paddingBottom: expandedFAQ === idx ? '16px' : '0px'
+                        paddingBottom: expandedFAQ === idx ? '16px' : '0px',
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     >
-                      <p className="text-white text-sm leading-relaxed">{faq.answer}</p>
+                      <p className="text-black text-sm leading-relaxed">{faq.answer}</p>
                     </div>
                   </div>
                 ))}

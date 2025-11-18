@@ -4,7 +4,11 @@
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" status --short)",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" show HEAD:src/components/ProgressHub.jsx)",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" log --all --full-history --oneline -- \"*ProgressHub*\")",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" status)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" ls-files src/components/Auth.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" show HEAD:src/components/Auth.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" log --all --full-history --oneline -- \"*Auth*\")"
     ],
     "deny": [],
     "ask": []
