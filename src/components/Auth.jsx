@@ -1790,9 +1790,9 @@ const Auth = () => {
                           width: '9.775rem',
                           top: card.position.top,
                           left: card.position.left,
-                          zIndex: hoveredUseCase === idx ? 20 : 1,
+                          zIndex: 1,
                           padding: '1.5rem',
-                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
+                          opacity: hoveredUseCase !== null ? 0 : 1,
                           transition: 'opacity 300ms ease-in-out',
                           pointerEvents: 'auto'
                         }}
@@ -1823,7 +1823,7 @@ const Auth = () => {
                         left: 0,
                         width: '20.53rem',
                         height: '20.05rem',
-                        zIndex: 15,
+                        zIndex: 10,
                         padding: '2rem',
                         opacity: hoveredUseCase !== null ? 1 : 0,
                         visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
