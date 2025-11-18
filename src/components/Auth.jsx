@@ -1450,7 +1450,7 @@ const Auth = () => {
                       </h4>
                       {activeCard === 0 && (
                         <p className="text-black text-sm" style={{
-                          marginTop: '0.42rem',
+                          marginTop: '0.2rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1495,7 +1495,7 @@ const Auth = () => {
                       </h4>
                       {activeCard === 1 && (
                         <p className="text-black text-sm" style={{
-                          marginTop: '0.42rem',
+                          marginTop: '0.2rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1540,7 +1540,7 @@ const Auth = () => {
                       </h4>
                       {activeCard === 2 && (
                         <p className="text-black text-sm" style={{
-                          marginTop: '0.42rem',
+                          marginTop: '0.2rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1585,7 +1585,7 @@ const Auth = () => {
                       </h4>
                       {activeCard === 3 && (
                         <p className="text-black text-sm" style={{
-                          marginTop: '0.42rem',
+                          marginTop: '0.2rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
