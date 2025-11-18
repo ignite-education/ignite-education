@@ -1451,7 +1451,6 @@ const Auth = () => {
                       {activeCard === 0 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.2rem',
-                          maxWidth: '90%',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1497,7 +1496,6 @@ const Auth = () => {
                       {activeCard === 1 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.2rem',
-                          maxWidth: '90%',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1543,7 +1541,6 @@ const Auth = () => {
                       {activeCard === 2 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.2rem',
-                          maxWidth: '90%',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
@@ -1589,7 +1586,6 @@ const Auth = () => {
                       {activeCard === 3 && (
                         <p className="text-black text-sm" style={{
                           marginTop: '0.2rem',
-                          maxWidth: '90%',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
