@@ -404,27 +404,30 @@ const Auth = () => {
     let linkedInIndex = 0;
     let faqIndex = 0;
 
-    // Type LinkedIn heading first
-    const linkedInInterval = setInterval(() => {
-      if (linkedInIndex <= linkedInText.length) {
-        setTypedLinkedInHeading(linkedInText.substring(0, linkedInIndex));
-        linkedInIndex++;
-      } else {
-        clearInterval(linkedInInterval);
+    // Add delay before starting typing
+    setTimeout(() => {
+      // Type LinkedIn heading first
+      const linkedInInterval = setInterval(() => {
+        if (linkedInIndex <= linkedInText.length) {
+          setTypedLinkedInHeading(linkedInText.substring(0, linkedInIndex));
+          linkedInIndex++;
+        } else {
+          clearInterval(linkedInInterval);
 
-        // Wait 1 second, then type FAQ heading
-        setTimeout(() => {
-          const faqInterval = setInterval(() => {
-            if (faqIndex <= faqText.length) {
-              setTypedFAQHeading(faqText.substring(0, faqIndex));
-              faqIndex++;
-            } else {
-              clearInterval(faqInterval);
-            }
-          }, 75); // 75ms per character
-        }, 1000); // 1 second delay
-      }
-    }, 75); // 75ms per character
+          // Wait 1 second, then type FAQ heading
+          setTimeout(() => {
+            const faqInterval = setInterval(() => {
+              if (faqIndex <= faqText.length) {
+                setTypedFAQHeading(faqText.substring(0, faqIndex));
+                faqIndex++;
+              } else {
+                clearInterval(faqInterval);
+              }
+            }, 75); // 75ms per character
+          }, 1000); // 1 second delay
+        }
+      }, 75); // 75ms per character
+    }, 1000); // 1000ms delay before starting
   };
 
   // Typing animation for education text
