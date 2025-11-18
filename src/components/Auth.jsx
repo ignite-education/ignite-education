@@ -1753,7 +1753,7 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="flex items-center justify-center">
-                  <div className="relative" style={{ width: '20.53rem', height: '20.05rem' }}>
+                  <div className="relative" style={{ width: '20.53rem', height: '20.3rem' }}>
                     {[
                       {
                         title: 'Recent Graduates',
@@ -1768,12 +1768,12 @@ const Auth = () => {
                       {
                         title: 'Upskilling in Role',
                         description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
-                        position: { top: '10.275rem', left: '0' }
+                        position: { top: '10.525rem', left: '0' }
                       },
                       {
                         title: 'Pivotting Careers',
                         description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
-                        position: { top: '10.275rem', left: '10.525rem' }
+                        position: { top: '10.525rem', left: '10.525rem' }
                       }
                     ].map((card, idx) => (
                       <div
@@ -1822,7 +1822,7 @@ const Auth = () => {
                         top: 0,
                         left: 0,
                         width: '20.53rem',
-                        height: '20.05rem',
+                        height: '20.3rem',
                         zIndex: 10,
                         padding: '2rem',
                         opacity: hoveredUseCase !== null ? 1 : 0,
