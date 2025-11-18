@@ -1970,7 +1970,7 @@ const Auth = () => {
                     style={{
                       backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: expandedFAQ === idx ? '10rem' : '3rem',
+                      height: expandedFAQ === idx ? '8rem' : '3.75rem',
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
