@@ -1949,7 +1949,9 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
               {/* Left Column - LinkedIn Posts */}
               <div className="space-y-4">
-                <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedLinkedInHeading}</h3>
+                <div className="flex justify-center">
+                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedLinkedInHeading}</h3>
+                </div>
 
                 {linkedInLoading ? (
                   <div className="text-center py-8">
@@ -2009,7 +2011,9 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedFAQHeading}</h3>
+                <div className="flex justify-center">
+                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '30px' }}>{typedFAQHeading}</h3>
+                </div>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
                 {[
