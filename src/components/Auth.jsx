@@ -1695,7 +1695,7 @@ const Auth = () => {
                           overflow: 'visible'
                         }}
                       >
-                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '10px' }}>
                           <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
@@ -1841,7 +1841,7 @@ const Auth = () => {
                         opacity: 0
                       }}>
                         <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                          color: '#EF0B72'
+                          color: '#7714E0'
                         }}>
                           {hoveredUseCase !== null ? [
                             { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
