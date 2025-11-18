@@ -1912,7 +1912,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
               {/* Left Column - LinkedIn Posts */}
               <div className="space-y-4">
-                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Latest from LinkedIn</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Latest from Ignite</h3>
 
                 {linkedInLoading ? (
                   <div className="text-center py-8">
@@ -1972,7 +1972,7 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>Frequently Asked Questions</h3>
+                <h3 className="font-bold text-white mb-6 text-center" style={{ fontSize: '2rem', lineHeight: '1.2' }}>FAQs</h3>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
                 {[
@@ -2049,7 +2049,8 @@ const Auth = () => {
             <div className="flex justify-center gap-8 px-4 pb-12">
               <a
                 href="mailto:hello@ignite.education"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Contact
               </a>
@@ -2057,7 +2058,8 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/jobs/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Careers
               </a>
@@ -2065,13 +2067,15 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 LinkedIn
               </a>
               <a
                 href="https://ignite.education/policy"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Policy
               </a>
