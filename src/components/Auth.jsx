@@ -1790,9 +1790,9 @@ const Auth = () => {
                           width: '9.775rem',
                           top: card.position.top,
                           left: card.position.left,
-                          zIndex: 1,
+                          zIndex: hoveredUseCase === idx ? 20 : 1,
                           padding: '1.5rem',
-                          opacity: hoveredUseCase !== null ? 0 : 1,
+                          opacity: hoveredUseCase !== null && hoveredUseCase !== idx ? 0 : 1,
                           transition: 'opacity 300ms ease-in-out',
                           pointerEvents: 'auto'
                         }}
@@ -1809,13 +1809,21 @@ const Auth = () => {
 
                     {/* Single overlay card that covers entire grid */}
                     <div
+                      onMouseEnter={() => {
+                        if (hoveredUseCase !== null) {
+                          setHoveredUseCase(hoveredUseCase);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredUseCase(null);
+                      }}
                       className="absolute rounded flex items-center justify-center bg-white"
                       style={{
                         top: 0,
                         left: 0,
                         width: '20.53rem',
                         height: '20.05rem',
-                        zIndex: 10,
+                        zIndex: 15,
                         padding: '2rem',
                         opacity: hoveredUseCase !== null ? 1 : 0,
                         visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
