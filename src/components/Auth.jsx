@@ -2052,7 +2052,7 @@ const Auth = () => {
                     style={{
                       backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: expandedFAQ === idx ? 'calc(7.25rem + 3px)' : '3.75rem',
+                      height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
@@ -2071,7 +2071,7 @@ const Auth = () => {
                     </h4>
                     {expandedFAQ === idx && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.1rem',
+                        marginTop: 'calc(0.1rem + 2px)',
                         paddingBottom: '3px',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
