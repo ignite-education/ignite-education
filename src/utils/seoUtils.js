@@ -163,7 +163,7 @@ export const generateKeywords = (baseKeywords, ...additionalKeywords) => {
  */
 export const trackPageView = (pagePath, pageTitle) => {
   if (typeof window.gtag === 'function') {
-    window.gtag('config', 'G-XXXXXXXXXX', {
+    window.gtag('config', 'G-FH4CYRKWME', {
       page_path: pagePath,
       page_title: pageTitle
     });
