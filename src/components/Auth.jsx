@@ -1443,7 +1443,7 @@ const Auth = () => {
                     right: 0,
                     width: '70px',
                     height: '100%',
-                    background: 'linear-gradient(to right, transparent, black)',
+                    background: 'linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.9))',
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
                     maskImage: 'linear-gradient(to right, transparent, black)',
