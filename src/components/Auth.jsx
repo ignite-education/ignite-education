@@ -1005,7 +1005,9 @@ const Auth = () => {
           scrollBehavior: 'smooth',
           scrollSnapType: 'y mandatory',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
-          pointerEvents: selectedCourseModal ? 'none' : 'auto'
+          pointerEvents: selectedCourseModal ? 'none' : 'auto',
+          minWidth: '1024px',
+          overflowX: 'auto'
         }}
       >
       {/* First Section - Auth Form */}
