@@ -2076,6 +2076,7 @@ const Auth = () => {
                     {expandedFAQ === idx && (
                       <p className="text-black text-sm" style={{
                         marginTop: '0.1rem',
+                        paddingBottom: '3px',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
