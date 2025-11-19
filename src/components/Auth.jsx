@@ -1963,11 +1963,11 @@ const Auth = () => {
                     {/* Left Arrow */}
                     <button
                       onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
-                      className="bg-white hover:bg-white p-2 transition flex-shrink-0 group"
-                      style={{ borderRadius: '4px' }}
+                      className="bg-white hover:bg-white transition flex-shrink-0 group"
+                      style={{ borderRadius: '4px', padding: '6px' }}
                       aria-label="Previous post"
                     >
-                      <svg className="w-6 h-6 text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
@@ -2024,11 +2024,11 @@ const Auth = () => {
                     {/* Right Arrow */}
                     <button
                       onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
-                      className="bg-white hover:bg-white p-2 transition flex-shrink-0 group"
-                      style={{ borderRadius: '4px' }}
+                      className="bg-white hover:bg-white transition flex-shrink-0 group"
+                      style={{ borderRadius: '4px', padding: '6px' }}
                       aria-label="Next post"
                     >
-                      <svg className="w-6 h-6 text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
