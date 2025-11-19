@@ -1327,28 +1327,35 @@ const Auth = () => {
                 </div>
               </div>
 
-              {/* Right Column - 2x2 Course Grid with Swipe Navigation */}
-              <div className="flex items-center gap-2" style={{ marginLeft: '-50px' }}>
-                {/* Left Arrow */}
-                {coursePageIndex > 0 && courses.length > 4 && (
-                  <button
-                    onClick={() => setCoursePageIndex(Math.max(0, coursePageIndex - 1))}
-                    className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
-                    aria-label="Previous courses"
-                  >
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                )}
-
-                <div className="grid grid-cols-2 gap-4 flex-1" style={{ transform: 'scale(0.85)' }}>
-                  {courses.length > 0 ? courses.slice(coursePageIndex * 4, coursePageIndex * 4 + 4).map((course) => {
+              {/* Right Column - Swipeable Course Cards */}
+              <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'hidden' }}>
+                <div
+                  className="overflow-x-auto overflow-y-hidden"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: 'x mandatory',
+                    paddingRight: '100px'
+                  }}
+                >
+                  <style>{`
+                    .overflow-x-auto::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}</style>
+                  <div className="flex gap-4" style={{ transform: 'scale(0.85)', transformOrigin: 'left' }}>
+                  {courses.length > 0 ? courses.map((course) => {
                     return (
                       <div
                         key={course.name}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px' }}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden relative cursor-pointer flex-shrink-0"
+                        style={{
+                          padding: '16px',
+                          width: '280px',
+                          height: '280px',
+                          scrollSnapAlign: 'start'
+                        }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
@@ -1394,8 +1401,12 @@ const Auth = () => {
                       {[...Array(4)].map((_, i) => (
                         <div
                           key={i}
-                          className="bg-white/10 rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
-                          style={{ padding: '16px' }}
+                          className="bg-white/10 rounded flex flex-col justify-start overflow-hidden animate-pulse flex-shrink-0"
+                          style={{
+                            padding: '16px',
+                            width: '280px',
+                            height: '280px'
+                          }}
                         >
                           <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
                           <div className="h-4 bg-white/20 rounded w-full mb-1"></div>
@@ -1411,20 +1422,8 @@ const Auth = () => {
                       ))}
                     </>
                   )}
+                  </div>
                 </div>
-
-                {/* Right Arrow */}
-                {coursePageIndex < Math.ceil(courses.length / 4) - 1 && courses.length > 4 && (
-                  <button
-                    onClick={() => setCoursePageIndex(Math.min(Math.ceil(courses.length / 4) - 1, coursePageIndex + 1))}
-                    className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition"
-                    aria-label="Next courses"
-                  >
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
               </div>
             </div>
           </div>
