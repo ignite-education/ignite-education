@@ -2019,11 +2019,11 @@ const Auth = () => {
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
                   },
                   {
                     question: 'Who is Ignite for?',
-                    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields or switch careers entirely.'
+                    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
                   },
                   {
                     question: 'How much does Ignite cost?',
@@ -2031,11 +2031,11 @@ const Auth = () => {
                   },
                   {
                     question: 'What can I learn on Ignite?',
-                    answer: 'We offer comprehensive courses in Product Management and Cyber Security with more fields launching soon. Each course includes interactive lessons, knowledge checks, and a certification upon completion. Register your interest for any upcoming courses and we\'ll be in touch when they launch.'
+                    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks, and a certification upon completion to boost your CV.'
                   },
                   {
                     question: 'Can I learn at my own pace?',
-                    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for maximum knowledge retention.'
+                    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
                   }
                 ].map((faq, idx) => (
                   <div
