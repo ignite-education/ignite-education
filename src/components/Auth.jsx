@@ -1926,7 +1926,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '35px' }}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
               {/* Left Column - LinkedIn Posts */}
               <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
