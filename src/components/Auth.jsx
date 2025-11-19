@@ -1335,7 +1335,7 @@ const Auth = () => {
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
-                    paddingRight: '0px'
+                    paddingRight: '51px'
                   }}
                 >
                   <style>{`
@@ -1441,7 +1441,7 @@ const Auth = () => {
                     position: 'absolute',
                     top: 0,
                     right: 0,
-                    width: '30px',
+                    width: '51px',
                     height: '100%',
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
