@@ -2301,35 +2301,17 @@ const Auth = () => {
                         const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
 
                         return (
-                          <>
-                            <span style={{ fontWeight: 600, fontSize: '20px' }}>
-                              {before}
-                              <span style={{ color: '#EC4899' }}>{pink}</span>
-                              {after}
-                            </span>
-                            {restOfDescription && (
-                              <>
-                                <br /><br />
-                                <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
-                              </>
-                            )}
-                          </>
+                          <span style={{ fontWeight: 600, fontSize: '20px', color: '#000000' }}>
+                            {before}
+                            <span style={{ color: '#EC4899' }}>{pink}</span>
+                            {after}
+                          </span>
                         );
                       }
 
-                      return (
-                        <>
-                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
-                          {restOfDescription && (
-                            <>
-                              <br /><br />
-                              <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
-                            </>
-                          )}
-                        </>
-                      );
+                      return <span style={{ fontWeight: 600, fontSize: '20px', color: '#000000' }}>{firstSentence}</span>;
                     }
-                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
+                    return <span style={{ fontWeight: 600, fontSize: '20px', color: '#000000' }}>{description}</span>;
                   })()}
                 </div>
 
@@ -2374,7 +2356,7 @@ const Auth = () => {
                       }}
                     >
                       <div className="flex gap-4" style={{ minHeight: '100px', height: '100px' }}>
-                        {allLessons.map((lesson, index) => (
+                        {allLessons.slice(0, 5).map((lesson, index) => (
                             <div
                               key={`${lesson.moduleIndex}-${lesson.lessonIndex}`}
                               className="relative flex items-center gap-3 flex-shrink-0"
@@ -2409,15 +2391,15 @@ const Auth = () => {
                                 }}
                               />
                               <div className="flex-1">
-                                <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
+                                <h4 className="font-semibold truncate" style={{ marginBottom: '3px', fontSize: '13px', color: '#000000' }}>
                                   {lesson.name || `Lesson ${lesson.lessonIndex}`}
                                 </h4>
                                 <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
                                   {(lesson.bullet_points || [])
                                     .slice(0, 3)
                                     .map((bulletPoint, idx) => (
-                                      <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
-                                        <span className="mt-0.5 text-purple-200">•</span>
+                                      <li key={idx} className="text-xs flex items-start gap-2" style={{ color: '#000000' }}>
+                                        <span className="mt-0.5" style={{ color: '#000000' }}>•</span>
                                         <span>{bulletPoint}</span>
                                       </li>
                                     ))}
