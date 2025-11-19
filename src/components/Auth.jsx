@@ -2130,7 +2130,7 @@ const Auth = () => {
                 LinkedIn
               </a>
               <a
-                href="https://ignite.education/policy"
+                href="/privacy"
                 className="text-white hover:text-pink-500 transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
