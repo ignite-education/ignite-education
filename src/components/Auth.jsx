@@ -1336,7 +1336,7 @@ const Auth = () => {
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
                     scrollSnapType: 'x mandatory',
-                    paddingRight: '200px'
+                    paddingRight: '60px'
                   }}
                 >
                   <style>{`
