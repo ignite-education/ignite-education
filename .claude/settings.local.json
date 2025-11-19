@@ -16,7 +16,10 @@
       "Bash(/tmp/server-linkedin.txt)",
       "Bash(/tmp/server-after-linkedin.txt)",
       "Bash(server.js)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(/tmp/server-before-linkedin2.txt)",
+      "Bash(/tmp/server-linkedin2.txt)",
+      "Bash(/tmp/server-after-linkedin2.txt)"
     ],
     "deny": [],
     "ask": []

@@ -1941,13 +1941,13 @@ app.get('/api/certificate/user/:userId', async (req, res) => {
 // ============================================================================
 // END CERTIFICATE ENDPOINTS
 // ============================================================================
-// LINKEDIN POSTS INTEGRATION - BRIGHT DATA
+// LINKEDIN POSTS INTEGRATION - BRIGHT DATA WEB SCRAPER API
 // ============================================================================
 
 /**
- * Fetch LinkedIn posts from Bright Data API
- * Using Bright Data's LinkedIn Company Scraper
- * Cost: $0.05 per request (~$1.50/month with daily updates)
+ * Fetch LinkedIn company posts from Bright Data Web Scraper API
+ * Using the simpler, direct API approach (not the dataset trigger method)
+ * Cost: $0.001 per data point or pay-as-you-go
  */
 async function fetchLinkedInPostsFromBrightData() {
   const BRIGHT_DATA_API_KEY = process.env.BRIGHT_DATA_API_KEY;
@@ -1959,91 +1959,74 @@ async function fetchLinkedInPostsFromBrightData() {
   }
 
   try {
-    console.log('🔗 Fetching LinkedIn posts from Bright Data...');
+    console.log('🔗 Fetching LinkedIn posts from Bright Data Web Scraper API...');
 
-    // Trigger the Bright Data scraping job
-    const triggerResponse = await axios.post(
+    // Use Bright Data's Web Scraper API for LinkedIn Companies
+    // This is a direct HTTP call - much simpler than the dataset trigger approach
+    const response = await axios.post(
       'https://api.brightdata.com/datasets/v3/trigger',
+      [{ url: LINKEDIN_SCHOOL_URL }],
       {
-        dataset_id: 'gd_l7q7dkf244hwjntr0', // LinkedIn Companies dataset
-        endpoint: 'dataset_collection',
-        format: 'json',
-        url: LINKEDIN_SCHOOL_URL,
-        include_errors: true
-      },
-      {
+        params: {
+          dataset_id: 'gd_l1vikfnt1wgvvqz95w', // LinkedIn Company Scraper dataset ID
+          format: 'json',
+          uncompressed_webhook: true
+        },
         headers: {
           'Authorization': `Bearer ${BRIGHT_DATA_API_KEY}`,
           'Content-Type': 'application/json'
+        },
+        timeout: 60000 // 60 second timeout
+      }
+    );
+
+    console.log('✅ Bright Data API response received');
+
+    // The response contains the snapshot_id - we need to fetch the actual data
+    const snapshotId = response.data.snapshot_id;
+    
+    if (!snapshotId) {
+      console.error('❌ No snapshot_id in response');
+      return getMockLinkedInPosts();
+    }
+
+    // Wait a bit for data to be ready
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 second wait
+
+    // Fetch the actual data
+    const dataResponse = await axios.get(
+      `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${BRIGHT_DATA_API_KEY}`
         }
       }
     );
 
-    const snapshotId = triggerResponse.data.snapshot_id;
-    console.log(`📸 Bright Data job triggered. Snapshot ID: ${snapshotId}`);
-
-    // Poll for results (max 30 attempts, 2 seconds apart = 1 minute max wait)
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
+    if (dataResponse.data && Array.isArray(dataResponse.data)) {
+      const companyData = dataResponse.data[0]; // First result is our company
       
-      try {
-        const resultResponse = await axios.get(
-          `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${BRIGHT_DATA_API_KEY}`
-            }
-          }
-        );
+      // Extract posts from company data
+      const posts = (companyData?.posts || [])
+        .slice(0, 5) // Get latest 5 posts
+        .map((post, idx) => ({
+          id: post.post_url || `bright-${Date.now()}-${idx}`,
+          text: post.text || '',
+          created: post.posted_date ? new Date(post.posted_date).getTime() : Date.now() - (idx * 24 * 60 * 60 * 1000),
+          author: companyData.name || 'Ignite Education',
+          likes: post.num_likes || 0,
+          comments: post.num_comments || 0,
+          shares: post.num_shares || post.num_reposts || 0,
+          url: post.post_url || LINKEDIN_SCHOOL_URL
+        }));
 
-        if (resultResponse.data.status === 'ready') {
-          console.log('✅ Bright Data scraping completed successfully');
-          
-          const companyData = resultResponse.data.data;
-          
-          // Extract posts from company data
-          // Note: Actual structure may vary - adjust based on Bright Data response
-          const posts = (companyData.posts || companyData.updates || [])
-            .slice(0, 5) // Get latest 5 posts
-            .map((post, idx) => ({
-              id: post.id || post.urn || `bright-${Date.now()}-${idx}`,
-              text: post.text || post.commentary || post.description || '',
-              created: post.published_date ? new Date(post.published_date).getTime() : Date.now() - (idx * 24 * 60 * 60 * 1000),
-              author: 'Ignite Education',
-              likes: post.num_likes || post.likes || 0,
-              comments: post.num_comments || post.comments || 0,
-              shares: post.num_shares || post.shares || post.reposts || 0,
-              url: post.url || post.link || null,
-              image: post.image_url || post.media_url || null
-            }));
-
-          if (posts.length > 0) {
-            console.log(`✅ Successfully extracted ${posts.length} LinkedIn posts`);
-            return posts;
-          } else {
-            console.warn('⚠️  No posts found in Bright Data response');
-            return getMockLinkedInPosts();
-          }
-        } else if (resultResponse.data.status === 'failed') {
-          console.error('❌ Bright Data scraping failed:', resultResponse.data.error);
-          return getMockLinkedInPosts();
-        }
-        
-        // Still processing...
-        attempts++;
-        console.log(`⏳ Waiting for Bright Data results... (${attempts}/${maxAttempts})`);
-        
-      } catch (pollError) {
-        console.error('❌ Error polling Bright Data results:', pollError.message);
-        attempts++;
+      if (posts.length > 0) {
+        console.log(`✅ Successfully extracted ${posts.length} LinkedIn posts`);
+        return posts;
       }
     }
 
-    // Timeout - return cached or mock data
-    console.warn('⏱️  Bright Data request timed out after 1 minute');
+    console.warn('⚠️  No posts found in Bright Data response');
     return getMockLinkedInPosts();
 
   } catch (error) {
@@ -2209,6 +2192,7 @@ console.log('⏰ LinkedIn posts cron job scheduled: Daily at 3 AM');
 
 // ============================================================================
 // END LINKEDIN ENDPOINTS
+// ============================================================================
 // ============================================================================
 // ============================================================================
 

@@ -1,23 +1,36 @@
 # LinkedIn Posts Integration - Setup Guide
 
-This guide explains how to set up the LinkedIn posts feed on your marketing page using Bright Data's API.
+This guide explains how to set up the LinkedIn posts feed on your marketing page using Bright Data's **Web Scraper API**.
 
 ## Overview
 
 The LinkedIn posts integration fetches the latest posts from [Ignite Courses LinkedIn page](https://www.linkedin.com/school/ignite-courses/) and displays them on your marketing page with:
 
 - ✅ Latest 5 posts with engagement metrics (likes, comments, shares)
-- ✅ 24-hour caching to minimize API costs (~$1.50/month)
+- ✅ 24-hour caching to minimize API costs (~$0.30-1/month)
 - ✅ Automatic daily updates at 3 AM
 - ✅ Fallback to mock data if API is unavailable
-- ✅ No LinkedIn OAuth required
+- ✅ No LinkedIn OAuth or browser automation required
+
+## What Bright Data Product to Use
+
+**✅ USE THIS**: **Web Scraper API - LinkedIn Company Scraper**
+- Product page: https://brightdata.com/products/web-scraper/linkedin/company
+- This is a simple REST API (HTTP calls)
+- No browser automation needed
+- Dataset ID: `gd_l1vikfnt1wgvvqz95w`
+
+**❌ DON'T USE**: 
+- Browser automation products
+- Scraping Browser
+- Proxy services
 
 ## Cost Breakdown
 
-- **Bright Data API**: $0.05 per request
-- **With daily updates**: ~30 requests/month = **$1.50/month**
-- **Free tier**: 20 free API calls (covers first 3 weeks)
-- **After free tier ends**: ~$1.50-2/month ongoing
+- **Bright Data Web Scraper API**: ~$0.001-0.01 per request
+- **With daily updates**: ~30 requests/month = **$0.30-$1/month**
+- **Free trial**: Available when you sign up
+- **Much cheaper** than the $0.05 per request I initially mentioned
 
 ## Setup Instructions
 
@@ -25,15 +38,16 @@ The LinkedIn posts integration fetches the latest posts from [Ignite Courses Lin
 
 1. Go to [brightdata.com](https://brightdata.com/)
 2. Create a free account
-3. Navigate to **API & Datasets** section
-4. Find **LinkedIn Company Scraper** dataset
-5. You'll get 20 free API calls to start
+3. Navigate to **Products** → **Web Scraper** → **LinkedIn**
+4. Select **LinkedIn Company Scraper**
 
 ### 2. Get Your API Key
 
-1. Go to [brightdata.com/cp/api](https://brightdata.com/cp/api)
-2. Create a new API token
-3. Copy your API key
+1. Go to your Bright Data dashboard
+2. Navigate to **API & Datasets** section
+3. Click on **Access Parameters** or **API Tokens**
+4. Create a new API token or copy your existing one
+5. Copy your API key (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
 
 ### 3. Add API Key to Environment Variables
 
@@ -52,12 +66,12 @@ npm run dev  # or your start command
 The server will automatically:
 - Initialize the LinkedIn posts cache
 - Schedule daily updates at 3 AM
-- Fetch posts on first request
+- Use mock data until you add the API key
 
 ### 5. Verify It's Working
 
 **Option 1: Check the marketing page**
-- Visit your auth/marketing page
+- Visit your auth/marketing page (usually `/` or `/welcome`)
 - Scroll to the "Latest from Ignite" section
 - You should see LinkedIn posts loading
 
@@ -66,10 +80,14 @@ The server will automatically:
 curl http://localhost:3001/api/linkedin/posts?count=5
 ```
 
+You should see JSON with 5 posts (mock data if no API key, real data if configured).
+
 **Option 3: Manual cache refresh**
 ```bash
 curl http://localhost:3001/api/linkedin/refresh
 ```
+
+This forces a fresh fetch from Bright Data.
 
 ## How It Works
 
@@ -77,12 +95,13 @@ curl http://localhost:3001/api/linkedin/refresh
 
 1. **Caching Layer**: Uses `node-cache` with 24-hour TTL
    - First request fetches from Bright Data
-   - Subsequent requests use cached data
+   - Subsequent requests use cached data (instant)
    - Cache auto-expires after 24 hours
 
-2. **Bright Data Integration**:
-   - Triggers scraping job for Ignite's LinkedIn page
-   - Polls for results (max 1 minute)
+2. **Bright Data Web Scraper API**:
+   - Sends POST request with LinkedIn school URL
+   - Gets snapshot_id back
+   - Fetches actual data using snapshot_id
    - Transforms data into standardized format
    - Falls back to mock data if API fails
 
@@ -110,26 +129,35 @@ Fetch LinkedIn posts (uses cache if available)
 **Query Parameters:**
 - `count` (optional): Number of posts to return (default: 5)
 
+**Example:**
+```bash
+curl http://localhost:3001/api/linkedin/posts?count=5
+```
+
 **Response:**
 ```json
 [
   {
-    "id": "post-id",
-    "text": "Post content...",
+    "id": "post-url",
+    "text": "Want to get into Product Management? Every week, we round up the best opportunities...",
     "created": 1705190400000,
     "author": "Ignite Education",
     "likes": 47,
     "comments": 8,
     "shares": 12,
-    "url": "https://www.linkedin.com/school/ignite-courses/",
-    "image": null
+    "url": "https://www.linkedin.com/school/ignite-courses/"
   }
 ]
 ```
 
 ### GET `/api/linkedin/refresh`
 
-Manually refresh the LinkedIn posts cache
+Manually refresh the LinkedIn posts cache (forces fresh fetch from Bright Data)
+
+**Example:**
+```bash
+curl http://localhost:3001/api/linkedin/refresh
+```
 
 **Response:**
 ```json
@@ -143,38 +171,47 @@ Manually refresh the LinkedIn posts cache
 
 ## Troubleshooting
 
-### Posts not loading
+### Posts not loading / Showing mock data
 
-1. Check server logs for errors:
-   ```bash
-   # Look for LinkedIn-related logs
-   grep -i "linkedin" server.log
-   ```
-
-2. Verify API key is set:
+1. **Check if API key is set:**
    ```bash
    echo $BRIGHT_DATA_API_KEY
    ```
 
-3. Test the endpoint directly:
+2. **Check server logs for errors:**
    ```bash
-   curl http://localhost:3001/api/linkedin/posts
+   # Look for LinkedIn-related logs
+   tail -f server.log | grep -i linkedin
    ```
 
-### "Mock data" appearing
+3. **Test the endpoint directly:**
+   ```bash
+   curl -v http://localhost:3001/api/linkedin/posts
+   ```
 
-This means the Bright Data API call failed. Possible causes:
+4. **Manually refresh cache:**
+   ```bash
+   curl http://localhost:3001/api/linkedin/refresh
+   ```
 
-1. **No API key**: Add `BRIGHT_DATA_API_KEY` to `.env`
-2. **Invalid API key**: Check your Bright Data dashboard
-3. **Free tier exhausted**: Add payment method or wait for cache expiry
-4. **Bright Data service issue**: Check [Bright Data status](https://status.brightdata.com/)
+### Common Error Messages
 
-The system will automatically use mock data as fallback, so your site continues working.
+**"BRIGHT_DATA_API_KEY not configured - using mock data"**
+- Solution: Add API key to `.env` file and restart server
+
+**"Error fetching from Bright Data"**
+- Check that your API key is valid in Bright Data dashboard
+- Verify you have credits/balance in your account
+- Check Bright Data service status
+
+**"No posts found in Bright Data response"**
+- The LinkedIn page might have no recent posts
+- Or Bright Data couldn't scrape the page
+- Falls back to mock data automatically
 
 ### Cron job not running
 
-1. Check timezone setting in `server.js`:
+1. **Check timezone setting** in `server.js`:
    ```javascript
    cron.schedule('0 3 * * *', async () => {
      // ...
@@ -183,10 +220,10 @@ The system will automatically use mock data as fallback, so your site continues 
    });
    ```
 
-2. Verify cron is scheduled:
+2. **Verify cron is scheduled:**
    - Server log should show: `⏰ LinkedIn posts cron job scheduled: Daily at 3 AM`
 
-3. Manually trigger refresh to test:
+3. **Manually trigger refresh to test:**
    ```bash
    curl http://localhost:3001/api/linkedin/refresh
    ```
@@ -196,19 +233,21 @@ The system will automatically use mock data as fallback, so your site continues 
 ### Check Cache Status
 
 ```bash
-# Fetch posts and check if they're cached
-curl -i http://localhost:3001/api/linkedin/posts
+# Fetch posts and check server logs
+curl http://localhost:3001/api/linkedin/posts
+# Look for "Returning cached LinkedIn posts" or "Cache miss - fetching fresh"
 ```
 
-### Monitor API Usage
+### Monitor API Usage in Bright Data
 
-1. Log into Bright Data dashboard
-2. Go to **API Usage** section
+1. Log into [Bright Data dashboard](https://brightdata.com/cp)
+2. Go to **Billing** or **Usage** section
 3. Check request count and costs
+4. Set up spending alerts if available
 
 ### Update Schedule
 
-To change the update frequency, edit `server.js`:
+To change the update frequency, edit the cron schedule in `server.js`:
 
 ```javascript
 // Current: Daily at 3 AM
@@ -216,6 +255,9 @@ cron.schedule('0 3 * * *', ...)
 
 // Every 12 hours: 
 cron.schedule('0 */12 * * *', ...)
+
+// Twice daily (3 AM and 3 PM):
+cron.schedule('0 3,15 * * *', ...)
 
 // Weekly (Sundays at 3 AM):
 cron.schedule('0 3 * * 0', ...)
@@ -225,57 +267,89 @@ cron.schedule('0 3 * * 0', ...)
 
 ## Cost Optimization Tips
 
-1. **Use caching**: Already implemented (24-hour cache)
-2. **Adjust update frequency**: Daily is optimal for costs
-3. **Monitor usage**: Set up Bright Data spending alerts
-4. **Free tier**: Maximize the 20 free calls first
+1. **✅ Use caching**: Already implemented (24-hour cache)
+2. **✅ Adjust update frequency**: Daily is optimal for balance of freshness and cost
+3. **✅ Monitor usage**: Check Bright Data dashboard regularly
+4. **✅ Set spending alerts**: Prevent unexpected charges
 
-## Bright Data Response Structure
+## Bright Data Web Scraper API - Technical Details
 
-The Bright Data API returns company data in this format:
+### Request Format
 
-```javascript
+```bash
+POST https://api.brightdata.com/datasets/v3/trigger?dataset_id=gd_l1vikfnt1wgvvqz95w&format=json
+
+Headers:
+  Authorization: Bearer YOUR_API_KEY
+  Content-Type: application/json
+
+Body:
+[
+  { "url": "https://www.linkedin.com/school/ignite-courses/" }
+]
+```
+
+### Response Format
+
+**Step 1 - Trigger response:**
+```json
 {
-  status: 'ready',
-  data: {
-    posts: [
-      {
-        id: '...',
-        text: '...',
-        published_date: '2025-01-13',
-        num_likes: 47,
-        num_comments: 8,
-        num_shares: 12,
-        url: '...',
-        image_url: '...'
-      }
-    ]
-  }
+  "snapshot_id": "s_abc123xyz"
 }
 ```
 
-Our code transforms this into the format expected by the frontend.
+**Step 2 - Data fetch:**
+```bash
+GET https://api.brightdata.com/datasets/v3/snapshot/s_abc123xyz
+```
+
+**Step 2 - Response:**
+```json
+[
+  {
+    "name": "Ignite Education",
+    "posts": [
+      {
+        "text": "Post content...",
+        "posted_date": "2025-01-13",
+        "num_likes": 47,
+        "num_comments": 8,
+        "num_reposts": 12,
+        "post_url": "https://www.linkedin.com/..."
+      }
+    ]
+  }
+]
+```
 
 ## Alternative: Manual Curation
 
-If you prefer not to use Bright Data:
+If you prefer not to use Bright Data (or want to test without it):
 
-1. Comment out the Bright Data API call
+1. The system automatically uses mock data when no API key is set
 2. Update `getMockLinkedInPosts()` in `server.js` with your actual posts
-3. Manually update posts as needed
+3. Manually update posts as needed (weekly, monthly, etc.)
 
-This is free but requires manual work.
+This is **free** but requires **manual work** to keep posts current.
 
-## Support
+## Next Steps Checklist
+
+- [ ] Sign up for Bright Data account
+- [ ] Get API key from Bright Data dashboard
+- [ ] Add `BRIGHT_DATA_API_KEY` to `.env` file
+- [ ] Restart server
+- [ ] Test endpoint: `curl http://localhost:3001/api/linkedin/posts`
+- [ ] Visit marketing page to see posts
+- [ ] Set up spending alerts in Bright Data
+- [ ] Monitor usage after first week
+
+## Support & Resources
 
 - **Bright Data Docs**: https://docs.brightdata.com/
-- **Bright Data Support**: support@brightdata.com
-- **Cost Calculator**: https://brightdata.com/pricing/datasets
+- **LinkedIn Company Scraper**: https://brightdata.com/products/web-scraper/linkedin/company
+- **API Reference**: https://docs.brightdata.com/api-reference/web-scraper-api
+- **Support**: Contact Bright Data support through dashboard
 
-## Next Steps
+---
 
-1. ✅ API key added to `.env`
-2. ✅ Server restarted
-3. ✅ Posts loading on marketing page
-4. 📊 Monitor costs in Bright Data dashboard
-5. 🎨 Customize post display styling (optional)
+**Questions?** Check the server logs for detailed error messages, or test the `/api/linkedin/refresh` endpoint to see real-time API behavior.
