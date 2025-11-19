@@ -1327,7 +1327,7 @@ const Auth = () => {
                 </div>
               </div>
 
-              {/* Right Column - Swipeable Course Cards */}
+              {/* Right Column - Swipeable 2x2 Course Grid */}
               <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'hidden' }}>
                 <div
                   className="overflow-x-auto overflow-y-hidden"
@@ -1336,7 +1336,7 @@ const Auth = () => {
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
                     scrollSnapType: 'x mandatory',
-                    paddingRight: '100px'
+                    paddingRight: '200px'
                   }}
                 >
                   <style>{`
@@ -1344,18 +1344,28 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-4" style={{ transform: 'scale(0.85)', transformOrigin: 'left' }}>
-                  {courses.length > 0 ? courses.map((course) => {
+                  <div className="flex gap-6">
+                  {courses.length > 0 ? (() => {
+                    const pages = [];
+                    for (let i = 0; i < courses.length; i += 4) {
+                      pages.push(courses.slice(i, i + 4));
+                    }
+                    return pages.map((pageCourses, pageIndex) => (
+                      <div 
+                        key={`page-${pageIndex}`}
+                        className="grid grid-cols-2 gap-4 flex-shrink-0"
+                        style={{ 
+                          transform: 'scale(0.85)',
+                          transformOrigin: 'left',
+                          scrollSnapAlign: 'start'
+                        }}
+                      >
+                        {pageCourses.map((course) => {
                     return (
                       <div
                         key={course.name}
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden relative cursor-pointer flex-shrink-0"
-                        style={{
-                          padding: '16px',
-                          width: '280px',
-                          height: '280px',
-                          scrollSnapAlign: 'start'
-                        }}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
+                        style={{ padding: '16px' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
@@ -1395,18 +1405,24 @@ const Auth = () => {
                         </div>
                       </div>
                     );
-                  }) : (
+                          });
+                        })}
+                      </div>
+                    ));
+                  })() : (
                     // Skeleton cards while loading
-                    <>
+                    <div 
+                      className="grid grid-cols-2 gap-4 flex-shrink-0"
+                      style={{ 
+                        transform: 'scale(0.85)',
+                        transformOrigin: 'left'
+                      }}
+                    >
                       {[...Array(4)].map((_, i) => (
                         <div
                           key={i}
-                          className="bg-white/10 rounded flex flex-col justify-start overflow-hidden animate-pulse flex-shrink-0"
-                          style={{
-                            padding: '16px',
-                            width: '280px',
-                            height: '280px'
-                          }}
+                          className="bg-white/10 rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
+                          style={{ padding: '16px' }}
                         >
                           <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
                           <div className="h-4 bg-white/20 rounded w-full mb-1"></div>
@@ -1420,7 +1436,7 @@ const Auth = () => {
                           </div>
                         </div>
                       ))}
-                    </>
+                                              </div>
                   )}
                   </div>
                 </div>
