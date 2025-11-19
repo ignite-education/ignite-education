@@ -2019,27 +2019,23 @@ const Auth = () => {
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite is a free, online learning platform offering industry-leading courses in high-demand fields like Product Management, Cybersecurity, and more. Our courses are built by experts and designed to help you gain practical skills through real-world projects.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired.'
                   },
                   {
                     question: 'Who is Ignite for?',
-                    answer: 'Ignite is for everyone! Whether you\'re a recent graduate, career changer, returning to work after a break, or looking to upskill in your current role, our courses are designed to meet you where you are and help you reach your goals.'
+                    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields or switch careers entirely.'
                   },
                   {
                     question: 'How much does Ignite cost?',
-                    answer: 'Ignite is completely free! We believe education should be accessible to everyone. Our platform is funded by limited, non-intrusive advertising, so you can focus on learning without worrying about subscription fees or hidden costs.'
+                    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
                   },
                   {
                     question: 'What can I learn on Ignite?',
-                    answer: 'We offer comprehensive courses in Product Management, Cybersecurity, and more fields are coming soon! Each course includes interactive lessons, hands-on projects, knowledge checks, and a certification upon completion.'
+                    answer: 'We offer comprehensive courses in Product Management and Cyber Security with more fields launching soon. Each course includes interactive lessons, knowledge checks, and a certification upon completion. Register your interest for any upcoming courses and we\'ll be in touch when they launch.'
                   },
                   {
                     question: 'Can I learn at my own pace?',
-                    answer: 'Absolutely! Ignite courses are self-paced, so you can learn when and where it works best for you. Whether you have 10 minutes or 2 hours, you can pick up right where you left off and progress at your own speed.'
-                  },
-                  {
-                    question: 'Who created Ignite?',
-                    answer: 'Ignite was founded by a team of educators and industry professionals passionate about making high-quality education accessible to everyone. Our courses are developed in collaboration with subject matter experts from leading companies.'
+                    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for maximum knowledge retention.'
                   }
                 ].map((faq, idx) => (
                   <div
