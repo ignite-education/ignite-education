@@ -2060,7 +2060,7 @@ const Auth = () => {
                       opacity: 0,
                       animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
                     }}
-                    onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 500)}
+                    onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
                     <div style={{
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
