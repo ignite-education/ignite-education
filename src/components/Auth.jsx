@@ -1948,7 +1948,7 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-12">
               {/* Left Column - LinkedIn Posts */}
-              <div style={{ marginLeft: '20px' }}>
+              <div className="flex flex-col items-center" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-center" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
                   <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', width: '320px', marginBottom: '1.5rem' }}>{typedLinkedInHeading}</h3>
                 </div>
@@ -1959,7 +1959,7 @@ const Auth = () => {
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
                 ) : linkedInPosts.length > 0 ? (
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 justify-center">
                     {/* Left Arrow */}
                     <button
                       onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
