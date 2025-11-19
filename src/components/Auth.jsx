@@ -2124,7 +2124,7 @@ const Auth = () => {
                     });
                   }
                 }}
-                className="bg-white hover:bg-white text-black hover:text-[#D84A8C] font-semibold py-3 px-8 rounded transition"
+                className="bg-[#D84A8C] hover:bg-[#EF0B72] text-white font-semibold py-3 px-8 rounded transition"
                 style={{ fontSize: '16px' }}
               >
                 Get Started
