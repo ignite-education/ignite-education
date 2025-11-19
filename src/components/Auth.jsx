@@ -2093,7 +2093,7 @@ const Auth = () => {
                       transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       transform: expandedFAQ === idx ? 'translateY(0)' : 'translateY(0)'
                     }}>
-                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#D84A8C' : '#000000' }}>
+                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#000000' }}>
                         {faq.question}
                       </h4>
                       {expandedFAQ === idx && (
@@ -2124,7 +2124,7 @@ const Auth = () => {
                     });
                   }
                 }}
-                className="bg-[#D84A8C] hover:bg-[#EF0B72] text-white font-semibold py-3 px-8 rounded transition"
+                className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
                 style={{ fontSize: '16px' }}
               >
                 Get Started
