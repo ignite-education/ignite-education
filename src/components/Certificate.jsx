@@ -6,6 +6,7 @@ import { getCertificate } from '../lib/api';
 import { jsPDF } from 'jspdf';
 
 import LoadingScreen from './LoadingScreen';
+import SEO from './SEO';
 
 
 export default function Certificate() {
@@ -148,6 +149,13 @@ export default function Certificate() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
+      <SEO
+        title={`${certificate.user_name} - ${certificate.course_name} Certificate`}
+        description={`${certificate.user_name} has successfully completed the ${certificate.course_name} course at Ignite Education. Verify this certificate and explore our courses in Product Management, Cyber Security, Data Analysis, and UX Design.`}
+        keywords={`${certificate.course_name} certificate, online course completion, Ignite Education, professional certification, ${certificate.user_name}`}
+        url={`https://www.ignite.education/certificate/${certificateId}`}
+        type="article"
+      />
       {/* Black Header Bar */}
       <div className="bg-black w-full">
         <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">

@@ -15,9 +15,9 @@ const SEO = ({
   structuredData
 }) => {
   const location = useLocation();
-  const baseUrl = 'https://yourdomain.com';
+  const baseUrl = 'https://www.ignite.education';
   const fullUrl = url || `${baseUrl}${location.pathname}`;
-  const ogImage = image || `${baseUrl}/og-image.jpg`;
+  const ogImage = image || `${baseUrl}/og-image.png`;
 
   useEffect(() => {
     // Update title

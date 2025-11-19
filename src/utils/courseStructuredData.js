@@ -10,8 +10,8 @@ export const generateCourseStructuredData = (course) => {
     "description": course.description || "Comprehensive product management training with interactive lessons and AI support",
     "provider": {
       "@type": "EducationalOrganization",
-      "name": "Ignite Learning",
-      "url": "https://yourdomain.com"
+      "name": "Ignite Education",
+      "url": "https://www.ignite.education"
     },
     "educationalLevel": "Beginner to Advanced",
     "teaches": [
@@ -55,7 +55,7 @@ export const generateLessonStructuredData = (lesson, moduleNumber, lessonNumber)
       "name": "Product Management Course",
       "provider": {
         "@type": "Organization",
-        "name": "Ignite Learning"
+        "name": "Ignite Education"
       }
     },
     "interactivityType": "mixed",
@@ -74,7 +74,7 @@ export const generateBreadcrumbStructuredData = (items) => {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://yourdomain.com${item.path}`
+      "item": `https://www.ignite.education${item.path}`
     }))
   };
 };

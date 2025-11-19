@@ -6,6 +6,7 @@ import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
+import SEO from './SEO';
 
 const Auth = () => {
   // Debounce helper to prevent rapid state updates
@@ -982,6 +983,12 @@ const Auth = () => {
 
   return (
     <>
+      <SEO
+        title="Welcome to Ignite"
+        description="Transform your career with Ignite's interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback."
+        keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
+        url="https://www.ignite.education/welcome"
+      />
       {/* Background - Progress Hub */}
       <div
         style={{

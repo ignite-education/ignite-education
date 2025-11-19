@@ -1,11 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const Terms = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <SEO
+        title="Terms of Service"
+        description="Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines for our online learning platform."
+        keywords="terms of service, terms and conditions, user agreement, course enrollment, refund policy, Ignite Education terms"
+        url="https://www.ignite.education/terms"
+      />
       {/* Header with Logo */}
       <div className="fixed top-0 left-0 w-full bg-black z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

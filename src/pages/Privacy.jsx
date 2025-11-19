@@ -1,11 +1,18 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import SEO from '../components/SEO';
 
 const Privacy = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <SEO
+        title="Privacy Policy"
+        description="Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws."
+        keywords="privacy policy, data protection, GDPR, UK data privacy, personal information, Ignite Education privacy"
+        url="https://www.ignite.education/privacy"
+      />
       {/* Header with Logo */}
       <div className="fixed top-0 left-0 w-full bg-black z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
