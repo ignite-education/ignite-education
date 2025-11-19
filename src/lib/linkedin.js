@@ -201,13 +201,13 @@ export async function getOrganizationPosts(orgId = '104616735', count = 5) {
 function getMockLinkedInPosts() {
   return [
     {
-      id: '1',
-      text: 'Excited to announce our latest course on Product Management! Learn from industry experts and build real-world projects. 🚀',
-      created: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
-      author: 'Ignite Education',
-      likes: 47,
-      comments: 8,
-      shares: 12
+      id: '7366907418041090049',
+      text: 'Want to get into Product Management? Every week, we round up the best opportunities.\n\nGraduate Product Manager at Evernote (UK/Italy)\nProgramme Manager Graduate at TikTok (UK)\nProduct Manager Intern at TikTok (UK)\nProduct Owner (Graduate) at Revolut (UK)\nAssistant Product Marketing Manager at Huel (UK)\nProduct Manager (Subscriptions) at Spotify (UK/Sweden)\nProduct Manager (Developer Marketplace) at Vodafone (UK)\nProduct Manager at Selfridges (UK)\n\nKnow of any others? Share them in the comments!\n\n#ProductManagement #EntryLevelJobs',
+      created: new Date('2025-01-13').getTime(), // Date from LinkedIn post
+      author: 'Ignite',
+      likes: 1,
+      comments: 0,
+      shares: 0
     },
     {
       id: '2',
