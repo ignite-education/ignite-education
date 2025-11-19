@@ -2090,20 +2090,19 @@ const Auth = () => {
                     }}
                     onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
-                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#000000' }}>
-                        {faq.question}
-                      </h4>
-                      {expandedFAQ === idx && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.1rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          {faq.answer}
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#000000' }}>
+                      {faq.question}
+                    </h4>
+                    {expandedFAQ === idx && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.1rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        {faq.answer}
+                      </p>
+                    )}
                   </div>
                 ))}
                 </div>
