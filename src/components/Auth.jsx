@@ -1924,7 +1924,7 @@ const Auth = () => {
               {/* Left Column - LinkedIn Posts */}
               <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
-                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '1.5rem' }}>{typedLinkedInHeading}</h3>
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '1rem' }}>{typedLinkedInHeading}</h3>
                 </div>
 
                 {linkedInLoading ? (
@@ -2014,7 +2014,7 @@ const Auth = () => {
               {/* Right Column - FAQs */}
               <div>
                 <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)', width: '85%', margin: '0 auto' }}>
-                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
+                  <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
                 </div>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
