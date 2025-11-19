@@ -1923,7 +1923,7 @@ const Auth = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
               {/* Left Column - LinkedIn Posts */}
               <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
-                <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
+                <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1rem)' }}>
                   <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '1rem' }}>{typedLinkedInHeading}</h3>
                 </div>
 
@@ -2013,7 +2013,7 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)', width: '85%', margin: '0 auto' }}>
+                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1rem)', width: '85%', margin: '0 auto' }}>
                   <h3 className="font-bold text-white mb-4 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
                 </div>
 
