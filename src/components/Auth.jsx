@@ -1959,52 +1959,77 @@ const Auth = () => {
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
                 ) : linkedInPosts.length > 0 ? (
-                  <div className="flex flex-col items-center">
-                    {/* Single Post Display */}
-                    <div
-                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
-                      style={{
-                        aspectRatio: '1 / 1',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        opacity: 1,
-                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
-                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
+                  <div className="flex items-center gap-4">
+                    {/* Left Arrow */}
+                    <button
+                      onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
+                      className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition flex-shrink-0"
+                      aria-label="Previous post"
                     >
-                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
-                        {linkedInPosts[currentLinkedInPost]?.text}
-                      </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <div className="flex gap-4">
-                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
-                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
-                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+
+                    <div className="flex flex-col items-center">
+                      {/* Single Post Display */}
+                      <div
+                        className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                        style={{
+                          aspectRatio: '1 / 1',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          opacity: 1,
+                          transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                          transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                      >
+                        <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
+                          {linkedInPosts[currentLinkedInPost]?.text}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-gray-500">
+                          <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                          <div className="flex gap-4">
+                            <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
+                            <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
+                            <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
+                          </div>
                         </div>
+                      </div>
+
+                      {/* Carousel Indicators */}
+                      <div className="flex justify-center gap-2 mt-4">
+                        {linkedInPosts.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentLinkedInPost(idx)}
+                            className={`transition-all duration-300 ${
+                              currentLinkedInPost === idx
+                                ? 'bg-[#EF0B72]'
+                                : 'bg-white hover:bg-gray-300'
+                            }`}
+                            style={{
+                              width: currentLinkedInPost === idx ? '32px' : '10px',
+                              height: '10px',
+                              borderRadius: '2px'
+                            }}
+                            aria-label={`Go to post ${idx + 1}`}
+                          />
+                        ))}
                       </div>
                     </div>
 
-                    {/* Pink Indicator Dots */}
-                    <div className="flex gap-2 mt-4">
-                      {linkedInPosts.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentLinkedInPost(idx)}
-                          className="transition-all duration-300"
-                          style={{
-                            width: currentLinkedInPost === idx ? '24px' : '8px',
-                            height: '8px',
-                            borderRadius: '4px',
-                            backgroundColor: currentLinkedInPost === idx ? '#D84A8C' : '#666',
-                            cursor: 'pointer',
-                            border: 'none'
-                          }}
-                          aria-label={`View post ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
+                    {/* Right Arrow */}
+                    <button
+                      onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
+                      className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition flex-shrink-0"
+                      aria-label="Next post"
+                    >
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
                   </div>
                 ) : null}
               </div>
