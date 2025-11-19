@@ -2,67 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Homepage / Progress Hub -->
+  <!-- Homepage -->
   <url>
     <loc>https://www.ignite.education/</loc>
-    <lastmod>2025-01-24</lastmod>
+    <lastmod>2025-01-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Progress Hub -->
-  <url>
-    <loc>https://www.ignite.education/progress</loc>
-    <lastmod>2025-01-24</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
-
-  <!-- Authentication -->
-  <url>
-    <loc>https://www.ignite.education/auth</loc>
-    <lastmod>2025-01-24</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Welcome Page -->
+  <!-- Welcome/Landing Page -->
   <url>
     <loc>https://www.ignite.education/welcome</loc>
-    <lastmod>2025-01-24</lastmod>
+    <lastmod>2025-01-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://www.ignite.education/privacy</loc>
+    <lastmod>2025-01-19</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Learning Hub -->
-  <url>
-    <loc>https://www.ignite.education/learn</loc>
-    <lastmod>2025-01-24</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.95</priority>
-  </url>
-
-  <!-- Analytics Dashboard -->
-  <url>
-    <loc>https://www.ignite.education/analytics</loc>
-    <lastmod>2025-01-24</lastmod>
-    <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
-  <!-- Curriculum Upload -->
   <url>
-    <loc>https://www.ignite.education/curriculum-upload</loc>
-    <lastmod>2025-01-24</lastmod>
+    <loc>https://www.ignite.education/terms</loc>
+    <lastmod>2025-01-19</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
 
-  <!-- Auth Design Test -->
+  <!-- Password Reset -->
   <url>
-    <loc>https://www.ignite.education/auth-design</loc>
-    <lastmod>2025-01-24</lastmod>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.ignite.education/reset-password</loc>
+    <lastmod>2025-01-19</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 

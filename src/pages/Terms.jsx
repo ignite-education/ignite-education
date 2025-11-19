@@ -21,14 +21,10 @@ const Terms = () => {
               onClick={() => navigate('/welcome')}
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <div
-                className="w-32 h-12"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                  backgroundSize: 'contain',
-                  backgroundRepeat: 'no-repeat',
-                  backgroundPosition: 'left center',
-                }}
+              <img
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+                alt="Ignite Education Logo"
+                className="w-32 h-12 object-contain object-left"
               />
             </button>
           </div>
