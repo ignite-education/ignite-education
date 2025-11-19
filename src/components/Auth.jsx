@@ -1484,28 +1484,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 0 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
-                        Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
-                      </h4>
-                      {activeCard === 0 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.2rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
+                      Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
+                    </h4>
+                    {activeCard === 0 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 2 - Personalised support */}
@@ -1529,28 +1524,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 1 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
-                        Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
-                      </h4>
-                      {activeCard === 1 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.2rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
+                      Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
+                    </h4>
+                    {activeCard === 1 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 3 - Community */}
@@ -1574,28 +1564,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 2 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
-                        Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
-                      </h4>
-                      {activeCard === 2 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.2rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
+                      Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
+                    </h4>
+                    {activeCard === 2 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 4 - Get certified */}
@@ -1619,28 +1604,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 3 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
-                        Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
-                      </h4>
-                      {activeCard === 3 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.2rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
+                      Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                    </h4>
+                    {activeCard === 3 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                      </p>
+                    )}
                   </div>
                 </div>
 
