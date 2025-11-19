@@ -1928,7 +1928,7 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '35px' }}>
               {/* Left Column - LinkedIn Posts */}
-              <div className="flex flex-col items-center" style={{ marginLeft: '20px' }}>
+              <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
                   <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '1.5rem' }}>{typedLinkedInHeading}</h3>
                 </div>
@@ -1939,7 +1939,7 @@ const Auth = () => {
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
                 ) : linkedInPosts.length > 0 ? (
-                  <div className="flex flex-col items-center justify-center">
+                  <div className="flex flex-col items-start justify-center">
                     {/* Single Post Display */}
                     <div
                       className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
@@ -2019,7 +2019,7 @@ const Auth = () => {
 
               {/* Right Column - FAQs */}
               <div>
-                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
+                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)', width: '85%', margin: '0 auto' }}>
                   <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
                 </div>
 
