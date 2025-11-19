@@ -1352,11 +1352,9 @@ const Auth = () => {
                     return pages.map((pageCourses, pageIndex) => (
                       <div 
                         key={`page-${pageIndex}`}
-                        className="grid grid-cols-2 gap-4 flex-shrink-0"
+                        className="grid grid-cols-2 gap-3 flex-shrink-0"
                         style={{ 
-          width: '600px',
-                          transform: 'scale(0.85)',
-                          transformOrigin: 'left'
+          width: '510px'
                         }}
                       >
                         {pageCourses.map((course) => {
@@ -1410,11 +1408,9 @@ const Auth = () => {
                   })() : (
                     // Skeleton cards while loading
                     <div 
-                      className="grid grid-cols-2 gap-4 flex-shrink-0"
+                      className="grid grid-cols-2 gap-3 flex-shrink-0"
                       style={{ 
-                        width: '600px',
-                        transform: 'scale(0.85)',
-                        transformOrigin: 'left'
+                        width: '510px'
                       }}
                     >
                       {[...Array(4)].map((_, i) => (
