@@ -2099,7 +2099,7 @@ const Auth = () => {
                       </h4>
                       {expandedFAQ === idx && (
                         <p className="text-black text-sm" style={{
-                          marginTop: '0.2rem',
+                          marginTop: '0.1rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
