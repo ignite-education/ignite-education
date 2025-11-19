@@ -2171,6 +2171,13 @@ const Auth = () => {
               >
                 Policy
               </a>
+              <a
+                href="/terms"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Terms
+              </a>
             </div>
           </div>
         </div>

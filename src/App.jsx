@@ -17,6 +17,7 @@ const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
 const Certificate = lazy(() => import('./components/Certificate'))
 
 // Component to redirect authenticated users away from auth pages
@@ -56,6 +57,7 @@ function App() {
             } />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <ProgressHub />
