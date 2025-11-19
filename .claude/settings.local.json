@@ -19,7 +19,9 @@
       "Bash(node -c:*)",
       "Bash(/tmp/server-before-linkedin2.txt)",
       "Bash(/tmp/server-linkedin2.txt)",
-      "Bash(/tmp/server-after-linkedin2.txt)"
+      "Bash(/tmp/server-after-linkedin2.txt)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nReduce spacing below LinkedIn and FAQ headings\n\nUpdated margin-bottom from 1.5rem to 1rem for both ''Latest from Ignite'' and ''FAQs'' headings to reduce the gap between headings and body content.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
