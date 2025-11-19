@@ -46,18 +46,18 @@ const CourseManagement = () => {
     }
   };
 
-  const handleStatusChange = async (courseName, newStatus) => {
+  const handleStatusChange = async (courseId, newStatus) => {
     try {
       const { error } = await supabase
         .from('courses')
         .update({ status: newStatus })
-        .eq('name', courseName);
+        .eq('id', courseId);
 
       if (error) throw error;
 
       // Update local state
       setCourses(courses.map(course =>
-        course.name === courseName ? { ...course, status: newStatus } : course
+        course.id === courseId ? { ...course, status: newStatus } : course
       ));
     } catch (error) {
       console.error('Error updating status:', error);
@@ -262,7 +262,7 @@ const CourseManagement = () => {
       const { error } = await supabase
         .from('courses')
         .delete()
-        .eq('name', courseName);
+        .eq('id', courseId);
 
       if (error) throw error;
 
@@ -359,7 +359,7 @@ const CourseManagement = () => {
               </tr>
             ) : (
               courses.map((course) => (
-                <tr key={course.name} className="hover:bg-gray-50">
+                <tr key={course.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
                     <div>
                       <div className="text-sm font-medium text-gray-900">{course.title}</div>
@@ -369,7 +369,7 @@ const CourseManagement = () => {
                   <td className="px-6 py-4">
                     <select
                       value={course.status}
-                      onChange={(e) => handleStatusChange(course.name, e.target.value)}
+                      onChange={(e) => handleStatusChange(course.id, e.target.value)}
                       className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeClass(course.status)} cursor-pointer`}
                     >
                       <option value="live">Live</option>
@@ -396,7 +396,7 @@ const CourseManagement = () => {
                         <Edit2 size={16} />
                       </button>
                       <button
-                        onClick={() => handleDeleteCourse(course.name, course.title)}
+                        onClick={() => handleDeleteCourse(course.id, course.title)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Delete course"
                       >

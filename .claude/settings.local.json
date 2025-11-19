@@ -24,7 +24,8 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nReduce spacing below LinkedIn and FAQ headings\n\nUpdated margin-bottom from 1.5rem to 1rem for both ''Latest from Ignite'' and ''FAQs'' headings to reduce the gap between headings and body content.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git pull:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(sed:*)"
     ],
     "deny": [],
     "ask": []
