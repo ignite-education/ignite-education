@@ -1959,48 +1959,49 @@ const Auth = () => {
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
                 ) : linkedInPosts.length > 0 ? (
-                  <div className="flex items-center gap-4 justify-center">
-                    {/* Left Arrow */}
-                    <button
-                      onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
-                      className="bg-white hover:bg-white transition flex-shrink-0 group"
-                      style={{ borderRadius: '4px', padding: '6px' }}
-                      aria-label="Previous post"
+                  <div className="flex flex-col items-center justify-center">
+                    {/* Single Post Display */}
+                    <div
+                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        opacity: 1,
+                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
                     >
-                      <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-
-                    <div className="flex flex-col items-center">
-                      {/* Single Post Display */}
-                      <div
-                        className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
-                        style={{
-                          aspectRatio: '1 / 1',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'space-between',
-                          opacity: 1,
-                          transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
-                          transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-                        }}
-                      >
-                        <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
-                          {linkedInPosts[currentLinkedInPost]?.text}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          <div className="flex gap-4">
-                            <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
-                            <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
-                            <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
-                          </div>
+                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
+                        {linkedInPosts[currentLinkedInPost]?.text}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <div className="flex gap-4">
+                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
+                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
+                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Carousel Indicators */}
-                      <div className="flex justify-center gap-2 mt-4">
+                    {/* Carousel Indicators with Arrows */}
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      {/* Left Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Previous post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Dot Indicators */}
+                      <div className="flex justify-center gap-2">
                         {linkedInPosts.map((_, idx) => (
                           <button
                             key={idx}
@@ -2019,19 +2020,19 @@ const Auth = () => {
                           />
                         ))}
                       </div>
-                    </div>
 
-                    {/* Right Arrow */}
-                    <button
-                      onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
-                      className="bg-white hover:bg-white transition flex-shrink-0 group"
-                      style={{ borderRadius: '4px', padding: '6px' }}
-                      aria-label="Next post"
-                    >
-                      <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                      {/* Right Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Next post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>
