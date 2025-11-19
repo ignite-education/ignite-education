@@ -1355,6 +1355,7 @@ const Auth = () => {
                         key={`page-${pageIndex}`}
                         className="grid grid-cols-2 gap-4 flex-shrink-0"
                         style={{ 
+          width: '600px',
                           transform: 'scale(0.85)',
                           transformOrigin: 'left',
                           scrollSnapAlign: 'start'
@@ -1413,6 +1414,7 @@ const Auth = () => {
                     <div 
                       className="grid grid-cols-2 gap-4 flex-shrink-0"
                       style={{ 
+                        width: '600px',
                         transform: 'scale(0.85)',
                         transformOrigin: 'left'
                       }}
