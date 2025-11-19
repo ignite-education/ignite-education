@@ -2060,7 +2060,7 @@ const Auth = () => {
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
-                      paddingBottom: '1rem',
+                      paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
