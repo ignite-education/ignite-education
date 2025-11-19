@@ -1006,7 +1006,7 @@ const Auth = () => {
           scrollSnapType: 'y mandatory',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
-          minWidth: '1024px',
+          minWidth: '1300px',
           overflowX: 'auto'
         }}
       >
