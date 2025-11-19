@@ -2113,6 +2113,24 @@ const Auth = () => {
               </div>
             </div>
 
+            {/* Get Started Button */}
+            <div className="flex justify-center px-4 pb-8">
+              <button
+                onClick={() => {
+                  if (authScrollContainerRef.current) {
+                    authScrollContainerRef.current.scrollTo({
+                      top: 0,
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
+                className="bg-[#D84A8C] hover:bg-[#EF0B72] text-white font-semibold py-3 px-8 rounded transition"
+                style={{ fontSize: '16px' }}
+              >
+                Get Started
+              </button>
+            </div>
+
             {/* Footer Links */}
             <div className="flex justify-center gap-8 px-4 pb-12">
               <a
