@@ -1963,10 +1963,11 @@ const Auth = () => {
                     {/* Left Arrow */}
                     <button
                       onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
-                      className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition flex-shrink-0"
+                      className="bg-white hover:bg-white p-2 transition flex-shrink-0 group"
+                      style={{ borderRadius: '4px' }}
                       aria-label="Previous post"
                     >
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
@@ -2023,10 +2024,11 @@ const Auth = () => {
                     {/* Right Arrow */}
                     <button
                       onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
-                      className="bg-white/20 hover:bg-white/30 rounded-full p-2 transition flex-shrink-0"
+                      className="bg-white hover:bg-white p-2 transition flex-shrink-0 group"
+                      style={{ borderRadius: '4px' }}
                       aria-label="Next post"
                     >
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
