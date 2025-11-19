@@ -1344,7 +1344,7 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-3">
+                  <div className="flex gap-1">
                   {courses.length > 0 ? (() => {
                     const pages = [];
                     for (let i = 0; i < courses.length; i += 4) {
