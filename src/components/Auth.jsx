@@ -2038,7 +2038,7 @@ const Auth = () => {
                     answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
                   },
                   {
-                    question: 'What makes Ignite different from other learning platforms?',
+                    question: 'What makes Ignite different?',
                     answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
                   }
                 ].map((faq, idx) => (
