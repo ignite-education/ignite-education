@@ -29,7 +29,9 @@
       "Bash(sqlite3:*)",
       "Bash(git revert:*)",
       "Bash(git checkout:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(lsof:*)",
+      "Bash(vercel --version:*)"
     ],
     "deny": [],
     "ask": []
