@@ -55,6 +55,7 @@ const Auth = () => {
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
+  const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInError, setLinkedInError] = useState(null);
@@ -2332,14 +2333,24 @@ const Auth = () => {
                         const pink = firstSentence.substring(pinkIndex, pinkIndex + pinkPhrase.length);
                         const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
 
+                        // Use typed version for first sentence
+                        const typedBefore = typedCourseDescription.substring(0, Math.min(pinkIndex, typedCourseDescription.length));
+                        const typedPink = typedCourseDescription.substring(
+                          pinkIndex, 
+                          Math.min(pinkIndex + pinkPhrase.length, typedCourseDescription.length)
+                        );
+                        const typedAfter = typedCourseDescription.substring(
+                          Math.min(pinkIndex + pinkPhrase.length, typedCourseDescription.length)
+                        );
+
                         return (
                           <>
                             <span style={{ fontWeight: 600, fontSize: '20px' }}>
-                              {before}
-                              <span style={{ color: '#EC4899' }}>{pink}</span>
-                              {after}
+                              {typedBefore}
+                              {typedPink && <span style={{ color: '#EC4899' }}>{typedPink}</span>}
+                              {typedAfter}
                             </span>
-                            {restOfDescription && (
+                            {typedCourseDescription.length === firstSentence.length && restOfDescription && (
                               <>
                                 <br /><br />
                                 <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
@@ -2361,7 +2372,7 @@ const Auth = () => {
                         </>
                       );
                     }
-                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
+                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{typedCourseDescription}</span>;
                   })()}
                 </div>
 
