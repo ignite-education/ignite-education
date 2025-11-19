@@ -2031,7 +2031,7 @@ const Auth = () => {
                   },
                   {
                     question: 'What can I learn on Ignite?',
-                    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks, and a certification upon completion to boost your CV.'
+                    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
                   },
                   {
                     question: 'Can I learn at my own pace?',
