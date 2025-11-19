@@ -1356,15 +1356,20 @@ const Auth = () => {
                         <div className="flex flex-col h-full">
                           <h4 className="text-xl font-semibold mb-2" style={{ color: '#7714E0' }}>{course.title}</h4>
                           {course.description && (
-                            <p className="text-sm text-gray-700 line-clamp-4 mb-2">
-                              {course.description}
+                            <p className="text-sm text-black line-clamp-4 mb-2">
+                              {(() => {
+                                const firstSentenceEnd = course.description.indexOf('. ');
+                                return firstSentenceEnd !== -1
+                                  ? course.description.substring(0, firstSentenceEnd + 1)
+                                  : course.description;
+                              })()}
                             </p>
                           )}
                           {course.module_names && (
                             <div className="pb-5">
                               <p className="text-xs text-black font-semibold mb-1">Modules:</p>
-                              <ul className="text-xs text-gray-700 space-y-0.5">
-                                {course.module_names.split(', ').slice(0, 6).map((moduleName, idx) => (
+                              <ul className="text-xs text-black space-y-0.5">
+                                {course.module_names.split(', ').slice(0, 5).map((moduleName, idx) => (
                                   <li key={idx} className="flex items-start">
                                     <span className="mr-1.5">•</span>
                                     <span className="line-clamp-1">{moduleName}</span>
