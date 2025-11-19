@@ -5,7 +5,6 @@ import ProgressHub from './ProgressHub';
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { getOrganizationPosts } from '../lib/linkedin';
 import { getCoachesForCourse } from '../lib/api';
 
 const Auth = () => {
@@ -378,7 +377,7 @@ const Auth = () => {
     try {
       // Call backend API endpoint instead of direct LinkedIn API
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/linkedin/posts?orgId=104616735&count=3`);
+      const response = await fetch(`${apiUrl}/api/linkedin/posts?count=5`);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -388,11 +387,6 @@ const Auth = () => {
       setLinkedInPosts(posts);
     } catch (error) {
       console.error('Error fetching LinkedIn posts:', error);
-      setLinkedInError(error.message);
-      // Fallback to mock data if API fails
-      const fallbackPosts = await getOrganizationPosts();
-      setLinkedInPosts(fallbackPosts);
-    } finally {
       setLinkedInLoading(false);
     }
   };

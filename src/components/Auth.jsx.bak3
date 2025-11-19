@@ -5,7 +5,6 @@ import ProgressHub from './ProgressHub';
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { getOrganizationPosts } from '../lib/linkedin';
 import { getCoachesForCourse } from '../lib/api';
 
 const Auth = () => {
@@ -55,11 +54,14 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
-  const [expandedFAQ, setExpandedFAQ] = useState(null);
+  const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [linkedInPosts, setLinkedInPosts] = useState([]);
   const [linkedInLoading, setLinkedInLoading] = useState(false);
   const [linkedInError, setLinkedInError] = useState(null);
+  const [currentLinkedInPost, setCurrentLinkedInPost] = useState(0);
   const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
+  const [typedLinkedInHeading, setTypedLinkedInHeading] = useState('');
+  const [typedFAQHeading, setTypedFAQHeading] = useState('');
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
@@ -97,6 +99,24 @@ const Auth = () => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
     }
+  }, []);
+
+  // Reset loading state when component mounts to handle failed OAuth redirects
+  useEffect(() => {
+    // Reset loading state when returning to the page
+    setLoading(false);
+
+    // Handle browser back button navigation
+    const handlePopState = () => {
+      setLoading(false);
+      setError('');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   // Intersection observer for animating words when section comes into view
@@ -250,7 +270,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: 0.3, rootMargin: '-100px 0px -100px 0px' }
     );
 
     observer.observe(learningModelSectionRef.current);
@@ -281,7 +301,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.2, rootMargin: '-100px 0px -100px 0px' }
     );
 
     observer.observe(testimonialsSectionRef.current);
@@ -295,14 +315,14 @@ const Auth = () => {
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
-    if (!animateTestimonials || isTestimonialHovered || isLogin || selectedCourseModal) return;
+    if (!animateTestimonials || !isTestimonialsHeadingTypingComplete || isTestimonialHovered || isLogin || selectedCourseModal) return;
 
     const interval = setInterval(() => {
-      setCurrentTestimonialIndex((prev) => (prev + 1) % 6); // 6 testimonials total
-    }, 5000); // Rotate every 5 seconds
+      setCurrentTestimonialIndex((prev) => (prev + 1) % 5); // 5 testimonials total
+    }, 6000); // Rotate every 6 seconds
 
     return () => clearInterval(interval);
-  }, [animateTestimonials, isTestimonialHovered, isLogin, selectedCourseModal]);
+  }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, isLogin, selectedCourseModal]);
 
   // Intersection observer for LinkedIn & FAQ section animation
   useEffect(() => {
@@ -314,6 +334,8 @@ const Auth = () => {
           if (entry.isIntersecting && !animateLinkedInFAQ) {
             debounce('linkedInAnimation', () => {
               setAnimateLinkedInFAQ(true);
+              // Start typing animations for headings
+              startLinkedInFAQHeadingsTyping();
               // Fetch LinkedIn posts when section becomes visible
               fetchLinkedInPosts().catch(err => {
                 console.error('Failed to fetch LinkedIn posts:', err);
@@ -333,6 +355,17 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateLinkedInFAQ, selectedCourseModal]);
+
+  // Auto-rotate LinkedIn posts every 5 seconds
+  useEffect(() => {
+    if (linkedInPosts.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length);
+    }, 5000); // Rotate every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [linkedInPosts.length]);
 
   // Fetch LinkedIn posts from backend API
   const fetchLinkedInPosts = async () => {
@@ -354,13 +387,41 @@ const Auth = () => {
       setLinkedInPosts(posts);
     } catch (error) {
       console.error('Error fetching LinkedIn posts:', error);
-      setLinkedInError(error.message);
-      // Fallback to mock data if API fails
-      const fallbackPosts = await getOrganizationPosts();
-      setLinkedInPosts(fallbackPosts);
-    } finally {
       setLinkedInLoading(false);
     }
+  };
+
+  // Typing animation for LinkedIn and FAQ headings
+  const startLinkedInFAQHeadingsTyping = () => {
+    const linkedInText = 'Latest from Ignite';
+    const faqText = 'FAQs';
+    let linkedInIndex = 0;
+    let faqIndex = 0;
+
+    // Add delay before starting typing
+    setTimeout(() => {
+      // Type LinkedIn heading first
+      const linkedInInterval = setInterval(() => {
+        if (linkedInIndex <= linkedInText.length) {
+          setTypedLinkedInHeading(linkedInText.substring(0, linkedInIndex));
+          linkedInIndex++;
+        } else {
+          clearInterval(linkedInInterval);
+
+          // Wait 1 second, then type FAQ heading
+          setTimeout(() => {
+            const faqInterval = setInterval(() => {
+              if (faqIndex <= faqText.length) {
+                setTypedFAQHeading(faqText.substring(0, faqIndex));
+                faqIndex++;
+              } else {
+                clearInterval(faqInterval);
+              }
+            }, 75); // 75ms per character
+          }, 1000); // 1 second delay
+        }
+      }, 75); // 75ms per character
+    }, 1000); // 1000ms delay before starting
   };
 
   // Typing animation for education text
@@ -453,7 +514,7 @@ const Auth = () => {
           // Pause after "Building a smarter,"
           if (currentIndex === pauseAfter) {
             isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
           }
 
           currentIndex++;
@@ -485,7 +546,7 @@ const Auth = () => {
           // Pause after "everyone"
           if (currentIndex === pauseAfterEveryone) {
             isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
+            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
           }
           
           // Pause after "curious,"
@@ -965,7 +1026,7 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18px, 4vw, 26px)' }}>
+        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
           Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
         </h1>
 
@@ -980,8 +1041,7 @@ const Auth = () => {
         <div
           className="bg-white text-black px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4"
           style={{
-            animation: 'scaleUp 0.2s ease-out',
-            borderRadius: '0.3rem'
+            animation: 'scaleUp 0.2s ease-out'
           }}
         >
 
@@ -1254,7 +1314,7 @@ const Auth = () => {
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg text-white mb-6 max-w-2xl text-left" style={{ lineHeight: '1.425' }}>
-                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant, and in-demand by employers.
+                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
@@ -1387,10 +1447,10 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '6.5rem', paddingBottom: '3rem' }}>
+          <div className="max-w-4xl mx-auto text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4">
-              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '1.2rem' }}>
+              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0.5rem', marginTop: '2rem' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
@@ -1418,23 +1478,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 0 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-xl text-black leading-tight">
-                        Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
-                      </h4>
-                      {activeCard === 0 && (
-                        <p className="text-black text-sm mt-3">
-                          Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
+                      Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
+                    </h4>
+                    {activeCard === 0 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 2 - Personalised support */}
@@ -1458,23 +1518,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 1 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-xl text-black leading-tight">
-                        Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
-                      </h4>
-                      {activeCard === 1 && (
-                        <p className="text-black text-sm mt-3">
-                          Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
+                      Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
+                    </h4>
+                    {activeCard === 1 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 3 - Community */}
@@ -1498,23 +1558,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 2 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-xl text-black leading-tight">
-                        Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
-                      </h4>
-                      {activeCard === 2 && (
-                        <p className="text-black text-sm mt-3">
-                          Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
+                      Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
+                    </h4>
+                    {activeCard === 2 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                      </p>
+                    )}
                   </div>
 
                   {/* Card 4 - Get certified */}
@@ -1538,23 +1598,23 @@ const Auth = () => {
                       paddingLeft: '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'center',
+                      justifyContent: 'flex-start',
                       backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <div style={{
-                      transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      transform: activeCard === 3 ? 'translateY(0)' : 'translateY(0)'
-                    }}>
-                      <h4 className="font-semibold text-xl text-black leading-tight">
-                        Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
-                      </h4>
-                      {activeCard === 3 && (
-                        <p className="text-black text-sm mt-3">
-                          Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
-                        </p>
-                      )}
-                    </div>
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
+                      Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                    </h4>
+                    {activeCard === 3 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -1566,7 +1626,7 @@ const Auth = () => {
               </div>
 
             {/* Scroll Down Arrow */}
-            <div className="flex justify-center mt-12">
+            <div className="flex justify-center mt-8">
               <button
                 onClick={scrollToTestimonials}
                 className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
@@ -1594,14 +1654,17 @@ const Auth = () => {
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="max-w-4xl mx-auto text-white text-left" style={{ paddingTop: '6.5rem', paddingBottom: '3rem' }}>
-            {/* Learning Model Section */}
-            <div className="px-4">
-              <h3 className="font-bold text-white text-left mb-16" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px' }}>
+          <div className="w-full text-white text-left">
+            {/* Title Container */}
+            <div className="max-w-4xl mx-auto px-4">
+              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
+            </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+            {/* Testimonials and Cards Container */}
+            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
                 {/* Left Column - Testimonials Slider */}
                 <div className="flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -1609,39 +1672,39 @@ const Auth = () => {
                   <div className="relative">
                     {[
                       {
-                        quote: "Levelling up learning with smart AI integration.",
-                        name: "Mark Jones",
-                        role: "Student, Kings College"
+                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
+                        name: "Amelia Chen",
+                        role: "Junior Designer",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
                       },
                       {
-                        quote: "We think of it as everyone's responsibility in the organization to be more data-driven. After all, every single one of us is probably touching data in some way, regardless of your role.",
-                        name: "Rachel Alt-Simmons",
-                        role: "Head Of Strategic Design, Data, Pricing And Analytics"
+                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
+                        name: "Sarah Matthews",
+                        role: "Product Marketing Manager",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
-                        quote: "On Ignite, you learn from the experts. As you are taking courses, you are really learning from the best instructors in the world.",
-                        name: "Ofentswe Lebogo",
-                        role: "Data Scientist, Council for Scientific and Industrial Research (CSIR)"
+                        quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
+                        name: "James Patel",
+                        role: "University Student",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
-                        quote: "Ignite was how I got into my Masters program. The real-world projects and short video lessons were a game changer. They made complex topics easy to understand and apply.",
-                        name: "Ebuka Nwaformo",
-                        role: "Graduate Student, University College Dublin"
+                        quote: "Taking a career break left me feeling out of touch. Following the course and using the neat AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
+                        name: "Rebecca Thompson",
+                        role: "Former Teacher",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
                       },
                       {
-                        quote: "Only Ignite provides the interactive experience that reinforces learning. There's an excellent content depth—great for absolute beginners to experienced users.",
-                        name: "Sarah Schlobohm",
-                        role: "Senior Analytics Manager, Global Risk Analytics, HSBC"
-                      },
-                      {
-                        quote: "I've used other sites—Coursera, Udacity, things like that—but Ignite's been the one that I've stuck with.",
-                        name: "Devon Edwards Joseph",
-                        role: "Lloyds Banking Group"
+                        quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
+                        name: "David Morrison",
+                        role: "Sr Product Manager",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
                       }
                     ].map((testimonial, idx) => (
                       <div
                         key={idx}
-                        className="bg-white p-6 rounded-lg"
+                        className="bg-white p-6 rounded flex items-center justify-center"
                         style={{
                           position: idx === 0 ? 'relative' : 'absolute',
                           top: idx === 0 ? 'auto' : 0,
@@ -1649,38 +1712,60 @@ const Auth = () => {
                           right: idx === 0 ? 'auto' : 0,
                           opacity: currentTestimonialIndex === idx ? 1 : 0,
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
-                          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                          minHeight: '200px'
+                          transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          width: '576px',
+                          height: '324.8px',
+                          overflow: 'visible'
                         }}
                       >
-                        <p className="text-gray-900 text-lg leading-relaxed mb-4">
-                          "{testimonial.quote}"
-                        </p>
-                        <div className="flex items-center gap-3 mt-4">
-                          <div className="w-12 h-12 rounded-full bg-gray-300 flex-shrink-0"></div>
-                          <div>
-                            <div className="font-semibold text-black">{testimonial.name}</div>
-                            <div className="text-sm text-gray-600">{testimonial.role}</div>
-                          </div>
+                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '10px' }}>
+                          <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
+                            <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
+                          </p>
+                        </div>
+                        {/* Avatar positioned on bottom edge */}
+                        <div
+                          className="w-24 h-24 rounded flex-shrink-0"
+                          style={{
+                            position: 'absolute',
+                            bottom: '-40px',
+                            left: '44px',
+                            backgroundImage: `url(${testimonial.avatar})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        ></div>
+                        {/* Name and role positioned at bottom edge */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '155px',
+                            lineHeight: '1.2'
+                          }}
+                        >
+                          <div className="font-semibold text-black">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}</div>
                         </div>
                       </div>
                     ))}
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2 mt-6">
-                    {[0, 1, 2, 3, 4, 5].map((idx) => (
+                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem', marginLeft: '20px' }}>
+                    {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
                         onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`transition-all duration-300 rounded-sm ${
+                        className={`transition-all duration-300 ${
                           currentTestimonialIndex === idx
                             ? 'bg-[#EF0B72]'
                             : 'bg-white hover:bg-gray-300'
                         }`}
                         style={{
                           width: currentTestimonialIndex === idx ? '32px' : '10px',
-                          height: '10px'
+                          height: '10px',
+                          borderRadius: '2px'
                         }}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
@@ -1689,9 +1774,121 @@ const Auth = () => {
                 </div>
 
 
-              </div>
+                {/* Right Column - 2x2 Grid of Cards */}
+                <div className="flex items-center justify-center">
+                  <div className="relative" style={{ width: '21.35rem', height: '20.3rem' }}>
+                    {[
+                      {
+                        title: 'Recent Graduates',
+                        description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.',
+                        position: { top: '0', left: '0' }
+                      },
+                      {
+                        title: 'Career Break Returners',
+                        description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
+                        position: { top: '0', left: '11.05rem' }
+                      },
+                      {
+                        title: 'Upskilling in Role',
+                        description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
+                        position: { top: '10.525rem', left: '0' }
+                      },
+                      {
+                        title: 'Pivotting Careers',
+                        description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
+                        position: { top: '10.525rem', left: '11.05rem' }
+                      }
+                    ].map((card, idx) => (
+                      <div
+                        key={idx}
+                        onMouseEnter={() => {
+                          setHoveredUseCase(idx);
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredUseCase(null);
+                        }}
+                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                        style={{
+                          height: '9.775rem',
+                          width: '10.3rem',
+                          top: card.position.top,
+                          left: card.position.left,
+                          zIndex: 1,
+                          padding: '1.5rem',
+                          opacity: hoveredUseCase !== null ? 0 : 1,
+                          transition: 'opacity 300ms ease-in-out',
+                          pointerEvents: 'auto'
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <h4 className="font-semibold leading-tight text-lg" style={{
+                            color: '#7714E0'
+                          }}>
+                            {card.title === 'Career Break Returners' ? (
+                              <>Career Break<br />Returners</>
+                            ) : card.title === 'Upskilling in Role' ? (
+                              <>Upskilling<br />in Role</>
+                            ) : card.title}
+                          </h4>
+                        </div>
+                      </div>
+                    ))}
 
-              <div className="flex justify-center mt-12">
+                    {/* Single overlay card that covers entire grid */}
+                    <div
+                      onMouseEnter={() => {
+                        if (hoveredUseCase !== null) {
+                          setHoveredUseCase(hoveredUseCase);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredUseCase(null);
+                      }}
+                      className="absolute rounded flex items-center justify-center bg-white"
+                      style={{
+                        top: 0,
+                        left: 0,
+                        width: '21.35rem',
+                        height: '20.3rem',
+                        zIndex: 10,
+                        padding: '2rem',
+                        opacity: hoveredUseCase !== null ? 1 : 0,
+                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
+                        transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
+                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
+                      }}
+                    >
+                      <div className="flex flex-col items-center justify-center text-center" style={{
+                        animation: hoveredUseCase !== null ? 'fadeIn 400ms ease-in forwards' : 'none',
+                        animationDelay: '100ms',
+                        opacity: 0
+                      }}>
+                        <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                          color: '#7714E0'
+                        }}>
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].title : ''}
+                        </h4>
+                        <p className="text-black text-base leading-relaxed">
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].description : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center mt-12">
                 <button
                   onClick={() => {
                     linkedInFAQSectionRef.current?.scrollIntoView({
@@ -1711,7 +1908,6 @@ const Auth = () => {
               </div>
             </div>
           </div>
-        </div>
 
       {/* Sixth Section - LinkedIn & FAQs */}
         <div
@@ -1724,116 +1920,194 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 px-4 max-w-7xl mx-auto mb-12">
-              {/* Left Column - LinkedIn Posts (2 cols) */}
-              <div className="lg:col-span-2 space-y-4">
-                <h3 className="text-2xl font-bold text-white mb-6">Latest from LinkedIn</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
+              {/* Left Column - LinkedIn Posts */}
+              <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
+                <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)' }}>
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '1.5rem' }}>{typedLinkedInHeading}</h3>
+                </div>
 
                 {linkedInLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
                     <p className="text-gray-400 mt-4">Loading posts...</p>
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {linkedInPosts.map((post, idx) => (
-                      <div
-                        key={post.id}
-                        className="bg-white rounded-lg p-5 text-gray-800"
-                        style={{
-                          opacity: 1,
-                          transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
-                          transition: `all 0.6s cubic-bezier(0.4, 0, 0.2, 1) ${0.1 + idx * 0.15}s`
-                        }}
-                      >
-                        <p className="text-sm leading-relaxed mb-3">{post.text}</p>
-                        <div className="flex items-center justify-between text-xs text-gray-500">
-                          <span>{new Date(post.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                          <div className="flex gap-4">
-                            <span>👍 {post.likes}</span>
-                            <span>💬 {post.comments}</span>
-                            <span>🔁 {post.shares}</span>
-                          </div>
+                ) : linkedInPosts.length > 0 ? (
+                  <div className="flex flex-col items-start justify-center">
+                    {/* Single Post Display */}
+                    <div
+                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        opacity: 1,
+                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
+                        {linkedInPosts[currentLinkedInPost]?.text}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <div className="flex gap-4">
+                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
+                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
+                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
                         </div>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Carousel Indicators with Arrows */}
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      {/* Left Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Previous post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Dot Indicators */}
+                      <div className="flex justify-center gap-2">
+                        {linkedInPosts.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentLinkedInPost(idx)}
+                            className={`transition-all duration-300 ${
+                              currentLinkedInPost === idx
+                                ? 'bg-[#EF0B72]'
+                                : 'bg-white hover:bg-gray-300'
+                            }`}
+                            style={{
+                              width: currentLinkedInPost === idx ? '32px' : '10px',
+                              height: '10px',
+                              borderRadius: '2px'
+                            }}
+                            aria-label={`Go to post ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Right Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Next post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                )}
+                ) : null}
               </div>
 
-              {/* Right Column - FAQs (3 cols) */}
-              <div className="lg:col-span-3 space-y-3">
-                <h3 className="text-2xl font-bold text-white mb-6">Frequently Asked Questions</h3>
+              {/* Right Column - FAQs */}
+              <div>
+                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 1.5rem)', width: '85%', margin: '0 auto' }}>
+                  <h3 className="font-bold text-white mb-6 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
+                </div>
 
+                <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite is a free, online learning platform offering industry-leading courses in high-demand fields like Product Management, Cybersecurity, and more. Our courses are built by experts and designed to help you gain practical skills through real-world projects.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
                   },
                   {
                     question: 'Who is Ignite for?',
-                    answer: 'Ignite is for everyone! Whether you\'re a recent graduate, career changer, returning to work after a break, or looking to upskill in your current role, our courses are designed to meet you where you are and help you reach your goals.'
+                    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
                   },
                   {
                     question: 'How much does Ignite cost?',
-                    answer: 'Ignite is completely free! We believe education should be accessible to everyone. Our platform is funded by limited, non-intrusive advertising, so you can focus on learning without worrying about subscription fees or hidden costs.'
+                    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
                   },
                   {
                     question: 'What can I learn on Ignite?',
-                    answer: 'We offer comprehensive courses in Product Management, Cybersecurity, and more fields are coming soon! Each course includes interactive lessons, hands-on projects, knowledge checks, and a certification upon completion.'
+                    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
                   },
                   {
                     question: 'Can I learn at my own pace?',
-                    answer: 'Absolutely! Ignite courses are self-paced, so you can learn when and where it works best for you. Whether you have 10 minutes or 2 hours, you can pick up right where you left off and progress at your own speed.'
+                    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
                   },
                   {
-                    question: 'Who created Ignite?',
-                    answer: 'Ignite was founded by a team of educators and industry professionals passionate about making high-quality education accessible to everyone. Our courses are developed in collaboration with subject matter experts from leading companies.'
+                    question: 'What makes Ignite different?',
+                    answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
                   }
                 ].map((faq, idx) => (
                   <div
                     key={idx}
-                    className="rounded-2xl overflow-hidden cursor-pointer transition-all duration-300"
+                    className="rounded cursor-pointer"
                     style={{
-                      background: '#D84A8C',
+                      backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: expandedFAQ === idx ? '7.25rem' : '3.75rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
                       opacity: 0,
                       animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
                     }}
-                    onMouseEnter={() => setExpandedFAQ(idx)}
-                    onMouseLeave={() => setExpandedFAQ(null)}
+                    onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
-                    <div className="px-6 py-4 flex items-center justify-between">
-                      <h4 className="text-lg font-bold text-white">{faq.question}</h4>
-                      <div
-                        className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-transform duration-300"
-                        style={{
-                          background: '#7B2D4E',
-                          transform: expandedFAQ === idx ? 'rotate(45deg)' : 'rotate(0deg)'
-                        }}
-                      >
-                        <span className="text-white text-2xl font-light">+</span>
-                      </div>
-                    </div>
-                    <div
-                      className="px-6 overflow-hidden transition-all duration-300 ease-in-out"
-                      style={{
-                        maxHeight: expandedFAQ === idx ? '300px' : '0px',
-                        paddingTop: expandedFAQ === idx ? '0px' : '0px',
-                        paddingBottom: expandedFAQ === idx ? '16px' : '0px'
-                      }}
-                    >
-                      <p className="text-white text-sm leading-relaxed">{faq.answer}</p>
-                    </div>
+                    <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#000000' }}>
+                      {faq.question}
+                    </h4>
+                    {expandedFAQ === idx && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.1rem',
+                        paddingBottom: '3px',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        {faq.answer}
+                      </p>
+                    )}
                   </div>
                 ))}
+                </div>
               </div>
+            </div>
+
+            {/* Get Started Button */}
+            <div className="flex justify-center px-4 pb-8" style={{ paddingTop: '0px' }}>
+              <button
+                onClick={() => {
+                  if (authScrollContainerRef.current) {
+                    authScrollContainerRef.current.scrollTo({
+                      top: 0,
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
+                className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
+                style={{ fontSize: '16px' }}
+              >
+                Get Started
+              </button>
             </div>
 
             {/* Footer Links */}
             <div className="flex justify-center gap-8 px-4 pb-12">
               <a
                 href="mailto:hello@ignite.education"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Contact
               </a>
@@ -1841,7 +2115,8 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/jobs/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Careers
               </a>
@@ -1849,13 +2124,15 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 LinkedIn
               </a>
               <a
                 href="https://ignite.education/policy"
-                className="text-white hover:text-purple-400 transition text-sm font-medium"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
               >
                 Policy
               </a>
@@ -1888,7 +2165,6 @@ const Auth = () => {
               width: '450px',
               maxWidth: '90vw',
               animation: 'scaleUp 0.2s ease-out',
-              borderRadius: '0.3rem',
               padding: '2rem'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -1976,8 +2252,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp"
             style={{
               width: '720px',
-              height: '70vh',
-              borderRadius: '0.3rem',
+              height: '70vh'
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -2108,7 +2383,6 @@ const Auth = () => {
                                 paddingRight: '5.618px',
                                 paddingBottom: '5.618px',
                                 paddingLeft: '14px',
-                                borderRadius: '0.3rem',
                                 background: '#7714E0',
                                 height: '90px',
                                 scrollSnapAlign: 'start',
@@ -2126,7 +2400,6 @@ const Auth = () => {
                                   backgroundColor: 'rgba(0, 0, 0, 0.5)',
                                   backdropFilter: 'blur(0.75px)',
                                   WebkitBackdropFilter: 'blur(0.75px)',
-                                  borderRadius: '0.3rem',
                                   pointerEvents: 'none',
                                   opacity: index === snappedModuleIndex ? 0 : 1,
                                   transition: 'opacity 0.2s ease-out',

@@ -7,9 +7,6 @@ import { createClient } from '@supabase/supabase-js';
 import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
 import { render } from '@react-email/render';
 import React from 'react';
-import axios from 'axios';
-import NodeCache from 'node-cache';
-import cron from 'node-cron';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,10 +42,6 @@ const pollyClient = new PollyClient({
 
 // Initialize Resend (optional) - will be loaded dynamically when needed
 let resend = null;
-
-// Initialize LinkedIn posts cache with 24-hour TTL
-const linkedInCache = new NodeCache({ stdTTL: 24 * 60 * 60 }); // 24 hours in seconds
-const LINKEDIN_CACHE_KEY = 'linkedin_posts';
 
 app.use(cors());
 
@@ -1941,275 +1934,281 @@ app.get('/api/certificate/user/:userId', async (req, res) => {
 // ============================================================================
 // END CERTIFICATE ENDPOINTS
 // ============================================================================
-// LINKEDIN POSTS INTEGRATION - BRIGHT DATA
+
+// ============================================================================
+// LINKEDIN ENDPOINTS
 // ============================================================================
 
-/**
- * Fetch LinkedIn posts from Bright Data API
- * Using Bright Data's LinkedIn Company Scraper
- * Cost: $0.05 per request (~$1.50/month with daily updates)
- */
-async function fetchLinkedInPostsFromBrightData() {
-  const BRIGHT_DATA_API_KEY = process.env.BRIGHT_DATA_API_KEY;
-  const LINKEDIN_SCHOOL_URL = 'https://www.linkedin.com/school/ignite-courses/';
+// Cache for LinkedIn posts to avoid rate limiting
+let linkedInPostsCache = {
+  data: null,
+  timestamp: null,
+  expiresIn: 15 * 60 * 1000 // Cache for 15 minutes
+};
 
-  if (!BRIGHT_DATA_API_KEY) {
-    console.warn('⚠️  BRIGHT_DATA_API_KEY not configured - using mock data');
-    return getMockLinkedInPosts();
-  }
+// LinkedIn admin token storage (in production, store in database)
+let linkedInAdminToken = {
+  accessToken: null,
+  refreshToken: null,
+  expiresAt: null
+};
 
+// Get LinkedIn organization posts
+app.get('/api/linkedin/posts', async (req, res) => {
   try {
-    console.log('🔗 Fetching LinkedIn posts from Bright Data...');
+    const count = parseInt(req.query.count) || 3;
 
-    // Trigger the Bright Data scraping job
-    const triggerResponse = await axios.post(
-      'https://api.brightdata.com/datasets/v3/trigger',
-      {
-        dataset_id: 'gd_l7q7dkf244hwjntr0', // LinkedIn Companies dataset
-        endpoint: 'dataset_collection',
-        format: 'json',
-        url: LINKEDIN_SCHOOL_URL,
-        include_errors: true
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${BRIGHT_DATA_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    const snapshotId = triggerResponse.data.snapshot_id;
-    console.log(`📸 Bright Data job triggered. Snapshot ID: ${snapshotId}`);
-
-    // Poll for results (max 30 attempts, 2 seconds apart = 1 minute max wait)
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    while (attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-      
-      try {
-        const resultResponse = await axios.get(
-          `https://api.brightdata.com/datasets/v3/snapshot/${snapshotId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${BRIGHT_DATA_API_KEY}`
-            }
-          }
-        );
-
-        if (resultResponse.data.status === 'ready') {
-          console.log('✅ Bright Data scraping completed successfully');
-          
-          const companyData = resultResponse.data.data;
-          
-          // Extract posts from company data
-          // Note: Actual structure may vary - adjust based on Bright Data response
-          const posts = (companyData.posts || companyData.updates || [])
-            .slice(0, 5) // Get latest 5 posts
-            .map((post, idx) => ({
-              id: post.id || post.urn || `bright-${Date.now()}-${idx}`,
-              text: post.text || post.commentary || post.description || '',
-              created: post.published_date ? new Date(post.published_date).getTime() : Date.now() - (idx * 24 * 60 * 60 * 1000),
-              author: 'Ignite Education',
-              likes: post.num_likes || post.likes || 0,
-              comments: post.num_comments || post.comments || 0,
-              shares: post.num_shares || post.shares || post.reposts || 0,
-              url: post.url || post.link || null,
-              image: post.image_url || post.media_url || null
-            }));
-
-          if (posts.length > 0) {
-            console.log(`✅ Successfully extracted ${posts.length} LinkedIn posts`);
-            return posts;
-          } else {
-            console.warn('⚠️  No posts found in Bright Data response');
-            return getMockLinkedInPosts();
-          }
-        } else if (resultResponse.data.status === 'failed') {
-          console.error('❌ Bright Data scraping failed:', resultResponse.data.error);
-          return getMockLinkedInPosts();
-        }
-        
-        // Still processing...
-        attempts++;
-        console.log(`⏳ Waiting for Bright Data results... (${attempts}/${maxAttempts})`);
-        
-      } catch (pollError) {
-        console.error('❌ Error polling Bright Data results:', pollError.message);
-        attempts++;
-      }
+    // Check cache first
+    const now = Date.now();
+    if (linkedInPostsCache.data &&
+        linkedInPostsCache.timestamp &&
+        (now - linkedInPostsCache.timestamp) < linkedInPostsCache.expiresIn) {
+      console.log('📦 Returning cached LinkedIn posts');
+      return res.json(linkedInPostsCache.data);
     }
 
-    // Timeout - return cached or mock data
-    console.warn('⏱️  Bright Data request timed out after 1 minute');
-    return getMockLinkedInPosts();
+    console.log('🔗 Attempting to fetch LinkedIn posts via API...');
+
+    // Try to fetch from LinkedIn API using admin token
+    try {
+      const accessToken = await getValidLinkedInToken();
+      const orgId = '104616735'; // Ignite Courses organization ID
+
+      const postsResponse = await fetch(
+        `https://api.linkedin.com/v2/organizationalEntityShareStatistics?q=organizationalEntity&organizationalEntity=urn:li:organization:${orgId}&count=${count}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'X-Restli-Protocol-Version': '2.0.0'
+          }
+        }
+      );
+
+      if (postsResponse.ok) {
+        const postsData = await postsResponse.json();
+
+        // Transform LinkedIn API response to our format
+        const posts = (postsData.elements || []).map((post, idx) => ({
+          id: post.organizationalEntity || `post-${idx}`,
+          text: post.commentary || post.text?.text || '',
+          created: post.lastModified?.time || Date.now(),
+          author: 'Ignite Education',
+          likes: post.totalShareStatistics?.likeCount || 0,
+          comments: post.totalShareStatistics?.commentCount || 0,
+          shares: post.totalShareStatistics?.shareCount || 0
+        }));
+
+        if (posts.length > 0) {
+          // Update cache
+          linkedInPostsCache = {
+            data: posts,
+            timestamp: now
+          };
+
+          console.log('✅ Successfully fetched', posts.length, 'LinkedIn posts from API');
+          return res.json(posts);
+        }
+      } else {
+        console.error('❌ LinkedIn API returned:', postsResponse.status, await postsResponse.text());
+      }
+    } catch (apiError) {
+      console.log('📋 LinkedIn API fetch failed:', apiError.message);
+    }
+
+    // Fallback to mock data
+    console.log('📋 Using mock LinkedIn posts (RSS not available)');
+    const mockPosts = getMockLinkedInPosts();
+
+    // Update cache with mock data
+    linkedInPostsCache = {
+      data: mockPosts,
+      timestamp: now
+    };
+
+    res.json(mockPosts);
 
   } catch (error) {
-    console.error('❌ Error fetching from Bright Data:', error.response?.data || error.message);
-    return getMockLinkedInPosts();
+    console.error('❌ Error fetching LinkedIn posts:', error);
+    // Return mock data on error
+    res.json(getMockLinkedInPosts());
   }
-}
+});
 
-/**
- * Get LinkedIn posts (with caching)
- * Checks cache first, then fetches from Bright Data if needed
- */
-async function getLinkedInPosts() {
-  // Check cache first
-  const cachedPosts = linkedInCache.get(LINKEDIN_CACHE_KEY);
-  
-  if (cachedPosts) {
-    console.log('📦 Returning cached LinkedIn posts');
-    return cachedPosts;
-  }
-
-  // Fetch fresh data from Bright Data
-  console.log('🔄 Cache miss - fetching fresh LinkedIn posts');
-  const posts = await fetchLinkedInPostsFromBrightData();
-  
-  // Cache the results (24 hour TTL set in NodeCache initialization)
-  linkedInCache.set(LINKEDIN_CACHE_KEY, posts);
-  
-  return posts;
-}
-
-/**
- * Fallback mock data when API is unavailable
- */
+// Fallback mock data
 function getMockLinkedInPosts() {
   return [
     {
-      id: '7366907418041090049',
-      text: 'Want to get into Product Management? Every week, we round up the best opportunities.\n\nGraduate Product Manager at Evernote (UK/Italy)\nProgramme Manager Graduate at TikTok (UK)\nProduct Manager Intern at TikTok (UK)\nProduct Owner (Graduate) at Revolut (UK)\nAssistant Product Marketing Manager at Huel (UK)\nProduct Manager (Subscriptions) at Spotify (UK/Sweden)\nProduct Manager (Developer Marketplace) at Vodafone (UK)\nProduct Manager at Selfridges (UK)\n\nKnow of any others? Share them in the comments!\n\n#ProductManagement #EntryLevelJobs',
-      created: new Date('2025-01-13').getTime(),
+      id: '1',
+      text: 'Excited to announce our latest course on Product Management! Learn from industry experts and build real-world projects. 🚀',
+      created: Date.now() - 2 * 24 * 60 * 60 * 1000, // 2 days ago
       author: 'Ignite Education',
-      likes: 1,
-      comments: 0,
-      shares: 0,
-      url: 'https://www.linkedin.com/school/ignite-courses/'
+      likes: 47,
+      comments: 8,
+      shares: 12
     },
     {
       id: '2',
       text: 'Join thousands of learners upskilling with Ignite. Our courses are completely free and designed for everyone. 💡',
-      created: Date.now() - 5 * 24 * 60 * 60 * 1000,
+      created: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
       author: 'Ignite Education',
       likes: 63,
       comments: 15,
-      shares: 21,
-      url: 'https://www.linkedin.com/school/ignite-courses/'
+      shares: 21
     },
     {
       id: '3',
       text: 'New module just dropped in our Cybersecurity course! Dive into threat detection and incident response. 🔒',
-      created: Date.now() - 7 * 24 * 60 * 60 * 1000,
+      created: Date.now() - 7 * 24 * 60 * 60 * 1000, // 7 days ago
       author: 'Ignite Education',
       likes: 89,
       comments: 23,
-      shares: 34,
-      url: 'https://www.linkedin.com/school/ignite-courses/'
-    },
-    {
-      id: '4',
-      text: 'Check out our latest graduates who landed amazing roles in tech! Your success story could be next. 🎓',
-      created: Date.now() - 10 * 24 * 60 * 60 * 1000,
-      author: 'Ignite Education',
-      likes: 102,
-      comments: 31,
-      shares: 45,
-      url: 'https://www.linkedin.com/school/ignite-courses/'
-    },
-    {
-      id: '5',
-      text: 'Free webinar next week: Breaking into Tech - Tips from Industry Leaders. Register now! 🚀',
-      created: Date.now() - 14 * 24 * 60 * 60 * 1000,
-      author: 'Ignite Education',
-      likes: 127,
-      comments: 18,
-      shares: 56,
-      url: 'https://www.linkedin.com/school/ignite-courses/'
+      shares: 34
     }
   ];
 }
 
-/**
- * API Endpoint: Get LinkedIn posts
- * Returns cached posts or fetches fresh data if cache expired
- */
-app.get('/api/linkedin/posts', async (req, res) => {
+// Admin: Initiate LinkedIn OAuth (call this once to authenticate)
+app.get('/api/linkedin/admin/auth', (req, res) => {
+  const state = Math.random().toString(36).substring(7);
+
+  // Scopes needed:
+  // - r_organization_social: Read organization posts (requires Community Management API product)
+  // - profile, openid, email: Basic profile info (available with Sign In with LinkedIn)
+  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?` +
+    `response_type=code&` +
+    `client_id=${process.env.VITE_LINKEDIN_CLIENT_ID}&` +
+    `redirect_uri=${encodeURIComponent(process.env.VITE_LINKEDIN_REDIRECT_URI)}&` +
+    `state=${state}&` +
+    `scope=profile%20email`;
+
+  res.redirect(authUrl);
+});
+
+// Admin: Handle LinkedIn OAuth callback
+app.get('/api/linkedin/admin/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+
+  if (error) {
+    return res.status(400).send(`LinkedIn OAuth error: ${error}`);
+  }
+
+  if (!code) {
+    return res.status(400).send('No authorization code received');
+  }
+
   try {
-    const posts = await getLinkedInPosts();
-    const requestedCount = parseInt(req.query.count) || 5;
-    
-    // Return only the requested number of posts
-    res.json(posts.slice(0, requestedCount));
-  } catch (error) {
-    console.error('❌ Error in /api/linkedin/posts endpoint:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch LinkedIn posts',
-      posts: getMockLinkedInPosts().slice(0, parseInt(req.query.count) || 5)
+    // Exchange code for access token
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        code: code,
+        redirect_uri: process.env.VITE_LINKEDIN_REDIRECT_URI,
+        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
+        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
+      })
     });
+
+    if (!tokenResponse.ok) {
+      const errorData = await tokenResponse.text();
+      console.error('LinkedIn token exchange failed:', errorData);
+      return res.status(500).send(`Failed to exchange code for token: ${errorData}`);
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    // Store the token
+    linkedInAdminToken = {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresAt: Date.now() + (tokenData.expires_in * 1000)
+    };
+
+    console.log('✅ LinkedIn admin token stored successfully');
+    console.log('   Expires at:', new Date(linkedInAdminToken.expiresAt).toLocaleString());
+
+    res.send(`
+      <html>
+        <head><title>LinkedIn Auth Success</title></head>
+        <body style="font-family: Arial; padding: 40px; text-align: center;">
+          <h1 style="color: #0077b5;">✅ LinkedIn Authentication Successful!</h1>
+          <p>Your LinkedIn posts will now appear on the auth page.</p>
+          <p>Token expires: ${new Date(linkedInAdminToken.expiresAt).toLocaleString()}</p>
+          <p><a href="/">Return to homepage</a></p>
+        </body>
+      </html>
+    `);
+
+    // Clear the posts cache to fetch fresh data
+    linkedInPostsCache = { data: null, timestamp: null, expiresIn: 15 * 60 * 1000 };
+
+  } catch (error) {
+    console.error('Error in LinkedIn callback:', error);
+    res.status(500).send(`Error: ${error.message}`);
   }
 });
 
-/**
- * Manual cache refresh endpoint (for testing or manual updates)
- */
-app.get('/api/linkedin/refresh', async (req, res) => {
-  try {
-    console.log('🔄 Manual LinkedIn cache refresh requested');
-    
-    // Clear cache
-    linkedInCache.del(LINKEDIN_CACHE_KEY);
-    
-    // Fetch fresh data
-    const posts = await getLinkedInPosts();
-    
-    res.json({
-      success: true,
-      message: 'LinkedIn posts cache refreshed',
-      posts: posts,
-      cachedUntil: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-    });
-  } catch (error) {
-    console.error('❌ Error refreshing LinkedIn cache:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to refresh cache'
-    });
+// Helper: Get valid LinkedIn access token (with refresh if needed)
+async function getValidLinkedInToken() {
+  // Check if we have a token
+  if (!linkedInAdminToken.accessToken) {
+    throw new Error('No LinkedIn admin token available. Please authenticate first.');
   }
-});
 
-/**
- * Scheduled daily update of LinkedIn posts
- * Runs at 3 AM every day to refresh the cache
- * This ensures the cache is always warm and API costs are minimized
- */
-cron.schedule('0 3 * * *', async () => {
-  console.log('⏰ Running scheduled LinkedIn posts update (3 AM daily)');
-  
-  try {
-    // Clear cache to force fresh fetch
-    linkedInCache.del(LINKEDIN_CACHE_KEY);
-    
-    // Fetch and cache new posts
-    await getLinkedInPosts();
-    
-    console.log('✅ Scheduled LinkedIn posts update completed successfully');
-  } catch (error) {
-    console.error('❌ Error in scheduled LinkedIn posts update:', error);
+  // Check if token is still valid (with 5 min buffer)
+  const now = Date.now();
+  if (linkedInAdminToken.expiresAt && now < linkedInAdminToken.expiresAt - (5 * 60 * 1000)) {
+    return linkedInAdminToken.accessToken;
   }
-}, {
-  timezone: "America/New_York" // Adjust to your timezone
-});
 
-// Log that the cron job is scheduled
-console.log('⏰ LinkedIn posts cron job scheduled: Daily at 3 AM');
+  // Token expired or about to expire, try to refresh
+  if (!linkedInAdminToken.refreshToken) {
+    throw new Error('LinkedIn token expired and no refresh token available. Please re-authenticate.');
+  }
+
+  console.log('🔄 Refreshing LinkedIn access token...');
+
+  try {
+    const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: linkedInAdminToken.refreshToken,
+        client_id: process.env.VITE_LINKEDIN_CLIENT_ID,
+        client_secret: process.env.VITE_LINKEDIN_CLIENT_SECRET
+      })
+    });
+
+    if (!tokenResponse.ok) {
+      throw new Error('Failed to refresh LinkedIn token');
+    }
+
+    const tokenData = await tokenResponse.json();
+
+    // Update stored token
+    linkedInAdminToken = {
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token || linkedInAdminToken.refreshToken,
+      expiresAt: Date.now() + (tokenData.expires_in * 1000)
+    };
+
+    console.log('✅ LinkedIn token refreshed successfully');
+    return linkedInAdminToken.accessToken;
+
+  } catch (error) {
+    console.error('❌ Failed to refresh LinkedIn token:', error);
+    throw new Error('Failed to refresh LinkedIn token. Please re-authenticate.');
+  }
+}
 
 // ============================================================================
 // END LINKEDIN ENDPOINTS
-// ============================================================================
 // ============================================================================
 
 app.listen(PORT, () => {
