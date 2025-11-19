@@ -1011,7 +1011,7 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative" style={{ scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-center justify-center px-8 relative" style={{ scrollSnapAlign: 'start' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
@@ -1028,20 +1028,20 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-lg sm:text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
+        <h1 className="text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
           Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
         </h1>
 
         <div className="w-full">
 
         {/* Title above the box */}
-        <h2 className="text-sm sm:text-base md:text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+        <h2 className="text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
           {isLogin ? 'Welcome Back' : 'Create Account'}
         </h2>
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4"
+          className="bg-white text-black px-5 py-4"
           style={{
             animation: 'scaleUp 0.2s ease-out'
           }}
@@ -1054,14 +1054,14 @@ const Auth = () => {
           )}
 
           {/* OAuth Buttons */}
-          <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
+          <div className="space-y-2 mb-3">
             <button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-3 py-1.5 sm:py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
@@ -1074,9 +1074,9 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('linkedin_oidc')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-xl px-3 py-1.5 sm:py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-xl px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
               <span className="truncate">Continue with LinkedIn</span>
@@ -1088,61 +1088,61 @@ const Auth = () => {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-gray-300"></div>
             </div>
-            <div className="relative flex justify-center text-xs sm:text-sm">
+            <div className="relative flex justify-center text-sm">
               <span className="px-2 bg-white text-gray-500">Or</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 sm:gap-2">
-            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5">First Name</label>
+                <label className="block text-sm font-medium mb-0.5">First Name</label>
                 <input
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
                   placeholder="John"
                   disabled={isLogin}
                 />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5">Last Name</label>
+                <label className="block text-sm font-medium mb-0.5">Last Name</label>
                 <input
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
                   placeholder="Doe"
                   disabled={isLogin}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5">Email</label>
+                <label className="block text-sm font-medium mb-0.5">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="you@example.com"
                 />
               </div>
 
               <div>
-                <label className="block text-xs sm:text-sm font-medium mb-0.5">Password</label>
+                <label className="block text-sm font-medium mb-0.5">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
                   placeholder="••••••••"
                 />
               </div>
@@ -1151,7 +1151,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-1.5 sm:py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
@@ -1220,7 +1220,7 @@ const Auth = () => {
       {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative"
+          className="min-h-screen flex items-center justify-center px-8 relative"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1300,7 +1300,7 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative"
+          className="min-h-screen flex items-center justify-center px-8 relative"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1308,7 +1308,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 px-4 w-full items-center">
+            <div className="grid grid-cols-2 gap-12 px-4 w-full items-center">
               {/* Left Column - Description */}
               <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
@@ -1443,7 +1443,7 @@ const Auth = () => {
       {/* Fourth Section - Learning Model */}
         <div
           ref={learningModelSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1456,7 +1456,7 @@ const Auth = () => {
                 {renderTypedLearningTagline()}
               </h3>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
+              <div className="grid grid-cols-2 gap-3 items-center">
                 {/* Left Column - Feature Cards */}
                 <div className="space-y-3 flex-shrink-0">
                   {/* Card 1 - AI smarts */}
@@ -1650,7 +1650,7 @@ const Auth = () => {
       {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1666,7 +1666,7 @@ const Auth = () => {
 
             {/* Testimonials and Cards Container */}
             <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              <div className="grid grid-cols-2 gap-12 items-start">
                 {/* Left Column - Testimonials Slider */}
                 <div className="flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -1914,7 +1914,7 @@ const Auth = () => {
       {/* Sixth Section - LinkedIn & FAQs */}
         <div
           ref={linkedInFAQSectionRef}
-          className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8"
+          className="min-h-screen flex items-center justify-center px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1922,7 +1922,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
+            <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
               {/* Left Column - LinkedIn Posts */}
               <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
