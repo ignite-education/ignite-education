@@ -1335,7 +1335,6 @@ const Auth = () => {
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
-                    scrollSnapType: 'x mandatory',
                     paddingRight: '0px'
                   }}
                 >
@@ -1357,8 +1356,7 @@ const Auth = () => {
                         style={{ 
           width: '600px',
                           transform: 'scale(0.85)',
-                          transformOrigin: 'left',
-                          scrollSnapAlign: 'start'
+                          transformOrigin: 'left'
                         }}
                       >
                         {pageCourses.map((course) => {
