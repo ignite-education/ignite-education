@@ -2114,7 +2114,7 @@ const Auth = () => {
             </div>
 
             {/* Get Started Button */}
-            <div className="flex justify-center px-4 pb-8">
+            <div className="flex justify-center px-4 pb-8" style={{ paddingTop: '22.4px' }}>
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
@@ -2124,7 +2124,7 @@ const Auth = () => {
                     });
                   }
                 }}
-                className="bg-[#D84A8C] hover:bg-[#EF0B72] text-white font-semibold py-3 px-8 rounded transition"
+                className="bg-white hover:bg-white text-black hover:text-[#D84A8C] font-semibold py-3 px-8 rounded transition"
                 style={{ fontSize: '16px' }}
               >
                 Get Started
