@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import confetti from 'canvas-confetti';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
@@ -407,6 +408,44 @@ const LearningHub = () => {
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex, chatMessages]);
+
+  // Trigger confetti when LinkedIn modal opens
+  useEffect(() => {
+    if (showLinkedInModal) {
+      // Small delay to let modal animate in
+      setTimeout(() => {
+        const duration = 2000; // 2 seconds
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 50 * (timeLeft / duration);
+          
+          // Fire confetti from different positions
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+          });
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+          });
+        }, 250);
+      }, 300);
+    }
+  }, [showLinkedInModal]);
 
   // Track which card is in the leftmost position using Intersection Observer
   useEffect(() => {
@@ -3120,7 +3159,7 @@ ${currentLessonSections.map((section) => {
         >
           <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
             {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Add to LinkedIn</h2>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Congratulations</h2>
 
             {/* Modal Card - Entire card is clickable */}
             <div
@@ -3145,8 +3184,10 @@ ${currentLessonSections.map((section) => {
 
               {/* Content */}
               <div className="text-center">
+                <p className="text-black font-medium" style={{ marginBottom: '1.5rem' }}>
+                  Congratulations, you've completed your first lesson!
+                </p>
                 <p className="text-black mb-6">
-                  Congratulations, you've completed your first lesson!<br />
                   Add to your LinkedIn to showcase your progress.
                 </p>
 
@@ -3165,7 +3206,10 @@ ${currentLessonSections.map((section) => {
                     e.stopPropagation();
                     handleAddToLinkedIn();
                   }}
-                  className="w-full bg-gray-200 hover:bg-gray-300 text-black font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#EF0B72' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D90A65'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
                 >
                   Add to
                   <img
