@@ -3227,7 +3227,7 @@ ${currentLessonSections.map((section) => {
                 >
                   Add to
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/LI-Logo.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
                     alt="LinkedIn"
                     className="h-5"
                   />
