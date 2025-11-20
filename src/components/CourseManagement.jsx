@@ -19,6 +19,8 @@ const CourseManagement = () => {
     description: '',
     reddit_channel: '',
     reddit_url: '',
+    reddit_read_url: '',
+    reddit_post_url: '',
     calendly_url: ''
   });
 
@@ -83,6 +85,8 @@ const CourseManagement = () => {
       description: '',
       reddit_channel: '',
       reddit_url: '',
+      reddit_read_url: '',
+      reddit_post_url: '',
       calendly_url: ''
     });
     setShowAddModal(true);
@@ -130,6 +134,8 @@ const CourseManagement = () => {
       description: course.description || '',
       reddit_channel: course.reddit_channel || '',
       reddit_url: course.reddit_url || '',
+      reddit_read_url: course.reddit_read_url || '',
+      reddit_post_url: course.reddit_post_url || '',
       calendly_url: course.calendly_link || ''
     });
     setShowEditModal(true);
@@ -147,6 +153,8 @@ const CourseManagement = () => {
       description: '',
       reddit_channel: '',
       reddit_url: '',
+      reddit_read_url: '',
+      reddit_post_url: '',
       calendly_url: ''
     });
   };
@@ -181,6 +189,8 @@ const CourseManagement = () => {
         module_structure: formData.modules, // Save the full nested structure
         reddit_channel: formData.reddit_channel,
         reddit_url: formData.reddit_url,
+        reddit_read_url: formData.reddit_read_url,
+        reddit_post_url: formData.reddit_post_url,
         calendly_link: formData.calendly_url
       };
 
@@ -223,6 +233,8 @@ const CourseManagement = () => {
         module_structure: formData.modules, // Save the full nested structure
         reddit_channel: formData.reddit_channel,
         reddit_url: formData.reddit_url,
+        reddit_read_url: formData.reddit_read_url,
+        reddit_post_url: formData.reddit_post_url,
         calendly_link: formData.calendly_url
       };
 
@@ -558,7 +570,7 @@ const CourseManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL (Legacy)</label>
                 <input
                   type="text"
                   value={formData.reddit_url}
@@ -566,7 +578,31 @@ const CourseManagement = () => {
                   placeholder="e.g., https://www.reddit.com/r/ProductManagement/"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
-                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
+                <p className="text-xs text-gray-500 mt-1">Legacy field - kept for backward compatibility</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Thread for Display</label>
+                <input
+                  type="text"
+                  value={formData.reddit_read_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_read_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/ProductManagement/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit to fetch and display posts from</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Thread for Posting</label>
+                <input
+                  type="text"
+                  value={formData.reddit_post_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_post_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/PMcareers/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit where user posts will be submitted</p>
               </div>
 
               <div>
@@ -760,7 +796,7 @@ const CourseManagement = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Channel URL (Legacy)</label>
                 <input
                   type="text"
                   value={formData.reddit_url}
@@ -768,7 +804,31 @@ const CourseManagement = () => {
                   placeholder="e.g., https://www.reddit.com/r/ProductManagement/"
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 />
-                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit</p>
+                <p className="text-xs text-gray-500 mt-1">Legacy field - kept for backward compatibility</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Thread for Display</label>
+                <input
+                  type="text"
+                  value={formData.reddit_read_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_read_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/ProductManagement/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit to fetch and display posts from</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reddit Thread for Posting</label>
+                <input
+                  type="text"
+                  value={formData.reddit_post_url}
+                  onChange={(e) => setFormData({ ...formData, reddit_post_url: e.target.value })}
+                  placeholder="e.g., https://www.reddit.com/r/PMcareers/"
+                  className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                />
+                <p className="text-xs text-gray-500 mt-1">Full Reddit URL for the subreddit where user posts will be submitted</p>
               </div>
 
               <div>

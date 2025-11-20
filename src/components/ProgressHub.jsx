@@ -94,7 +94,9 @@ const ProgressHub = () => {
   const [calendlyLink, setCalendlyLink] = useState('');
   const [courseReddit, setCourseReddit] = useState({
     channel: 'r/ProductManagement',
-    url: 'https://www.reddit.com/r/ProductManagement/'
+    url: 'https://www.reddit.com/r/ProductManagement/',
+    readUrl: 'https://www.reddit.com/r/ProductManagement/',
+    postUrl: 'https://www.reddit.com/r/ProductManagement/'
   });
   const [userRole, setUserRole] = useState(null); // 'student', 'teacher', 'admin'
 
@@ -509,15 +511,39 @@ const ProgressHub = () => {
           // Update reddit data for community forum
           console.log('📱 Reddit data from DB:', {
             reddit_channel: courseData.reddit_channel,
-            reddit_url: courseData.reddit_url
+            reddit_url: courseData.reddit_url,
+            reddit_read_url: courseData.reddit_read_url,
+            reddit_post_url: courseData.reddit_post_url
           });
+
+          // Helper function to extract subreddit from URL
+          const extractSubredditFromUrl = (url) => {
+            if (!url) return null;
+            const match = url.match(/reddit\.com\/r\/([^\/]+)/);
+            return match ? `r/${match[1]}` : null;
+          };
+
+          // Use new fields if available, fallback to legacy fields
+          const readUrl = courseData.reddit_read_url || courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+          const postUrl = courseData.reddit_post_url || courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+          const readChannel = extractSubredditFromUrl(readUrl) || courseData.reddit_channel || 'r/ProductManagement';
+          const postChannel = extractSubredditFromUrl(postUrl) || courseData.reddit_channel || 'r/ProductManagement';
+
           setCourseReddit({
-            channel: courseData.reddit_channel || 'r/ProductManagement',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
+            channel: courseData.reddit_channel || 'r/ProductManagement', // Keep for display compatibility
+            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/', // Keep for legacy compatibility
+            readUrl: readUrl,
+            postUrl: postUrl,
+            readChannel: readChannel,
+            postChannel: postChannel
           });
           console.log('📱 courseReddit state updated to:', {
             channel: courseData.reddit_channel || 'r/ProductManagement',
-            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/'
+            url: courseData.reddit_url || 'https://www.reddit.com/r/ProductManagement/',
+            readUrl: readUrl,
+            postUrl: postUrl,
+            readChannel: readChannel,
+            postChannel: postChannel
           });
         }
       } catch (error) {
@@ -625,9 +651,28 @@ const ProgressHub = () => {
 
       // Fetch fresh data in the background (forceRefresh = false to respect server cache)
       try {
-        // Use the fetched course data to get the subreddit (not state, as state updates are async)
-        const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
-        const subreddit = redditChannel.replace(/^r\//, '');
+        // Helper function to extract subreddit from URL
+        const extractSubredditFromUrl = (url) => {
+          if (!url) return null;
+          const match = url.match(/reddit\.com\/r\/([^\/]+)/);
+          return match ? match[1] : null;
+        };
+
+        // Use the read URL if available, otherwise fall back to legacy channel
+        const readUrl = fetchedCourseData?.reddit_read_url || fetchedCourseData?.reddit_url;
+        let subreddit;
+
+        if (readUrl) {
+          subreddit = extractSubredditFromUrl(readUrl);
+        }
+
+        // Fallback to channel if URL extraction failed
+        if (!subreddit) {
+          const redditChannel = fetchedCourseData?.reddit_channel || 'r/ProductManagement';
+          subreddit = redditChannel.replace(/^r\//, '');
+        }
+
+        console.log('🔍 Fetching Reddit posts from subreddit:', subreddit);
         redditData = await getRedditPosts(25, false, subreddit);
       } catch (err) {
         console.error('❌ Error fetching Reddit posts:', err);
@@ -794,12 +839,16 @@ const ProgressHub = () => {
         return;
       }
 
-      // Post to Reddit
+      // Post to Reddit using the post subreddit
       console.log('📤 Posting to Reddit...');
       const contextLine = `\n\nFor context, I'm on the ${user.enrolledCourse} course at [Ignite](https://ignite.education).`;
       const redditContent = newPost.content + contextLine;
-      const subreddit = courseReddit.channel.replace(/^r\//, '');
-      const redditResult = await postToReddit(subreddit, newPost.title, redditContent, newPost.flair || null);
+
+      // Use postChannel if available, fallback to channel
+      const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
+      console.log('📤 Posting to subreddit:', postSubreddit);
+
+      const redditResult = await postToReddit(postSubreddit, newPost.title, redditContent, newPost.flair || null);
       console.log('✅ Posted to Reddit successfully:', redditResult.url);
 
       // Open the Reddit post in a new tab
@@ -1593,9 +1642,9 @@ const ProgressHub = () => {
 
       try {
         // Force refresh = true to bypass cache (but respects minimum 2-min refresh on server)
-        // Extract subreddit name from channel (remove 'r/' prefix)
-        const subreddit = courseReddit.channel.replace(/^r\//, '');
-        console.log('🔄 Refreshing Reddit posts for subreddit:', subreddit, 'from courseReddit.channel:', courseReddit.channel);
+        // Extract subreddit name from read channel (remove 'r/' prefix)
+        const subreddit = (courseReddit.readChannel || courseReddit.channel).replace(/^r\//, '');
+        console.log('🔄 Refreshing Reddit posts for subreddit:', subreddit, 'from courseReddit.readChannel:', courseReddit.readChannel);
         redditData = await getRedditPosts(25, true, subreddit);
         console.log('✅ Refreshed Reddit posts:', redditData?.length || 0);
       } catch (err) {
@@ -1905,8 +1954,8 @@ const ProgressHub = () => {
       setLoadingComments(prev => ({ ...prev, [post.id]: true }));
       console.log(`🔄 Fetching Reddit comments for post: ${post.redditId}`);
 
-      // Get the subreddit name from courseReddit (remove 'r/' prefix if present)
-      const subredditName = courseReddit.channel.replace(/^r\//, '');
+      // Get the subreddit name from courseReddit read channel (remove 'r/' prefix if present)
+      const subredditName = (courseReddit.readChannel || courseReddit.channel).replace(/^r\//, '');
       const redditComments = await getRedditComments(subredditName, post.redditId);
       console.log(`📦 Raw Reddit comments received:`, redditComments);
 
@@ -3015,7 +3064,7 @@ const ProgressHub = () => {
 
                   {/* Flair Selector */}
                   {(() => {
-                    const subreddit = courseReddit.channel.replace(/^r\//, '');
+                    const subreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
                     const availableFlairs = SUBREDDIT_FLAIRS[subreddit];
 
                     if (availableFlairs && availableFlairs.length > 0) {
@@ -3058,7 +3107,7 @@ const ProgressHub = () => {
                         <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
                       </svg>
                       <span className="text-black text-sm font-medium flex-1">
-                        This will be posted to {courseReddit.channel}
+                        This will be posted to {courseReddit.postChannel || courseReddit.channel}
                       </span>
                       {redditAuthenticated && (
                         <span className="text-xs text-green-600 flex items-center gap-1">
