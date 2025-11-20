@@ -420,7 +420,7 @@ const LearningHub = () => {
           startVelocity: 45, 
           spread: 360, 
           ticks: 80, 
-          zIndex: 40,  // Behind modal which is z-50
+          zIndex: 55,  // Above backdrop (z-50), below modal content (z-60)
           gravity: 1.2,
           scalar: 1.2  // Makes confetti bigger
         };
@@ -3169,7 +3169,7 @@ ${currentLessonSections.map((section) => {
           }}
           onClick={handleCloseLinkedInModal}
         >
-          <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
+          <div className="relative w-full px-4" style={{ maxWidth: '632.5px', zIndex: 60 }}>
             {/* Title above the box */}
             <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Congratulations</h2>
 
@@ -3196,7 +3196,7 @@ ${currentLessonSections.map((section) => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-medium text-lg" style={{ marginBottom: '1.5rem' }}>
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem' }}>
                   Congratulations, you've completed your first lesson!
                 </p>
                 <p className="text-black mb-6">
