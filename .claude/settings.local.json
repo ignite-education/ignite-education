@@ -40,7 +40,8 @@
       "Bash(rg:*)",
       "Bash(/tmp/course_management.jsx)",
       "Bash(/tmp/progresshub.jsx)",
-      "Bash(node run-dual-reddit-migration.js:*)"
+      "Bash(node run-dual-reddit-migration.js:*)",
+      "Bash(node run-user-progress-migration.js:*)"
     ],
     "deny": [],
     "ask": []
