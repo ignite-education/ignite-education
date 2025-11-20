@@ -125,11 +125,11 @@ const GoogleAd = ({
   }
 
   return (
-    <div ref={containerRef} style={{ minHeight: '60px', width: '100%' }}>
+    <div ref={containerRef} style={style}>
       {adStatus === 'loading' && (
         <div
           className="bg-gray-800 rounded-lg flex items-center justify-center animate-pulse"
-          style={{ minHeight: '60px', ...style }}
+          style={style}
         >
           <p className="text-gray-400 text-xs">Loading Advertisement...</p>
         </div>
@@ -138,10 +138,8 @@ const GoogleAd = ({
         ref={insRef}
         className="adsbygoogle"
         style={{ 
-          display: 'block', 
-          width: '100%',
-          ...style,
-          ...(adStatus === 'loading' ? { visibility: 'hidden', position: 'absolute' } : {})
+          display: adStatus === 'loading' ? 'none' : 'block',
+          ...style
         }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
