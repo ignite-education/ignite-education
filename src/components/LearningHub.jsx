@@ -3224,7 +3224,7 @@ ${currentLessonSections.map((section) => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
                     alt="LinkedIn"
-                    style={{ height: '18px' }}
+                    style={{ height: '18px', marginLeft: '-2px' }}
                   />
                 </button>
               </div>
