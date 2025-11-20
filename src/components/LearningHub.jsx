@@ -248,6 +248,16 @@ const LearningHub = () => {
       return;
     }
 
+    // Stop and reset audio playback
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    isPausedRef.current = false;
+    setIsReading(false);
+    setCurrentNarrationSection(0);
+
     // Reset chat to initial greeting
     setChatMessages([
       {
