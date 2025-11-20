@@ -42,7 +42,13 @@
       "Bash(/tmp/progresshub.jsx)",
       "Bash(node run-dual-reddit-migration.js:*)",
       "Bash(node run-user-progress-migration.js:*)",
-      "Bash(node run-fix-user-progress.js:*)"
+      "Bash(node run-fix-user-progress.js:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" diff src/components/KnowledgeCheck.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/components/KnowledgeCheck.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate KnowledgeCheck greeting to be dynamic and bold\n\n- Made lesson name insertion dynamic in greeting\n- Updated question description to reference lesson name for context\n- Made \"Ready to begin?\" bold (medium font weight)\n- Removed \"If you close this window, you will need to restart\" text\n- Simplified passing threshold message\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" remote -v)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push origin main)"
     ],
     "deny": [],
     "ask": []
