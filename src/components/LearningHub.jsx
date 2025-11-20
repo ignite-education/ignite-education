@@ -3093,7 +3093,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   <p className="text-gray-400 text-sm text-center">Check back later or contact your instructor.</p>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center px-8 py-4">
+                <div className="flex-1 flex flex-col items-center justify-center px-8 pt-0 pb-4">
                   {/* Card counter and navigation buttons */}
                   <div className="flex items-center gap-3 w-full mb-4">
                     <button
