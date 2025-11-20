@@ -238,6 +238,51 @@ export async function createCommunityPost(postData) {
 }
 
 /**
+ * Delete a community post (admin only)
+ * @param {string} postId - The post ID to delete
+ * @param {string} userId - The user ID attempting to delete
+ * @returns {Promise<void>}
+ */
+export async function deleteCommunityPost(postId, userId) {
+  // First, verify the user is an admin
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (userError) throw userError;
+
+  if (userData.role !== 'admin') {
+    throw new Error('Only admins can delete posts');
+  }
+
+  // Delete associated comments first
+  const { error: commentsError } = await supabase
+    .from('community_comments')
+    .delete()
+    .eq('post_id', postId);
+
+  if (commentsError) throw commentsError;
+
+  // Delete associated likes
+  const { error: likesError } = await supabase
+    .from('community_likes')
+    .delete()
+    .eq('post_id', postId);
+
+  if (likesError) throw likesError;
+
+  // Finally, delete the post itself
+  const { error: postError } = await supabase
+    .from('community_posts')
+    .delete()
+    .eq('id', postId);
+
+  if (postError) throw postError;
+}
+
+/**
  * Get live posts from Reddit subreddit via backend
  * @param {number} limit - Number of posts to fetch (default: 10)
  * @param {boolean} forceRefresh - Whether to force a cache refresh (default: false)

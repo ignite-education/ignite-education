@@ -4,7 +4,7 @@ import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Sha
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
@@ -2183,6 +2183,35 @@ const ProgressHub = () => {
     }
   };
 
+  // Handle delete post (admin only)
+  const handleDeletePost = async (postId) => {
+    if (userRole !== 'admin') {
+      alert('Only admins can delete posts');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await deleteCommunityPost(postId, authUser.id);
+
+      // Remove post from local state
+      setCommunityPosts(prev => prev.filter(p => p.id !== postId));
+
+      // Clear expanded state if this post was expanded
+      if (expandedPostId === postId) {
+        setExpandedPostId(null);
+      }
+
+      console.log('✅ Post deleted successfully');
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      alert(`Failed to delete post: ${error.message}`);
+    }
+  };
+
   // Handle comment submission
   const handleSubmitComment = async (postId) => {
     const post = communityPosts.find(p => p.id === postId);
@@ -2893,8 +2922,19 @@ const ProgressHub = () => {
                       }}
                     >
                     <div
-                      className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition"
+                      className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative"
                     >
+                      {/* Admin delete button */}
+                      {userRole === 'admin' && (
+                        <button
+                          onClick={() => handleDeletePost(post.id)}
+                          className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition"
+                          title="Delete post (admin only)"
+                        >
+                          <X size={16} />
+                        </button>
+                      )}
+
                       <div className="flex items-start gap-2 mb-2">
                         {post.author_icon ? (
                           <img
