@@ -3157,8 +3157,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         <div
                           className="w-full h-full bg-black rounded-lg px-4 py-6"
                         >
-                          <div className="flex flex-col h-full">
-                            <div className="flex-1 overflow-y-auto px-2 py-4">
+                          <div className="flex flex-col h-full justify-center">
+                            <div className="overflow-y-auto px-2">
                               <div className="text-base text-white space-y-2 w-full">
                                 {flashcards[currentFlashcardIndex].answer.split('\n').map((line, idx) => {
                                   if (line.trim().startsWith('•')) {
@@ -3167,11 +3167,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                                     const parts = content.split(/(\*\*[^*]+\*\*)/g);
                                     return (
                                       <div key={idx} className="flex gap-2">
-                                        <span className="flex-shrink-0" style={{ color: '#EF0B72' }}>•</span>
+                                        <span className="flex-shrink-0 text-white">•</span>
                                         <span className="text-left flex-1">
                                           {parts.map((part, i) => {
                                             if (part.startsWith('**') && part.endsWith('**')) {
-                                              return <strong key={i}>{part.slice(2, -2)}</strong>;
+                                              return <strong key={i} style={{ color: '#EF0B72' }}>{part.slice(2, -2)}</strong>;
                                             }
                                             return part;
                                           })}
