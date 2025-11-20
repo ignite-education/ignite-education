@@ -3150,7 +3150,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                                 {flashcards[currentFlashcardIndex].question}
                               </p>
                             </div>
-                            <p className="text-xs text-white opacity-70 text-left mt-4">Click to reveal</p>
                           </div>
                         </div>
                       )}
@@ -3188,12 +3187,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                                 })}
                               </div>
                             </div>
-                            <p className="text-xs text-white opacity-70 text-left mt-4 px-2">Click to hide</p>
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
+
+                  {/* Click to reveal/hide text below flashcard */}
+                  <p className="text-xs text-gray-500 mt-2 text-left w-full">
+                    {isFlashcardFlipped ? 'Click to hide' : 'Click to reveal'}
+                  </p>
                 </div>
               )}
             </div>
