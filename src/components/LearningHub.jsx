@@ -423,7 +423,7 @@ const LearningHub = () => {
           zIndex: 55,  // Above backdrop (z-50), below modal content (z-60)
           gravity: 0.6,  // Much slower fall
           scalar: 1.8,  // Bigger confetti pieces
-          colors: ['#7714E0', '#9D4EDD', '#C77DFF']  // Ignite purple shades
+          colors: ['#EF0B72', '#FF4D9E', '#FF80B8']  // Ignite pink shades
         };
 
         function randomInRange(min, max) {
@@ -3165,14 +3165,15 @@ ${currentLessonSections.map((section) => {
           }}
           onClick={handleCloseLinkedInModal}
         >
-          <div className="relative w-full px-4" style={{ maxWidth: '632.5px', zIndex: 60 }}>
+          <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
             {/* Modal Card - Entire card is clickable */}
             <div
               className="bg-white text-black relative cursor-pointer hover:opacity-95 transition"
               style={{
                 animation: isClosingLinkedInModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                padding: '2rem'
+                padding: '2rem',
+                zIndex: 60
               }}
               onClick={handleAddToLinkedIn}
             >
@@ -3189,7 +3190,7 @@ ${currentLessonSections.map((section) => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem' }}>
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '10px' }}>
                   Congratulations, you've completed your first lesson!
                 </p>
                 <p className="text-black mb-6">
@@ -3222,7 +3223,7 @@ ${currentLessonSections.map((section) => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
                     alt="LinkedIn"
-                    className="h-5"
+                    style={{ height: '18px' }}
                   />
                 </button>
               </div>
