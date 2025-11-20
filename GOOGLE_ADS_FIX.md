@@ -183,3 +183,62 @@ If ads still don't load after these fixes:
 **Ad Slot ID:** `3322377575`
 **Ad Format:** Auto (responsive)
 **Used In:** LearningHub component (line 2515)
+
+---
+
+## Update: Fixed "No slot size for availableWidth=0" Error
+
+### Issue Identified
+After initial implementation, the console showed:
+```
+[GoogleAd] Error initializing ad: TagError: adsbygoogle.push() error: No slot size for availableWidth=0
+```
+
+This error occurs when the ad tries to initialize before its container has been properly sized by the browser's layout engine.
+
+### Additional Fix Applied
+
+Updated `GoogleAd.jsx` with:
+
+1. **Width Detection Before Initialization**
+   - Added `containerRef` to track the container element
+   - Check `offsetWidth` before calling `adsbygoogle.push()`
+   - Retry with delay if width is still 0
+
+2. **IntersectionObserver for Visibility**
+   - Only initialize ad when it becomes visible in the viewport
+   - Prevents wasted initialization for off-screen ads
+   - Better performance and reliability
+
+3. **Explicit Width Styling**
+   - Added `width: '100%'` to container
+   - Ensures container always has a calculable width
+   - Prevents zero-width edge cases
+
+### How It Works Now
+
+1. Component mounts and renders placeholder
+2. IntersectionObserver watches for visibility
+3. When ad container enters viewport:
+   - Waits 100ms for layout calculation
+   - Checks if container width > 0
+   - If width is 0, retries every 100ms
+   - Once width is available, initializes ad
+4. Ad loads and displays
+
+This ensures ads only initialize when they're visible AND properly sized.
+
+### Testing After This Fix
+
+1. **Clear browser cache** and hard refresh
+2. **Check console logs**:
+   - `[GoogleAd] Ad container is visible, checking width...`
+   - `[GoogleAd] Initializing ad with container width: [number]`
+   - `[GoogleAd] Ad initialized successfully`
+3. **Wait 5-10 seconds** for ad to fill
+4. **Scroll down** to verify ad appears when it enters viewport
+
+If you still see the error, check:
+- Is the ad container inside a hidden element (display: none)?
+- Is the parent component properly sized?
+- Are there CSS issues preventing width calculation?

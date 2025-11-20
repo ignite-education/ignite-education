@@ -10,6 +10,7 @@ const GoogleAd = ({
   const [adStatus, setAdStatus] = useState('loading'); // 'loading', 'loaded', 'error', 'hidden'
   const adInitialized = useRef(false);
   const insRef = useRef(null);
+  const containerRef = useRef(null);
 
   useEffect(() => {
     // Don't load ads if user is ad-free
@@ -34,8 +35,8 @@ const GoogleAd = ({
     }
 
     // Wait for ins element to be in the DOM
-    if (!insRef.current) {
-      console.log('[GoogleAd] Waiting for ins element');
+    if (!insRef.current || !containerRef.current) {
+      console.log('[GoogleAd] Waiting for elements to mount');
       return;
     }
 
@@ -56,20 +57,51 @@ const GoogleAd = ({
       return;
     }
 
-    // Initialize the ad
-    try {
-      console.log('[GoogleAd] Initializing ad:', { adClient, adSlot, adFormat });
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-      adInitialized.current = true;
-      setAdStatus('loaded');
-      console.log('[GoogleAd] Ad initialized successfully');
-    } catch (error) {
-      console.error('[GoogleAd] Error initializing ad:', error);
-      setAdStatus('error');
+    // Wait for container to have width before initializing ad
+    const checkWidthAndInitialize = () => {
+      const containerWidth = containerRef.current?.offsetWidth || 0;
+      
+      if (containerWidth === 0) {
+        console.log('[GoogleAd] Container width is 0, waiting for layout...');
+        // Try again after a short delay
+        setTimeout(checkWidthAndInitialize, 100);
+        return;
+      }
+
+      // Container has width, safe to initialize ad
+      try {
+        console.log('[GoogleAd] Initializing ad with container width:', containerWidth, { adClient, adSlot, adFormat });
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+        adInitialized.current = true;
+        setAdStatus('loaded');
+        console.log('[GoogleAd] Ad initialized successfully');
+      } catch (error) {
+        console.error('[GoogleAd] Error initializing ad:', error);
+        setAdStatus('error');
+      }
+    };
+
+    // Use IntersectionObserver to detect when ad becomes visible
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !adInitialized.current) {
+            console.log('[GoogleAd] Ad container is visible, checking width...');
+            // Give the browser time to calculate layout
+            setTimeout(checkWidthAndInitialize, 100);
+          }
+        });
+      },
+      { threshold: 0.01 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
     }
 
     // Cleanup function
     return () => {
+      observer.disconnect();
       console.log('[GoogleAd] Component unmounting');
       adInitialized.current = false;
     };
@@ -93,7 +125,7 @@ const GoogleAd = ({
   }
 
   return (
-    <div style={{ minHeight: '60px' }}>
+    <div ref={containerRef} style={{ minHeight: '60px', width: '100%' }}>
       {adStatus === 'loading' && (
         <div
           className="bg-gray-800 rounded-lg flex items-center justify-center animate-pulse"
@@ -107,6 +139,7 @@ const GoogleAd = ({
         className="adsbygoogle"
         style={{ 
           display: 'block', 
+          width: '100%',
           ...style,
           ...(adStatus === 'loading' ? { visibility: 'hidden', position: 'absolute' } : {})
         }}
