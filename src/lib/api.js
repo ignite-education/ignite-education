@@ -283,6 +283,100 @@ export async function deleteCommunityPost(postId, userId) {
 }
 
 /**
+ * Block a Reddit post from appearing in the community forum (admin only)
+ * @param {string} redditPostId - The Reddit post ID (e.g., "1p04bfo" or "reddit-1p04bfo")
+ * @param {string} userId - The user ID blocking the post
+ * @returns {Promise<void>}
+ */
+export async function blockRedditPost(redditPostId, userId) {
+  // First, verify the user is an admin
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (userError) throw userError;
+
+  if (userData.role !== 'admin') {
+    throw new Error('Only admins can block posts');
+  }
+
+  // Remove "reddit-" prefix if present
+  const cleanPostId = redditPostId.replace(/^reddit-/, '');
+
+  // Check if table exists, if not create it
+  // Insert the blocked post (will be created if doesn't exist)
+  const { error } = await supabase
+    .from('blocked_reddit_posts')
+    .insert({
+      reddit_post_id: cleanPostId,
+      blocked_by: userId
+    });
+
+  if (error) {
+    // If error is duplicate, that's fine - post is already blocked
+    if (error.code === '23505') {
+      console.log('Post already blocked');
+      return;
+    }
+    throw error;
+  }
+}
+
+/**
+ * Get all blocked Reddit post IDs
+ * @returns {Promise<Array<string>>} Array of blocked Reddit post IDs
+ */
+export async function getBlockedRedditPosts() {
+  const { data, error } = await supabase
+    .from('blocked_reddit_posts')
+    .select('reddit_post_id');
+
+  if (error) {
+    // If table doesn't exist yet, return empty array
+    if (error.code === '42P01') {
+      console.log('blocked_reddit_posts table does not exist yet');
+      return [];
+    }
+    throw error;
+  }
+
+  return data.map(item => item.reddit_post_id);
+}
+
+/**
+ * Unblock a Reddit post (admin only)
+ * @param {string} redditPostId - The Reddit post ID
+ * @param {string} userId - The user ID unblocking the post
+ * @returns {Promise<void>}
+ */
+export async function unblockRedditPost(redditPostId, userId) {
+  // Verify the user is an admin
+  const { data: userData, error: userError } = await supabase
+    .from('users')
+    .select('role')
+    .eq('id', userId)
+    .single();
+
+  if (userError) throw userError;
+
+  if (userData.role !== 'admin') {
+    throw new Error('Only admins can unblock posts');
+  }
+
+  // Remove "reddit-" prefix if present
+  const cleanPostId = redditPostId.replace(/^reddit-/, '');
+
+  const { error } = await supabase
+    .from('blocked_reddit_posts')
+    .delete()
+    .eq('reddit_post_id', cleanPostId);
+
+  if (error) throw error;
+}
+
+/**
  * Get live posts from Reddit subreddit via backend
  * @param {number} limit - Number of posts to fetch (default: 10)
  * @param {boolean} forceRefresh - Whether to force a cache refresh (default: false)

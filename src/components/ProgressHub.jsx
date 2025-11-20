@@ -4,7 +4,7 @@ import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Sha
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, blockRedditPost, getBlockedRedditPosts, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
@@ -61,6 +61,7 @@ const ProgressHub = () => {
   const [currentModule, setCurrentModule] = useState(1);
   const [currentLesson, setCurrentLesson] = useState(1);
   const [communityPosts, setCommunityPosts] = useState([]);
+  const [blockedRedditPosts, setBlockedRedditPosts] = useState([]);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -679,6 +680,16 @@ const ProgressHub = () => {
         redditData = []; // Ensure it's an empty array
       }
 
+      // Fetch blocked Reddit posts
+      let blockedPostIds = [];
+      try {
+        blockedPostIds = await getBlockedRedditPosts();
+        setBlockedRedditPosts(blockedPostIds);
+        console.log('🚫 Blocked posts fetched:', blockedPostIds.length);
+      } catch (err) {
+        console.error('❌ Error fetching blocked posts:', err);
+      }
+
       // Temporarily disable user posts - only show Reddit posts for course-specific content
       // TODO: Add course_id field to community_posts table to enable course filtering
       userPostsData = [];
@@ -694,23 +705,25 @@ const ProgressHub = () => {
       const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
 
       // Transform Reddit posts (ensure redditData is an array) - Reddit posts only
-      const redditPosts = (Array.isArray(redditData) ? redditData : []).map((post, index) => ({
-        id: `reddit-${post.id}`,
-        redditId: post.id, // Store the original Reddit ID
-        redditFullname: `t3_${post.id}`, // Full Reddit name for API calls (t3_ = post)
-        author: post.author,
-        author_icon: post.author_icon, // Reddit user icon URL
-        time: getTimeAgo(post.created_at),
-        created_at: post.created_at,
-        title: post.title,
-        content: post.content,
-        tag: post.tag,
-        upvotes: post.upvotes,
-        comments: post.comments,
-        avatar: avatarColors[index % avatarColors.length],
-        url: post.url,
-        source: 'reddit'
-      }));
+      const redditPosts = (Array.isArray(redditData) ? redditData : [])
+        .filter(post => !blockedPostIds.includes(post.id)) // Filter out blocked posts
+        .map((post, index) => ({
+          id: `reddit-${post.id}`,
+          redditId: post.id, // Store the original Reddit ID
+          redditFullname: `t3_${post.id}`, // Full Reddit name for API calls (t3_ = post)
+          author: post.author,
+          author_icon: post.author_icon, // Reddit user icon URL
+          time: getTimeAgo(post.created_at),
+          created_at: post.created_at,
+          title: post.title,
+          content: post.content,
+          tag: post.tag,
+          upvotes: post.upvotes,
+          comments: post.comments,
+          avatar: avatarColors[index % avatarColors.length],
+          url: post.url,
+          source: 'reddit'
+        }));
 
       // Sort by upvotes (top posts first)
       const allPosts = redditPosts.sort((a, b) => b.upvotes - a.upvotes);
@@ -2183,10 +2196,10 @@ const ProgressHub = () => {
     }
   };
 
-  // Handle delete post (admin only)
+  // Handle delete/block post (admin only)
   const handleDeletePost = async (postId) => {
     if (userRole !== 'admin') {
-      alert('Only admins can delete posts');
+      alert('Only admins can remove posts');
       return;
     }
 
@@ -2194,17 +2207,25 @@ const ProgressHub = () => {
     const post = communityPosts.find(p => p.id === postId);
     if (!post) return;
 
-    if (post.source === 'reddit') {
-      alert('Reddit posts cannot be deleted from this interface. They are fetched from Reddit and not stored in the database.');
-      return;
-    }
+    const isRedditPost = post.source === 'reddit';
+    const confirmMessage = isRedditPost
+      ? 'Are you sure you want to remove this Reddit post from the community forum? It will be hidden for all users.'
+      : 'Are you sure you want to delete this post? This action cannot be undone.';
 
-    if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
     try {
-      await deleteCommunityPost(postId, authUser.id);
+      if (isRedditPost) {
+        // Block Reddit post from appearing in the forum
+        await blockRedditPost(postId, authUser.id);
+        console.log('✅ Reddit post blocked successfully');
+      } else {
+        // Delete user-created post from database
+        await deleteCommunityPost(postId, authUser.id);
+        console.log('✅ Post deleted successfully');
+      }
 
       // Remove post from local state
       setCommunityPosts(prev => prev.filter(p => p.id !== postId));
@@ -2213,11 +2234,9 @@ const ProgressHub = () => {
       if (expandedPostId === postId) {
         setExpandedPostId(null);
       }
-
-      console.log('✅ Post deleted successfully');
     } catch (error) {
-      console.error('Error deleting post:', error);
-      alert(`Failed to delete post: ${error.message}`);
+      console.error('Error removing post:', error);
+      alert(`Failed to remove post: ${error.message}`);
     }
   };
 
@@ -2933,12 +2952,12 @@ const ProgressHub = () => {
                     <div
                       className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative"
                     >
-                      {/* Admin delete button - only for user posts, not Reddit posts */}
-                      {userRole === 'admin' && post.source !== 'reddit' && (
+                      {/* Admin delete/block button */}
+                      {userRole === 'admin' && (
                         <button
                           onClick={() => handleDeletePost(post.id)}
                           className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition"
-                          title="Delete post (admin only)"
+                          title={post.source === 'reddit' ? 'Remove post from forum (admin only)' : 'Delete post (admin only)'}
                         >
                           <X size={16} />
                         </button>
