@@ -575,7 +575,7 @@ Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-7-sonnet-20250219',
       max_tokens: 8192,
       system: systemPrompt,
       messages: [
@@ -1225,7 +1225,7 @@ app.post('/api/fetch-jobs', async (req, res) => {
     const searchQuery = course === 'Product Management' ? 'product manager' : course.toLowerCase();
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-3-7-sonnet-20250219',
       max_tokens: 4096,
       messages: [{
         role: 'user',
