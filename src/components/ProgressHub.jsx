@@ -2312,7 +2312,7 @@ const ProgressHub = () => {
                 <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (
-                    `Ready when you are, ${user.firstName}.`
+                    'To get started, click the arrow button on the current lesson below.'
                   ) : progressPercentage >= 100 && userCertificate ? (
                     <>
                       You've completed the {user.enrolledCourse} course.{' '}
