@@ -102,6 +102,7 @@ const LearningHub = () => {
   const cardRefs = React.useRef([]);
   const sectionRefs = React.useRef([]);
   const contentScrollRef = React.useRef(null);
+  const isInitialMountRef = React.useRef(true);
   const [isReading, setIsReading] = React.useState(false);
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
   const audioRef = React.useRef(null);
@@ -236,6 +237,37 @@ const LearningHub = () => {
       setCurrentLesson(lessonParam);
     }
   }, [searchParams]);
+
+  // Reset chat conversation and scroll position when lesson changes
+  useEffect(() => {
+    // Skip on initial mount to preserve welcome message
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+
+    // Reset chat to initial greeting
+    setChatMessages([
+      {
+        type: 'assistant',
+        text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
+        isComplete: false
+      }
+    ]);
+
+    // Clear chat input field
+    setChatInput('');
+
+    // Scroll lesson content to top
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTop = 0;
+    }
+
+    // Start typing animation for greeting message
+    setTimeout(() => {
+      setTypingMessageIndex(0);
+    }, 100);
+  }, [currentModule, currentLesson]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
