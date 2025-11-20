@@ -7,68 +7,55 @@ const GoogleAd = ({
   style = {}, 
   isAdFree = false 
 }) => {
-  const [adStatus, setAdStatus] = useState('loading'); // 'loading', 'loaded', 'error', 'hidden'
+  const [adStatus, setAdStatus] = useState('loading');
   const adInitialized = useRef(false);
   const insRef = useRef(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    // Don't load ads if user is ad-free
     if (isAdFree) {
       console.log('[GoogleAd] User is ad-free, not loading ads');
       setAdStatus('hidden');
       return;
     }
 
-    // Validate ad credentials
     if (!adClient || !adSlot) {
       console.warn('[GoogleAd] Missing ad credentials:', { adClient, adSlot });
-      console.warn('[GoogleAd] Make sure VITE_ADSENSE_CLIENT and VITE_ADSENSE_SLOT are set in .env');
       setAdStatus('error');
       return;
     }
 
-    // Don't initialize if already done
     if (adInitialized.current) {
-      console.log('[GoogleAd] Already initialized');
       return;
     }
 
-    // Wait for ins element to be in the DOM
     if (!insRef.current || !containerRef.current) {
-      console.log('[GoogleAd] Waiting for elements to mount');
       return;
     }
 
-    // Check if this specific ins element already has an ad
     const adStatusAttr = insRef.current.getAttribute('data-ad-status');
     const adsbyGoogleStatusAttr = insRef.current.getAttribute('data-adsbygoogle-status');
     
     if (adStatusAttr === 'filled' || adsbyGoogleStatusAttr) {
-      console.log('[GoogleAd] Ad already filled:', { adStatusAttr, adsbyGoogleStatusAttr });
       setAdStatus('loaded');
       return;
     }
 
-    // Check if AdSense script is loaded (should be in index.html)
     if (typeof window.adsbygoogle === 'undefined') {
       console.warn('[GoogleAd] AdSense script not loaded. Make sure the script is in index.html head section.');
       setAdStatus('error');
       return;
     }
 
-    // Wait for ins element to have width before initializing ad
     const checkWidthAndInitialize = () => {
       const insWidth = insRef.current?.offsetWidth || 0;
       
       if (insWidth === 0) {
         console.log('[GoogleAd] Ins element width is 0, waiting for layout...');
-        // Try again after a short delay
         setTimeout(checkWidthAndInitialize, 100);
         return;
       }
 
-      // Ins element has width, safe to initialize ad
       try {
         console.log('[GoogleAd] Initializing ad with ins width:', insWidth, { adClient, adSlot, adFormat });
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -81,13 +68,11 @@ const GoogleAd = ({
       }
     };
 
-    // Use IntersectionObserver to detect when ad becomes visible
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !adInitialized.current) {
             console.log('[GoogleAd] Ad container is visible, checking width...');
-            // Give the browser time to calculate layout
             setTimeout(checkWidthAndInitialize, 200);
           }
         });
@@ -99,20 +84,16 @@ const GoogleAd = ({
       observer.observe(containerRef.current);
     }
 
-    // Cleanup function
     return () => {
       observer.disconnect();
-      console.log('[GoogleAd] Component unmounting');
       adInitialized.current = false;
     };
   }, [adClient, adSlot, adFormat, isAdFree]);
 
-  // Don't render anything if user is ad-free
   if (adStatus === 'hidden') {
     return null;
   }
 
-  // If ad loading error or missing credentials, show placeholder
   if (adStatus === 'error') {
     return (
       <div
@@ -129,10 +110,7 @@ const GoogleAd = ({
       <ins
         ref={insRef}
         className="adsbygoogle"
-        style={{ 
-          display: 'block',
-          ...style
-        }}
+        style={{ display: 'block' }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
