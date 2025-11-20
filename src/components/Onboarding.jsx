@@ -240,15 +240,16 @@ const Onboarding = ({ firstName, userId }) => {
             <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn">
               <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
               <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
-              <span className="text-pink-500 ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0' }}>
+              <span className="ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0', color: '#EF0B72' }}>
                 {displayedName}
                 {showCursor && displayedName && (
                   <span
-                    className="absolute h-12 bg-pink-500 ml-1"
+                    className="absolute h-12 ml-1"
                     style={{
                       animation: 'blink 1s step-end infinite',
                       width: '4px',
-                      transition: 'opacity 0.3s'
+                      transition: 'opacity 0.3s',
+                      backgroundColor: '#EF0B72'
                     }}
                   />
                 )}

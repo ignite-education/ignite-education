@@ -2364,7 +2364,7 @@ const ProgressHub = () => {
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px', paddingTop: '10px' }}>
                 <h1 className="font-semibold" style={{ fontSize: '34px', marginBottom: '8px' }}>
-                  Welcome, <span className="text-pink-500">{user.firstName}</span>
+                  Welcome, <span style={{ color: '#EF0B72' }}>{user.firstName}</span>
                 </h1>
                 <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
