@@ -414,15 +414,16 @@ const LearningHub = () => {
     if (showLinkedInModal) {
       // Small delay to let modal animate in
       setTimeout(() => {
-        const duration = 3000; // 3 seconds
+        const duration = 4000; // 4 seconds - slower
         const animationEnd = Date.now() + duration;
         const defaults = { 
-          startVelocity: 45, 
+          startVelocity: 25,  // Slower velocity
           spread: 360, 
-          ticks: 80, 
+          ticks: 100,  // Longer lifetime
           zIndex: 55,  // Above backdrop (z-50), below modal content (z-60)
-          gravity: 1.2,
-          scalar: 1.2  // Makes confetti bigger
+          gravity: 0.6,  // Much slower fall
+          scalar: 1.8,  // Bigger confetti pieces
+          colors: ['#7714E0', '#9D4EDD', '#C77DFF']  // Ignite purple shades
         };
 
         function randomInRange(min, max) {
@@ -436,25 +437,20 @@ const LearningHub = () => {
             return clearInterval(interval);
           }
 
-          const particleCount = 75 * (timeLeft / duration);  // More particles
+          const particleCount = 20 * (timeLeft / duration);  // Fewer particles
           
-          // Fire confetti from multiple positions for better coverage
+          // Fire confetti from fewer positions for subtlety
           confetti({
             ...defaults,
             particleCount,
-            origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+            origin: { x: randomInRange(0.2, 0.4), y: Math.random() - 0.2 }
           });
           confetti({
             ...defaults,
             particleCount,
-            origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+            origin: { x: randomInRange(0.6, 0.8), y: Math.random() - 0.2 }
           });
-          confetti({
-            ...defaults,
-            particleCount: particleCount / 2,
-            origin: { x: 0.5, y: Math.random() - 0.2 }
-          });
-        }, 200);  // Fire more frequently
+        }, 400);  // Fire less frequently
       }, 300);
     }
   }, [showLinkedInModal]);
@@ -3170,9 +3166,6 @@ ${currentLessonSections.map((section) => {
           onClick={handleCloseLinkedInModal}
         >
           <div className="relative w-full px-4" style={{ maxWidth: '632.5px', zIndex: 60 }}>
-            {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Congratulations</h2>
-
             {/* Modal Card - Entire card is clickable */}
             <div
               className="bg-white text-black relative cursor-pointer hover:opacity-95 transition"
