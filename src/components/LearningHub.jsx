@@ -3049,7 +3049,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               className="bg-white relative flex flex-col"
               style={{
                 width: '600px',
-                height: '400px',
+                height: '450px',
                 animation: isClosingFlashcards ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
               }}
@@ -3161,7 +3161,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                           className="w-full h-full bg-black rounded-lg px-4 py-6"
                         >
                           <div className="flex flex-col h-full">
-                            <div className="flex-1 overflow-y-auto flex items-center justify-start px-2">
+                            <div className="flex-1 overflow-y-auto px-2 py-4">
                               <div className="text-base text-white space-y-2 w-full">
                                 {flashcards[currentFlashcardIndex].answer.split('\n').map((line, idx) => {
                                   if (line.trim().startsWith('•')) {
