@@ -2544,9 +2544,9 @@ const ProgressHub = () => {
               <div className="flex-shrink-0" style={{ marginTop: '-28px', minHeight: '160px' }}>
                 <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '-2px' }}>Office Hours</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>Get personalised support from your course leaders.</p>
-                <div className="rounded-lg" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
+                <div className="rounded-lg flex items-center" style={{ padding: '12px', minHeight: '100px', background: '#7714E0' }}>
                   {coaches || calendlyLink ? (
-                    <div className="flex gap-2.5 h-full items-center">
+                    <div className="flex gap-2.5 w-full items-center">
                       {/* Single coach layout - horizontal */}
                       {coaches && coaches.length === 1 ? (
                         <div className="flex-1 flex gap-4 items-center">
