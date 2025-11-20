@@ -1506,6 +1506,43 @@ async function fetchAndCacheRedditData(subreddit) {
 
     console.log(`✅ Fetched ${posts.length} posts from r/${subreddit}`);
 
+    // Batch fetch user avatars for unique authors
+    console.log('🔄 Fetching user avatars...');
+    const uniqueAuthors = [...new Set(posts.map(p => p.author))].filter(author => author && author !== '[deleted]');
+    const authorAvatars = {};
+
+    // Limit to first 25 authors to stay within rate limits (60 requests/min)
+    const authorsToFetch = uniqueAuthors.slice(0, 25);
+    let avatarsFetched = 0;
+
+    for (const author of authorsToFetch) {
+      try {
+        await waitForRateLimit();
+        const userUrl = `https://oauth.reddit.com/user/${author}/about`;
+        const userResponse = await fetch(userUrl, {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'User-Agent': process.env.VITE_REDDIT_USER_AGENT || 'IgniteLearning/1.0'
+          }
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          // Try icon_img first (Snoo avatar), then snoovatar_img as fallback
+          const avatarUrl = userData.data?.icon_img || userData.data?.snoovatar_img;
+          if (avatarUrl) {
+            // Clean up the URL (Reddit sometimes returns URLs with HTML entities)
+            authorAvatars[author] = avatarUrl.replace(/&amp;/g, '&');
+            avatarsFetched++;
+          }
+        }
+      } catch (err) {
+        console.error(`  ⚠️ Error fetching avatar for u/${author}:`, err.message);
+      }
+    }
+
+    console.log(`✅ Fetched ${avatarsFetched} user avatars from ${authorsToFetch.length} unique authors`);
+
     // Store posts in database
     let postsStored = 0;
     let commentsStored = 0;
@@ -1518,7 +1555,7 @@ async function fetchAndCacheRedditData(subreddit) {
           id: post.id,
           subreddit: subreddit,
           author: post.author,
-          author_icon: post.sr_detail?.icon_img || (post.thumbnail?.startsWith('http') ? post.thumbnail : null), // Extract avatar from existing API response data
+          author_icon: authorAvatars[post.author] || null, // Use fetched avatar URL from batch fetch
           created_at: new Date(post.created_utc * 1000).toISOString(),
           title: post.title,
           content: post.selftext || '',
@@ -1568,7 +1605,7 @@ async function fetchAndCacheRedditData(subreddit) {
                   post_id: post.id,
                   subreddit: subreddit,
                   author: comment.data.author,
-                  author_icon: null, // User avatars not available from Reddit API - UI uses fallback avatars
+                  author_icon: authorAvatars[comment.data.author] || null, // Use fetched avatar URL from batch fetch
                   body: comment.data.body,
                   created_utc: comment.data.created_utc,
                   score: comment.data.score,
