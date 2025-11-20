@@ -106,11 +106,16 @@ const GoogleAd = ({
   }
 
   return (
-    <div ref={containerRef} style={style}>
+    <div ref={containerRef} style={{ ...style, overflow: 'hidden' }}>
       <ins
         ref={insRef}
         className="adsbygoogle"
-        style={{ display: 'block' }}
+        style={{ 
+          display: 'block',
+          height: '60px',
+          maxHeight: '60px',
+          overflow: 'hidden'
+        }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={adFormat}
