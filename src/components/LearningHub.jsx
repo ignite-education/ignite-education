@@ -83,6 +83,8 @@ const LearningHub = () => {
   const [currentFlashcardIndex, setCurrentFlashcardIndex] = useState(0);
   const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false);
   const [isClosingFlashcards, setIsClosingFlashcards] = useState(false);
+  const [isLoadingFlashcards, setIsLoadingFlashcards] = useState(false);
+  const [flashcardError, setFlashcardError] = useState(null);
   const [selectedText, setSelectedText] = useState('');
   const [isEditingInput, setIsEditingInput] = useState(false);
   const [explainedSections, setExplainedSections] = useState([]);
@@ -691,10 +693,14 @@ const LearningHub = () => {
       // Show modal with loading state
       setShowFlashcards(true);
       setFlashcards([]);
+      setIsLoadingFlashcards(true);
+      setFlashcardError(null);
 
       // Fetch flashcards from database (already shuffled)
       const courseId = await getUserCourseId();
       const flashcardsData = await getFlashcards(courseId, currentModule, currentLesson);
+
+      setIsLoadingFlashcards(false);
 
       if (flashcardsData && flashcardsData.length > 0) {
         setFlashcards(flashcardsData);
@@ -707,6 +713,8 @@ const LearningHub = () => {
       }
     } catch (error) {
       console.error('Error fetching flashcards:', error);
+      setIsLoadingFlashcards(false);
+      setFlashcardError('Failed to load flashcards. Please try again.');
       setFlashcards([]);
     }
   };
@@ -718,6 +726,8 @@ const LearningHub = () => {
       setIsClosingFlashcards(false);
       setIsFlashcardFlipped(false);
       setCurrentFlashcardIndex(0);
+      setFlashcardError(null);
+      setIsLoadingFlashcards(false);
     }, 200);
   };
 
@@ -3054,7 +3064,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               </button>
 
               {/* Flashcard content */}
-              {flashcards.length === 0 ? (
+              {isLoadingFlashcards ? (
                 <div className="flex-1 flex items-center justify-center px-8 py-8">
                   {lottieData ? (
                     <Lottie
@@ -3066,6 +3076,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   ) : (
                     <p className="text-gray-500">Loading flashcards...</p>
                   )}
+                </div>
+              ) : flashcardError ? (
+                <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+                  <p className="text-red-500 text-center mb-4">{flashcardError}</p>
+                  <button
+                    onClick={handleOpenFlashcards}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : flashcards.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+                  <p className="text-gray-500 text-center mb-2">No flashcards available for this lesson yet.</p>
+                  <p className="text-gray-400 text-sm text-center">Check back later or contact your instructor.</p>
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
