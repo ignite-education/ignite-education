@@ -1616,3 +1616,148 @@ export function getNextAvailableDate() {
   const options = { weekday: 'long', month: 'long', day: 'numeric' };
   return tomorrow.toLocaleDateString('en-US', options);
 }
+
+// ============================================================================
+// USER PROGRESS MANAGEMENT FUNCTIONS (ADMIN)
+// ============================================================================
+
+/**
+ * Get detailed progress information for a user
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @returns {Promise<Object>} Object with current progress and completion count
+ */
+export async function getUserProgressDetails(userId, courseId) {
+  try {
+    // Get current progress
+    const progress = await getUserProgress(userId, courseId);
+
+    // Get completed lessons count
+    const completedLessons = await getCompletedLessons(userId, courseId);
+
+    return {
+      currentModule: progress?.current_module || 1,
+      currentLesson: progress?.current_lesson || 1,
+      completedCount: completedLessons?.length || 0,
+      lastUpdated: progress?.updated_at || null
+    };
+  } catch (error) {
+    console.error('Error fetching user progress details:', error);
+    return {
+      currentModule: 1,
+      currentLesson: 1,
+      completedCount: 0,
+      lastUpdated: null
+    };
+  }
+}
+
+/**
+ * Set user progress to a specific lesson (admin function)
+ * Clears all lesson completions after the target lesson
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @param {number} targetModule - Target module number
+ * @param {number} targetLesson - Target lesson number
+ * @returns {Promise<Object>} Updated progress information
+ */
+export async function setUserProgress(userId, courseId, targetModule, targetLesson) {
+  try {
+    console.log('🔧 Setting user progress:', { userId, courseId, targetModule, targetLesson });
+
+    // Get all lessons from the database to validate target exists
+    const { data: allLessons, error: lessonsError } = await supabase
+      .from('lessons')
+      .select('module_number, lesson_number')
+      .eq('course_id', courseId);
+
+    if (lessonsError) {
+      console.error('Error fetching lessons:', lessonsError);
+      throw new Error('Failed to fetch course structure');
+    }
+
+    // Get unique lessons
+    const uniqueLessons = Array.from(
+      new Set(allLessons.map(l => `${l.module_number}-${l.lesson_number}`))
+    ).map(key => {
+      const [module, lesson] = key.split('-').map(Number);
+      return { module_number: module, lesson_number: lesson };
+    }).sort((a, b) => {
+      if (a.module_number === b.module_number) {
+        return a.lesson_number - b.lesson_number;
+      }
+      return a.module_number - b.module_number;
+    });
+
+    // Validate target lesson exists
+    const targetExists = uniqueLessons.some(
+      l => l.module_number === targetModule && l.lesson_number === targetLesson
+    );
+
+    if (!targetExists) {
+      throw new Error(`Lesson ${targetModule}-${targetLesson} does not exist in course ${courseId}`);
+    }
+
+    // Delete lesson completions after the target lesson
+    // First, get all completed lessons
+    const { data: completions, error: getError } = await supabase
+      .from('lesson_completions')
+      .select('module_number, lesson_number')
+      .eq('user_id', userId)
+      .eq('course_id', courseId);
+
+    if (getError) {
+      console.error('Error fetching completions:', getError);
+    }
+
+    // Filter completions that come after target lesson
+    const completionsToDelete = (completions || []).filter(completion => {
+      // If module is after target module, delete
+      if (completion.module_number > targetModule) return true;
+      // If same module but lesson is after or equal to target lesson, delete
+      if (completion.module_number === targetModule && completion.lesson_number >= targetLesson) return true;
+      return false;
+    });
+
+    // Delete these completions
+    if (completionsToDelete.length > 0) {
+      for (const completion of completionsToDelete) {
+        const { error: deleteError } = await supabase
+          .from('lesson_completions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .eq('module_number', completion.module_number)
+          .eq('lesson_number', completion.lesson_number);
+
+        if (deleteError) {
+          console.error('Error deleting completion:', deleteError);
+        }
+      }
+      console.log(`🗑️ Deleted ${completionsToDelete.length} lesson completions`);
+    }
+
+    // Update user_progress to target lesson
+    const updatedProgress = await saveUserProgress(userId, courseId, targetModule, targetLesson);
+
+    // Get updated details
+    const details = await getUserProgressDetails(userId, courseId);
+
+    console.log('✅ Progress updated successfully:', details);
+    return details;
+  } catch (error) {
+    console.error('Error in setUserProgress:', error);
+    throw error;
+  }
+}
+
+/**
+ * Reset user progress to the beginning of a course (Module 1, Lesson 1)
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @returns {Promise<Object>} Reset progress information
+ */
+export async function resetUserProgress(userId, courseId) {
+  console.log('🔄 Resetting user progress to start:', { userId, courseId });
+  return setUserProgress(userId, courseId, 1, 1);
+}

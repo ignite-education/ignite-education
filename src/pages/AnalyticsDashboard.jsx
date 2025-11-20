@@ -29,7 +29,7 @@ import {
   getEngagementMetrics,
   getRetentionMetrics
 } from '../lib/analytics';
-import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics } from '../lib/api';
+import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics, getUserProgressDetails, setUserProgress, resetUserProgress, getAllCourses } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -79,6 +79,15 @@ const AnalyticsDashboard = () => {
   const [userFilter, setUserFilter] = useState('all'); // all, student, teacher, admin
   const [updatingUserId, setUpdatingUserId] = useState(null);
 
+  // Progress management modal
+  const [progressModalOpen, setProgressModalOpen] = useState(false);
+  const [selectedUserForProgress, setSelectedUserForProgress] = useState(null);
+  const [userProgressData, setUserProgressData] = useState(null);
+  const [loadingProgress, setLoadingProgress] = useState(false);
+  const [targetModule, setTargetModule] = useState(1);
+  const [targetLesson, setTargetLesson] = useState(1);
+  const [availableCourses, setAvailableCourses] = useState([]);
+
   // Course requests
   const [courseRequests, setCourseRequests] = useState([]);
 
@@ -95,7 +104,18 @@ const AnalyticsDashboard = () => {
     loadUsers();
     loadCourseRequests();
     loadManagedCourses();
+    loadAvailableCourses();
   }, []);
+
+  const loadAvailableCourses = async () => {
+    try {
+      const courses = await getAllCourses();
+      setAvailableCourses(courses || []);
+    } catch (error) {
+      console.error('Error loading available courses:', error);
+      setAvailableCourses([]);
+    }
+  };
 
   const loadAnalytics = async () => {
     setLoading(true);
@@ -309,6 +329,84 @@ const AnalyticsDashboard = () => {
       alert('Failed to update user course. Please try again.');
     } finally {
       setUpdatingUserId(null);
+    }
+  };
+
+  const handleOpenProgressModal = async (user) => {
+    if (!user.enrolled_course) {
+      alert('This user is not enrolled in any course. Please assign a course first.');
+      return;
+    }
+
+    setSelectedUserForProgress(user);
+    setProgressModalOpen(true);
+    setLoadingProgress(true);
+
+    try {
+      const progressDetails = await getUserProgressDetails(user.id, user.enrolled_course);
+      setUserProgressData(progressDetails);
+      setTargetModule(progressDetails.currentModule);
+      setTargetLesson(progressDetails.currentLesson);
+    } catch (error) {
+      console.error('Error loading user progress:', error);
+      alert('Failed to load user progress. Please try again.');
+      setProgressModalOpen(false);
+    } finally {
+      setLoadingProgress(false);
+    }
+  };
+
+  const handleCloseProgressModal = () => {
+    setProgressModalOpen(false);
+    setSelectedUserForProgress(null);
+    setUserProgressData(null);
+    setTargetModule(1);
+    setTargetLesson(1);
+  };
+
+  const handleSetProgress = async () => {
+    if (!selectedUserForProgress || !userProgressData) return;
+
+    setLoadingProgress(true);
+    try {
+      await setUserProgress(
+        selectedUserForProgress.id,
+        selectedUserForProgress.enrolled_course,
+        targetModule,
+        targetLesson
+      );
+      alert(`Progress updated! User is now on Module ${targetModule}, Lesson ${targetLesson}.`);
+      handleCloseProgressModal();
+    } catch (error) {
+      console.error('Error setting user progress:', error);
+      alert(`Failed to update progress: ${error.message}`);
+    } finally {
+      setLoadingProgress(false);
+    }
+  };
+
+  const handleResetProgress = async () => {
+    if (!selectedUserForProgress) return;
+
+    const confirmed = window.confirm(
+      `Are you sure you want to reset ${selectedUserForProgress.first_name} ${selectedUserForProgress.last_name}'s progress back to Module 1, Lesson 1? This will clear all their lesson completions.`
+    );
+
+    if (!confirmed) return;
+
+    setLoadingProgress(true);
+    try {
+      await resetUserProgress(
+        selectedUserForProgress.id,
+        selectedUserForProgress.enrolled_course
+      );
+      alert('Progress has been reset to Module 1, Lesson 1!');
+      handleCloseProgressModal();
+    } catch (error) {
+      console.error('Error resetting user progress:', error);
+      alert(`Failed to reset progress: ${error.message}`);
+    } finally {
+      setLoadingProgress(false);
     }
   };
 
@@ -773,6 +871,7 @@ const AnalyticsDashboard = () => {
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Email</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Current Role</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Enrolled Course</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Progress</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Joined</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Change Role</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
@@ -781,7 +880,7 @@ const AnalyticsDashboard = () => {
                     <tbody className="divide-y divide-gray-800">
                       {filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan="7" className="px-6 py-8 text-center text-gray-400">
+                          <td colSpan="8" className="px-6 py-8 text-center text-gray-400">
                             No users found
                           </td>
                         </tr>
@@ -825,6 +924,21 @@ const AnalyticsDashboard = () => {
                                     <option key={course} value={course} className="bg-gray-900 text-white">{course}</option>
                                   ))}
                                 </select>
+                              </td>
+                              <td className="px-6 py-4 text-sm">
+                                {user.enrolled_course ? (
+                                  <button
+                                    onClick={() => handleOpenProgressModal(user)}
+                                    disabled={isUpdating}
+                                    className={`px-3 py-1.5 bg-purple-900/30 text-purple-400 border border-purple-700 rounded-lg hover:bg-purple-900/50 transition text-xs font-medium ${
+                                      isUpdating ? 'opacity-50 cursor-not-allowed' : ''
+                                    }`}
+                                  >
+                                    Adjust Progress
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-500 text-xs">No course</span>
+                                )}
                               </td>
                               <td className="px-6 py-4 text-sm text-gray-400">
                                 {new Date(user.created_at).toLocaleDateString('en-US', {
@@ -1178,6 +1292,127 @@ const AnalyticsDashboard = () => {
           </div>
         )}
       </div>
+
+      {/* Progress Adjustment Modal */}
+      {progressModalOpen && selectedUserForProgress && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg border border-gray-800 max-w-md w-full">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">
+                Adjust Progress
+              </h3>
+              <button
+                onClick={handleCloseProgressModal}
+                className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="px-6 py-4 space-y-4">
+              {loadingProgress ? (
+                <div className="py-8 text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto mb-3"></div>
+                  <p className="text-gray-400 text-sm">Loading progress...</p>
+                </div>
+              ) : (
+                <>
+                  {/* User Info */}
+                  <div className="bg-gray-800 rounded-lg p-4">
+                    <p className="text-sm text-gray-400 mb-1">User</p>
+                    <p className="text-white font-medium">
+                      {selectedUserForProgress.first_name} {selectedUserForProgress.last_name}
+                    </p>
+                    <p className="text-sm text-gray-400 mt-2 mb-1">Enrolled Course</p>
+                    <p className="text-white">{selectedUserForProgress.enrolled_course}</p>
+                  </div>
+
+                  {/* Current Progress */}
+                  {userProgressData && (
+                    <div className="bg-purple-900/20 border border-purple-700 rounded-lg p-4">
+                      <p className="text-sm text-purple-400 font-medium mb-2">Current Progress</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-xs text-purple-400 mb-1">Module</p>
+                          <p className="text-2xl font-bold text-white">{userProgressData.currentModule}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-purple-400 mb-1">Lesson</p>
+                          <p className="text-2xl font-bold text-white">{userProgressData.currentLesson}</p>
+                        </div>
+                      </div>
+                      <p className="text-xs text-purple-400 mt-3">
+                        Completed: {userProgressData.completedCount} lessons
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Set Target Progress */}
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium text-white">Set New Progress</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1.5">Module Number</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={targetModule}
+                          onChange={(e) => setTargetModule(parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs text-gray-400 mb-1.5">Lesson Number</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={targetLesson}
+                          onChange={(e) => setTargetLesson(parseInt(e.target.value) || 1)}
+                          className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      This will clear all lesson completions at or after the target lesson.
+                    </p>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="pt-2">
+                    <button
+                      onClick={handleResetProgress}
+                      disabled={loadingProgress}
+                      className="w-full px-4 py-2 bg-red-900/30 text-red-400 border border-red-700 rounded-lg hover:bg-red-900/50 transition text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Reset to Module 1, Lesson 1
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+              <button
+                onClick={handleCloseProgressModal}
+                disabled={loadingProgress}
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSetProgress}
+                disabled={loadingProgress}
+                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loadingProgress ? 'Updating...' : 'Set Progress'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
