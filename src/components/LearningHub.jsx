@@ -1783,10 +1783,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         narrateAbortController.current.abort();
       }
 
-      // Pause and reset current audio
+      // Pause current audio (preserve position and reference for resume)
       const audio = audioRef.current;
       audio.pause();
-      audio.currentTime = 0;
 
       // Verify pause succeeded
       if (!audio.paused) {
@@ -1794,18 +1793,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audio.pause();
       }
 
-      // Clear audio reference
-      audioRef.current = null;
-
-      // Update state
+      // Update state (keep audioRef and currentNarrationSection for resume)
       setIsReading(false);
       isPausedRef.current = true;
-      setCurrentNarrationSection(0);
       return;
     }
 
     // If audio exists and is paused, resume it
-    if (audioRef.current && !isReading && audioRef.current.currentTime > 0) {
+    if (audioRef.current && !isReading && isPausedRef.current) {
       audioRef.current.play();
       setIsReading(true);
       isPausedRef.current = false;
