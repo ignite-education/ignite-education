@@ -3143,13 +3143,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                             backgroundColor: '#7c3aed'
                           }}
                         >
-                          <div className="flex flex-col h-full">
-                            <p className="text-sm font-semibold text-white mb-4 text-left">Question</p>
-                            <div className="flex-1 flex items-start justify-start pt-2">
-                              <p className="text-2xl font-medium text-white text-left">
-                                {flashcards[currentFlashcardIndex].question}
-                              </p>
-                            </div>
+                          <div className="flex flex-col h-full justify-center">
+                            <p className="text-base font-medium text-white mb-1.5 text-left">Question</p>
+                            <p className="text-2xl font-medium text-white text-left">
+                              {flashcards[currentFlashcardIndex].question}
+                            </p>
                           </div>
                         </div>
                       )}
