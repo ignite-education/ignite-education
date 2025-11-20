@@ -414,7 +414,7 @@ const LearningHub = () => {
     if (showLinkedInModal) {
       // Small delay to let modal animate in
       setTimeout(() => {
-        const duration = 4000; // 4 seconds - slower
+        const duration = 2000; // 2 seconds
         const animationEnd = Date.now() + duration;
         const defaults = { 
           startVelocity: 25,  // Slower velocity
@@ -437,7 +437,7 @@ const LearningHub = () => {
             return clearInterval(interval);
           }
 
-          const particleCount = 20 * (timeLeft / duration);  // Fewer particles
+          const particleCount = 10 * (timeLeft / duration);  // 50% fewer particles
           
           // Fire confetti from fewer positions for subtlety
           confetti({
@@ -3173,7 +3173,8 @@ ${currentLessonSections.map((section) => {
                 animation: isClosingLinkedInModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '2rem',
-                zIndex: 60
+                position: 'relative',
+                zIndex: 9999
               }}
               onClick={handleAddToLinkedIn}
             >
@@ -3190,8 +3191,8 @@ ${currentLessonSections.map((section) => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '10px' }}>
-                  Congratulations, you've completed your first lesson!
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
+                  Congratulations, you've completed your first lesson.
                 </p>
                 <p className="text-black mb-6">
                   Add to your LinkedIn to showcase your progress<br />
