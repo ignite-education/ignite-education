@@ -1478,3 +1478,141 @@ export async function checkCourseCompletion(userId, courseId) {
     return false;
   }
 }
+
+// ============================================================================
+// DAILY COURSE COMPLETION LIMIT FUNCTIONS
+// ============================================================================
+
+/**
+ * Get the number of courses a user has completed today
+ * @param {string} userId - The user's ID
+ * @returns {Promise<number>} Number of courses completed today
+ */
+export async function getCourseCompletionsToday(userId) {
+  try {
+    // Get today's date at midnight in user's timezone
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get tomorrow's date at midnight
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString();
+
+    const { data, error } = await supabase
+      .from('course_completions')
+      .select('course_id')
+      .eq('user_id', userId)
+      .gte('completed_at', todayISO)
+      .lt('completed_at', tomorrowISO);
+
+    if (error) {
+      console.error('Error fetching today\'s course completions:', error);
+      // If table doesn't exist yet, return 0
+      if (error.code === '42P01') {
+        return 0;
+      }
+      throw error;
+    }
+
+    console.log('📊 Courses completed today:', data?.length || 0);
+    return data?.length || 0;
+  } catch (error) {
+    console.error('Error in getCourseCompletionsToday:', error);
+    return 0;
+  }
+}
+
+/**
+ * Get the list of course IDs completed today
+ * @param {string} userId - The user's ID
+ * @returns {Promise<Array<string>>} Array of course IDs completed today
+ */
+export async function getCoursesCompletedToday(userId) {
+  try {
+    // Get today's date at midnight in user's timezone
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const todayISO = today.toISOString();
+
+    // Get tomorrow's date at midnight
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowISO = tomorrow.toISOString();
+
+    const { data, error } = await supabase
+      .from('course_completions')
+      .select('course_id')
+      .eq('user_id', userId)
+      .gte('completed_at', todayISO)
+      .lt('completed_at', tomorrowISO);
+
+    if (error) {
+      console.error('Error fetching today\'s completed courses:', error);
+      // If table doesn't exist yet, return empty array
+      if (error.code === '42P01') {
+        return [];
+      }
+      throw error;
+    }
+
+    const courseIds = (data || []).map(record => record.course_id);
+    console.log('📚 Course IDs completed today:', courseIds);
+    return courseIds;
+  } catch (error) {
+    console.error('Error in getCoursesCompletedToday:', error);
+    return [];
+  }
+}
+
+/**
+ * Mark a course as completed for a user
+ * @param {string} userId - The user's ID
+ * @param {string} courseId - The course ID
+ * @returns {Promise<Object>} Course completion record
+ */
+export async function markCourseComplete(userId, courseId) {
+  try {
+    console.log('🎓 Marking course as complete:', { userId, courseId });
+
+    const { data, error } = await supabase
+      .from('course_completions')
+      .insert({
+        user_id: userId,
+        course_id: courseId,
+        completed_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+
+    if (error) {
+      // Ignore duplicate errors (user already completed this course today)
+      if (error.code === '23505') {
+        console.log('ℹ️ Course already marked as complete today');
+        return null;
+      }
+      console.error('❌ Error marking course complete:', error);
+      throw error;
+    }
+
+    console.log('✅ Course marked as complete:', data);
+    return data;
+  } catch (error) {
+    console.error('Error in markCourseComplete:', error);
+    return null;
+  }
+}
+
+/**
+ * Get the next available date for course completion (tomorrow)
+ * @returns {string} Formatted date string (e.g., "Monday, January 22")
+ */
+export function getNextAvailableDate() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Format as "Monday, January 22"
+  const options = { weekday: 'long', month: 'long', day: 'numeric' };
+  return tomorrow.toLocaleDateString('en-US', options);
+}

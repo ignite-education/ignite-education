@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion } from '../lib/api';
 import GoogleAd from './GoogleAd';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
@@ -112,6 +112,12 @@ const LearningHub = () => {
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
+
+  // Daily course completion limit state
+  const [coursesCompletedToday, setCoursesCompletedToday] = useState(0);
+  const [todaysCompletedCourseIds, setTodaysCompletedCourseIds] = useState([]);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
+  const [nextAvailableDate, setNextAvailableDate] = useState('');
 
   useEffect(() => {
     fetchLessonData();
@@ -525,6 +531,35 @@ const LearningHub = () => {
         setCompletedLessons([]);
       }
 
+      // Check daily course completion limit
+      try {
+        console.log('🔒 Checking daily course completion limit...');
+        const completedCount = await getCourseCompletionsToday(userId);
+        const completedCourseIds = await getCoursesCompletedToday(userId);
+
+        console.log('📊 Daily completion status:', {
+          completedCount,
+          completedCourseIds,
+          currentCourseId: courseId
+        });
+
+        setCoursesCompletedToday(completedCount);
+        setTodaysCompletedCourseIds(completedCourseIds);
+
+        // Check if daily limit is reached and current course is NOT one of today's completions
+        const isCurrentCourseCompletedToday = completedCourseIds.includes(courseId);
+        const limitReached = completedCount >= 2 && !isCurrentCourseCompletedToday;
+
+        setDailyLimitReached(limitReached);
+        if (limitReached) {
+          setNextAvailableDate(getNextAvailableDate());
+          console.log('🚫 Daily limit reached! Next available:', getNextAvailableDate());
+        }
+      } catch (error) {
+        console.error('Error checking daily course limit:', error);
+        setDailyLimitReached(false);
+      }
+
       console.log('✅ All data loaded, setting loading to false');
       setLoading(false);
     } catch (error) {
@@ -804,6 +839,23 @@ const LearningHub = () => {
         console.log('✅ Completed lessons refreshed in LearningHub:', completedLessonsData);
         console.log('📊 New completed lessons count:', completedLessonsData.length);
         setCompletedLessons(completedLessonsData);
+
+        // Check if completing this lesson completes the entire course
+        const isCourseComplete = await checkCourseCompletion(userId, courseId);
+        console.log('🎓 Course completion check:', isCourseComplete);
+
+        if (isCourseComplete) {
+          console.log('🎉 Course completed! Marking in course_completions table...');
+          await markCourseComplete(userId, courseId);
+
+          // Refresh daily course completion tracking
+          const updatedCount = await getCourseCompletionsToday(userId);
+          const updatedCourseIds = await getCoursesCompletedToday(userId);
+          setCoursesCompletedToday(updatedCount);
+          setTodaysCompletedCourseIds(updatedCourseIds);
+
+          console.log('✅ Course completion recorded. Total courses completed today:', updatedCount);
+        }
       } catch (error) {
         console.error('❌ Error refreshing completed lessons:', error);
       }
@@ -1852,6 +1904,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   // Check if user is trying to access a lesson ahead of their progress
   // Only run this check after completedLessons has been loaded to avoid false positives
   let isLessonLocked = false;
+  let lockReason = 'prerequisite'; // 'prerequisite' or 'daily_limit'
   let currentLessonToNavigate = null;
 
   if (!loading && lessonsMetadata.length > 0 && completedLessons !== null) {
@@ -1862,37 +1915,47 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return a.lesson_number - b.lesson_number;
     });
 
-    // Check if the previous lesson is completed
-    const requestedLessonIndex = allLessons.findIndex(
-      lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
-    );
-
-    console.log('🔒 Lesson Lock Check:');
-    console.log('  Current Module/Lesson:', currentModule, currentLesson);
-    console.log('  Requested Lesson Index:', requestedLessonIndex);
-    console.log('  Completed Lessons:', completedLessons.map(l => `M${l.module_number}L${l.lesson_number}`).join(', '));
-
-    if (requestedLessonIndex > 0) {
-      // There is a previous lesson - check if it's completed
-      const previousLesson = allLessons[requestedLessonIndex - 1];
-      console.log('  Previous Lesson:', `M${previousLesson.module_number}L${previousLesson.lesson_number}`);
-
-      const isPreviousCompleted = isLessonCompleted(previousLesson.module_number, previousLesson.lesson_number);
-      console.log('  Is Previous Completed?', isPreviousCompleted);
-
-      if (!isPreviousCompleted) {
-        console.log('  ❌ LESSON LOCKED - previous lesson not completed');
-        isLessonLocked = true;
-        // Find the first incomplete lesson to navigate to
-        const firstIncompleteIndex = allLessons.findIndex(
-          lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
-        );
-        currentLessonToNavigate = allLessons[firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0];
-      } else {
-        console.log('  ✅ LESSON UNLOCKED - previous lesson is completed');
-      }
+    // FIRST: Check daily course completion limit
+    if (dailyLimitReached) {
+      console.log('🚫 LESSON LOCKED - Daily course completion limit reached (2 courses/day)');
+      isLessonLocked = true;
+      lockReason = 'daily_limit';
+      // Navigate to first lesson of current course
+      currentLessonToNavigate = allLessons[0];
     } else {
-      console.log('  ✅ LESSON UNLOCKED - this is the first lesson');
+      // SECOND: Check if the previous lesson is completed (normal progression check)
+      const requestedLessonIndex = allLessons.findIndex(
+        lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
+      );
+
+      console.log('🔒 Lesson Lock Check:');
+      console.log('  Current Module/Lesson:', currentModule, currentLesson);
+      console.log('  Requested Lesson Index:', requestedLessonIndex);
+      console.log('  Completed Lessons:', completedLessons.map(l => `M${l.module_number}L${l.lesson_number}`).join(', '));
+
+      if (requestedLessonIndex > 0) {
+        // There is a previous lesson - check if it's completed
+        const previousLesson = allLessons[requestedLessonIndex - 1];
+        console.log('  Previous Lesson:', `M${previousLesson.module_number}L${previousLesson.lesson_number}`);
+
+        const isPreviousCompleted = isLessonCompleted(previousLesson.module_number, previousLesson.lesson_number);
+        console.log('  Is Previous Completed?', isPreviousCompleted);
+
+        if (!isPreviousCompleted) {
+          console.log('  ❌ LESSON LOCKED - previous lesson not completed');
+          isLessonLocked = true;
+          lockReason = 'prerequisite';
+          // Find the first incomplete lesson to navigate to
+          const firstIncompleteIndex = allLessons.findIndex(
+            lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+          );
+          currentLessonToNavigate = allLessons[firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0];
+        } else {
+          console.log('  ✅ LESSON UNLOCKED - previous lesson is completed');
+        }
+      } else {
+        console.log('  ✅ LESSON UNLOCKED - this is the first lesson');
+      }
     }
   }
 
@@ -2386,17 +2449,37 @@ ${currentLessonSections.map((section) => {
         {/* Locked Lesson Overlay */}
         {isLessonLocked && currentLessonToNavigate && (
           <div className="absolute inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
-            <div className="text-center flex flex-col gap-4">
-              <div className="text-xl text-black font-semibold">Lesson not available yet</div>
-              <button
-                onClick={() => window.location.href = `/learning?module=${currentLessonToNavigate.module_number}&lesson=${currentLessonToNavigate.lesson_number}`}
-                className="px-6 py-2 rounded-lg transition"
-                style={{ backgroundColor: '#EF0B72', color: 'white' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
-              >
-                Go to Current Lesson
-              </button>
+            <div className="text-center flex flex-col gap-4 max-w-md px-6">
+              {lockReason === 'daily_limit' ? (
+                <>
+                  <div className="text-2xl text-black font-semibold">Daily Course Limit Reached</div>
+                  <div className="text-lg text-gray-700">
+                    You've completed 2 courses today. Come back on <span className="font-semibold">{nextAvailableDate}</span> to continue learning.
+                  </div>
+                  <button
+                    onClick={() => window.location.href = '/'}
+                    className="px-6 py-2 rounded-lg transition"
+                    style={{ backgroundColor: '#EF0B72', color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
+                  >
+                    Back to Progress Hub
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-xl text-black font-semibold">Lesson not available yet</div>
+                  <button
+                    onClick={() => window.location.href = `/learning?module=${currentLessonToNavigate.module_number}&lesson=${currentLessonToNavigate.lesson_number}`}
+                    className="px-6 py-2 rounded-lg transition"
+                    style={{ backgroundColor: '#EF0B72', color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
+                  >
+                    Go to Current Lesson
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )}
