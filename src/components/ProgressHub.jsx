@@ -2570,7 +2570,7 @@ const ProgressHub = () => {
                                 <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" />
                               )}
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '2px' }}>
+                                <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
                                   {coaches[0].name}
                                 </h3>
                                 {coaches[0].position && (
@@ -2600,7 +2600,7 @@ const ProgressHub = () => {
                                 <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" />
                               )}
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '2px' }}>
+                                <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
                                   {coaches[0].name}
                                 </h3>
                                 {coaches[0].position && (
