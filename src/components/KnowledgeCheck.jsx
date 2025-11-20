@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { logKnowledgeCheck } from '../lib/api';
 
-const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName }) => {
+const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -15,8 +15,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
   const [displayedText, setDisplayedText] = useState('');
   const chatContainerRef = useRef(null);
 
-  const TOTAL_QUESTIONS = 10;
-  const PASS_THRESHOLD = 8;
+  // Dynamic question count and pass threshold based on whether it's the first lesson
+  const TOTAL_QUESTIONS = isFirstLesson ? 5 : 7;
+  const PASS_THRESHOLD = isFirstLesson ? 4 : 5;
+  const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 2;
 
   useEffect(() => {
     if (isOpen && currentQuestionIndex === 0 && chatMessages.length === 0) {
@@ -36,14 +38,23 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
         // Select a random greeting
         const randomGreeting = greetingVariations[Math.floor(Math.random() * greetingVariations.length)];
 
-        const lessonReference = lessonName || "the lesson content";
         const greetingText = firstName
-          ? `${firstName}, ${randomGreeting.toLowerCase()} ${lessonReference}`
-          : `${randomGreeting} ${lessonReference}`;
+          ? `${randomGreeting}, ${firstName}`
+          : `${randomGreeting}`;
+
+        // Build the message based on whether it's the first lesson
+        let messageText;
+        if (isFirstLesson) {
+          messageText = `${greetingText}.\n\nI'll now ask you 5 questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed, and that you answer the question asked. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\nReady to begin?`;
+        } else {
+          const courseNameText = courseName || "course";
+          const lessonNameText = lessonName || "this lesson";
+          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass. If you close this window, you will need to restart.\n\nReady to begin?`;
+        }
 
         setChatMessages([{
           type: 'assistant',
-          text: `${greetingText}.\n\nI'll now ask you 10 detailed questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed, and that you answer the question asked. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\nReady to begin?`,
+          text: messageText,
           isComplete: false
         }]);
         setTimeout(() => {
@@ -51,7 +62,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
         }, 0);
       }, 800);
     }
-  }, [isOpen, firstName, lessonName]);
+  }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
 
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive or during typing
@@ -108,6 +119,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
       // Use answers.length + 1 as the question number (more reliable than currentQuestionIndex)
       const questionNum = currentAnswers.length + 1;
 
+      // Determine if this question should be about prior lessons or current lesson
+      const isAboutPriorLessons = questionNum <= NUM_PRIOR_QUESTIONS;
+
       const response = await fetch('https://ignite-education-api.onrender.com/api/knowledge-check/question', {
         method: 'POST',
         headers: {
@@ -115,9 +129,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, lessonName, mo
         },
         body: JSON.stringify({
           lessonContext,
+          priorLessonsContext,
           questionNumber: questionNum,
           totalQuestions: TOTAL_QUESTIONS,
           previousQA: currentAnswers,
+          isAboutPriorLessons,
+          numPriorQuestions: NUM_PRIOR_QUESTIONS,
         }),
       });
 

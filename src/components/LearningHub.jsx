@@ -3216,6 +3216,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         userId={user?.id}
         firstName={firstName}
         userRole={userRole}
+        courseName={userCourseName}
         isFirstLesson={currentModule === 1 && currentLesson === 1}
         nextLessonName={(() => {
           const allLessons = [...lessonsMetadata].sort((a, b) => {
