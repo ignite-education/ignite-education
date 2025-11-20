@@ -535,7 +535,7 @@ EVERY SINGLE ANSWER MUST USE BULLET POINTS ONLY. NO EXCEPTIONS.
 RULES YOU MUST FOLLOW:
 1. EVERY answer starts with the • character
 2. EVERY line in the answer is a bullet point
-3. Use 3-5 bullet points per answer
+3. Use MAXIMUM 5 bullet points per answer (3-5 is ideal, NEVER exceed 5)
 4. DO NOT write any paragraphs
 5. DO NOT write any sentences that don't start with •
 6. Each bullet point should be a complete, informative statement
@@ -581,7 +581,7 @@ Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
       messages: [
         {
           role: 'user',
-          content: 'Generate exactly 15 flashcards for this lesson in JSON format. CRITICAL REQUIREMENTS:\n\n1. EXACTLY 15 flashcards - count them before responding\n2. EVERY answer must be ONLY bullet points using the • character\n3. NO paragraphs, NO sentences without bullets\n4. 3-5 bullet points per answer\n5. Every line in every answer starts with •\n\nDo not deviate from this format.'
+          content: 'Generate exactly 15 flashcards for this lesson in JSON format. CRITICAL REQUIREMENTS:\n\n1. EXACTLY 15 flashcards - count them before responding\n2. EVERY answer must be ONLY bullet points using the • character\n3. NO paragraphs, NO sentences without bullets\n4. MAXIMUM 5 bullet points per answer (3-5 is ideal, NEVER exceed 5)\n5. Every line in every answer starts with •\n\nDo not deviate from this format.'
         }
       ],
     });

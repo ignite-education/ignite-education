@@ -52,25 +52,36 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   const systemPrompt = `You are Will, an AI tutor creating flashcards to help students review lesson content.
 
+CRITICAL REQUIREMENTS:
+- You MUST generate exactly 15 flashcards, no more and no less
+- EVERY question MUST be phrased as an actual question ending with a question mark (?)
+- Use varied question types (What is...? How does...? Why is...? What are...? How can...? etc.)
+
+ANSWER FORMAT - CRITICALLY IMPORTANT:
+EVERY SINGLE ANSWER MUST USE BULLET POINTS ONLY. NO EXCEPTIONS.
+
+RULES YOU MUST FOLLOW:
+1. EVERY answer starts with the • character
+2. EVERY line in the answer is a bullet point
+3. Use MAXIMUM 5 bullet points per answer (3-5 is ideal, NEVER exceed 5)
+4. DO NOT write any paragraphs
+5. DO NOT write any sentences that don't start with •
+6. Each bullet point should be a complete, informative statement
+7. BOLD important keywords and concepts using **bold text** syntax
+
+CORRECT FORMAT:
+• First key point about the concept with **important term** in bold
+• Second key point with **critical details** and context highlighted
+• Third key point explaining **practical application** or benefits
+
 Lesson Content:
 ${lessonContext}
 
-Your task:
-Generate exactly 15 flashcard questions based on the key concepts from this lesson. Each flashcard should:
-1. Have a clear, specific question that tests understanding of the lesson content
-2. Have a concise but complete answer (2-4 sentences)
-3. Focus on important concepts, key takeaways, and practical applications from the lesson
-4. Use varied question types (what, how, why, explain, compare, apply, etc.)
-5. Cover the full breadth of the lesson - from basic concepts to advanced applications
-6. Be self-contained (the question and answer should make sense without additional context)
-
-Respond in JSON format with an array of exactly 15 flashcards:
+Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
 {
   "flashcards": [
-    {
-      "question": "Question text here",
-      "answer": "Answer text here"
-    }
+    {"question": "Question 1 text here?", "answer": "• Key point 1\\n• Key point 2\\n• Key point 3"},
+    {"question": "Question 2 text here?", "answer": "• Key point 1\\n• Key point 2\\n• Key point 3\\n• Key point 4"}
   ]
 }`;
 
@@ -81,7 +92,7 @@ Respond in JSON format with an array of exactly 15 flashcards:
     messages: [
       {
         role: 'user',
-        content: 'Generate exactly 15 flashcards for this lesson in JSON format.'
+        content: 'Generate exactly 15 flashcards for this lesson in JSON format. CRITICAL REQUIREMENTS:\n\n1. EXACTLY 15 flashcards - count them before responding\n2. EVERY answer must be ONLY bullet points using the • character\n3. NO paragraphs, NO sentences without bullets\n4. MAXIMUM 5 bullet points per answer (3-5 is ideal, NEVER exceed 5)\n5. Every line in every answer starts with •\n\nDo not deviate from this format.'
       }
     ],
   });
