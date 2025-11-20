@@ -3171,7 +3171,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                                         <span className="text-left flex-1">
                                           {parts.map((part, i) => {
                                             if (part.startsWith('**') && part.endsWith('**')) {
-                                              return <strong key={i} style={{ color: '#EF0B72' }}>{part.slice(2, -2)}</strong>;
+                                              return <span key={i} style={{ color: '#EF0B72', fontWeight: 500 }}>{part.slice(2, -2)}</span>;
                                             }
                                             return part;
                                           })}
