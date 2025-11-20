@@ -361,27 +361,40 @@ app.get('/api/health', (req, res) => {
 // Knowledge Check - Generate question
 app.post('/api/knowledge-check/question', async (req, res) => {
   try {
-    const { lessonContext, questionNumber, totalQuestions, previousQA } = req.body;
+    const { lessonContext, priorLessonsContext, questionNumber, totalQuestions, previousQA, isAboutPriorLessons, numPriorQuestions } = req.body;
 
     // Build a list of previously asked questions to avoid repetition
     const previousQuestions = previousQA?.map(qa => qa.question).join('\n') || 'None yet';
 
-    const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions} based on the lesson content.
+    // Determine which content to use for question generation
+    const contentToUse = isAboutPriorLessons ? priorLessonsContext : lessonContext;
+    const contentLabel = isAboutPriorLessons ? 'Prior Lessons Content' : 'Current Lesson Content';
+    
+    // Build the context section
+    let contextSection = `${contentLabel}:
+${contentToUse}`;
+    
+    // If we have prior lessons and this is about the current lesson, include a note
+    if (!isAboutPriorLessons && priorLessonsContext && priorLessonsContext.trim()) {
+      contextSection += `\n\nNote: The student has completed prior lessons, but this question should focus ONLY on the current lesson content above.`;
+    }
 
-Lesson Content:
-${lessonContext}
+    const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions}.
+
+${contextSection}
 
 Previously Asked Questions:
 ${previousQuestions}
 
 Your task:
-- Generate ONE clear, specific question that tests the student's understanding of the lesson content
+- Generate ONE clear, specific question that tests the student's understanding of the ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'}
 - The question should be open-ended (not multiple choice)
 - Vary the difficulty - some questions should be straightforward recall, others should require deeper understanding or application
 - DO NOT repeat any previously asked questions
-- Make sure the question can be answered based on the lesson content provided
+- Make sure the question can be answered based on the content provided
 - Keep the question concise and clear
 - Be friendly and encouraging in your tone
+${isAboutPriorLessons ? '- This question should test recall and understanding from lessons completed BEFORE the current lesson' : '- Focus exclusively on the current lesson content'}
 
 Generate ONLY the question, nothing else.`;
 
