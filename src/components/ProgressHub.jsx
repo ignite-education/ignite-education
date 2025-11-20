@@ -2574,7 +2574,7 @@ const ProgressHub = () => {
                                   {coaches[0].name}
                                 </h3>
                                 {coaches[0].position && (
-                                  <p className="text-white" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '4px' }}>
+                                  <p className="text-white font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '4px' }}>
                                     {coaches[0].position}
                                   </p>
                                 )}
@@ -2604,7 +2604,7 @@ const ProgressHub = () => {
                                   {coaches[0].name}
                                 </h3>
                                 {coaches[0].position && (
-                                  <p className="text-white" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '4px' }}>
+                                  <p className="text-white font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '4px' }}>
                                     {coaches[0].position}
                                   </p>
                                 )}
