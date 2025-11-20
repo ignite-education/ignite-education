@@ -109,6 +109,7 @@ const LearningHub = () => {
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
   const audioRef = React.useRef(null);
   const isPausedRef = React.useRef(false); // Track if user manually paused
+  const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -1580,6 +1581,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.log('✅ Finished narrating all sections');
       setIsReading(false);
       setCurrentNarrationSection(0);
+      isPausedRef.current = false;
       return;
     }
 
@@ -1612,12 +1614,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
 
     try {
+      // Create new abort controller for this request
+      narrateAbortController.current = new AbortController();
+      const controller = narrateAbortController.current;
+
       const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ text: sectionText }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -1634,6 +1641,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`✅ Finished section ${sectionIndex}`);
         URL.revokeObjectURL(audioUrl);
 
+        // Guard: check if this audio is still the current one
+        if (audioRef.current !== audio) {
+          console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
+          return;
+        }
+
         // Continue to next section if not paused
         if (!isPausedRef.current) {
           narrateSection(sectionIndex + 1);
@@ -1647,9 +1660,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       };
 
       await audio.play();
+      setIsReading(true);
       setCurrentNarrationSection(sectionIndex);
 
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log(`Section ${sectionIndex} narration cancelled`);
+        return;
+      }
       console.error('Error narrating section:', error);
       setIsReading(false);
     }
@@ -1699,12 +1717,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     try {
       console.log(`📖 Narrating lesson title: ${lessonName}`);
 
+      // Create new abort controller for this request
+      narrateAbortController.current = new AbortController();
+      const controller = narrateAbortController.current;
+
       const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ text: lessonName }),
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -1721,6 +1744,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`✅ Finished lesson title`);
         URL.revokeObjectURL(audioUrl);
 
+        // Guard: check if this audio is still the current one
+        if (audioRef.current !== audio) {
+          console.log('Title audio is no longer active, skipping continuation');
+          return;
+        }
+
         // Continue to lesson content if not paused
         if (!isPausedRef.current) {
           narrateSection(0);
@@ -1736,6 +1765,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       await audio.play();
 
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Lesson title narration cancelled');
+        return;
+      }
       console.error('Error narrating lesson title:', error);
       setIsReading(false);
     }
@@ -1745,9 +1778,29 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const handleReadAloud = async () => {
     // If audio is playing, pause it
     if (isReading && audioRef.current) {
-      audioRef.current.pause();
+      // Abort any in-flight API requests
+      if (narrateAbortController.current) {
+        narrateAbortController.current.abort();
+      }
+
+      // Pause and reset current audio
+      const audio = audioRef.current;
+      audio.pause();
+      audio.currentTime = 0;
+
+      // Verify pause succeeded
+      if (!audio.paused) {
+        console.warn('Audio pause failed - forcing pause state');
+        audio.pause();
+      }
+
+      // Clear audio reference
+      audioRef.current = null;
+
+      // Update state
       setIsReading(false);
       isPausedRef.current = true;
+      setCurrentNarrationSection(0);
       return;
     }
 
