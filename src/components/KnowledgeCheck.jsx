@@ -94,7 +94,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
         // Add pause after newline characters
         if (fullText[currentIndex] === '\n') {
-          pauseCounter = 15; // Pause for ~450ms (15 * 30ms)
+          pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
+        }
+
+        // Add pause after sentence-ending punctuation (. ! ?)
+        if (fullText[currentIndex] === '.' || fullText[currentIndex] === '!' || fullText[currentIndex] === '?') {
+          pauseCounter = 7; // Pause for ~315ms (7 * 45ms)
         }
 
         currentIndex++;
@@ -107,7 +112,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         setTypingMessageIndex(null);
         setDisplayedText('');
       }
-    }, 30); // Adjust speed here (lower = faster)
+    }, 45); // Adjust speed here (lower = faster)
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex]); // Only depend on typingMessageIndex, not chatMessages
