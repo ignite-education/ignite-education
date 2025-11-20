@@ -2562,12 +2562,13 @@ const ProgressHub = () => {
                                   src={coaches[0].image_url}
                                   alt={coaches[0].name}
                                   className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                  style={{ marginLeft: '3px' }}
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                   }}
                                 />
                               ) : (
-                                <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" />
+                                <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" style={{ marginLeft: '3px' }} />
                               )}
                               <div className="flex-1 min-w-0">
                                 <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
@@ -2592,12 +2593,13 @@ const ProgressHub = () => {
                                   src={coaches[0].image_url}
                                   alt={coaches[0].name}
                                   className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                  style={{ marginLeft: '3px' }}
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                   }}
                                 />
                               ) : (
-                                <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" />
+                                <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" style={{ marginLeft: '3px' }} />
                               )}
                               <div className="flex-1 min-w-0">
                                 <h3 className="font-semibold text-white" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
