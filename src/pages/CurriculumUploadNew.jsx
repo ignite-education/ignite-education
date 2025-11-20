@@ -2203,10 +2203,20 @@ ${contentBlocks.map((block, index) => {
 
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium mb-1 text-gray-300">Description</label>
+                    <label className="block text-sm font-medium mb-1 text-gray-300">
+                      Description
+                      <span className="text-gray-400 text-xs ml-2">
+                        ({coachForm.description.length}/185 characters)
+                      </span>
+                    </label>
                     <textarea
                       value={coachForm.description}
-                      onChange={(e) => setCoachForm({ ...coachForm, description: e.target.value })}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 185) {
+                          setCoachForm({ ...coachForm, description: e.target.value });
+                        }
+                      }}
+                      maxLength={185}
                       className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       placeholder="Brief bio about the coach..."
                       rows={3}
