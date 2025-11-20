@@ -3107,7 +3107,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       userSelect: 'none',
                       WebkitUserSelect: 'none',
                       MozUserSelect: 'none',
-                      msUserSelect: 'none'
+                      msUserSelect: 'none',
+                      maxWidth: '125%',
+                      width: '125%'
                     }}
                   >
                     <div className="relative w-full h-full">
