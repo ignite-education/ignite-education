@@ -48,7 +48,9 @@
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate KnowledgeCheck greeting to be dynamic and bold\n\n- Made lesson name insertion dynamic in greeting\n- Updated question description to reference lesson name for context\n- Made \"Ready to begin?\" bold (medium font weight)\n- Removed \"If you close this window, you will need to restart\" text\n- Simplified passing threshold message\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push)",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" remote -v)",
-      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push origin main)"
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push origin main)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" log --oneline -5)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nSimplify KnowledgeCheck greeting with fixed text\n\n- Changed greeting to \"Well done finishing [lesson name], Max\"\n- Updated to show exactly 5 questions in the greeting text\n- Changed passing requirement to \"80% or above to pass\"\n- Removed random greeting variations in favor of consistent message\n- Removed dynamic question count messages\n- Cleaned up unused code for greeting and message building logic\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
