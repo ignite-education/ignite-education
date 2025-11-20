@@ -57,20 +57,20 @@ const GoogleAd = ({
       return;
     }
 
-    // Wait for container to have width before initializing ad
+    // Wait for ins element to have width before initializing ad
     const checkWidthAndInitialize = () => {
-      const containerWidth = containerRef.current?.offsetWidth || 0;
+      const insWidth = insRef.current?.offsetWidth || 0;
       
-      if (containerWidth === 0) {
-        console.log('[GoogleAd] Container width is 0, waiting for layout...');
+      if (insWidth === 0) {
+        console.log('[GoogleAd] Ins element width is 0, waiting for layout...');
         // Try again after a short delay
         setTimeout(checkWidthAndInitialize, 100);
         return;
       }
 
-      // Container has width, safe to initialize ad
+      // Ins element has width, safe to initialize ad
       try {
-        console.log('[GoogleAd] Initializing ad with container width:', containerWidth, { adClient, adSlot, adFormat });
+        console.log('[GoogleAd] Initializing ad with ins width:', insWidth, { adClient, adSlot, adFormat });
         (window.adsbygoogle = window.adsbygoogle || []).push({});
         adInitialized.current = true;
         setAdStatus('loaded');
@@ -88,7 +88,7 @@ const GoogleAd = ({
           if (entry.isIntersecting && !adInitialized.current) {
             console.log('[GoogleAd] Ad container is visible, checking width...');
             // Give the browser time to calculate layout
-            setTimeout(checkWidthAndInitialize, 100);
+            setTimeout(checkWidthAndInitialize, 200);
           }
         });
       },
@@ -126,19 +126,11 @@ const GoogleAd = ({
 
   return (
     <div ref={containerRef} style={style}>
-      {adStatus === 'loading' && (
-        <div
-          className="bg-gray-800 rounded-lg flex items-center justify-center animate-pulse"
-          style={style}
-        >
-          <p className="text-gray-400 text-xs">Loading Advertisement...</p>
-        </div>
-      )}
       <ins
         ref={insRef}
         className="adsbygoogle"
         style={{ 
-          display: adStatus === 'loading' ? 'none' : 'block',
+          display: 'block',
           ...style
         }}
         data-ad-client={adClient}
