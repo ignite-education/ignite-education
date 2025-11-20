@@ -3,7 +3,14 @@
     "allow": [
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/components/Certificate.jsx src/components/Auth.jsx src/pages/CourseRedirect.jsx)",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nStandardize all pink colors to Ignite brand color\n\n- Updated all instances of #ec4899 to #EF0B72 (Ignite pink)\n- Standardized hover states from #db2777 and #D50A65 to #D10A64\n- Fixed Certificate.jsx: Share/Download buttons, PDF styles, user name heading\n- Fixed CourseRedirect.jsx: Browse button and loading spinner\n- Fixed Auth.jsx: All button hover states across sign-in, sign-up, reset, and course selection\n\nAll pink colors now consistently use the Ignite brand color (#EF0B72) with unified hover state (#D10A64).\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" log --oneline -1)"
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" log --oneline -1)",
+      "Bash(cat:*)",
+      "Bash(if [ -f .env ])",
+      "Bash(then)",
+      "Bash(if ! grep -q \"VITE_ADSENSE_CLIENT\" .env)",
+      "Bash(.env)",
+      "Bash(else)",
+      "Bash(fi)"
     ],
     "deny": [],
     "ask": []

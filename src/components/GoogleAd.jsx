@@ -1,116 +1,120 @@
 import { useEffect, useState, useRef } from 'react';
 
-const GoogleAd = ({ adClient, adSlot, adFormat = 'auto', style = {}, isAdFree = false }) => {
-  const [showPlaceholder, setShowPlaceholder] = useState(true); // Start with placeholder
-  const adInitialized = useRef(false); // Track if ad has been initialized
-  const insRef = useRef(null); // Reference to the ins element
+const GoogleAd = ({ 
+  adClient = import.meta.env.VITE_ADSENSE_CLIENT, 
+  adSlot = import.meta.env.VITE_ADSENSE_SLOT, 
+  adFormat = 'auto', 
+  style = {}, 
+  isAdFree = false 
+}) => {
+  const [adStatus, setAdStatus] = useState('loading'); // 'loading', 'loaded', 'error', 'hidden'
+  const adInitialized = useRef(false);
+  const insRef = useRef(null);
 
   useEffect(() => {
     // Don't load ads if user is ad-free
-    if (isAdFree) return;
-
-    // Don't initialize if already done
-    if (adInitialized.current) return;
-
-    // Wait for ins element to be in the DOM
-    if (!insRef.current) return;
-
-    // Check if this specific ins element already has an ad
-    if (insRef.current.getAttribute('data-ad-status') === 'filled' ||
-        insRef.current.getAttribute('data-adsbygoogle-status')) {
-      setShowPlaceholder(false);
+    if (isAdFree) {
+      console.log('[GoogleAd] User is ad-free, not loading ads');
+      setAdStatus('hidden');
       return;
     }
 
-    // Load AdSense script if not already loaded
-    if (!window.adsbygoogle) {
-      const script = document.createElement('script');
-      script.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
-      script.async = true;
-      script.crossOrigin = 'anonymous';
-      if (adClient) {
-        script.setAttribute('data-ad-client', adClient);
-      }
+    // Validate ad credentials
+    if (!adClient || !adSlot) {
+      console.warn('[GoogleAd] Missing ad credentials:', { adClient, adSlot });
+      console.warn('[GoogleAd] Make sure VITE_ADSENSE_CLIENT and VITE_ADSENSE_SLOT are set in .env');
+      setAdStatus('error');
+      return;
+    }
 
-      script.onload = () => {
-        // Hide placeholder when script loads successfully
-        setShowPlaceholder(false);
-        // Push ad to AdSense queue only if not already initialized
-        if (!adInitialized.current && insRef.current) {
-          try {
-            (window.adsbygoogle = window.adsbygoogle || []).push({});
-            adInitialized.current = true;
-          } catch (e) {
-            console.error('AdSense error:', e);
-            setShowPlaceholder(true);
-          }
-        }
-      };
+    // Don't initialize if already done
+    if (adInitialized.current) {
+      console.log('[GoogleAd] Already initialized');
+      return;
+    }
 
-      script.onerror = () => {
-        console.log('AdSense script failed to load');
-        setShowPlaceholder(true);
-      };
+    // Wait for ins element to be in the DOM
+    if (!insRef.current) {
+      console.log('[GoogleAd] Waiting for ins element');
+      return;
+    }
 
-      document.head.appendChild(script);
-    } else {
-      // Script already loaded, hide placeholder and push ad only if not already initialized
-      setShowPlaceholder(false);
-      if (!adInitialized.current && insRef.current) {
-        try {
-          (window.adsbygoogle = window.adsbygoogle || []).push({});
-          adInitialized.current = true;
-        } catch (e) {
-          console.error('AdSense error:', e);
-          setShowPlaceholder(true);
-        }
-      }
+    // Check if this specific ins element already has an ad
+    const adStatusAttr = insRef.current.getAttribute('data-ad-status');
+    const adsbyGoogleStatusAttr = insRef.current.getAttribute('data-adsbygoogle-status');
+    
+    if (adStatusAttr === 'filled' || adsbyGoogleStatusAttr) {
+      console.log('[GoogleAd] Ad already filled:', { adStatusAttr, adsbyGoogleStatusAttr });
+      setAdStatus('loaded');
+      return;
+    }
+
+    // Check if AdSense script is loaded (should be in index.html)
+    if (typeof window.adsbygoogle === 'undefined') {
+      console.warn('[GoogleAd] AdSense script not loaded. Make sure the script is in index.html head section.');
+      setAdStatus('error');
+      return;
+    }
+
+    // Initialize the ad
+    try {
+      console.log('[GoogleAd] Initializing ad:', { adClient, adSlot, adFormat });
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      adInitialized.current = true;
+      setAdStatus('loaded');
+      console.log('[GoogleAd] Ad initialized successfully');
+    } catch (error) {
+      console.error('[GoogleAd] Error initializing ad:', error);
+      setAdStatus('error');
     }
 
     // Cleanup function
     return () => {
-      // Mark as needing reinitialization if component unmounts
+      console.log('[GoogleAd] Component unmounting');
       adInitialized.current = false;
     };
-  }, [adClient, isAdFree]);
+  }, [adClient, adSlot, adFormat, isAdFree]);
 
   // Don't render anything if user is ad-free
-  if (isAdFree) {
+  if (adStatus === 'hidden') {
     return null;
   }
 
-  // If no ad client provided, show placeholder
-  if (!adClient || !adSlot) {
+  // If ad loading error or missing credentials, show placeholder
+  if (adStatus === 'error') {
     return (
       <div
         className="bg-gray-800 rounded-lg flex items-center justify-center"
         style={{ minHeight: '100px', ...style }}
       >
-        <p className="text-gray-400 text-xs">Advertisement Placeholder</p>
+        <p className="text-gray-400 text-xs">Advertisement Unavailable</p>
       </div>
     );
   }
 
   return (
     <div style={{ minHeight: '60px' }}>
-      {showPlaceholder ? (
+      {adStatus === 'loading' && (
         <div
-          className="bg-gray-800 rounded-lg flex items-center justify-center"
+          className="bg-gray-800 rounded-lg flex items-center justify-center animate-pulse"
           style={{ minHeight: '60px', ...style }}
         >
-          <p className="text-gray-400 text-xs">Advertisement</p>
+          <p className="text-gray-400 text-xs">Loading Advertisement...</p>
         </div>
-      ) : (
-        <ins
-          ref={insRef}
-          className="adsbygoogle"
-          style={{ display: 'block', ...style }}
-          data-ad-client={adClient}
-          data-ad-slot={adSlot}
-          data-ad-format={adFormat}
-          data-full-width-responsive="true"
-        />
       )}
+      <ins
+        ref={insRef}
+        className="adsbygoogle"
+        style={{ 
+          display: 'block', 
+          ...style,
+          ...(adStatus === 'loading' ? { visibility: 'hidden', position: 'absolute' } : {})
+        }}
+        data-ad-client={adClient}
+        data-ad-slot={adSlot}
+        data-ad-format={adFormat}
+        data-full-width-responsive="true"
+      />
     </div>
   );
 };
