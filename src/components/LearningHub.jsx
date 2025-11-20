@@ -3094,20 +3094,44 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
-                  {/* Card counter */}
-                  <div className="text-sm text-gray-500 mb-4">
-                    {currentFlashcardIndex + 1} / {flashcards.length}
+                  {/* Card counter and navigation buttons */}
+                  <div className="flex items-center justify-between w-full mb-4">
+                    <button
+                      onClick={handlePreviousFlashcard}
+                      disabled={currentFlashcardIndex === 0}
+                      className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <ChevronLeft size={16} />
+                      Previous
+                    </button>
+                    <div className="text-sm text-gray-500">
+                      {currentFlashcardIndex + 1} / {flashcards.length}
+                    </div>
+                    <button
+                      onClick={handleNextFlashcard}
+                      disabled={currentFlashcardIndex === flashcards.length - 1}
+                      className="px-3 py-1.5 text-sm text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: '#EF0B72'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
 
                   {/* Flashcard */}
                   <div
                     onClick={handleFlipFlashcard}
-                    className="w-full h-64 cursor-pointer select-none"
+                    className="w-full cursor-pointer select-none"
                     style={{
                       userSelect: 'none',
                       WebkitUserSelect: 'none',
                       MozUserSelect: 'none',
-                      msUserSelect: 'none'
+                      msUserSelect: 'none',
+                      height: '306px'
                     }}
                   >
                     <div className="relative w-full h-full">
@@ -3169,32 +3193,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Navigation buttons */}
-                  <div className="flex gap-2 mt-4">
-                    <button
-                      onClick={handlePreviousFlashcard}
-                      disabled={currentFlashcardIndex === 0}
-                      className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                    >
-                      <ChevronLeft size={16} />
-                      Previous
-                    </button>
-                    <button
-                      onClick={handleNextFlashcard}
-                      disabled={currentFlashcardIndex === flashcards.length - 1}
-                      className="px-3 py-1.5 text-sm text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                      style={{
-                        backgroundColor: '#EF0B72',
-                        '&:hover': { backgroundColor: '#D10A64' }
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
-                    >
-                      Next
-                      <ChevronRight size={16} />
-                    </button>
                   </div>
                 </div>
               )}
