@@ -2190,6 +2190,15 @@ const ProgressHub = () => {
       return;
     }
 
+    // Check if this is a Reddit post
+    const post = communityPosts.find(p => p.id === postId);
+    if (!post) return;
+
+    if (post.source === 'reddit') {
+      alert('Reddit posts cannot be deleted from this interface. They are fetched from Reddit and not stored in the database.');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
       return;
     }
@@ -2924,8 +2933,8 @@ const ProgressHub = () => {
                     <div
                       className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative"
                     >
-                      {/* Admin delete button */}
-                      {userRole === 'admin' && (
+                      {/* Admin delete button - only for user posts, not Reddit posts */}
+                      {userRole === 'admin' && post.source !== 'reddit' && (
                         <button
                           onClick={() => handleDeletePost(post.id)}
                           className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition"
