@@ -3093,9 +3093,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   <p className="text-gray-400 text-sm text-center">Check back later or contact your instructor.</p>
                 </div>
               ) : (
-                <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+                <div className="flex-1 flex flex-col items-center justify-center px-8 py-4">
                   {/* Card counter and navigation buttons */}
-                  <div className="flex items-center justify-between w-full mb-4">
+                  <div className="flex items-center gap-3 w-full mb-4">
                     <button
                       onClick={handlePreviousFlashcard}
                       disabled={currentFlashcardIndex === 0}
@@ -3104,9 +3104,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       <ChevronLeft size={16} />
                       Previous
                     </button>
-                    <div className="text-sm text-gray-500">
-                      {currentFlashcardIndex + 1} / {flashcards.length}
-                    </div>
                     <button
                       onClick={handleNextFlashcard}
                       disabled={currentFlashcardIndex === flashcards.length - 1}
@@ -3120,6 +3117,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       Next
                       <ChevronRight size={16} />
                     </button>
+                    <div className="text-sm text-gray-500">
+                      {currentFlashcardIndex + 1} / {flashcards.length}
+                    </div>
                   </div>
 
                   {/* Flashcard */}
@@ -3144,13 +3144,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                           }}
                         >
                           <div className="flex flex-col h-full">
-                            <p className="text-xl font-semibold text-white mb-4 text-center">Question</p>
-                            <div className="flex-1 flex items-center justify-center">
-                              <p className="text-lg font-medium text-white text-center">
+                            <p className="text-xl font-semibold text-white mb-4 text-left">Question</p>
+                            <div className="flex-1 flex items-start justify-start pt-2">
+                              <p className="text-lg font-medium text-white text-left">
                                 {flashcards[currentFlashcardIndex].question}
                               </p>
                             </div>
-                            <p className="text-xs text-white opacity-70 text-center mt-4">Click to reveal</p>
+                            <p className="text-xs text-white opacity-70 text-left mt-4">Click to reveal</p>
                           </div>
                         </div>
                       )}
@@ -3188,7 +3188,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                                 })}
                               </div>
                             </div>
-                            <p className="text-xs text-white opacity-70 text-center mt-4">Click to hide</p>
+                            <p className="text-xs text-white opacity-70 text-left mt-4 px-2">Click to hide</p>
                           </div>
                         </div>
                       )}
