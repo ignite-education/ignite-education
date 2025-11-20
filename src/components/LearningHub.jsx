@@ -3145,7 +3145,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         >
                           <div className="flex flex-col h-full justify-center">
                             <p className="text-base font-medium text-white mb-1.5 text-left">Question</p>
-                            <p className="text-2xl font-medium text-white text-left" style={{ maxWidth: '350px' }}>
+                            <p className="text-2xl font-medium text-white text-left" style={{ maxWidth: '400px' }}>
                               {flashcards[currentFlashcardIndex].question}
                             </p>
                           </div>
