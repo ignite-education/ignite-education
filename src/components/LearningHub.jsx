@@ -414,9 +414,16 @@ const LearningHub = () => {
     if (showLinkedInModal) {
       // Small delay to let modal animate in
       setTimeout(() => {
-        const duration = 2000; // 2 seconds
+        const duration = 3000; // 3 seconds
         const animationEnd = Date.now() + duration;
-        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+        const defaults = { 
+          startVelocity: 45, 
+          spread: 360, 
+          ticks: 80, 
+          zIndex: 40,  // Behind modal which is z-50
+          gravity: 1.2,
+          scalar: 1.2  // Makes confetti bigger
+        };
 
         function randomInRange(min, max) {
           return Math.random() * (max - min) + min;
@@ -429,9 +436,9 @@ const LearningHub = () => {
             return clearInterval(interval);
           }
 
-          const particleCount = 50 * (timeLeft / duration);
+          const particleCount = 75 * (timeLeft / duration);  // More particles
           
-          // Fire confetti from different positions
+          // Fire confetti from multiple positions for better coverage
           confetti({
             ...defaults,
             particleCount,
@@ -442,7 +449,12 @@ const LearningHub = () => {
             particleCount,
             origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
           });
-        }, 250);
+          confetti({
+            ...defaults,
+            particleCount: particleCount / 2,
+            origin: { x: 0.5, y: Math.random() - 0.2 }
+          });
+        }, 200);  // Fire more frequently
       }, 300);
     }
   }, [showLinkedInModal]);
@@ -3184,19 +3196,21 @@ ${currentLessonSections.map((section) => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-medium" style={{ marginBottom: '1.5rem' }}>
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '1.5rem' }}>
                   Congratulations, you've completed your first lesson!
                 </p>
                 <p className="text-black mb-6">
-                  Add to your LinkedIn to showcase your progress.
+                  Add to your LinkedIn to showcase your progress<br />
+                  and we'll send you a free Ignite Tote Bag.
                 </p>
 
                 {/* Image */}
-                <div className="mb-6">
+                <div className="mb-6 flex justify-center">
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-16%20at%2022.16.20.png"
                     alt="Add to LinkedIn"
-                    className="w-full h-auto rounded-lg"
+                    className="h-auto rounded-lg"
+                    style={{ width: '85%' }}
                   />
                 </div>
 
