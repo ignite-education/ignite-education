@@ -1417,13 +1417,13 @@ const Auth = () => {
                       <div
                         key={course.name}
                         data-course-card
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, width: '249px', height: '249px', backfaceVisibility: 'hidden', contain: 'layout style paint' }}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-visible aspect-square relative cursor-pointer"
+                        style={{ padding: '0px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, width: '249px', height: '249px', backfaceVisibility: 'hidden', contain: 'layout style paint' }}
                         onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
-                        <div className="flex flex-col h-full">
+                        <div className="flex flex-col h-full" style={{ padding: "16px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold mb-2" style={{ color: '#7714E0' }}>{course.title}</h4>
                           {course.description && (
                             <p className="text-xs text-black line-clamp-4 mb-2">
