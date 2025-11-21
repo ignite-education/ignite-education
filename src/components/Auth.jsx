@@ -35,10 +35,12 @@ const Auth = () => {
   const [typedEducationText, setTypedEducationText] = useState('');
   const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
   const coursesSectionRef = useRef(null);
+  const courseCardsScrollRef = useRef(null);
   const learningModelSectionRef = useRef(null);
   const testimonialsSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
+  const [blurredCards, setBlurredCards] = useState([]);
   const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
@@ -201,6 +203,45 @@ const Auth = () => {
 
     fetchCourses();
   }, []);
+
+  // Detect card visibility for blur effect on course grid
+  useEffect(() => {
+    const scrollContainer = courseCardsScrollRef.current;
+    if (!scrollContainer || courses.length === 0) return;
+
+    const updateCardBlur = () => {
+      const cards = scrollContainer.querySelectorAll('[data-course-card]');
+      const newBlurredCards = [];
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const containerRect = scrollContainer.getBoundingClientRect();
+        
+        // Calculate visible width
+        const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
+        const visibilityRatio = visibleWidth / cardRect.width;
+
+        // Blur cards that are less than 70% visible
+        if (visibilityRatio < 0.7) {
+          newBlurredCards.push(index);
+        }
+      });
+
+      setBlurredCards(newBlurredCards);
+    };
+
+    // Initial check
+    updateCardBlur();
+
+    // Listen to scroll events
+    scrollContainer.addEventListener('scroll', updateCardBlur);
+    window.addEventListener('resize', updateCardBlur);
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateCardBlur);
+      window.removeEventListener('resize', updateCardBlur);
+    };
+  }, [courses]);
 
   // Preload images to prevent flickering/pop-in
   useEffect(() => {
@@ -1338,6 +1379,7 @@ const Auth = () => {
               {/* Right Column - Swipeable 2x2 Course Grid */}
               <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'hidden' }}>
                 <div
+                  ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-hidden"
                   style={{
                     scrollbarWidth: 'none',
@@ -1365,12 +1407,14 @@ const Auth = () => {
           width: '510px'
                         }}
                       >
-                        {pageCourses.map((course) => {
+                        {pageCourses.map((course, index) => {
+                    const isBlurred = blurredCards.includes(index);
                     return (
                       <div
                         key={course.name}
+                        data-course-card
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px' }}
+                        style={{ padding: '16px', filter: isBlurred ? 'blur(4px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
