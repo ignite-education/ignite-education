@@ -2597,8 +2597,8 @@ const Auth = () => {
                 {/* Course Quote Section - Only for live courses */}
                 {selectedCourse.status === 'live' && (
                   <div className="mb-6 p-6 rounded-lg" style={{ backgroundColor: '#F0F0F2' }}>
-                    <p className="text-black text-lg italic">
-                      "This is a placeholder quote about the course. Replace this with actual course testimonial or motivational quote."
+                    <p className="text-black text-lg font-medium">
+                      "The Product Manager course was great! For someone new to the PM world, this is a great introduction and allowed me to connect with the community"
                     </p>
                   </div>
                 )}
