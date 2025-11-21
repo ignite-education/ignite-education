@@ -2566,24 +2566,25 @@ const Auth = () => {
                   <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full">
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ marginRight: '9.6px', transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v.01M12 12v.01M12 18v.01" />
                         </svg>
                       </div>
                       <span className="leading-tight">Certificate upon<br/>completion</span>
                     </div>
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ marginRight: '9.6px', transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
                       </div>
                       <span className="leading-tight">Taught by industry<br/>expert instructors</span>
                     </div>
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ marginRight: '9.6px', transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
                       <span className="leading-tight">Self-paced<br/>learning</span>
