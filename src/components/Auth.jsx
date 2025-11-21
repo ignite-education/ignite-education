@@ -2612,80 +2612,76 @@ const Auth = () => {
                       </h3>
                       <div className="flex flex-col gap-4">
                         {selectedCourseCoaches.map((coach, index) => (
-                        <div key={index} className="flex gap-4 items-start">
-                          {/* Left side - Coach info */}
-                          <div className="flex items-start gap-3 flex-shrink-0" style={{ width: '240px' }}>
+                          <div key={index} className="flex gap-4 items-start">
                             {coach.linkedin_url ? (
                               <a
                                 href={coach.linkedin_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="flex items-start gap-3 group transition-all"
+                                className="flex gap-4 items-start flex-1 group"
                               >
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
                                     alt={coach.name}
-                                    className="w-16 h-16 rounded-lg object-cover"
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';
                                     }}
                                   />
                                 ) : (
-                                  <div className="w-16 h-16 rounded-lg bg-gray-200" />
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
                                 )}
-                                <div>
-                                  <h4 className="font-semibold text-black group-hover:text-[#FF1CF7] transition-colors" style={{ fontSize: '14px' }}>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
-                                    <p className="text-black text-sm group-hover:text-[#FF1CF7] transition-colors">{coach.position}</p>
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '11px', lineHeight: '1.5', opacity: 0.85 }}>
+                                      {coach.description}
+                                    </p>
                                   )}
                                 </div>
                               </a>
                             ) : (
-                              <div className="flex items-start gap-3 group">
+                              <div className="flex gap-4 items-start flex-1">
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
                                     alt={coach.name}
-                                    className="w-16 h-16 rounded-lg object-cover"
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';
                                     }}
                                   />
                                 ) : (
-                                  <div className="w-16 h-16 rounded-lg bg-gray-200" />
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
                                 )}
-                                <div>
-                                  <h4 className="font-semibold text-black group-hover:text-[#FF1CF7] transition-colors" style={{ fontSize: '14px' }}>
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
                                     {coach.name}
                                   </h4>
                                   {coach.position && (
-                                    <p className="text-black text-sm group-hover:text-[#FF1CF7] transition-colors">{coach.position}</p>
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '11px', lineHeight: '1.5', opacity: 0.85 }}>
+                                      {coach.description}
+                                    </p>
                                   )}
                                 </div>
                               </div>
                             )}
                           </div>
-
-                          {/* Right side - Description or skeleton */}
-                          <div className="flex-1 pt-0.5">
-                            {coach.description ? (
-                              <p className="text-black text-sm leading-relaxed">
-                                {coach.description}
-                              </p>
-                            ) : (
-                              <div className="space-y-2">
-                                <div className="h-3 bg-gray-200 rounded animate-pulse w-full" />
-                                <div className="h-3 bg-gray-200 rounded animate-pulse w-5/6" />
-                                <div className="h-3 bg-gray-200 rounded animate-pulse w-4/6" />
-                              </div>
-                            )}
-                          </div>
-                        </div>
                         ))}
                       </div>
                     </>
