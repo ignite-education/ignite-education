@@ -208,21 +208,20 @@ const Auth = () => {
   useEffect(() => {
     const scrollContainer = courseCardsScrollRef.current;
     if (!scrollContainer || courses.length === 0) return;
-
     const updateCardBlur = () => {
       const cards = scrollContainer.querySelectorAll('[data-course-card]');
       const newBlurredCards = [];
+      const containerRect = scrollContainer.getBoundingClientRect();
 
       cards.forEach((card, index) => {
         const cardRect = card.getBoundingClientRect();
-        const containerRect = scrollContainer.getBoundingClientRect();
         
         // Calculate visible width
         const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
         const visibilityRatio = visibleWidth / cardRect.width;
 
-        // Blur cards that are less than 70% visible
-        if (visibilityRatio < 0.7) {
+        // Blur cards that are not in the first 4 positions (2x2 grid) and are less than 90% visible
+        if (index >= 4 && visibilityRatio < 0.9) {
           newBlurredCards.push(index);
         }
       });
@@ -1385,6 +1384,7 @@ const Auth = () => {
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: 'x mandatory',
                     paddingRight: '300px'
                   }}
                 >
@@ -1414,7 +1414,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px', filter: isBlurred ? 'blur(4px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out' }}
+                        style={{ padding: '16px', filter: isBlurred ? 'blur(4px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out', scrollSnapAlign: 'start' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
