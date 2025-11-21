@@ -178,8 +178,17 @@ const Auth = () => {
           };
         });
 
-        console.log('Fetched courses with modules:', coursesWithModules);
-        setCourses(coursesWithModules);
+        // Sort courses: live courses first, then coming_soon, maintaining display_order within each group
+        const sortedCourses = coursesWithModules.sort((a, b) => {
+          // First sort by status (live before coming_soon)
+          if (a.status === 'live' && b.status === 'coming_soon') return -1;
+          if (a.status === 'coming_soon' && b.status === 'live') return 1;
+          // If same status, sort by display_order
+          return (a.display_order || 0) - (b.display_order || 0);
+        });
+
+        console.log('Fetched courses with modules:', sortedCourses);
+        setCourses(sortedCourses);
 
         // Preload coaches for all courses to prevent flickering when modal opens
         const coachesCache = {};
