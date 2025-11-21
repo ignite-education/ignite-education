@@ -28,7 +28,8 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
-      "Bash(__NEW_LINE__ echo \"=== Verification ===\")"
+      "Bash(__NEW_LINE__ echo \"=== Verification ===\")",
+      "Bash(node -c src/components/Auth.jsx)"
     ],
     "deny": [],
     "ask": []
