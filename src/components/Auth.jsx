@@ -1435,7 +1435,7 @@ const Auth = () => {
                         <div className="flex flex-col h-full" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
-                            <p className="text-xs text-black mb-2" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
+                            <p className="text-xs text-black mb-2" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.6', minHeight: '60px' }}>
                               {(() => {
                                 const firstSentenceEnd = course.description.indexOf('. ');
                                 return firstSentenceEnd !== -1
