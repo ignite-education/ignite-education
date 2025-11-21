@@ -2594,6 +2594,13 @@ const Auth = () => {
                   </div>
                 </div>
 
+                {/* Course Quote Section */}
+                <div className="mb-6 p-6 rounded-lg" style={{ backgroundColor: '#F0F0F2' }}>
+                  <p className="text-black text-lg italic">
+                    "This is a placeholder quote about the course. Replace this with actual course testimonial or motivational quote."
+                  </p>
+                </div>
+
                 {/* Course Coaches Section - Always rendered with min-height to prevent layout shift */}
                 <div className="mb-6" style={{ minHeight: selectedCourseCoaches.length > 0 ? 'auto' : '0' }}>
                   {selectedCourseCoaches.length > 0 && (
