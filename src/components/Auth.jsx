@@ -212,17 +212,20 @@ const Auth = () => {
       const cards = scrollContainer.querySelectorAll('[data-course-card]');
       const newBlurredCards = [];
       const containerRect = scrollContainer.getBoundingClientRect();
+      const containerLeft = containerRect.left;
 
-      cards.forEach((card, index) => {
+      cards.forEach((card, globalIndex) => {
         const cardRect = card.getBoundingClientRect();
+        const cardLeft = cardRect.left;
+        const cardRight = cardRect.right;
         
-        // Calculate visible width
-        const visibleWidth = Math.min(cardRect.right, containerRect.right) - Math.max(cardRect.left, containerRect.left);
-        const visibilityRatio = visibleWidth / cardRect.width;
-
-        // Blur cards that are not in the first 4 positions (2x2 grid) and are less than 90% visible
-        if (index >= 4 && visibilityRatio < 0.9) {
-          newBlurredCards.push(index);
+        // A card should NOT be blurred if it's in the first visible page (left-most 4 cards)
+        // Check if card is within the first page width (~510px from container left)
+        const relativeLeft = cardLeft - containerLeft;
+        
+        // Blur cards that start beyond ~520px (outside the first 2x2 grid)
+        if (relativeLeft > 520) {
+          newBlurredCards.push(globalIndex);
         }
       });
 
@@ -1407,8 +1410,9 @@ const Auth = () => {
           width: '510px'
                         }}
                       >
-                        {pageCourses.map((course, index) => {
-                    const isBlurred = blurredCards.includes(index);
+                        {pageCourses.map((course, localIndex) => {
+                    const globalIndex = pageIndex * 4 + localIndex;
+                    const isBlurred = blurredCards.includes(globalIndex);
                     return (
                       <div
                         key={course.name}
