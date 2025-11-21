@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProgressHub from './ProgressHub';
 import Onboarding from './Onboarding';
@@ -72,6 +72,7 @@ const Auth = () => {
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Memoize selected course to avoid duplicate finds and reduce re-renders
   const selectedCourse = useMemo(() => {
@@ -212,6 +213,31 @@ const Auth = () => {
 
     fetchCourses();
   }, []);
+
+  // Handle ?course= URL parameter to auto-open course modal
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const courseParam = searchParams.get('course');
+
+    if (courseParam && courses.length > 0) {
+      // Map course slug to course name in database
+      const slugToCourseMap = {
+        'product-manager': 'Product Manager',
+        'cyber-security-analyst': 'Cyber Security Analyst',
+        'data-analyst': 'Data Analyst',
+        'ux-designer': 'UX Designer',
+      };
+
+      const courseName = slugToCourseMap[courseParam];
+
+      // Check if this course exists in the loaded courses
+      const courseExists = courses.find(c => c.name === courseName);
+
+      if (courseExists) {
+        setSelectedCourseModal(courseName);
+      }
+    }
+  }, [location.search, courses]);
 
   // Detect card visibility for blur effect on course grid
   useEffect(() => {
