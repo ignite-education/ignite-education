@@ -2524,7 +2524,7 @@ const Auth = () => {
                           transform: 'translateY(-20%)',
                           width: '40px',
                           height: '40px',
-                          borderRadius: '50%',
+                          borderRadius: '0.3rem',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
