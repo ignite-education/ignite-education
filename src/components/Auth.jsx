@@ -2521,7 +2521,7 @@ const Auth = () => {
                         style={{
                           right: '16px',
                           top: '50%',
-                          transform: 'translateY(-20%)',
+                          transform: 'translateY(calc(-20% - 5px))',
                           width: '40px',
                           height: '40px',
                           borderRadius: '0.3rem',
