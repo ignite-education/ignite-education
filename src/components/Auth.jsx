@@ -2390,10 +2390,7 @@ const Auth = () => {
                               {after}
                             </span>
                             {restOfDescription && (
-                              <>
-                                <br /><br />
-                                <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
-                              </>
+                              <span style={{ fontWeight: 400, fontSize: '16px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
                             )}
                           </>
                         );
@@ -2403,10 +2400,7 @@ const Auth = () => {
                         <>
                           <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
                           {restOfDescription && (
-                            <>
-                              <br /><br />
-                              <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
-                            </>
+                            <span style={{ fontWeight: 400, fontSize: '16px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
                           )}
                         </>
                       );
