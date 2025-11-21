@@ -2643,7 +2643,7 @@ const Auth = () => {
                                     </p>
                                   )}
                                   {coach.description && (
-                                    <p className="text-black" style={{ fontSize: '11px', lineHeight: '1.5', opacity: 0.85 }}>
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
                                       {coach.description}
                                     </p>
                                   )}
@@ -2674,7 +2674,7 @@ const Auth = () => {
                                     </p>
                                   )}
                                   {coach.description && (
-                                    <p className="text-black" style={{ fontSize: '11px', lineHeight: '1.5', opacity: 0.85 }}>
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
                                       {coach.description}
                                     </p>
                                   )}
