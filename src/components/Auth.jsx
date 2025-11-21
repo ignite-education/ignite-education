@@ -2412,7 +2412,7 @@ const Auth = () => {
                 {/* Module and Lesson Details - Swipable Cards */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6 relative">
-                    <h3 className="font-semibold text-gray-900 mb-1.5" style={{ fontSize: '17px' }}>
+                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '17px', marginBottom: '0.263rem' }}>
                       {(() => {
                         if (allLessons.length > 0 && snappedModuleIndex < allLessons.length && allLessons[snappedModuleIndex]) {
                           const currentLesson = allLessons[snappedModuleIndex];
