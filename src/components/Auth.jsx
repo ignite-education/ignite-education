@@ -35,10 +35,12 @@ const Auth = () => {
   const [typedEducationText, setTypedEducationText] = useState('');
   const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
   const coursesSectionRef = useRef(null);
+  const courseCardsScrollRef = useRef(null);
   const learningModelSectionRef = useRef(null);
   const testimonialsSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
+  const [blurredCards, setBlurredCards] = useState(new Set());
   const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
@@ -201,6 +203,52 @@ const Auth = () => {
 
     fetchCourses();
   }, []);
+
+  // Detect card visibility for blur effect
+  useEffect(() => {
+    const scrollContainer = courseCardsScrollRef.current;
+    if (!scrollContainer || courses.length === 0) return;
+
+    const updateCardBlur = () => {
+      const container = scrollContainer;
+      const containerRect = container.getBoundingClientRect();
+      const cards = container.querySelectorAll('[data-course-card]');
+      const newBlurredCards = new Set();
+
+      cards.forEach((card, index) => {
+        const cardRect = card.getBoundingClientRect();
+        const cardLeft = cardRect.left;
+        const cardRight = cardRect.right;
+        const containerRight = containerRect.right;
+
+        // Calculate how much of the card is visible
+        const visibleWidth = Math.min(cardRight, containerRight) - Math.max(cardLeft, containerRect.left);
+        const cardWidth = cardRect.width;
+        const visibilityRatio = visibleWidth / cardWidth;
+
+        // Blur cards that are less than 80% visible
+        if (visibilityRatio < 0.8 && cardRight > containerRect.left) {
+          newBlurredCards.add(index);
+        }
+      });
+
+      setBlurredCards(newBlurredCards);
+    };
+
+    // Initial check
+    updateCardBlur();
+
+    // Listen to scroll events
+    scrollContainer.addEventListener('scroll', updateCardBlur);
+
+    // Also check on window resize
+    window.addEventListener('resize', updateCardBlur);
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', updateCardBlur);
+      window.removeEventListener('resize', updateCardBlur);
+    };
+  }, [courses]);
 
   // Preload images to prevent flickering/pop-in
   useEffect(() => {
@@ -1338,6 +1386,7 @@ const Auth = () => {
               {/* Right Column - Swipeable 2x2 Course Grid */}
               <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'hidden' }}>
                 <div
+                  ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-hidden"
                   style={{
                     scrollbarWidth: 'none',
@@ -1365,12 +1414,14 @@ const Auth = () => {
           width: '510px'
                         }}
                       >
-                        {pageCourses.map((course) => {
+                        {pageCourses.map((course, index) => {
+                    const isBlurred = blurredCards.has(index);
                     return (
                       <div
                         key={course.name}
+                        data-course-card
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px' }}
+                        style={{ padding: '16px', filter: isBlurred ? 'blur(4px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
@@ -1425,7 +1476,7 @@ const Auth = () => {
                         <div
                           key={i}
                           className="bg-white/10 rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
-                          style={{ padding: '16px' }}
+                          style={{ padding: '16px', filter: isBlurred ? 'blur(4px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out' }}
                         >
                           <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
                           <div className="h-4 bg-white/20 rounded w-full mb-1"></div>
