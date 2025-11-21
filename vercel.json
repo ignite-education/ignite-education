@@ -1,4 +1,5 @@
 {
+  "_comment": "SPA routing - all paths serve index.html for React Router",
   "rewrites": [
     {
       "source": "/(.*)",
