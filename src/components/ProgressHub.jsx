@@ -831,7 +831,7 @@ const ProgressHub = () => {
           }, 500);
         }
       }, 85); // 85ms per character
-    }, 1300); // 1300ms initial delay
+    }, 1250); // 1250ms initial delay
   };
 
   const getTimeAgo = (timestamp) => {
