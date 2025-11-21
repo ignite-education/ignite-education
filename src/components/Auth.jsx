@@ -421,6 +421,38 @@ const Auth = () => {
     return () => clearInterval(interval);
   }, [linkedInPosts.length]);
 
+  // Typing animation for course description in modal
+  useEffect(() => {
+    if (!selectedCourse) {
+      setTypedCourseDescription('');
+      return;
+    }
+
+    const description = selectedCourse.description || '';
+    const firstSentenceEnd = description.indexOf('. ');
+    const firstSentence = firstSentenceEnd !== -1
+      ? description.substring(0, firstSentenceEnd + 1)
+      : description;
+
+    let currentIndex = 0;
+    const typingSpeed = 20; // milliseconds per character
+
+    const typeNextChar = () => {
+      if (currentIndex <= firstSentence.length) {
+        setTypedCourseDescription(firstSentence.substring(0, currentIndex));
+        currentIndex++;
+        setTimeout(typeNextChar, typingSpeed);
+      }
+    };
+
+    // Start typing after a brief delay
+    const startDelay = setTimeout(typeNextChar, 100);
+
+    return () => {
+      clearTimeout(startDelay);
+    };
+  }, [selectedCourse]);
+
   // Fetch LinkedIn posts from backend API
   const fetchLinkedInPosts = async () => {
     if (linkedInPosts.length > 0) return; // Already fetched
