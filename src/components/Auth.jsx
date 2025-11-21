@@ -2340,7 +2340,8 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp"
             style={{
               width: '720px',
-              height: '70vh'
+              height: '70vh',
+              borderRadius: '12px'
             }}
             onClick={(e) => e.stopPropagation()}
           >
