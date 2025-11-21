@@ -13,7 +13,9 @@
       "Bash(fi)",
       "Bash(xargs ls:*)",
       "Bash(cd:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/components/KnowledgeCheck.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate knowledge check introduction copy\n\n- Changed greeting from \"Well done finishing\" to \"Nice work working through\"\n- Updated to use dynamic firstName variable instead of hardcoded \"Max\"\n- Added \"now\" to \"I 'll now ask you 5 questions\"\n- Removed \"and that you answer the question asked\" for cleaner instructions\n- Kept dynamic lessonReference and 80% passing requirement\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
