@@ -1418,9 +1418,9 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate' }}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        style={{ padding: '16px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, width: '249px', height: '249px' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div className="flex flex-col h-full">
