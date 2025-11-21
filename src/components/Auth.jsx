@@ -1487,23 +1487,6 @@ const Auth = () => {
                   )}
                   </div>
                 </div>
-                {/* Gradient overlay on right side */}
-                <div 
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    right: 0,
-                    width: '60px',
-                    height: '100%',
-                    background: 'linear-gradient(to right, rgba(0,0,0,0), rgba(0,0,0,0.9))',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
-                    maskImage: 'linear-gradient(to right, transparent, black)',
-                    WebkitMaskImage: 'linear-gradient(to right, transparent, black)',
-                    pointerEvents: 'none',
-                    zIndex: 10
-                  }}
-                />
               </div>
             </div>
           </div>
