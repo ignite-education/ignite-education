@@ -1445,7 +1445,7 @@ const Auth = () => {
                             </p>
                           )}
                           {course.module_names && (
-                            <div className="pb-5">
+                            <div className="pb-8">
                               <p className="text-xs text-black font-semibold mb-1">Modules:</p>
                               <ul className="text-xs text-black space-y-0.5">
                                 {course.module_names.split(', ').slice(0, course.title.length > 25 ? 4 : 5).map((moduleName, idx) => (
