@@ -421,38 +421,6 @@ const Auth = () => {
     return () => clearInterval(interval);
   }, [linkedInPosts.length]);
 
-  // Typing animation for course description in modal
-  useEffect(() => {
-    if (!selectedCourse) {
-      setTypedCourseDescription('');
-      return;
-    }
-
-    const description = selectedCourse.description || '';
-    const firstSentenceEnd = description.indexOf('. ');
-    const firstSentence = firstSentenceEnd !== -1
-      ? description.substring(0, firstSentenceEnd + 1)
-      : description;
-
-    let currentIndex = 0;
-    const typingSpeed = 20; // milliseconds per character
-
-    const typeNextChar = () => {
-      if (currentIndex <= firstSentence.length) {
-        setTypedCourseDescription(firstSentence.substring(0, currentIndex));
-        currentIndex++;
-        setTimeout(typeNextChar, typingSpeed);
-      }
-    };
-
-    // Start typing after a brief delay
-    const startDelay = setTimeout(typeNextChar, 100);
-
-    return () => {
-      clearTimeout(startDelay);
-    };
-  }, [selectedCourse]);
-
   // Fetch LinkedIn posts from backend API
   const fetchLinkedInPosts = async () => {
     if (linkedInPosts.length > 0) return; // Already fetched
@@ -2414,24 +2382,14 @@ const Auth = () => {
                         const pink = firstSentence.substring(pinkIndex, pinkIndex + pinkPhrase.length);
                         const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
 
-                        // Use typed version for first sentence
-                        const typedBefore = typedCourseDescription.substring(0, Math.min(pinkIndex, typedCourseDescription.length));
-                        const typedPink = typedCourseDescription.substring(
-                          pinkIndex, 
-                          Math.min(pinkIndex + pinkPhrase.length, typedCourseDescription.length)
-                        );
-                        const typedAfter = typedCourseDescription.substring(
-                          Math.min(pinkIndex + pinkPhrase.length, typedCourseDescription.length)
-                        );
-
                         return (
                           <>
                             <span style={{ fontWeight: 600, fontSize: '20px' }}>
-                              {typedBefore}
-                              {typedPink && <span style={{ color: '#EC4899' }}>{typedPink}</span>}
-                              {typedAfter}
+                              {before}
+                              <span style={{ color: '#EC4899' }}>{pink}</span>
+                              {after}
                             </span>
-                            {typedCourseDescription.length === firstSentence.length && restOfDescription && (
+                            {restOfDescription && (
                               <>
                                 <br /><br />
                                 <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
@@ -2443,8 +2401,8 @@ const Auth = () => {
 
                       return (
                         <>
-                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{typedCourseDescription}</span>
-                          {typedCourseDescription.length === firstSentence.length && restOfDescription && (
+                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
+                          {restOfDescription && (
                             <>
                               <br /><br />
                               <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
@@ -2453,7 +2411,7 @@ const Auth = () => {
                         </>
                       );
                     }
-                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{typedCourseDescription}</span>;
+                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
                   })()}
                 </div>
 
