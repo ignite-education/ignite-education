@@ -830,7 +830,7 @@ const ProgressHub = () => {
             setIsNameTypingComplete(true);
           }, 500);
         }
-      }, 75); // 75ms per character
+      }, 85); // 85ms per character
     }, 1000); // 1000ms initial delay
   };
 
