@@ -225,24 +225,26 @@ const Auth = () => {
     console.log('🔍 [Auth] courseParam:', courseParam);
 
     if (courseParam && courses.length > 0) {
-      // Map course slug to course name in database
-      const slugToCourseMap = {
+      // Map course slug to course title for display
+      const slugToTitleMap = {
         'product-manager': 'Product Manager',
         'cyber-security-analyst': 'Cyber Security Analyst',
         'data-analyst': 'Data Analyst',
         'ux-designer': 'UX Designer',
       };
 
-      const courseName = slugToCourseMap[courseParam];
-      console.log('🔍 [Auth] Mapped course name:', courseName);
+      const courseTitle = slugToTitleMap[courseParam];
+      console.log('🔍 [Auth] Mapped course title:', courseTitle);
 
-      // Check if this course exists in the loaded courses
-      const courseExists = courses.find(c => c.name === courseName);
+      // Check if this course exists in the loaded courses (by title, not name)
+      const courseExists = courses.find(c => c.title === courseTitle);
       console.log('🔍 [Auth] Course exists:', !!courseExists);
+      console.log('🔍 [Auth] Available courses:', courses.map(c => ({ name: c.name, title: c.title })));
 
       if (courseExists) {
-        console.log('✅ [Auth] Opening course modal:', courseName);
-        setSelectedCourseModal(courseName);
+        console.log('✅ [Auth] Opening course modal for:', courseTitle);
+        // setSelectedCourseModal expects the course name (not title)
+        setSelectedCourseModal(courseExists.name);
       } else {
         console.log('❌ [Auth] Course not found in loaded courses');
       }
