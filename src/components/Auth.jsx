@@ -2101,8 +2101,7 @@ const Auth = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
-                      opacity: 0,
-                      animation: animateLinkedInFAQ ? `fadeInUp 0.8s ease-out ${0.5 + idx * 0.1}s forwards` : 'none'
+                      opacity: 1
                     }}
                     onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
