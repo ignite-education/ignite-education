@@ -2443,8 +2443,8 @@ const Auth = () => {
 
                       return (
                         <>
-                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
-                          {restOfDescription && (
+                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{typedCourseDescription}</span>
+                          {typedCourseDescription.length === firstSentence.length && restOfDescription && (
                             <>
                               <br /><br />
                               <span style={{ fontWeight: 400, fontSize: '16px' }}>{restOfDescription}</span>
@@ -2814,14 +2814,9 @@ const Auth = () => {
                     }, 300);
                   }
                 }}
-                className={`w-full font-semibold py-3 rounded-lg transition ${
-                  selectedCourse.status === 'live'
-                    ? 'bg-[#EF0B72] text-white hover:bg-[#D50A65]'
-                    : 'bg-gray-400 text-white cursor-not-allowed'
-                }`}
-                disabled={selectedCourse.status !== 'live'}
+                className="w-full font-semibold py-3 rounded-lg transition bg-[#EF0B72] text-white hover:bg-[#D50A65]"
               >
-                {selectedCourse.status === 'live' ? 'Get Started' : 'Notify Me When Available'}
+                Get Started
               </button>
                 </div>
               </div>
