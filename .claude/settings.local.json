@@ -48,7 +48,15 @@
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nReduce course title margin to 0.15rem\n\n- Changed margin-bottom from 0.35rem to 0.15rem\n- Tightens spacing between course title and description from ~5.6px to ~2.4px\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" diff HEAD~1 HEAD src/components/Auth.jsx)",
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" log --oneline -1 --stat)",
-      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" show a89e3d8 --stat)"
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" show a89e3d8 --stat)",
+      "Bash(git log:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git hash-object:*)",
+      "Bash(git cat-file:*)",
+      "Bash(python3:*)",
+      "Bash(sqlite3:*)",
+      "Bash(echo:*)",
+      "Bash(env)"
     ],
     "deny": [],
     "ask": []
