@@ -3983,7 +3983,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Office Hours</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Get personalised support from<br />course leaders when you need it.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Get personalised support from<br />course leaders when you need it.</p>
                     </div>
                   </div>
 
@@ -3996,7 +3996,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Completely Ad-Free</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>Learn without distractions with<br />a completely ad-free experience.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Learn without distractions with<br />a completely ad-free experience.</p>
                     </div>
                   </div>
 
@@ -4009,7 +4009,7 @@ const ProgressHub = () => {
                     </div>
                     <div>
                       <h4 className="text-white font-semibold text-lg mb-0">Weekly Handpicked Roles</h4>
-                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px' }}>We'll send you the top career<br />opportunities to you every week.</p>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>We'll send you the top career<br />opportunities to you every week.</p>
                     </div>
                   </div>
 
