@@ -1379,16 +1379,16 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'hidden' }}>
+              <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
-                  className="overflow-x-auto overflow-y-hidden"
+                  className="overflow-x-auto overflow-y-visible"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
                     scrollSnapType: 'x mandatory',
-                    paddingRight: '300px'
+                    paddingRight: '300px', paddingTop: '10px', paddingBottom: '10px'
                   }}
                 >
                   <style>{`
