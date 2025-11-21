@@ -1423,7 +1423,7 @@ const Auth = () => {
                         onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
-                        <div className="flex flex-col h-full" style={{ padding: "16px", backgroundColor: "white", borderRadius: "inherit" }}>
+                        <div className="flex flex-col h-full" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold" style={{ color: '#7714E0', marginBottom: '0.1rem' }}>{course.title}</h4>
                           {course.description && (
                             <p className="text-xs text-black line-clamp-4 mb-2">
