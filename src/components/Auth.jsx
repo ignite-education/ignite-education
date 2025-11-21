@@ -243,9 +243,9 @@ const Auth = () => {
 
       if (courseExists) {
         console.log('✅ [Auth] Opening course modal for:', courseTitle);
-        // Scroll to courses section so modal appears in the right context
+        // Scroll to courses section instantly (no animation)
         if (coursesSectionRef.current) {
-          coursesSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          coursesSectionRef.current.scrollIntoView({ behavior: 'auto', block: 'start' });
         }
         // setSelectedCourseModal expects the course name (not title)
         setSelectedCourseModal(courseExists.name);
