@@ -216,8 +216,13 @@ const Auth = () => {
 
   // Handle ?course= URL parameter to auto-open course modal
   useEffect(() => {
+    console.log('🔍 [Auth] URL parameter handler triggered');
+    console.log('🔍 [Auth] location.search:', location.search);
+    console.log('🔍 [Auth] courses.length:', courses.length);
+
     const searchParams = new URLSearchParams(location.search);
     const courseParam = searchParams.get('course');
+    console.log('🔍 [Auth] courseParam:', courseParam);
 
     if (courseParam && courses.length > 0) {
       // Map course slug to course name in database
@@ -229,13 +234,20 @@ const Auth = () => {
       };
 
       const courseName = slugToCourseMap[courseParam];
+      console.log('🔍 [Auth] Mapped course name:', courseName);
 
       // Check if this course exists in the loaded courses
       const courseExists = courses.find(c => c.name === courseName);
+      console.log('🔍 [Auth] Course exists:', !!courseExists);
 
       if (courseExists) {
+        console.log('✅ [Auth] Opening course modal:', courseName);
         setSelectedCourseModal(courseName);
+      } else {
+        console.log('❌ [Auth] Course not found in loaded courses');
       }
+    } else {
+      console.log('⏭️ [Auth] Skipping - courseParam:', courseParam, 'courses.length:', courses.length);
     }
   }, [location.search, courses]);
 
