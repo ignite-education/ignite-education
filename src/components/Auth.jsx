@@ -2363,9 +2363,10 @@ const Auth = () => {
     {/* Course Details Modal */}
     {selectedCourse && (
       <div
-        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+        className="fixed inset-0 flex items-center justify-center backdrop-blur-sm animate-fadeIn"
         style={{
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+          zIndex: 9999,
         }}
         onClick={() => setSelectedCourseModal(null)}
       >
