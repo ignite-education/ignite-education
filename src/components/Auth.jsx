@@ -2373,7 +2373,7 @@ const Auth = () => {
             style={{
               width: '720px',
               height: '70vh',
-              borderRadius: '12px'
+              borderRadius: '6px'
             }}
             onClick={(e) => e.stopPropagation()}
           >
