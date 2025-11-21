@@ -2358,11 +2358,6 @@ const Auth = () => {
               style={{ scrollbarWidth: 'none', paddingTop: '25.6px', paddingBottom: '20px' }}
             >
               <div>
-                {selectedCourse.status === 'coming_soon' && (
-                  <div className="mb-6">
-                    <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm font-medium">Coming Soon</span>
-                  </div>
-                )}
                 {selectedCourse.status === 'requested' && (
                   <div className="mb-6">
                     <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">Requested</span>
