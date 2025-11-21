@@ -3311,8 +3311,10 @@ const ProgressHub = () => {
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 bg-pink-500 text-white font-semibold hover:bg-pink-600 transition disabled:opacity-50"
-                      style={{ borderRadius: '0.3rem' }}
+                      className="px-6 py-2 text-white font-semibold transition disabled:opacity-50"
+                      style={{ borderRadius: '0.3rem', backgroundColor: '#EF0B72' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#D10A64'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Posting...' : 'Post'}
