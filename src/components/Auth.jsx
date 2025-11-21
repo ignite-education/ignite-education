@@ -1035,7 +1035,7 @@ const Auth = () => {
       {/* Background - Progress Hub */}
       <div
         style={{
-          filter: 'blur(2px)',
+          filter: 'blur(1px) brightness(0.7)',
           pointerEvents: 'none',
           opacity: 0,
           animation: 'fadeIn 1s ease-out forwards',
@@ -1418,7 +1418,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square relative cursor-pointer"
-                        style={{ padding: '16px', filter: isBlurred ? 'blur(2px)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out', scrollSnapAlign: 'start' }}
+                        style={{ padding: '16px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 300ms ease-in-out, transform 300ms ease-in-out', scrollSnapAlign: 'start' }}
                         onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.015)'}
                         onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         onClick={() => setSelectedCourseModal(course.name)}
