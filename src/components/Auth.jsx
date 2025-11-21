@@ -40,7 +40,7 @@ const Auth = () => {
   const testimonialsSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
-  const [blurredCards, setBlurredCards] = useState(new Set());
+  const [blurredCards, setBlurredCards] = useState([]);
   const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
   const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
   const [typedLearningTagline, setTypedLearningTagline] = useState('');
@@ -232,7 +232,7 @@ const Auth = () => {
         }
       });
 
-      setBlurredCards(newBlurredCards);
+      setBlurredCards(Array.from(newBlurredCards));
     };
 
     // Initial check
@@ -1415,7 +1415,7 @@ const Auth = () => {
                         }}
                       >
                         {pageCourses.map((course, index) => {
-                    const isBlurred = blurredCards.has(index);
+                    const isBlurred = blurredCards.includes(index);
                     return (
                       <div
                         key={course.name}
