@@ -510,7 +510,7 @@ const Auth = () => {
 
   // Typing animation for courses title
   const startCourseTitleTyping = () => {
-    const fullText = 'The best courses.\nFor the best studentss.';
+    const fullText = 'The best courses.\nFor the best students.';
     const firstLineLength = 'The best courses.'.length;
     let currentIndex = 0;
     let isPaused = false;
@@ -698,7 +698,7 @@ const Auth = () => {
   // Helper to render typed courses title with purple highlights
   const renderTypedCoursesTitle = () => {
     const text = typedCoursesTitle;
-    const fullText = 'The best courses.\nFor the best studentss.';
+    const fullText = 'The best courses.\nFor the best students.';
     const firstLineLength = 'The best courses.'.length;
 
     let result = [];
