@@ -2386,7 +2386,7 @@ const Auth = () => {
                           <>
                             <span style={{ fontWeight: 600, fontSize: '20px' }}>
                               {before}
-                              <span style={{ color: '#EC4899' }}>{pink}</span>
+                              <span style={{ color: '#EF0B72' }}>{pink}</span>
                               {after}
                             </span>
                             {restOfDescription && (
