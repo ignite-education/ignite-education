@@ -10,7 +10,10 @@
       "Bash(if ! grep -q \"VITE_ADSENSE_CLIENT\" .env)",
       "Bash(.env)",
       "Bash(else)",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(xargs ls:*)",
+      "Bash(cd:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": [],
     "ask": []

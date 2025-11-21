@@ -101,6 +101,10 @@ const ProgressHub = () => {
   });
   const [userRole, setUserRole] = useState(null); // 'student', 'teacher', 'admin'
 
+  // Typing animation states
+  const [typedFirstName, setTypedFirstName] = useState('');
+  const [isNameTypingComplete, setIsNameTypingComplete] = useState(false);
+
   // Pull-to-refresh states
   const [isPulling, setIsPulling] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
@@ -450,6 +454,13 @@ const ProgressHub = () => {
 
     checkAndGenerateCertificate();
   }, [completedLessons, authUser, certificateGenerated]);
+
+  // Trigger typing animation when component mounts or user changes
+  useEffect(() => {
+    if (user.firstName) {
+      startNameTyping();
+    }
+  }, [user.firstName]);
 
 
   const fetchData = async () => {
@@ -801,6 +812,26 @@ const ProgressHub = () => {
       setCommunityPosts([]); // Set empty posts on error
       setLoading(false); // Always turn off loading
     }
+  };
+
+  // Typing animation for user's first name
+  const startNameTyping = () => {
+    const fullName = user.firstName;
+    let currentIndex = 0;
+
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= fullName.length) {
+          setTypedFirstName(fullName.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setTimeout(() => {
+            setIsNameTypingComplete(true);
+          }, 500);
+        }
+      }, 75); // 75ms per character
+    }, 500); // 500ms initial delay
   };
 
   const getTimeAgo = (timestamp) => {
@@ -2364,7 +2395,12 @@ const ProgressHub = () => {
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px', paddingTop: '10px' }}>
                 <h1 className="font-semibold" style={{ fontSize: '34px', marginBottom: '8px' }}>
-                  Welcome, <span style={{ color: '#EF0B72' }}>{user.firstName}</span>
+                  Welcome, <span style={{ color: '#EF0B72' }}>
+                    {typedFirstName}
+                    {!isNameTypingComplete && (
+                      <span className="animate-blink font-light">|</span>
+                    )}
+                  </span>
                 </h1>
                 <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
