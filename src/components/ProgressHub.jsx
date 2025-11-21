@@ -455,12 +455,12 @@ const ProgressHub = () => {
     checkAndGenerateCertificate();
   }, [completedLessons, authUser, certificateGenerated]);
 
-  // Trigger typing animation when component mounts or user changes
+  // Trigger typing animation only after loading completes
   useEffect(() => {
-    if (user.firstName) {
+    if (!loading && user.firstName) {
       startNameTyping();
     }
-  }, [user.firstName]);
+  }, [loading, user.firstName]);
 
 
   const fetchData = async () => {
