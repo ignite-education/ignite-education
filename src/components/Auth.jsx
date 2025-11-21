@@ -2461,29 +2461,31 @@ const Auth = () => {
                                 paddingRight: '5.618px',
                                 paddingBottom: '5.618px',
                                 paddingLeft: '14px',
+                                borderRadius: '0.3rem',
                                 background: '#7714E0',
                                 height: '90px',
                                 scrollSnapAlign: 'start',
                                 scrollSnapStop: 'always'
                               }}
                             >
-                              {/* Opacity overlay for non-snapped cards - Always rendered, controlled by CSS opacity */}
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                  backdropFilter: 'blur(0.75px)',
-                                  WebkitBackdropFilter: 'blur(0.75px)',
-                                  pointerEvents: 'none',
-                                  opacity: index === snappedModuleIndex ? 0 : 1,
-                                  transition: 'opacity 0.2s ease-out',
-                                  willChange: 'opacity'
-                                }}
-                              />
+                              {/* Opacity overlay for non-snapped cards */}
+                              {index !== snappedModuleIndex && (
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    right: 0,
+                                    bottom: 0,
+                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                                    backdropFilter: 'blur(0.75px)',
+                                    WebkitBackdropFilter: 'blur(0.75px)',
+                                    borderRadius: '0.3rem',
+                                    pointerEvents: 'none',
+                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                                  }}
+                                />
+                              )}
                               <div className="flex-1">
                                 <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                                   {lesson.name || `Lesson ${lesson.lessonIndex}`}
