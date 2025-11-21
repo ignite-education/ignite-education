@@ -2786,30 +2786,10 @@ const Auth = () => {
                     // Wait for modal close animation, then scroll to top
                     setTimeout(() => {
                       if (authScrollContainerRef.current) {
-                        const container = authScrollContainerRef.current;
-                        const startPosition = container.scrollTop;
-                        const duration = 800; // 800ms for slower, smoother scroll
-                        const startTime = performance.now();
-
-                        const easeInOutCubic = (t) => {
-                          return t < 0.5
-                            ? 4 * t * t * t
-                            : 1 - Math.pow(-2 * t + 2, 3) / 2;
-                        };
-
-                        const animateScroll = (currentTime) => {
-                          const elapsed = currentTime - startTime;
-                          const progress = Math.min(elapsed / duration, 1);
-                          const easeProgress = easeInOutCubic(progress);
-
-                          container.scrollTop = startPosition * (1 - easeProgress);
-
-                          if (progress < 1) {
-                            requestAnimationFrame(animateScroll);
-                          }
-                        };
-
-                        requestAnimationFrame(animateScroll);
+                        authScrollContainerRef.current.scrollTo({
+                          top: 0,
+                          behavior: 'smooth'
+                        });
                       }
                     }, 300);
                   }
