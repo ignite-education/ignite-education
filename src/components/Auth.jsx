@@ -1633,7 +1633,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="relative cursor-pointer flex-shrink-0"
-                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
+                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
