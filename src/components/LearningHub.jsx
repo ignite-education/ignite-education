@@ -3146,63 +3146,117 @@ ${currentLessonSections.map((section) => {
               setShowVoiceSettings(false);
             }}
           >
-            {/* Voice Settings Menu */}
+            {/* Voice Settings Menu - Curved Arc */}
             {showVoiceSettings && (
               <div
-                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2"
-                style={{ zIndex: 30, width: '200px' }}
+                className="absolute"
+                style={{
+                  bottom: '-21.5px',
+                  left: '-21.5px',
+                  width: '160px',
+                  height: '160px',
+                  zIndex: 30,
+                  pointerEvents: 'none'
+                }}
               >
-                {/* Container for voice buttons and slider */}
-                <div className="relative" style={{ height: '120px' }}>
-                  {/* Male button - top center */}
-                  <button
-                    onClick={() => setVoiceGender('male')}
-                    className="absolute top-0 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg"
-                    style={{
-                      backgroundColor: voiceGender === 'male' ? '#EF0B72' : 'white',
-                      color: voiceGender === 'male' ? 'white' : '#374151',
-                      border: voiceGender === 'male' ? 'none' : '2px solid #e5e7eb'
-                    }}
-                  >
-                    Male
-                  </button>
+                {/* SVG Arc Background */}
+                <svg
+                  viewBox="0 0 160 160"
+                  style={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  {/* Background arc */}
+                  <path
+                    d="M 80,80 L 15,80 A 65,65 0 0,1 80,15 Z"
+                    fill="white"
+                    stroke="#e5e7eb"
+                    strokeWidth="2"
+                    opacity="0.95"
+                    style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
+                  />
+                  {/* Progress arc based on speed */}
+                  <path
+                    d="M 80,80 L 15,80 A 65,65 0 0,1 80,15"
+                    fill="none"
+                    stroke="#EF0B72"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${((playbackSpeed - 0.75) / 0.75) * 102} 102`}
+                    strokeDashoffset="0"
+                  />
+                </svg>
 
-                  {/* Female button - bottom left */}
-                  <button
-                    onClick={() => setVoiceGender('female')}
-                    className="absolute bottom-0 left-0 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg"
-                    style={{
-                      backgroundColor: voiceGender === 'female' ? '#EF0B72' : 'white',
-                      color: voiceGender === 'female' ? 'white' : '#374151',
-                      border: voiceGender === 'female' ? 'none' : '2px solid #e5e7eb'
-                    }}
-                  >
-                    Female
-                  </button>
+                {/* Male button - positioned along top arc */}
+                <button
+                  onClick={() => setVoiceGender('male')}
+                  className="absolute px-3 py-1.5 rounded-full font-medium text-xs transition-all shadow-lg"
+                  style={{
+                    top: '8px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    backgroundColor: voiceGender === 'male' ? '#EF0B72' : 'white',
+                    color: voiceGender === 'male' ? 'white' : '#374151',
+                    border: voiceGender === 'male' ? 'none' : '2px solid #e5e7eb',
+                    pointerEvents: 'auto',
+                    zIndex: 40
+                  }}
+                >
+                  Male
+                </button>
 
-                  {/* Curved Speed Slider - bottom right */}
-                  <div className="absolute bottom-0 right-0 bg-white rounded-full shadow-lg px-3 py-2" style={{ width: '120px' }}>
-                    <div className="text-xs font-semibold text-gray-700 mb-1 text-center">
-                      {playbackSpeed}x
-                    </div>
-                    <input
-                      type="range"
-                      min="0.75"
-                      max="1.5"
-                      step="0.25"
-                      value={playbackSpeed}
-                      onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
-                      className="w-full"
-                      style={{
-                        accentColor: '#EF0B72',
-                        height: '6px',
-                        borderRadius: '3px'
-                      }}
-                    />
-                    <div className="flex justify-between text-xs text-gray-500 mt-0.5">
-                      <span>0.75</span>
-                      <span>1.5</span>
-                    </div>
+                {/* Female button - positioned along left arc */}
+                <button
+                  onClick={() => setVoiceGender('female')}
+                  className="absolute px-3 py-1.5 rounded-full font-medium text-xs transition-all shadow-lg"
+                  style={{
+                    top: '50%',
+                    left: '8px',
+                    transform: 'translateY(-50%)',
+                    backgroundColor: voiceGender === 'female' ? '#EF0B72' : 'white',
+                    color: voiceGender === 'female' ? 'white' : '#374151',
+                    border: voiceGender === 'female' ? 'none' : '2px solid #e5e7eb',
+                    pointerEvents: 'auto',
+                    zIndex: 40
+                  }}
+                >
+                  Female
+                </button>
+
+                {/* Speed control - positioned in center of arc */}
+                <div
+                  className="absolute bg-white rounded-lg shadow-lg px-2 py-1.5"
+                  style={{
+                    top: '28px',
+                    left: '28px',
+                    width: '65px',
+                    pointerEvents: 'auto',
+                    zIndex: 40
+                  }}
+                >
+                  <div className="text-xs font-semibold text-gray-700 mb-1 text-center">
+                    {playbackSpeed}x
+                  </div>
+                  <input
+                    type="range"
+                    min="0.75"
+                    max="1.5"
+                    step="0.25"
+                    value={playbackSpeed}
+                    onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
+                    className="w-full"
+                    style={{
+                      accentColor: '#EF0B72',
+                      height: '4px',
+                      borderRadius: '2px'
+                    }}
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-400 mt-0.5">
+                    <span>0.75</span>
+                    <span>1.5</span>
                   </div>
                 </div>
               </div>
