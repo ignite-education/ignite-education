@@ -2586,7 +2586,7 @@ const Auth = () => {
                             {(module.lessons || []).map((lesson, lessonIndex) => (
                               <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
                                 <span className="mt-0.5 text-white">•</span>
-                                <span className="font-semibold text-white">{lesson.name}</span>
+                                <span className="font-medium text-white">{lesson.name}</span>
                               </li>
                             ))}
                           </ul>
