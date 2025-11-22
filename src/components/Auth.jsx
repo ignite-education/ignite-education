@@ -2480,7 +2480,7 @@ const Auth = () => {
                     <div className="space-y-6">
                       {selectedCourse.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>
-                          {/* Module Title - Outside container */}
+                          {/* Module Title */}
                           <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#7714E0' }}>
                             Module {moduleIndex + 1} - {module.name}
                           </h4>
@@ -2491,23 +2491,263 @@ const Auth = () => {
                             borderRadius: '0.5rem', 
                             padding: '1rem'
                           }}>
-                            {/* AI-Generated Module Intro */}
-                            <p className="text-white mb-3" style={{ fontSize: '14px' }}>
-                              {generateModuleIntro(module)}
-                            </p>
 
-                            {/* Lesson List */}
-                            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.09375rem' }}>
-                              {(module.lessons || []).map((lesson, lessonIndex) => (
-                                <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
-                                  <span className="mt-0.5 text-white">•</span>
-                                  <span className="font-semibold text-white">{lesson.name}</span>
-                                </li>
-                              ))}
-                            </ul>
+                          {/* AI-Generated Module Intro */}
+                          <p className="text-white mb-3" style={{ fontSize: '14px' }}>
+                            {generateModuleIntro(module)}
+                          </p>
+
+                          {/* Lesson List */}
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.09375rem' }}>
+                            {(module.lessons || []).map((lesson, lessonIndex) => (
+                              <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
+                                <span className="mt-0.5 text-white">•</span>
+                                <span className="font-semibold text-white">{lesson.name}</span>
+                              </li>
+                            ))}
+                          </ul>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 ) : (
+                  /* Fallback for courses without module_structure */
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-700">
+                        <strong>
+                          {selectedCourse.modules && selectedCourse.modules.toLowerCase() === 'multiple'
+                            ? 'Multiple comprehensive modules'
+                            : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
+                        </strong>
+                      </p>
+                      {selectedCourse.lessons > 0 && (
+                        <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
+                      )}
+                      {selectedCourse.duration && (
+                        <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Course Benefits - Single Row Layout */}
+                <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-7.2px', marginBottom: '19.2px' }}>
+                  <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full">
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Certificate upon<br/>completion</span>
+                    </div>
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Taught by industry<br/>expert instructors</span>
+                    </div>
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Self-paced<br/>learning</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Course Quote Section - Only for live courses */}
+                {selectedCourse.status === 'live' && (
+                  <div className="mb-6 p-6 rounded-lg" style={{ backgroundColor: '#F0F0F2' }}>
+                    <p className="text-black text-lg font-medium">
+                      "The Product Manager course was great! For someone new to the PM world, this is a great introduction and allowed me to connect with the community"
+                    </p>
+                  </div>
+                )}
+
+                {/* Course Coaches Section - Always rendered with min-height to prevent layout shift */}
+                <div className="mb-6" style={{ minHeight: selectedCourseCoaches.length > 0 ? 'auto' : '0' }}>
+                  {selectedCourseCoaches.length > 0 && (
+                    <>
+                      <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '22px' }}>
+                        Course Leaders
+                      </h3>
+                      <div className="flex flex-col gap-4">
+                        {selectedCourseCoaches.map((coach, index) => (
+                          <div key={index} className="flex gap-4 items-start">
+                            {coach.linkedin_url ? (
+                              <a
+                                href={coach.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex gap-4 items-start flex-1 group"
+                              >
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                      {coach.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </a>
+                            ) : (
+                              <div className="flex gap-4 items-start flex-1">
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                      {coach.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Get Started Button */}
+                <div className="mt-6">
+                  <button
+                onClick={async () => {
+                  if (selectedCourse.status === 'live' && user) {
+                    try {
+                      console.log('📝 Enrolling in course:', {
+                        courseId: selectedCourse.id,
+                        courseName: selectedCourse.name,
+                        courseTitle: selectedCourse.title,
+                        userId: user.id
+                      });
+
+                      // Verify the course has lesson data
+                      const { data: lessonCheck, error: lessonError } = await supabase
+                        .from('lessons')
+                        .select('id')
+                        .eq('course_id', selectedCourse.name)
+                        .limit(1);
+
+                      if (lessonError) {
+                        console.error('Error checking lessons:', lessonError);
+                      }
+
+                      if (!lessonCheck || lessonCheck.length === 0) {
+                        console.warn('⚠️ No lessons found for course:', selectedCourse.name);
+                        console.log('Checking if module_structure exists...');
+
+                        // Check if the course has module_structure data
+                        if (!selectedCourse.module_structure || selectedCourse.module_structure.length === 0) {
+                          alert(`This course doesn't have lesson content yet. Please contact support.`);
+                          setSelectedCourseModal(null);
+                          return;
+                        }
+                      }
+
+                      // Enroll user in the course
+                      const { error } = await supabase
+                        .from('users')
+                        .update({ enrolled_course: selectedCourse.name })
+                        .eq('id', user.id);
+
+                      if (error) throw error;
+
+                      console.log('✅ User enrolled in course:', selectedCourse.name);
+
+                      // Navigate to progress hub
+                      window.location.href = '/progress';
+                    } catch (error) {
+                      console.error('Error enrolling in course:', error);
+                      alert('Failed to enroll in course. Please try again.');
+                    }
+                  } else {
+                    // Close modal first
+                    setSelectedCourseModal(null);
+                    // Set to sign-up mode
+                    setIsLogin(false);
+                    // Wait for modal close animation, then scroll to top
+                    setTimeout(() => {
+                      if (authScrollContainerRef.current) {
+                        authScrollContainerRef.current.scrollTo({
+                          top: 0,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }, 300);
+                  }
+                }}
+                className="w-full font-semibold py-3 rounded-lg transition bg-[#EF0B72] text-white hover:bg-[#D50A65]"
+              >
+                Get Started
+              </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </>
+        </div>
+      </div>
+    )}
+    </>
+  );
+};
+
+export default Auth;
