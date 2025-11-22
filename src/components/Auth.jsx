@@ -86,7 +86,7 @@ const Auth = () => {
   // Helper function to generate AI-powered module intro based on lesson content
   const generateModuleIntro = (module) => {
     if (!module?.lessons || module.lessons.length === 0) {
-      return "Comprehensive content designed to enhance your skills.";
+      return "Comprehensive content designed to enhance your skills. Build practical expertise in this essential area.";
     }
 
     const moduleName = module.name || '';
@@ -95,88 +95,88 @@ const Auth = () => {
     
     // Generate contextual intro based on module name and actual lesson topics
     if (lowerModuleName.includes('foundation') || lowerModuleName.includes('fundamental')) {
-      return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
+      return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you. Build a strong foundation in core concepts and essential skills.`;
     }
     
     if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning')) {
       // Check lesson topics for specific themes
       if (lessonNames.includes('roadmap') || lessonNames.includes('vision')) {
-        return `Master strategic vision and roadmapping techniques to align product development with business objectives and market opportunities.`;
+        return `Master strategic vision and roadmapping techniques to align product development with business objectives. Learn to identify market opportunities and translate them into actionable product strategies.`;
       }
       if (lessonNames.includes('priorit')) {
-        return `Learn proven frameworks for strategic prioritization and effective resource allocation across product initiatives.`;
+        return `Learn proven frameworks for strategic prioritization and effective resource allocation across product initiatives. Develop decision-making skills to balance competing demands and maximize business impact.`;
       }
-      return `Develop strategic thinking capabilities for product planning, competitive positioning, and long-term business success.`;
+      return `Develop strategic thinking capabilities for product planning, competitive positioning, and long-term business success. Master frameworks for analyzing market dynamics and creating winning product strategies.`;
     }
     
     if (lowerModuleName.includes('technical') || lowerModuleName.includes('tool')) {
       if (lessonNames.includes('python') || lessonNames.includes('code') || lessonNames.includes('programming')) {
-        return `Build hands-on technical skills with practical coding exercises and real-world implementation techniques.`;
+        return `Build hands-on technical skills with practical coding exercises and real-world implementation techniques. Develop proficiency in writing clean, efficient code for professional applications.`;
       }
-      return `Gain proficiency in essential technical tools and methodologies used by industry professionals.`;
+      return `Gain proficiency in essential technical tools and methodologies used by industry professionals. Learn to leverage technology effectively for improved productivity and results.`;
     }
     
     if (lowerModuleName.includes('analysis') || lowerModuleName.includes('data')) {
       if (lessonNames.includes('statistics') || lessonNames.includes('statistical')) {
-        return `Master statistical methods and analytical techniques to extract meaningful insights from complex datasets.`;
+        return `Master statistical methods and analytical techniques to extract meaningful insights from complex datasets. Learn to apply rigorous mathematical approaches to solve real-world business problems.`;
       }
       if (lessonNames.includes('sql') || lessonNames.includes('database')) {
-        return `Develop database querying skills and learn to manipulate, analyze, and extract valuable information from data sources.`;
+        return `Develop database querying skills and learn to manipulate, analyze, and extract valuable information from data sources. Master SQL fundamentals to efficiently retrieve and transform data for analysis.`;
       }
       if (lessonNames.includes('visualization') || lessonNames.includes('visualisation')) {
-        return `Transform raw data into compelling visual stories that drive informed decision-making and stakeholder engagement.`;
+        return `Transform raw data into compelling visual stories that drive informed decision-making and stakeholder engagement. Learn to create clear, impactful charts and dashboards that communicate insights effectively.`;
       }
-      return `Build analytical expertise through data-driven approaches, interpretation techniques, and evidence-based decision frameworks.`;
+      return `Build analytical expertise through data-driven approaches, interpretation techniques, and evidence-based decision frameworks. Develop skills to turn data into actionable insights that drive business value.`;
     }
     
     if (lowerModuleName.includes('design') || lowerModuleName.includes('ux') || lowerModuleName.includes('ui')) {
       if (lessonNames.includes('research') || lessonNames.includes('user research')) {
-        return `Discover user research methodologies to understand customer needs, behaviors, and pain points for better product outcomes.`;
+        return `Discover user research methodologies to understand customer needs, behaviors, and pain points for better product outcomes. Learn to conduct interviews, usability tests, and gather insights that inform design decisions.`;
       }
       if (lessonNames.includes('wireframe') || lessonNames.includes('prototype')) {
-        return `Learn to create effective wireframes and prototypes that communicate design concepts and validate solutions early.`;
+        return `Learn to create effective wireframes and prototypes that communicate design concepts and validate solutions early. Master rapid prototyping techniques to test ideas and gather feedback before full development.`;
       }
-      return `Explore user-centered design principles, interaction patterns, and best practices for creating intuitive digital experiences.`;
+      return `Explore user-centered design principles, interaction patterns, and best practices for creating intuitive digital experiences. Develop skills to design products that delight users and meet business objectives.`;
     }
     
     if (lowerModuleName.includes('communication') || lowerModuleName.includes('presentation')) {
       if (lessonNames.includes('stakeholder')) {
-        return `Develop strategies for effective stakeholder management, influence, and building consensus across diverse audiences.`;
+        return `Develop strategies for effective stakeholder management, influence, and building consensus across diverse audiences. Learn to navigate complex organizational dynamics and secure buy-in for your initiatives.`;
       }
-      return `Enhance your ability to communicate complex ideas clearly, present with confidence, and engage stakeholders effectively.`;
+      return `Enhance your ability to communicate complex ideas clearly, present with confidence, and engage stakeholders effectively. Master techniques for persuasive storytelling and impactful professional communication.`;
     }
     
     if (lowerModuleName.includes('career') || lowerModuleName.includes('professional')) {
       if (lessonNames.includes('interview') || lessonNames.includes('job')) {
-        return `Prepare for career advancement with interview strategies, resume optimization, and techniques to stand out in the job market.`;
+        return `Prepare for career advancement with interview strategies, resume optimization, and techniques to stand out in the job market. Learn to showcase your skills effectively and navigate the hiring process with confidence.`;
       }
       if (lessonNames.includes('portfolio')) {
-        return `Build a compelling professional portfolio that showcases your skills, projects, and value to potential employers.`;
+        return `Build a compelling professional portfolio that showcases your skills, projects, and value to potential employers. Learn to curate and present your work in ways that demonstrate impact and expertise.`;
       }
-      return `Advance your professional journey with career development strategies, networking techniques, and industry success pathways.`;
+      return `Advance your professional journey with career development strategies, networking techniques, and industry success pathways. Build the skills and mindset needed to achieve your long-term career goals.`;
     }
     
     if (lowerModuleName.includes('excel') || lowerModuleName.includes('spreadsheet')) {
-      return `Master spreadsheet analysis, formulas, and data manipulation techniques for efficient business intelligence and reporting.`;
+      return `Master spreadsheet analysis, formulas, and data manipulation techniques for efficient business intelligence and reporting. Learn advanced Excel features to automate workflows and create powerful analytical tools.`;
     }
     
     if (lowerModuleName.includes('sql') || lowerModuleName.includes('database')) {
-      return `Learn to write powerful queries, manage databases, and extract insights from structured data using industry-standard SQL.`;
+      return `Learn to write powerful queries, manage databases, and extract insights from structured data using industry-standard SQL. Develop proficiency in data retrieval, joins, and aggregations for complex analytical tasks.`;
     }
     
     if (lowerModuleName.includes('python')) {
       if (lessonNames.includes('pandas') || lessonNames.includes('numpy')) {
-        return `Harness Python's data analysis libraries to clean, transform, and analyze datasets with professional-grade techniques.`;
+        return `Harness Python's data analysis libraries to clean, transform, and analyze datasets with professional-grade techniques. Master pandas and NumPy for efficient data manipulation and computational tasks.`;
       }
-      return `Develop Python programming skills for automation, data manipulation, and solving real-world analytical challenges.`;
+      return `Develop Python programming skills for automation, data manipulation, and solving real-world analytical challenges. Learn to write efficient, scalable code for professional data analysis workflows.`;
     }
     
     if (lowerModuleName.includes('business intelligence') || lowerModuleName.includes('bi')) {
-      return `Transform data into actionable business insights using modern BI tools, dashboards, and reporting frameworks.`;
+      return `Transform data into actionable business insights using modern BI tools, dashboards, and reporting frameworks. Learn to design and build analytics solutions that drive strategic decision-making.`;
     }
     
     // Default pattern without lesson count
-    return `Develop essential skills and practical knowledge in this critical area of professional expertise.`;
+    return `Develop essential skills and practical knowledge in this critical area of professional expertise. Build capabilities that enhance your effectiveness and career prospects.`;
   };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
