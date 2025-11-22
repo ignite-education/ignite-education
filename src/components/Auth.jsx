@@ -2653,7 +2653,7 @@ const Auth = () => {
                 {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-2" style={{ fontSize: '22px' }}>
+                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.3rem' }}>
                       Curriculum
                     </h3>
                     <div className="space-y-6">
