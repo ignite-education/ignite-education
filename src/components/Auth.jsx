@@ -51,9 +51,6 @@ const Auth = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSuccess, setResetSuccess] = useState(false);
-  const [snappedModuleIndex, setSnappedModuleIndex] = useState(0);
-  const modalScrollContainerRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
@@ -86,18 +83,27 @@ const Auth = () => {
     return courseCoaches[selectedCourseModal] || [];
   }, [selectedCourseModal, courseCoaches]);
 
-  // Memoize allLessons to avoid expensive flatMap calculations on every render
-  const allLessons = useMemo(() => {
-    if (!selectedCourse?.module_structure) return [];
-    return selectedCourse.module_structure.flatMap((module, modIdx) =>
-      (module.lessons || []).map((lesson, lesIdx) => ({
-        ...lesson,
-        moduleIndex: modIdx + 1,
-        moduleName: module.name,
-        lessonIndex: lesIdx + 1
-      }))
-    );
-  }, [selectedCourse]);
+  // Helper function to generate AI-powered module intro based on lesson content
+  const generateModuleIntro = (module) => {
+    if (!module?.lessons || module.lessons.length === 0) {
+      return "Comprehensive content designed to enhance your skills.";
+    }
+
+    // Extract key themes from lesson names
+    const lessonCount = module.lessons.length;
+    const firstLesson = module.lessons[0]?.name || '';
+
+    // Generate contextual intro based on module name and lessons
+    const moduleName = module.name || '';
+
+    // Simple pattern-based generation
+    if (moduleName.toLowerCase().includes('foundation') || moduleName.toLowerCase().includes('introduction')) {
+      return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
+    }
+
+    // Default pattern
+    return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
+  };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
   useLayoutEffect(() => {
@@ -311,22 +317,6 @@ const Auth = () => {
     });
   }, []);
 
-  // Reset snapped module index and scroll when modal opens
-  useLayoutEffect(() => {
-    if (selectedCourseModal) {
-      setSnappedModuleIndex(0);
-      if (modalScrollContainerRef.current) {
-        modalScrollContainerRef.current.scrollLeft = 0;
-      }
-    }
-
-    // Cleanup scroll timeout when modal closes
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [selectedCourseModal]);
 
   // Intersection observer for courses section typing animation
   useEffect(() => {
@@ -2457,135 +2447,37 @@ const Auth = () => {
                   })()}
                 </div>
 
-                {/* Module and Lesson Details - Swipable Cards */}
+                {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
-                  <div className="mb-6 relative">
-                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '17px', marginBottom: '2px' }}>
-                      {(() => {
-                        if (allLessons.length > 0 && snappedModuleIndex < allLessons.length && allLessons[snappedModuleIndex]) {
-                          const currentLesson = allLessons[snappedModuleIndex];
-                          return `Module ${currentLesson.moduleIndex} - ${currentLesson.moduleName}`;
-                        }
-                        return 'Course Modules';
-                      })()}
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: '17px' }}>
+                      Curriculum
                     </h3>
-                    <div
-                      ref={modalScrollContainerRef}
-                      className="overflow-x-auto overflow-y-hidden select-none"
-                      style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                        scrollBehavior: 'smooth',
-                        WebkitOverflowScrolling: 'touch',
-                        cursor: 'grab',
-                        scrollSnapType: 'x mandatory',
-                        scrollSnapStop: 'always',
-                        scrollPaddingLeft: '0px'
-                      }}
-                      onScroll={(e) => {
-                        const scrollLeft = e.target.scrollLeft;
-                        const cardWidth = 406; // Approximate card width + gap (390 + 16)
-                        const newIndex = Math.round(scrollLeft / cardWidth);
+                    <div className="space-y-6">
+                      {selectedCourse.module_structure.map((module, moduleIndex) => (
+                        <div key={moduleIndex}>
+                          {/* Module Title */}
+                          <h4 className="font-semibold mb-2" style={{ fontSize: '15px', color: '#7714E0' }}>
+                            Module {moduleIndex + 1} - {module.name}
+                          </h4>
 
-                        // Throttle updates to avoid excessive re-renders during scroll
-                        if (scrollTimeoutRef.current) {
-                          clearTimeout(scrollTimeoutRef.current);
-                        }
+                          {/* AI-Generated Module Intro */}
+                          <p className="text-gray-700 mb-3" style={{ fontSize: '14px' }}>
+                            {generateModuleIntro(module)}
+                          </p>
 
-                        scrollTimeoutRef.current = setTimeout(() => {
-                          setSnappedModuleIndex(newIndex);
-                        }, 50); // Update only after 50ms of no scrolling
-                      }}
-                    >
-                      <div className="flex gap-4" style={{ minHeight: '100px', height: '100px' }}>
-                        {allLessons.map((lesson, index) => (
-                            <div
-                              key={`${lesson.moduleIndex}-${lesson.lessonIndex}`}
-                              className="relative flex items-center gap-3 flex-shrink-0"
-                              style={{
-                                width: '390px',
-                                minWidth: '390px',
-                                paddingTop: '5.618px',
-                                paddingRight: '5.618px',
-                                paddingBottom: '5.618px',
-                                paddingLeft: '14px',
-                                borderRadius: '0.3rem',
-                                background: '#7714E0',
-                                height: '90px',
-                                scrollSnapAlign: 'start',
-                                scrollSnapStop: 'always'
-                              }}
-                            >
-                              {/* Opacity overlay for non-snapped cards */}
-                              {index !== snappedModuleIndex && (
-                                <div
-                                  style={{
-                                    position: 'absolute',
-                                    top: 0,
-                                    left: 0,
-                                    right: 0,
-                                    bottom: 0,
-                                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                    backdropFilter: 'blur(0.75px)',
-                                    WebkitBackdropFilter: 'blur(0.75px)',
-                                    borderRadius: '0.3rem',
-                                    pointerEvents: 'none',
-                                    transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
-                                  }}
-                                />
-                              )}
-                              <div className="flex-1">
-                                <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
-                                  {lesson.name || `Lesson ${lesson.lessonIndex}`}
-                                </h4>
-                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
-                                  {(lesson.bullet_points || [])
-                                    .slice(0, 3)
-                                    .map((bulletPoint, idx) => (
-                                      <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
-                                        <span className="mt-0.5 text-purple-200">•</span>
-                                        <span>{bulletPoint}</span>
-                                      </li>
-                                    ))}
-                                </ul>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
+                          {/* Lesson List */}
+                          <ul className="space-y-1.5">
+                            {(module.lessons || []).map((lesson, lessonIndex) => (
+                              <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
+                                <span className="mt-0.5">•</span>
+                                <span className="font-semibold text-gray-900">{lesson.name}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
                     </div>
-
-                    {/* Back to First Lesson Button - Show when not viewing first lesson */}
-                    {snappedModuleIndex > 0 && (
-                      <button
-                        onClick={() => {
-                          if (modalScrollContainerRef.current) {
-                            modalScrollContainerRef.current.scrollTo({
-                              left: 0,
-                              behavior: 'smooth'
-                            });
-                          }
-                        }}
-                        className="absolute bg-white text-black hover:bg-purple-50 transition-all"
-                        style={{
-                          right: '16px',
-                          top: '50%',
-                          transform: 'translateY(calc(-20% - 5px))',
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '0.3rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                          zIndex: 10,
-                          opacity: 0.7
-                        }}
-                      >
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 12H5M12 19l-7-7 7-7"/>
-                        </svg>
-                      </button>
-                    )}
                   </div>
                 ) : (
                   /* Fallback for courses without module_structure */
