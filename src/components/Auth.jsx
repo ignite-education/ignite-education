@@ -89,44 +89,94 @@ const Auth = () => {
       return "Comprehensive content designed to enhance your skills.";
     }
 
-    const lessonCount = module.lessons.length;
     const moduleName = module.name || '';
-    const lessonNames = module.lessons.map(l => l.name).join(', ');
-
-    // Generate contextual intro based on module name and lesson topics
+    const lessonNames = module.lessons.map(l => l.name.toLowerCase()).join(' ');
     const lowerModuleName = moduleName.toLowerCase();
     
-    // Pattern matching for different module types
+    // Generate contextual intro based on module name and actual lesson topics
     if (lowerModuleName.includes('foundation') || lowerModuleName.includes('fundamental')) {
       return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
     }
     
     if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning')) {
-      return `Master strategic approaches with ${lessonCount} comprehensive lessons covering essential planning and decision-making frameworks.`;
+      // Check lesson topics for specific themes
+      if (lessonNames.includes('roadmap') || lessonNames.includes('vision')) {
+        return `Master strategic vision and roadmapping techniques to align product development with business objectives and market opportunities.`;
+      }
+      if (lessonNames.includes('priorit')) {
+        return `Learn proven frameworks for strategic prioritization and effective resource allocation across product initiatives.`;
+      }
+      return `Develop strategic thinking capabilities for product planning, competitive positioning, and long-term business success.`;
     }
     
     if (lowerModuleName.includes('technical') || lowerModuleName.includes('tool')) {
-      return `Develop practical skills through ${lessonCount} hands-on lessons focused on industry-standard tools and techniques.`;
+      if (lessonNames.includes('python') || lessonNames.includes('code') || lessonNames.includes('programming')) {
+        return `Build hands-on technical skills with practical coding exercises and real-world implementation techniques.`;
+      }
+      return `Gain proficiency in essential technical tools and methodologies used by industry professionals.`;
     }
     
     if (lowerModuleName.includes('analysis') || lowerModuleName.includes('data')) {
-      return `Build analytical expertise with ${lessonCount} focused lessons on data-driven approaches and methodologies.`;
+      if (lessonNames.includes('statistics') || lessonNames.includes('statistical')) {
+        return `Master statistical methods and analytical techniques to extract meaningful insights from complex datasets.`;
+      }
+      if (lessonNames.includes('sql') || lessonNames.includes('database')) {
+        return `Develop database querying skills and learn to manipulate, analyze, and extract valuable information from data sources.`;
+      }
+      if (lessonNames.includes('visualization') || lessonNames.includes('visualisation')) {
+        return `Transform raw data into compelling visual stories that drive informed decision-making and stakeholder engagement.`;
+      }
+      return `Build analytical expertise through data-driven approaches, interpretation techniques, and evidence-based decision frameworks.`;
     }
     
     if (lowerModuleName.includes('design') || lowerModuleName.includes('ux') || lowerModuleName.includes('ui')) {
-      return `Explore design principles through ${lessonCount} practical lessons covering user-centered approaches and best practices.`;
+      if (lessonNames.includes('research') || lessonNames.includes('user research')) {
+        return `Discover user research methodologies to understand customer needs, behaviors, and pain points for better product outcomes.`;
+      }
+      if (lessonNames.includes('wireframe') || lessonNames.includes('prototype')) {
+        return `Learn to create effective wireframes and prototypes that communicate design concepts and validate solutions early.`;
+      }
+      return `Explore user-centered design principles, interaction patterns, and best practices for creating intuitive digital experiences.`;
     }
     
     if (lowerModuleName.includes('communication') || lowerModuleName.includes('presentation')) {
-      return `Enhance your communication abilities with ${lessonCount} lessons on effective presentation and stakeholder engagement.`;
+      if (lessonNames.includes('stakeholder')) {
+        return `Develop strategies for effective stakeholder management, influence, and building consensus across diverse audiences.`;
+      }
+      return `Enhance your ability to communicate complex ideas clearly, present with confidence, and engage stakeholders effectively.`;
     }
     
     if (lowerModuleName.includes('career') || lowerModuleName.includes('professional')) {
-      return `Advance your professional journey with ${lessonCount} lessons on career development and industry success strategies.`;
+      if (lessonNames.includes('interview') || lessonNames.includes('job')) {
+        return `Prepare for career advancement with interview strategies, resume optimization, and techniques to stand out in the job market.`;
+      }
+      if (lessonNames.includes('portfolio')) {
+        return `Build a compelling professional portfolio that showcases your skills, projects, and value to potential employers.`;
+      }
+      return `Advance your professional journey with career development strategies, networking techniques, and industry success pathways.`;
     }
     
-    // Default pattern with lesson count
-    return `Explore ${lessonCount} comprehensive lessons designed to build your expertise in this essential area.`;
+    if (lowerModuleName.includes('excel') || lowerModuleName.includes('spreadsheet')) {
+      return `Master spreadsheet analysis, formulas, and data manipulation techniques for efficient business intelligence and reporting.`;
+    }
+    
+    if (lowerModuleName.includes('sql') || lowerModuleName.includes('database')) {
+      return `Learn to write powerful queries, manage databases, and extract insights from structured data using industry-standard SQL.`;
+    }
+    
+    if (lowerModuleName.includes('python')) {
+      if (lessonNames.includes('pandas') || lessonNames.includes('numpy')) {
+        return `Harness Python's data analysis libraries to clean, transform, and analyze datasets with professional-grade techniques.`;
+      }
+      return `Develop Python programming skills for automation, data manipulation, and solving real-world analytical challenges.`;
+    }
+    
+    if (lowerModuleName.includes('business intelligence') || lowerModuleName.includes('bi')) {
+      return `Transform data into actionable business insights using modern BI tools, dashboards, and reporting frameworks.`;
+    }
+    
+    // Default pattern without lesson count
+    return `Develop essential skills and practical knowledge in this critical area of professional expertise.`;
   };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
