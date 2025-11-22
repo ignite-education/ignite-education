@@ -1763,9 +1763,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let audioUrl;
       let audio;
 
-      // Check if we have prefetched audio for section 0
-      if (sectionIndex === 0 && prefetchedAudioRef.current) {
-        console.log('⚡ Using prefetched audio for first section');
+      // Check if we have prefetched audio for this section
+      if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
+        console.log(`⚡ Using prefetched audio for section ${sectionIndex}`);
         audioUrl = prefetchedAudioRef.current.url;
         audio = prefetchedAudioRef.current.audio;
         prefetchedAudioRef.current = null; // Clear after use
@@ -1820,6 +1820,52 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       await audio.play();
       setIsReading(true);
       setCurrentNarrationSection(sectionIndex);
+
+      // Prefetch next section while current one is playing
+      const nextSectionIndex = sectionIndex + 1;
+      if (nextSectionIndex < currentLessonSections.length) {
+        const nextSection = currentLessonSections[nextSectionIndex];
+        const nextSectionText = extractTextFromSection(nextSection);
+
+        if (nextSectionText && nextSectionText.length > 0) {
+          console.log(`⚡ Prefetching section ${nextSectionIndex}...`);
+
+          try {
+            const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ text: nextSectionText }),
+            });
+
+            if (prefetchResponse.ok) {
+              const prefetchBlob = await prefetchResponse.blob();
+              const prefetchUrl = URL.createObjectURL(prefetchBlob);
+              const prefetchAudio = new Audio(prefetchUrl);
+
+              // Store for next section (only if we're still on the same section)
+              if (audioRef.current === audio) {
+                // Clear any old prefetch first
+                if (prefetchedAudioRef.current) {
+                  URL.revokeObjectURL(prefetchedAudioRef.current.url);
+                }
+                prefetchedAudioRef.current = {
+                  url: prefetchUrl,
+                  audio: prefetchAudio,
+                  sectionIndex: nextSectionIndex
+                };
+                console.log(`⚡ Section ${nextSectionIndex} prefetched successfully`);
+              } else {
+                // Section changed, cleanup
+                URL.revokeObjectURL(prefetchUrl);
+              }
+            }
+          } catch (prefetchError) {
+            console.log('Prefetch failed (non-critical):', prefetchError.message);
+          }
+        }
+      }
 
     } catch (error) {
       if (error.name === 'AbortError') {
@@ -1947,7 +1993,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               // Store for later use
               prefetchedAudioRef.current = {
                 url: prefetchUrl,
-                audio: prefetchAudio
+                audio: prefetchAudio,
+                sectionIndex: 0
               };
               console.log('⚡ First section audio prefetched successfully');
             }
