@@ -2652,7 +2652,7 @@ const Auth = () => {
 
                 {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
-                  <div className="mb-6">
+                  <div className="mb-6" style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', padding: '2rem' }}>
                     <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.3rem' }}>
                       Curriculum
                     </h3>
@@ -2664,27 +2664,22 @@ const Auth = () => {
                             Module {moduleIndex + 1} - {module.name}
                           </h4>
 
-                          {/* Purple container with description and lessons */}
-                          <div style={{ 
-                            backgroundColor: '#F0F0F2', 
-                            borderRadius: '0.5rem', 
-                            padding: '0.75rem'
-                          }}>
+                          {/* Module Description and Lessons */}
+                          <div>
+                            {/* AI-Generated Module Intro */}
+                            <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
+                              {generateModuleIntro(module)}
+                            </p>
 
-                          {/* AI-Generated Module Intro */}
-                          <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
-                            {generateModuleIntro(module)}
-                          </p>
-
-                          {/* Lesson List */}
-                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-                            {(module.lessons || []).map((lesson, lessonIndex) => (
-                              <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
-                                <span className="text-gray-900" style={{ fontSize: '0.5em' }}>■</span>
-                                <span className="font-medium text-gray-900">{lesson.name}</span>
-                              </li>
-                            ))}
-                          </ul>
+                            {/* Lesson List */}
+                            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                              {(module.lessons || []).map((lesson, lessonIndex) => (
+                                <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                                  <span className="text-gray-900" style={{ fontSize: '0.5em' }}>■</span>
+                                  <span className="font-medium text-gray-900">{lesson.name}</span>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
                         </div>
                       ))}
