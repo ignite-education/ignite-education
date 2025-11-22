@@ -477,7 +477,7 @@ const Auth = () => {
   useEffect(() => {
     const imagesToPreload = [
       'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
-      'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png'
+      'https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg'
     ];
 
     imagesToPreload.forEach(src => {
@@ -1582,7 +1582,7 @@ const Auth = () => {
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
-                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                     alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                     className="rounded-lg"
                     style={{ width: '70%' }}
