@@ -98,8 +98,69 @@ const Auth = () => {
       return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you. Build a strong foundation in core concepts and essential skills.`;
     }
     
+    // Cybersecurity specific modules
+    if (lowerModuleName.includes('security') || lowerModuleName.includes('cybersecurity')) {
+      if (lowerModuleName.includes('network')) {
+        return `Master network security principles, protocols, and defensive techniques to protect against cyber threats. Learn to implement firewalls, detect intrusions, and secure network infrastructure.`;
+      }
+      if (lowerModuleName.includes('cloud')) {
+        return `Develop expertise in cloud security architecture, data protection, and compliance frameworks for modern environments. Learn to secure cloud deployments, manage access controls, and implement best practices.`;
+      }
+      if (lowerModuleName.includes('ethical') || lowerModuleName.includes('penetration') || lowerModuleName.includes('testing')) {
+        return `Learn ethical hacking methodologies and penetration testing techniques to identify vulnerabilities before attackers do. Develop skills in reconnaissance, exploitation, and security assessment.`;
+      }
+      if (lowerModuleName.includes('incident') || lowerModuleName.includes('response')) {
+        return `Master incident response procedures, threat detection, and recovery strategies for security breaches. Learn to investigate attacks, contain threats, and restore normal operations.`;
+      }
+      if (lowerModuleName.includes('governance') || lowerModuleName.includes('compliance') || lowerModuleName.includes('risk')) {
+        return `Understand security governance frameworks, compliance requirements, and risk management methodologies. Learn to develop security policies, conduct audits, and ensure regulatory compliance.`;
+      }
+      if (lowerModuleName.includes('threat') || lowerModuleName.includes('intelligence')) {
+        return `Develop threat intelligence capabilities to identify, analyze, and respond to emerging cyber threats. Learn to leverage threat data, assess risks, and implement proactive defenses.`;
+      }
+      return `Build comprehensive cybersecurity knowledge to protect systems, data, and networks from evolving threats. Develop practical skills in security implementation, monitoring, and incident management.`;
+    }
+    
+    // Healthcare specific modules
+    if (lowerModuleName.includes('health') || lowerModuleName.includes('medical') || lowerModuleName.includes('patient')) {
+      if (lowerModuleName.includes('mental')) {
+        return `Develop understanding of mental health conditions, therapeutic approaches, and support strategies. Learn to recognize symptoms, provide compassionate care, and connect individuals with appropriate resources.`;
+      }
+      if (lowerModuleName.includes('care') || lowerModuleName.includes('clinical')) {
+        return `Master patient care fundamentals, clinical procedures, and healthcare best practices. Learn to provide quality care, maintain patient safety, and work effectively in healthcare settings.`;
+      }
+      return `Build essential healthcare knowledge and patient care skills for professional practice. Develop competencies in assessment, intervention, and collaborative healthcare delivery.`;
+    }
+    
+    // Green energy/sustainability modules
+    if (lowerModuleName.includes('energy') || lowerModuleName.includes('renewable') || lowerModuleName.includes('solar') || lowerModuleName.includes('green')) {
+      if (lowerModuleName.includes('solar')) {
+        return `Master solar energy systems, photovoltaic technology, and installation techniques. Learn to design, implement, and maintain solar power solutions for residential and commercial applications.`;
+      }
+      if (lowerModuleName.includes('sustainability') || lowerModuleName.includes('environmental')) {
+        return `Understand sustainable practices, environmental impact assessment, and green technology solutions. Learn to implement eco-friendly strategies and contribute to environmental conservation.`;
+      }
+      return `Develop expertise in renewable energy technologies, sustainable practices, and green solutions. Learn to design and implement clean energy systems that reduce environmental impact.`;
+    }
+    
+    // Marketing specific modules
+    if (lowerModuleName.includes('marketing') || lowerModuleName.includes('digital marketing')) {
+      if (lowerModuleName.includes('social') || lowerModuleName.includes('social media')) {
+        return `Master social media marketing strategies, content creation, and community engagement techniques. Learn to build brand presence, drive engagement, and measure social media ROI.`;
+      }
+      if (lowerModuleName.includes('seo') || lowerModuleName.includes('search')) {
+        return `Learn search engine optimization techniques to improve website visibility and organic traffic. Master keyword research, on-page optimization, and link building strategies.`;
+      }
+      if (lowerModuleName.includes('content')) {
+        return `Develop content marketing expertise to create compelling stories that attract and engage audiences. Learn to plan, produce, and distribute content that drives business results.`;
+      }
+      if (lowerModuleName.includes('analytics') || lowerModuleName.includes('measurement')) {
+        return `Master marketing analytics tools and techniques to measure campaign performance and ROI. Learn to interpret data, generate insights, and optimize marketing strategies.`;
+      }
+      return `Build comprehensive digital marketing skills to reach audiences, drive engagement, and achieve business goals. Learn to create integrated campaigns across multiple channels.`;
+    }
+    
     if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning') || lowerModuleName.includes('thinking')) {
-      // Check lesson topics for specific themes
       if (lessonNames.includes('roadmap') || lessonNames.includes('vision')) {
         return `Master strategic vision and roadmapping techniques to align product development with business objectives. Learn to identify market opportunities and translate them into actionable product strategies.`;
       }
@@ -195,13 +256,8 @@ const Auth = () => {
       return `Master agile methodologies and frameworks for efficient product development and team collaboration. Learn to run effective sprints, manage backlogs, and deliver value iteratively.`;
     }
     
-    // Enhanced default that uses lesson context
-    if (lessonNames) {
-      return `Master essential concepts and practical techniques in ${moduleName.toLowerCase()}. Develop professional capabilities through hands-on learning and real-world applications.`;
-    }
-    
-    // Final fallback
-    return `Build expertise through comprehensive learning in this essential professional area. Develop practical skills and knowledge that enhance your effectiveness and career prospects.`;
+    // Generic fallback - should rarely be used now
+    return `Build comprehensive knowledge and practical skills in this essential professional domain. Develop expertise through hands-on learning and real-world application of key concepts.`;
   };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
