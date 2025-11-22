@@ -2383,7 +2383,7 @@ const Auth = () => {
                   }
                 }}
                 className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
-                style={{ fontSize: '16px' }}
+                style={{ fontSize: '15px' }}
               >
                 Get Started
               </button>
@@ -2597,7 +2597,7 @@ const Auth = () => {
                               {after}
                             </span>
                             {restOfDescription && (
-                              <span style={{ fontWeight: 400, fontSize: '16px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                              <span style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
                             )}
                           </>
                         );
@@ -2607,7 +2607,7 @@ const Auth = () => {
                         <>
                           <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
                           {restOfDescription && (
-                            <span style={{ fontWeight: 400, fontSize: '16px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                            <span style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
                           )}
                         </>
                       );
@@ -2660,7 +2660,7 @@ const Auth = () => {
                       {selectedCourse.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>
                           {/* Module Title */}
-                          <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#7714E0' }}>
+                          <h4 className="font-semibold mb-1" style={{ fontSize: '17px', color: '#7714E0' }}>
                             Module {moduleIndex + 1} - {module.name}
                           </h4>
 
@@ -2672,7 +2672,7 @@ const Auth = () => {
                           }}>
 
                           {/* AI-Generated Module Intro */}
-                          <p className="text-gray-900 mb-3" style={{ fontSize: '16px' }}>
+                          <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
                             {generateModuleIntro(module)}
                           </p>
 
