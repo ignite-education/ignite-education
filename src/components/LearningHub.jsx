@@ -3159,59 +3159,64 @@ ${currentLessonSections.map((section) => {
               setShowVoiceSettings(false);
             }}
           >
-            {/* Voice Settings Menu - Simple Row */}
+            {/* Voice Settings Menu - Two Pink Boxes */}
             {showVoiceSettings && (
               <div
-                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg px-3 py-2 flex items-center gap-3"
+                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 flex gap-2"
                 style={{
                   zIndex: 30,
                   animation: 'slideUpFade 0.2s ease-out',
                   opacity: 1
                 }}
               >
-                {/* Voice Gender Selection */}
-                <div className="flex items-center gap-1.5">
+                {/* Left Box - Voice Gender */}
+                <div
+                  className="rounded-lg shadow-lg px-3 py-2 flex flex-col gap-1.5"
+                  style={{ backgroundColor: '#EF0B72' }}
+                >
                   <button
                     onClick={() => setVoiceGender('female')}
-                    className="px-2.5 py-1 rounded-full font-medium text-xs transition-all"
+                    className="px-3 py-1.5 rounded font-medium text-xs transition-all"
                     style={{
-                      backgroundColor: voiceGender === 'female' ? '#EF0B72' : '#f3f4f6',
-                      color: voiceGender === 'female' ? 'white' : '#6b7280'
+                      backgroundColor: voiceGender === 'female' ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                      color: voiceGender === 'female' ? '#EF0B72' : 'white'
                     }}
                   >
                     Female
                   </button>
                   <button
                     onClick={() => setVoiceGender('male')}
-                    className="px-2.5 py-1 rounded-full font-medium text-xs transition-all"
+                    className="px-3 py-1.5 rounded font-medium text-xs transition-all"
                     style={{
-                      backgroundColor: voiceGender === 'male' ? '#EF0B72' : '#f3f4f6',
-                      color: voiceGender === 'male' ? 'white' : '#6b7280'
+                      backgroundColor: voiceGender === 'male' ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                      color: voiceGender === 'male' ? '#EF0B72' : 'white'
                     }}
                   >
                     Male
                   </button>
                 </div>
 
-                {/* Divider */}
-                <div className="w-px h-6 bg-gray-200"></div>
-
-                {/* Speed Selection */}
-                <div className="flex items-center gap-1.5">
-                  {[0.75, 1.0, 1.25, 1.5].map((speed) => (
-                    <button
-                      key={speed}
-                      onClick={() => setPlaybackSpeed(speed)}
-                      className="px-2 py-1 rounded font-medium text-xs transition-all"
-                      style={{
-                        backgroundColor: playbackSpeed === speed ? '#EF0B72' : '#f3f4f6',
-                        color: playbackSpeed === speed ? 'white' : '#6b7280',
-                        minWidth: '38px'
-                      }}
-                    >
-                      {speed}x
-                    </button>
-                  ))}
+                {/* Right Box - Speed Grid */}
+                <div
+                  className="rounded-lg shadow-lg px-2.5 py-2"
+                  style={{ backgroundColor: '#EF0B72' }}
+                >
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[0.75, 1.0, 1.25, 1.5].map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => setPlaybackSpeed(speed)}
+                        className="px-2.5 py-1.5 rounded font-medium text-xs transition-all"
+                        style={{
+                          backgroundColor: playbackSpeed === speed ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                          color: playbackSpeed === speed ? '#EF0B72' : 'white',
+                          minWidth: '42px'
+                        }}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
