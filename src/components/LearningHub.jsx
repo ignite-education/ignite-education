@@ -3156,40 +3156,42 @@ ${currentLessonSections.map((section) => {
               if (voiceSettingsTimeoutRef.current) {
                 clearTimeout(voiceSettingsTimeoutRef.current);
               }
-              setShowVoiceSettings(false);
+              setTimeout(() => {
+                setShowVoiceSettings(false);
+              }, 300);
             }}
           >
             {/* Voice Settings Menu - Two Pink Boxes */}
             {showVoiceSettings && (
               <div
-                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 flex gap-2"
+                className="absolute bottom-full mb-2 flex gap-2"
                 style={{
                   zIndex: 30,
                   animation: 'slideUpFade 0.2s ease-out',
-                  opacity: 1
+                  opacity: 1,
+                  left: '50%',
+                  transform: 'translateX(-50%)'
                 }}
               >
                 {/* Left Box - Voice Gender */}
                 <div
-                  className="rounded-lg shadow-lg px-3 py-2 flex flex-col gap-1.5"
-                  style={{ backgroundColor: '#EF0B72' }}
+                  className="rounded-lg shadow-lg px-4 py-2.5 flex flex-col gap-1.5"
+                  style={{ backgroundColor: '#EF0B72', minWidth: '80px' }}
                 >
                   <button
                     onClick={() => setVoiceGender('female')}
-                    className="px-3 py-1.5 rounded font-medium text-xs transition-all"
+                    className="font-medium text-xs transition-all text-left"
                     style={{
-                      backgroundColor: voiceGender === 'female' ? 'white' : 'rgba(255, 255, 255, 0.2)',
-                      color: voiceGender === 'female' ? '#EF0B72' : 'white'
+                      color: voiceGender === 'female' ? 'black' : 'white'
                     }}
                   >
                     Female
                   </button>
                   <button
                     onClick={() => setVoiceGender('male')}
-                    className="px-3 py-1.5 rounded font-medium text-xs transition-all"
+                    className="font-medium text-xs transition-all text-left"
                     style={{
-                      backgroundColor: voiceGender === 'male' ? 'white' : 'rgba(255, 255, 255, 0.2)',
-                      color: voiceGender === 'male' ? '#EF0B72' : 'white'
+                      color: voiceGender === 'male' ? 'black' : 'white'
                     }}
                   >
                     Male
@@ -3198,19 +3200,17 @@ ${currentLessonSections.map((section) => {
 
                 {/* Right Box - Speed Grid */}
                 <div
-                  className="rounded-lg shadow-lg px-2.5 py-2"
-                  style={{ backgroundColor: '#EF0B72' }}
+                  className="rounded-lg shadow-lg px-3 py-2.5"
+                  style={{ backgroundColor: '#EF0B72', minWidth: '100px' }}
                 >
-                  <div className="grid grid-cols-2 gap-1.5">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                     {[0.75, 1.0, 1.25, 1.5].map((speed) => (
                       <button
                         key={speed}
                         onClick={() => setPlaybackSpeed(speed)}
-                        className="px-2.5 py-1.5 rounded font-medium text-xs transition-all"
+                        className="font-medium text-xs transition-all text-center"
                         style={{
-                          backgroundColor: playbackSpeed === speed ? 'white' : 'rgba(255, 255, 255, 0.2)',
-                          color: playbackSpeed === speed ? '#EF0B72' : 'white',
-                          minWidth: '42px'
+                          color: playbackSpeed === speed ? 'black' : 'white'
                         }}
                       >
                         {speed}x
