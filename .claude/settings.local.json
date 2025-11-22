@@ -57,7 +57,16 @@
       "Bash(sqlite3:*)",
       "Bash(echo:*)",
       "Bash(env)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(__NEW_LINE__ echo \"Updated foundation pattern\")",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" diff --cached src/components/Auth.jsx)",
+      "Bash(git pull:*)",
+      "Bash(md5:*)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(node -c:*)",
+      "Bash(timeout 5 npm run server:*)"
     ],
     "deny": [],
     "ask": []

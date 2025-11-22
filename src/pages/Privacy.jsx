@@ -142,7 +142,7 @@ const Privacy = () => {
               <li><strong>Vercel:</strong> Frontend hosting services</li>
               <li><strong>Render:</strong> Backend server hosting</li>
               <li><strong>Anthropic Claude:</strong> AI-powered chat assistance services for educational support</li>
-              <li><strong>Amazon Web Services (AWS):</strong> Voice-over content delivery</li>
+              <li><strong>ElevenLabs:</strong> Voice-over content delivery</li>
               <li><strong>Stripe:</strong> Payment processing for ad-free subscriptions (Stripe handles all payment information directly; we do not store your payment card details)</li>
             </ul>
             <p>

@@ -4,7 +4,7 @@ import cors from 'cors';
 import Anthropic from '@anthropic-ai/sdk';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
-import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
+import { ElevenLabsClient } from '@elevenlabs/elevenlabs-js';
 import { render } from '@react-email/render';
 import React from 'react';
 import axios from 'axios';
@@ -34,13 +34,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Initialize AWS Polly client
-const pollyClient = new PollyClient({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  }
+// Initialize ElevenLabs client
+const elevenlabs = new ElevenLabsClient({
+  apiKey: process.env.ELEVENLABS_API_KEY
 });
 
 // Initialize Resend (optional) - will be loaded dynamically when needed
@@ -808,7 +804,7 @@ app.post('/api/create-billing-portal-session', async (req, res) => {
 });
 
 
-// Text-to-speech endpoint using Amazon Polly
+// Text-to-speech endpoint using ElevenLabs
 app.post('/api/text-to-speech', async (req, res) => {
   try {
     let { text } = req.body;
@@ -817,9 +813,9 @@ app.post('/api/text-to-speech', async (req, res) => {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    // Polly Neural voices have a 3000 character limit
+    // ElevenLabs has a 5000 character limit for standard plans
     // Truncate text if it exceeds the limit
-    const MAX_CHARS = 3000;
+    const MAX_CHARS = 5000;
     if (text.length > MAX_CHARS) {
       console.log(`⚠️ Text too long (${text.length} chars), truncating to ${MAX_CHARS} chars`);
       text = text.substring(0, MAX_CHARS);
@@ -830,17 +826,21 @@ app.post('/api/text-to-speech', async (req, res) => {
       }
     }
 
-    // Configure Polly parameters for high-quality British voice
-    const params = {
-      Text: text,
-      OutputFormat: 'mp3',
-      VoiceId: 'Arthur', // British English Neural voice (male, authoritative)
-      Engine: 'neural', // Neural engine for more natural speech
-      TextType: 'text'
-    };
+    // Use ElevenLabs voice ID from environment or default to Alice (British female)
+    const voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
 
-    const command = new SynthesizeSpeechCommand(params);
-    const response = await pollyClient.send(command);
+    // Generate speech with ElevenLabs
+    const audio = await elevenlabs.textToSpeech.convert(voiceId, {
+      text: text,
+      model_id: 'eleven_multilingual_v2', // High quality model with emotional range
+      output_format: 'mp3_44100_128', // 44.1kHz, 128kbps - good balance of quality and size
+      voice_settings: {
+        stability: 0.5, // Balance between consistency and expressiveness
+        similarity_boost: 0.75, // Maintain voice characteristics
+        style: 0.0, // Neutral style
+        use_speaker_boost: true // Enhance voice clarity
+      }
+    });
 
     // Set response headers for audio streaming
     res.set({
@@ -849,11 +849,8 @@ app.post('/api/text-to-speech', async (req, res) => {
     });
 
     // Stream the audio data to the client
-    const audioStream = response.AudioStream;
-
-    // Convert the stream to buffer and send
     const chunks = [];
-    for await (const chunk of audioStream) {
+    for await (const chunk of audio) {
       chunks.push(chunk);
     }
     const audioBuffer = Buffer.concat(chunks);
@@ -861,7 +858,7 @@ app.post('/api/text-to-speech', async (req, res) => {
     res.send(audioBuffer);
 
   } catch (error) {
-    console.error('Error generating speech with Polly:', error);
+    console.error('Error generating speech with ElevenLabs:', error);
     res.status(500).json({
       error: 'Failed to generate speech',
       message: error.message
@@ -2250,7 +2247,7 @@ app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ Stripe configured: ${process.env.STRIPE_SECRET_KEY ? 'Yes' : 'No'}`);
-  console.log(`✅ AWS Polly configured: ${process.env.AWS_ACCESS_KEY_ID ? 'Yes' : 'No'}`);
+  console.log(`✅ ElevenLabs configured: ${process.env.ELEVENLABS_API_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ Resend configured: ${process.env.RESEND_API_KEY ? 'Yes' : 'No'}`);
   console.log(`✅ LinkedIn configured: ${process.env.VITE_LINKEDIN_CLIENT_ID && process.env.VITE_LINKEDIN_CLIENT_SECRET ? 'Yes' : 'No'}`);
 });

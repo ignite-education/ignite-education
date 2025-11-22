@@ -12,7 +12,7 @@ export default defineConfig({
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'supabase-vendor': ['@supabase/supabase-js'],
           'stripe-vendor': ['@stripe/stripe-js', 'stripe'],
-          'ai-vendor': ['@anthropic-ai/sdk', '@aws-sdk/client-polly'],
+          'ai-vendor': ['@anthropic-ai/sdk'],
           'ui-vendor': ['lottie-react', 'react-calendly'],
           'icons': ['lucide-react'],
           // Note: cors and express are server-side only, not bundled in frontend
@@ -34,7 +34,7 @@ export default defineConfig({
     ],
     exclude: [
       '@anthropic-ai/sdk',
-      '@aws-sdk/client-polly',
+      '@elevenlabs/elevenlabs-js',
     ],
   },
 })
