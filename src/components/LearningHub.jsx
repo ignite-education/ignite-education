@@ -111,6 +111,7 @@ const LearningHub = () => {
   const audioRef = React.useRef(null);
   const isPausedRef = React.useRef(false); // Track if user manually paused
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
+  const prefetchedAudioRef = React.useRef(null); // Store prefetched first section audio
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -261,6 +262,11 @@ const LearningHub = () => {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
       audioRef.current = null;
+    }
+    // Clear any prefetched audio
+    if (prefetchedAudioRef.current) {
+      URL.revokeObjectURL(prefetchedAudioRef.current.url);
+      prefetchedAudioRef.current = null;
     }
     isPausedRef.current = false;
     setIsReading(false);
@@ -1754,28 +1760,40 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
 
     try {
-      // Create new abort controller for this request
-      narrateAbortController.current = new AbortController();
-      const controller = narrateAbortController.current;
+      let audioUrl;
+      let audio;
 
-      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: sectionText }),
-        signal: controller.signal,
-      });
+      // Check if we have prefetched audio for section 0
+      if (sectionIndex === 0 && prefetchedAudioRef.current) {
+        console.log('⚡ Using prefetched audio for first section');
+        audioUrl = prefetchedAudioRef.current.url;
+        audio = prefetchedAudioRef.current.audio;
+        prefetchedAudioRef.current = null; // Clear after use
+        audioRef.current = audio;
+      } else {
+        // Create new abort controller for this request
+        narrateAbortController.current = new AbortController();
+        const controller = narrateAbortController.current;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
+        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: sectionText }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to generate speech');
+        }
+
+        const audioBlob = await response.blob();
+        audioUrl = URL.createObjectURL(audioBlob);
+
+        audio = new Audio(audioUrl);
+        audioRef.current = audio;
       }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
 
       audio.onended = () => {
         console.log(`✅ Finished section ${sectionIndex}`);
@@ -1904,6 +1922,42 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       await audio.play();
 
+      // Prefetch the first section audio while title is playing
+      if (currentLessonSections && currentLessonSections.length > 0) {
+        const firstSection = currentLessonSections[0];
+        const firstSectionText = extractTextFromSection(firstSection);
+
+        if (firstSectionText && firstSectionText.length > 0) {
+          console.log('⚡ Prefetching first section audio...');
+
+          try {
+            const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ text: firstSectionText }),
+            });
+
+            if (prefetchResponse.ok) {
+              const prefetchBlob = await prefetchResponse.blob();
+              const prefetchUrl = URL.createObjectURL(prefetchBlob);
+              const prefetchAudio = new Audio(prefetchUrl);
+
+              // Store for later use
+              prefetchedAudioRef.current = {
+                url: prefetchUrl,
+                audio: prefetchAudio
+              };
+              console.log('⚡ First section audio prefetched successfully');
+            }
+          } catch (prefetchError) {
+            console.log('Prefetch failed (non-critical):', prefetchError.message);
+            // Non-critical error, continue without prefetch
+          }
+        }
+      }
+
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('Lesson title narration cancelled');
@@ -1914,7 +1968,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
   };
 
-  // Handle read-aloud functionality with Amazon Polly
+  // Handle read-aloud functionality with ElevenLabs
   const handleReadAloud = async () => {
     // If audio is playing, pause it
     if (isReading && audioRef.current) {
@@ -1964,6 +2018,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       if (noteAudioRef.current) {
         noteAudioRef.current.pause();
         noteAudioRef.current = null;
+      }
+      if (prefetchedAudioRef.current) {
+        URL.revokeObjectURL(prefetchedAudioRef.current.url);
+        prefetchedAudioRef.current = null;
       }
     };
   }, []);
