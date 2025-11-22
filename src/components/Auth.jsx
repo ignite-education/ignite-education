@@ -2596,13 +2596,13 @@ const Auth = () => {
 
                           {/* Purple container with description and lessons */}
                           <div style={{ 
-                            backgroundColor: '#7714E0', 
+                            backgroundColor: '#F0F0F2', 
                             borderRadius: '0.5rem', 
                             padding: '0.75rem'
                           }}>
 
                           {/* AI-Generated Module Intro */}
-                          <p className="text-white mb-3" style={{ fontSize: '14px' }}>
+                          <p className="text-gray-900 mb-3" style={{ fontSize: '14px' }}>
                             {generateModuleIntro(module)}
                           </p>
 
@@ -2610,8 +2610,8 @@ const Auth = () => {
                           <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.028125rem' }}>
                             {(module.lessons || []).map((lesson, lessonIndex) => (
                               <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
-                                <span className="mt-0.5 text-white">•</span>
-                                <span className="font-medium text-white">{lesson.name}</span>
+                                <span className="mt-0.5 text-gray-900">•</span>
+                                <span className="font-medium text-gray-900">{lesson.name}</span>
                               </li>
                             ))}
                           </ul>
