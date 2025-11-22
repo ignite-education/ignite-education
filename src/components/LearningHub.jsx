@@ -3149,53 +3149,60 @@ ${currentLessonSections.map((section) => {
             {/* Voice Settings Menu */}
             {showVoiceSettings && (
               <div
-                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-3 w-48"
-                style={{ zIndex: 30 }}
+                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2"
+                style={{ zIndex: 30, width: '200px' }}
               >
-                {/* Voice Gender */}
-                <div className="mb-3">
-                  <div className="text-xs font-semibold text-gray-700 mb-1.5">Voice</div>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => setVoiceGender('female')}
-                      className="flex-1 py-1.5 px-2 text-xs rounded transition"
-                      style={{
-                        backgroundColor: voiceGender === 'female' ? '#EF0B72' : '#f3f4f6',
-                        color: voiceGender === 'female' ? 'white' : '#374151'
-                      }}
-                    >
-                      Female
-                    </button>
-                    <button
-                      onClick={() => setVoiceGender('male')}
-                      className="flex-1 py-1.5 px-2 text-xs rounded transition"
-                      style={{
-                        backgroundColor: voiceGender === 'male' ? '#EF0B72' : '#f3f4f6',
-                        color: voiceGender === 'male' ? 'white' : '#374151'
-                      }}
-                    >
-                      Male
-                    </button>
-                  </div>
-                </div>
+                {/* Container for voice buttons and slider */}
+                <div className="relative" style={{ height: '120px' }}>
+                  {/* Male button - top center */}
+                  <button
+                    onClick={() => setVoiceGender('male')}
+                    className="absolute top-0 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg"
+                    style={{
+                      backgroundColor: voiceGender === 'male' ? '#EF0B72' : 'white',
+                      color: voiceGender === 'male' ? 'white' : '#374151',
+                      border: voiceGender === 'male' ? 'none' : '2px solid #e5e7eb'
+                    }}
+                  >
+                    Male
+                  </button>
 
-                {/* Playback Speed */}
-                <div>
-                  <div className="text-xs font-semibold text-gray-700 mb-1.5">Speed</div>
-                  <div className="grid grid-cols-4 gap-1">
-                    {[0.75, 1.0, 1.25, 1.5].map(speed => (
-                      <button
-                        key={speed}
-                        onClick={() => setPlaybackSpeed(speed)}
-                        className="py-1.5 px-1 text-xs rounded transition"
-                        style={{
-                          backgroundColor: playbackSpeed === speed ? '#EF0B72' : '#f3f4f6',
-                          color: playbackSpeed === speed ? 'white' : '#374151'
-                        }}
-                      >
-                        {speed}x
-                      </button>
-                    ))}
+                  {/* Female button - bottom left */}
+                  <button
+                    onClick={() => setVoiceGender('female')}
+                    className="absolute bottom-0 left-0 px-4 py-2 rounded-full font-medium text-sm transition-all shadow-lg"
+                    style={{
+                      backgroundColor: voiceGender === 'female' ? '#EF0B72' : 'white',
+                      color: voiceGender === 'female' ? 'white' : '#374151',
+                      border: voiceGender === 'female' ? 'none' : '2px solid #e5e7eb'
+                    }}
+                  >
+                    Female
+                  </button>
+
+                  {/* Curved Speed Slider - bottom right */}
+                  <div className="absolute bottom-0 right-0 bg-white rounded-full shadow-lg px-3 py-2" style={{ width: '120px' }}>
+                    <div className="text-xs font-semibold text-gray-700 mb-1 text-center">
+                      {playbackSpeed}x
+                    </div>
+                    <input
+                      type="range"
+                      min="0.75"
+                      max="1.5"
+                      step="0.25"
+                      value={playbackSpeed}
+                      onChange={(e) => setPlaybackSpeed(parseFloat(e.target.value))}
+                      className="w-full"
+                      style={{
+                        accentColor: '#EF0B72',
+                        height: '6px',
+                        borderRadius: '3px'
+                      }}
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-0.5">
+                      <span>0.75</span>
+                      <span>1.5</span>
+                    </div>
                   </div>
                 </div>
               </div>
