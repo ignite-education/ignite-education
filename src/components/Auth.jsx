@@ -1753,8 +1753,10 @@ const Auth = () => {
                   {/* Card 1 - AI smarts */}
                   <div
                     onMouseEnter={() => {
-                      setActiveCard(0);
-                      setIsCardManuallySelected(true);
+                      setTimeout(() => {
+                        setActiveCard(0);
+                        setIsCardManuallySelected(true);
+                      }, 300);
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 0
@@ -1793,8 +1795,10 @@ const Auth = () => {
                   {/* Card 2 - Personalised support */}
                   <div
                     onMouseEnter={() => {
-                      setActiveCard(1);
-                      setIsCardManuallySelected(true);
+                      setTimeout(() => {
+                        setActiveCard(1);
+                        setIsCardManuallySelected(true);
+                      }, 300);
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 1
@@ -1833,8 +1837,10 @@ const Auth = () => {
                   {/* Card 3 - Community */}
                   <div
                     onMouseEnter={() => {
-                      setActiveCard(2);
-                      setIsCardManuallySelected(true);
+                      setTimeout(() => {
+                        setActiveCard(2);
+                        setIsCardManuallySelected(true);
+                      }, 300);
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 2
@@ -1873,8 +1879,10 @@ const Auth = () => {
                   {/* Card 4 - Get certified */}
                   <div
                     onMouseEnter={() => {
-                      setActiveCard(3);
-                      setIsCardManuallySelected(true);
+                      setTimeout(() => {
+                        setActiveCard(3);
+                        setIsCardManuallySelected(true);
+                      }, 300);
                     }}
                     className={`rounded cursor-pointer ${
                       activeCard === 3
