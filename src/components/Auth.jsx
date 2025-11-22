@@ -2450,7 +2450,7 @@ const Auth = () => {
                 {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
                   <div className="mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-4" style={{ fontSize: '17px' }}>
+                    <h3 className="font-semibold text-gray-900 mb-2" style={{ fontSize: '22px' }}>
                       Curriculum
                     </h3>
                     <div className="space-y-6">
@@ -2547,7 +2547,7 @@ const Auth = () => {
                 <div className="mb-6" style={{ minHeight: selectedCourseCoaches.length > 0 ? 'auto' : '0' }}>
                   {selectedCourseCoaches.length > 0 && (
                     <>
-                      <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '17px' }}>
+                      <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '22px' }}>
                         Course Leaders
                       </h3>
                       <div className="flex flex-col gap-4">
