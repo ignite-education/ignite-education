@@ -1603,7 +1603,7 @@ const Auth = () => {
                     msOverflowStyle: 'none',
                     WebkitOverflowScrolling: 'touch',
                     scrollSnapType: 'x mandatory',
-                    paddingLeft: '10px', paddingRight: '310px', paddingTop: '10px', paddingBottom: '10px'
+                    paddingLeft: '15px', paddingRight: '315px', paddingTop: '15px', paddingBottom: '15px'
                   }}
                 >
                   <style>{`
@@ -1611,7 +1611,7 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-3" style={{ paddingLeft: '5px', paddingRight: '5px', marginRight: '300px' }}>
+                  <div className="flex gap-3" style={{ marginRight: '300px' }}>
                   {courses.length > 0 ? (() => {
                     const pages = [];
                     for (let i = 0; i < courses.length; i += 4) {
