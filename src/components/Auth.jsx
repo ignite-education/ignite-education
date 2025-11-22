@@ -1752,7 +1752,7 @@ const Auth = () => {
                 <div className="space-y-3 flex-shrink-0">
                   {/* Card 1 - AI smarts */}
                   <div
-                    onClick={() => {
+                    onMouseEnter={() => {
                       setActiveCard(0);
                       setIsCardManuallySelected(true);
                     }}
@@ -1792,7 +1792,7 @@ const Auth = () => {
 
                   {/* Card 2 - Personalised support */}
                   <div
-                    onClick={() => {
+                    onMouseEnter={() => {
                       setActiveCard(1);
                       setIsCardManuallySelected(true);
                     }}
@@ -1832,7 +1832,7 @@ const Auth = () => {
 
                   {/* Card 3 - Community */}
                   <div
-                    onClick={() => {
+                    onMouseEnter={() => {
                       setActiveCard(2);
                       setIsCardManuallySelected(true);
                     }}
@@ -1872,7 +1872,7 @@ const Auth = () => {
 
                   {/* Card 4 - Get certified */}
                   <div
-                    onClick={() => {
+                    onMouseEnter={() => {
                       setActiveCard(3);
                       setIsCardManuallySelected(true);
                     }}
