@@ -56,7 +56,8 @@
       "Bash(python3:*)",
       "Bash(sqlite3:*)",
       "Bash(echo:*)",
-      "Bash(env)"
+      "Bash(env)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
