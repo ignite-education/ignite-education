@@ -1611,7 +1611,7 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-3" style={{ paddingLeft: '0px', marginRight: '300px' }}>
+                  <div className="flex gap-3" style={{ paddingLeft: '5px', paddingRight: '5px', marginRight: '300px' }}>
                   {courses.length > 0 ? (() => {
                     const pages = [];
                     for (let i = 0; i < courses.length; i += 4) {
@@ -1622,7 +1622,7 @@ const Auth = () => {
                         key={`page-${pageIndex}`}
                         className="grid grid-cols-2 gap-3 flex-shrink-0"
                         style={{ 
-          width: '510px', minWidth: '510px', maxWidth: '510px'
+          width: '510px', minWidth: '510px', maxWidth: '510px', overflow: 'visible'
                         }}
                       >
 {pageCourses.map((course, localIndex) => {
