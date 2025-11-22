@@ -1679,7 +1679,7 @@ const Auth = () => {
                       </div>
                     );
                         })}
-
+                      </div>
                     ));
                   })() : (
                     // Skeleton cards while loading
