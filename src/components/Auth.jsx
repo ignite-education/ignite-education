@@ -2467,7 +2467,7 @@ const Auth = () => {
                           </p>
 
                           {/* Lesson List */}
-                          <ul className="space-y-1.5">
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.1875rem' }}>
                             {(module.lessons || []).map((lesson, lessonIndex) => (
                               <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
                                 <span className="mt-0.5">•</span>
