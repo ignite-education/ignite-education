@@ -2590,7 +2590,7 @@ const Auth = () => {
                       {selectedCourse.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>
                           {/* Module Title */}
-                          <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#000000' }}>
+                          <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#7714E0' }}>
                             Module {moduleIndex + 1} - {module.name}
                           </h4>
 
