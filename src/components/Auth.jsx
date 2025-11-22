@@ -89,20 +89,44 @@ const Auth = () => {
       return "Comprehensive content designed to enhance your skills.";
     }
 
-    // Extract key themes from lesson names
     const lessonCount = module.lessons.length;
-    const firstLesson = module.lessons[0]?.name || '';
-
-    // Generate contextual intro based on module name and lessons
     const moduleName = module.name || '';
+    const lessonNames = module.lessons.map(l => l.name).join(', ');
 
-    // Simple pattern-based generation
-    if (moduleName.toLowerCase().includes('foundation') || moduleName.toLowerCase().includes('introduction')) {
+    // Generate contextual intro based on module name and lesson topics
+    const lowerModuleName = moduleName.toLowerCase();
+    
+    // Pattern matching for different module types
+    if (lowerModuleName.includes('foundation') || lowerModuleName.includes('fundamental')) {
       return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
     }
-
-    // Default pattern
-    return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.`;
+    
+    if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning')) {
+      return `Master strategic approaches with ${lessonCount} comprehensive lessons covering essential planning and decision-making frameworks.`;
+    }
+    
+    if (lowerModuleName.includes('technical') || lowerModuleName.includes('tool')) {
+      return `Develop practical skills through ${lessonCount} hands-on lessons focused on industry-standard tools and techniques.`;
+    }
+    
+    if (lowerModuleName.includes('analysis') || lowerModuleName.includes('data')) {
+      return `Build analytical expertise with ${lessonCount} focused lessons on data-driven approaches and methodologies.`;
+    }
+    
+    if (lowerModuleName.includes('design') || lowerModuleName.includes('ux') || lowerModuleName.includes('ui')) {
+      return `Explore design principles through ${lessonCount} practical lessons covering user-centered approaches and best practices.`;
+    }
+    
+    if (lowerModuleName.includes('communication') || lowerModuleName.includes('presentation')) {
+      return `Enhance your communication abilities with ${lessonCount} lessons on effective presentation and stakeholder engagement.`;
+    }
+    
+    if (lowerModuleName.includes('career') || lowerModuleName.includes('professional')) {
+      return `Advance your professional journey with ${lessonCount} lessons on career development and industry success strategies.`;
+    }
+    
+    // Default pattern with lesson count
+    return `Explore ${lessonCount} comprehensive lessons designed to build your expertise in this essential area.`;
   };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
