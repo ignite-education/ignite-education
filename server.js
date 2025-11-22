@@ -807,7 +807,7 @@ app.post('/api/create-billing-portal-session', async (req, res) => {
 // Text-to-speech endpoint using ElevenLabs
 app.post('/api/text-to-speech', async (req, res) => {
   try {
-    let { text } = req.body;
+    let { text, voiceGender } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -826,8 +826,15 @@ app.post('/api/text-to-speech', async (req, res) => {
       }
     }
 
-    // Use ElevenLabs voice ID from environment or default to Alice (British female)
-    const voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
+    // Select voice based on gender preference
+    let voiceId;
+    if (voiceGender === 'male') {
+      // George - British male voice (warm, clear)
+      voiceId = 'JBFqnCBsd6RMkjVDRZzb';
+    } else {
+      // Alice - British female voice (default)
+      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2';
+    }
 
     // Generate speech with ElevenLabs
     const audio = await elevenlabs.textToSpeech.convert(voiceId, {

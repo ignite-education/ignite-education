@@ -116,6 +116,12 @@ const LearningHub = () => {
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
+  // Voice settings state
+  const [voiceGender, setVoiceGender] = useState('female'); // 'female' or 'male'
+  const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // 0.75, 1.0, 1.25, 1.5
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
+  const voiceSettingsTimeoutRef = React.useRef(null);
+
   // Daily course completion limit state
   const [coursesCompletedToday, setCoursesCompletedToday] = useState(0);
   const [todaysCompletedCourseIds, setTodaysCompletedCourseIds] = useState([]);
@@ -1169,7 +1175,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: cleanText }),
+        body: JSON.stringify({ text: cleanText, voiceGender }),
       });
 
       if (!response.ok) {
@@ -1194,6 +1200,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         noteAudioRef.current = null;
         URL.revokeObjectURL(audioUrl);
       };
+
+      // Set playback speed for note
+      audio.playbackRate = playbackSpeed;
 
       await audio.play();
     } catch (error) {
@@ -1783,7 +1792,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ text: sectionText }),
+          body: JSON.stringify({ text: sectionText, voiceGender }),
           signal: controller.signal,
         });
 
@@ -1827,6 +1836,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         setIsReading(false);
       };
 
+      // Set playback speed
+      audio.playbackRate = playbackSpeed;
+
       await audio.play();
       setIsReading(true);
       setCurrentNarrationSection(sectionIndex);
@@ -1848,7 +1860,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: nextSectionText }),
+                body: JSON.stringify({ text: nextSectionText, voiceGender }),
               });
 
               if (prefetchResponse.ok) {
@@ -1943,7 +1955,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: lessonName }),
+        body: JSON.stringify({ text: lessonName, voiceGender }),
         signal: controller.signal,
       });
 
@@ -1979,6 +1991,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         setIsReading(false);
       };
 
+      // Set playback speed for title
+      audio.playbackRate = playbackSpeed;
+
       await audio.play();
 
       // Prefetch the first section audio while title is playing
@@ -1995,7 +2010,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ text: firstSectionText }),
+              body: JSON.stringify({ text: firstSectionText, voiceGender }),
             });
 
             if (prefetchResponse.ok) {
@@ -3116,23 +3131,95 @@ ${currentLessonSections.map((section) => {
 
           {/* Content */}
           <div className="relative z-10 flex items-center justify-center gap-2 w-full" style={{ zIndex: 20 }}>
-          <button
-            onClick={handleReadAloud}
-            className="rounded-lg flex items-center justify-center transition text-white"
-            style={{
-              backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-              width: '43px',
-              height: '43px'
+          {/* Voice-over button with settings */}
+          <div
+            className="relative"
+            onMouseEnter={() => {
+              voiceSettingsTimeoutRef.current = setTimeout(() => {
+                setShowVoiceSettings(true);
+              }, 500);
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
+            onMouseLeave={() => {
+              if (voiceSettingsTimeoutRef.current) {
+                clearTimeout(voiceSettingsTimeoutRef.current);
+              }
+              setShowVoiceSettings(false);
+            }}
           >
-            {isReading ? (
-              <Pause size={18} className="text-white" fill="white" />
-            ) : (
-              <Volume2 size={18} className="text-white" />
+            {/* Voice Settings Menu */}
+            {showVoiceSettings && (
+              <div
+                className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-3 w-48"
+                style={{ zIndex: 30 }}
+              >
+                {/* Voice Gender */}
+                <div className="mb-3">
+                  <div className="text-xs font-semibold text-gray-700 mb-1.5">Voice</div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => setVoiceGender('female')}
+                      className="flex-1 py-1.5 px-2 text-xs rounded transition"
+                      style={{
+                        backgroundColor: voiceGender === 'female' ? '#EF0B72' : '#f3f4f6',
+                        color: voiceGender === 'female' ? 'white' : '#374151'
+                      }}
+                    >
+                      Female
+                    </button>
+                    <button
+                      onClick={() => setVoiceGender('male')}
+                      className="flex-1 py-1.5 px-2 text-xs rounded transition"
+                      style={{
+                        backgroundColor: voiceGender === 'male' ? '#EF0B72' : '#f3f4f6',
+                        color: voiceGender === 'male' ? 'white' : '#374151'
+                      }}
+                    >
+                      Male
+                    </button>
+                  </div>
+                </div>
+
+                {/* Playback Speed */}
+                <div>
+                  <div className="text-xs font-semibold text-gray-700 mb-1.5">Speed</div>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[0.75, 1.0, 1.25, 1.5].map(speed => (
+                      <button
+                        key={speed}
+                        onClick={() => setPlaybackSpeed(speed)}
+                        className="py-1.5 px-1 text-xs rounded transition"
+                        style={{
+                          backgroundColor: playbackSpeed === speed ? '#EF0B72' : '#f3f4f6',
+                          color: playbackSpeed === speed ? 'white' : '#374151'
+                        }}
+                      >
+                        {speed}x
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
-          </button>
+
+            {/* Speaker Button */}
+            <button
+              onClick={handleReadAloud}
+              className="rounded-lg flex items-center justify-center transition text-white"
+              style={{
+                backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+                width: '43px',
+                height: '43px'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
+            >
+              {isReading ? (
+                <Pause size={18} className="text-white" fill="white" />
+              ) : (
+                <Volume2 size={18} className="text-white" />
+              )}
+            </button>
+          </div>
           <button
             onClick={handleContinue}
             className="text-white font-semibold rounded-lg transition"
