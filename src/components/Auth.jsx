@@ -2652,7 +2652,7 @@ const Auth = () => {
 
                 {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
-                  <div className="mb-6" style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', padding: '2rem' }}>
+                  <div className="mb-6" style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', paddingTop: '1.6rem', paddingRight: '2rem', paddingBottom: '2rem', paddingLeft: '2rem' }}>
                     <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.3rem' }}>
                       Curriculum
                     </h3>
@@ -2672,7 +2672,7 @@ const Auth = () => {
                             </p>
 
                             {/* Lesson List */}
-                            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
                               {(module.lessons || []).map((lesson, lessonIndex) => (
                                 <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
                                   <span className="text-gray-900" style={{ fontSize: '0.5em' }}>■</span>
