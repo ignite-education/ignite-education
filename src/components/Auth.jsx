@@ -1622,7 +1622,7 @@ const Auth = () => {
                         key={`page-${pageIndex}`}
                         className="grid grid-cols-2 gap-3 flex-shrink-0"
                         style={{ 
-          width: '520px', minWidth: '520px', maxWidth: '520px', overflow: 'visible'
+          width: '510px', minWidth: '510px', maxWidth: '510px', overflow: 'visible'
                         }}
                       >
 {pageCourses.map((course, localIndex) => {
