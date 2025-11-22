@@ -2573,7 +2573,7 @@ const Auth = () => {
                           <div style={{ 
                             backgroundColor: '#7714E0', 
                             borderRadius: '0.5rem', 
-                            padding: '1rem'
+                            padding: '0.75rem'
                           }}>
 
                           {/* AI-Generated Module Intro */}
