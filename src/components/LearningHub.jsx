@@ -111,7 +111,8 @@ const LearningHub = () => {
   const audioRef = React.useRef(null);
   const isPausedRef = React.useRef(false); // Track if user manually paused
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
-  const prefetchedAudioRef = React.useRef(null); // Store prefetched first section audio
+  const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
+  const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -268,6 +269,8 @@ const LearningHub = () => {
       URL.revokeObjectURL(prefetchedAudioRef.current.url);
       prefetchedAudioRef.current = null;
     }
+    // Clear prefetch promise
+    prefetchPromiseRef.current = null;
     isPausedRef.current = false;
     setIsReading(false);
     setCurrentNarrationSection(0);
@@ -1795,7 +1798,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioRef.current = audio;
       }
 
-      audio.onended = () => {
+      audio.onended = async () => {
         console.log(`✅ Finished section ${sectionIndex}`);
         URL.revokeObjectURL(audioUrl);
 
@@ -1803,6 +1806,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         if (audioRef.current !== audio) {
           console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
           return;
+        }
+
+        // Wait for prefetch to complete if it's still in progress
+        if (prefetchPromiseRef.current) {
+          console.log('⏳ Waiting for prefetch to complete...');
+          await prefetchPromiseRef.current;
+          prefetchPromiseRef.current = null;
         }
 
         // Continue to next section if not paused
@@ -1830,40 +1840,43 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         if (nextSectionText && nextSectionText.length > 0) {
           console.log(`⚡ Prefetching section ${nextSectionIndex}...`);
 
-          try {
-            const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ text: nextSectionText }),
-            });
+          // Store the prefetch promise so we can wait for it if needed
+          prefetchPromiseRef.current = (async () => {
+            try {
+              const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: nextSectionText }),
+              });
 
-            if (prefetchResponse.ok) {
-              const prefetchBlob = await prefetchResponse.blob();
-              const prefetchUrl = URL.createObjectURL(prefetchBlob);
-              const prefetchAudio = new Audio(prefetchUrl);
+              if (prefetchResponse.ok) {
+                const prefetchBlob = await prefetchResponse.blob();
+                const prefetchUrl = URL.createObjectURL(prefetchBlob);
+                const prefetchAudio = new Audio(prefetchUrl);
 
-              // Store for next section (only if we're still on the same section)
-              if (audioRef.current === audio) {
-                // Clear any old prefetch first
-                if (prefetchedAudioRef.current) {
-                  URL.revokeObjectURL(prefetchedAudioRef.current.url);
+                // Store for next section (only if we're still on the same section)
+                if (audioRef.current === audio) {
+                  // Clear any old prefetch first
+                  if (prefetchedAudioRef.current) {
+                    URL.revokeObjectURL(prefetchedAudioRef.current.url);
+                  }
+                  prefetchedAudioRef.current = {
+                    url: prefetchUrl,
+                    audio: prefetchAudio,
+                    sectionIndex: nextSectionIndex
+                  };
+                  console.log(`⚡ Section ${nextSectionIndex} prefetched successfully`);
+                } else {
+                  // Section changed, cleanup
+                  URL.revokeObjectURL(prefetchUrl);
                 }
-                prefetchedAudioRef.current = {
-                  url: prefetchUrl,
-                  audio: prefetchAudio,
-                  sectionIndex: nextSectionIndex
-                };
-                console.log(`⚡ Section ${nextSectionIndex} prefetched successfully`);
-              } else {
-                // Section changed, cleanup
-                URL.revokeObjectURL(prefetchUrl);
               }
+            } catch (prefetchError) {
+              console.log('Prefetch failed (non-critical):', prefetchError.message);
             }
-          } catch (prefetchError) {
-            console.log('Prefetch failed (non-critical):', prefetchError.message);
-          }
+          })();
         }
       }
 
