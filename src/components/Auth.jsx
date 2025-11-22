@@ -95,7 +95,21 @@ const Auth = () => {
     
     // Generate contextual intro based on module name and actual lesson topics
     if (lowerModuleName.includes('foundation') || lowerModuleName.includes('fundamental')) {
-      return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you. Build a strong foundation in core concepts and essential skills.`;
+      // Analyze lesson content for foundation modules
+      if (lessonNames.includes('role') || lessonNames.includes('responsibilit')) {
+        return `Master the core responsibilities and key competencies that define professional success in this field. Build essential knowledge of industry practices, methodologies, and best practices.`;
+      }
+      if (lessonNames.includes('lifecycle') || lessonNames.includes('process')) {
+        return `Understand fundamental processes, workflows, and lifecycle management from start to finish. Develop a comprehensive framework for approaching work systematically and effectively.`;
+      }
+      if (lessonNames.includes('stakeholder') || lessonNames.includes('management')) {
+        return `Learn essential principles of stakeholder engagement, relationship management, and collaborative work. Build foundational skills for effective communication and cross-functional cooperation.`;
+      }
+      if (lessonNames.includes('research') || lessonNames.includes('analysis')) {
+        return `Develop fundamental research and analytical capabilities to gather insights and inform decisions. Master core methodologies for understanding problems and identifying solutions.`;
+      }
+      // Generic foundation fallback
+      return `Build a comprehensive foundation in essential concepts, principles, and practices. Develop core competencies and fundamental knowledge that supports all advanced work in this field.`;
     }
     
     // Cybersecurity specific modules
