@@ -2515,7 +2515,7 @@ const Auth = () => {
                       {selectedCourse.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>
                           {/* Module Title */}
-                          <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#7714E0' }}>
+                          <h4 className="font-semibold mb-1" style={{ fontSize: '16.5px', color: '#000000' }}>
                             Module {moduleIndex + 1} - {module.name}
                           </h4>
 
@@ -2532,7 +2532,7 @@ const Auth = () => {
                           </p>
 
                           {/* Lesson List */}
-                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.09375rem' }}>
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.046875rem' }}>
                             {(module.lessons || []).map((lesson, lessonIndex) => (
                               <li key={lessonIndex} className="flex items-start gap-2" style={{ fontSize: '14px' }}>
                                 <span className="mt-0.5 text-white">•</span>
