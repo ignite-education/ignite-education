@@ -98,7 +98,7 @@ const Auth = () => {
       return `Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you. Build a strong foundation in core concepts and essential skills.`;
     }
     
-    if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning')) {
+    if (lowerModuleName.includes('strategic') || lowerModuleName.includes('planning') || lowerModuleName.includes('thinking')) {
       // Check lesson topics for specific themes
       if (lessonNames.includes('roadmap') || lessonNames.includes('vision')) {
         return `Master strategic vision and roadmapping techniques to align product development with business objectives. Learn to identify market opportunities and translate them into actionable product strategies.`;
@@ -109,6 +109,18 @@ const Auth = () => {
       return `Develop strategic thinking capabilities for product planning, competitive positioning, and long-term business success. Master frameworks for analyzing market dynamics and creating winning product strategies.`;
     }
     
+    if (lowerModuleName.includes('execution') || lowerModuleName.includes('implementation') || lowerModuleName.includes('delivery')) {
+      return `Master practical execution strategies to turn plans into reality and deliver results on time. Learn agile methodologies, project management techniques, and ways to overcome common obstacles.`;
+    }
+    
+    if (lowerModuleName.includes('stakeholder') || lowerModuleName.includes('influence') || lowerModuleName.includes('leadership')) {
+      return `Develop strategies for effective stakeholder management, influence, and building consensus across diverse audiences. Learn to navigate complex organizational dynamics and secure buy-in for your initiatives.`;
+    }
+    
+    if (lowerModuleName.includes('market') || lowerModuleName.includes('research') || lowerModuleName.includes('customer')) {
+      return `Discover methodologies to understand market dynamics, customer needs, and competitive landscapes. Learn to conduct effective research that informs strategic decisions and product direction.`;
+    }
+    
     if (lowerModuleName.includes('technical') || lowerModuleName.includes('tool')) {
       if (lessonNames.includes('python') || lessonNames.includes('code') || lessonNames.includes('programming')) {
         return `Build hands-on technical skills with practical coding exercises and real-world implementation techniques. Develop proficiency in writing clean, efficient code for professional applications.`;
@@ -116,7 +128,7 @@ const Auth = () => {
       return `Gain proficiency in essential technical tools and methodologies used by industry professionals. Learn to leverage technology effectively for improved productivity and results.`;
     }
     
-    if (lowerModuleName.includes('analysis') || lowerModuleName.includes('data')) {
+    if (lowerModuleName.includes('analysis') || lowerModuleName.includes('data') || lowerModuleName.includes('analyt')) {
       if (lessonNames.includes('statistics') || lessonNames.includes('statistical')) {
         return `Master statistical methods and analytical techniques to extract meaningful insights from complex datasets. Learn to apply rigorous mathematical approaches to solve real-world business problems.`;
       }
@@ -146,7 +158,7 @@ const Auth = () => {
       return `Enhance your ability to communicate complex ideas clearly, present with confidence, and engage stakeholders effectively. Master techniques for persuasive storytelling and impactful professional communication.`;
     }
     
-    if (lowerModuleName.includes('career') || lowerModuleName.includes('professional')) {
+    if (lowerModuleName.includes('career') || lowerModuleName.includes('professional') || lowerModuleName.includes('development')) {
       if (lessonNames.includes('interview') || lessonNames.includes('job')) {
         return `Prepare for career advancement with interview strategies, resume optimization, and techniques to stand out in the job market. Learn to showcase your skills effectively and navigate the hiring process with confidence.`;
       }
@@ -175,8 +187,21 @@ const Auth = () => {
       return `Transform data into actionable business insights using modern BI tools, dashboards, and reporting frameworks. Learn to design and build analytics solutions that drive strategic decision-making.`;
     }
     
-    // Default pattern without lesson count
-    return `Develop essential skills and practical knowledge in this critical area of professional expertise. Build capabilities that enhance your effectiveness and career prospects.`;
+    if (lowerModuleName.includes('metrics') || lowerModuleName.includes('measurement') || lowerModuleName.includes('kpi')) {
+      return `Learn to define, track, and analyze key performance indicators that measure product success and business impact. Develop data-driven approaches to make informed decisions and demonstrate value.`;
+    }
+    
+    if (lowerModuleName.includes('agile') || lowerModuleName.includes('scrum') || lowerModuleName.includes('sprint')) {
+      return `Master agile methodologies and frameworks for efficient product development and team collaboration. Learn to run effective sprints, manage backlogs, and deliver value iteratively.`;
+    }
+    
+    // Enhanced default that uses lesson context
+    if (lessonNames) {
+      return `Master essential concepts and practical techniques in ${moduleName.toLowerCase()}. Develop professional capabilities through hands-on learning and real-world applications.`;
+    }
+    
+    // Final fallback
+    return `Build expertise through comprehensive learning in this essential professional area. Develop practical skills and knowledge that enhance your effectiveness and career prospects.`;
   };
 
   // Clean up OAuth hash fragments before paint to prevent flicker
