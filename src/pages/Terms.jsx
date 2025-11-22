@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SEO from '../components/SEO';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 const Terms = () => {
   const navigate = useNavigate();
@@ -34,7 +35,11 @@ const Terms = () => {
       {/* Content */}
       <div className="max-w-4xl px-4 sm:px-6 lg:px-8 pt-24 pb-16">
         <div style={{ marginLeft: '48px' }}>
-          <h1 className="text-4xl font-bold mb-8">Terms of Service</h1>
+          <Breadcrumbs customItems={[
+            { name: 'Home', href: '/' },
+            { name: 'Terms of Service' }
+          ]} />
+          <h1 className="text-4xl font-bold mb-8 mt-6">Terms of Service</h1>
 
           {/* Terms Content */}
           <div className="space-y-8 text-gray-100 leading-relaxed">

@@ -1424,9 +1424,12 @@ const Auth = () => {
                   </p>
                   <img
                     src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
-                    alt="Course preview"
+                    alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                     className="rounded-lg"
                     style={{ width: '70%' }}
+                    loading="lazy"
+                    width="1400"
+                    height="900"
                   />
                 </div>
               </div>
@@ -2668,8 +2671,11 @@ const Auth = () => {
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
-                                    alt={coach.name}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
                                     className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';
@@ -2699,8 +2705,11 @@ const Auth = () => {
                                 {coach.image_url ? (
                                   <img
                                     src={coach.image_url}
-                                    alt={coach.name}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
                                     className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
                                     onError={(e) => {
                                       e.target.src = '';
                                       e.target.style.display = 'none';

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SEO from '../components/SEO';
+import Breadcrumbs from '../components/Breadcrumbs';
 
 /**
  * CourseRedirect - SEO-optimized landing pages for individual courses
@@ -66,7 +67,7 @@ const CourseRedirect = () => {
   useEffect(() => {
     if (!course) return;
 
-    const schema = {
+    const courseSchema = {
       "@context": "https://schema.org",
       "@type": "Course",
       "name": course.title.replace(' - Ignite Education', ''),
@@ -88,42 +89,88 @@ const CourseRedirect = () => {
       "url": course.canonicalUrl
     };
 
-    let scriptTag = document.querySelector('script[data-schema="course-redirect"]');
-    if (!scriptTag) {
-      scriptTag = document.createElement('script');
-      scriptTag.setAttribute('type', 'application/ld+json');
-      scriptTag.setAttribute('data-schema', 'course-redirect');
-      document.head.appendChild(scriptTag);
+    let courseScriptTag = document.querySelector('script[data-schema="course-redirect"]');
+    if (!courseScriptTag) {
+      courseScriptTag = document.createElement('script');
+      courseScriptTag.setAttribute('type', 'application/ld+json');
+      courseScriptTag.setAttribute('data-schema', 'course-redirect');
+      document.head.appendChild(courseScriptTag);
     }
-    scriptTag.textContent = JSON.stringify(schema);
+    courseScriptTag.textContent = JSON.stringify(courseSchema);
+
+    // Add BreadcrumbList structured data
+    const breadcrumbSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.ignite.education"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Courses",
+          "item": "https://www.ignite.education/welcome"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": course.title.replace(' - Ignite Education', ''),
+          "item": course.canonicalUrl
+        }
+      ]
+    };
+
+    let breadcrumbScriptTag = document.querySelector('script[data-schema="breadcrumb"]');
+    if (!breadcrumbScriptTag) {
+      breadcrumbScriptTag = document.createElement('script');
+      breadcrumbScriptTag.setAttribute('type', 'application/ld+json');
+      breadcrumbScriptTag.setAttribute('data-schema', 'breadcrumb');
+      document.head.appendChild(breadcrumbScriptTag);
+    }
+    breadcrumbScriptTag.textContent = JSON.stringify(breadcrumbSchema);
 
     // Cleanup on unmount
     return () => {
-      const tag = document.querySelector('script[data-schema="course-redirect"]');
-      if (tag) tag.remove();
+      const courseTag = document.querySelector('script[data-schema="course-redirect"]');
+      if (courseTag) courseTag.remove();
+      const breadcrumbTag = document.querySelector('script[data-schema="breadcrumb"]');
+      if (breadcrumbTag) breadcrumbTag.remove();
     };
   }, [course]);
 
   // 404 if course not found
   if (!course) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold mb-4">Course Not Found</h1>
-          <p className="text-gray-400 mb-6">The course you're looking for doesn't exist.</p>
-          <button
-            onClick={() => navigate('/welcome')}
-            className="px-6 py-3 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors"
-          >
-            Browse All Courses
-          </button>
+      <div className="min-h-screen bg-black text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Breadcrumbs customItems={[
+            { name: 'Home', href: '/' },
+            { name: 'Courses', href: '/welcome' },
+            { name: 'Course Not Found' }
+          ]} />
+          <div className="flex items-center justify-center min-h-[80vh]">
+            <div className="text-center">
+              <h1 className="text-4xl font-bold mb-4">Course Not Found</h1>
+              <p className="text-gray-400 mb-6">The course you're looking for doesn't exist.</p>
+              <button
+                onClick={() => navigate('/welcome')}
+                className="px-6 py-3 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors"
+              >
+                Browse All Courses
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white flex items-center justify-center">
+    <div className="min-h-screen bg-black text-white">
       <SEO
         title={course.title}
         description={course.description}
@@ -131,10 +178,20 @@ const CourseRedirect = () => {
         url={course.canonicalUrl}
       />
 
-      <div className="text-center">
-        <div className="animate-pulse">
-          <div className="w-16 h-16 border-4 border-[#ec4899] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading course details...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Breadcrumbs customItems={[
+          { name: 'Home', href: '/' },
+          { name: 'Courses', href: '/welcome' },
+          { name: course.title.replace(' - Ignite Education', '').replace(' Course', '') }
+        ]} />
+
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="w-16 h-16 border-4 border-[#ec4899] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading course details...</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>

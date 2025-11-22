@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import SEO from './SEO';
+import Breadcrumbs from './Breadcrumbs';
 
 const NotFound = () => {
   const navigate = useNavigate();
@@ -41,14 +42,22 @@ const NotFound = () => {
               src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
               alt="Ignite Education Logo"
               className="w-32 h-12 object-contain object-left"
+              width="128"
+              height="48"
             />
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl w-full text-center">
+      <div className="flex-1 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto py-8">
+          <Breadcrumbs customItems={[
+            { name: 'Home', href: '/' },
+            { name: '404 - Page Not Found' }
+          ]} />
+        </div>
+        <div className="max-w-2xl w-full text-center mx-auto">
           {/* 404 */}
           <h1 className="text-9xl font-bold text-[#ec4899] mb-4">404</h1>
 
