@@ -1245,20 +1245,398 @@ const Auth = () => {
         url="https://www.ignite.education/welcome"
       />
       {/* Background - Progress Hub */}
-                      {/* Fixed outer container */}
+      <div
+        style={{
+          filter: 'blur(1px) brightness(0.7)',
+          pointerEvents: 'none',
+          opacity: 0,
+          animation: 'fadeIn 1s ease-out forwards',
+          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+        }}
+      >
+        <ProgressHub />
+      </div>
+
+      {/* Auth Overlay - Scrollable Container */}
+      <div
+        ref={authScrollContainerRef}
+        className="fixed inset-0 backdrop-blur-sm animate-fadeIn overflow-y-auto"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75))',
+          animation: 'fadeIn 0.2s ease-out',
+          zIndex: 50,
+          scrollBehavior: 'smooth',
+          scrollSnapType: 'y mandatory',
+          overflow: selectedCourseModal ? 'hidden' : 'auto',
+          pointerEvents: selectedCourseModal ? 'none' : 'auto',
+          minWidth: '1300px',
+          overflowX: 'auto'
+        }}
+      >
+      {/* First Section - Auth Form */}
+      <div className="min-h-screen flex items-center justify-center px-8 relative" style={{ scrollSnapAlign: 'start' }}>
+      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
+        {/* Logo */}
+        <div
+          className="mx-auto"
+          style={{
+            backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            width: 'clamp(100px, 25vw, 140px)',
+            height: 'clamp(32px, 8vw, 44.8px)',
+            marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
+          }}
+        />
+
+        {/* Tagline - on both sign in and create account pages */}
+        <h1 className="text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
+          Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
+        </h1>
+
+        <div className="w-full">
+
+        {/* Title above the box */}
+        <h2 className="text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+          {isLogin ? 'Welcome Back' : 'Create Account'}
+        </h2>
+
+        {/* Form Card */}
+        <div
+          className="bg-white text-black px-5 py-4"
+          style={{
+            animation: 'scaleUp 0.2s ease-out'
+          }}
+        >
+
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          {/* OAuth Buttons */}
+          <div className="space-y-2 mb-3">
+            <button
+              type="button"
+              onClick={() => handleOAuthSignIn('google')}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+              <span className="truncate">Continue with Google</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOAuthSignIn('linkedin_oidc')}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-xl px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+              </svg>
+              <span className="truncate">Continue with LinkedIn</span>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative" style={{ marginBottom: '0.625rem' }}>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white text-gray-500">Or</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+              <div>
+                <label className="block text-sm font-medium mb-0.5">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="John"
+                  disabled={isLogin}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-0.5">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="Doe"
+                  disabled={isLogin}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-sm font-medium mb-0.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-0.5">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+            </button>
+          </form>
+
+          <div className="text-center" style={{ marginTop: '0.5rem' }}>
+            {isLogin ? (
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                  }}
+                  className="text-black hover:text-[#EF0B72] transition"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  Don't have an account?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetPassword(true);
+                    setResetEmail(email);
+                    setResetSuccess(false);
+                    setError('');
+                  }}
+                  className="text-black hover:text-[#EF0B72] transition"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  Reset password
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                }}
+                className="text-black hover:text-[#EF0B72] transition"
+                style={{ fontSize: '0.85em' }}
+              >
+                Already have an account?
+              </button>
+            )}
+          </div>
+        </div>
+        </div>
+
+        {/* Scroll Down Arrow */}
+        <div className="mt-8">
+          <button
+            onClick={scrollToMarketing}
+            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+            style={{
+              animation: 'subtleBounce 2s infinite',
+              padding: '11px'
+            }}
+            aria-label="Scroll to learn more"
+          >
+            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+          </button>
+        </div>
+      </div>
+      </div>
+
+      {/* Second Section - Education Philosophy */}
+        <div
+          ref={marketingSectionRef}
+          className="min-h-screen flex items-center justify-center px-8 relative"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-4xl w-full text-white">
+            <div className="w-full max-w-3xl mx-auto px-4">
+              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block" style={{ minHeight: '240px' }}>
+                <span style={{ display: 'inline', whiteSpace: 'normal' }}>
+                  {renderTypedEducation()}
+                </span>
+              </h2>
+
+              {/* Feature bullets - fade in after typing completes - reserve space */}
+              <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
+                <div className="space-y-3 text-left">
+                  {isEducationTypingComplete && (
+                    <>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
+                          <div className="text-base text-white">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.4s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">Ignite is Free</div>
+                          <div className="text-base text-white">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <div className="leading-snug font-light">
+                          <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
+                          <div className="text-base text-white">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll Down Arrow - Absolutely positioned */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <button
+              onClick={scrollToCourses}
+              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to courses"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+            </button>
+          </div>
+        </div>
+
+      {/* Third Section - Courses */}
+        <div
+          ref={coursesSectionRef}
+          className="min-h-screen flex items-center justify-center px-8 relative"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-7xl w-full text-white">
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-2 gap-12 px-4 w-full items-center">
+              {/* Left Column - Description */}
+              <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
+                <div className="flex flex-col items-start">
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
+                    {renderTypedCoursesTitle()}
+                  </h3>
+                  <p className="text-lg text-white mb-6 max-w-2xl text-left" style={{ lineHeight: '1.425' }}>
+                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
+                  </p>
+                  <img
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-27%20at%2019.08.45.png"
+                    alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
+                    className="rounded-lg"
+                    style={{ width: '70%' }}
+                    loading="lazy"
+                    width="1400"
+                    height="900"
+                  />
+                </div>
+              </div>
+
+              {/* Right Column - Swipeable 2x2 Course Grid */}
+              <div className="relative" style={{ marginLeft: '-50px', width: 'calc(100% + 50px)', overflow: 'visible' }}>
+                <div
+                  ref={courseCardsScrollRef}
+                  className="overflow-x-auto overflow-y-visible"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    WebkitOverflowScrolling: 'touch',
+                    scrollSnapType: 'x mandatory',
+                    paddingLeft: '10px', paddingRight: '310px', paddingTop: '10px', paddingBottom: '10px'
+                  }}
+                >
+                  <style>{`
+                    .overflow-x-auto::-webkit-scrollbar {
+                      display: none;
+                    }
+                  `}</style>
+                  <div className="flex gap-3" style={{ paddingLeft: '0px', marginRight: '300px' }}>
+                  {courses.length > 0 ? (() => {
+                    const pages = [];
+                    for (let i = 0; i < courses.length; i += 4) {
+                      pages.push(courses.slice(i, i + 4));
+                    }
+                    return pages.map((pageCourses, pageIndex) => (
+                      <div 
+                        key={`page-${pageIndex}`}
+                        className="grid grid-cols-2 gap-3 flex-shrink-0"
+                        style={{ 
+          width: '510px', minWidth: '510px', maxWidth: '510px'
+                        }}
+                      >
+                        {pageCourses.map((course, localIndex) => {
+                    const globalIndex = pageIndex * 4 + localIndex;
+                    const isBlurred = blurredCards.includes(globalIndex);
+                    return (
                       <div
                         key={course.name}
                         data-course-card
-                        style={{ position: 'relative', width: '249px', height: '249px', scrollSnapAlign: 'start' }}
+                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-visible aspect-square relative cursor-pointer"
+                        style={{ padding: '0px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, width: '249px', height: '249px', backfaceVisibility: 'hidden', contain: 'layout style paint' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         onClick={() => setSelectedCourseModal(course.name)}
-                      >
-                        {/* Inner scalable card */}
-                        <div
-                          className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-visible aspect-square cursor-pointer"
-                          style={{ position: 'absolute', inset: 0, padding: '0px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', contain: 'layout style paint' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
-                        >
                       >
                         <div className="flex flex-col h-full" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
@@ -1307,17 +1685,1210 @@ const Auth = () => {
                       }}
                     >
                       {[...Array(4)].map((_, i) => (
-                      {/* Fixed outer container */}
-                      <div
-                        key={course.name}
-                        data-course-card
-                        style={{ position: 'relative', width: '249px', height: '249px', scrollSnapAlign: 'start' }}
-                        onClick={() => setSelectedCourseModal(course.name)}
-                      >
-                        {/* Inner scalable card */}
                         <div
-                          className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-visible aspect-square cursor-pointer"
-                          style={{ position: 'absolute', inset: 0, padding: '0px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', contain: 'layout style paint' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
+                          key={i}
+                          className="bg-white/10 rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
+                          style={{ padding: '16px' }}
                         >
+                          <div className="h-6 bg-white/20 rounded w-3/4 mb-2"></div>
+                          <div className="h-4 bg-white/20 rounded w-full mb-1"></div>
+                          <div className="h-4 bg-white/20 rounded w-5/6 mb-1"></div>
+                          <div className="h-4 bg-white/20 rounded w-4/5 mb-3"></div>
+                          <div className="h-3 bg-white/20 rounded w-1/2 mb-2"></div>
+                          <div className="space-y-1">
+                            <div className="h-3 bg-white/20 rounded w-full"></div>
+                            <div className="h-3 bg-white/20 rounded w-11/12"></div>
+                            <div className="h-3 bg-white/20 rounded w-full"></div>
+                          </div>
+                        </div>
+                      ))}
+                                              </div>
+                  )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Scroll Down Arrow - Absolutely positioned */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+            <button
+              onClick={scrollToLearningModel}
+              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to learning model"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+            </button>
+          </div>
+        </div>
+
+      {/* Fourth Section - Learning Model */}
+        <div
+          ref={learningModelSectionRef}
+          className="min-h-screen flex items-center justify-center px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-4xl mx-auto text-white text-left">
+            {/* Learning Model Section */}
+            <div className="px-4">
+              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0.5rem', marginTop: '2rem' }}>
+                {renderTypedLearningTagline()}
+              </h3>
+
+              <div className="grid grid-cols-2 gap-3 items-center">
+                {/* Left Column - Feature Cards */}
+                <div className="space-y-3 flex-shrink-0">
+                  {/* Card 1 - AI smarts */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(0);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded cursor-pointer ${
+                      activeCard === 0
+                        ? 'shadow-xl'
+                        : ''
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 0 ? '10rem' : '5rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
+                    }}
+                  >
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
+                      Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
+                    </h4>
+                    {activeCard === 0 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Card 2 - Personalised support */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(1);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded cursor-pointer ${
+                      activeCard === 1
+                        ? 'shadow-xl'
+                        : ''
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 1 ? '10rem' : '5rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
+                    }}
+                  >
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
+                      Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
+                    </h4>
+                    {activeCard === 1 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Card 3 - Community */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(2);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded cursor-pointer ${
+                      activeCard === 2
+                        ? 'shadow-xl'
+                        : ''
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 2 ? '10rem' : '5rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
+                    }}
+                  >
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
+                      Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
+                    </h4>
+                    {activeCard === 2 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Card 4 - Get certified */}
+                  <div
+                    onClick={() => {
+                      setActiveCard(3);
+                      setIsCardManuallySelected(true);
+                    }}
+                    className={`rounded cursor-pointer ${
+                      activeCard === 3
+                        ? 'shadow-xl'
+                        : ''
+                    }`}
+                    style={{
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: activeCard === 3 ? '10rem' : '5rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
+                    }}
+                  >
+                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
+                      Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                    </h4>
+                    {activeCard === 3 && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: '0.2rem',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Column - Dynamic Content */}
+                <div className="flex items-center justify-center">
+                  <div className="rounded transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', width: '32.2rem' }}>
+                  </div>
+                </div>
+              </div>
+
+            {/* Scroll Down Arrow */}
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={scrollToTestimonials}
+                className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+                style={{
+                  animation: 'subtleBounce 2s infinite',
+                  padding: '11px'
+                }}
+                aria-label="Scroll to testimonials"
+              >
+                <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+              </button>
+            </div>
+            </div>
+          </div>
+
+
+        </div>
+
+      {/* Fifth Section - Merged Testimonials & Use Cases */}
+        <div
+          ref={testimonialsSectionRef}
+          className="min-h-screen flex items-center justify-center px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="w-full text-white text-left">
+            {/* Title Container */}
+            <div className="max-w-4xl mx-auto px-4">
+              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
+                {renderTypedTestimonialsHeading()}
+              </h3>
+            </div>
+
+            {/* Testimonials and Cards Container */}
+            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="mx-auto">
+              <div className="grid grid-cols-2 gap-12 items-start">
+                {/* Left Column - Testimonials Slider */}
+                <div className="flex flex-col justify-center"
+                  onMouseEnter={() => setIsTestimonialHovered(true)}
+                  onMouseLeave={() => setIsTestimonialHovered(false)}>
+                  <div className="relative">
+                    {[
+                      {
+                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
+                        name: "Amelia Chen",
+                        role: "Junior Designer",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
+                      },
+                      {
+                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
+                        name: "Sarah Matthews",
+                        role: "Product Marketing Manager",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
+                      },
+                      {
+                        quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
+                        name: "James Patel",
+                        role: "University Student",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
+                      },
+                      {
+                        quote: "Taking a career break left me feeling out of touch. Following the course and using the neat AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
+                        name: "Rebecca Thompson",
+                        role: "Former Teacher",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
+                      },
+                      {
+                        quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
+                        name: "David Morrison",
+                        role: "Sr Product Manager",
+                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
+                      }
+                    ].map((testimonial, idx) => (
+                      <div
+                        key={idx}
+                        className="bg-white p-6 rounded flex items-center justify-center"
+                        style={{
+                          position: idx === 0 ? 'relative' : 'absolute',
+                          top: idx === 0 ? 'auto' : 0,
+                          left: idx === 0 ? 'auto' : 0,
+                          right: idx === 0 ? 'auto' : 0,
+                          opacity: currentTestimonialIndex === idx ? 1 : 0,
+                          pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
+                          transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          width: '576px',
+                          height: '324.8px',
+                          overflow: 'visible'
+                        }}
+                      >
+                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '10px' }}>
+                          <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
+                            <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
+                          </p>
+                        </div>
+                        {/* Avatar positioned on bottom edge */}
+                        <div
+                          className="w-24 h-24 rounded flex-shrink-0"
+                          style={{
+                            position: 'absolute',
+                            bottom: '-40px',
+                            left: '44px',
+                            backgroundImage: `url(${testimonial.avatar})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                          }}
+                        ></div>
+                        {/* Name and role positioned at bottom edge */}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            bottom: '12px',
+                            left: '155px',
+                            lineHeight: '1.2'
+                          }}
+                        >
+                          <div className="font-semibold text-black">{testimonial.name}</div>
+                          <div className="text-sm text-gray-600">{testimonial.role}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Carousel Indicators */}
+                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem', marginLeft: '20px' }}>
+                    {[0, 1, 2, 3, 4].map((idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentTestimonialIndex(idx)}
+                        className={`transition-all duration-300 ${
+                          currentTestimonialIndex === idx
+                            ? 'bg-[#EF0B72]'
+                            : 'bg-white hover:bg-gray-300'
+                        }`}
+                        style={{
+                          width: currentTestimonialIndex === idx ? '32px' : '10px',
+                          height: '10px',
+                          borderRadius: '2px'
+                        }}
+                        aria-label={`Go to testimonial ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+
+                {/* Right Column - 2x2 Grid of Cards */}
+                <div className="flex items-center justify-center">
+                  <div className="relative" style={{ width: '21.35rem', height: '20.3rem' }}>
+                    {[
+                      {
+                        title: 'Recent Graduates',
+                        description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.',
+                        position: { top: '0', left: '0' }
+                      },
+                      {
+                        title: 'Career Break Returners',
+                        description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
+                        position: { top: '0', left: '11.05rem' }
+                      },
+                      {
+                        title: 'Upskilling in Role',
+                        description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
+                        position: { top: '10.525rem', left: '0' }
+                      },
+                      {
+                        title: 'Pivotting Careers',
+                        description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
+                        position: { top: '10.525rem', left: '11.05rem' }
+                      }
+                    ].map((card, idx) => (
+                      <div
+                        key={idx}
+                        onMouseEnter={() => {
+                          setHoveredUseCase(idx);
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredUseCase(null);
+                        }}
+                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                        style={{
+                          height: '9.775rem',
+                          width: '10.3rem',
+                          top: card.position.top,
+                          left: card.position.left,
+                          zIndex: 1,
+                          padding: '1.5rem',
+                          opacity: hoveredUseCase !== null ? 0 : 1,
+                          transition: 'opacity 300ms ease-in-out',
+                          pointerEvents: 'auto'
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center text-center">
+                          <h4 className="font-semibold leading-tight text-lg" style={{
+                            color: '#7714E0'
+                          }}>
+                            {card.title === 'Career Break Returners' ? (
+                              <>Career Break<br />Returners</>
+                            ) : card.title === 'Upskilling in Role' ? (
+                              <>Upskilling<br />in Role</>
+                            ) : card.title}
+                          </h4>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Single overlay card that covers entire grid */}
+                    <div
+                      onMouseEnter={() => {
+                        if (hoveredUseCase !== null) {
+                          setHoveredUseCase(hoveredUseCase);
+                        }
+                      }}
+                      onMouseLeave={() => {
+                        setHoveredUseCase(null);
+                      }}
+                      className="absolute rounded flex items-center justify-center bg-white"
+                      style={{
+                        top: 0,
+                        left: 0,
+                        width: '21.35rem',
+                        height: '20.3rem',
+                        zIndex: 10,
+                        padding: '2rem',
+                        opacity: hoveredUseCase !== null ? 1 : 0,
+                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
+                        transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
+                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
+                      }}
+                    >
+                      <div className="flex flex-col items-center justify-center text-center" style={{
+                        animation: hoveredUseCase !== null ? 'fadeIn 400ms ease-in forwards' : 'none',
+                        animationDelay: '100ms',
+                        opacity: 0
+                      }}>
+                        <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                          color: '#7714E0'
+                        }}>
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].title : ''}
+                        </h4>
+                        <p className="text-black text-base leading-relaxed">
+                          {hoveredUseCase !== null ? [
+                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                          ][hoveredUseCase].description : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center mt-12">
+                <button
+                  onClick={() => {
+                    linkedInFAQSectionRef.current?.scrollIntoView({
+                      behavior: 'smooth',
+                      block: 'start'
+                    });
+                  }}
+                  className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+                  style={{
+                    animation: 'subtleBounce 2s infinite',
+                    padding: '11px'
+                  }}
+                  aria-label="Scroll to LinkedIn and FAQs"
+                >
+                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+      {/* Sixth Section - LinkedIn & FAQs */}
+        <div
+          ref={linkedInFAQSectionRef}
+          className="min-h-screen flex items-center justify-center px-8"
+          style={{
+            background: 'black',
+            scrollSnapAlign: 'start'
+          }}
+        >
+          <div className="max-w-7xl w-full text-white">
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
+              {/* Left Column - LinkedIn Posts */}
+              <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
+                <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedLinkedInHeading}</h3>
+                </div>
+
+                {linkedInLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                    <p className="text-gray-400 mt-4">Loading posts...</p>
+                  </div>
+                ) : linkedInPosts.length > 0 ? (
+                  <div className="flex flex-col items-start justify-center">
+                    {/* Single Post Display */}
+                    <div
+                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                      style={{
+                        aspectRatio: '1 / 1',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        opacity: 1,
+                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
+                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
+                      }}
+                    >
+                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
+                        {linkedInPosts[currentLinkedInPost]?.text}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <div className="flex gap-4">
+                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
+                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
+                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Carousel Indicators with Arrows */}
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      {/* Left Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Previous post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Dot Indicators */}
+                      <div className="flex justify-center gap-2">
+                        {linkedInPosts.map((_, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentLinkedInPost(idx)}
+                            className={`transition-all duration-300 ${
+                              currentLinkedInPost === idx
+                                ? 'bg-[#EF0B72]'
+                                : 'bg-white hover:bg-gray-300'
+                            }`}
+                            style={{
+                              width: currentLinkedInPost === idx ? '32px' : '10px',
+                              height: '10px',
+                              borderRadius: '2px'
+                            }}
+                            aria-label={`Go to post ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Right Arrow */}
+                      <button
+                        onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
+                        className="bg-white hover:bg-white transition flex-shrink-0 group"
+                        style={{ borderRadius: '4px', padding: '6px' }}
+                        aria-label="Next post"
+                      >
+                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Right Column - FAQs */}
+              <div>
+                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)', width: '85%', margin: '0 auto' }}>
+                  <h3 className="font-bold text-white mb-2 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
+                </div>
+
+                <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
+                {[
+                  {
+                    question: 'What is Ignite?',
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
+                  },
+                  {
+                    question: 'Who is Ignite for?',
+                    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
+                  },
+                  {
+                    question: 'How much does Ignite cost?',
+                    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
+                  },
+                  {
+                    question: 'What can I learn on Ignite?',
+                    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
+                  },
+                  {
+                    question: 'Can I learn at my own pace?',
+                    answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
+                  },
+                  {
+                    question: 'What makes Ignite different?',
+                    answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
+                  }
+                ].map((faq, idx) => (
+                  <div
+                    key={idx}
+                    className="rounded cursor-pointer"
+                    style={{
+                      backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
+                      overflow: 'hidden',
+                      paddingTop: '1rem',
+                      paddingRight: '1rem',
+                      paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
+                      paddingLeft: '1.2rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      opacity: 1
+                    }}
+                    onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
+                  >
+                    <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
+                      {faq.question}
+                    </h4>
+                    {expandedFAQ === idx && (
+                      <p className="text-black text-sm" style={{
+                        marginTop: 'calc(0.1rem + 2px)',
+                        paddingBottom: '3px',
+                        animation: 'fadeIn 200ms ease-in forwards',
+                        animationDelay: '300ms',
+                        opacity: 0
+                      }}>
+                        {faq.answer}
+                      </p>
+                    )}
+                  </div>
+                ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Get Started Button */}
+            <div className="flex justify-center px-4 pb-8" style={{ paddingTop: '0px' }}>
+              <button
+                onClick={() => {
+                  if (authScrollContainerRef.current) {
+                    authScrollContainerRef.current.scrollTo({
+                      top: 0,
+                      behavior: 'smooth'
+                    });
+                  }
+                }}
+                className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
+                style={{ fontSize: '15px' }}
+              >
+                Get Started
+              </button>
+            </div>
+
+            {/* Footer Links */}
+            <div className="flex justify-center gap-8 px-4 pb-12">
+              <a
+                href="mailto:hello@ignite.education"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Contact
+              </a>
+              <a
+                href="https://www.linkedin.com/school/ignite-courses/jobs/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Careers
+              </a>
+              <a
+                href="https://www.linkedin.com/school/ignite-courses/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                LinkedIn
+              </a>
+              <a
+                href="/privacy"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Policy
+              </a>
+              <a
+                href="/terms"
+                className="text-white hover:text-pink-500 transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Terms
+              </a>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    {/* Password Reset Modal */}
+    {showResetPassword && (
+      <div
+        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+        }}
+        onClick={() => {
+          setShowResetPassword(false);
+          setResetSuccess(false);
+          setError('');
+        }}
+      >
+        <div className="relative">
+          <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+            Reset Password
+          </h2>
+
+          <div
+            className="bg-white relative"
+            style={{
+              width: '450px',
+              maxWidth: '90vw',
+              animation: 'scaleUp 0.2s ease-out',
+              padding: '2rem'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setShowResetPassword(false);
+                setResetSuccess(false);
+                setError('');
+              }}
+              className="absolute top-4 right-4 text-gray-600 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+
+            {!resetSuccess ? (
+              <>
+                <p className="text-gray-700 mb-4 text-sm">
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
+
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                <form onSubmit={handleResetPassword}>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1 text-black">Email</label>
+                    <input
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                      className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                </form>
+              </>
+            ) : (
+              <div className="text-center py-4">
+                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-black mb-2">Check Your Email</h3>
+                <p className="text-gray-700 text-sm mb-4">
+                  We've sent a password reset link to <strong>{resetEmail}</strong>
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {/* Course Details Modal */}
+    {selectedCourse && (
+      <div
+        className="fixed inset-0 flex items-center justify-center backdrop-blur-sm animate-fadeIn"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+          zIndex: 9999,
+        }}
+        onClick={() => setSelectedCourseModal(null)}
+      >
+        <div className="relative">
+          <>
+            {/* Title above the box */}
+            <h2 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
+              {selectedCourse.title}
+            </h2>
+
+          <div
+            className="bg-white relative flex flex-col animate-scaleUp"
+            style={{
+              width: '720px',
+              height: '70vh',
+              borderRadius: '6px'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedCourseModal(null)}
+              className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Scrollable Content */}
+            <div
+              className="flex-1 overflow-y-auto px-8"
+              style={{ scrollbarWidth: 'none', paddingTop: '25.6px', paddingBottom: '20px' }}
+            >
+              <div>
+                {selectedCourse.status === 'requested' && (
+                  <div className="mb-6">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded text-sm font-medium">Requested</span>
+                  </div>
+                )}
+
+                {/* Full description */}
+                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
+                  {(() => {
+                    const description = selectedCourse.description || '';
+                    const firstSentenceEnd = description.indexOf('. ');
+                    if (firstSentenceEnd !== -1) {
+                      const firstSentence = description.substring(0, firstSentenceEnd + 1);
+                      const restOfDescription = description.substring(firstSentenceEnd + 1).trim();
+                      // Highlight "leading products from concept to launch" in pink
+                      const pinkPhrase = 'leading products from concept to launch';
+                      const pinkIndex = firstSentence.toLowerCase().indexOf(pinkPhrase);
+
+                      if (pinkIndex !== -1) {
+                        const before = firstSentence.substring(0, pinkIndex);
+                        const pink = firstSentence.substring(pinkIndex, pinkIndex + pinkPhrase.length);
+                        const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
+
+                        return (
+                          <>
+                            <span style={{ fontWeight: 600, fontSize: '20px' }}>
+                              {before}
+                              <span style={{ color: '#EF0B72' }}>{pink}</span>
+                              {after}
+                            </span>
+                            {restOfDescription && (
+                              <span style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                            )}
+                          </>
+                        );
+                      }
+
+                      return (
+                        <>
+                          <span style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
+                          {restOfDescription && (
+                            <span style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                          )}
+                        </>
+                      );
+                    }
+                    return <span style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
+                  })()}
+                </div>
+
+                {/* Course Benefits - Single Row Layout */}
+                <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-7.2px', marginBottom: '19.2px' }}>
+                  <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full">
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Certificate upon<br/>completion</span>
+                    </div>
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Taught by industry<br/>expert instructors</span>
+                    </div>
+                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
+                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
+                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                        </svg>
+                      </div>
+                      <span className="leading-tight">Self-paced<br/>learning</span>
+                    </div>
+                  </div>
+                </div>
+
+
+                {/* Curriculum Section */}
+                {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
+                  <div className="mb-6" style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', paddingTop: '1.6rem', paddingRight: '2rem', paddingBottom: '2rem', paddingLeft: '2rem' }}>
+                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.3rem' }}>
+                      Curriculum
+                    </h3>
+                    <div className="space-y-6">
+                      {selectedCourse.module_structure.map((module, moduleIndex) => (
+                        <div key={moduleIndex}>
+                          {/* Module Title */}
+                          <h4 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0' }}>
+                            Module {moduleIndex + 1} - {module.name}
+                          </h4>
+
+                          {/* Module Description and Lessons */}
+                          <div>
+                            {/* AI-Generated Module Intro */}
+                            <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
+                              {generateModuleIntro(module)}
+                            </p>
+
+                            {/* Lesson List */}
+                            <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
+                              {(module.lessons || []).map((lesson, lessonIndex) => (
+                                <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                                  <span className="text-gray-900" style={{ fontSize: '0.5em' }}>■</span>
+                                  <span className="font-medium text-gray-900">{lesson.name}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  /* Fallback for courses without module_structure */
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-3 text-gray-900">Course Structure</h3>
+                    <div className="space-y-2">
+                      <p className="text-gray-700">
+                        <strong>
+                          {selectedCourse.modules && selectedCourse.modules.toLowerCase() === 'multiple'
+                            ? 'Multiple comprehensive modules'
+                            : `${selectedCourse.modules} comprehensive module${selectedCourse.modules !== '1' ? 's' : ''}`}
+                        </strong>
+                      </p>
+                      {selectedCourse.lessons > 0 && (
+                        <p className="text-gray-700">{selectedCourse.lessons} lessons</p>
+                      )}
+                      {selectedCourse.duration && (
+                        <p className="text-gray-700">Duration: {selectedCourse.duration}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Course Quote Section - Only for live courses */}
+                {selectedCourse.status === 'live' && (
+                  <div className="mb-6 p-6 rounded-lg" style={{ backgroundColor: '#F0F0F2' }}>
+                    <p className="text-black text-lg font-medium">
+                      "The Product Manager course was great! For someone new to the PM world, this is a great introduction and allowed me to connect with the community"
+                    </p>
+                  </div>
+                )}
+
+                {/* Course Coaches Section - Always rendered with min-height to prevent layout shift */}
+                <div className="mb-6" style={{ minHeight: selectedCourseCoaches.length > 0 ? 'auto' : '0' }}>
+                  {selectedCourseCoaches.length > 0 && (
+                    <>
+                      <h3 className="font-semibold text-gray-900 mb-3" style={{ fontSize: '22px' }}>
+                        Course Leaders
+                      </h3>
+                      <div className="flex flex-col gap-4">
+                        {selectedCourseCoaches.map((coach, index) => (
+                          <div key={index} className="flex gap-4 items-start">
+                            {coach.linkedin_url ? (
+                              <a
+                                href={coach.linkedin_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex gap-4 items-start flex-1 group"
+                              >
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                      {coach.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </a>
+                            ) : (
+                              <div className="flex gap-4 items-start flex-1">
+                                {coach.image_url ? (
+                                  <img
+                                    src={coach.image_url}
+                                    alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
+                                    className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                    loading="lazy"
+                                    width="64"
+                                    height="64"
+                                    onError={(e) => {
+                                      e.target.src = '';
+                                      e.target.style.display = 'none';
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                                    {coach.name}
+                                  </h4>
+                                  {coach.position && (
+                                    <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                      {coach.position}
+                                    </p>
+                                  )}
+                                  {coach.description && (
+                                    <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                      {coach.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Get Started Button */}
+                <div className="mt-6">
+                  <button
+                onClick={async () => {
+                  if (selectedCourse.status === 'live' && user) {
+                    try {
+                      console.log('📝 Enrolling in course:', {
+                        courseId: selectedCourse.id,
+                        courseName: selectedCourse.name,
+                        courseTitle: selectedCourse.title,
+                        userId: user.id
+                      });
+
+                      // Verify the course has lesson data
+                      const { data: lessonCheck, error: lessonError } = await supabase
+                        .from('lessons')
+                        .select('id')
+                        .eq('course_id', selectedCourse.name)
+                        .limit(1);
+
+                      if (lessonError) {
+                        console.error('Error checking lessons:', lessonError);
+                      }
+
+                      if (!lessonCheck || lessonCheck.length === 0) {
+                        console.warn('⚠️ No lessons found for course:', selectedCourse.name);
+                        console.log('Checking if module_structure exists...');
+
+                        // Check if the course has module_structure data
+                        if (!selectedCourse.module_structure || selectedCourse.module_structure.length === 0) {
+                          alert(`This course doesn't have lesson content yet. Please contact support.`);
+                          setSelectedCourseModal(null);
+                          return;
+                        }
+                      }
+
+                      // Enroll user in the course
+                      const { error } = await supabase
+                        .from('users')
+                        .update({ enrolled_course: selectedCourse.name })
+                        .eq('id', user.id);
+
+                      if (error) throw error;
+
+                      console.log('✅ User enrolled in course:', selectedCourse.name);
+
+                      // Navigate to progress hub
+                      window.location.href = '/progress';
+                    } catch (error) {
+                      console.error('Error enrolling in course:', error);
+                      alert('Failed to enroll in course. Please try again.');
+                    }
+                  } else {
+                    // Close modal first
+                    setSelectedCourseModal(null);
+                    // Set to sign-up mode
+                    setIsLogin(false);
+                    // Wait for modal close animation, then scroll to top
+                    setTimeout(() => {
+                      if (authScrollContainerRef.current) {
+                        authScrollContainerRef.current.scrollTo({
+                          top: 0,
+                          behavior: 'smooth'
+                        });
+                      }
+                    }, 300);
+                  }
+                }}
+                className="w-full font-semibold py-3 rounded-lg transition bg-[#EF0B72] text-white hover:bg-[#D50A65]"
+              >
+                Get Started
+              </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </>
+        </div>
+      </div>
+    )}
+    </>
+  );
+};
+
+export default Auth;
