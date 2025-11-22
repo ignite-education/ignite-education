@@ -1625,19 +1625,23 @@ const Auth = () => {
           width: '510px', minWidth: '510px', maxWidth: '510px'
                         }}
                       >
-                        {pageCourses.map((course, localIndex) => {
+{pageCourses.map((course, localIndex) => {
                     const globalIndex = pageIndex * 4 + localIndex;
                     const isBlurred = blurredCards.includes(globalIndex);
                     return (
                       <div
                         key={course.name}
                         data-course-card
-                        className="bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-visible aspect-square relative cursor-pointer"
-                        style={{ padding: '0px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out, transform 100ms ease-in-out', scrollSnapAlign: 'start', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, width: '249px', height: '249px', backfaceVisibility: 'hidden', contain: 'layout style paint' }}
-                        onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
+                        className="relative cursor-pointer flex-shrink-0"
+                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out', contain: 'layout' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
+                        <div
+                          className="absolute inset-0 bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl overflow-hidden aspect-square cursor-pointer"
+                          style={{ transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
+                        >
                         <div className="flex flex-col h-full" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
@@ -1671,10 +1675,11 @@ const Auth = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                           </svg>
                         </div>
+                        </div>
                       </div>
                     );
                         })}
-                      </div>
+
                     ));
                   })() : (
                     // Skeleton cards while loading
