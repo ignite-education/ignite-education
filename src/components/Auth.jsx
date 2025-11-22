@@ -2672,7 +2672,7 @@ const Auth = () => {
                           }}>
 
                           {/* AI-Generated Module Intro */}
-                          <p className="text-gray-900 mb-3" style={{ fontSize: '14px' }}>
+                          <p className="text-gray-900 mb-3" style={{ fontSize: '16px' }}>
                             {generateModuleIntro(module)}
                           </p>
 
