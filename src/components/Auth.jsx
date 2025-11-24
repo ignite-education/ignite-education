@@ -1922,6 +1922,23 @@ const Auth = () => {
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center">
                   <div className="rounded transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', width: '32.2rem' }}>
+                    {activeCard === 2 && (
+                      <video
+                        autoPlay
+                        muted
+                        loop
+                        controls
+                        className="w-full h-full rounded object-cover"
+                        style={{
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}
+                      >
+                        <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-24%20at%2017.59.52.mov" type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
                   </div>
                 </div>
               </div>
