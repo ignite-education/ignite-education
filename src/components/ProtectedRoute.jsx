@@ -5,6 +5,11 @@ import { supabase } from '../lib/supabase';
 import Onboarding from './Onboarding';
 import LoadingScreen from './LoadingScreen';
 
+const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const DB_TIMEOUT = 10000; // 10 seconds (increased from 5s)
+const MAX_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
+
 const ProtectedRoute = ({ children }) => {
   const { user, firstName, isInitialized } = useAuth();
   const [onboardingLoading, setOnboardingLoading] = useState(false);
@@ -20,81 +25,157 @@ const ProtectedRoute = ({ children }) => {
 
       setOnboardingLoading(true);
 
+      // Check session storage cache first
       try {
-        // Create a timeout promise (reduced from 8s to 5s for faster response)
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Onboarding check timed out')), 5000);
-        });
+        const cached = sessionStorage.getItem(ONBOARDING_CACHE_KEY);
+        if (cached) {
+          const { userId, needsOnboarding: cachedNeedsOnboarding, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
 
-        // Check if user has completed onboarding with timeout
-        const onboardingPromise = supabase
-          .from('users')
-          .select('onboarding_completed, enrolled_course, seniority_level')
-          .eq('id', user.id)
-          .maybeSingle();
+          // Use cache if it's for the current user and not expired
+          if (userId === user.id && age < CACHE_DURATION) {
+            console.log('[ProtectedRoute] Using cached onboarding status:', { needsOnboarding: cachedNeedsOnboarding, ageSeconds: Math.floor(age / 1000) });
+            setNeedsOnboarding(cachedNeedsOnboarding);
+            setOnboardingLoading(false);
+            return;
+          } else {
+            console.log('[ProtectedRoute] Cache expired or user mismatch, fetching fresh data');
+            sessionStorage.removeItem(ONBOARDING_CACHE_KEY);
+          }
+        }
+      } catch (cacheError) {
+        console.warn('[ProtectedRoute] Error reading cache:', cacheError);
+        // Continue to database check
+      }
 
-        const { data, error } = await Promise.race([onboardingPromise, timeoutPromise]);
-
-        console.log('Onboarding check:', { data, error, userId: user.id });
-
-        if (error) {
-          console.error('Error checking onboarding:', error);
-          // If there's a real database error (not just missing record), assume they need onboarding
-          setNeedsOnboarding(true);
-        } else if (data) {
-          // User record exists - check if onboarding is completed
-          const completed = data.onboarding_completed === true;
-          const hasEnrolledCourse = Boolean(data.enrolled_course);
-
-          console.log('Onboarding status:', {
-            completed,
-            hasEnrolledCourse,
-            enrolledCourse: data.enrolled_course,
-            seniorityLevel: data.seniority_level
-          });
-
-          // Only show onboarding if BOTH conditions are true:
-          // 1. onboarding_completed is not true AND
-          // 2. user doesn't have an enrolled course
-          // This handles OAuth linking - if user already has a course, skip onboarding
-          setNeedsOnboarding(!completed && !hasEnrolledCourse);
-        } else {
-          // No user record found - this is a new user who needs onboarding
-          console.log('No user record found, creating one and showing onboarding');
-
-          // Try to create the user record from OAuth metadata
-          const metadata = user.user_metadata || {};
-          const firstName = metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '';
-          const lastName = metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '';
-
-          try {
-            await supabase.from('users').insert({
-              id: user.id,
-              first_name: firstName,
-              last_name: lastName,
-              onboarding_completed: false,
-              role: 'student'
-            });
-          } catch (insertError) {
-            // Ignore duplicate key errors (user might have been created by trigger)
-            if (!insertError.message?.includes('duplicate key')) {
-              console.error('Error creating user record:', insertError);
-            }
+      // Retry logic wrapper
+      let lastError = null;
+      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`[ProtectedRoute] Retry attempt ${attempt} of ${MAX_RETRIES}`);
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
 
+          // Create a timeout promise
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Onboarding check timed out')), DB_TIMEOUT);
+          });
+
+          // Check if user has completed onboarding with timeout
+          const onboardingPromise = supabase
+            .from('users')
+            .select('onboarding_completed, enrolled_course, seniority_level')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          const { data, error } = await Promise.race([onboardingPromise, timeoutPromise]);
+
+          console.log('[ProtectedRoute] Onboarding check result:', {
+            data,
+            error,
+            userId: user.id,
+            attempt: attempt + 1
+          });
+
+          if (error) {
+            console.error(`[ProtectedRoute] Database error on attempt ${attempt + 1}:`, error);
+            lastError = error;
+            // Try again unless it's the last attempt
+            if (attempt < MAX_RETRIES) {
+              continue;
+            }
+            // On last attempt with error, assume they need onboarding (safe fallback)
+            setNeedsOnboarding(true);
+            cacheOnboardingStatus(user.id, true);
+          } else if (data) {
+            // User record exists - check if onboarding is completed
+            const completed = data.onboarding_completed === true;
+            const hasEnrolledCourse = Boolean(data.enrolled_course);
+
+            console.log('[ProtectedRoute] Onboarding status:', {
+              completed,
+              hasEnrolledCourse,
+              enrolledCourse: data.enrolled_course,
+              seniorityLevel: data.seniority_level
+            });
+
+            // Only show onboarding if BOTH conditions are true:
+            // 1. onboarding_completed is not true AND
+            // 2. user doesn't have an enrolled course
+            // This handles OAuth linking - if user already has a course, skip onboarding
+            const needsOnboardingValue = !completed && !hasEnrolledCourse;
+            setNeedsOnboarding(needsOnboardingValue);
+            cacheOnboardingStatus(user.id, needsOnboardingValue);
+          } else {
+            // No user record found - this is a new user who needs onboarding
+            console.log('[ProtectedRoute] No user record found, creating one and showing onboarding');
+
+            // Try to create the user record from OAuth metadata
+            const metadata = user.user_metadata || {};
+            const firstName = metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '';
+            const lastName = metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '';
+
+            try {
+              await supabase.from('users').insert({
+                id: user.id,
+                first_name: firstName,
+                last_name: lastName,
+                onboarding_completed: false,
+                role: 'student'
+              });
+              console.log('[ProtectedRoute] Created new user record');
+            } catch (insertError) {
+              // Ignore duplicate key errors (user might have been created by trigger)
+              if (!insertError.message?.includes('duplicate key')) {
+                console.error('[ProtectedRoute] Error creating user record:', insertError);
+              }
+            }
+
+            setNeedsOnboarding(true);
+            cacheOnboardingStatus(user.id, true);
+          }
+
+          // Success! Break out of retry loop
+          break;
+        } catch (err) {
+          console.error(`[ProtectedRoute] Exception on attempt ${attempt + 1}:`, err);
+          lastError = err;
+
+          // Try again unless it's the last attempt
+          if (attempt < MAX_RETRIES) {
+            continue;
+          }
+
+          // On last attempt with exception, default to showing onboarding (safe fallback)
+          console.error('[ProtectedRoute] All retry attempts failed, defaulting to show onboarding');
           setNeedsOnboarding(true);
+          cacheOnboardingStatus(user.id, true);
         }
-      } catch (err) {
-        console.error('Exception checking onboarding:', err);
-        // On timeout or error, default to showing onboarding (safe fallback)
-        setNeedsOnboarding(true);
-      } finally {
-        setOnboardingLoading(false);
       }
+
+      setOnboardingLoading(false);
     };
 
     checkOnboarding();
   }, [user?.id]);
+
+  // Helper function to cache onboarding status
+  const cacheOnboardingStatus = (userId, needsOnboarding) => {
+    try {
+      const cacheData = {
+        userId,
+        needsOnboarding,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem(ONBOARDING_CACHE_KEY, JSON.stringify(cacheData));
+      console.log('[ProtectedRoute] Cached onboarding status:', cacheData);
+    } catch (cacheError) {
+      console.warn('[ProtectedRoute] Failed to cache onboarding status:', cacheError);
+      // Non-critical error, continue
+    }
+  };
 
   // Wait for auth to be initialized first
   if (!isInitialized || onboardingLoading) {

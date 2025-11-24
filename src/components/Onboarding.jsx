@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
+
+const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
 const Onboarding = ({ firstName, userId }) => {
   const [selectedCourse, setSelectedCourse] = useState('');
   const [courseStatus, setCourseStatus] = useState(''); // 'live', 'coming_soon', 'requested', or 'unrecognized'
@@ -16,6 +18,16 @@ const Onboarding = ({ firstName, userId }) => {
   const [courses, setCourses] = useState([]);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // Helper function to clear onboarding cache
+  const clearOnboardingCache = () => {
+    try {
+      sessionStorage.removeItem(ONBOARDING_CACHE_KEY);
+      console.log('[Onboarding] Cleared onboarding cache');
+    } catch (error) {
+      console.warn('[Onboarding] Failed to clear cache:', error);
+    }
+  };
 
   // Typing animation effect for the name
   useEffect(() => {
@@ -170,6 +182,9 @@ const Onboarding = ({ firstName, userId }) => {
 
         console.log('Redirecting to progress hub');
         // Force a full page reload to ensure ProtectedRoute re-checks
+        // Clear the onboarding cache before redirecting
+        clearOnboardingCache();
+
         window.location.href = '/';
       } catch (error) {
         console.error('Error updating user:', error);
