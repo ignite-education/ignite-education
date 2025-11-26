@@ -68,6 +68,12 @@ const Auth = () => {
   const authScrollContainerRef = useRef(null);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
+
+  // Debug: Check environment variable on mount
+  useEffect(() => {
+    console.log('[LinkedIn] Component mounted');
+    console.log('[LinkedIn] Environment variable VITE_SOCIABLEKIT_FEED_URL:', import.meta.env.VITE_SOCIABLEKIT_FEED_URL);
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -2393,7 +2399,7 @@ const Auth = () => {
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today's competitive job market.'
                   },
                   {
                     question: 'Who is Ignite for?',
