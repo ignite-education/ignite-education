@@ -2399,7 +2399,7 @@ const Auth = () => {
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today's competitive job market.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
                   },
                   {
                     question: 'Who is Ignite for?',
