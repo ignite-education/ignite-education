@@ -2322,11 +2322,11 @@ const Auth = () => {
                       }}
                     >
                       {linkedInPosts[currentLinkedInPost]?.image && (
-                        <div className="w-full" style={{ height: '40%', overflow: 'hidden' }}>
+                        <div className="w-full bg-gray-100" style={{ height: '40%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <img
                             src={linkedInPosts[currentLinkedInPost].image}
                             alt="LinkedIn post"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       )}
