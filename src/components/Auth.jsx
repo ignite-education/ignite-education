@@ -1304,7 +1304,7 @@ const Auth = () => {
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-5 py-4"
+          className="bg-white text-black px-5 py-4 rounded"
           style={{
             animation: 'scaleUp 0.2s ease-out'
           }}
