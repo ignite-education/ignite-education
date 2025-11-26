@@ -60,7 +60,7 @@ const BlogCarousel = ({ limit = 5 }) => {
   };
 
   const handleCardClick = (post) => {
-    navigate(\`/blog/\${post.slug}\`);
+    navigate(`/blog/${post.slug}`);
   };
 
   if (loading) {
@@ -135,12 +135,12 @@ const BlogCarousel = ({ limit = 5 }) => {
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={\`h-2 rounded-full transition-all duration-300 \${
+              className={`h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
                   ? 'w-8 bg-[#EF0B72]'
                   : 'w-2 bg-white/30 hover:bg-white/50'
-              }\`}
-              aria-label={\`Go to post \${index + 1}\`}
+              }`}
+              aria-label={`Go to post ${index + 1}`}
             />
           ))}
         </div>

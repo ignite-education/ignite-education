@@ -15,7 +15,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
 
   const cardContent = (
     <div
-      className={\`bg-white/5 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 hover:border-[#EF0B72]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#EF0B72]/20 cursor-pointer h-full flex flex-col \${className}\`}
+      className={`bg-white/5 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 hover:border-[#EF0B72]/50 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-[#EF0B72]/20 cursor-pointer h-full flex flex-col ${className}`}
     >
       {featured_image && (
         <div className="w-full bg-gray-900" style={{ height: '200px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -81,7 +81,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
   }
 
   return (
-    <Link to={\`/blog/\${slug}\`} className="block h-full">
+    <Link to={`/blog/${slug}`} className="block h-full">
       {cardContent}
     </Link>
   );
