@@ -38,7 +38,7 @@ const BlogPostPage = () => {
     }
   };
 
-  // Typing animation for title
+  // Typing animation for title (75ms per character to match Auth page)
   useEffect(() => {
     if (!post) return;
 
@@ -53,7 +53,7 @@ const BlogPostPage = () => {
         clearInterval(typingInterval);
         setIsTypingComplete(true);
       }
-    }, 50);
+    }, 75);
 
     return () => clearInterval(typingInterval);
   }, [post]);
@@ -121,8 +121,8 @@ const BlogPostPage = () => {
         {/* Hero Section with Black Background */}
         <div className="bg-black">
           <div className="max-w-4xl mx-auto px-6 py-12">
-            {/* Breadcrumb Navigation */}
-            <nav className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-12">
+            {/* Breadcrumb Navigation - Left aligned */}
+            <nav className="flex items-center gap-2 text-sm text-gray-400 mb-12">
               <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center gap-1">
                 <Home className="w-4 h-4" />
                 <span>Home</span>
@@ -133,19 +133,19 @@ const BlogPostPage = () => {
               <span className="text-white truncate max-w-md">{post.title}</span>
             </nav>
 
-            {/* Title with typing animation */}
-            <h1 className="text-5xl font-bold text-white mb-6 leading-tight text-center">
+            {/* Title with typing animation - Left aligned */}
+            <h1 className="text-5xl font-bold text-white mb-6 leading-tight text-left">
               {typedTitle}
               {!isTypingComplete && <span className="animate-pulse">|</span>}
             </h1>
 
-            {/* Subtitle/Excerpt */}
-            <p className="text-xl text-gray-300 mb-6 leading-relaxed text-center max-w-3xl mx-auto">
+            {/* Subtitle/Excerpt - Left aligned */}
+            <p className="text-xl text-gray-300 mb-6 leading-relaxed text-left">
               {post.excerpt}
             </p>
 
-            {/* Meta Info: Date and Tag */}
-            <div className="flex items-center justify-center gap-4 mb-12">
+            {/* Meta Info: Date and Tag - Left aligned */}
+            <div className="flex items-center gap-4 mb-12">
               <time className="text-gray-400 text-sm">
                 {new Date(post.published_at).toLocaleDateString('en-GB', {
                   day: 'numeric',
@@ -197,15 +197,20 @@ const BlogPostPage = () => {
               >
                 <style>{`
                   .prose h2 {
-                    color: #111827;
-                    font-size: 2rem;
-                    font-weight: 700;
+                    background-color: black;
+                    color: white;
+                    font-size: 1.5rem;
+                    font-weight: 500;
+                    padding: 0.35rem 0.5rem;
+                    border-radius: 0.2rem;
+                    max-width: 750px;
+                    width: fit-content;
                     margin-top: 3rem;
                     margin-bottom: 1.5rem;
                   }
                   .prose h3 {
                     color: #111827;
-                    font-size: 1.5rem;
+                    font-size: 1.25rem;
                     font-weight: 600;
                     margin-top: 2.5rem;
                     margin-bottom: 1rem;
