@@ -1,8 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/pages/BlogManagement.jsx src/App.jsx)",
-      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nAdd direct image upload to blog management page\n\nNew Features:\n- Upload button to upload images directly to Supabase Storage\n- Images stored in ''assets/blog-images/'' bucket\n- Automatic unique filename generation with timestamp\n- File validation (image type, max 5MB)\n- Upload progress indicator\n- Image preview with remove button\n- Still supports pasting image URLs as alternative\n- All images get public URLs automatically\n\nTechnical implementation:\n- Uses Supabase Storage API for uploads\n- FileReader for client-side preview\n- File input hidden, triggered by custom button\n- Validates file type and size before upload\n- Generates unique filenames: timestamp-random.ext\n- Updates featured_image field with public URL\n\nAdmin can now upload images directly at /admin/blog instead of needing external hosting.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add migrations/ public/)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" status --short)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nAdd blog system components and migrations\n\nNew files:\n- BlogCard.jsx: Reusable blog post card component\n- BlogCarousel.jsx: Carousel for displaying blog posts\n- blogApi.js: API functions for blog operations\n- SEO.jsx: SEO meta tags component\n- Blog migration files and seed data\n\nUpdated files:\n- Auth.jsx: Integrated BlogCarousel to replace LinkedIn posts\n- Certificate.jsx: Updated with latest changes\n- KnowledgeCheck.jsx: Updated copy\n- ProtectedRoute.jsx: Latest version\n- CourseRedirect.jsx: Course landing page redirects\n\nThis commit adds all the supporting files for the blog system that were previously missing from the repository.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" log --oneline -6)"
     ],
     "deny": [],
     "ask": []
