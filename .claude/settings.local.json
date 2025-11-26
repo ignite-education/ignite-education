@@ -81,7 +81,8 @@
       "Bash(__NEW_LINE__ sed -i.bak '1,9s/BRIGHT_DATA_API_KEY=.*/VITE_SOCIABLEKIT_FEED_URL=https:\\/\\/data.accentapi.com\\/feed\\/YOUR_WIDGET_ID.json/' .env.example)",
       "Bash(__NEW_LINE__ rm .env.example.bak)",
       "Bash(__NEW_LINE__ head -15 .env.example)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
