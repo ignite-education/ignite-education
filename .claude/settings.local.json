@@ -72,7 +72,15 @@
       "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" restore src/components/ProtectedRoute.jsx src/components/Onboarding.jsx src/contexts/AuthContext.jsx)",
       "Bash(git restore:*)",
       "Bash(/tmp/onboarding.txt)",
-      "Bash(node --check:*)"
+      "Bash(node --check:*)",
+      "Bash(.env.example)",
+      "Bash(__NEW_LINE__ sed -i.bak '1,9s/# Bright Data API Key/# SociableKIT LinkedIn Feed API URL/' .env.example)",
+      "Bash(__NEW_LINE__ sed -i.bak '1,9s|# Get your API key from: https://brightdata.com/cp/api|# Get this from your SociableKIT dashboard: Options > Data feed|' .env.example)",
+      "Bash(__NEW_LINE__ sed -i.bak '1,9s/# Pricing.*$/# Note: Requires SociableKIT paid plan for API access/' .env.example)",
+      "Bash(__NEW_LINE__ sed -i.bak '1,9s/# Free tier.*$//' .env.example)",
+      "Bash(__NEW_LINE__ sed -i.bak '1,9s/BRIGHT_DATA_API_KEY=.*/VITE_SOCIABLEKIT_FEED_URL=https:\\/\\/data.accentapi.com\\/feed\\/YOUR_WIDGET_ID.json/' .env.example)",
+      "Bash(__NEW_LINE__ rm .env.example.bak)",
+      "Bash(__NEW_LINE__ head -15 .env.example)"
     ],
     "deny": [],
     "ask": []
