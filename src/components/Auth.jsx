@@ -2311,20 +2311,29 @@ const Auth = () => {
                   <div className="flex flex-col items-start justify-center">
                     {/* Single Post Display */}
                     <div
-                      className="bg-white rounded-lg p-6 text-gray-800 w-full max-w-md"
+                      className="bg-white rounded-lg overflow-hidden text-gray-800 w-full max-w-md"
                       style={{
                         aspectRatio: '1 / 1',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'space-between',
                         opacity: 1,
                         transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
                         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
                       }}
                     >
-                      <p className="text-sm leading-relaxed mb-3 overflow-auto flex-1">
-                        {linkedInPosts[currentLinkedInPost]?.text}
-                      </p>
+                      {linkedInPosts[currentLinkedInPost]?.image && (
+                        <div className="w-full" style={{ height: '40%', overflow: 'hidden' }}>
+                          <img
+                            src={linkedInPosts[currentLinkedInPost].image}
+                            alt="LinkedIn post"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="p-6 flex-1 flex flex-col justify-between">
+                        <p className="text-sm leading-relaxed mb-3 overflow-auto">
+                          {linkedInPosts[currentLinkedInPost]?.text}
+                        </p>
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                         <div className="flex gap-4">
@@ -2332,6 +2341,7 @@ const Auth = () => {
                           <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
                           <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
                         </div>
+                      </div>
                       </div>
                     </div>
 
