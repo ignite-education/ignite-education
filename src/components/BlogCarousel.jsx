@@ -73,14 +73,8 @@ const BlogCarousel = ({ limit = 5 }) => {
 
   if (error) {
     return (
-      <div className="text-center py-8 bg-red-900/20 rounded-lg p-6">
-        <p className="text-red-400">{error}</p>
-        <button
-          onClick={fetchPosts}
-          className="mt-4 px-6 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white rounded-lg transition-colors"
-        >
-          Retry
-        </button>
+      <div className="text-center py-8 bg-white/5 rounded-lg p-6">
+        <p className="text-gray-400 text-sm">Updates coming soon...</p>
       </div>
     );
   }
