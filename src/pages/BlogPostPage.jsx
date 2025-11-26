@@ -12,10 +12,26 @@ const BlogPostPage = () => {
   const [error, setError] = useState(null);
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
     fetchPost();
   }, [slug]);
+
+  // Track scroll progress
+  useEffect(() => {
+    const handleScroll = () => {
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const scrollTop = window.scrollY;
+      const scrollableHeight = documentHeight - windowHeight;
+      const progress = (scrollTop / scrollableHeight) * 100;
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const fetchPost = async () => {
     try {
@@ -104,7 +120,7 @@ const BlogPostPage = () => {
       />
 
       <div className="min-h-screen bg-black">
-        {/* Sticky Top Navigation Bar */}
+        {/* Sticky Top Navigation Bar with Progress Indicator */}
         <div className="sticky top-0 z-50 bg-black">
           <div className="max-w-7xl mx-auto px-6 py-4">
             <Link to="/" className="inline-block">
@@ -115,6 +131,13 @@ const BlogPostPage = () => {
                 }}
               />
             </Link>
+          </div>
+          {/* Progress Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
+            <div 
+              className="h-full bg-[#EF0B72] transition-all duration-150 ease-out"
+              style={{ width: `${scrollProgress}%` }}
+            />
           </div>
         </div>
 
