@@ -10,6 +10,8 @@ const BlogPostPage = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [typedTitle, setTypedTitle] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
 
   useEffect(() => {
     fetchPost();
@@ -35,6 +37,26 @@ const BlogPostPage = () => {
       setLoading(false);
     }
   };
+
+  // Typing animation for title
+  useEffect(() => {
+    if (!post) return;
+
+    let currentIndex = 0;
+    const titleText = post.title;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex <= titleText.length) {
+        setTypedTitle(titleText.substring(0, currentIndex));
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTypingComplete(true);
+      }
+    }, 50);
+
+    return () => clearInterval(typingInterval);
+  }, [post]);
 
   if (loading) {
     return (
@@ -83,46 +105,47 @@ const BlogPostPage = () => {
 
       <div className="min-h-screen bg-black">
         {/* Sticky Top Navigation Bar */}
-        <div className="sticky top-0 z-50 bg-black border-b border-white/10">
-          <div className="max-w-5xl mx-auto px-6 py-4">
+        <div className="sticky top-0 z-50 bg-black">
+          <div className="max-w-7xl mx-auto px-6 py-4">
             <Link to="/" className="inline-block">
-              <div className="flex items-center gap-2">
-                <div className="text-2xl font-bold text-white">
-                  <span className="text-[#EF0B72]">Ignite</span>
-                </div>
-              </div>
+              <div 
+                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
+                style={{
+                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
+                }}
+              />
             </Link>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="max-w-5xl mx-auto px-6 py-8">
-          {/* Breadcrumb Navigation */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-8">
-            <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center gap-1">
-              <Home className="w-4 h-4" />
-              <span>Home</span>
-            </Link>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-500">Posts</span>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-white truncate max-w-md">{post.title}</span>
-          </nav>
+        {/* Hero Section with Black Background */}
+        <div className="bg-black">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            {/* Breadcrumb Navigation */}
+            <nav className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-12">
+              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center gap-1">
+                <Home className="w-4 h-4" />
+                <span>Home</span>
+              </Link>
+              <ChevronRight className="w-4 h-4" />
+              <span className="text-gray-500">Posts</span>
+              <ChevronRight className="w-4 h-4" />
+              <span className="text-white truncate max-w-md">{post.title}</span>
+            </nav>
 
-          {/* Article Header */}
-          <article>
-            {/* Title */}
-            <h1 className="text-5xl font-bold text-white mb-6 leading-tight">
-              {post.title}
+            {/* Title with typing animation */}
+            <h1 className="text-5xl font-bold text-white mb-6 leading-tight text-center">
+              {typedTitle}
+              {!isTypingComplete && <span className="animate-pulse">|</span>}
             </h1>
 
             {/* Subtitle/Excerpt */}
-            <p className="text-xl text-gray-300 mb-6 leading-relaxed">
+            <p className="text-xl text-gray-300 mb-6 leading-relaxed text-center max-w-3xl mx-auto">
               {post.excerpt}
             </p>
 
             {/* Meta Info: Date and Tag */}
-            <div className="flex items-center gap-4 mb-8 pb-8 border-b border-white/10">
+            <div className="flex items-center justify-center gap-4 mb-12">
               <time className="text-gray-400 text-sm">
                 {new Date(post.published_at).toLocaleDateString('en-GB', {
                   day: 'numeric',
@@ -134,120 +157,138 @@ const BlogPostPage = () => {
                 News
               </span>
             </div>
+          </div>
+        </div>
 
-            {/* Featured Image */}
-            {post.featured_image && (
-              <div className="mb-12 rounded-lg overflow-hidden">
+        {/* Featured Image with gradient transition */}
+        {post.featured_image && (
+          <div className="relative">
+            <div className="max-w-5xl mx-auto px-6">
+              <div className="relative rounded-lg overflow-hidden">
                 <img
                   src={post.featured_image}
                   alt={post.title}
                   className="w-full h-auto object-cover"
                 />
+                {/* Gradient overlay at bottom half */}
+                <div 
+                  className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(to bottom, transparent, white)'
+                  }}
+                />
               </div>
-            )}
-
-            {/* Article Body */}
-            <div 
-              className="prose prose-invert prose-lg max-w-none"
-              style={{
-                color: '#E5E7EB',
-                fontSize: '18px',
-                lineHeight: '1.8'
-              }}
-            >
-              <style>{`
-                .prose h2 {
-                  color: white;
-                  font-size: 2rem;
-                  font-weight: 700;
-                  margin-top: 3rem;
-                  margin-bottom: 1.5rem;
-                }
-                .prose h3 {
-                  color: white;
-                  font-size: 1.5rem;
-                  font-weight: 600;
-                  margin-top: 2.5rem;
-                  margin-bottom: 1rem;
-                }
-                .prose p {
-                  color: #E5E7EB;
-                  margin-bottom: 1.5rem;
-                }
-                .prose ul, .prose ol {
-                  margin-top: 1.5rem;
-                  margin-bottom: 1.5rem;
-                  padding-left: 1.5rem;
-                }
-                .prose li {
-                  color: #E5E7EB;
-                  margin-bottom: 0.75rem;
-                }
-                .prose strong {
-                  color: white;
-                  font-weight: 600;
-                }
-                .prose a {
-                  color: #EF0B72;
-                  text-decoration: none;
-                  border-bottom: 1px solid #EF0B72;
-                  transition: all 0.2s;
-                }
-                .prose a:hover {
-                  color: #D10A64;
-                  border-bottom-color: #D10A64;
-                }
-                .prose blockquote {
-                  border-left: 4px solid #EF0B72;
-                  padding-left: 1.5rem;
-                  font-style: italic;
-                  color: #D1D5DB;
-                }
-              `}</style>
-              <div dangerouslySetInnerHTML={{ __html: post.content }} />
             </div>
+          </div>
+        )}
 
-            {/* Article Footer */}
-            <div className="mt-16 pt-8 border-t border-white/10">
-              <div className="flex items-center justify-between">
-                {/* Author Info */}
-                <div className="flex items-center gap-3">
-                  {post.author_avatar ? (
-                    <img
-                      src={post.author_avatar}
-                      alt={post.author_name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-[#EF0B72]/20 flex items-center justify-center">
-                      <span className="text-[#EF0B72] text-lg font-bold">
-                        {post.author_name.charAt(0)}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-white font-semibold">{post.author_name}</p>
-                    {post.author_role && (
-                      <p className="text-gray-400 text-sm">{post.author_role}</p>
+        {/* White Content Section */}
+        <div className="bg-white">
+          <div className="max-w-4xl mx-auto px-6 py-16">
+            <article>
+              {/* Article Body */}
+              <div 
+                className="prose prose-lg max-w-none"
+                style={{
+                  color: '#374151',
+                  fontSize: '18px',
+                  lineHeight: '1.8'
+                }}
+              >
+                <style>{`
+                  .prose h2 {
+                    color: #111827;
+                    font-size: 2rem;
+                    font-weight: 700;
+                    margin-top: 3rem;
+                    margin-bottom: 1.5rem;
+                  }
+                  .prose h3 {
+                    color: #111827;
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    margin-top: 2.5rem;
+                    margin-bottom: 1rem;
+                  }
+                  .prose p {
+                    color: #374151;
+                    margin-bottom: 1.5rem;
+                  }
+                  .prose ul, .prose ol {
+                    margin-top: 1.5rem;
+                    margin-bottom: 1.5rem;
+                    padding-left: 1.5rem;
+                  }
+                  .prose li {
+                    color: #374151;
+                    margin-bottom: 0.75rem;
+                  }
+                  .prose strong {
+                    color: #111827;
+                    font-weight: 600;
+                  }
+                  .prose a {
+                    color: #EF0B72;
+                    text-decoration: none;
+                    border-bottom: 1px solid #EF0B72;
+                    transition: all 0.2s;
+                  }
+                  .prose a:hover {
+                    color: #D10A64;
+                    border-bottom-color: #D10A64;
+                  }
+                  .prose blockquote {
+                    border-left: 4px solid #EF0B72;
+                    padding-left: 1.5rem;
+                    font-style: italic;
+                    color: #6B7280;
+                  }
+                `}</style>
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              </div>
+
+              {/* Article Footer */}
+              <div className="mt-16 pt-8 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  {/* Author Info */}
+                  <div className="flex items-center gap-3">
+                    {post.author_avatar ? (
+                      <img
+                        src={post.author_avatar}
+                        alt={post.author_name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-[#EF0B72]/20 flex items-center justify-center">
+                        <span className="text-[#EF0B72] text-lg font-bold">
+                          {post.author_name.charAt(0)}
+                        </span>
+                      </div>
                     )}
+                    <div>
+                      <p className="text-gray-900 font-semibold">{post.author_name}</p>
+                      {post.author_role && (
+                        <p className="text-gray-600 text-sm">{post.author_role}</p>
+                      )}
+                    </div>
                   </div>
+
+                  {/* Back to Home Button */}
+                  <Link
+                    to="/"
+                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 rounded-lg transition-colors inline-flex items-center gap-2"
+                  >
+                    <Home className="w-4 h-4" />
+                    Back to Home
+                  </Link>
                 </div>
-
-                {/* Back to Home Button */}
-                <Link
-                  to="/"
-                  className="px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-lg transition-colors inline-flex items-center gap-2"
-                >
-                  <Home className="w-4 h-4" />
-                  Back to Home
-                </Link>
               </div>
-            </div>
-          </article>
-        </div>
+            </article>
+          </div>
 
-        {/* Bottom Spacing */}
-        <div className="h-24"></div>
+          {/* Bottom Spacing */}
+          <div className="h-24"></div>
+        </div>
       </div>
     </>
   );
