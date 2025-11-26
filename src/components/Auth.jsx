@@ -636,17 +636,24 @@ const Auth = () => {
       // The feed URL is obtained from SociableKIT dashboard: Options > Data feed
       const feedUrl = import.meta.env.VITE_SOCIABLEKIT_FEED_URL;
 
+      console.log('[LinkedIn] Attempting to fetch posts...');
+      console.log('[LinkedIn] Feed URL:', feedUrl);
+
       if (!feedUrl) {
-        throw new Error('SociableKIT feed URL not configured');
+        console.error('[LinkedIn] Feed URL not configured');
+        throw new Error('SociableKIT feed URL not configured. Please add VITE_SOCIABLEKIT_FEED_URL to your environment variables.');
       }
 
       const response = await fetch(feedUrl);
+      console.log('[LinkedIn] Response status:', response.status);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const jsonData = await response.json();
+      console.log('[LinkedIn] Fetched data:', jsonData);
+      console.log('[LinkedIn] Number of posts:', jsonData.posts?.length || 0);
 
       // Transform SociableKIT data to match our UI format
       const transformedPosts = jsonData.posts.slice(0, 5).map(post => ({
@@ -661,8 +668,9 @@ const Auth = () => {
 
       setLinkedInPosts(transformedPosts);
       setLinkedInLoading(false);
+      console.log('[LinkedIn] Successfully loaded', transformedPosts.length, 'posts');
     } catch (error) {
-      console.error('Error fetching LinkedIn posts:', error);
+      console.error('[LinkedIn] Error fetching posts:', error);
       setLinkedInError('Unable to load LinkedIn posts. Please try again later.');
       setLinkedInLoading(false);
     }
@@ -2368,6 +2376,9 @@ const Auth = () => {
                         </svg>
                       </button>
                     </div>
+                  </div>) : linkedInError ? (
+                  <div className="text-center py-8 bg-red-900/20 rounded-lg p-6">
+                    <p className="text-red-400">{linkedInError}</p>
                   </div>
                 ) : null}
               </div>
@@ -2382,7 +2393,7 @@ const Auth = () => {
                 {[
                   {
                     question: 'What is Ignite?',
-                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
+                    answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today's competitive job market.'
                   },
                   {
                     question: 'Who is Ignite for?',
