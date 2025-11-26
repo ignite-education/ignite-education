@@ -89,3 +89,41 @@ const SEO = ({
 };
 
 export default SEO;
+
+/**
+ * Generate structured data for a blog post
+ * @param {Object} post - Blog post object
+ * @param {string} url - Full URL of the blog post
+ * @returns {Object} Schema.org BlogPosting structured data
+ */
+export const generateBlogPostStructuredData = (post, url) => {
+  const baseUrl = 'https://www.ignite.education';
+  
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.excerpt,
+    image: post.featured_image || post.og_image,
+    datePublished: post.published_at,
+    dateModified: post.updated_at,
+    author: {
+      '@type': 'Person',
+      name: post.author_name,
+      ...(post.author_avatar && { image: post.author_avatar }),
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Ignite',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
+  };
+};
+

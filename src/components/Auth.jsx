@@ -7,6 +7,7 @@ import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO from './SEO';
+import BlogCarousel from './BlogCarousel';
 
 const Auth = () => {
   // Debounce helper to prevent rapid state updates
@@ -56,12 +57,7 @@ const Auth = () => {
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
-  const [linkedInPosts, setLinkedInPosts] = useState([]);
-  const [linkedInLoading, setLinkedInLoading] = useState(false);
-  const [linkedInError, setLinkedInError] = useState(null);
-  const [currentLinkedInPost, setCurrentLinkedInPost] = useState(0);
-  const [animateLinkedInFAQ, setAnimateLinkedInFAQ] = useState(false);
-  const [typedLinkedInHeading, setTypedLinkedInHeading] = useState('');
+
   const [typedFAQHeading, setTypedFAQHeading] = useState('');
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
@@ -71,8 +67,6 @@ const Auth = () => {
 
   // Debug: Check environment variable on mount
   useEffect(() => {
-    console.log('[LinkedIn] Component mounted');
-    console.log('[LinkedIn] Environment variable VITE_SOCIABLEKIT_FEED_URL:', import.meta.env.VITE_SOCIABLEKIT_FEED_URL);
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -594,15 +588,12 @@ const Auth = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !animateLinkedInFAQ) {
+          if (entry.isIntersecting) {
             debounce('linkedInAnimation', () => {
-              setAnimateLinkedInFAQ(true);
+              
               // Start typing animations for headings
-              startLinkedInFAQHeadingsTyping();
-              // Fetch LinkedIn posts when section becomes visible
-              fetchLinkedInPosts().catch(err => {
-                console.error('Failed to fetch LinkedIn posts:', err);
-              });
+              
+
             }, 50);
           }
         });
@@ -617,103 +608,12 @@ const Auth = () => {
         observer.unobserve(linkedInFAQSectionRef.current);
       }
     };
-  }, [isLogin, animateLinkedInFAQ, selectedCourseModal]);
+  }, [isLogin, selectedCourseModal]);
 
-  // Auto-rotate LinkedIn posts every 5 seconds
-  useEffect(() => {
-    if (linkedInPosts.length === 0) return;
 
-    const interval = setInterval(() => {
-      setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length);
-    }, 5000); // Rotate every 5 seconds
 
-    return () => clearInterval(interval);
-  }, [linkedInPosts.length]);
 
-  // Fetch LinkedIn posts from backend API
-  const fetchLinkedInPosts = async () => {
-    if (linkedInPosts.length > 0) return; // Already fetched
 
-    setLinkedInLoading(true);
-    setLinkedInError(null);
-
-    try {
-      // Fetch from SociableKIT JSON data feed
-      // The feed URL is obtained from SociableKIT dashboard: Options > Data feed
-      const feedUrl = import.meta.env.VITE_SOCIABLEKIT_FEED_URL;
-
-      console.log('[LinkedIn] Attempting to fetch posts...');
-      console.log('[LinkedIn] Feed URL:', feedUrl);
-
-      if (!feedUrl) {
-        console.error('[LinkedIn] Feed URL not configured');
-        throw new Error('SociableKIT feed URL not configured. Please add VITE_SOCIABLEKIT_FEED_URL to your environment variables.');
-      }
-
-      const response = await fetch(feedUrl);
-      console.log('[LinkedIn] Response status:', response.status);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const jsonData = await response.json();
-      console.log('[LinkedIn] Fetched data:', jsonData);
-      console.log('[LinkedIn] Number of posts:', jsonData.posts?.length || 0);
-
-      // Transform SociableKIT data to match our UI format
-      const transformedPosts = jsonData.posts.slice(0, 5).map(post => ({
-        text: post.raw_text || post.description?.replace(/<[^>]*>/g, '') || '', // Strip HTML tags
-        created: post.post_date_time,
-        likes: parseInt(post.likes_count) || 0,
-        comments: parseInt(post.comments_count) || 0,
-        shares: 0, // SociableKIT doesn't provide share count in their data
-        image: post.image_urls?.[0] || post.thumbnail_url || null,
-        postUrl: post.post_url
-      }));
-
-      setLinkedInPosts(transformedPosts);
-      setLinkedInLoading(false);
-      console.log('[LinkedIn] Successfully loaded', transformedPosts.length, 'posts');
-    } catch (error) {
-      console.error('[LinkedIn] Error fetching posts:', error);
-      setLinkedInError('Unable to load LinkedIn posts. Please try again later.');
-      setLinkedInLoading(false);
-    }
-  };
-
-  // Typing animation for LinkedIn and FAQ headings
-  const startLinkedInFAQHeadingsTyping = () => {
-    const linkedInText = 'Latest from Ignite';
-    const faqText = 'FAQs';
-    let linkedInIndex = 0;
-    let faqIndex = 0;
-
-    // Add delay before starting typing
-    setTimeout(() => {
-      // Type LinkedIn heading first
-      const linkedInInterval = setInterval(() => {
-        if (linkedInIndex <= linkedInText.length) {
-          setTypedLinkedInHeading(linkedInText.substring(0, linkedInIndex));
-          linkedInIndex++;
-        } else {
-          clearInterval(linkedInInterval);
-
-          // Wait 1 second, then type FAQ heading
-          setTimeout(() => {
-            const faqInterval = setInterval(() => {
-              if (faqIndex <= faqText.length) {
-                setTypedFAQHeading(faqText.substring(0, faqIndex));
-                faqIndex++;
-              } else {
-                clearInterval(faqInterval);
-              }
-            }, 75); // 75ms per character
-          }, 1000); // 1 second delay
-        }
-      }, 75); // 75ms per character
-    }, 1000); // 1000ms delay before starting
-  };
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -2296,107 +2196,15 @@ const Auth = () => {
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
-              {/* Left Column - LinkedIn Posts */}
-              <div className="flex flex-col items-start" style={{ marginLeft: '20px' }}>
+              {/* Left Column - Blog Posts */}
+              <div className="flex flex-col items-start justify-center" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
-                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedLinkedInHeading}</h3>
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>Latest Updates</h3>
                 </div>
 
-                {linkedInLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-                    <p className="text-gray-400 mt-4">Loading posts...</p>
-                  </div>
-                ) : linkedInPosts.length > 0 ? (
-                  <div className="flex flex-col items-start justify-center">
-                    {/* Single Post Display */}
-                    <div
-                      className="bg-white rounded-lg overflow-hidden text-gray-800 w-full max-w-md"
-                      style={{
-                        aspectRatio: '1 / 1',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        opacity: 1,
-                        transform: animateLinkedInFAQ ? 'translateY(0)' : 'translateY(10px)',
-                        transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)'
-                      }}
-                    >
-                      {linkedInPosts[currentLinkedInPost]?.image && (
-                        <div className="w-full bg-gray-100" style={{ height: '40%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <img
-                            src={linkedInPosts[currentLinkedInPost].image}
-                            alt="LinkedIn post"
-                            className="w-full h-full object-contain"
-                          />
-                        </div>
-                      )}
-                      <div className="p-6 flex-1 flex flex-col justify-between">
-                        <p className="text-sm leading-relaxed mb-3 overflow-auto">
-                          {linkedInPosts[currentLinkedInPost]?.text}
-                        </p>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>{new Date(linkedInPosts[currentLinkedInPost]?.created).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                        <div className="flex gap-4">
-                          <span>👍 {linkedInPosts[currentLinkedInPost]?.likes}</span>
-                          <span>💬 {linkedInPosts[currentLinkedInPost]?.comments}</span>
-                          <span>🔁 {linkedInPosts[currentLinkedInPost]?.shares}</span>
-                        </div>
-                      </div>
-                      </div>
-                    </div>
-
-                    {/* Carousel Indicators with Arrows */}
-                    <div className="flex items-center justify-center gap-4 mt-4">
-                      {/* Left Arrow */}
-                      <button
-                        onClick={() => setCurrentLinkedInPost((prev) => (prev - 1 + linkedInPosts.length) % linkedInPosts.length)}
-                        className="bg-white hover:bg-white transition flex-shrink-0 group"
-                        style={{ borderRadius: '4px', padding: '6px' }}
-                        aria-label="Previous post"
-                      >
-                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-
-                      {/* Dot Indicators */}
-                      <div className="flex justify-center gap-2">
-                        {linkedInPosts.map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setCurrentLinkedInPost(idx)}
-                            className={`transition-all duration-300 ${
-                              currentLinkedInPost === idx
-                                ? 'bg-[#EF0B72]'
-                                : 'bg-white hover:bg-gray-300'
-                            }`}
-                            style={{
-                              width: currentLinkedInPost === idx ? '32px' : '10px',
-                              height: '10px',
-                              borderRadius: '2px'
-                            }}
-                            aria-label={`Go to post ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-
-                      {/* Right Arrow */}
-                      <button
-                        onClick={() => setCurrentLinkedInPost((prev) => (prev + 1) % linkedInPosts.length)}
-                        className="bg-white hover:bg-white transition flex-shrink-0 group"
-                        style={{ borderRadius: '4px', padding: '6px' }}
-                        aria-label="Next post"
-                      >
-                        <svg className="text-black group-hover:text-[#D84A8C] transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ width: '18px', height: '18px' }}>
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>) : linkedInError ? (
-                  <div className="text-center py-8 bg-red-900/20 rounded-lg p-6">
-                    <p className="text-red-400">{linkedInError}</p>
-                  </div>
-                ) : null}
+                <div className="w-full max-w-md">
+                  <BlogCarousel limit={5} />
+                </div>
               </div>
 
               {/* Right Column - FAQs */}
