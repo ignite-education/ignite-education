@@ -54,24 +54,27 @@ const BlogPostPage = () => {
     }
   };
 
-  // Typing animation for title (75ms per character to match Auth page)
+  // Typing animation for title (75ms per character to match Auth page, 1 second delay)
   useEffect(() => {
     if (!post) return;
 
     let currentIndex = 0;
     const titleText = post.title;
 
-    const typingInterval = setInterval(() => {
-      if (currentIndex <= titleText.length) {
-        setTypedTitle(titleText.substring(0, currentIndex));
-        currentIndex++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTypingComplete(true);
-      }
-    }, 75);
+    // Add 1 second delay before starting typing
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (currentIndex <= titleText.length) {
+          setTypedTitle(titleText.substring(0, currentIndex));
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTypingComplete(true);
+        }
+      }, 75);
+    }, 1000);
 
-    return () => clearInterval(typingInterval);
+    return () => {};
   }, [post]);
 
   if (loading) {
@@ -144,8 +147,8 @@ const BlogPostPage = () => {
         {/* Hero Section with Black Background */}
         <div className="bg-black">
           <div className="max-w-4xl mx-auto px-6 py-12">
-            {/* Breadcrumb Navigation - Left aligned */}
-            <nav className="flex items-center gap-2 text-sm text-gray-400 mb-12">
+            {/* Breadcrumb Navigation - Left aligned - 40% less gap */}
+            <nav className="flex items-center gap-2 text-sm text-gray-400 mb-7">
               <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center gap-1">
                 <Home className="w-4 h-4" />
                 <span>Home</span>
@@ -162,8 +165,8 @@ const BlogPostPage = () => {
               {!isTypingComplete && <span className="animate-pulse">|</span>}
             </h1>
 
-            {/* Subtitle/Excerpt - Left aligned */}
-            <p className="text-xl text-gray-300 mb-6 leading-relaxed text-left">
+            {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
+            <p className="text-xl text-[#EF0B72] mb-6 leading-relaxed text-left">
               {post.excerpt}
             </p>
 

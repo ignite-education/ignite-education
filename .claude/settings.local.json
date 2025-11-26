@@ -82,7 +82,13 @@
       "Bash(__NEW_LINE__ rm .env.example.bak)",
       "Bash(__NEW_LINE__ head -15 .env.example)",
       "Bash(kill:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" add src/pages/BlogPostPage.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nAdd 1 second typing delay, pink subtitle, and reduce title gap\n\n- Add 1000ms delay before title typing animation starts\n- Change subtitle color to Ignite pink (#EF0B72)\n- Reduce gap above title by 40% (mb-12 to mb-7)\n\nUser-requested refinements for blog post page design.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" remote add origin https://github.com/maxshillam/ignite-education.git)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" push -u origin main --force)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''''s MacBook Pro/GitHub/ignite-education\" show HEAD:src/pages/BlogPostPage.jsx)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" commit -m \"$(cat <<''EOF''\nMake progress bar smooth and start only when content reaches top\n\nChanges to scroll progress tracking:\n- Increased transition duration from 150ms to 300ms for smoother animation\n- Added passive event listener for better scroll performance\n- Progress bar now only starts tracking when white content section hits nav bar\n- Remains at 0% while user scrolls through black hero section\n- Calculates progress from white content start to end of page\n- Uses Math.max/min to clamp values between 0-100%\n\nTechnical implementation:\n- Added whiteContentRef to track white content section position\n- Checks getBoundingClientRect().top to detect when section reaches nav\n- Adjusts scroll calculation to start from white content offset\n- All previous features maintained (1s typing delay, pink subtitle, reduced gap)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
