@@ -632,18 +632,38 @@ const Auth = () => {
     setLinkedInError(null);
 
     try {
-      // Call backend API endpoint instead of direct LinkedIn API
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      const response = await fetch(`${apiUrl}/api/linkedin/posts?count=5`);
+      // Fetch from SociableKIT JSON data feed
+      // The feed URL is obtained from SociableKIT dashboard: Options > Data feed
+      const feedUrl = import.meta.env.VITE_SOCIABLEKIT_FEED_URL;
+
+      if (!feedUrl) {
+        throw new Error('SociableKIT feed URL not configured');
+      }
+
+      const response = await fetch(feedUrl);
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const posts = await response.json();
-      setLinkedInPosts(posts);
+      const jsonData = await response.json();
+
+      // Transform SociableKIT data to match our UI format
+      const transformedPosts = jsonData.posts.slice(0, 5).map(post => ({
+        text: post.raw_text || post.description?.replace(/<[^>]*>/g, '') || '', // Strip HTML tags
+        created: post.post_date_time,
+        likes: parseInt(post.likes_count) || 0,
+        comments: parseInt(post.comments_count) || 0,
+        shares: 0, // SociableKIT doesn't provide share count in their data
+        image: post.image_urls?.[0] || post.thumbnail_url || null,
+        postUrl: post.post_url
+      }));
+
+      setLinkedInPosts(transformedPosts);
+      setLinkedInLoading(false);
     } catch (error) {
       console.error('Error fetching LinkedIn posts:', error);
+      setLinkedInError('Unable to load LinkedIn posts. Please try again later.');
       setLinkedInLoading(false);
     }
   };
