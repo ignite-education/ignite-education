@@ -68,7 +68,11 @@
       "Bash(node -c:*)",
       "Bash(timeout 5 npm run server:*)",
       "Bash(curl:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git -C \"/Users/maxshillam/Documents/Documents - Max''s MacBook Pro/GitHub/ignite-education\" restore src/components/ProtectedRoute.jsx src/components/Onboarding.jsx src/contexts/AuthContext.jsx)",
+      "Bash(git restore:*)",
+      "Bash(/tmp/onboarding.txt)",
+      "Bash(node --check:*)"
     ],
     "deny": [],
     "ask": []
