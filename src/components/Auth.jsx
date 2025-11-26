@@ -59,6 +59,7 @@ const Auth = () => {
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
 
   const [typedFAQHeading, setTypedFAQHeading] = useState('');
+  const [typedBlogHeading, setTypedBlogHeading] = useState('');
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
@@ -581,7 +582,7 @@ const Auth = () => {
     return () => clearInterval(interval);
   }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, isLogin, selectedCourseModal]);
 
-  // Intersection observer for LinkedIn & FAQ section animation
+  // Intersection observer for Blog & FAQ section animation
   useEffect(() => {
     if (!linkedInFAQSectionRef.current || isLogin || selectedCourseModal) return;
 
@@ -589,11 +590,9 @@ const Auth = () => {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            debounce('linkedInAnimation', () => {
-              
+            debounce('blogFAQAnimation', () => {
               // Start typing animations for headings
-              
-
+              startBlogFAQHeadingsTyping();
             }, 50);
           }
         });
@@ -614,6 +613,36 @@ const Auth = () => {
 
 
 
+
+  // Typing animation for Blog and FAQ headings
+  const startBlogFAQHeadingsTyping = () => {
+    const blogText = 'Latest from Ignite';
+    const faqText = 'FAQs';
+    let blogIndex = 0;
+    let faqIndex = 0;
+
+    // Start typing blog heading immediately
+    const blogInterval = setInterval(() => {
+      if (blogIndex <= blogText.length) {
+        setTypedBlogHeading(blogText.substring(0, blogIndex));
+        blogIndex++;
+      } else {
+        clearInterval(blogInterval);
+
+        // Wait 500ms, then type FAQ heading
+        setTimeout(() => {
+          const faqInterval = setInterval(() => {
+            if (faqIndex <= faqText.length) {
+              setTypedFAQHeading(faqText.substring(0, faqIndex));
+              faqIndex++;
+            } else {
+              clearInterval(faqInterval);
+            }
+          }, 75); // 75ms per character
+        }, 500); // 500ms delay
+      }
+    }, 75); // 75ms per character
+  };
 
   // Typing animation for education text
   const startEducationTyping = () => {
@@ -2199,7 +2228,7 @@ const Auth = () => {
               {/* Left Column - Blog Posts */}
               <div className="flex flex-col items-start justify-center" style={{ marginLeft: '20px' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
-                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>Latest Updates</h3>
+                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
 
                 <div className="w-full max-w-md">
