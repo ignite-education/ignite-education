@@ -21,6 +21,7 @@ const Terms = lazy(() => import('./pages/Terms'))
 const Certificate = lazy(() => import('./components/Certificate'))
 const CourseRedirect = lazy(() => import('./pages/CourseRedirect'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
+const BlogManagement = lazy(() => import('./pages/BlogManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
 
 // Component to redirect authenticated users away from auth pages
@@ -96,6 +97,11 @@ function App() {
             <Route path="/certificate/:certificateId" element={<Certificate />} />
             <Route path="/courses/:courseSlug" element={<CourseRedirect />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
+            <Route path="/admin/blog" element={
+              <ProtectedRoute>
+                <BlogManagement />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
