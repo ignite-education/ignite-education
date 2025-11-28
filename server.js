@@ -873,6 +873,103 @@ app.post('/api/text-to-speech', async (req, res) => {
   }
 });
 
+// Text-to-speech with character-level timestamps endpoint
+app.post('/api/text-to-speech-timestamps', async (req, res) => {
+  try {
+    let { text, voiceGender } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    // ElevenLabs has a 5000 character limit for standard plans
+    // Truncate text if it exceeds the limit
+    const MAX_CHARS = 5000;
+    if (text.length > MAX_CHARS) {
+      console.log(`⚠️ Text too long (${text.length} chars), truncating to ${MAX_CHARS} chars`);
+      text = text.substring(0, MAX_CHARS);
+      // Try to end at a sentence boundary
+      const lastPeriod = text.lastIndexOf('.');
+      if (lastPeriod > MAX_CHARS - 200) {
+        text = text.substring(0, lastPeriod + 1);
+      }
+    }
+
+    // Select voice based on gender preference
+    let voiceId;
+    if (voiceGender === 'male') {
+      // George - British male voice (warm, clear)
+      voiceId = 'JBFqnCBsd6RMkjVDRZzb';
+    } else {
+      // Alice - British female voice (default)
+      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2';
+    }
+
+    console.log('🎤 Generating speech with timestamps for text:', text.substring(0, 100) + '...');
+
+    // Generate speech with timestamps using ElevenLabs
+    const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+      text: text,
+      model_id: 'eleven_multilingual_v2', // High quality model with emotional range
+      output_format: 'mp3_44100_128', // 44.1kHz, 128kbps - good balance of quality and size
+      voice_settings: {
+        stability: 0.5, // Balance between consistency and expressiveness
+        similarity_boost: 0.75, // Maintain voice characteristics
+        style: 0.0, // Neutral style
+        use_speaker_boost: true // Enhance voice clarity
+      }
+    });
+
+    console.log('✅ Speech generated successfully with timestamps');
+
+    // The response from convertWithTimestamps contains:
+    // - audio_base64: base64 encoded audio
+    // - alignment: character-level timing information
+    
+    // Collect audio chunks
+    const audioChunks = [];
+    for await (const chunk of response.audio_base64) {
+      audioChunks.push(chunk);
+    }
+    const audioBase64 = audioChunks.join('');
+
+    // Collect alignment data (character timestamps)
+    const alignmentData = {
+      characters: [],
+      character_start_times_seconds: [],
+      character_end_times_seconds: []
+    };
+
+    for await (const alignmentChunk of response.alignment) {
+      if (alignmentChunk.characters) {
+        alignmentData.characters.push(...alignmentChunk.characters);
+      }
+      if (alignmentChunk.character_start_times_seconds) {
+        alignmentData.character_start_times_seconds.push(...alignmentChunk.character_start_times_seconds);
+      }
+      if (alignmentChunk.character_end_times_seconds) {
+        alignmentData.character_end_times_seconds.push(...alignmentChunk.character_end_times_seconds);
+      }
+    }
+
+    console.log(`📊 Alignment data: ${alignmentData.characters.length} characters tracked`);
+
+    // Return JSON response with both audio and timestamps
+    res.json({
+      audio_base64: audioBase64,
+      alignment: alignmentData
+    });
+
+  } catch (error) {
+    console.error('Error generating speech with timestamps:', error);
+    res.status(500).json({
+      error: 'Failed to generate speech with timestamps',
+      message: error.message
+    });
+  }
+});
+
+
 // Reddit posts endpoint with server-side caching and rate limiting
 // Cache is now an object keyed by subreddit name for compatibility
 let redditPostsCache = {}; // Object: { [subreddit]: { data, timestamp } }
