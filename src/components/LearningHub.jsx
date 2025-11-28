@@ -1656,7 +1656,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   // Helper to render text with explained sections highlighted and word-by-word narration highlighting
-  const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null) => {
+  const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
     if (!text) return null;
 
     // Split text into words while preserving spaces
@@ -1695,11 +1695,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // 2. This word index matches the current narration word
       // 3. Either we're narrating the title and this is the title (sectionIndexForHighlight === 'title')
       //    OR we're narrating a section and this section matches currentNarrationSection
+      // 4. Narration highlighting is not disabled for this text
       const isInActiveNarrationContext =
         (sectionIndexForHighlight === 'title' && isNarratingTitle) ||
         (sectionIndexForHighlight !== 'title' && !isNarratingTitle && sectionIndexForHighlight === currentNarrationSection);
 
-      const isCurrentWord = isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
+      const isCurrentWord = !disableNarrationHighlight && isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
 
       // Build className based on highlighting state
       let className = 'transition-all duration-200';
@@ -3078,7 +3079,7 @@ ${currentLessonSections.map((section) => {
                 })()}
               </p>
               <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
-                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0, 'title')}</h1>
+                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0, 'title', true)}</h1>
               </div>
             </div>
             {/* Render ALL sections */}
@@ -3113,9 +3114,9 @@ ${currentLessonSections.map((section) => {
                       let result;
                       if (part.startsWith('__') && part.endsWith('__')) {
                         const innerText = part.slice(2, -2);
-                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</u>;
+                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx, true)}</u>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx, true)}</span>;
                       }
 
                       currentOffset += wordCount;
