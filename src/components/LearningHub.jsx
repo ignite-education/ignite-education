@@ -108,7 +108,9 @@ const LearningHub = () => {
   const isInitialMountRef = React.useRef(true);
   const [isReading, setIsReading] = React.useState(false);
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
+  const [currentNarrationWord, setCurrentNarrationWord] = React.useState(-1); // Track which word is being spoken
   const audioRef = React.useRef(null);
+  const wordTimerRef = React.useRef(null); // Track word highlighting timer
   const isPausedRef = React.useRef(false); // Track if user manually paused
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
@@ -1652,92 +1654,109 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     };
   };
 
-  // Helper to render text with explained sections highlighted
+  // Helper to render text with explained sections highlighted and word-by-word narration highlighting
   const renderTextWithHighlight = (text, startWordIndex) => {
     if (!text) return null;
 
-    // Check if any explained sections match parts of this text
-    let result = text;
+    // Split text into words while preserving spaces
+    const parts = text.split(/(\s+)/); // This keeps the spaces in the array
     const elements = [];
-    let lastIndex = 0;
+    let currentWordIndex = startWordIndex;
 
-    explainedSections.forEach((section) => {
-      const index = text.indexOf(section.text);
-      if (index !== -1) {
-        // Add text before the match
-        if (index > lastIndex) {
-          elements.push(text.substring(lastIndex, index));
-        }
-
-        // Add highlighted explained text with hover functionality
-        elements.push(
-          <span
-            key={section.id}
-            className="bg-pink-100 cursor-pointer transition-colors hover:bg-pink-200"
-            style={{
-              backgroundColor: hoveredExplanation === section.id ? '#fce7f3' : '#fce7f3',
-              borderRadius: '2px',
-              padding: '2px 0'
-            }}
-            onMouseEnter={(e) => {
-              // Clear any pending close timeout
-              if (closeTimeoutRef.current) {
-                clearTimeout(closeTimeoutRef.current);
-                closeTimeoutRef.current = null;
-              }
-
-              if (!popupLocked) {
-                setHoveredExplanation(section.id);
-
-                // Calculate position based on the highlighted element
-                const rect = e.currentTarget.getBoundingClientRect();
-                const centerX = rect.left + (rect.width / 2);
-                const bottomY = rect.bottom;
-                const topY = rect.top;
-
-                // Check if there's enough space above
-                const popupHeight = 500; // max height
-                const spaceAbove = topY;
-                const spaceBelow = window.innerHeight - bottomY;
-                const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
-
-                setPopupPosition({
-                  x: centerX,
-                  y: preferAbove ? topY : bottomY,
-                  preferAbove: preferAbove
-                });
-
-                // Store reference to the highlight element
-                highlightRef.current = e.currentTarget;
-              }
-            }}
-            onMouseMove={(e) => {
-              // Don't update position on mouse move - keep it fixed
-            }}
-            onMouseLeave={() => {
-              if (!popupLocked) {
-                // Add a delay before closing to allow user to move to popup
-                closeTimeoutRef.current = setTimeout(() => {
-                  setHoveredExplanation(null);
-                  highlightRef.current = null;
-                }, 300); // 300ms delay
-              }
-            }}
-          >
-            {section.text}
-          </span>
-        );
-
-        lastIndex = index + section.text.length;
+    parts.forEach((part, idx) => {
+      // If this is whitespace, render it without highlighting
+      if (!part || /^\s+$/.test(part)) {
+        elements.push(<span key={`space-${idx}`}>{part}</span>);
+        return;
       }
+
+      // This is an actual word
+      const word = part;
+
+      // Check if this word is part of an explained section
+      let isExplainedSection = false;
+      let explainedSectionId = null;
+
+      explainedSections.forEach((section) => {
+        if (text.indexOf(section.text) !== -1) {
+          const sectionWords = section.text.split(/\s+/).filter(w => w.length > 0);
+          const wordInSection = sectionWords.includes(word.trim());
+          if (wordInSection) {
+            isExplainedSection = true;
+            explainedSectionId = section.id;
+          }
+        }
+      });
+
+      // Determine if this word should be highlighted for narration
+      const isCurrentWord = isReading && currentNarrationWord === currentWordIndex;
+
+      // Build className based on highlighting state
+      let className = 'transition-all duration-200';
+      let style = {};
+
+      if (isCurrentWord) {
+        // Narration highlight (yellow)
+        className += ' bg-yellow-300 px-1 rounded';
+      } else if (isExplainedSection) {
+        // Explained section highlight (pink)
+        className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
+        style = {
+          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
+          borderRadius: '2px',
+          padding: '2px 0'
+        };
+      }
+
+      elements.push(
+        <span
+          key={`word-${idx}-${currentWordIndex}`}
+          className={className}
+          style={style}
+          onMouseEnter={isExplainedSection ? (e) => {
+            // Explained section hover logic
+            if (closeTimeoutRef.current) {
+              clearTimeout(closeTimeoutRef.current);
+              closeTimeoutRef.current = null;
+            }
+
+            if (!popupLocked) {
+              setHoveredExplanation(explainedSectionId);
+              const rect = e.currentTarget.getBoundingClientRect();
+              const centerX = rect.left + (rect.width / 2);
+              const bottomY = rect.bottom;
+              const topY = rect.top;
+              const popupHeight = 500;
+              const spaceAbove = topY;
+              const spaceBelow = window.innerHeight - bottomY;
+              const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
+
+              setPopupPosition({
+                x: centerX,
+                y: preferAbove ? topY : bottomY,
+                preferAbove: preferAbove
+              });
+
+              highlightRef.current = e.currentTarget;
+            }
+          } : undefined}
+          onMouseLeave={isExplainedSection ? () => {
+            if (!popupLocked) {
+              closeTimeoutRef.current = setTimeout(() => {
+                setHoveredExplanation(null);
+                highlightRef.current = null;
+              }, 300);
+            }
+          } : undefined}
+        >
+          {word}
+        </span>
+      );
+
+      currentWordIndex++;
     });
 
-    // Add remaining text
-    if (lastIndex < text.length) {
-      elements.push(text.substring(lastIndex));
-    }
-
-    return elements.length > 0 ? elements : text;
+    return elements;
   };
 
   // Narrate a single section
@@ -1750,7 +1769,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.log('✅ Finished narrating all sections');
       setIsReading(false);
       setCurrentNarrationSection(0);
+      setCurrentNarrationWord(-1);
       isPausedRef.current = false;
+      // Clear word highlighting timer
+      if (wordTimerRef.current) {
+        clearInterval(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
       return;
     }
 
@@ -1913,6 +1938,54 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsReading(true);
       setCurrentNarrationSection(sectionIndex);
 
+      // Start word-by-word highlighting
+      // Calculate word offset for this section (total words in all previous sections)
+      const wordsBeforeThisSection = currentLessonSections
+        .slice(0, sectionIndex)
+        .map(s => extractTextFromSection(s))
+        .join(' ')
+        .split(/\s+/)
+        .filter(w => w.length > 0).length;
+
+      // Count words in current section
+      const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
+
+      // Clear any existing word timer
+      if (wordTimerRef.current) {
+        clearInterval(wordTimerRef.current);
+      }
+
+      // Wait for audio metadata to load to get duration
+      const startWordHighlighting = () => {
+        const duration = audio.duration * 1000; // Convert to milliseconds
+        const timePerWord = duration / wordsInSection;
+
+        console.log(`📝 Section ${sectionIndex}: ${wordsInSection} words, ${duration.toFixed(0)}ms duration, ${timePerWord.toFixed(0)}ms per word`);
+
+        let currentWordInSection = 0;
+        setCurrentNarrationWord(wordsBeforeThisSection);
+
+        wordTimerRef.current = setInterval(() => {
+          currentWordInSection++;
+          if (currentWordInSection < wordsInSection) {
+            setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
+          } else {
+            // End of section, clear timer
+            clearInterval(wordTimerRef.current);
+            wordTimerRef.current = null;
+            setCurrentNarrationWord(-1);
+          }
+        }, timePerWord);
+      };
+
+      // If duration is already available, start immediately
+      if (audio.duration && !isNaN(audio.duration)) {
+        startWordHighlighting();
+      } else {
+        // Wait for loadedmetadata event
+        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
+      }
+
       // Prefetch next section while current one is playing
       const nextSectionIndex = sectionIndex + 1;
       if (nextSectionIndex < currentLessonSections.length) {
@@ -2073,6 +2146,40 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       await audio.play();
 
+      // Start word-by-word highlighting for title
+      const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
+
+      const startTitleWordHighlighting = () => {
+        const duration = audio.duration * 1000;
+        const timePerWord = duration / titleWords.length;
+
+        console.log(`📝 Title: ${titleWords.length} words, ${duration.toFixed(0)}ms duration, ${timePerWord.toFixed(0)}ms per word`);
+
+        let currentWordIndex = 0;
+        setCurrentNarrationWord(0);
+
+        if (wordTimerRef.current) {
+          clearInterval(wordTimerRef.current);
+        }
+
+        wordTimerRef.current = setInterval(() => {
+          currentWordIndex++;
+          if (currentWordIndex < titleWords.length) {
+            setCurrentNarrationWord(currentWordIndex);
+          } else {
+            clearInterval(wordTimerRef.current);
+            wordTimerRef.current = null;
+            setCurrentNarrationWord(-1);
+          }
+        }, timePerWord);
+      };
+
+      if (audio.duration && !isNaN(audio.duration)) {
+        startTitleWordHighlighting();
+      } else {
+        audio.addEventListener('loadedmetadata', startTitleWordHighlighting, { once: true });
+      }
+
       // Prefetch first 6 sections in parallel while title is playing
       if (currentLessonSections && currentLessonSections.length > 0) {
         const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
@@ -2220,6 +2327,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audio.pause();
       }
 
+      // Clear word highlighting timer
+      if (wordTimerRef.current) {
+        clearInterval(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      setCurrentNarrationWord(-1);
+
       // Update state (keep audioRef and currentNarrationSection for resume)
       setIsReading(false);
       isPausedRef.current = true;
@@ -2228,9 +2342,48 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     // If audio exists and is paused, resume it
     if (audioRef.current && !isReading && isPausedRef.current) {
-      audioRef.current.play();
+      const audio = audioRef.current;
+      audio.play();
       setIsReading(true);
       isPausedRef.current = false;
+
+      // Resume word highlighting from current position
+      const currentSection = currentLessonSections[currentNarrationSection];
+      if (currentSection) {
+        const sectionText = extractTextFromSection(currentSection);
+        const wordsBeforeThisSection = currentLessonSections
+          .slice(0, currentNarrationSection)
+          .map(s => extractTextFromSection(s))
+          .join(' ')
+          .split(/\s+/)
+          .filter(w => w.length > 0).length;
+
+        const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
+        const duration = audio.duration * 1000;
+        const currentTime = audio.currentTime * 1000;
+        const timePerWord = duration / wordsInSection;
+        const currentWordInSection = Math.floor(currentTime / timePerWord);
+
+        setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
+
+        // Continue timer from current position
+        if (wordTimerRef.current) {
+          clearInterval(wordTimerRef.current);
+        }
+
+        let wordIndex = currentWordInSection;
+        wordTimerRef.current = setInterval(() => {
+          wordIndex++;
+          if (wordIndex < wordsInSection) {
+            setCurrentNarrationWord(wordsBeforeThisSection + wordIndex);
+          } else {
+            clearInterval(wordTimerRef.current);
+            wordTimerRef.current = null;
+            setCurrentNarrationWord(-1);
+          }
+        }, timePerWord);
+      }
+
       return;
     }
 
@@ -2267,6 +2420,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         }
       });
       batchPrefetchCache.current = {};
+      // Cleanup word highlighting timer
+      if (wordTimerRef.current) {
+        clearInterval(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
     };
   }, []);
 
@@ -2898,7 +3056,7 @@ ${currentLessonSections.map((section) => {
                 })()}
               </p>
               <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
-                <h1 className="text-3xl font-medium text-left">{lessonName}</h1>
+                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0)}</h1>
               </div>
             </div>
             {/* Render ALL sections */}
