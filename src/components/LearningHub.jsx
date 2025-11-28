@@ -27,6 +27,58 @@ const stripFormattingMarkers = (text) => {
     .trim();
 };
 
+// Helper to convert ElevenLabs character-level timestamps to word-level timestamps
+const convertCharacterToWordTimestamps = (text, characters, characterStartTimes, characterEndTimes) => {
+  if (!text || !characters || !characterStartTimes || !characterEndTimes) {
+    return [];
+  }
+
+  // Split text into words (preserve original text for matching)
+  const words = text.match(/\S+/g) || []; // Split on whitespace, keep punctuation with words
+  const wordTimestamps = [];
+  let charIndex = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+
+    // Skip whitespace characters in the character array
+    while (charIndex < characters.length && /\s/.test(characters[charIndex])) {
+      charIndex++;
+    }
+
+    if (charIndex >= characters.length) break;
+
+    // Start time is the first character of this word
+    const wordStartTime = characterStartTimes[charIndex];
+    let wordEndTime = characterEndTimes[charIndex];
+    let wordCharCount = 0;
+
+    // Find all characters that belong to this word
+    for (let j = 0; j < word.length && charIndex + wordCharCount < characters.length; j++) {
+      // Skip whitespace within the word matching
+      while (charIndex + wordCharCount < characters.length && /\s/.test(characters[charIndex + wordCharCount])) {
+        charIndex++;
+      }
+
+      if (charIndex + wordCharCount < characters.length) {
+        wordEndTime = characterEndTimes[charIndex + wordCharCount];
+        wordCharCount++;
+      }
+    }
+
+    wordTimestamps.push({
+      word: word,
+      start: wordStartTime,
+      end: wordEndTime,
+      index: i
+    });
+
+    charIndex += wordCharCount;
+  }
+
+  return wordTimestamps;
+};
+
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -112,6 +164,7 @@ const LearningHub = () => {
   const [isNarratingTitle, setIsNarratingTitle] = React.useState(false); // Track if we're narrating the title vs sections
   const audioRef = React.useRef(null);
   const wordTimerRef = React.useRef(null); // Track word highlighting timer
+  const wordTimestampsRef = React.useRef(null); // Store word timestamps for current section/title
   const isPausedRef = React.useRef(false); // Track if user manually paused
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
@@ -1841,6 +1894,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] BATCH CACHE HIT for section ${sectionIndex} (readyState: ${cachedAudio.audio.readyState})`);
         audioUrl = cachedAudio.url;
         audio = cachedAudio.audio;
+        // Store word timestamps if available
+        if (cachedAudio.wordTimestamps) {
+          wordTimestampsRef.current = cachedAudio.wordTimestamps;
+          console.log(`📝 Retrieved ${cachedAudio.wordTimestamps.length} word timestamps from cache`);
+        }
         delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
         delete prefetchPromises.current[sectionIndex]; // Remove promise too
         audioRef.current = audio;
@@ -1859,6 +1917,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           if (nowCached) {
             audioUrl = nowCached.url;
             audio = nowCached.audio;
+            // Store word timestamps if available
+            if (nowCached.wordTimestamps) {
+              wordTimestampsRef.current = nowCached.wordTimestamps;
+              console.log(`📝 Retrieved ${nowCached.wordTimestamps.length} word timestamps from cache`);
+            }
             delete batchPrefetchCache.current[sectionIndex];
             delete prefetchPromises.current[sectionIndex];
             audioRef.current = audio;
@@ -1887,7 +1950,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         narrateAbortController.current = new AbortController();
         const controller = narrateAbortController.current;
 
-        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1903,8 +1966,29 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const fetchEndTime = performance.now();
         console.log(`📥 [${fetchEndTime.toFixed(0)}ms] TTS API response received (took: ${(fetchEndTime - fetchStartTime).toFixed(0)}ms)`);
 
-        const audioBlob = await response.blob();
+        const data = await response.json();
+
+        // Convert base64 audio to blob
+        const audioData = atob(data.audio_base64);
+        const arrayBuffer = new ArrayBuffer(audioData.length);
+        const view = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < audioData.length; i++) {
+          view[i] = audioData.charCodeAt(i);
+        }
+        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
         audioUrl = URL.createObjectURL(audioBlob);
+
+        // Convert character timestamps to word timestamps
+        if (data.alignment) {
+          const wordTimestamps = convertCharacterToWordTimestamps(
+            sectionText,
+            data.alignment.characters,
+            data.alignment.character_start_times_seconds,
+            data.alignment.character_end_times_seconds
+          );
+          wordTimestampsRef.current = wordTimestamps;
+          console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
+        }
 
         audio = new Audio(audioUrl);
         audioRef.current = audio;
@@ -1972,33 +2056,47 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         cancelAnimationFrame(wordTimerRef.current);
       }
 
-      // Wait for audio metadata to load to get duration
+      // Start word-by-word highlighting using actual timestamps
       const startWordHighlighting = () => {
-        const duration = audio.duration; // Duration in seconds
-        const timePerWord = duration / wordsInSection;
+        const wordTimestamps = wordTimestampsRef.current;
 
-        console.log(`📝 Section ${sectionIndex}: ${wordsInSection} words, ${(duration * 1000).toFixed(0)}ms duration, ${(timePerWord * 1000).toFixed(0)}ms per word`);
+        if (!wordTimestamps || wordTimestamps.length === 0) {
+          console.warn('⚠️ No word timestamps available for section', sectionIndex);
+          return;
+        }
+
+        console.log(`📝 Section ${sectionIndex}: Using ${wordTimestamps.length} precise word timestamps`);
 
         setCurrentNarrationWord(wordsBeforeThisSection);
 
-        // Use requestAnimationFrame for smooth, real-time synchronization
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
             return;
           }
 
-          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
-          const currentWordInSection = Math.floor(currentTime / timePerWord);
+          const currentTime = audio.currentTime; // Current playback position in seconds
 
-          if (currentWordInSection < wordsInSection) {
-            setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
-            wordTimerRef.current = requestAnimationFrame(updateHighlight);
-          } else {
-            // End of section
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(wordsBeforeThisSection + i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
             setCurrentNarrationWord(-1);
             wordTimerRef.current = null;
+            return;
           }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
         };
 
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
@@ -2119,7 +2217,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       narrateAbortController.current = new AbortController();
       const controller = narrateAbortController.current;
 
-      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2132,8 +2230,29 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         throw new Error('Failed to generate speech for lesson title');
       }
 
-      const audioBlob = await response.blob();
+      const data = await response.json();
+
+      // Convert base64 audio to blob
+      const audioData = atob(data.audio_base64);
+      const arrayBuffer = new ArrayBuffer(audioData.length);
+      const view = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < audioData.length; i++) {
+        view[i] = audioData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
       const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Convert character timestamps to word timestamps for title
+      if (data.alignment) {
+        const wordTimestamps = convertCharacterToWordTimestamps(
+          lessonName,
+          data.alignment.characters,
+          data.alignment.character_start_times_seconds,
+          data.alignment.character_end_times_seconds
+        );
+        wordTimestampsRef.current = wordTimestamps;
+        console.log(`📝 Converted ${wordTimestamps.length} word timestamps for lesson title`);
+      }
 
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
@@ -2182,10 +2301,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
 
       const startTitleWordHighlighting = () => {
-        const duration = audio.duration; // Duration in seconds
-        const timePerWord = duration / titleWords.length;
+        const wordTimestamps = wordTimestampsRef.current;
 
-        console.log(`📝 Title: ${titleWords.length} words, ${(duration * 1000).toFixed(0)}ms duration, ${(timePerWord * 1000).toFixed(0)}ms per word`);
+        if (!wordTimestamps || wordTimestamps.length === 0) {
+          console.warn('⚠️ No word timestamps available for title');
+          return;
+        }
+
+        console.log(`📝 Title: Using ${wordTimestamps.length} precise word timestamps`);
 
         setCurrentNarrationWord(0);
 
@@ -2193,25 +2316,35 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           cancelAnimationFrame(wordTimerRef.current);
         }
 
-        // Use requestAnimationFrame for smooth, real-time synchronization
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
             return;
           }
 
-          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
-          const currentWordIndex = Math.floor(currentTime / timePerWord);
+          const currentTime = audio.currentTime; // Current playback position in seconds
 
-          if (currentWordIndex < titleWords.length) {
-            setCurrentNarrationWord(currentWordIndex);
-            wordTimerRef.current = requestAnimationFrame(updateHighlight);
-          } else {
-            // End of title
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
             setCurrentNarrationWord(-1);
             setIsNarratingTitle(false); // Title narration finished
             wordTimerRef.current = null;
+            return;
           }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
         };
 
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
@@ -2237,18 +2370,37 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             // Only create promise if one doesn't exist yet
             if (!prefetchPromises.current[sectionIndex]) {
               prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-                fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+                fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: sectionText, voiceGender })
                 })
                   .then(response => {
-                    if (response.ok) return response.blob();
+                    if (response.ok) return response.json();
                     throw new Error('Prefetch failed');
                   })
-                  .then(blob => {
+                  .then(data => {
+                    // Convert base64 audio to blob
+                    const audioData = atob(data.audio_base64);
+                    const arrayBuffer = new ArrayBuffer(audioData.length);
+                    const view = new Uint8Array(arrayBuffer);
+                    for (let i = 0; i < audioData.length; i++) {
+                      view[i] = audioData.charCodeAt(i);
+                    }
+                    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
                     const url = URL.createObjectURL(blob);
                     const audio = new Audio(url);
+
+                    // Convert character timestamps to word timestamps
+                    let wordTimestamps = null;
+                    if (data.alignment) {
+                      wordTimestamps = convertCharacterToWordTimestamps(
+                        sectionText,
+                        data.alignment.characters,
+                        data.alignment.character_start_times_seconds,
+                        data.alignment.character_end_times_seconds
+                      );
+                    }
 
                     // Store in batch cache (may already exist from upfront prefetch)
                     if (!batchPrefetchCache.current[sectionIndex]) {
@@ -2257,9 +2409,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         batchPrefetchCache.current[sectionIndex] = {
                           url,
                           audio,
+                          wordTimestamps,
                           sectionIndex
                         };
-                        console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState})`);
+                        console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
                         resolve();
                       }, { once: true });
 
@@ -2311,27 +2464,47 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         // Store the promise so we can await it if needed
         prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-          fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+          fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: sectionText, voiceGender })
           })
             .then(response => {
-              if (response.ok) return response.blob();
+              if (response.ok) return response.json();
               throw new Error('Prefetch failed');
             })
-            .then(blob => {
+            .then(data => {
+              // Convert base64 audio to blob
+              const audioData = atob(data.audio_base64);
+              const arrayBuffer = new ArrayBuffer(audioData.length);
+              const view = new Uint8Array(arrayBuffer);
+              for (let i = 0; i < audioData.length; i++) {
+                view[i] = audioData.charCodeAt(i);
+              }
+              const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
               const url = URL.createObjectURL(blob);
               const audio = new Audio(url);
+
+              // Convert character timestamps to word timestamps
+              let wordTimestamps = null;
+              if (data.alignment) {
+                wordTimestamps = convertCharacterToWordTimestamps(
+                  sectionText,
+                  data.alignment.characters,
+                  data.alignment.character_start_times_seconds,
+                  data.alignment.character_end_times_seconds
+                );
+              }
 
               // Wait for audio to fully load before caching
               audio.addEventListener('canplaythrough', () => {
                 batchPrefetchCache.current[sectionIndex] = {
                   url,
                   audio,
+                  wordTimestamps,
                   sectionIndex
                 };
-                console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState})`);
+                console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
                 resolve(); // Resolve promise when ready
               }, { once: true });
 
@@ -2392,9 +2565,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       isPausedRef.current = false;
 
       // Resume word highlighting from current position
-      const currentSection = currentLessonSections[currentNarrationSection];
-      if (currentSection) {
-        const sectionText = extractTextFromSection(currentSection);
+      const wordTimestamps = wordTimestampsRef.current;
+      if (wordTimestamps && wordTimestamps.length > 0) {
         const wordsBeforeThisSection = currentLessonSections
           .slice(0, currentNarrationSection)
           .map(s => extractTextFromSection(s))
@@ -2402,33 +2574,39 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           .split(/\s+/)
           .filter(w => w.length > 0).length;
 
-        const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
-        const duration = audio.duration; // Duration in seconds
-        const timePerWord = duration / wordsInSection;
-
         // Clear existing timer
         if (wordTimerRef.current) {
           cancelAnimationFrame(wordTimerRef.current);
         }
 
-        // Use requestAnimationFrame for smooth, real-time synchronization
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
             return;
           }
 
-          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
-          const currentWordInSection = Math.floor(currentTime / timePerWord);
+          const currentTime = audio.currentTime; // Current playback position in seconds
 
-          if (currentWordInSection < wordsInSection) {
-            setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
-            wordTimerRef.current = requestAnimationFrame(updateHighlight);
-          } else {
-            // End of section
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(wordsBeforeThisSection + i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
             setCurrentNarrationWord(-1);
             wordTimerRef.current = null;
+            return;
           }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
         };
 
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
