@@ -113,6 +113,7 @@ const LearningHub = () => {
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
   const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
+  const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -273,6 +274,13 @@ const LearningHub = () => {
       URL.revokeObjectURL(prefetchedAudioRef.current.url);
       prefetchedAudioRef.current = null;
     }
+    // Clear batch prefetch cache
+    Object.values(batchPrefetchCache.current).forEach(cached => {
+      if (cached && cached.url) {
+        URL.revokeObjectURL(cached.url);
+      }
+    });
+    batchPrefetchCache.current = {};
     // Clear prefetch promise
     prefetchPromiseRef.current = null;
     isPausedRef.current = false;
@@ -1773,8 +1781,15 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let audioUrl;
       let audio;
 
-      // Check if we have prefetched audio for this section
-      if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
+      // Check batch cache first, then single prefetch cache
+      const cachedAudio = batchPrefetchCache.current[sectionIndex];
+      if (cachedAudio) {
+        console.log(`⚡ Using batch prefetched audio for section ${sectionIndex}`);
+        audioUrl = cachedAudio.url;
+        audio = cachedAudio.audio;
+        delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
+        audioRef.current = audio;
+      } else if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
         console.log(`⚡ Using prefetched audio for section ${sectionIndex}`);
         audioUrl = prefetchedAudioRef.current.url;
         audio = prefetchedAudioRef.current.audio;
@@ -1987,41 +2002,46 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       await audio.play();
 
-      // Prefetch the first section audio while title is playing
+      // Prefetch first 3 sections in parallel while title is playing
       if (currentLessonSections && currentLessonSections.length > 0) {
-        const firstSection = currentLessonSections[0];
-        const firstSectionText = extractTextFromSection(firstSection);
+        const sectionsToPreload = [0, 1, 2].filter(i => i < currentLessonSections.length);
 
-        if (firstSectionText && firstSectionText.length > 0) {
-          console.log('⚡ Prefetching first section audio...');
+        sectionsToPreload.forEach(sectionIndex => {
+          const section = currentLessonSections[sectionIndex];
+          const sectionText = extractTextFromSection(section);
 
-          try {
-            const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+          if (sectionText && sectionText.length > 0) {
+            console.log(`⚡ Prefetching section ${sectionIndex} during title...`);
+
+            fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ text: firstSectionText, voiceGender }),
-            });
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: sectionText, voiceGender })
+            })
+              .then(response => {
+                if (response.ok) return response.blob();
+                throw new Error('Prefetch failed');
+              })
+              .then(blob => {
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
 
-            if (prefetchResponse.ok) {
-              const prefetchBlob = await prefetchResponse.blob();
-              const prefetchUrl = URL.createObjectURL(prefetchBlob);
-              const prefetchAudio = new Audio(prefetchUrl);
-
-              // Store for later use
-              prefetchedAudioRef.current = {
-                url: prefetchUrl,
-                audio: prefetchAudio,
-                sectionIndex: 0
-              };
-              console.log('⚡ First section audio prefetched successfully');
-            }
-          } catch (prefetchError) {
-            console.log('Prefetch failed (non-critical):', prefetchError.message);
-            // Non-critical error, continue without prefetch
+                // Store in batch cache (may already exist from upfront prefetch)
+                if (!batchPrefetchCache.current[sectionIndex]) {
+                  batchPrefetchCache.current[sectionIndex] = {
+                    url,
+                    audio,
+                    sectionIndex
+                  };
+                  console.log(`✅ Section ${sectionIndex} prefetched during title`);
+                } else {
+                  // Already cached from upfront prefetch, clean up duplicate
+                  URL.revokeObjectURL(url);
+                }
+              })
+              .catch(err => console.log(`Title prefetch section ${sectionIndex} failed:`, err.message));
           }
-        }
+        });
       }
 
     } catch (error) {
@@ -2032,6 +2052,46 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.error('Error narrating lesson title:', error);
       setIsReading(false);
     }
+  };
+
+  // Prefetch multiple sections upfront for smoother narration
+  const prefetchInitialSections = () => {
+    if (!currentLessonSections || currentLessonSections.length === 0) return;
+
+    // Prefetch first 3 sections in parallel for immediate playback
+    const sectionsToPreload = [0, 1, 2].filter(i => i < currentLessonSections.length);
+
+    sectionsToPreload.forEach(sectionIndex => {
+      const section = currentLessonSections[sectionIndex];
+      const sectionText = extractTextFromSection(section);
+
+      if (sectionText && sectionText.length > 0) {
+        console.log(`⚡ Starting upfront prefetch for section ${sectionIndex}`);
+
+        fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: sectionText, voiceGender })
+        })
+          .then(response => {
+            if (response.ok) return response.blob();
+            throw new Error('Prefetch failed');
+          })
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            // Store in batch cache
+            batchPrefetchCache.current[sectionIndex] = {
+              url,
+              audio,
+              sectionIndex
+            };
+            console.log(`✅ Section ${sectionIndex} prefetched and cached`);
+          })
+          .catch(err => console.log(`Prefetch section ${sectionIndex} failed:`, err.message));
+      }
+    });
   };
 
   // Handle read-aloud functionality with ElevenLabs
@@ -2071,6 +2131,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setIsReading(true);
     isPausedRef.current = false;
     setCurrentNarrationSection(0);
+
+    // Start prefetching sections immediately in parallel with title
+    prefetchInitialSections();
+
     narrateLessonTitle();
   };
 
@@ -2089,6 +2153,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         URL.revokeObjectURL(prefetchedAudioRef.current.url);
         prefetchedAudioRef.current = null;
       }
+      // Cleanup batch prefetch cache
+      Object.values(batchPrefetchCache.current).forEach(cached => {
+        if (cached && cached.url) {
+          URL.revokeObjectURL(cached.url);
+        }
+      });
+      batchPrefetchCache.current = {};
     };
   }, []);
 

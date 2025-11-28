@@ -9,7 +9,10 @@
       "Bash(cat:*)",
       "Bash(curl:*)",
       "Bash(test:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cd:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -c:*)"
     ],
     "deny": [],
     "ask": []
