@@ -1783,8 +1783,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         style = {
           backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
           borderRadius: '2px',
-          padding: '2px 4px',
-          margin: '0 -4px'  // Negative margin offsets the padding to prevent layout shift
+          padding: '2px',
+          margin: '-2px' // Negative margin offsets the padding to prevent layout shift
         };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
