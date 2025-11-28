@@ -1770,7 +1770,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               className="bg-pink-100 cursor-pointer hover:bg-pink-200"
               style={{
                 backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
-                padding: '2px'
               }}
               onMouseEnter={(e) => {
                 if (closeTimeoutRef.current) {
@@ -1838,7 +1837,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Explained section highlight (pink) - no padding/border-radius for seamless highlighting
         className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
         style = {
-          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3'
         };
       }
 
