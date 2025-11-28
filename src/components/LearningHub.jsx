@@ -1788,7 +1788,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       isPausedRef.current = false;
       // Clear word highlighting timer
       if (wordTimerRef.current) {
-        clearInterval(wordTimerRef.current);
+        cancelAnimationFrame(wordTimerRef.current);
         wordTimerRef.current = null;
       }
       return;
@@ -1967,30 +1967,38 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Clear any existing word timer
       if (wordTimerRef.current) {
-        clearInterval(wordTimerRef.current);
+        cancelAnimationFrame(wordTimerRef.current);
       }
 
       // Wait for audio metadata to load to get duration
       const startWordHighlighting = () => {
-        const duration = audio.duration * 1000; // Convert to milliseconds
+        const duration = audio.duration; // Duration in seconds
         const timePerWord = duration / wordsInSection;
 
-        console.log(`📝 Section ${sectionIndex}: ${wordsInSection} words, ${duration.toFixed(0)}ms duration, ${timePerWord.toFixed(0)}ms per word`);
+        console.log(`📝 Section ${sectionIndex}: ${wordsInSection} words, ${(duration * 1000).toFixed(0)}ms duration, ${(timePerWord * 1000).toFixed(0)}ms per word`);
 
-        let currentWordInSection = 0;
         setCurrentNarrationWord(wordsBeforeThisSection);
 
-        wordTimerRef.current = setInterval(() => {
-          currentWordInSection++;
+        // Use requestAnimationFrame for smooth, real-time synchronization
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+          const currentWordInSection = Math.floor(currentTime / timePerWord);
+
           if (currentWordInSection < wordsInSection) {
             setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
+            wordTimerRef.current = requestAnimationFrame(updateHighlight);
           } else {
-            // End of section, clear timer
-            clearInterval(wordTimerRef.current);
-            wordTimerRef.current = null;
+            // End of section
             setCurrentNarrationWord(-1);
+            wordTimerRef.current = null;
           }
-        }, timePerWord);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
       };
 
       // If duration is already available, start immediately
@@ -2171,29 +2179,38 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
 
       const startTitleWordHighlighting = () => {
-        const duration = audio.duration * 1000;
+        const duration = audio.duration; // Duration in seconds
         const timePerWord = duration / titleWords.length;
 
-        console.log(`📝 Title: ${titleWords.length} words, ${duration.toFixed(0)}ms duration, ${timePerWord.toFixed(0)}ms per word`);
+        console.log(`📝 Title: ${titleWords.length} words, ${(duration * 1000).toFixed(0)}ms duration, ${(timePerWord * 1000).toFixed(0)}ms per word`);
 
-        let currentWordIndex = 0;
         setCurrentNarrationWord(0);
 
         if (wordTimerRef.current) {
-          clearInterval(wordTimerRef.current);
+          cancelAnimationFrame(wordTimerRef.current);
         }
 
-        wordTimerRef.current = setInterval(() => {
-          currentWordIndex++;
+        // Use requestAnimationFrame for smooth, real-time synchronization
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+          const currentWordIndex = Math.floor(currentTime / timePerWord);
+
           if (currentWordIndex < titleWords.length) {
             setCurrentNarrationWord(currentWordIndex);
+            wordTimerRef.current = requestAnimationFrame(updateHighlight);
           } else {
-            clearInterval(wordTimerRef.current);
-            wordTimerRef.current = null;
+            // End of title
             setCurrentNarrationWord(-1);
             setIsNarratingTitle(false); // Title narration finished
+            wordTimerRef.current = null;
           }
-        }, timePerWord);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
       };
 
       if (audio.duration && !isNaN(audio.duration)) {
@@ -2351,7 +2368,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Clear word highlighting timer
       if (wordTimerRef.current) {
-        clearInterval(wordTimerRef.current);
+        cancelAnimationFrame(wordTimerRef.current);
         wordTimerRef.current = null;
       }
       setCurrentNarrationWord(-1);
@@ -2382,29 +2399,34 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           .filter(w => w.length > 0).length;
 
         const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
-        const duration = audio.duration * 1000;
-        const currentTime = audio.currentTime * 1000;
+        const duration = audio.duration; // Duration in seconds
         const timePerWord = duration / wordsInSection;
-        const currentWordInSection = Math.floor(currentTime / timePerWord);
 
-        setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
-
-        // Continue timer from current position
+        // Clear existing timer
         if (wordTimerRef.current) {
-          clearInterval(wordTimerRef.current);
+          cancelAnimationFrame(wordTimerRef.current);
         }
 
-        let wordIndex = currentWordInSection;
-        wordTimerRef.current = setInterval(() => {
-          wordIndex++;
-          if (wordIndex < wordsInSection) {
-            setCurrentNarrationWord(wordsBeforeThisSection + wordIndex);
-          } else {
-            clearInterval(wordTimerRef.current);
-            wordTimerRef.current = null;
-            setCurrentNarrationWord(-1);
+        // Use requestAnimationFrame for smooth, real-time synchronization
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
           }
-        }, timePerWord);
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+          const currentWordInSection = Math.floor(currentTime / timePerWord);
+
+          if (currentWordInSection < wordsInSection) {
+            setCurrentNarrationWord(wordsBeforeThisSection + currentWordInSection);
+            wordTimerRef.current = requestAnimationFrame(updateHighlight);
+          } else {
+            // End of section
+            setCurrentNarrationWord(-1);
+            wordTimerRef.current = null;
+          }
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
       }
 
       return;
@@ -2445,7 +2467,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       batchPrefetchCache.current = {};
       // Cleanup word highlighting timer
       if (wordTimerRef.current) {
-        clearInterval(wordTimerRef.current);
+        cancelAnimationFrame(wordTimerRef.current);
         wordTimerRef.current = null;
       }
     };
