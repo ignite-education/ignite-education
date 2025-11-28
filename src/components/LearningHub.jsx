@@ -1707,11 +1707,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (light grey) with padding
+        // Narration highlight (light grey) with padding that doesn't shift layout
         style = {
           backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
           borderRadius: '2px',
-          padding: '2px'
+          padding: '2px',
+          margin: '-2px' // Negative margin offsets the padding to prevent layout shift
         };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
@@ -1986,7 +1987,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          const currentTime = audio.currentTime; // Current playback position in seconds
+          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
           const currentWordInSection = Math.floor(currentTime / timePerWord);
 
           if (currentWordInSection < wordsInSection) {
@@ -2197,7 +2199,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          const currentTime = audio.currentTime; // Current playback position in seconds
+          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
           const currentWordIndex = Math.floor(currentTime / timePerWord);
 
           if (currentWordIndex < titleWords.length) {
@@ -2414,7 +2417,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          const currentTime = audio.currentTime; // Current playback position in seconds
+          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
           const currentWordInSection = Math.floor(currentTime / timePerWord);
 
           if (currentWordInSection < wordsInSection) {
