@@ -2574,13 +2574,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const handleReadAloud = async () => {
     console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
 
-    // Prevent multiple simultaneous calls
-    if (isHandlingReadAloud.current) {
-      console.warn('⚠️ handleReadAloud already running, ignoring this call');
+    // Prevent multiple simultaneous calls - use a 500ms debounce
+    const now = Date.now();
+    if (isHandlingReadAloud.current && (now - isHandlingReadAloud.current) < 500) {
+      console.warn('⚠️ handleReadAloud called too quickly, ignoring (debounce)');
       return;
     }
 
-    isHandlingReadAloud.current = true;
+    isHandlingReadAloud.current = now;
 
     try {
       // If audio is playing, pause it
@@ -2611,7 +2612,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Update state (keep audioRef and currentNarrationSection for resume)
       setIsReading(false);
       isPausedRef.current = true;
-      isHandlingReadAloud.current = false;
+      isHandlingReadAloud.current = 0;
       return;
     }
 
@@ -2670,7 +2671,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
       }
 
-      isHandlingReadAloud.current = false;
+      isHandlingReadAloud.current = 0;
       return;
     }
 
@@ -2684,12 +2685,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       prefetchInitialSections();
 
       narrateLessonTitle();
-    } finally {
-      // Reset the flag after a short delay to allow async operations to start
-      setTimeout(() => {
-        isHandlingReadAloud.current = false;
-        console.log('🔵 handleReadAloud flag reset');
-      }, 100);
+
+      console.log('🔵 handleReadAloud completed, narration started');
+    } catch (error) {
+      console.error('Error in handleReadAloud:', error);
+      isHandlingReadAloud.current = 0;
+      setIsReading(false);
     }
   };
 
