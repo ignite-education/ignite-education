@@ -2236,12 +2236,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Narrate the lesson title before starting content
   const narrateLessonTitle = async () => {
+    console.log(`🎯 [ENTRY] narrateLessonTitle called for: ${lessonName}`);
     try {
       console.log(`📖 Narrating lesson title: ${lessonName}`);
 
       // Create new abort controller for this request
       narrateAbortController.current = new AbortController();
       const controller = narrateAbortController.current;
+
+      console.log('🌐 [FETCH] Starting API call to /api/text-to-speech-timestamps...');
+      console.log('📤 [FETCH] Request body:', { text: lessonName, voiceGender });
 
       const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
         method: 'POST',
@@ -2251,6 +2255,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         body: JSON.stringify({ text: lessonName, voiceGender }),
         signal: controller.signal,
       });
+
+      console.log('📡 [FETCH] API response received, status:', response.status);
 
       if (!response.ok) {
         const errorText = await response.text();
