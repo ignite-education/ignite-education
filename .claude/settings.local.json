@@ -12,7 +12,8 @@
       "Bash(find:*)",
       "Bash(cd:*)",
       "Bash(npm run build:*)",
-      "Bash(node -c:*)"
+      "Bash(node -c:*)",
+      "Bash(awk:*)"
     ],
     "deny": [],
     "ask": []

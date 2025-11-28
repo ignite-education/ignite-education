@@ -170,6 +170,7 @@ const LearningHub = () => {
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
   const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
   const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
+  const isHandlingReadAloud = React.useRef(false); // Prevent multiple simultaneous calls
   const prefetchPromises = React.useRef({}); // Store promises for sections currently being prefetched
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
@@ -2553,8 +2554,19 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Handle read-aloud functionality with ElevenLabs
   const handleReadAloud = async () => {
-    // If audio is playing, pause it
-    if (isReading && audioRef.current) {
+    console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
+
+    // Prevent multiple simultaneous calls
+    if (isHandlingReadAloud.current) {
+      console.warn('⚠️ handleReadAloud already running, ignoring this call');
+      return;
+    }
+
+    isHandlingReadAloud.current = true;
+
+    try {
+      // If audio is playing, pause it
+      if (isReading && audioRef.current) {
       // Abort any in-flight API requests
       if (narrateAbortController.current) {
         narrateAbortController.current.abort();
@@ -2581,6 +2593,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Update state (keep audioRef and currentNarrationSection for resume)
       setIsReading(false);
       isPausedRef.current = true;
+      isHandlingReadAloud.current = false;
       return;
     }
 
@@ -2639,18 +2652,27 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
       }
 
+      isHandlingReadAloud.current = false;
       return;
     }
 
-    // Start reading from the beginning with lesson title
-    setIsReading(true);
-    isPausedRef.current = false;
-    setCurrentNarrationSection(0);
+      // Start reading from the beginning with lesson title
+      console.log('🎬 Starting narration from beginning');
+      setIsReading(true);
+      isPausedRef.current = false;
+      setCurrentNarrationSection(0);
 
-    // Start prefetching sections immediately in parallel with title
-    prefetchInitialSections();
+      // Start prefetching sections immediately in parallel with title
+      prefetchInitialSections();
 
-    narrateLessonTitle();
+      narrateLessonTitle();
+    } finally {
+      // Reset the flag after a short delay to allow async operations to start
+      setTimeout(() => {
+        isHandlingReadAloud.current = false;
+        console.log('🔵 handleReadAloud flag reset');
+      }, 100);
+    }
   };
 
   // Cleanup audio on unmount
