@@ -1830,9 +1830,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           return;
         }
 
-        // Continue to next section if not paused (don't wait for prefetch)
+        // Continue to next section immediately for seamless playback
         if (!isPausedRef.current) {
-          narrateSection(sectionIndex + 1);
+          await narrateSection(sectionIndex + 1);
         }
       };
 
@@ -1975,7 +1975,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const audio = new Audio(audioUrl);
       audioRef.current = audio;
 
-      audio.onended = () => {
+      audio.onended = async () => {
         console.log(`✅ Finished lesson title`);
         URL.revokeObjectURL(audioUrl);
 
@@ -1985,9 +1985,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           return;
         }
 
-        // Continue to lesson content if not paused
+        // Continue to lesson content immediately for seamless playback
         if (!isPausedRef.current) {
-          narrateSection(0);
+          await narrateSection(0);
         }
       };
 
