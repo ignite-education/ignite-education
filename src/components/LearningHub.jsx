@@ -1770,6 +1770,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               className="bg-pink-100 cursor-pointer hover:bg-pink-200"
               style={{
                 backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
+                padding: '2px'
               }}
               onMouseEnter={(e) => {
                 if (closeTimeoutRef.current) {
@@ -1777,11 +1778,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   closeTimeoutRef.current = null;
                 }
                 if (!popupLocked) {
-                  setHoveredExplanation(explainedSectionId);
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const x = rect.left + rect.width / 2;
-                  const y = rect.top;
-                  setPopupPosition({ x, y });
+                  // Only update position if we're switching to a different section
+                  if (hoveredExplanation !== explainedSectionId) {
+                    setHoveredExplanation(explainedSectionId);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top;
+                    setPopupPosition({ x, y });
+                  } else {
+                    // Just keep the same section active without moving popup
+                    setHoveredExplanation(explainedSectionId);
+                  }
                 }
               }}
               onMouseLeave={() => {
@@ -1848,23 +1855,29 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             }
 
             if (!popupLocked) {
-              setHoveredExplanation(explainedSectionId);
-              const rect = e.currentTarget.getBoundingClientRect();
-              const centerX = rect.left + (rect.width / 2);
-              const bottomY = rect.bottom;
-              const topY = rect.top;
-              const popupHeight = 500;
-              const spaceAbove = topY;
-              const spaceBelow = window.innerHeight - bottomY;
-              const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
+              // Only update position if we're switching to a different section
+              if (hoveredExplanation !== explainedSectionId) {
+                setHoveredExplanation(explainedSectionId);
+                const rect = e.currentTarget.getBoundingClientRect();
+                const centerX = rect.left + (rect.width / 2);
+                const bottomY = rect.bottom;
+                const topY = rect.top;
+                const popupHeight = 500;
+                const spaceAbove = topY;
+                const spaceBelow = window.innerHeight - bottomY;
+                const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
 
-              setPopupPosition({
-                x: centerX,
-                y: preferAbove ? topY : bottomY,
-                preferAbove: preferAbove
-              });
+                setPopupPosition({
+                  x: centerX,
+                  y: preferAbove ? topY : bottomY,
+                  preferAbove: preferAbove
+                });
 
-              highlightRef.current = e.currentTarget;
+                highlightRef.current = e.currentTarget;
+              } else {
+                // Just keep the same section active without moving popup
+                setHoveredExplanation(explainedSectionId);
+              }
             }
           } : undefined}
           onMouseLeave={isExplainedSection ? () => {

@@ -23,7 +23,9 @@
       "Bash(/tmp/index-new.css)",
       "Bash(/tmp/learninghub-fixed.jsx)",
       "Bash(/tmp/learninghub-fixed2.jsx)",
-      "Bash(/tmp/learninghub-seamless.jsx)"
+      "Bash(/tmp/learninghub-seamless.jsx)",
+      "Bash(/tmp/stable-1.jsx)",
+      "Bash(/tmp/stable-2.jsx)"
     ],
     "deny": [],
     "ask": []
