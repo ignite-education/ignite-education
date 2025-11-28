@@ -109,6 +109,7 @@ const LearningHub = () => {
   const [isReading, setIsReading] = React.useState(false);
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
   const [currentNarrationWord, setCurrentNarrationWord] = React.useState(-1); // Track which word is being spoken
+  const [isNarratingTitle, setIsNarratingTitle] = React.useState(false); // Track if we're narrating the title vs sections
   const audioRef = React.useRef(null);
   const wordTimerRef = React.useRef(null); // Track word highlighting timer
   const isPausedRef = React.useRef(false); // Track if user manually paused
@@ -1655,7 +1656,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   // Helper to render text with explained sections highlighted and word-by-word narration highlighting
-  const renderTextWithHighlight = (text, startWordIndex) => {
+  const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null) => {
     if (!text) return null;
 
     // Split text into words while preserving spaces
@@ -1689,7 +1690,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       });
 
       // Determine if this word should be highlighted for narration
-      const isCurrentWord = isReading && currentNarrationWord === currentWordIndex;
+      // Only highlight if:
+      // 1. We're currently reading
+      // 2. This word index matches the current narration word
+      // 3. Either we're narrating the title and this is the title (sectionIndexForHighlight === 'title')
+      //    OR we're narrating a section and this section matches currentNarrationSection
+      const isInActiveNarrationContext =
+        (sectionIndexForHighlight === 'title' && isNarratingTitle) ||
+        (sectionIndexForHighlight !== 'title' && !isNarratingTitle && sectionIndexForHighlight === currentNarrationSection);
+
+      const isCurrentWord = isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
 
       // Build className based on highlighting state
       let className = 'transition-all duration-200';
@@ -1770,6 +1780,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsReading(false);
       setCurrentNarrationSection(0);
       setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
       isPausedRef.current = false;
       // Clear word highlighting timer
       if (wordTimerRef.current) {
@@ -2117,6 +2128,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`⏱️ [${endTime.toFixed(0)}ms] TITLE ENDED`);
         URL.revokeObjectURL(audioUrl);
 
+        // Clear title narration flag
+        setIsNarratingTitle(false);
+
         // Guard: check if this audio is still the current one
         if (audioRef.current !== audio) {
           console.log('Title audio is no longer active, skipping continuation');
@@ -2146,6 +2160,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       await audio.play();
 
+      // Set flag that we're narrating the title
+      setIsNarratingTitle(true);
+
       // Start word-by-word highlighting for title
       const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
 
@@ -2170,6 +2187,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             clearInterval(wordTimerRef.current);
             wordTimerRef.current = null;
             setCurrentNarrationWord(-1);
+            setIsNarratingTitle(false); // Title narration finished
           }
         }, timePerWord);
       };
@@ -2333,6 +2351,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         wordTimerRef.current = null;
       }
       setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
 
       // Update state (keep audioRef and currentNarrationSection for resume)
       setIsReading(false);
@@ -3056,7 +3075,7 @@ ${currentLessonSections.map((section) => {
                 })()}
               </p>
               <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
-                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0)}</h1>
+                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0, 'title')}</h1>
               </div>
             </div>
             {/* Render ALL sections */}
@@ -3091,9 +3110,9 @@ ${currentLessonSections.map((section) => {
                       let result;
                       if (part.startsWith('__') && part.endsWith('__')) {
                         const innerText = part.slice(2, -2);
-                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset)}</u>;
+                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</u>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset)}</span>;
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
                       }
 
                       currentOffset += wordCount;
@@ -3163,20 +3182,20 @@ ${currentLessonSections.map((section) => {
                             rel="noopener noreferrer"
                             className="text-blue-600 underline hover:text-blue-800"
                           >
-                            {renderTextWithHighlight(linkText, currentOffset)}
+                            {renderTextWithHighlight(linkText, currentOffset, sectionIdx)}
                           </a>
                         );
                       } else if (part.startsWith('**') && part.endsWith('**')) {
                         const innerText = part.slice(2, -2);
-                        result = <strong key={i} className="font-semibold">{renderTextWithHighlight(innerText, currentOffset)}</strong>;
+                        result = <strong key={i} className="font-semibold">{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</strong>;
                       } else if (part.startsWith('__') && part.endsWith('__')) {
                         const innerText = part.slice(2, -2);
-                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset)}</u>;
+                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</u>;
                       } else if (part.match(/^(?<!\*)\*(?!\*)([^*]+)\*(?!\*)$/)) {
                         const innerText = part.slice(1, -1);
-                        result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset)}</em>;
+                        result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</em>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset)}</span>;
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
                       }
 
                       currentOffset += wordCount;
