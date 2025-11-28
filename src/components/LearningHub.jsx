@@ -2576,8 +2576,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     // Prevent multiple simultaneous calls - use a 500ms debounce
     const now = Date.now();
-    if (isHandlingReadAloud.current && (now - isHandlingReadAloud.current) < 500) {
-      console.warn('⚠️ handleReadAloud called too quickly, ignoring (debounce)');
+    if (isHandlingReadAloud.current > 0 && (now - isHandlingReadAloud.current) < 500) {
+      console.warn('⚠️ handleReadAloud called too quickly, ignoring (debounce). Time since last call:', now - isHandlingReadAloud.current, 'ms');
       return;
     }
 
