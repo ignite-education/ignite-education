@@ -116,11 +116,9 @@ const LearningHub = () => {
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
-  // Voice settings state
-  const [voiceGender, setVoiceGender] = useState('female'); // 'female' or 'male'
-  const [playbackSpeed, setPlaybackSpeed] = useState(1.0); // 0.75, 1.0, 1.25, 1.5
-  const [showVoiceSettings, setShowVoiceSettings] = useState(false);
-  const voiceSettingsTimeoutRef = React.useRef(null);
+  // Voice settings - hardcoded defaults (no user controls)
+  const voiceGender = 'male'; // Fixed to male voice
+  const playbackSpeed = 1.0; // Fixed to 1x speed
 
   // Daily course completion limit state
   const [coursesCompletedToday, setCoursesCompletedToday] = useState(0);
@@ -3144,102 +3142,24 @@ ${currentLessonSections.map((section) => {
 
           {/* Content */}
           <div className="relative z-10 flex items-center justify-center gap-2 w-full" style={{ zIndex: 20 }}>
-          {/* Voice-over button with settings */}
-          <div
-            className="relative"
-            onMouseEnter={() => {
-              voiceSettingsTimeoutRef.current = setTimeout(() => {
-                setShowVoiceSettings(true);
-              }, 500);
+          {/* Speaker Button */}
+          <button
+            onClick={handleReadAloud}
+            className="rounded-lg flex items-center justify-center transition text-white"
+            style={{
+              backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+              width: '43px',
+              height: '43px'
             }}
-            onMouseLeave={() => {
-              if (voiceSettingsTimeoutRef.current) {
-                clearTimeout(voiceSettingsTimeoutRef.current);
-              }
-              setTimeout(() => {
-                setShowVoiceSettings(false);
-              }, 300);
-            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
           >
-            {/* Voice Settings Menu - Two Pink Boxes */}
-            {showVoiceSettings && (
-              <div
-                className="absolute bottom-full mb-2 flex gap-2"
-                style={{
-                  zIndex: 30,
-                  animation: 'slideUpFade 0.2s ease-out',
-                  opacity: 1,
-                  left: '50%',
-                  transform: 'translateX(-50%)'
-                }}
-              >
-                {/* Left Box - Voice Gender */}
-                <div
-                  className="rounded-lg shadow-lg px-4 py-2.5 flex flex-col gap-1.5"
-                  style={{ backgroundColor: '#EF0B72', minWidth: '80px' }}
-                >
-                  <button
-                    onClick={() => setVoiceGender('female')}
-                    className="font-medium text-xs transition-all text-left"
-                    style={{
-                      color: voiceGender === 'female' ? 'black' : 'white'
-                    }}
-                  >
-                    Female
-                  </button>
-                  <button
-                    onClick={() => setVoiceGender('male')}
-                    className="font-medium text-xs transition-all text-left"
-                    style={{
-                      color: voiceGender === 'male' ? 'black' : 'white'
-                    }}
-                  >
-                    Male
-                  </button>
-                </div>
-
-                {/* Right Box - Speed Grid */}
-                <div
-                  className="rounded-lg shadow-lg px-3 py-2.5"
-                  style={{ backgroundColor: '#EF0B72', minWidth: '100px' }}
-                >
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                    {[0.75, 1.0, 1.25, 1.5].map((speed) => (
-                      <button
-                        key={speed}
-                        onClick={() => setPlaybackSpeed(speed)}
-                        className="font-medium text-xs transition-all text-center"
-                        style={{
-                          color: playbackSpeed === speed ? 'black' : 'white'
-                        }}
-                      >
-                        {speed}x
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {isReading ? (
+              <Pause size={18} className="text-white" fill="white" />
+            ) : (
+              <Volume2 size={18} className="text-white" />
             )}
-
-            {/* Speaker Button */}
-            <button
-              onClick={handleReadAloud}
-              className="rounded-lg flex items-center justify-center transition text-white"
-              style={{
-                backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-                width: '43px',
-                height: '43px'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
-            >
-              {isReading ? (
-                <Pause size={18} className="text-white" fill="white" />
-              ) : (
-                <Volume2 size={18} className="text-white" />
-              )}
-            </button>
-          </div>
+          </button>
           <button
             onClick={handleContinue}
             className="text-white font-semibold rounded-lg transition"
