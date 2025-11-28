@@ -2073,9 +2073,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       await audio.play();
 
-      // Prefetch first 3 sections in parallel while title is playing
+      // Prefetch first 6 sections in parallel while title is playing
       if (currentLessonSections && currentLessonSections.length > 0) {
-        const sectionsToPreload = [0, 1, 2].filter(i => i < currentLessonSections.length);
+        const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
 
         sectionsToPreload.forEach(sectionIndex => {
           const section = currentLessonSections[sectionIndex];
@@ -2149,8 +2149,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const prefetchInitialSections = () => {
     if (!currentLessonSections || currentLessonSections.length === 0) return;
 
-    // Prefetch first 3 sections in parallel for immediate playback
-    const sectionsToPreload = [0, 1, 2].filter(i => i < currentLessonSections.length);
+    // Prefetch first 6 sections in parallel for immediate playback
+    const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
 
     sectionsToPreload.forEach(sectionIndex => {
       const section = currentLessonSections[sectionIndex];
