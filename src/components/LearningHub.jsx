@@ -1735,33 +1735,75 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     const parts = text.split(/(\s+)/); // This keeps the spaces in the array
     const elements = [];
     let currentWordIndex = startWordIndex;
-
     parts.forEach((part, idx) => {
-      // If this is whitespace, render it without highlighting
-      if (!part || /^\s+$/.test(part)) {
-        elements.push(<span key={`space-${idx}`}>{part}</span>);
-        return;
+      // Calculate the current position in the original text
+      let currentPosition = 0;
+      for (let i = 0; i < idx; i++) {
+        currentPosition += parts[i].length;
       }
+      const partStart = currentPosition;
+      const partEnd = currentPosition + part.length;
 
-      // This is an actual word
-      const word = part;
-
-      // Check if this word is part of an explained section
+      // Check if this part (word or space) is within an explained section
       let isExplainedSection = false;
       let explainedSectionId = null;
 
       explainedSections.forEach((section) => {
-        if (text.indexOf(section.text) !== -1) {
-          const sectionWords = section.text.split(/\s+/).filter(w => w.length > 0);
-          const wordInSection = sectionWords.includes(word.trim());
-          if (wordInSection) {
+        const sectionStart = text.indexOf(section.text);
+        if (sectionStart !== -1) {
+          const sectionEnd = sectionStart + section.text.length;
+          // Check if this part overlaps with the explained section
+          if (partStart < sectionEnd && partEnd > sectionStart) {
             isExplainedSection = true;
             explainedSectionId = section.id;
           }
         }
       });
 
-      // Determine if this word should be highlighted for narration
+      // If this is whitespace
+      if (!part || /^\s+$/.test(part)) {
+        if (isExplainedSection) {
+          // Render highlighted whitespace
+          elements.push(
+            <span 
+              key={`space-${idx}`}
+              className="bg-pink-100 cursor-pointer hover:bg-pink-200"
+              style={{
+                backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
+              }}
+              onMouseEnter={(e) => {
+                if (closeTimeoutRef.current) {
+                  clearTimeout(closeTimeoutRef.current);
+                  closeTimeoutRef.current = null;
+                }
+                if (!popupLocked) {
+                  setHoveredExplanation(explainedSectionId);
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const x = rect.left + rect.width / 2;
+                  const y = rect.top;
+                  setPopupPosition({ x, y });
+                }
+              }}
+              onMouseLeave={() => {
+                if (!popupLocked) {
+                  closeTimeoutRef.current = setTimeout(() => {
+                    setHoveredExplanation(null);
+                  }, 200);
+                }
+              }}
+            >
+              {part}
+            </span>
+          );
+        } else {
+          // Render normal whitespace
+          elements.push(<span key={`space-${idx}`}>{part}</span>);
+        }
+        return;
+      }
+
+      // This is an actual word
+      const word = part;
       // Only highlight if:
       // 1. We're currently reading
       // 2. This word index matches the current narration word
