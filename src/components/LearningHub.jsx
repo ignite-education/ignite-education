@@ -1740,6 +1740,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Narrate a single section
   const narrateSection = async (sectionIndex) => {
+    const entryTime = performance.now();
+    console.log(`🎯 [${entryTime.toFixed(0)}ms] narrateSection(${sectionIndex}) ENTERED`);
+
     if (sectionIndex >= currentLessonSections.length) {
       // Finished all sections
       console.log('✅ Finished narrating all sections');
@@ -1759,7 +1762,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return;
     }
 
-    console.log(`📖 Narrating section ${sectionIndex}: ${sectionText.substring(0, 50)}...`);
+    console.log(`📖 [${performance.now().toFixed(0)}ms] Narrating section ${sectionIndex} (${section.content_type}): ${sectionText.substring(0, 50)}...`);
 
     // Scroll when we hit h2 or h3 headers (but skip the first h2 which is learning objectives)
     const headingLevel = section.content_type === 'heading' ? (section.content?.level || 2) : null;
@@ -1780,22 +1783,32 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     try {
       let audioUrl;
       let audio;
+      const cacheCheckTime = performance.now();
+
+      // Log batch cache status
+      const cachedSections = Object.keys(batchPrefetchCache.current);
+      console.log(`💾 [${cacheCheckTime.toFixed(0)}ms] Batch cache has sections: [${cachedSections.join(', ')}]`);
 
       // Check batch cache first, then single prefetch cache
       const cachedAudio = batchPrefetchCache.current[sectionIndex];
       if (cachedAudio) {
-        console.log(`⚡ Using batch prefetched audio for section ${sectionIndex}`);
+        const cacheHitTime = performance.now();
+        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] BATCH CACHE HIT for section ${sectionIndex} (readyState: ${cachedAudio.audio.readyState})`);
         audioUrl = cachedAudio.url;
         audio = cachedAudio.audio;
         delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
         audioRef.current = audio;
       } else if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
-        console.log(`⚡ Using prefetched audio for section ${sectionIndex}`);
+        const cacheHitTime = performance.now();
+        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] SINGLE CACHE HIT for section ${sectionIndex}`);
         audioUrl = prefetchedAudioRef.current.url;
         audio = prefetchedAudioRef.current.audio;
         prefetchedAudioRef.current = null; // Clear after use
         audioRef.current = audio;
       } else {
+        const fetchStartTime = performance.now();
+        console.log(`❌ [${fetchStartTime.toFixed(0)}ms] CACHE MISS - Fetching section ${sectionIndex} on-demand`);
+
         // Create new abort controller for this request
         narrateAbortController.current = new AbortController();
         const controller = narrateAbortController.current;
@@ -1813,15 +1826,20 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           throw new Error('Failed to generate speech');
         }
 
+        const fetchEndTime = performance.now();
+        console.log(`📥 [${fetchEndTime.toFixed(0)}ms] TTS API response received (took: ${(fetchEndTime - fetchStartTime).toFixed(0)}ms)`);
+
         const audioBlob = await response.blob();
         audioUrl = URL.createObjectURL(audioBlob);
 
         audio = new Audio(audioUrl);
         audioRef.current = audio;
+        console.log(`🎵 [${performance.now().toFixed(0)}ms] Audio object created from blob`);
       }
 
       audio.onended = async () => {
-        console.log(`✅ Finished section ${sectionIndex}`);
+        const endTime = performance.now();
+        console.log(`⏱️ [${endTime.toFixed(0)}ms] Section ${sectionIndex} ENDED`);
         URL.revokeObjectURL(audioUrl);
 
         // Guard: check if this audio is still the current one
@@ -1832,7 +1850,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         // Continue to next section immediately for seamless playback
         if (!isPausedRef.current) {
+          const startNextTime = performance.now();
+          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section ${sectionIndex + 1} (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
+
           await narrateSection(sectionIndex + 1);
+
+          const playedTime = performance.now();
+          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section ${sectionIndex + 1} PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
         }
       };
 
@@ -1845,7 +1869,15 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Set playback speed
       audio.playbackRate = playbackSpeed;
 
+      const beforePlayTime = performance.now();
+      console.log(`🎬 [${beforePlayTime.toFixed(0)}ms] Calling audio.play() for section ${sectionIndex} (readyState: ${audio.readyState})`);
+
       await audio.play();
+
+      const afterPlayTime = performance.now();
+      console.log(`✅ [${afterPlayTime.toFixed(0)}ms] audio.play() completed (took: ${(afterPlayTime - beforePlayTime).toFixed(0)}ms) - SECTION ${sectionIndex} NOW PLAYING`);
+      console.log(`⏰ Total time from narrateSection entry to playback: ${(afterPlayTime - entryTime).toFixed(0)}ms`);
+
       setIsReading(true);
       setCurrentNarrationSection(sectionIndex);
 
@@ -1976,7 +2008,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       audioRef.current = audio;
 
       audio.onended = async () => {
-        console.log(`✅ Finished lesson title`);
+        const endTime = performance.now();
+        console.log(`⏱️ [${endTime.toFixed(0)}ms] TITLE ENDED`);
         URL.revokeObjectURL(audioUrl);
 
         // Guard: check if this audio is still the current one
@@ -1987,7 +2020,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         // Continue to lesson content immediately for seamless playback
         if (!isPausedRef.current) {
+          const startNextTime = performance.now();
+          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section 0 (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
+
           await narrateSection(0);
+
+          const playedTime = performance.now();
+          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section 0 PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
         }
       };
 
