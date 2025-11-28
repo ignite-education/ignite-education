@@ -738,13 +738,33 @@ const LearningHub = () => {
   const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
   const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
 
-  // Debug: Log the lesson being displayed
-  console.log('📖 Displaying lesson:', {
-    module: currentModule,
-    lesson: currentLesson,
-    lessonName: lessonName,
-    sectionsCount: Array.isArray(currentLessonSections) ? currentLessonSections.length : 0
-  });
+  // Debug: Track render count to identify infinite loop
+  const renderCountRef = React.useRef(0);
+  renderCountRef.current++;
+
+  if (renderCountRef.current > 10) {
+    console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
+    console.log('Current state values:', {
+      loading,
+      currentModule,
+      currentLesson,
+      isReading,
+      groupedLessonsKeys: Object.keys(groupedLessons).length
+    });
+
+    // STOP THE INFINITE LOOP BY THROWING AN ERROR
+    throw new Error('INFINITE RENDER LOOP DETECTED - check console for details');
+  }
+
+  // Debug: Log the lesson being displayed (only first few renders)
+  if (renderCountRef.current <= 5) {
+    console.log('📖 Displaying lesson (render #' + renderCountRef.current + '):', {
+      module: currentModule,
+      lesson: currentLesson,
+      lessonName: lessonName,
+      sectionsCount: Array.isArray(currentLessonSections) ? currentLessonSections.length : 0
+    });
+  }
 
   // Helper to determine if a section is high-priority for question generation
   // Get suggested question for section (only uses custom questions from H2 headings)
