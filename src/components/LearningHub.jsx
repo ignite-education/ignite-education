@@ -2067,13 +2067,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
                 // Store in batch cache (may already exist from upfront prefetch)
                 if (!batchPrefetchCache.current[sectionIndex]) {
-                  audio.load(); // Preload audio immediately for instant playback
-                  batchPrefetchCache.current[sectionIndex] = {
-                    url,
-                    audio,
-                    sectionIndex
-                  };
-                  console.log(`✅ Section ${sectionIndex} prefetched during title`);
+                  // Wait for audio to fully load before caching
+                  audio.addEventListener('canplaythrough', () => {
+                    batchPrefetchCache.current[sectionIndex] = {
+                      url,
+                      audio,
+                      sectionIndex
+                    };
+                    console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState})`);
+                  }, { once: true });
+
+                  audio.load(); // Start loading audio
                 } else {
                   // Already cached from upfront prefetch, clean up duplicate
                   URL.revokeObjectURL(url);
@@ -2120,15 +2124,18 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           .then(blob => {
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
-            audio.load(); // Preload audio immediately for instant playback
 
-            // Store in batch cache
-            batchPrefetchCache.current[sectionIndex] = {
-              url,
-              audio,
-              sectionIndex
-            };
-            console.log(`✅ Section ${sectionIndex} prefetched and cached`);
+            // Wait for audio to fully load before caching
+            audio.addEventListener('canplaythrough', () => {
+              batchPrefetchCache.current[sectionIndex] = {
+                url,
+                audio,
+                sectionIndex
+              };
+              console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState})`);
+            }, { once: true });
+
+            audio.load(); // Start loading audio
           })
           .catch(err => console.log(`Prefetch section ${sectionIndex} failed:`, err.message));
       }
