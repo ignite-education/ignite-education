@@ -1707,10 +1707,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (light grey) - no padding to avoid position shift
+        // Narration highlight (light grey) with padding
         style = {
           backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
-          borderRadius: '2px'
+          borderRadius: '2px',
+          padding: '2px'
         };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
