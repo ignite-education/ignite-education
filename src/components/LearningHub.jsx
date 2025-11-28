@@ -2028,6 +2028,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
                 // Store in batch cache (may already exist from upfront prefetch)
                 if (!batchPrefetchCache.current[sectionIndex]) {
+                  audio.load(); // Preload audio immediately for instant playback
                   batchPrefetchCache.current[sectionIndex] = {
                     url,
                     audio,
@@ -2080,6 +2081,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           .then(blob => {
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
+            audio.load(); // Preload audio immediately for instant playback
 
             // Store in batch cache
             batchPrefetchCache.current[sectionIndex] = {
