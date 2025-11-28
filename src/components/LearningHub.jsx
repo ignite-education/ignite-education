@@ -1828,12 +1828,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           boxShadow: '0 0 0 3px #FDE7F4' // Creates visual padding without affecting layout
         };
       } else if (isExplainedSection) {
-        // Explained section highlight (pink)
+        // Explained section highlight (pink) - no padding/border-radius for seamless highlighting
         className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
         style = {
-          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
-          borderRadius: '2px',
-          padding: '2px 0'
+          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3'
         };
       }
 
