@@ -874,10 +874,10 @@ app.post('/api/text-to-speech', async (req, res) => {
   }
 });
 
-// Text-to-speech with character-level timestamps endpoint (with caching)
+// Text-to-speech with character-level timestamps endpoint
 app.post('/api/text-to-speech-timestamps', async (req, res) => {
   try {
-    let { text, voiceGender, courseId } = req.body;
+    let { text, voiceGender } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -906,38 +906,6 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
       voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2';
     }
 
-    // 1. Calculate SHA-256 hash of the text for cache lookup
-    const contentHash = crypto.createHash('sha256').update(text).digest('hex');
-    console.log('🔍 Cache lookup for hash:', contentHash.substring(0, 12) + '...');
-
-    // 2. Check cache in database
-    const { data: cached, error: cacheError } = await supabase
-      .from('narration_cache')
-      .select('*')
-      .eq('content_hash', contentHash)
-      .single();
-
-    if (cached && !cacheError) {
-      // 3a. CACHE HIT - Update access metrics and return cached data
-      console.log('✅ Cache HIT - returning cached audio');
-      
-      await supabase
-        .from('narration_cache')
-        .update({
-          last_accessed_at: new Date().toISOString(),
-          access_count: cached.access_count + 1
-        })
-        .eq('id', cached.id);
-
-      return res.json({
-        audio_base64: cached.audio_base64,
-        alignment: cached.alignment_data,
-        cached: true
-      });
-    }
-
-    // 3b. CACHE MISS - Generate new audio
-    console.log('❌ Cache MISS - generating new audio with ElevenLabs');
     console.log('🎤 Generating speech with timestamps for text:', text.substring(0, 100) + '...');
 
     // Generate speech with timestamps using ElevenLabs
@@ -955,6 +923,10 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
 
     console.log('✅ Speech generated successfully with timestamps');
 
+    // The response from convertWithTimestamps is an object with:
+    // - audioBase64: base64 encoded audio string
+    // - alignment: { characters, characterStartTimesSeconds, characterEndTimesSeconds }
+    
     // Convert camelCase properties to snake_case to match frontend expectations
     const result = {
       audio_base64: response.audioBase64,
@@ -968,32 +940,8 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
     const charCount = result.alignment && result.alignment.characters ? result.alignment.characters.length : 0;
     console.log('📊 Alignment data: ' + charCount + ' characters tracked');
 
-    // 4. Store in cache for future requests
-    const { error: insertError } = await supabase
-      .from('narration_cache')
-      .insert({
-        course_id: courseId || null,
-        content_hash: contentHash,
-        original_text: text,
-        audio_base64: result.audio_base64,
-        alignment_data: result.alignment,
-        voice_gender: voiceGender,
-        voice_id: voiceId,
-        access_count: 1
-      });
-
-    if (insertError) {
-      console.error('⚠️ Failed to cache audio:', insertError);
-      // Don't fail the request if caching fails, just log it
-    } else {
-      console.log('💾 Audio cached successfully');
-    }
-
     // Return JSON response with both audio and timestamps
-    res.json({
-      ...result,
-      cached: false
-    });
+    res.json(result);
 
   } catch (error) {
     console.error('Error generating speech with timestamps:', error);
@@ -1004,8 +952,6 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
     });
   }
 });
-
-
 
 let redditRateLimitResetTime = 0;
 

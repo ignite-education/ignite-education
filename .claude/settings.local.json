@@ -14,7 +14,12 @@
       "Bash(npm run build:*)",
       "Bash(node -c:*)",
       "Bash(awk:*)",
-      "Bash(/tmp/server_fixed.js)"
+      "Bash(/tmp/server_fixed.js)",
+      "Bash(git ls-tree:*)",
+      "Bash(rg --files:*)",
+      "Bash(git log:*)",
+      "Bash(/tmp/server_part1.js)",
+      "Bash(/tmp/server_new.js)"
     ],
     "deny": [],
     "ask": []
