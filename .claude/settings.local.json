@@ -19,7 +19,8 @@
       "Bash(rg --files:*)",
       "Bash(git log:*)",
       "Bash(/tmp/server_part1.js)",
-      "Bash(/tmp/server_new.js)"
+      "Bash(/tmp/server_new.js)",
+      "Bash(/tmp/index-new.css)"
     ],
     "deny": [],
     "ask": []

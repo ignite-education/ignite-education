@@ -21,13 +21,13 @@ body {
 
 /* Custom text selection color - Ignite pink */
 ::selection {
-  background-color: #ec4899;
-  color: white;
+  background-color: #FDE7F4;
+  color: #000000;
 }
 
 ::-moz-selection {
-  background-color: #ec4899;
-  color: white;
+  background-color: #FDE7F4;
+  color: #000000;
 }
 
 /* Override selection color for popup notes - use default browser selection */
