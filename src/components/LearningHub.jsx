@@ -1987,8 +1987,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
+          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
           const currentWordInSection = Math.floor(currentTime / timePerWord);
 
           if (currentWordInSection < wordsInSection) {
@@ -2199,8 +2199,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
+          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
           const currentWordIndex = Math.floor(currentTime / timePerWord);
 
           if (currentWordIndex < titleWords.length) {
@@ -2417,8 +2417,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             return;
           }
 
-          // Add a 0.3 second (300ms) lead time to make highlighting appear ahead of speech
-          const currentTime = audio.currentTime + 0.3; // Current playback position in seconds + lead time
+          // Add a 0.5 second (500ms) lead time to make highlighting appear ahead of speech
+          const currentTime = audio.currentTime + 0.5; // Current playback position in seconds + lead time
           const currentWordInSection = Math.floor(currentTime / timePerWord);
 
           if (currentWordInSection < wordsInSection) {
