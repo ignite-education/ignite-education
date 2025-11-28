@@ -1779,11 +1779,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (light grey) using box-shadow to avoid any layout shift
+        // Narration highlight (light pink) using box-shadow to avoid any layout shift
         style = {
-          backgroundColor: '#F0F0F2', // light grey highlight
+          backgroundColor: '#FDE7F4', // light pink highlight
           borderRadius: '2px',
-          boxShadow: '0 0 0 3px #F0F0F2' // Creates visual padding without affecting layout
+          boxShadow: '0 0 0 3px #FDE7F4' // Creates visual padding without affecting layout
         };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)

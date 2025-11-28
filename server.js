@@ -504,9 +504,9 @@ Respond in JSON format:
 // Generate and store flashcards for a lesson (admin/setup endpoint)
 app.post('/api/generate-flashcards', async (req, res) => {
   try {
-    const { courseId, moduleNumber, lessonNumber, lessonContext } = req.body;
+    const { courseName, moduleNumber, lessonNumber, lessonContext } = req.body;
 
-    console.log(`📝 Flashcard generation request for: Course: ${courseId}, Module: ${moduleNumber}, Lesson: ${lessonNumber}`);
+    console.log(`📝 Flashcard generation request for: Course: ${courseName}, Module: ${moduleNumber}, Lesson: ${lessonNumber}`);
     console.log(`📄 Lesson context length: ${lessonContext?.length || 0} characters`);
 
     if (!lessonContext || lessonContext.trim().length === 0) {
@@ -877,7 +877,7 @@ app.post('/api/text-to-speech', async (req, res) => {
 // Text-to-speech with character-level timestamps endpoint (with caching)
 app.post('/api/text-to-speech-timestamps', async (req, res) => {
   try {
-    let { text, voiceGender, courseId } = req.body;
+    let { text, voiceGender, courseName } = req.body;
 
     if (!text) {
       return res.status(400).json({ error: 'Text is required' });
@@ -972,7 +972,7 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
     const { error: insertError } = await supabase
       .from('narration_cache')
       .insert({
-        course_id: courseId || null,
+        course_name: courseName || null,
         content_hash: contentHash,
         original_text: text,
         audio_base64: result.audio_base64,
@@ -1962,10 +1962,10 @@ scheduleNextRefresh();
 // Generate a certificate for a user when they complete a course
 app.post('/api/certificate/generate', async (req, res) => {
   try {
-    const { userId, courseId } = req.body;
+    const { userId, courseName } = req.body;
 
-    if (!userId || !courseId) {
-      return res.status(400).json({ error: 'userId and courseId are required' });
+    if (!userId || !courseName) {
+      return res.status(400).json({ error: 'userId and courseName are required' });
     }
 
     // Get user information
@@ -1987,7 +1987,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       // Add more course mappings as needed
     };
 
-    const courseName = courseNames[courseId] || courseId;
+    const courseDisplayName = courseNames[courseId] || courseName;
     const userName = `${userData.first_name} ${userData.last_name}`;
 
     // Generate a unique certificate number (format: IGN-YYYY-XXXXXX)
@@ -2000,7 +2000,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .select('*')
       .eq('user_id', userId)
-      .eq('course_id', courseId)
+      .eq('course_name', courseName)
       .single();
 
     if (existingCert) {
@@ -2016,7 +2016,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .insert({
         user_id: userId,
-        course_id: courseId,
+        course_name: courseName,
         certificate_number: certificateNumber,
         user_name: userName,
         course_name: courseName,
