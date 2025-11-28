@@ -742,7 +742,7 @@ const LearningHub = () => {
   const renderCountRef = React.useRef(0);
   renderCountRef.current++;
 
-  if (renderCountRef.current > 10) {
+  if (renderCountRef.current === 11) {
     console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
     console.log('Current state values:', {
       loading,
@@ -751,9 +751,7 @@ const LearningHub = () => {
       isReading,
       groupedLessonsKeys: Object.keys(groupedLessons).length
     });
-
-    // STOP THE INFINITE LOOP BY THROWING AN ERROR
-    throw new Error('INFINITE RENDER LOOP DETECTED - check console for details');
+    console.log('⚠️ Component is re-rendering infinitely. Check useEffect dependencies.');
   }
 
   // Debug: Log the lesson being displayed (only first few renders)
