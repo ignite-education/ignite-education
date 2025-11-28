@@ -1815,14 +1815,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           return;
         }
 
-        // Wait for prefetch to complete if it's still in progress
-        if (prefetchPromiseRef.current) {
-          console.log('⏳ Waiting for prefetch to complete...');
-          await prefetchPromiseRef.current;
-          prefetchPromiseRef.current = null;
-        }
-
-        // Continue to next section if not paused
+        // Continue to next section if not paused (don't wait for prefetch)
         if (!isPausedRef.current) {
           narrateSection(sectionIndex + 1);
         }
