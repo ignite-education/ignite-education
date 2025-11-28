@@ -2306,7 +2306,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Set playback speed for title
       audio.playbackRate = playbackSpeed;
 
-      await audio.play();
+      try {
+        console.log('🎬 Attempting to play title audio...');
+        await audio.play();
+        console.log('✅ Title audio playing successfully');
+      } catch (playError) {
+        console.error('❌ Failed to play title audio:', playError);
+        URL.revokeObjectURL(audioUrl);
+        setIsReading(false);
+        throw playError;
+      }
 
       // Set flag that we're narrating the title
       setIsNarratingTitle(true);
