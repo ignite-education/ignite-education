@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
@@ -735,7 +735,7 @@ const LearningHub = () => {
     return allPriorSections;
   };
 
-  const currentLessonSections = getCurrentLessonData();
+  const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
   const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
 
   // Debug: Log the lesson being displayed
