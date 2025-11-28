@@ -1960,13 +1960,20 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         });
 
         if (!response.ok) {
-          throw new Error('Failed to generate speech');
+          const errorText = await response.text();
+          console.error('❌ Section narration API error:', response.status, errorText);
+          throw new Error(`Failed to generate speech: ${response.status} - ${errorText}`);
         }
 
         const fetchEndTime = performance.now();
         console.log(`📥 [${fetchEndTime.toFixed(0)}ms] TTS API response received (took: ${(fetchEndTime - fetchStartTime).toFixed(0)}ms)`);
 
         const data = await response.json();
+        console.log('✅ Section narration API response received:', {
+          hasAudio: !!data.audio_base64,
+          hasAlignment: !!data.alignment,
+          alignmentChars: data.alignment?.characters?.length
+        });
 
         // Convert base64 audio to blob
         const audioData = atob(data.audio_base64);
@@ -2227,10 +2234,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate speech for lesson title');
+        const errorText = await response.text();
+        console.error('❌ Title narration API error:', response.status, errorText);
+        throw new Error(`Failed to generate speech for lesson title: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('✅ Title narration API response received:', {
+        hasAudio: !!data.audio_base64,
+        hasAlignment: !!data.alignment,
+        alignmentChars: data.alignment?.characters?.length
+      });
 
       // Convert base64 audio to blob
       const audioData = atob(data.audio_base64);
@@ -2375,9 +2389,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: sectionText, voiceGender })
                 })
-                  .then(response => {
+                  .then(async response => {
                     if (response.ok) return response.json();
-                    throw new Error('Prefetch failed');
+                    const errorText = await response.text();
+                    console.error(`❌ Title prefetch section ${sectionIndex} API error:`, response.status, errorText);
+                    throw new Error(`Prefetch failed: ${response.status}`);
                   })
                   .then(data => {
                     // Convert base64 audio to blob
@@ -2469,9 +2485,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: sectionText, voiceGender })
           })
-            .then(response => {
+            .then(async response => {
               if (response.ok) return response.json();
-              throw new Error('Prefetch failed');
+              const errorText = await response.text();
+              console.error(`❌ Prefetch section ${sectionIndex} API error:`, response.status, errorText);
+              throw new Error(`Prefetch failed: ${response.status}`);
             })
             .then(data => {
               // Convert base64 audio to blob
