@@ -114,6 +114,7 @@ const LearningHub = () => {
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
   const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
   const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
+  const prefetchPromises = React.useRef({}); // Store promises for sections currently being prefetched
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -281,7 +282,8 @@ const LearningHub = () => {
       }
     });
     batchPrefetchCache.current = {};
-    // Clear prefetch promise
+    // Clear prefetch promises
+    prefetchPromises.current = {};
     prefetchPromiseRef.current = null;
     isPausedRef.current = false;
     setIsReading(false);
@@ -1787,7 +1789,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Log batch cache status
       const cachedSections = Object.keys(batchPrefetchCache.current);
-      console.log(`💾 [${cacheCheckTime.toFixed(0)}ms] Batch cache has sections: [${cachedSections.join(', ')}]`);
+      const pendingPrefetches = Object.keys(prefetchPromises.current);
+      console.log(`💾 [${cacheCheckTime.toFixed(0)}ms] Batch cache has sections: [${cachedSections.join(', ')}], Pending: [${pendingPrefetches.join(', ')}]`);
 
       // Check batch cache first, then single prefetch cache
       const cachedAudio = batchPrefetchCache.current[sectionIndex];
@@ -1797,7 +1800,33 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioUrl = cachedAudio.url;
         audio = cachedAudio.audio;
         delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
+        delete prefetchPromises.current[sectionIndex]; // Remove promise too
         audioRef.current = audio;
+      } else if (prefetchPromises.current[sectionIndex]) {
+        // Prefetch is in progress - wait for it
+        const waitStartTime = performance.now();
+        console.log(`⏳ [${waitStartTime.toFixed(0)}ms] Waiting for prefetch of section ${sectionIndex} to complete...`);
+
+        try {
+          await prefetchPromises.current[sectionIndex];
+          const waitEndTime = performance.now();
+          console.log(`✅ [${waitEndTime.toFixed(0)}ms] Prefetch completed (waited: ${(waitEndTime - waitStartTime).toFixed(0)}ms)`);
+
+          // Now it should be in cache
+          const nowCached = batchPrefetchCache.current[sectionIndex];
+          if (nowCached) {
+            audioUrl = nowCached.url;
+            audio = nowCached.audio;
+            delete batchPrefetchCache.current[sectionIndex];
+            delete prefetchPromises.current[sectionIndex];
+            audioRef.current = audio;
+          } else {
+            throw new Error('Prefetch completed but audio not in cache');
+          }
+        } catch (err) {
+          console.log(`⚠️ Prefetch failed, falling back to on-demand fetch:`, err.message);
+          // Fall through to on-demand fetch
+        }
       } else if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
         const cacheHitTime = performance.now();
         console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] SINGLE CACHE HIT for section ${sectionIndex}`);
@@ -1805,7 +1834,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audio = prefetchedAudioRef.current.audio;
         prefetchedAudioRef.current = null; // Clear after use
         audioRef.current = audio;
-      } else {
+      }
+
+      // Only fetch on-demand if we haven't gotten audio yet
+      if (!audio) {
         const fetchStartTime = performance.now();
         console.log(`❌ [${fetchStartTime.toFixed(0)}ms] CACHE MISS - Fetching section ${sectionIndex} on-demand`);
 
@@ -2052,38 +2084,53 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           if (sectionText && sectionText.length > 0) {
             console.log(`⚡ Prefetching section ${sectionIndex} during title...`);
 
-            fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: sectionText, voiceGender })
-            })
-              .then(response => {
-                if (response.ok) return response.blob();
-                throw new Error('Prefetch failed');
-              })
-              .then(blob => {
-                const url = URL.createObjectURL(blob);
-                const audio = new Audio(url);
+            // Only create promise if one doesn't exist yet
+            if (!prefetchPromises.current[sectionIndex]) {
+              prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
+                fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text: sectionText, voiceGender })
+                })
+                  .then(response => {
+                    if (response.ok) return response.blob();
+                    throw new Error('Prefetch failed');
+                  })
+                  .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
 
-                // Store in batch cache (may already exist from upfront prefetch)
-                if (!batchPrefetchCache.current[sectionIndex]) {
-                  // Wait for audio to fully load before caching
-                  audio.addEventListener('canplaythrough', () => {
-                    batchPrefetchCache.current[sectionIndex] = {
-                      url,
-                      audio,
-                      sectionIndex
-                    };
-                    console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState})`);
-                  }, { once: true });
+                    // Store in batch cache (may already exist from upfront prefetch)
+                    if (!batchPrefetchCache.current[sectionIndex]) {
+                      // Wait for audio to fully load before caching
+                      audio.addEventListener('canplaythrough', () => {
+                        batchPrefetchCache.current[sectionIndex] = {
+                          url,
+                          audio,
+                          sectionIndex
+                        };
+                        console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState})`);
+                        resolve();
+                      }, { once: true });
 
-                  audio.load(); // Start loading audio
-                } else {
-                  // Already cached from upfront prefetch, clean up duplicate
-                  URL.revokeObjectURL(url);
-                }
-              })
-              .catch(err => console.log(`Title prefetch section ${sectionIndex} failed:`, err.message));
+                      audio.addEventListener('error', () => {
+                        console.log(`❌ Section ${sectionIndex} audio load error during title`);
+                        reject(new Error('Audio load failed'));
+                      }, { once: true });
+
+                      audio.load(); // Start loading audio
+                    } else {
+                      // Already cached from upfront prefetch, clean up duplicate
+                      URL.revokeObjectURL(url);
+                      resolve();
+                    }
+                  })
+                  .catch(err => {
+                    console.log(`Title prefetch section ${sectionIndex} failed:`, err.message);
+                    reject(err);
+                  });
+              });
+            }
           }
         });
       }
@@ -2112,32 +2159,44 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       if (sectionText && sectionText.length > 0) {
         console.log(`⚡ Starting upfront prefetch for section ${sectionIndex}`);
 
-        fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: sectionText, voiceGender })
-        })
-          .then(response => {
-            if (response.ok) return response.blob();
-            throw new Error('Prefetch failed');
+        // Store the promise so we can await it if needed
+        prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
+          fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: sectionText, voiceGender })
           })
-          .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
+            .then(response => {
+              if (response.ok) return response.blob();
+              throw new Error('Prefetch failed');
+            })
+            .then(blob => {
+              const url = URL.createObjectURL(blob);
+              const audio = new Audio(url);
 
-            // Wait for audio to fully load before caching
-            audio.addEventListener('canplaythrough', () => {
-              batchPrefetchCache.current[sectionIndex] = {
-                url,
-                audio,
-                sectionIndex
-              };
-              console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState})`);
-            }, { once: true });
+              // Wait for audio to fully load before caching
+              audio.addEventListener('canplaythrough', () => {
+                batchPrefetchCache.current[sectionIndex] = {
+                  url,
+                  audio,
+                  sectionIndex
+                };
+                console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState})`);
+                resolve(); // Resolve promise when ready
+              }, { once: true });
 
-            audio.load(); // Start loading audio
-          })
-          .catch(err => console.log(`Prefetch section ${sectionIndex} failed:`, err.message));
+              audio.addEventListener('error', () => {
+                console.log(`❌ Section ${sectionIndex} audio load error`);
+                reject(new Error('Audio load failed'));
+              }, { once: true });
+
+              audio.load(); // Start loading audio
+            })
+            .catch(err => {
+              console.log(`Prefetch section ${sectionIndex} failed:`, err.message);
+              reject(err);
+            });
+        });
       }
     });
   };
