@@ -1706,8 +1706,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (yellow)
-        className += ' bg-yellow-300 px-1 rounded';
+        // Narration highlight (light grey) - no padding to avoid position shift
+        style = {
+          backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
+          borderRadius: '2px'
+        };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
         className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
