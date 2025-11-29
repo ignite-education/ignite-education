@@ -51,17 +51,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Build the message based on whether it's the first lesson
         let messageText;
         if (isFirstLesson) {
-          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.`;
+          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.`;
+          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
           type: 'assistant',
           text: messageText,
-          boldSuffix: 'Ready to begin?',
           isComplete: false
         }]);
         setPendingTypingIndex(0);
@@ -254,7 +253,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person. ACCURACY RULE: Only reference things the user ACTUALLY wrote - never fabricate or assume what they said. FOR CORRECT ANSWERS: Keep feedback brief - maximum TWO sentences. FOR INCORRECT/UNSURE ANSWERS: Provide the complete correct answer IN THE SAME MESSAGE. NEVER say 'Let me explain' or 'Let me provide' - just immediately give the answer. BAD example: 'Let me provide a brief explanation to help clarify.' GOOD example: 'The Power-Interest Grid maps stakeholders by their level of power and interest, while RACI defines specific roles: Responsible, Accountable, Consulted, and Informed. You would use the Power-Interest Grid first to identify key stakeholders, then apply RACI to clarify their specific involvement in decisions.' Your response must be COMPLETE and SELF-CONTAINED - do not end with promises to explain more. NEVER offer additional help at the end.",
+          feedbackInstructions: "STRUCTURE FOR INCORRECT/UNSURE: Start with ONE brief sentence acknowledging their answer, then IMMEDIATELY give the full correct answer. FORBIDDEN PHRASES: Never use 'Let me explain', 'Let me provide', 'Let me clarify', or any variation - these are BANNED. Instead, just state the answer directly. BAD: 'Let me provide a more complete response.' GOOD: 'Effective stakeholder management involves identifying stakeholders, understanding their needs, and engaging them throughout the product lifecycle. Benefits include better decision-making, reduced risks, and increased buy-in. For example, involving key stakeholders early can prevent costly rework later.' FOR CORRECT ANSWERS: Maximum two sentences. RULES: Speak directly to user (you/your). Only reference what they actually wrote. Response must be complete - no promises of more info.",
         }),
       });
 
@@ -336,21 +335,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       );
 
       console.log(`✅ Knowledge check logged: ${correctCount}/${TOTAL_QUESTIONS} (${passed ? 'PASSED' : 'FAILED'})`);
-
-      // If passed, call onPass immediately to mark lesson complete
-      // This ensures completion is recorded even if user closes the modal
-      if (passed && !hasCalledOnPassRef.current) {
-        hasCalledOnPassRef.current = true;
-        onPass();
-      }
+      // Note: onPass will be called when user clicks Proceed or closes the modal
     } catch (error) {
       console.error('Error logging knowledge check:', error);
       // Continue anyway - don't block the user experience
-      // Still call onPass if they passed, even if logging failed
-      if (passed && !hasCalledOnPassRef.current) {
-        hasCalledOnPassRef.current = true;
-        onPass();
-      }
     }
 
     // Show final result message
@@ -444,6 +432,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
+      // If user passed and hasn't already triggered onPass, call it now
+      if (isComplete && score >= PASS_THRESHOLD && !hasCalledOnPassRef.current) {
+        hasCalledOnPassRef.current = true;
+        onPass();
+      }
+
       // Reset all quiz state
       setChatMessages([]);
       setChatInput('');
