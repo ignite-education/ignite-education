@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCircle } from 'lucide-react';
 import { logKnowledgeCheck } from '../lib/api';
 
 const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
@@ -50,7 +50,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass. If you close this window, you will need to restart.\n\nReady to begin?`;
+          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
@@ -274,15 +274,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
 
     // Show final result message with typing animation
+    const nextLessonText = nextLessonName || 'the next lesson';
     setChatMessages(prev => {
       const newMessageIndex = prev.length;
       setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
       return [...prev, {
         type: 'assistant',
         text: passed
-          ? `Congratulations. You scored ${correctCount}/${TOTAL_QUESTIONS}. You've passed this lesson and can move on to the next one. Great work.`
+          ? `You scored ${correctCount}/${TOTAL_QUESTIONS}.\n\nCongratulations. You've passed this lesson and can move on to ${nextLessonText}.`
           : `You scored ${correctCount}/${TOTAL_QUESTIONS}. You need ${PASS_THRESHOLD} correct answers to pass. Don't worry - you can retake the knowledge check.`,
-        isComplete: false
+        isComplete: false,
+        isPassed: passed
       }];
     });
   };
@@ -421,23 +423,28 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 }}
               >
                 {msg.type === 'assistant' ? (
-                  <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%]" style={{
+                  <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isPassed ? 'flex items-start gap-2' : ''}`} style={{
                     borderRadius: '8px',
                     backgroundColor: '#f3f4f6'
                   }}>
-                    {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
-                      const parts = line.split(/(\*\*.*?\*\*)/g);
-                      return (
-                        <p key={i} className={i > 0 ? 'mt-3' : ''}>
-                          {parts.map((part, j) => {
-                            if (part.startsWith('**') && part.endsWith('**')) {
-                              return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
-                            }
-                            return <span key={j}>{part}</span>;
-                          })}
-                        </p>
-                      );
-                    })}
+                    {msg.isPassed && (
+                      <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
+                        const parts = line.split(/(\*\*.*?\*\*)/g);
+                        return (
+                          <p key={i} className={i > 0 ? 'mt-3' : ''}>
+                            {parts.map((part, j) => {
+                              if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
+                              }
+                              return <span key={j}>{part}</span>;
+                            })}
+                          </p>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : (
                   <div className="p-3 text-white text-sm max-w-[95%] inline-block" style={{
