@@ -2732,15 +2732,32 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     console.log(`🎵 Playing pre-generated section ${sectionIndex} (array index ${arrayIndex}): "${sectionData.text?.substring(0, 50)}..."`);
 
-    // Convert base64 audio to blob
-    const binaryData = atob(sectionData.audio_base64);
-    const arrayBuffer = new ArrayBuffer(binaryData.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < binaryData.length; i++) {
-      view[i] = binaryData.charCodeAt(i);
+    // Use audio URL from Supabase Storage (or fallback to base64 for legacy data)
+    let audioUrl;
+    let needsRevoke = false;
+
+    if (sectionData.audio_url) {
+      // New format: direct URL from Supabase Storage
+      audioUrl = sectionData.audio_url;
+      console.log(`  📥 Using Storage URL: ${audioUrl.substring(0, 80)}...`);
+    } else if (sectionData.audio_base64) {
+      // Legacy format: convert base64 to blob
+      const binaryData = atob(sectionData.audio_base64);
+      const arrayBuffer = new ArrayBuffer(binaryData.length);
+      const view = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < binaryData.length; i++) {
+        view[i] = binaryData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      audioUrl = URL.createObjectURL(audioBlob);
+      needsRevoke = true;
+      console.log(`  📥 Using legacy base64 audio`);
+    } else {
+      console.error(`❌ No audio data for section ${sectionIndex}`);
+      // Skip to next section
+      await playPregenSection(arrayIndex + 1);
+      return;
     }
-    const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-    const audioUrl = URL.createObjectURL(audioBlob);
 
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
@@ -2800,7 +2817,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     audio.onended = async () => {
       console.log(`⏱️ Pre-generated section ${sectionIndex} ended`);
-      URL.revokeObjectURL(audioUrl);
+      if (needsRevoke) {
+        URL.revokeObjectURL(audioUrl);
+      }
 
       // Clear word highlighting timer
       if (wordTimerRef.current) {
@@ -2822,7 +2841,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     audio.onerror = (e) => {
       console.error('Pre-generated section audio playback error:', e);
-      URL.revokeObjectURL(audioUrl);
+      if (needsRevoke) {
+        URL.revokeObjectURL(audioUrl);
+      }
       setIsReading(false);
     };
 

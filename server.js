@@ -1304,10 +1304,13 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
     }
 
-    // 5. Generate audio for each section separately
-    const sectionAudio = [];
+    // 5. Generate audio for each section and upload to Supabase Storage
+    const sectionAudioMetadata = []; // Store metadata only (no base64)
     let totalDuration = 0;
     let totalCharacters = 0;
+
+    // Storage path prefix for this lesson
+    const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}`;
 
     // Helper to extract text from section (same logic as extractLessonText but per-section)
     const extractSectionText = (section) => {
@@ -1323,6 +1326,34 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         return section.content.items.join('. ');
       }
       return '';
+    };
+
+    // Helper to upload audio to Storage
+    const uploadAudioToStorage = async (audioBase64, fileName) => {
+      const audioBuffer = Buffer.from(audioBase64, 'base64');
+      const filePath = `${storagePath}/${fileName}`;
+
+      console.log(`  📤 Uploading ${filePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
+
+      const { data, error } = await supabase.storage
+        .from('lesson-audio')
+        .upload(filePath, audioBuffer, {
+          contentType: 'audio/mpeg',
+          upsert: true
+        });
+
+      if (error) {
+        console.error(`  ❌ Upload failed for ${filePath}:`, error);
+        throw error;
+      }
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('lesson-audio')
+        .getPublicUrl(filePath);
+
+      console.log(`  ✅ Uploaded ${filePath}`);
+      return urlData.publicUrl;
     };
 
     // Generate audio for lesson title (section_index = -1)
@@ -1343,10 +1374,13 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       const titleEndTimes = titleResponse.alignment?.characterEndTimesSeconds || [];
       const titleDuration = titleEndTimes.length > 0 ? titleEndTimes[titleEndTimes.length - 1] : 0;
 
-      sectionAudio.push({
+      // Upload to Storage
+      const audioUrl = await uploadAudioToStorage(titleResponse.audioBase64, 'title.mp3');
+
+      sectionAudioMetadata.push({
         section_index: -1,
         text: lessonName,
-        audio_base64: titleResponse.audioBase64,
+        audio_url: audioUrl,
         alignment: titleResponse.alignment ? {
           characters: titleResponse.alignment.characters,
           character_start_times_seconds: titleResponse.alignment.characterStartTimesSeconds,
@@ -1391,10 +1425,13 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         const sectionEndTimes = response.alignment?.characterEndTimesSeconds || [];
         const sectionDuration = sectionEndTimes.length > 0 ? sectionEndTimes[sectionEndTimes.length - 1] : 0;
 
-        sectionAudio.push({
+        // Upload to Storage
+        const audioUrl = await uploadAudioToStorage(response.audioBase64, `section_${i}.mp3`);
+
+        sectionAudioMetadata.push({
           section_index: i,
           text: sectionText,
-          audio_base64: response.audioBase64,
+          audio_url: audioUrl,
           alignment: response.alignment ? {
             characters: response.alignment.characters,
             character_start_times_seconds: response.alignment.characterStartTimesSeconds,
@@ -1412,15 +1449,15 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       }
     }
 
-    console.log(`✅ All section audio generated: ${sectionAudio.length} sections, ${totalDuration.toFixed(2)}s total`);
+    console.log(`✅ All section audio generated and uploaded: ${sectionAudioMetadata.length} sections, ${totalDuration.toFixed(2)}s total`);
 
-    // Debug: Log section audio structure (without the large base64 data)
-    console.log('📊 Section audio structure:');
-    sectionAudio.forEach((s, idx) => {
-      console.log(`  [${idx}] section_index=${s.section_index}, text_length=${s.text?.length}, audio_length=${s.audio_base64?.length}, has_alignment=${!!s.alignment}, duration=${s.duration_seconds?.toFixed(2)}s`);
+    // Debug: Log section audio metadata structure
+    console.log('📊 Section audio metadata:');
+    sectionAudioMetadata.forEach((s, idx) => {
+      console.log(`  [${idx}] section_index=${s.section_index}, text_length=${s.text?.length}, has_url=${!!s.audio_url}, has_alignment=${!!s.alignment}, duration=${s.duration_seconds?.toFixed(2)}s`);
     });
 
-    // 6. Store in database (upsert)
+    // 6. Store metadata in database (no base64, just URLs and alignment)
     const upsertData = {
       course_id: courseId,
       module_number: moduleNumber,
@@ -1428,7 +1465,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       content_hash: contentHash,
       lesson_name: lessonName,
       full_text: fullText,
-      section_audio: sectionAudio,
+      section_audio: sectionAudioMetadata, // Now contains URLs instead of base64
       voice_gender: voiceGender,
       voice_id: voiceId,
       duration_seconds: totalDuration,
@@ -1436,14 +1473,8 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       updated_at: new Date().toISOString()
     };
 
-    console.log('💾 Attempting to upsert lesson audio...');
-    console.log(`  course_id: ${upsertData.course_id}`);
-    console.log(`  module_number: ${upsertData.module_number}`);
-    console.log(`  lesson_number: ${upsertData.lesson_number}`);
-    console.log(`  content_hash: ${upsertData.content_hash?.substring(0, 12)}...`);
-    console.log(`  full_text length: ${upsertData.full_text?.length}`);
-    console.log(`  section_audio count: ${upsertData.section_audio?.length}`);
-    console.log(`  total section_audio JSON size: ${JSON.stringify(upsertData.section_audio).length} chars`);
+    console.log('💾 Storing lesson audio metadata in database...');
+    console.log(`  section_audio JSON size: ${JSON.stringify(upsertData.section_audio).length} chars`);
 
     const { data: insertedAudio, error: insertError } = await supabase
       .from('lesson_audio')
@@ -1454,7 +1485,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       .single();
 
     if (insertError) {
-      console.error('❌ Error storing lesson audio:', insertError);
+      console.error('❌ Error storing lesson audio metadata:', insertError);
       console.error('  Error code:', insertError.code);
       console.error('  Error message:', insertError.message);
       console.error('  Error details:', insertError.details);
@@ -1462,7 +1493,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
     }
 
-    console.log(`💾 Per-section audio stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`💾 Per-section audio metadata stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     res.json({
       success: true,
