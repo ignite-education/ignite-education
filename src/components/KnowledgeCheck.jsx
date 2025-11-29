@@ -80,6 +80,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     if (!message || message.isComplete) return;
 
     const fullText = message.text;
+    if (!fullText) return; // Skip if no text to animate
+
     let currentIndex = 0;
     let pauseCounter = 0;
 
@@ -116,7 +118,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }, 45); // Adjust speed here (lower = faster)
 
     return () => clearInterval(typingInterval);
-  }, [typingMessageIndex]); // Only depend on typingMessageIndex, not chatMessages
+  }, [typingMessageIndex, chatMessages]); // Include chatMessages to ensure we get the latest message content
 
   const askNextQuestion = async (updatedAnswers = null) => {
     try {
@@ -154,7 +156,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           return [...prev, {
             type: 'assistant',
             text: `${questionNum}. ${data.question}`,
-            isComplete: false
+            isComplete: false,
+            isQuestion: true
           }];
         });
       } else {
@@ -188,7 +191,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          includeCorrectAnswer: true,
+          feedbackInstructions: "If the answer is incorrect, incomplete, or the user says they are unsure, you MUST provide the correct answer with a clear explanation in your feedback. Never end with phrases like 'Let me explain further' or 'Let me provide more information' without actually providing the complete answer. Always include specific examples from the lesson content.",
         }),
       });
 
@@ -301,7 +304,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           score: `${correctCount}/${TOTAL_QUESTIONS}`,
           failedLine1: 'Almost.',
           failedLine2: "You haven't met the pass mark for the lesson.",
-          failedLine3: "Re-visit the lesson content and try again."
+          failedLine3: "Please re-visit the lesson content and try again."
         }];
       }
     });
@@ -484,7 +487,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                     </div>
                   ) : (
                     // Regular assistant message
-                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%]" style={{
+                    <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-medium' : ''}`} style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6'
                     }}>
