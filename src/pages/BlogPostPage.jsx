@@ -704,13 +704,14 @@ const BlogPostPage = () => {
               </div>
 
               {/* Share Section */}
-              <div className="mt-12 pt-8">
+              <div className="mt-6 pt-4">
                 <p className="text-sm font-medium text-gray-600 mb-4">Share this article</p>
                 <div className="flex items-center gap-3">
                   {/* Copy URL Button */}
                   <button
                     onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
+                      const shareUrl = `https://ignite.education/blog/${post.slug}`;
+                      navigator.clipboard.writeText(shareUrl);
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
@@ -726,7 +727,7 @@ const BlogPostPage = () => {
 
                   {/* LinkedIn */}
                   <a
-                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ignite.education/blog/${post.slug}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#0A66C2] hover:bg-[#004182] transition-colors"
@@ -739,7 +740,7 @@ const BlogPostPage = () => {
 
                   {/* X (Twitter) */}
                   <a
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`}
+                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`https://ignite.education/blog/${post.slug}`)}&text=${encodeURIComponent(post.title)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center px-3 py-2 rounded-lg bg-black hover:bg-gray-800 transition-colors"
@@ -752,7 +753,7 @@ const BlogPostPage = () => {
 
                   {/* Facebook */}
                   <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://ignite.education/blog/${post.slug}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#1877F2] hover:bg-[#0d65d9] transition-colors"
