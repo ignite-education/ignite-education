@@ -188,6 +188,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
+          includeCorrectAnswer: true,
         }),
       });
 
@@ -299,7 +300,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           isFailed: true,
           score: `${correctCount}/${TOTAL_QUESTIONS}`,
           failedLine1: 'Almost.',
-          failedLine2: "You haven't met the pass mark for the lesson. Re-visit the lesson content, and try this check again."
+          failedLine2: "You haven't met the pass mark for the lesson.",
+          failedLine3: "Re-visit the lesson content and try again."
         }];
       }
     });
@@ -477,6 +479,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
                         <p className="font-medium">{msg.failedLine1}</p>
                         <p className="mt-1">{msg.failedLine2}</p>
+                        <p className="mt-1">{msg.failedLine3}</p>
                       </div>
                     </div>
                   ) : (
@@ -514,14 +517,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             ))}
 
             {isEvaluating && (
-              <div className="p-3 text-black text-sm inline-block" style={{
-                borderRadius: '8px',
-                backgroundColor: '#f3f4f6'
-              }}>
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+              <div style={{ marginTop: '0.5rem' }}>
+                <div className="p-3 text-black text-sm inline-block" style={{
+                  borderRadius: '8px',
+                  backgroundColor: '#f3f4f6'
+                }}>
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  </div>
                 </div>
               </div>
             )}
@@ -565,20 +570,15 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                     {nextLessonName ? `Proceed to ${nextLessonName}` : 'Proceed to Next Lesson'}
                   </button>
                 ) : (
-                  <>
-                    <button
-                      onClick={handleRetake}
-                      className="w-full bg-purple-600 text-white rounded-xl px-5 py-3 text-sm font-semibold hover:bg-purple-700 transition"
-                    >
-                      Retake
-                    </button>
-                    <button
-                      onClick={handleClose}
-                      className="w-full bg-gray-300 text-gray-700 rounded-xl px-5 py-3 text-sm font-semibold hover:bg-gray-400 transition"
-                    >
-                      Back to content
-                    </button>
-                  </>
+                  <button
+                    onClick={handleClose}
+                    className="w-full text-white rounded-xl px-5 py-3 text-sm font-semibold transition"
+                    style={{ backgroundColor: '#7714E0' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}
+                  >
+                    Back to Content
+                  </button>
                 )}
               </div>
             )}
