@@ -11,6 +11,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
   const cardContent = (
     <div
       className={`rounded-md overflow-hidden cursor-pointer group ${className}`}
+      style={{ width: '110%' }}
     >
       {featured_image && (
         <div className="w-full" style={{ height: '364px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
