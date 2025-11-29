@@ -1912,20 +1912,18 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const isCurrentWord = !disableNarrationHighlight && isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
 
       // Build className based on highlighting state
-      let className = 'transition-all duration-200';
+      let className = '';
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (light pink) with padding that doesn't shift layout
+        // Narration highlight (light pink) - no padding/margin to avoid layout shift
         style = {
           backgroundColor: '#fde7f4', // light pink
           borderRadius: '2px',
-          padding: '2px',
-          margin: '-2px' // Negative margin offsets the padding to prevent layout shift
         };
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
-        className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
+        className = 'transition-colors duration-200 bg-pink-100 cursor-pointer hover:bg-pink-200';
         style = {
           backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
           borderRadius: '2px',
@@ -2839,9 +2837,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         sectionData.alignment.character_end_times_seconds
       );
       wordTimestampsRef.current = wordTimestamps;
-      console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
-      console.log(`📝 Section text: "${sectionData.text.substring(0, 100)}..."`);
-      console.log(`📝 First 5 words with timestamps:`, wordTimestamps.slice(0, 5).map(w => `"${w.word}" (${w.start.toFixed(2)}-${w.end.toFixed(2)})`));
     }
 
     // Per-section word indexing: each section starts at word index 0
