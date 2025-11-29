@@ -10,10 +10,10 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
 
   const cardContent = (
     <div
-      className={`rounded-xl overflow-hidden cursor-pointer ${className}`}
+      className={`rounded-md overflow-hidden cursor-pointer ${className}`}
     >
       {featured_image && (
-        <div className="w-full" style={{ height: '288px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-full" style={{ height: '331px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img
             src={featured_image}
             alt={title}
@@ -23,9 +23,9 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
         </div>
       )}
 
-      <div className="p-4 bg-white rounded-b-xl flex items-center justify-between">
+      <div className="p-4 bg-white rounded-b-md flex items-center justify-between">
         <div className="flex-1 pr-3">
-          <h3 className="font-bold text-gray-900 mb-2 line-clamp-2" style={{ fontSize: '1.1rem' }}>
+          <h3 className="font-bold text-gray-900 mb-1 line-clamp-2" style={{ fontSize: '1.21rem' }}>
             {title}
           </h3>
 
@@ -34,8 +34,8 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
           </p>
         </div>
         <div className="flex-shrink-0">
-          <span className="text-gray-400 hover:text-[#EF0B72] transition-colors">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <span className="bg-black hover:bg-[#EF0B72] transition-colors p-2 flex items-center justify-center">
+            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </span>
