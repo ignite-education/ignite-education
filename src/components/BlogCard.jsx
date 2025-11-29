@@ -35,8 +35,8 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
             </p>
           </div>
           <div className="flex-shrink-0">
-            <div className="bg-black rounded-md flex items-center justify-center" style={{ width: '32px', height: '32px' }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#EF0B72] transition-colors">
+            <div className="bg-black rounded-md flex items-center justify-center" style={{ width: '35px', height: '35px' }}>
+              <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#EF0B72] transition-colors">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </div>
