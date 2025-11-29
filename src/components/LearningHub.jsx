@@ -3351,7 +3351,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
           <h3 className="flex-shrink-0 font-semibold" style={{ fontSize: '19px', marginBottom: '1px' }}>Chat with Will</h3>
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col justify-end" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
+            <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
+              <div className="flex-1" />
               {chatMessages.map((msg, idx) => (
                 <div
                   key={idx}
