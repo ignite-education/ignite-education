@@ -1,3 +1,4 @@
+// Read Aloud fix - v2 - 2024-11-29
 import React, { useState, useEffect, useMemo } from 'react';
 import confetti from 'canvas-confetti';
 import { useNavigate, useSearchParams } from 'react-router-dom';
