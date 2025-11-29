@@ -1380,6 +1380,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       sectionAudioMetadata.push({
         section_index: -1,
         text: lessonName,
+        word_count: lessonName.match(/\S+/g)?.length || 0,
         audio_url: audioUrl,
         alignment: titleResponse.alignment ? {
           characters: titleResponse.alignment.characters,
@@ -1431,6 +1432,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         sectionAudioMetadata.push({
           section_index: i,
           text: sectionText,
+          word_count: sectionText.match(/\S+/g)?.length || 0,
           audio_url: audioUrl,
           alignment: response.alignment ? {
             characters: response.alignment.characters,

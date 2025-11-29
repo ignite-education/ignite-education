@@ -2785,17 +2785,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Title - no words before
       wordsBeforeThisSection = 0;
     } else {
-      // For content sections, count words in all previous sections (NOT including title)
-      // Use the text stored in sectionAudioDataRef (what was actually sent to ElevenLabs)
+      // For content sections, sum word counts from all previous sections (NOT including title)
+      // Use stored word_count from metadata to ensure exact match with ElevenLabs timestamps
       const sectionAudioArray = sectionAudioDataRef.current;
       if (sectionAudioArray) {
         const previousSections = sectionAudioArray
           .filter(s => s.section_index >= 0 && s.section_index < sectionIndex);
-        wordsBeforeThisSection = previousSections
-          .map(s => s.text || '')
-          .join(' ')
-          .split(/\s+/)
-          .filter(w => w.length > 0).length;
+        wordsBeforeThisSection = previousSections.reduce((sum, s) => {
+          // Use stored word_count, or calculate from text as fallback for old data
+          const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
+          return sum + wordCount;
+        }, 0);
       }
     }
 
@@ -2965,17 +2965,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Resume word highlighting from current position
         const wordTimestamps = wordTimestampsRef.current;
         if (wordTimestamps && wordTimestamps.length > 0) {
-          // Calculate words before this section using pre-generated audio text (same as playPregenSection)
+          // Calculate words before this section using stored word counts (same as playPregenSection)
           let wordsBeforeThisSection = 0;
           const sectionAudioArray = sectionAudioDataRef.current;
           if (sectionAudioArray && currentNarrationSection > 0) {
             const previousSections = sectionAudioArray
               .filter(s => s.section_index >= 0 && s.section_index < currentNarrationSection);
-            wordsBeforeThisSection = previousSections
-              .map(s => s.text || '')
-              .join(' ')
-              .split(/\s+/)
-              .filter(w => w.length > 0).length;
+            wordsBeforeThisSection = previousSections.reduce((sum, s) => {
+              // Use stored word_count, or calculate from text as fallback for old data
+              const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
+              return sum + wordCount;
+            }, 0);
           }
 
           // Clear existing timer
@@ -3717,10 +3717,11 @@ ${currentLessonSections.map((section) => {
                   const sizes = { 1: 'text-3xl', 2: 'text-2xl', 3: 'text-xl' };
 
                   // Calculate word offset for this section
+                  // Use single space join to match how narration counts words
                   const wordsBeforeThisSection = currentLessonSections
                     .slice(0, sectionIdx)
                     .map(s => extractTextFromSection(s))
-                    .join('. ')
+                    .join(' ')
                     .split(/\s+/)
                     .filter(w => w.length > 0).length;
 
@@ -3767,10 +3768,11 @@ ${currentLessonSections.map((section) => {
                   const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
 
                   // Calculate word offset for this section
+                  // Use single space join to match how narration counts words
                   const wordsBeforeThisSection = currentLessonSections
                     .slice(0, sectionIdx)
                     .map(s => extractTextFromSection(s))
-                    .join('. ')
+                    .join(' ')
                     .split(/\s+/)
                     .filter(w => w.length > 0).length;
 
