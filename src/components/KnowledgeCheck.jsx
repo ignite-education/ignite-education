@@ -34,7 +34,6 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           "Great work studying",
           "Excellent job completing",
           "Well done finishing",
-          "Nice work working through",
           "Fantastic effort studying",
           "Impressive work completing",
           "Strong work finishing"
@@ -678,7 +677,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           </div>
 
           {/* Input area */}
-          <div className="flex-shrink-0 bg-gray-100 px-8 pb-4 pt-3" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
+          <div className="flex-shrink-0 bg-gray-100 px-8" style={{ borderRadius: '0 0 0.3rem 0.3rem', height: isComplete ? '105px' : 'auto', paddingTop: isComplete ? '0' : '12px', paddingBottom: isComplete ? '0' : '16px' }}>
             {!isComplete ? (
               <form onSubmit={handleSendMessage}>
                 <textarea
@@ -712,7 +711,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 </button>
               </form>
             ) : (
-              <div className="flex items-center justify-center" style={{ height: '77px' }}>
+              <div className="flex items-center justify-center h-full">
                 {score >= PASS_THRESHOLD ? (
                   <button
                     onClick={handleProceed}
