@@ -166,6 +166,56 @@ const BlogManagement = () => {
     if (url) formatText('createLink', url);
   };
 
+  const resizeImage = (file, maxSizeKB = 5000) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let { width, height } = img;
+
+          // Max dimensions for blog featured images
+          const maxWidth = 1920;
+          const maxHeight = 1080;
+
+          // Scale down if dimensions are too large
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Start with high quality and reduce if needed
+          let quality = 0.9;
+          const tryCompress = () => {
+            canvas.toBlob(
+              (blob) => {
+                if (blob.size > maxSizeKB * 1024 && quality > 0.1) {
+                  quality -= 0.1;
+                  tryCompress();
+                } else {
+                  resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                }
+              },
+              'image/jpeg',
+              quality
+            );
+          };
+          tryCompress();
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -176,21 +226,22 @@ const BlogManagement = () => {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Image must be less than 5MB');
-      return;
-    }
-
     try {
       setIsUploadingImage(true);
-      const fileExt = file.name.split('.').pop();
+
+      // Resize if file is too large (over 5MB)
+      let fileToUpload = file;
+      if (file.size > 5 * 1024 * 1024) {
+        fileToUpload = await resizeImage(file, 5000);
+      }
+
+      const fileExt = fileToUpload.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
       const fileName = `blog_${Date.now()}.${fileExt}`;
       const filePath = `blog/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, file);
+        .upload(filePath, fileToUpload);
 
       if (uploadError) {
         if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
