@@ -434,11 +434,13 @@ const BlogPostPage = () => {
                 }}
               />
             </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 group">
+            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
               <span className="text-white text-sm font-medium">Discover</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#EF0B72] transition-colors">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
+              <div className="w-7 h-7 bg-white rounded-md flex items-center justify-center">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </div>
             </a>
           </div>
           {/* Progress Bar - only shows pink line when scrolling */}
@@ -477,27 +479,29 @@ const BlogPostPage = () => {
           </div>
         </div>
 
-        {/* Featured Image - positioned at black/white transition, left aligned */}
-        {post.featured_image && (
-          <div className="relative">
-            {/* Black top half behind image */}
-            <div className="absolute top-0 left-0 right-0 h-1/2 bg-black" />
-            {/* White bottom half behind image */}
-            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
-            <div className="relative max-w-4xl mx-auto px-6">
-              <div className="rounded-lg overflow-hidden" style={{ maxWidth: '720px' }}>
-                <img
-                  src={post.featured_image}
-                  alt={post.title}
-                  className="w-full h-auto object-cover"
-                />
+        {/* White Content Section - ref starts here so progress bar triggers when white goes behind nav */}
+        <div ref={whiteContentRef}>
+          {/* Featured Image - positioned at black/white transition, left aligned */}
+          {post.featured_image && (
+            <div className="relative">
+              {/* Black top half behind image */}
+              <div className="absolute top-0 left-0 right-0 h-1/2 bg-black" />
+              {/* White bottom half behind image */}
+              <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
+              <div className="relative max-w-4xl mx-auto px-6">
+                <div className="rounded-lg overflow-hidden" style={{ maxWidth: '720px' }}>
+                  <img
+                    src={post.featured_image}
+                    alt={post.title}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* White Content Section */}
-        <div className="bg-white" ref={whiteContentRef}>
+          {/* Main White Content */}
+          <div className="bg-white">
           {/* Speaker Button and Listen Duration */}
           <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center gap-3">
@@ -519,7 +523,7 @@ const BlogPostPage = () => {
                   <Volume2 size={15} className="text-white" />
                 )}
               </button>
-              <span className="text-black font-light" style={{ fontSize: '1.05rem' }}>
+              <span style={{ fontSize: '1.05rem', fontWeight: 300, color: '#000000' }}>
                 {preGeneratedAudio?.duration_seconds
                   ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute listen`
                   : contentWords.length > 0
@@ -602,6 +606,7 @@ const BlogPostPage = () => {
               </div>
 
             </article>
+          </div>
           </div>
         </div>
       </div>
