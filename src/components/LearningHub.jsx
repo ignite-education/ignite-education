@@ -1,21 +1,2823 @@
-import{j as t,u as fs,a as ps,s as Xt,L as xs}from"./index-CnskRoEk.js";import{r as h,u as ys,h as bs,R as Y}from"./react-vendor-u6da99lV.js";import{l as ws}from"./stripe-vendor-Cebp-8gm.js";import{L as vs}from"./ui-vendor-Dt3Fi5LI.js";import{l as js,g as ks,a as Cs,b as kn,c as Cn,d as Nn,e as Sn,f as Ns,h as Ss,s as Ts,i as Es,j as Ls,m as Ms,k as Rs,n as Is,o as _s,u as As}from"./api-BkxvA_y_.js";import{X as Tt,T as Fs,a as $s,P as Ps,V as Tn,F as Bs,C as Os,b as Ds,c as Ws,d as Us,S as Hs}from"./icons-Blm5tfcR.js";import"./supabase-vendor-DSKd7n9a.js";import KnowledgeCheck from"./KnowledgeCheck";var Zt={};(function Z($,ge,A,fe){var Ce=!!($.Worker&&$.Blob&&$.Promise&&$.OffscreenCanvas&&$.OffscreenCanvasRenderingContext2D&&$.HTMLCanvasElement&&$.HTMLCanvasElement.prototype.transferControlToOffscreen&&$.URL&&$.URL.createObjectURL),q=typeof Path2D=="function"&&typeof DOMMatrix=="function",re=(function(){if(!$.OffscreenCanvas)return!1;try{var a=new OffscreenCanvas(1,1),o=a.getContext("2d");o.fillRect(0,0,1,1);var y=a.transferToImageBitmap();o.createPattern(y,"no-repeat")}catch{return!1}return!0})();function te(){}function pe(a){var o=ge.exports.Promise,y=o!==void 0?o:$.Promise;return typeof y=="function"?new y(a):(a(te,te),null)}var V=(function(a,o){return{transform:function(y){if(a)return y;if(o.has(y))return o.get(y);var k=new OffscreenCanvas(y.width,y.height),S=k.getContext("2d");return S.drawImage(y,0,0),o.set(y,k),k},clear:function(){o.clear()}}})(re,new Map),de=(function(){var a=Math.floor(16.666666666666668),o,y,k={},S=0;return typeof requestAnimationFrame=="function"&&typeof cancelAnimationFrame=="function"?(o=function(T){var E=Math.random();return k[E]=requestAnimationFrame(function v(L){S===L||S+a-1<L?(S=L,delete k[E],T()):k[E]=requestAnimationFrame(v)}),E},y=function(T){k[T]&&cancelAnimationFrame(k[T])}):(o=function(T){return setTimeout(T,a)},y=function(T){return clearTimeout(T)}),{frame:o,cancel:y}})(),le=(function(){var a,o,y={};function k(S){function T(E,v){S.postMessage({options:E||{},callback:v})}S.init=function(v){var L=v.transferControlToOffscreen();S.postMessage({canvas:L},[L])},S.fire=function(v,L,x){if(o)return T(v,null),o;var w=Math.random().toString(36).slice(2);return o=pe(function(p){function b(F){F.data.callback===w&&(delete y[w],S.removeEventListener("message",b),o=null,V.clear(),x(),p())}S.addEventListener("message",b),T(v,w),y[w]=b.bind(null,{data:{callback:w}})}),o},S.reset=function(){S.postMessage({reset:!0});for(var v in y)y[v](),delete y[v]}}return function(){if(a)return a;if(!A&&Ce){var S=["var CONFETTI, SIZE = {}, module = {};","("+Z.toString()+")(this, module, true, SIZE);","onmessage = function(msg) {","  if (msg.data.options) {","    CONFETTI(msg.data.options).then(function () {","      if (msg.data.callback) {","        postMessage({ callback: msg.data.callback });","      }","    });","  } else if (msg.data.reset) {","    CONFETTI && CONFETTI.reset();","  } else if (msg.data.resize) {","    SIZE.width = msg.data.resize.width;","    SIZE.height = msg.data.resize.height;","  } else if (msg.data.canvas) {","    SIZE.width = msg.data.canvas.width;","    SIZE.height = msg.data.canvas.height;","    CONFETTI = module.exports.create(msg.data.canvas);","  }","}"].join(`
-`);try{a=new Worker(URL.createObjectURL(new Blob([S])))}catch(T){return typeof console<"u"&&typeof console.warn=="function"&&console.warn("🎊 Could not load worker",T),null}k(a)}return a}})(),De={particleCount:50,angle:90,spread:45,startVelocity:45,decay:.9,gravity:1,drift:0,ticks:200,x:.5,y:.5,shapes:["square","circle"],zIndex:100,colors:["#26ccff","#a25afd","#ff5e7e","#88ff5a","#fcff42","#ffa62d","#ff36ff"],disableForReducedMotion:!1,scalar:1};function G(a,o){return o?o(a):a}function ae(a){return a!=null}function H(a,o,y){return G(a&&ae(a[o])?a[o]:De[o],y)}function nt(a){return a<0?0:Math.floor(a)}function M(a,o){return Math.floor(Math.random()*(o-a))+a}function Fe(a){return parseInt(a,16)}function B(a){return a.map(Ge)}function Ge(a){var o=String(a).replace(/[^0-9a-f]/gi,"");return o.length<6&&(o=o[0]+o[0]+o[1]+o[1]+o[2]+o[2]),{r:Fe(o.substring(0,2)),g:Fe(o.substring(2,4)),b:Fe(o.substring(4,6))}}function ue(a){var o=H(a,"origin",Object);return o.x=H(o,"x",Number),o.y=H(o,"y",Number),o}function we(a){a.width=document.documentElement.clientWidth,a.height=document.documentElement.clientHeight}function Te(a){var o=a.getBoundingClientRect();a.width=o.width,a.height=o.height}function Ie(a){var o=document.createElement("canvas");return o.style.position="fixed",o.style.top="0px",o.style.left="0px",o.style.pointerEvents="none",o.style.zIndex=a,o}function ct(a,o,y,k,S,T,E,v,L){a.save(),a.translate(o,y),a.rotate(T),a.scale(k,S),a.arc(0,0,1,E,v,L),a.restore()}function Ke(a){var o=a.angle*(Math.PI/180),y=a.spread*(Math.PI/180);return{x:a.x,y:a.y,wobble:Math.random()*10,wobbleSpeed:Math.min(.11,Math.random()*.1+.05),velocity:a.startVelocity*.5+Math.random()*a.startVelocity,angle2D:-o+(.5*y-Math.random()*y),tiltAngle:(Math.random()*(.75-.25)+.25)*Math.PI,color:a.color,shape:a.shape,tick:0,totalTicks:a.ticks,decay:a.decay,drift:a.drift,random:Math.random()+2,tiltSin:0,tiltCos:0,wobbleX:0,wobbleY:0,gravity:a.gravity*3,ovalScalar:.6,scalar:a.scalar,flat:a.flat}}function dt(a,o){o.x+=Math.cos(o.angle2D)*o.velocity+o.drift,o.y+=Math.sin(o.angle2D)*o.velocity+o.gravity,o.velocity*=o.decay,o.flat?(o.wobble=0,o.wobbleX=o.x+10*o.scalar,o.wobbleY=o.y+10*o.scalar,o.tiltSin=0,o.tiltCos=0,o.random=1):(o.wobble+=o.wobbleSpeed,o.wobbleX=o.x+10*o.scalar*Math.cos(o.wobble),o.wobbleY=o.y+10*o.scalar*Math.sin(o.wobble),o.tiltAngle+=.1,o.tiltSin=Math.sin(o.tiltAngle),o.tiltCos=Math.cos(o.tiltAngle),o.random=Math.random()+2);var y=o.tick++/o.totalTicks,k=o.x+o.random*o.tiltCos,S=o.y+o.random*o.tiltSin,T=o.wobbleX+o.random*o.tiltCos,E=o.wobbleY+o.random*o.tiltSin;if(a.fillStyle="rgba("+o.color.r+", "+o.color.g+", "+o.color.b+", "+(1-y)+")",a.beginPath(),q&&o.shape.type==="path"&&typeof o.shape.path=="string"&&Array.isArray(o.shape.matrix))a.fill(Ye(o.shape.path,o.shape.matrix,o.x,o.y,Math.abs(T-k)*.1,Math.abs(E-S)*.1,Math.PI/10*o.wobble));else if(o.shape.type==="bitmap"){var v=Math.PI/10*o.wobble,L=Math.abs(T-k)*.1,x=Math.abs(E-S)*.1,w=o.shape.bitmap.width*o.scalar,p=o.shape.bitmap.height*o.scalar,b=new DOMMatrix([Math.cos(v)*L,Math.sin(v)*L,-Math.sin(v)*x,Math.cos(v)*x,o.x,o.y]);b.multiplySelf(new DOMMatrix(o.shape.matrix));var F=a.createPattern(V.transform(o.shape.bitmap),"no-repeat");F.setTransform(b),a.globalAlpha=1-y,a.fillStyle=F,a.fillRect(o.x-w/2,o.y-p/2,w,p),a.globalAlpha=1}else if(o.shape==="circle")a.ellipse?a.ellipse(o.x,o.y,Math.abs(T-k)*o.ovalScalar,Math.abs(E-S)*o.ovalScalar,Math.PI/10*o.wobble,0,2*Math.PI):ct(a,o.x,o.y,Math.abs(T-k)*o.ovalScalar,Math.abs(E-S)*o.ovalScalar,Math.PI/10*o.wobble,0,2*Math.PI);else if(o.shape==="star")for(var j=Math.PI/2*3,D=4*o.scalar,ne=8*o.scalar,je=o.x,Ee=o.y,$e=5,me=Math.PI/$e;$e--;)je=o.x+Math.cos(j)*ne,Ee=o.y+Math.sin(j)*ne,a.lineTo(je,Ee),j+=me,je=o.x+Math.cos(j)*D,Ee=o.y+Math.sin(j)*D,a.lineTo(je,Ee),j+=me;else a.moveTo(Math.floor(o.x),Math.floor(o.y)),a.lineTo(Math.floor(o.wobbleX),Math.floor(S)),a.lineTo(Math.floor(T),Math.floor(E)),a.lineTo(Math.floor(k),Math.floor(o.wobbleY));return a.closePath(),a.fill(),o.tick<o.totalTicks}function _e(a,o,y,k,S){var T=o.slice(),E=a.getContext("2d"),v,L,x=pe(function(w){function p(){v=L=null,E.clearRect(0,0,k.width,k.height),V.clear(),S(),w()}function b(){A&&!(k.width===fe.width&&k.height===fe.height)&&(k.width=a.width=fe.width,k.height=a.height=fe.height),!k.width&&!k.height&&(y(a),k.width=a.width,k.height=a.height),E.clearRect(0,0,k.width,k.height),T=T.filter(function(F){return dt(E,F)}),T.length?v=de.frame(b):p()}v=de.frame(b),L=p});return{addFettis:function(w){return T=T.concat(w),x},canvas:a,promise:x,reset:function(){v&&de.cancel(v),L&&L()}}}function ye(a,o){var y=!a,k=!!H(o||{},"resize"),S=!1,T=H(o,"disableForReducedMotion",Boolean),E=Ce&&!!H(o||{},"useWorker"),v=E?le():null,L=y?we:Te,x=a&&v?!!a.__confetti_initialized:!1,w=typeof matchMedia=="function"&&matchMedia("(prefers-reduced-motion)").matches,p;function b(j,D,ne){for(var je=H(j,"particleCount",nt),Ee=H(j,"angle",Number),$e=H(j,"spread",Number),me=H(j,"startVelocity",Number),ot=H(j,"decay",Number),en=H(j,"gravity",Number),Dt=H(j,"drift",Number),rt=H(j,"colors",B),Wt=H(j,"ticks",Number),at=H(j,"shapes"),Et=H(j,"scalar"),xt=!!H(j,"flat"),yt=ue(j),Ue=je,Je=[],Ae=a.width*yt.x,ut=a.height*yt.y;Ue--;)Je.push(Ke({x:Ae,y:ut,angle:Ee,spread:$e,startVelocity:me,color:rt[Ue%rt.length],shape:at[M(0,at.length)],ticks:Wt,decay:ot,gravity:en,drift:Dt,scalar:Et,flat:xt}));return p?p.addFettis(Je):(p=_e(a,Je,L,D,ne),p.promise)}function F(j){var D=T||H(j,"disableForReducedMotion",Boolean),ne=H(j,"zIndex",Number);if(D&&w)return pe(function(me){me()});y&&p?a=p.canvas:y&&!a&&(a=Ie(ne),document.body.appendChild(a)),k&&!x&&L(a);var je={width:a.width,height:a.height};v&&!x&&v.init(a),x=!0,v&&(a.__confetti_initialized=!0);function Ee(){if(v){var me={getBoundingClientRect:function(){if(!y)return a.getBoundingClientRect()}};L(me),v.postMessage({resize:{width:me.width,height:me.height}});return}je.width=je.height=null}function $e(){p=null,k&&(S=!1,$.removeEventListener("resize",Ee)),y&&a&&(document.body.contains(a)&&document.body.removeChild(a),a=null,x=!1)}return k&&!S&&(S=!0,$.addEventListener("resize",Ee,!1)),v?v.fire(j,je,$e):b(j,je,$e)}return F.reset=function(){v&&v.reset(),p&&p.reset()},F}var ie;function st(){return ie||(ie=ye(null,{useWorker:!0,resize:!0})),ie}function Ye(a,o,y,k,S,T,E){var v=new Path2D(a),L=new Path2D;L.addPath(v,new DOMMatrix(o));var x=new Path2D;return x.addPath(L,new DOMMatrix([Math.cos(E)*S,Math.sin(E)*S,-Math.sin(E)*T,Math.cos(E)*T,y,k])),x}function We(a){if(!q)throw new Error("path confetti are not supported in this browser");var o,y;typeof a=="string"?o=a:(o=a.path,y=a.matrix);var k=new Path2D(o),S=document.createElement("canvas"),T=S.getContext("2d");if(!y){for(var E=1e3,v=E,L=E,x=0,w=0,p,b,F=0;F<E;F+=2)for(var j=0;j<E;j+=2)T.isPointInPath(k,F,j,"nonzero")&&(v=Math.min(v,F),L=Math.min(L,j),x=Math.max(x,F),w=Math.max(w,j));p=x-v,b=w-L;var D=10,ne=Math.min(D/p,D/b);y=[ne,0,0,ne,-Math.round(p/2+v)*ne,-Math.round(b/2+L)*ne]}return{type:"path",path:o,matrix:y}}function ve(a){var o,y=1,k="#000000",S='"Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "EmojiOne Color", "Android Emoji", "Twemoji Mozilla", "system emoji", sans-serif';typeof a=="string"?o=a:(o=a.text,y="scalar"in a?a.scalar:y,S="fontFamily"in a?a.fontFamily:S,k="color"in a?a.color:k);var T=10*y,E=""+T+"px "+S,v=new OffscreenCanvas(T,T),L=v.getContext("2d");L.font=E;var x=L.measureText(o),w=Math.ceil(x.actualBoundingBoxRight+x.actualBoundingBoxLeft),p=Math.ceil(x.actualBoundingBoxAscent+x.actualBoundingBoxDescent),b=2,F=x.actualBoundingBoxLeft+b,j=x.actualBoundingBoxAscent+b;w+=b+b,p+=b+b,v=new OffscreenCanvas(w,p),L=v.getContext("2d"),L.font=E,L.fillStyle=k,L.fillText(o,F,j);var D=1/y;return{type:"bitmap",bitmap:v.transferToImageBitmap(),matrix:[D,0,0,D,-w*D/2,-p*D/2]}}ge.exports=function(){return st().apply(this,arguments)},ge.exports.reset=function(){st().reset()},ge.exports.create=ye,ge.exports.shapeFromPath=We,ge.exports.shapeFromText=ve})((function(){return typeof window<"u"?window:typeof self<"u"?self:this||{}})(),Zt,!1);const En=Zt.exports;Zt.exports.create;const zs=({adClient:Z=void 0,adSlot:$=void 0,adFormat:ge="auto",style:A={},isAdFree:fe=!1})=>{const[Ce,q]=h.useState("loading"),re=h.useRef(!1),te=h.useRef(null),pe=h.useRef(null);return h.useEffect(()=>{if(fe){console.log("[GoogleAd] User is ad-free, not loading ads"),q("hidden");return}if(!Z||!$){console.warn("[GoogleAd] Missing ad credentials:",{adClient:Z,adSlot:$}),q("error");return}if(re.current||!te.current||!pe.current)return;const V=te.current.getAttribute("data-ad-status"),de=te.current.getAttribute("data-adsbygoogle-status");if(V==="filled"||de){q("loaded");return}if(typeof window.adsbygoogle>"u"){console.warn("[GoogleAd] AdSense script not loaded. Make sure the script is in index.html head section."),q("error");return}const le=()=>{var ae;const G=((ae=te.current)==null?void 0:ae.offsetWidth)||0;if(G===0){console.log("[GoogleAd] Ins element width is 0, waiting for layout..."),setTimeout(le,100);return}try{console.log("[GoogleAd] Initializing ad with ins width:",G,{adClient:Z,adSlot:$,adFormat:ge}),(window.adsbygoogle=window.adsbygoogle||[]).push({}),re.current=!0,q("loaded"),console.log("[GoogleAd] Ad initialized successfully")}catch(H){console.error("[GoogleAd] Error initializing ad:",H),q("error")}},De=new IntersectionObserver(G=>{G.forEach(ae=>{ae.isIntersecting&&!re.current&&(console.log("[GoogleAd] Ad container is visible, checking width..."),setTimeout(le,200))})},{threshold:.01});return pe.current&&De.observe(pe.current),()=>{De.disconnect(),re.current=!1}},[Z,$,ge,fe]),Ce==="hidden"?null:Ce==="error"?t.jsx("div",{className:"bg-gray-800 rounded-lg flex items-center justify-center",style:{minHeight:"100px",...A},children:t.jsx("p",{className:"text-gray-400 text-xs",children:"Advertisement Unavailable"})}):t.jsx("div",{ref:pe,style:{...A,overflow:"hidden"},children:t.jsx("ins",{ref:te,className:"adsbygoogle",style:{display:"block",height:"60px",maxHeight:"60px",overflow:"hidden"},"data-ad-client":Z,"data-ad-slot":$,"data-ad-format":ge,"data-full-width-responsive":"true"})})}},Gs=ws("pk_live_51SICc4Rxlg2WD2fjAjnITtANLuW4lS0DhUaWgLbe37HgBXHsjyHIO9XCMS8x8no7lWa6ufiAUO92WG5QKjSMJVe800jQFWcp6e"),St=Z=>Z?Z.replace(/\*\*/g,"").replace(/__/g,"").replace(new RegExp("(?<!\\*)\\*(?!\\*)","g"),"").replace(/^[•\-]\s/gm,"").trim():"",Ot=(Z,$,ge,A)=>{if(!Z||!$||!ge||!A)return[];const fe=Z.match(/\S+/g)||[],Ce=[];let q=0;for(let re=0;re<fe.length;re++){const te=fe[re];for(;q<$.length&&/\s/.test($[q]);)q++;if(q>=$.length)break;const pe=ge[q];let V=A[q],de=0;for(let le=0;le<te.length&&q+de<$.length;le++){for(;q+de<$.length&&/\s/.test($[q+de]);)q++;q+de<$.length&&(V=A[q+de],de++)}Ce.push({word:te,start:pe,end:V,index:re}),q+=de}return Ce},so=()=>{const Z=ys(),[$]=bs(),{firstName:ge,user:A,isAdFree:fe,userRole:Ce}=fs(),{lottieData:q}=ps(),re=async()=>{if(!(A!=null&&A.id))return"product-manager";const{data:e}=await Xt.from("users").select("enrolled_course").eq("id",A.id).single();return(e==null?void 0:e.enrolled_course)||"product-manager"},[te,pe]=h.useState(!0),[V,de]=h.useState({}),[le,De]=h.useState([]),[G,ae]=h.useState([]),[H,nt]=h.useState("Product Management"),[M,Fe]=h.useState(parseInt($.get("module"))||1),[B,Ge]=h.useState(parseInt($.get("lesson"))||1),[ue,we]=h.useState([{type:"assistant",text:`Hello, I'm Will.
-I'm here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.`,isComplete:!1}]),[Te,Ie]=h.useState(""),[ct,Ke]=h.useState(!0),[dt,_e]=h.useState(!1),[ye,ie]=h.useState(null),[st,Ye]=h.useState(""),[We,ve]=h.useState(!1),[a,o]=h.useState(0),[y,k]=h.useState(0),[S,T]=h.useState(0),[E,v]=h.useState(!1),[L,x]=h.useState(!1),[w,p]=h.useState(!1),[b,F]=h.useState(null),[j,D]=h.useState(!1),[ne,je]=h.useState(!1),[Ee,$e]=h.useState(!1),[me,ot]=h.useState(0),[en,Dt]=h.useState(0),[rt,Wt]=h.useState("Can you explain this another way?"),[at,Et]=h.useState(!1),[xt,yt]=h.useState(!1),[Ue,Je]=h.useState([]),[Ae,ut]=h.useState(0),[Lt,bt]=h.useState(!1),[tn,nn]=h.useState(!1),[Ln,Mt]=h.useState(!1),[sn,Ut]=h.useState(null),[Mn,Rt]=h.useState(""),[on,rn]=h.useState(!1),[an,wt]=h.useState([]),[He,ze]=h.useState(null),[vt,ln]=h.useState({x:0,y:0,preferAbove:!0}),[mt,Ht]=h.useState(!1),[zt,It]=h.useState(""),[_t,At]=h.useState(!1),[qt,ht]=h.useState(!1),Ne=Y.useRef(null),he=Y.useRef(null),cn=Y.useRef(null),Ft=Y.useRef(null),se=Y.useRef(null),$t=Y.useRef(null),Gt=Y.useRef(null),gt=Y.useRef([]),Pt=Y.useRef([]),Qe=Y.useRef(null),dn=Y.useRef(!0),[Ve,Le]=Y.useState(!1),[un,Bt]=Y.useState(0),[Rn,Pe]=Y.useState(-1),[mn,jt]=Y.useState(!1),ce=Y.useRef(null),ee=Y.useRef(null),lt=Y.useRef(null),Xe=Y.useRef(!1),ft=Y.useRef(null),ke=Y.useRef(null),hn=Y.useRef(null),Me=Y.useRef({}),Ze=Y.useRef(!1),qe=Y.useRef({}),[pt,gn]=h.useState(null),[Ks,fn]=h.useState(!1),it="male",Kt=1,[Ys,pn]=h.useState(0),[Js,xn]=h.useState([]),[In,yn]=h.useState(!1),[_n,An]=h.useState("");h.useEffect(()=>{Fn(),setTimeout(()=>{ie(0)},2500)},[]),h.useEffect(()=>{(async()=>{var s,r,c,l,d,i;const n=new URLSearchParams(window.location.search);if(console.log("🔍 Checking URL params:",window.location.search),console.log("🔍 Payment param value:",n.get("payment")),n.get("payment")==="success"){if(sessionStorage.getItem("payment_processed")){console.log("⏭️ Payment already processed, skipping..."),window.history.replaceState({},"",window.location.pathname);return}console.log(`
-✅ ============ PAYMENT SUCCESS DETECTED ============`),console.log("⏰ Timestamp:",new Date().toISOString()),console.log("⏳ Waiting 3 seconds for webhook to process..."),sessionStorage.setItem("payment_processed","true"),await new Promise(u=>setTimeout(u,3e3)),console.log("🔄 Calling supabase.auth.refreshSession()...");try{const{data:u,error:g}=await Xt.auth.refreshSession();if(g){console.error("❌ Session refresh FAILED"),console.error("❌ Error:",g.message),console.error("❌ Error details:",JSON.stringify(g,null,2)),sessionStorage.removeItem("payment_processed");return}console.log("✅ Session refreshed successfully"),console.log("👤 User data:",JSON.stringify((s=u.session)==null?void 0:s.user,null,2)),console.log("📦 User metadata:",JSON.stringify((c=(r=u.session)==null?void 0:r.user)==null?void 0:c.user_metadata,null,2)),console.log("🎯 is_ad_free value:",(i=(d=(l=u.session)==null?void 0:l.user)==null?void 0:d.user_metadata)==null?void 0:i.is_ad_free),window.history.replaceState({},"",window.location.pathname),console.log("✅ Payment processed successfully without page reload")}catch(u){console.error("❌ Exception during session refresh"),console.error("❌ Error:",u.message),console.error("❌ Stack:",u.stack),sessionStorage.removeItem("payment_processed")}}})()},[]),h.useEffect(()=>{(async()=>{if(A)try{const n=await re(),r=(await Ns(A.id,n,M,B)).map(c=>({text:St(c.selected_text),explanation:c.explanation,id:c.id}));wt(r)}catch(n){console.error("Error loading explained sections:",n)}})()},[A,M,B]),h.useEffect(()=>{(async()=>{if(A)try{const n=await re(),s=await Ss(A.id,n,M,B);gn(s?s.rating:null)}catch(n){console.error("Error loading lesson rating:",n)}})()},[A,M,B]),h.useEffect(()=>{const e=parseInt($.get("module")),n=parseInt($.get("lesson"));e&&e!==M&&Fe(e),n&&n!==B&&Ge(n)},[$]),h.useEffect(()=>{if(dn.current){dn.current=!1;return}ce.current&&(ce.current.pause(),ce.current.currentTime=0,ce.current=null),ke.current&&(URL.revokeObjectURL(ke.current.url),ke.current=null),Object.values(Me.current).forEach(e=>{e&&e.url&&URL.revokeObjectURL(e.url)}),Me.current={},qe.current={},hn.current=null,Xe.current=!1,Le(!1),Bt(0),we([{type:"assistant",text:`Hello, I'm Will.
-I'm here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.`,isComplete:!1}]),Ie(""),Qe.current&&(Qe.current.scrollTop=0),setTimeout(()=>{ie(0)},100)},[M,B]),h.useEffect(()=>{$t.current&&($t.current.scrollTop=$t.current.scrollHeight)},[ue]),h.useEffect(()=>{const e=()=>{var d,i,m;if(j||xt)return;const n=window.getSelection(),s=n==null?void 0:n.toString().trim(),r=n==null?void 0:n.anchorNode,c=((d=r==null?void 0:r.parentElement)==null?void 0:d.tagName)==="INPUT"||((i=r==null?void 0:r.parentElement)==null?void 0:i.closest("input")),l=(m=r==null?void 0:r.parentElement)==null?void 0:m.closest("[data-popup-notes]");!c&&!l&&!on&&(s&&s.length>0?(Rt(s),Ie(`Explain '${s}'`)):Te.startsWith("Explain '")&&(Ie(""),Rt("")))};return document.addEventListener("mouseup",e),document.addEventListener("selectionchange",e),()=>{document.removeEventListener("mouseup",e),document.removeEventListener("selectionchange",e)}},[Te,on,j,xt]),h.useEffect(()=>{const e=n=>{if(n.key==="Enter"&&Te.startsWith("Explain '")&&document.activeElement.tagName!=="INPUT"&&document.activeElement.tagName!=="TEXTAREA"&&!document.activeElement.isContentEditable){n.preventDefault();const s=document.querySelector("[data-chat-form]");s&&s.dispatchEvent(new Event("submit",{bubbles:!0,cancelable:!0}))}};return document.addEventListener("keydown",e),()=>{document.removeEventListener("keydown",e)}},[Te]),h.useEffect(()=>{if(ye===null)return;const e=ue[ye];if(!e||e.isComplete)return;const n=e.text;let s=0,r=0;const c=setInterval(()=>{if(r>0){r--;return}s<n.length?(Ye(n.substring(0,s+1)),n[s]===`
-`&&(r=15),(n[s]==="."||n[s]==="!"||n[s]==="?")&&(r=7),s++):(clearInterval(c),we(l=>l.map((d,i)=>i===ye?{...d,isComplete:!0}:d)),ie(null),Ye(""))},45);return()=>clearInterval(c)},[ye,ue]),h.useEffect(()=>{ne&&setTimeout(()=>{const n=Date.now()+2e3,s={startVelocity:25,spread:360,ticks:100,zIndex:55,gravity:.6,scalar:1.8,colors:["#EF0B72","#FF4D9E","#FF80B8"]};function r(l,d){return Math.random()*(d-l)+l}const c=setInterval(function(){const l=n-Date.now();if(l<=0)return clearInterval(c);const d=10*(l/2e3);En({...s,particleCount:d,origin:{x:r(.2,.4),y:Math.random()-.2}}),En({...s,particleCount:d,origin:{x:r(.6,.8),y:Math.random()-.2}})},400)},300)},[ne]),h.useEffect(()=>{if(!se.current||gt.current.length===0)return;const e={root:se.current,threshold:[0,.5,1],rootMargin:"0px"},n=new IntersectionObserver(s=>{let r=null,c=0;if(s.forEach(l=>{l.isIntersecting&&l.intersectionRatio>c&&(c=l.intersectionRatio,r=l.target)}),r){const l=gt.current.indexOf(r);l!==-1&&ot(l)}},e);return gt.current.forEach(s=>{s&&n.observe(s)}),requestAnimationFrame(()=>{if(se.current&&gt.current.length>0){se.current.scrollLeft,se.current.clientWidth;let s=0,r=0;gt.current.forEach((c,l)=>{if(c){const d=c.getBoundingClientRect(),i=se.current.getBoundingClientRect(),m=Math.max(d.left,i.left),u=Math.min(d.right,i.right),W=Math.max(0,u-m)/d.width;W>r&&(r=W,s=l)}}),ot(s)}}),()=>{n.disconnect()}},[V,M,B]);const Fn=async()=>{try{console.log("🔄 Starting fetchLessonData...");const e=(A==null?void 0:A.id)||"temp-user-id",n=await re();console.log("📝 Using userId:",e,"courseId:",n);const{data:s}=await Xt.from("courses").select("title, name").eq("name",n).single();nt((s==null?void 0:s.title)||n),console.log("📚 Fetching lessons by module...");const r=await ks(n);console.log("✅ Lessons data received:",r),r.module_1&&(console.log("🔍 Module 1 lessons from database:"),Object.keys(r.module_1).forEach(l=>{const d=r.module_1[l];console.log(`  ${l}: ${d.lessonName||"No name"}`)})),de(r),console.log("📋 Fetching lessons metadata...");const c=await Cs(n);console.log("✅ Metadata received:",c),De(c);try{console.log("✓ Fetching completed lessons...");const l=await kn(e,n);console.log("✅ Completed lessons received:",l),ae(l)}catch(l){console.error("Error fetching completed lessons:",l),ae([])}try{console.log("🔒 Checking daily course completion limit...");const l=await Cn(e),d=await Nn(e);console.log("📊 Daily completion status:",{completedCount:l,completedCourseIds:d,currentCourseId:n}),pn(l),xn(d);const i=d.includes(n),m=l>=2&&!i;yn(m),m&&(An(Sn()),console.log("🚫 Daily limit reached! Next available:",Sn()))}catch(l){console.error("Error checking daily course limit:",l),yn(!1)}console.log("✅ All data loaded, setting loading to false"),pe(!1)}catch(e){console.error("❌ Error fetching lesson data:",e),console.error("Error details:",e.message,e.stack),pe(!1)}},$n=()=>{var s;const e=`module_${M}`,n=`lesson_${B}`;return((s=V[e])==null?void 0:s[n])||[]},Pn=()=>{const e=[];for(let n=1;n<=M;n++){const s=`module_${n}`,r=V[s];if(!r)continue;const c=n===M?B-1:Object.keys(r).length;for(let l=1;l<=c;l++){const d=`lesson_${l}`,i=r[d];i&&Array.isArray(i)&&e.push({module:n,lesson:l,lessonName:i.lessonName||`Module ${n}, Lesson ${l}`,sections:i})}}return e},R=h.useMemo(()=>$n(),[V,M,B]),Re=R.lessonName||`Lesson ${B}`,kt=Y.useRef(0);kt.current++,kt.current===11&&(console.error("🔴 INFINITE LOOP DETECTED! Render count:",kt.current),console.log("Current state values:",{loading:te,currentModule:M,currentLesson:B,isReading:Ve,groupedLessonsKeys:Object.keys(V).length}),console.log("⚠️ Component is re-rendering infinitely. Check useEffect dependencies.")),kt.current<=5&&console.log("📖 Displaying lesson (render #"+kt.current+"):",{module:M,lesson:B,lessonName:Re,sectionsCount:Array.isArray(R)?R.length:0});const Bn=e=>{var n,s;if(!e)return console.log("generateQuestionForSection: no section"),null;if(console.log("generateQuestionForSection:",{content_type:e.content_type,level:(n=e.content)==null?void 0:n.level,suggested_question:e.suggested_question}),e.content_type==="heading"&&((s=e.content)==null?void 0:s.level)===2){if(e.suggested_question&&e.suggested_question.trim())return console.log("✅ Returning question:",e.suggested_question),e.suggested_question;console.log("⚠️ H2 found but no suggested_question")}return null};h.useEffect(()=>{if(te||!R||R.length===0||!Qe.current){console.log("Observer setup skipped - missing requirements:",{loading:te,hasLessonSections:!!R,lessonSectionsLength:(R==null?void 0:R.length)||0,hasContentScrollRef:!!Qe.current});return}console.log("Setting up Intersection Observer for",R.length,"sections");const e=new IntersectionObserver(s=>{let r=null,c=1/0;s.forEach(d=>{var i;if(d.isIntersecting){const m=parseInt(d.target.dataset.sectionIndex),u=R[m],g=d.boundingClientRect,W=d.rootBounds;if(!W)return;if(u&&u.content_type==="heading"&&((i=u.content)==null?void 0:i.level)===2){const f=W.height*.5,C=g.top;if(C<=f){const X=Math.abs(C-f);X<c&&(c=X,r=m)}}}});const l=r;l!==null&&Dt(d=>{if(d!==l){const i=R[l],m=Bn(i);return Wt(m||"Can you explain this another way?"),l}return d})},{root:Qe.current,threshold:[0,.1,.2,.3,.4,.5,.6,.7,.8,.9,1]}),n=setTimeout(()=>{const s=Pt.current.filter(r=>r!==null);console.log("Observing",s.length,"section refs"),s.forEach(r=>{e.observe(r)})},100);return()=>{clearTimeout(n),e.disconnect()}},[R,M,B,te]);const On=async()=>{D(!0)},bn=async e=>{if(A)try{const n=await re();await Es(A.id,n,M,B,e),gn(e),fn(!0),setTimeout(()=>{fn(!1)},2e3)}catch(n){console.error("Error submitting lesson rating:",n)}},Dn=()=>{D(!1)},wn=async()=>{try{yt(!0),Je([]),Mt(!0),Ut(null);const e=await re(),n=await Ls(e,M,B);Mt(!1),n&&n.length>0?(Je(n),ut(0),bt(!1)):(console.warn(`No flashcards found for Module ${M}, Lesson ${B}`),Je([]))}catch(e){console.error("Error fetching flashcards:",e),Mt(!1),Ut("Failed to load flashcards. Please try again."),Je([])}},vn=()=>{nn(!0),setTimeout(()=>{yt(!1),nn(!1),bt(!1),ut(0),Ut(null),Mt(!1)},200)},Wn=()=>{bt(!Lt)},Un=()=>{Ae<Ue.length-1&&(bt(!1),ut(Ae+1))},Hn=()=>{Ae>0&&(bt(!1),ut(Ae-1))},Yt=()=>{$e(!0),setTimeout(()=>{je(!1),$e(!1),Z("/")},200)},jn=()=>{window.open("https://www.linkedin.com/in/me/edit/forms/education/new/","_blank"),Yt()},zn=async()=>{console.log("🎯 handleKnowledgeCheckPass called"),console.log("📍 Current lesson:",{module:M,lesson:B});try{const e=(A==null?void 0:A.id)||"temp-user-id",n=await re();console.log("💾 Marking lesson complete for userId:",e),await Ms(e,n,M,B),console.log("✅ Lesson marked as complete in database");const s=G.length===0;console.log("🔍 Is first lesson?",s,"(Current completed count:",G.length,")");try{const r=await kn(e,n);console.log("✅ Completed lessons refreshed in LearningHub:",r),console.log("📊 New completed lessons count:",r.length),ae(r);const c=await Rs(e,n);if(console.log("🎓 Course completion check:",c),c){console.log("🎉 Course completed! Marking in course_completions table..."),await Is(e,n);const l=await Cn(e),d=await Nn(e);pn(l),xn(d),console.log("✅ Course completion recorded. Total courses completed today:",l)}}catch(r){console.error("❌ Error refreshing completed lessons:",r)}D(!1),s?(console.log("🎉 First lesson complete! Showing LinkedIn modal"),je(!0)):(console.log("➡️ Navigating to Progress Hub"),Z("/"))}catch(e){console.error("❌ Error marking lesson complete:",e),D(!1),Z("/")}},qn=async e=>{if(e.preventDefault(),!Te.trim())return;const n=Te,s=Mn,r=[...ue,{type:"user",text:n}];we(r),Ie(""),_e(!0);try{const c=R.length>0?`
-Lesson: ${Re}
-Module: ${M}
+import React, { useState, useEffect, useMemo } from 'react';
+import confetti from 'canvas-confetti';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
+import Lottie from 'lottie-react';
+import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion } from '../lib/api';
+import GoogleAd from './GoogleAd';
+import { useAuth } from '../contexts/AuthContext';
+import { useAnimation } from '../contexts/AnimationContext';
+import KnowledgeCheck from './KnowledgeCheck';
+import LoadingScreen from './LoadingScreen';
+import { supabase } from '../lib/supabase';
+
+// Initialize Stripe
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
+// Helper to remove formatting markers from text
+const stripFormattingMarkers = (text) => {
+  if (!text) return '';
+  // Remove bold (**), underline (__), italic (*), and bullet markers
+  return text
+    .replace(/\*\*/g, '') // Remove bold markers
+    .replace(/__/g, '')   // Remove underline markers
+    .replace(/(?<!\*)\*(?!\*)/g, '') // Remove italic markers (single asterisks)
+    .replace(/^[•\-]\s/gm, '') // Remove bullet points
+    .trim();
+};
+
+// Helper to convert ElevenLabs character-level timestamps to word-level timestamps
+const convertCharacterToWordTimestamps = (text, characters, characterStartTimes, characterEndTimes) => {
+  if (!text || !characters || !characterStartTimes || !characterEndTimes) {
+    return [];
+  }
+
+  // Split text into words (preserve original text for matching)
+  const words = text.match(/\S+/g) || []; // Split on whitespace, keep punctuation with words
+  const wordTimestamps = [];
+  let charIndex = 0;
+
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+
+    // Skip whitespace characters in the character array
+    while (charIndex < characters.length && /\s/.test(characters[charIndex])) {
+      charIndex++;
+    }
+
+    if (charIndex >= characters.length) break;
+
+    // Start time is the first character of this word
+    const wordStartTime = characterStartTimes[charIndex];
+    let wordEndTime = characterEndTimes[charIndex];
+    let wordCharCount = 0;
+
+    // Find all characters that belong to this word
+    for (let j = 0; j < word.length && charIndex + wordCharCount < characters.length; j++) {
+      // Skip whitespace within the word matching
+      while (charIndex + wordCharCount < characters.length && /\s/.test(characters[charIndex + wordCharCount])) {
+        charIndex++;
+      }
+
+      if (charIndex + wordCharCount < characters.length) {
+        wordEndTime = characterEndTimes[charIndex + wordCharCount];
+        wordCharCount++;
+      }
+    }
+
+    wordTimestamps.push({
+      word: word,
+      start: wordStartTime,
+      end: wordEndTime,
+      index: i
+    });
+
+    charIndex += wordCharCount;
+  }
+
+  return wordTimestamps;
+};
+
+const LearningHub = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { firstName, user, isAdFree, userRole } = useAuth();
+  const { lottieData } = useAnimation();
+
+  // Helper function to get user's enrolled course
+  const getUserCourseId = async () => {
+    if (!user?.id) return 'product-manager'; // Default fallback
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('enrolled_course')
+      .eq('id', user.id)
+      .single();
+
+    return userData?.enrolled_course || 'product-manager';
+  };
+  const [loading, setLoading] = useState(true);
+  const [groupedLessons, setGroupedLessons] = useState({});
+  const [lessonsMetadata, setLessonsMetadata] = useState([]);
+  const [completedLessons, setCompletedLessons] = useState([]);
+  const [userCourseName, setUserCourseName] = useState('Product Management');
+  const [currentModule, setCurrentModule] = useState(parseInt(searchParams.get('module')) || 1);
+  const [currentLesson, setCurrentLesson] = useState(parseInt(searchParams.get('lesson')) || 1);
+  const [chatMessages, setChatMessages] = useState([
+    {
+      type: 'assistant',
+      text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
+      isComplete: false
+    }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [showPlaceholder, setShowPlaceholder] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingMessageIndex, setTypingMessageIndex] = useState(null);
+  const [displayedText, setDisplayedText] = useState('');
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [scrollStartX, setScrollStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [isClosingModal, setIsClosingModal] = useState(false);
+  const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
+  const [showLinkedInModal, setShowLinkedInModal] = useState(false);
+  const [isClosingLinkedInModal, setIsClosingLinkedInModal] = useState(false);
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
+  const [suggestedQuestion, setSuggestedQuestion] = useState('Can you explain this another way?');
+  const [isCarouselReady, setIsCarouselReady] = useState(false);
+  const [showFlashcards, setShowFlashcards] = useState(false);
+  const [flashcards, setFlashcards] = useState([]);
+  const [currentFlashcardIndex, setCurrentFlashcardIndex] = useState(0);
+  const [isFlashcardFlipped, setIsFlashcardFlipped] = useState(false);
+  const [isClosingFlashcards, setIsClosingFlashcards] = useState(false);
+  const [isLoadingFlashcards, setIsLoadingFlashcards] = useState(false);
+  const [flashcardError, setFlashcardError] = useState(null);
+  const [selectedText, setSelectedText] = useState('');
+  const [isEditingInput, setIsEditingInput] = useState(false);
+  const [explainedSections, setExplainedSections] = useState([]);
+  const [hoveredExplanation, setHoveredExplanation] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0, preferAbove: true });
+  const [isEditingExplanation, setIsEditingExplanation] = useState(false);
+  const [editedExplanation, setEditedExplanation] = useState('');
+  const [popupLocked, setPopupLocked] = useState(false);
+  const [isReadingNote, setIsReadingNote] = useState(false);
+  const noteAudioRef = React.useRef(null);
+  const closeTimeoutRef = React.useRef(null);
+  const highlightRef = React.useRef(null);
+  const editableRef = React.useRef(null);
+  const scrollContainerRef = React.useRef(null);
+  const chatContainerRef = React.useRef(null);
+  const checkoutRef = React.useRef(null);
+  const cardRefs = React.useRef([]);
+  const sectionRefs = React.useRef([]);
+  const contentScrollRef = React.useRef(null);
+  const isInitialMountRef = React.useRef(true);
+  const [isReading, setIsReading] = React.useState(false);
+  const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
+  const [currentNarrationWord, setCurrentNarrationWord] = React.useState(-1); // Track which word is being spoken
+  const [isNarratingTitle, setIsNarratingTitle] = React.useState(false); // Track if we're narrating the title vs sections
+  const audioRef = React.useRef(null);
+  const wordTimerRef = React.useRef(null); // Track word highlighting timer
+  const wordTimestampsRef = React.useRef(null); // Store word timestamps for current section/title
+  const isPausedRef = React.useRef(false); // Track if user manually paused
+  const narrateAbortController = React.useRef(null); // Track API requests for cancellation
+  const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
+  const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
+  const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
+  const isHandlingReadAloud = React.useRef(false); // Prevent multiple simultaneous calls
+  const prefetchPromises = React.useRef({}); // Store promises for sections currently being prefetched
+  const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
+  const [showRatingFeedback, setShowRatingFeedback] = useState(false);
+
+  // Voice settings - hardcoded defaults (no user controls)
+  const voiceGender = 'male'; // Fixed to male voice
+  const playbackSpeed = 1.0; // Fixed to 1x speed
+
+  // Daily course completion limit state
+  const [coursesCompletedToday, setCoursesCompletedToday] = useState(0);
+  const [todaysCompletedCourseIds, setTodaysCompletedCourseIds] = useState([]);
+  const [dailyLimitReached, setDailyLimitReached] = useState(false);
+  const [nextAvailableDate, setNextAvailableDate] = useState('');
+
+  useEffect(() => {
+    fetchLessonData();
+    // Start typing animation for initial greeting message with a slight delay
+    setTimeout(() => {
+      setTypingMessageIndex(0);
+    }, 2500);
+  }, []);
+
+  // Refresh user session after successful payment
+  useEffect(() => {
+    const refreshUserSession = async () => {
+      const params = new URLSearchParams(window.location.search);
+
+      console.log('🔍 Checking URL params:', window.location.search);
+      console.log('🔍 Payment param value:', params.get('payment'));
+
+      if (params.get('payment') === 'success') {
+        // Check if we've already processed this payment to prevent multiple reloads
+        const hasProcessed = sessionStorage.getItem('payment_processed');
+        if (hasProcessed) {
+          console.log('⏭️ Payment already processed, skipping...');
+          window.history.replaceState({}, '', window.location.pathname);
+          return;
+        }
+
+        console.log('\n✅ ============ PAYMENT SUCCESS DETECTED ============');
+        console.log('⏰ Timestamp:', new Date().toISOString());
+        console.log('⏳ Waiting 3 seconds for webhook to process...');
+
+        // Mark as processed immediately to prevent re-runs
+        sessionStorage.setItem('payment_processed', 'true');
+
+        // Wait 3 seconds to ensure webhook has time to update user metadata
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        console.log('🔄 Calling supabase.auth.refreshSession()...');
+
+        try {
+          const { data, error } = await supabase.auth.refreshSession();
+
+          if (error) {
+            console.error('❌ Session refresh FAILED');
+            console.error('❌ Error:', error.message);
+            console.error('❌ Error details:', JSON.stringify(error, null, 2));
+            sessionStorage.removeItem('payment_processed');
+            return;
+          }
+
+          console.log('✅ Session refreshed successfully');
+          console.log('👤 User data:', JSON.stringify(data.session?.user, null, 2));
+          console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
+          console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
+
+          // Remove the query parameter to prevent repeated refreshes
+          window.history.replaceState({}, '', window.location.pathname);
+
+          // Note: No page reload needed - the auth context will automatically update
+          // when the session is refreshed, causing components to re-render with new user data
+          console.log('✅ Payment processed successfully without page reload');
+
+        } catch (err) {
+          console.error('❌ Exception during session refresh');
+          console.error('❌ Error:', err.message);
+          console.error('❌ Stack:', err.stack);
+          sessionStorage.removeItem('payment_processed');
+        }
+      }
+    };
+
+    refreshUserSession();
+  }, []);
+
+  // Load explained sections when lesson changes
+  useEffect(() => {
+    const loadExplainedSections = async () => {
+      if (!user) return;
+
+      try {
+        const courseId = await getUserCourseId();
+        const sections = await getExplainedSections(user.id, courseId, currentModule, currentLesson);
+
+        // Transform database format to component state format
+        // Strip formatting markers from legacy data that might have them
+        const transformedSections = sections.map(section => ({
+          text: stripFormattingMarkers(section.selected_text),
+          explanation: section.explanation,
+          id: section.id
+        }));
+
+        setExplainedSections(transformedSections);
+      } catch (error) {
+        console.error('Error loading explained sections:', error);
+      }
+    };
+
+    loadExplainedSections();
+  }, [user, currentModule, currentLesson]);
+
+  // Load lesson rating when lesson changes
+  useEffect(() => {
+    const loadLessonRating = async () => {
+      if (!user) return;
+
+      try {
+        const courseId = await getUserCourseId();
+        const rating = await getLessonRating(user.id, courseId, currentModule, currentLesson);
+        setLessonRating(rating ? rating.rating : null);
+      } catch (error) {
+        console.error('Error loading lesson rating:', error);
+      }
+    };
+
+    loadLessonRating();
+  }, [user, currentModule, currentLesson]);
+
+  // Update current module and lesson when URL params change
+  useEffect(() => {
+    const moduleParam = parseInt(searchParams.get('module'));
+    const lessonParam = parseInt(searchParams.get('lesson'));
+
+    if (moduleParam && moduleParam !== currentModule) {
+      setCurrentModule(moduleParam);
+    }
+    if (lessonParam && lessonParam !== currentLesson) {
+      setCurrentLesson(lessonParam);
+    }
+  }, [searchParams]);
+
+  // Reset chat conversation and scroll position when lesson changes
+  useEffect(() => {
+    // Skip on initial mount to preserve welcome message
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false;
+      return;
+    }
+
+    // Stop and reset audio playback
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    // Clear any prefetched audio
+    if (prefetchedAudioRef.current) {
+      URL.revokeObjectURL(prefetchedAudioRef.current.url);
+      prefetchedAudioRef.current = null;
+    }
+    // Clear batch prefetch cache
+    Object.values(batchPrefetchCache.current).forEach(cached => {
+      if (cached && cached.url) {
+        URL.revokeObjectURL(cached.url);
+      }
+    });
+    batchPrefetchCache.current = {};
+    // Clear prefetch promises
+    prefetchPromises.current = {};
+    prefetchPromiseRef.current = null;
+    isPausedRef.current = false;
+    setIsReading(false);
+    setCurrentNarrationSection(0);
+
+    // Reset chat to initial greeting
+    setChatMessages([
+      {
+        type: 'assistant',
+        text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
+        isComplete: false
+      }
+    ]);
+
+    // Clear chat input field
+    setChatInput('');
+
+    // Scroll lesson content to top
+    if (contentScrollRef.current) {
+      contentScrollRef.current.scrollTop = 0;
+    }
+
+    // Start typing animation for greeting message
+    setTimeout(() => {
+      setTypingMessageIndex(0);
+    }, 100);
+  }, [currentModule, currentLesson]);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages]);
+
+  // Handle text selection
+  useEffect(() => {
+    const handleSelection = () => {
+      // Don't handle text selection if knowledge check or flashcards are open
+      if (showKnowledgeCheck || showFlashcards) return;
+
+      const selection = window.getSelection();
+      const text = selection?.toString().trim();
+
+      // Get the element that contains the selection
+      const anchorNode = selection?.anchorNode;
+      const isInputSelection = anchorNode?.parentElement?.tagName === 'INPUT' ||
+                               anchorNode?.parentElement?.closest('input');
+
+      // Check if selection is within the popup notes
+      const isPopupSelection = anchorNode?.parentElement?.closest('[data-popup-notes]');
+
+      // Only update if the selection is NOT from the input field, NOT from popup, and user is not editing
+      if (!isInputSelection && !isPopupSelection && !isEditingInput) {
+        if (text && text.length > 0) {
+          setSelectedText(text);
+          setChatInput(`Explain '${text}'`);
+        } else {
+          // Clear the input if text is unselected and it contains the "Explain" prompt
+          if (chatInput.startsWith('Explain \'')) {
+            setChatInput('');
+            setSelectedText('');
+          }
+        }
+      }
+    };
+
+    document.addEventListener('mouseup', handleSelection);
+    document.addEventListener('selectionchange', handleSelection);
+
+    return () => {
+      document.removeEventListener('mouseup', handleSelection);
+      document.removeEventListener('selectionchange', handleSelection);
+    };
+  }, [chatInput, isEditingInput, showKnowledgeCheck, showFlashcards]);
+
+  // Handle Enter key to send auto-populated explanation prompts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Only trigger if Enter is pressed, there's an explanation prompt, and user is not focused on an input
+      if (
+        e.key === 'Enter' &&
+        chatInput.startsWith('Explain \'') &&
+        document.activeElement.tagName !== 'INPUT' &&
+        document.activeElement.tagName !== 'TEXTAREA' &&
+        !document.activeElement.isContentEditable
+      ) {
+        e.preventDefault();
+        // Trigger the form submit by creating a synthetic event
+        const form = document.querySelector('[data-chat-form]');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [chatInput]);
+
+  // Typing animation effect
+  useEffect(() => {
+    if (typingMessageIndex === null) return;
+
+    const message = chatMessages[typingMessageIndex];
+    if (!message || message.isComplete) return;
+
+    const fullText = message.text;
+    let currentIndex = 0;
+    let pauseCounter = 0;
+
+    const typingInterval = setInterval(() => {
+      // Check if we need to pause (at newline characters)
+      if (pauseCounter > 0) {
+        pauseCounter--;
+        return;
+      }
+
+      if (currentIndex < fullText.length) {
+        setDisplayedText(fullText.substring(0, currentIndex + 1));
+
+        // Add pause after newline characters
+        if (fullText[currentIndex] === '\n') {
+          pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
+        }
+
+        // Add pause after sentence-ending punctuation (. ! ?)
+        if (fullText[currentIndex] === '.' || fullText[currentIndex] === '!' || fullText[currentIndex] === '?') {
+          pauseCounter = 7; // Pause for ~300ms (7 * 45ms, rounded from 6.67)
+        }
+
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        // Mark message as complete
+        setChatMessages(prev => prev.map((msg, idx) =>
+          idx === typingMessageIndex ? { ...msg, isComplete: true } : msg
+        ));
+        setTypingMessageIndex(null);
+        setDisplayedText('');
+      }
+    }, 45); // Adjust speed here (lower = faster)
+
+    return () => clearInterval(typingInterval);
+  }, [typingMessageIndex, chatMessages]);
+
+  // Trigger confetti when LinkedIn modal opens
+  useEffect(() => {
+    if (showLinkedInModal) {
+      // Small delay to let modal animate in
+      setTimeout(() => {
+        const duration = 2000; // 2 seconds
+        const animationEnd = Date.now() + duration;
+        const defaults = { 
+          startVelocity: 25,  // Slower velocity
+          spread: 360, 
+          ticks: 100,  // Longer lifetime
+          zIndex: 55,  // Above backdrop (z-50), below modal content (z-60)
+          gravity: 0.6,  // Much slower fall
+          scalar: 1.8,  // Bigger confetti pieces
+          colors: ['#EF0B72', '#FF4D9E', '#FF80B8']  // Ignite pink shades
+        };
+
+        function randomInRange(min, max) {
+          return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(function() {
+          const timeLeft = animationEnd - Date.now();
+
+          if (timeLeft <= 0) {
+            return clearInterval(interval);
+          }
+
+          const particleCount = 10 * (timeLeft / duration);  // 50% fewer particles
+          
+          // Fire confetti from fewer positions for subtlety
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.2, 0.4), y: Math.random() - 0.2 }
+          });
+          confetti({
+            ...defaults,
+            particleCount,
+            origin: { x: randomInRange(0.6, 0.8), y: Math.random() - 0.2 }
+          });
+        }, 400);  // Fire less frequently
+      }, 300);
+    }
+  }, [showLinkedInModal]);
+
+  // Track which card is in the leftmost position using Intersection Observer
+  useEffect(() => {
+    if (!scrollContainerRef.current || cardRefs.current.length === 0) return;
+
+    const observerOptions = {
+      root: scrollContainerRef.current,
+      threshold: [0, 0.5, 1], // Multiple thresholds to catch more intersection events
+      rootMargin: '0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      // Find the most visible card
+      let mostVisibleCard = null;
+      let highestRatio = 0;
+
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+          highestRatio = entry.intersectionRatio;
+          mostVisibleCard = entry.target;
+        }
+      });
+
+      if (mostVisibleCard) {
+        const cardIndex = cardRefs.current.indexOf(mostVisibleCard);
+        if (cardIndex !== -1) {
+          setActiveCardIndex(cardIndex);
+        }
+      }
+    }, observerOptions);
+
+    // Observe all card elements
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    // Force initial check - manually determine which card is most visible
+    requestAnimationFrame(() => {
+      if (scrollContainerRef.current && cardRefs.current.length > 0) {
+        const scrollLeft = scrollContainerRef.current.scrollLeft;
+        const containerWidth = scrollContainerRef.current.clientWidth;
+
+        // Find which card is most visible
+        let mostVisibleIndex = 0;
+        let maxVisibility = 0;
+
+        cardRefs.current.forEach((card, index) => {
+          if (card) {
+            const rect = card.getBoundingClientRect();
+            const containerRect = scrollContainerRef.current.getBoundingClientRect();
+
+            // Calculate how much of the card is visible
+            const visibleLeft = Math.max(rect.left, containerRect.left);
+            const visibleRight = Math.min(rect.right, containerRect.right);
+            const visibleWidth = Math.max(0, visibleRight - visibleLeft);
+            const visibility = visibleWidth / rect.width;
+
+            if (visibility > maxVisibility) {
+              maxVisibility = visibility;
+              mostVisibleIndex = index;
+            }
+          }
+        });
+
+        setActiveCardIndex(mostVisibleIndex);
+      }
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [groupedLessons, currentModule, currentLesson]);
+
+  const fetchLessonData = async () => {
+    try {
+      console.log('🔄 Starting fetchLessonData...');
+
+      const userId = user?.id || 'temp-user-id';
+      const courseId = await getUserCourseId();
+
+      console.log('📝 Using userId:', userId, 'courseId:', courseId);
+
+      // Fetch course title from courses table
+      const { data: courseData } = await supabase
+        .from('courses')
+        .select('title, name')
+        .eq('name', courseId)
+        .single();
+
+      // Set the user's course title for display
+      setUserCourseName(courseData?.title || courseId);
+
+      console.log('📚 Fetching lessons by module...');
+      const lessonsData = await getLessonsByModule(courseId);
+      console.log('✅ Lessons data received:', lessonsData);
+
+      // Debug: Show the lesson names for Module 1 to verify correct course content
+      if (lessonsData.module_1) {
+        console.log('🔍 Module 1 lessons from database:');
+        Object.keys(lessonsData.module_1).forEach(lessonKey => {
+          const lesson = lessonsData.module_1[lessonKey];
+          console.log(`  ${lessonKey}: ${lesson.lessonName || 'No name'}`);
+        });
+      }
+
+      setGroupedLessons(lessonsData);
+
+      // Fetch lessons metadata (for upcoming lessons carousel)
+      console.log('📋 Fetching lessons metadata...');
+      const metadataData = await getLessonsMetadata(courseId);
+      console.log('✅ Metadata received:', metadataData);
+      setLessonsMetadata(metadataData);
+
+      // Fetch completed lessons
+      try {
+        console.log('✓ Fetching completed lessons...');
+        const completedLessonsData = await getCompletedLessons(userId, courseId);
+        console.log('✅ Completed lessons received:', completedLessonsData);
+        setCompletedLessons(completedLessonsData);
+      } catch (error) {
+        console.error('Error fetching completed lessons:', error);
+        setCompletedLessons([]);
+      }
+
+      // Check daily course completion limit
+      try {
+        console.log('🔒 Checking daily course completion limit...');
+        const completedCount = await getCourseCompletionsToday(userId);
+        const completedCourseIds = await getCoursesCompletedToday(userId);
+
+        console.log('📊 Daily completion status:', {
+          completedCount,
+          completedCourseIds,
+          currentCourseId: courseId
+        });
+
+        setCoursesCompletedToday(completedCount);
+        setTodaysCompletedCourseIds(completedCourseIds);
+
+        // Check if daily limit is reached and current course is NOT one of today's completions
+        const isCurrentCourseCompletedToday = completedCourseIds.includes(courseId);
+        const limitReached = completedCount >= 2 && !isCurrentCourseCompletedToday;
+
+        setDailyLimitReached(limitReached);
+        if (limitReached) {
+          setNextAvailableDate(getNextAvailableDate());
+          console.log('🚫 Daily limit reached! Next available:', getNextAvailableDate());
+        }
+      } catch (error) {
+        console.error('Error checking daily course limit:', error);
+        setDailyLimitReached(false);
+      }
+
+      console.log('✅ All data loaded, setting loading to false');
+      setLoading(false);
+    } catch (error) {
+      console.error('❌ Error fetching lesson data:', error);
+      console.error('Error details:', error.message, error.stack);
+      setLoading(false);
+    }
+  };
+
+  const getCurrentLessonData = () => {
+    const moduleKey = `module_${currentModule}`;
+    const lessonKey = `lesson_${currentLesson}`;
+    return groupedLessons[moduleKey]?.[lessonKey] || [];
+  };
+
+  // Get all lessons prior to the current lesson for knowledge check
+  const getPriorLessonsData = () => {
+    const allPriorSections = [];
+    
+    // Iterate through all modules and lessons before the current one
+    for (let m = 1; m <= currentModule; m++) {
+      const moduleKey = `module_${m}`;
+      const moduleData = groupedLessons[moduleKey];
+      
+      if (!moduleData) continue;
+      
+      // For modules before current module, include all lessons
+      // For current module, only include lessons before current lesson
+      const maxLesson = (m === currentModule) ? currentLesson - 1 : Object.keys(moduleData).length;
+      
+      for (let l = 1; l <= maxLesson; l++) {
+        const lessonKey = `lesson_${l}`;
+        const lessonSections = moduleData[lessonKey];
+        
+        if (lessonSections && Array.isArray(lessonSections)) {
+          allPriorSections.push({
+            module: m,
+            lesson: l,
+            lessonName: lessonSections.lessonName || `Module ${m}, Lesson ${l}`,
+            sections: lessonSections
+          });
+        }
+      }
+    }
+    
+    return allPriorSections;
+  };
+
+  const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
+  const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
+
+  // Debug: Track render count to identify infinite loop
+  const renderCountRef = React.useRef(0);
+  renderCountRef.current++;
+
+  if (renderCountRef.current === 11) {
+    console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
+    console.log('Current state values:', {
+      loading,
+      currentModule,
+      currentLesson,
+      isReading,
+      groupedLessonsKeys: Object.keys(groupedLessons).length
+    });
+    console.log('⚠️ Component is re-rendering infinitely. Check useEffect dependencies.');
+  }
+
+  // Debug: Log the lesson being displayed (only first few renders)
+  if (renderCountRef.current <= 5) {
+    console.log('📖 Displaying lesson (render #' + renderCountRef.current + '):', {
+      module: currentModule,
+      lesson: currentLesson,
+      lessonName: lessonName,
+      sectionsCount: Array.isArray(currentLessonSections) ? currentLessonSections.length : 0
+    });
+  }
+
+  // Helper to determine if a section is high-priority for question generation
+  // Get suggested question for section (only uses custom questions from H2 headings)
+  const generateQuestionForSection = (section) => {
+    if (!section) {
+      console.log('generateQuestionForSection: no section');
+      return null;
+    }
+
+    console.log('generateQuestionForSection:', {
+      content_type: section.content_type,
+      level: section.content?.level,
+      suggested_question: section.suggested_question
+    });
+
+    // Only check H2 headings for suggested questions
+    if (section.content_type === 'heading' && section.content?.level === 2) {
+      // Only return custom suggested question if available
+      if (section.suggested_question && section.suggested_question.trim()) {
+        console.log('✅ Returning question:', section.suggested_question);
+        return section.suggested_question;
+      }
+      console.log('⚠️ H2 found but no suggested_question');
+    }
+
+    // No auto-generated questions - return null if not H2 or no custom question exists
+    return null;
+  };
+
+
+  // Intersection Observer to track visible sections
+  useEffect(() => {
+    // Wait for loading to complete and DOM to render
+    if (loading || !currentLessonSections || currentLessonSections.length === 0 || !contentScrollRef.current) {
+      console.log('Observer setup skipped - missing requirements:', {
+        loading,
+        hasLessonSections: !!currentLessonSections,
+        lessonSectionsLength: currentLessonSections?.length || 0,
+        hasContentScrollRef: !!contentScrollRef.current
+      });
+      return;
+    }
+
+    console.log('Setting up Intersection Observer for', currentLessonSections.length, 'sections');
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Find the H2 heading closest to the 50% mark of the viewport
+        let closestH2Index = null;
+        let smallestDistance = Infinity;
+
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const sectionIndex = parseInt(entry.target.dataset.sectionIndex);
+            const section = currentLessonSections[sectionIndex];
+            const rect = entry.boundingClientRect;
+            const containerRect = entry.rootBounds;
+
+            if (!containerRect) return;
+
+            // Only check H2 headings for suggested questions
+            const isH2 = section && section.content_type === 'heading' && section.content?.level === 2;
+
+            if (isH2) {
+              // Calculate how close the H2 is to the 50% point of the viewport (midway)
+              const targetPosition = containerRect.height * 0.5;
+              const sectionTop = rect.top;
+
+              // Only consider H2s that have reached or passed the 50% mark (midway)
+              if (sectionTop <= targetPosition) {
+                const distanceFromTarget = Math.abs(sectionTop - targetPosition);
+                if (distanceFromTarget < smallestDistance) {
+                  smallestDistance = distanceFromTarget;
+                  closestH2Index = sectionIndex;
+                }
+              }
+            }
+          }
+        });
+
+        // Use the H2 closest to the 50% mark that has reached or passed it
+        const selectedH2 = closestH2Index;
+
+        // Update the active section and suggested question
+        if (selectedH2 !== null) {
+          setActiveSectionIndex((prev) => {
+            if (prev !== selectedH2) {
+              const section = currentLessonSections[selectedH2];
+
+              // Always show a question - either custom or fallback
+              const newQuestion = generateQuestionForSection(section);
+              setSuggestedQuestion(newQuestion || 'Can you explain this another way?');
+
+              return selectedH2;
+            }
+            return prev;
+          });
+        }
+      },
+      {
+        root: contentScrollRef.current,
+        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      }
+    );
+
+    // Small delay to ensure refs are populated
+    const setupTimer = setTimeout(() => {
+      // Observe ALL section refs
+      const refsToObserve = sectionRefs.current.filter(ref => ref !== null);
+      console.log('Observing', refsToObserve.length, 'section refs');
+
+      refsToObserve.forEach((ref) => {
+        observer.observe(ref);
+      });
+    }, 100);
+
+    return () => {
+      clearTimeout(setupTimer);
+      observer.disconnect();
+    };
+  }, [currentLessonSections, currentModule, currentLesson, loading]);
+
+  const handleContinue = async () => {
+    // Trigger knowledge check when user clicks Continue
+    setShowKnowledgeCheck(true);
+  };
+
+  const handleRating = async (rating) => {
+    if (!user) return;
+
+    try {
+      const courseId = await getUserCourseId();
+      await submitLessonRating(user.id, courseId, currentModule, currentLesson, rating);
+      setLessonRating(rating);
+      setShowRatingFeedback(true);
+
+      // Hide feedback after 2 seconds
+      setTimeout(() => {
+        setShowRatingFeedback(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting lesson rating:', error);
+    }
+  };
+
+  const handleKnowledgeCheckClose = () => {
+    setShowKnowledgeCheck(false);
+  };
+
+  const handleOpenFlashcards = async () => {
+    try {
+      // Show modal with loading state
+      setShowFlashcards(true);
+      setFlashcards([]);
+      setIsLoadingFlashcards(true);
+      setFlashcardError(null);
+
+      // Fetch flashcards from database (already shuffled)
+      const courseId = await getUserCourseId();
+      const flashcardsData = await getFlashcards(courseId, currentModule, currentLesson);
+
+      setIsLoadingFlashcards(false);
+
+      if (flashcardsData && flashcardsData.length > 0) {
+        setFlashcards(flashcardsData);
+        setCurrentFlashcardIndex(0);
+        setIsFlashcardFlipped(false);
+      } else {
+        // If no flashcards exist, show empty state
+        console.warn(`No flashcards found for Module ${currentModule}, Lesson ${currentLesson}`);
+        setFlashcards([]);
+      }
+    } catch (error) {
+      console.error('Error fetching flashcards:', error);
+      setIsLoadingFlashcards(false);
+      setFlashcardError('Failed to load flashcards. Please try again.');
+      setFlashcards([]);
+    }
+  };
+
+  const handleCloseFlashcards = () => {
+    setIsClosingFlashcards(true);
+    setTimeout(() => {
+      setShowFlashcards(false);
+      setIsClosingFlashcards(false);
+      setIsFlashcardFlipped(false);
+      setCurrentFlashcardIndex(0);
+      setFlashcardError(null);
+      setIsLoadingFlashcards(false);
+    }, 200);
+  };
+
+  const handleFlipFlashcard = () => {
+    setIsFlashcardFlipped(!isFlashcardFlipped);
+  };
+
+  const handleNextFlashcard = () => {
+    if (currentFlashcardIndex < flashcards.length - 1) {
+      setIsFlashcardFlipped(false);
+      setCurrentFlashcardIndex(currentFlashcardIndex + 1);
+    }
+  };
+
+  const handlePreviousFlashcard = () => {
+    if (currentFlashcardIndex > 0) {
+      setIsFlashcardFlipped(false);
+      setCurrentFlashcardIndex(currentFlashcardIndex - 1);
+    }
+  };
+
+  const handleCloseLinkedInModal = () => {
+    setIsClosingLinkedInModal(true);
+    setTimeout(() => {
+      setShowLinkedInModal(false);
+      setIsClosingLinkedInModal(false);
+      navigate('/');
+    }, 200);
+  };
+
+  const handleAddToLinkedIn = () => {
+    // LinkedIn URL to add education entry
+    // This URL opens the LinkedIn profile edit page directly to the education section
+    const linkedInUrl = 'https://www.linkedin.com/in/me/edit/forms/education/new/';
+
+    // Open LinkedIn in new tab
+    window.open(linkedInUrl, '_blank');
+
+    // Close modal and navigate
+    handleCloseLinkedInModal();
+  };
+
+  const handleKnowledgeCheckPass = async () => {
+    console.log('🎯 handleKnowledgeCheckPass called');
+    console.log('📍 Current lesson:', { module: currentModule, lesson: currentLesson });
+
+    // Mark lesson as complete
+    try {
+      const userId = user?.id || 'temp-user-id';
+      const courseId = await getUserCourseId();
+      console.log('💾 Marking lesson complete for userId:', userId);
+
+      await markLessonComplete(userId, courseId, currentModule, currentLesson);
+      console.log('✅ Lesson marked as complete in database');
+
+      // Check if this is the first lesson completed
+      const isFirstLesson = completedLessons.length === 0;
+      console.log('🔍 Is first lesson?', isFirstLesson, '(Current completed count:', completedLessons.length, ')');
+
+      // Refresh completed lessons data
+      try {
+        const completedLessonsData = await getCompletedLessons(userId, courseId);
+        console.log('✅ Completed lessons refreshed in LearningHub:', completedLessonsData);
+        console.log('📊 New completed lessons count:', completedLessonsData.length);
+        setCompletedLessons(completedLessonsData);
+
+        // Check if completing this lesson completes the entire course
+        const isCourseComplete = await checkCourseCompletion(userId, courseId);
+        console.log('🎓 Course completion check:', isCourseComplete);
+
+        if (isCourseComplete) {
+          console.log('🎉 Course completed! Marking in course_completions table...');
+          await markCourseComplete(userId, courseId);
+
+          // Refresh daily course completion tracking
+          const updatedCount = await getCourseCompletionsToday(userId);
+          const updatedCourseIds = await getCoursesCompletedToday(userId);
+          setCoursesCompletedToday(updatedCount);
+          setTodaysCompletedCourseIds(updatedCourseIds);
+
+          console.log('✅ Course completion recorded. Total courses completed today:', updatedCount);
+        }
+      } catch (error) {
+        console.error('❌ Error refreshing completed lessons:', error);
+      }
+
+      // Close knowledge check
+      setShowKnowledgeCheck(false);
+
+      // If this is the first lesson, show LinkedIn modal
+      if (isFirstLesson) {
+        console.log('🎉 First lesson complete! Showing LinkedIn modal');
+        setShowLinkedInModal(true);
+      } else {
+        // Otherwise navigate back to Progress Hub
+        console.log('➡️ Navigating to Progress Hub');
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('❌ Error marking lesson complete:', error);
+      // Still navigate back on error
+      setShowKnowledgeCheck(false);
+      navigate('/');
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+
+    const userMessage = chatInput;
+    const currentSelectedText = selectedText; // Store the selected text at send time
+
+    // Add user message
+    const newMessages = [...chatMessages, { type: 'user', text: userMessage }];
+    setChatMessages(newMessages);
+    setChatInput('');
+    setIsTyping(true);
+
+    try {
+      // Build lesson context from all sections
+      const lessonContext = currentLessonSections.length > 0 ? `
+Lesson: ${lessonName}
+Module: ${currentModule}
 
 Sections:
-${R.map(i=>`
-Title: ${i.title}
-Content: ${typeof i.content=="string"?i.content:JSON.stringify(i.content)}
-`).join(`
----
-`)}
-      `.trim():"",d=await(await fetch("https://ignite-education-api.onrender.com/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:r,lessonContext:c})})).json();if(_e(!1),d.success){const i=ue.length+1;if(we(m=>[...m,{type:"assistant",text:d.response,isComplete:!1}]),ie(i),s&&n.startsWith("Explain '"))try{const m=await re(),u=St(s),g=await Ts(A.id,m,M,B,u,d.response);wt(W=>[...W,{text:u,explanation:d.response,id:g.id}]),Rt("")}catch(m){console.error("Error saving explained section:",m);const u=St(s);wt(g=>[...g,{text:u,explanation:d.response,id:Date.now()}]),Rt("")}}else throw new Error(d.error||"Failed to get response")}catch(c){console.error("Error sending message:",c),_e(!1);const l=ue.length+1;we(d=>[...d,{type:"assistant",text:"Sorry, I encountered an error. Please try again! 😊",isComplete:!1}]),ie(l)}},Gn=async e=>{try{await _s(e),wt(n=>n.filter(s=>s.id!==e)),he.current&&(clearTimeout(he.current),he.current=null),ze(null),At(!1)}catch(n){console.error("Error deleting explained section:",n)}},Kn=e=>{It(e),Ht(!0),setTimeout(()=>{if(Ft.current){Ft.current.focus();const n=document.createRange(),s=window.getSelection();n.selectNodeContents(Ft.current),n.collapse(!1),s.removeAllRanges(),s.addRange(n)}},10)},Yn=async e=>{try{await As(e,zt),wt(n=>n.map(s=>s.id===e?{...s,explanation:zt}:s)),he.current&&(clearTimeout(he.current),he.current=null),Ht(!1),It(""),At(!1),ze(null)}catch(n){console.error("Error updating explained section:",n)}},Jn=()=>{Ht(!1),It("")},Qn=async e=>{if(qt&&Ne.current){Ne.current.pause(),Ne.current=null,ht(!1);return}try{ht(!0);const n=e.replace(/\*\*(.+?)\*\*/g,"$1").replace(/\*(.+?)\*/g,"$1").trim(),s=await fetch("https://ignite-education-api.onrender.com/api/text-to-speech",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:n,voiceGender:it})});if(!s.ok)throw new Error("Failed to generate speech");const r=await s.blob(),c=URL.createObjectURL(r),l=new Audio(c);Ne.current=l,l.onended=()=>{ht(!1),Ne.current=null,URL.revokeObjectURL(c)},l.onerror=()=>{ht(!1),Ne.current=null,URL.revokeObjectURL(c)},l.playbackRate=Kt,await l.play()}catch(n){console.error("Error reading note aloud:",n),ht(!1),Ne.current=null}},Vn=e=>{se.current&&(ve(!0),o(e.pageX-se.current.offsetLeft),k(se.current.scrollLeft))},Xn=e=>{if(!We||!se.current)return;e.preventDefault();const s=(e.pageX-se.current.offsetLeft-a)*2;se.current.scrollLeft=y-s},Zn=()=>{ve(!1)},es=()=>{ve(!1)},ts=()=>{if(!se.current||J.length===0)return;const e=se.current.scrollLeft,n=16;let s=0,r=0;for(let c=0;c<J.length;c++){const l=J[c],d=Se(l.module_number,l.lesson_number),i=J.findIndex(g=>!Se(g.module_number,g.lesson_number)),u=d||c===i?390:346.06;if(e<s+u/2){r=c;break}s+=u+n,c===J.length-1&&(r=c)}ot(r)},ns=()=>{if(!se.current||J.length===0)return;const e=J.findIndex(n=>!Se(n.module_number,n.lesson_number));if(e!==-1){let s=0;for(let r=0;r<e;r++){const c=J[r],i=Se(c.module_number,c.lesson_number)||r===e?390:346.06;s+=i+16}se.current.scrollTo({left:s,behavior:"smooth"}),ot(e)}},Jt=()=>{x(!0),setTimeout(()=>{v(!1),x(!1),F(null),p(!1)},200)},ss=async()=>{if(!A){alert("Please sign in to upgrade to ad-free");return}v(!0),p(!0);try{const n=await(await fetch("https://ignite-education-api.onrender.com/api/create-checkout-session",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId:A.id})})).json();if(n.clientSecret)F(n.clientSecret),p(!1);else throw new Error("Failed to create checkout session")}catch(e){console.error("Error creating checkout session:",e),alert("Failed to start upgrade process. Please try again."),Jt()}};h.useEffect(()=>{let e=null;return(async()=>{if(b&&Gt.current)try{e=await(await Gs).initEmbeddedCheckout({clientSecret:b}),e.mount(Gt.current)}catch(s){console.error("Error mounting Stripe checkout:",s),p(!1),alert("Failed to load payment form. Please try again.")}})(),()=>{e&&e.destroy()}},[b]);const os=()=>{let e=0;return Object.keys(V).forEach(n=>{const s=V[n],r=Object.keys(s).filter(c=>c.startsWith("lesson_"));e+=r.length}),e},rs=()=>{let e=0;for(let s=1;s<M;s++){const r=`module_${s}`;if(V[r]){const c=Object.keys(V[r]).filter(l=>l.startsWith("lesson_"));e+=c.length}}const n=`module_${M}`;if(V[n]){const s=Object.keys(V[n]).filter(r=>r.startsWith("lesson_")).map(r=>parseInt(r.split("_")[1])).filter(r=>r<B);e+=s.length}return e},as=()=>{const e=os();if(e===0)return 0;const n=rs();return Math.round(n/e*100)};Object.keys(V).length>0&&as();const Se=(e,n)=>G.some(s=>s.module_number===e&&s.lesson_number===n),ls=()=>le.length===0?[]:le.sort((e,n)=>e.module_number!==n.module_number?e.module_number-n.module_number:e.lesson_number-n.lesson_number),J=Object.keys(V).length>0?ls():[];h.useEffect(()=>{if(!se.current||J.length===0||te)return;const e=J.findIndex(n=>!Se(n.module_number,n.lesson_number));if(console.log("🎯 LearningHub - Attempting to scroll to current lesson index:",e),console.log("📚 LearningHub - Total lessons:",J.length),console.log("📝 LearningHub - All lessons:",J.map(n=>`M${n.module_number}L${n.lesson_number}`)),e!==-1){const n=se.current,s=16;let r=0;for(let c=0;c<e;c++){const l=J[c],m=Se(l.module_number,l.lesson_number)||c===e?390:346.06;r+=m+s}console.log("📍 LearningHub - Setting initial scroll position:",r),n.scrollLeft=r,ot(e),Et(!0)}else Et(!0)},[J,te,M,B,G]),h.useEffect(()=>{if(!se.current||!at)return;const e=()=>{se.current&&T(se.current.clientWidth)};return e(),window.addEventListener("resize",e),()=>{window.removeEventListener("resize",e)}},[J.length,at]);const et=e=>{var n,s;if(e.content_type==="heading"){const r=((n=e.content)==null?void 0:n.text)||e.title||"";return St(r)}if(e.content_type==="paragraph"){const r=typeof e.content=="string"?e.content:((s=e.content)==null?void 0:s.text)||e.content_text||"";return St(r)}return""},is=e=>e?e.split(`
-`).map((n,s)=>{const r=n.match(/^[•\-\*]\s+(.+?):\s*(.*)$/),c=n.match(/^[•\-\*]\s+(.+?)\s+-\s+(.*)$/),l=n.match(/^(\d+)\.\s+(.+?):\s*(.*)$/),d=n.match(/^(\d+)\.\s+(.+?)\s+-\s+(.*)$/);if(r){const i=r[1].replace(/\*\*/g,""),m=r[2].replace(/\*\*/g,"");return t.jsxs("p",{className:s>0?"mt-2":"",children:[t.jsxs("span",{children:[r[0].charAt(0)," "]}),t.jsxs("strong",{className:"font-semibold",children:[i,":"]}),t.jsxs("span",{children:[" ",m]})]},s)}else if(c){const i=c[1].replace(/\*\*/g,""),m=c[2].replace(/\*\*/g,"");return t.jsxs("p",{className:s>0?"mt-2":"",children:[t.jsxs("span",{children:[c[0].charAt(0)," "]}),t.jsx("strong",{className:"font-semibold",children:i}),t.jsxs("span",{children:[" - ",m]})]},s)}else if(l){const i=l[2].replace(/\*\*/g,""),m=l[3].replace(/\*\*/g,"");return t.jsxs("p",{className:s>0?"mt-2":"",children:[t.jsxs("span",{children:[l[1],". "]}),t.jsxs("strong",{className:"font-semibold",children:[i,":"]}),t.jsxs("span",{children:[" ",m]})]},s)}else if(d){const i=d[2].replace(/\*\*/g,""),m=d[3].replace(/\*\*/g,"");return t.jsxs("p",{className:s>0?"mt-2":"",children:[t.jsxs("span",{children:[d[1],". "]}),t.jsx("strong",{className:"font-semibold",children:i}),t.jsxs("span",{children:[" - ",m]})]},s)}else{const i=n.split(/(\*\*.*?\*\*|\*.*?\*|DNA|RNA|Proteins)/g);return t.jsx("p",{className:s>0?"mt-2":"",children:i.map((m,u)=>{if(m.startsWith("**")&&m.endsWith("**")&&m.length>4){const g=m.slice(2,-2).trim();return t.jsx("strong",{className:"font-semibold",children:g},u)}else if(m.startsWith("*")&&m.endsWith("*")&&m.length>2&&!m.startsWith("**")){const g=m.slice(1,-1).trim();return t.jsx("em",{className:"italic",children:g},u)}else if(m==="DNA"||m==="RNA"||m==="Proteins")return t.jsx("strong",{className:"font-semibold",children:m},u);return t.jsx("span",{children:m},u)})},s)}}):null,tt=(e,n,s=null,r=!1)=>{if(!e)return null;const c=e.split(/(\s+)/),l=[];let d=n;return c.forEach((i,m)=>{let u=0;for(let I=0;I<m;I++)u+=c[I].length;const g=u,W=u+i.length;let U=!1,f=null;if(an.forEach(I=>{const z=e.indexOf(I.text);if(z!==-1){const N=z+I.text.length;g<N&&W>z&&(U=!0,f=I.id)}}),!i||/^\s+$/.test(i)){U?l.push(t.jsx("span",{className:"bg-pink-100 cursor-pointer hover:bg-pink-200",style:{backgroundColor:"#fce7f3"},onMouseEnter:I=>{if(he.current&&(clearTimeout(he.current),he.current=null),!_t)if(He!==f){ze(f);const z=I.currentTarget.getBoundingClientRect(),N=z.left+z.width/2,O=z.top;ln({x:N,y:O})}else ze(f)},onMouseLeave:()=>{_t||(he.current=setTimeout(()=>{ze(null)},200))},children:i},`space-${m}`)):l.push(t.jsx("span",{children:i},`space-${m}`));return}const C=i,K=!r&&Ve&&(s==="title"&&mn||s!=="title"&&!mn&&s===un)&&Rn===d;let P="transition-all duration-200",oe={};K?oe={backgroundColor:"#FDE7F4",borderRadius:"2px",boxShadow:"0 0 0 3px #FDE7F4"}:U&&(P+=" bg-pink-100 cursor-pointer hover:bg-pink-200",oe={}),l.push(t.jsx("span",{className:P,style:oe,onMouseEnter:U?I=>{if(he.current&&(clearTimeout(he.current),he.current=null),!_t)if(He!==f){ze(f);const z=I.currentTarget.getBoundingClientRect(),N=z.left+z.width/2,O=z.bottom,_=z.top,be=500,Q=_,xe=window.innerHeight-O,Be=Q>be||Q>xe;ln({x:N,y:Be?_:O,preferAbove:Be}),cn.current=I.currentTarget}else ze(f)}:void 0,onMouseLeave:U?()=>{_t||(he.current=setTimeout(()=>{ze(null),cn.current=null},300))}:void 0,children:C},`word-${m}-${d}`)),d++}),l},Qt=async e=>{var d,i,m;const n=performance.now();if(console.log(`🎯 [${n.toFixed(0)}ms] narrateSection(${e}) ENTERED`),e>=R.length){console.log("✅ Finished narrating all sections"),Le(!1),Bt(0),Pe(-1),jt(!1),Xe.current=!1,ee.current&&(cancelAnimationFrame(ee.current),ee.current=null);return}const s=R[e],r=et(s);if(!r||r.length===0){console.log(`⏭️ Skipping empty section ${e}`),await Qt(e+1);return}console.log(`📖 [${performance.now().toFixed(0)}ms] Narrating section ${e} (${s.content_type}): ${r.substring(0,50)}...`);const c=s.content_type==="heading"?((d=s.content)==null?void 0:d.level)||2:null;if(c===2||c===3){const u=R.findIndex(g=>{var W;return g.content_type==="heading"&&(((W=g.content)==null?void 0:W.level)||2)===2});e!==u&&cs(e)}try{let u,g;const W=performance.now(),U=Object.keys(Me.current),f=Object.keys(qe.current);console.log(`💾 [${W.toFixed(0)}ms] Batch cache has sections: [${U.join(", ")}], Pending: [${f.join(", ")}]`);const C=Me.current[e];if(C){const N=performance.now();console.log(`⚡ [${N.toFixed(0)}ms] BATCH CACHE HIT for section ${e} (readyState: ${C.audio.readyState})`),u=C.url,g=C.audio,C.wordTimestamps&&(lt.current=C.wordTimestamps,console.log(`📝 Retrieved ${C.wordTimestamps.length} word timestamps from cache`)),delete Me.current[e],delete qe.current[e],ce.current=g}else if(qe.current[e]){const N=performance.now();console.log(`⏳ [${N.toFixed(0)}ms] Waiting for prefetch of section ${e} to complete...`);try{await qe.current[e];const O=performance.now();console.log(`✅ [${O.toFixed(0)}ms] Prefetch completed (waited: ${(O-N).toFixed(0)}ms)`);const _=Me.current[e];if(_)u=_.url,g=_.audio,_.wordTimestamps&&(lt.current=_.wordTimestamps,console.log(`📝 Retrieved ${_.wordTimestamps.length} word timestamps from cache`)),delete Me.current[e],delete qe.current[e],ce.current=g;else throw new Error("Prefetch completed but audio not in cache")}catch(O){console.log("⚠️ Prefetch failed, falling back to on-demand fetch:",O.message)}}else if(ke.current&&ke.current.sectionIndex===e){const N=performance.now();console.log(`⚡ [${N.toFixed(0)}ms] SINGLE CACHE HIT for section ${e}`),u=ke.current.url,g=ke.current.audio,ke.current=null,ce.current=g}if(!g){const N=performance.now();console.log(`❌ [${N.toFixed(0)}ms] CACHE MISS - Fetching section ${e} on-demand`),ft.current=new AbortController;const O=ft.current,_=await fetch("https://ignite-education-api.onrender.com/api/text-to-speech-timestamps",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:r,voiceGender:it}),signal:O.signal});if(!_.ok){const Oe=await _.text();throw console.error("❌ Section narration API error:",_.status,Oe),new Error(`Failed to generate speech: ${_.status} - ${Oe}`)}const be=performance.now();console.log(`📥 [${be.toFixed(0)}ms] TTS API response received (took: ${(be-N).toFixed(0)}ms)`);const Q=await _.json();console.log("✅ Section narration API response received:",{hasAudio:!!Q.audio_base64,hasAlignment:!!Q.alignment,alignmentChars:(m=(i=Q.alignment)==null?void 0:i.characters)==null?void 0:m.length});const xe=atob(Q.audio_base64),Be=new ArrayBuffer(xe.length),hs=new Uint8Array(Be);for(let Oe=0;Oe<xe.length;Oe++)hs[Oe]=xe.charCodeAt(Oe);const gs=new Blob([Be],{type:"audio/mpeg"});if(u=URL.createObjectURL(gs),Q.alignment){const Oe=Ot(r,Q.alignment.characters,Q.alignment.character_start_times_seconds,Q.alignment.character_end_times_seconds);lt.current=Oe,console.log(`📝 Converted ${Oe.length} word timestamps for section ${e}`)}g=new Audio(u),ce.current=g,console.log(`🎵 [${performance.now().toFixed(0)}ms] Audio object created from blob`)}g.onended=async()=>{const N=performance.now();if(console.log(`⏱️ [${N.toFixed(0)}ms] Section ${e} ENDED`),URL.revokeObjectURL(u),ce.current!==g){console.log(`Section ${e} audio is no longer active, skipping continuation`);return}if(!Xe.current){const O=performance.now();console.log(`🔄 [${O.toFixed(0)}ms] Starting section ${e+1} (gap: ${(O-N).toFixed(0)}ms)`),await Qt(e+1);const _=performance.now();console.log(`▶️ [${_.toFixed(0)}ms] Section ${e+1} PLAYING (took: ${(_-O).toFixed(0)}ms)`)}},g.onerror=N=>{console.error("Audio playback error:",N),URL.revokeObjectURL(u),Le(!1)},g.playbackRate=Kt;const X=performance.now();console.log(`🎬 [${X.toFixed(0)}ms] Calling audio.play() for section ${e} (readyState: ${g.readyState})`),await g.play();const K=performance.now();console.log(`✅ [${K.toFixed(0)}ms] audio.play() completed (took: ${(K-X).toFixed(0)}ms) - SECTION ${e} NOW PLAYING`),console.log(`⏰ Total time from narrateSection entry to playback: ${(K-n).toFixed(0)}ms`),Le(!0),Bt(e);const P=R.slice(0,e).map(N=>et(N)).join(" ").split(/\s+/).filter(N=>N.length>0).length,oe=r.split(/\s+/).filter(N=>N.length>0).length;ee.current&&cancelAnimationFrame(ee.current);const I=()=>{const N=lt.current;if(!N||N.length===0){console.warn("⚠️ No word timestamps available for section",e);return}console.log(`📝 Section ${e}: Using ${N.length} precise word timestamps`),Pe(P);const O=()=>{if(!g||g.paused||g.ended)return;const _=g.currentTime;let be=!1;for(let Q=0;Q<N.length;Q++){const xe=N[Q];if(_>=xe.start&&_<xe.end){Pe(P+Q),be=!0;break}}if(!be&&_>=N[N.length-1].end){Pe(-1),ee.current=null;return}ee.current=requestAnimationFrame(O)};ee.current=requestAnimationFrame(O)};g.duration&&!isNaN(g.duration)?I():g.addEventListener("loadedmetadata",I,{once:!0});const z=e+1;if(z<R.length){const N=R[z],O=et(N);O&&O.length>0&&(console.log(`⚡ Prefetching section ${z}...`),hn.current=(async()=>{try{const _=await fetch("https://ignite-education-api.onrender.com/api/text-to-speech",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:O,voiceGender:it})});if(_.ok){const be=await _.blob(),Q=URL.createObjectURL(be),xe=new Audio(Q);ce.current===g?(ke.current&&URL.revokeObjectURL(ke.current.url),ke.current={url:Q,audio:xe,sectionIndex:z},console.log(`⚡ Section ${z} prefetched successfully`)):URL.revokeObjectURL(Q)}}catch(_){console.log("Prefetch failed (non-critical):",_.message)}})())}}catch(u){if(u.name==="AbortError"){console.log(`Section ${e} narration cancelled`);return}console.error("Error narrating section:",u),Le(!1)}},cs=e=>{if(!Qe.current||!Pt.current[e])return;const n=Pt.current[e],s=Qe.current,l=n.offsetTop-32,d=s.scrollTop,i=l-d,m=1200;let u=null;const g=U=>U<.5?4*U*U*U:1-Math.pow(-2*U+2,3)/2,W=U=>{u||(u=U);const f=U-u,C=Math.min(f/m,1),X=g(C);s.scrollTop=d+i*X,C<1&&requestAnimationFrame(W)};requestAnimationFrame(W)},ds=async()=>{var e,n;console.log(`🎯 [ENTRY] narrateLessonTitle called for: ${Re}`);try{console.log(`📖 Narrating lesson title: ${Re}`),ft.current=new AbortController;const s=ft.current;console.log("🌐 [FETCH] Starting API call to /api/text-to-speech-timestamps..."),console.log("📤 [FETCH] Request body:",{text:Re,voiceGender:it});const r=await fetch("https://ignite-education-api.onrender.com/api/text-to-speech-timestamps",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:Re,voiceGender:it}),signal:s.signal});if(console.log("📡 [FETCH] API response received, status:",r.status),!r.ok){const f=await r.text();throw console.error("❌ Title narration API error:",r.status,f),new Error(`Failed to generate speech for lesson title: ${r.status} - ${f}`)}const c=await r.json();console.log("✅ Title narration API response received:",{hasAudio:!!c.audio_base64,hasAlignment:!!c.alignment,alignmentChars:(n=(e=c.alignment)==null?void 0:e.characters)==null?void 0:n.length});const l=atob(c.audio_base64),d=new ArrayBuffer(l.length),i=new Uint8Array(d);for(let f=0;f<l.length;f++)i[f]=l.charCodeAt(f);const m=new Blob([d],{type:"audio/mpeg"}),u=URL.createObjectURL(m);if(c.alignment){const f=Ot(Re,c.alignment.characters,c.alignment.character_start_times_seconds,c.alignment.character_end_times_seconds);lt.current=f,console.log(`📝 Converted ${f.length} word timestamps for lesson title`)}const g=new Audio(u);ce.current=g,g.onended=async()=>{const f=performance.now();if(console.log(`⏱️ [${f.toFixed(0)}ms] TITLE ENDED`),URL.revokeObjectURL(u),jt(!1),ce.current!==g){console.log("Title audio is no longer active, skipping continuation");return}if(!Xe.current){const C=performance.now();console.log(`🔄 [${C.toFixed(0)}ms] Starting section 0 (gap: ${(C-f).toFixed(0)}ms)`),await Qt(0);const X=performance.now();console.log(`▶️ [${X.toFixed(0)}ms] Section 0 PLAYING (took: ${(X-C).toFixed(0)}ms)`)}},g.onerror=f=>{console.error("Audio playback error:",f),URL.revokeObjectURL(u),Le(!1)},g.playbackRate=Kt;try{console.log("🎬 Attempting to play title audio..."),await g.play(),console.log("✅ Title audio playing successfully")}catch(f){throw console.error("❌ Failed to play title audio:",f),URL.revokeObjectURL(u),Le(!1),f}jt(!0);const W=Re.split(/\s+/).filter(f=>f.length>0),U=()=>{const f=lt.current;if(!f||f.length===0){console.warn("⚠️ No word timestamps available for title");return}console.log(`📝 Title: Using ${f.length} precise word timestamps`),Pe(0),ee.current&&cancelAnimationFrame(ee.current);const C=()=>{if(!g||g.paused||g.ended)return;const X=g.currentTime;let K=!1;for(let P=0;P<f.length;P++){const oe=f[P];if(X>=oe.start&&X<oe.end){Pe(P),K=!0;break}}if(!K&&X>=f[f.length-1].end){Pe(-1),jt(!1),ee.current=null;return}ee.current=requestAnimationFrame(C)};ee.current=requestAnimationFrame(C)};g.duration&&!isNaN(g.duration)?U():g.addEventListener("loadedmetadata",U,{once:!0}),R&&R.length>0&&[0,1,2,3,4,5].filter(C=>C<R.length).forEach(C=>{const X=R[C],K=et(X);K&&K.length>0&&(console.log(`⚡ Prefetching section ${C} during title...`),qe.current[C]||(qe.current[C]=new Promise((P,oe)=>{fetch("https://ignite-education-api.onrender.com/api/text-to-speech-timestamps",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:K,voiceGender:it})}).then(async I=>{if(I.ok)return I.json();const z=await I.text();throw console.error(`❌ Title prefetch section ${C} API error:`,I.status,z),new Error(`Prefetch failed: ${I.status}`)}).then(I=>{const z=atob(I.audio_base64),N=new ArrayBuffer(z.length),O=new Uint8Array(N);for(let Be=0;Be<z.length;Be++)O[Be]=z.charCodeAt(Be);const _=new Blob([N],{type:"audio/mpeg"}),be=URL.createObjectURL(_),Q=new Audio(be);let xe=null;I.alignment&&(xe=Ot(K,I.alignment.characters,I.alignment.character_start_times_seconds,I.alignment.character_end_times_seconds)),Me.current[C]?(URL.revokeObjectURL(be),P()):(Q.addEventListener("canplaythrough",()=>{Me.current[C]={url:be,audio:Q,wordTimestamps:xe,sectionIndex:C},console.log(`✅ Section ${C} prefetched during title (readyState: ${Q.readyState}, ${(xe==null?void 0:xe.length)||0} timestamps)`),P()},{once:!0}),Q.addEventListener("error",()=>{console.log(`❌ Section ${C} audio load error during title`),oe(new Error("Audio load failed"))},{once:!0}),Q.load())}).catch(I=>{console.log(`Title prefetch section ${C} failed:`,I.message),oe(I)})})))})}catch(s){if(s.name==="AbortError"){console.log("Lesson title narration cancelled");return}console.error("Error narrating lesson title:",s),Le(!1)}},us=()=>{if(!R||R.length===0)return;[0,1,2,3,4,5].filter(n=>n<R.length).forEach(n=>{const s=R[n],r=et(s);r&&r.length>0&&(console.log(`⚡ Starting upfront prefetch for section ${n}`),qe.current[n]=new Promise((c,l)=>{fetch("https://ignite-education-api.onrender.com/api/text-to-speech-timestamps",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:r,voiceGender:it})}).then(async d=>{if(d.ok)return d.json();const i=await d.text();throw console.error(`❌ Prefetch section ${n} API error:`,d.status,i),new Error(`Prefetch failed: ${d.status}`)}).then(d=>{const i=atob(d.audio_base64),m=new ArrayBuffer(i.length),u=new Uint8Array(m);for(let C=0;C<i.length;C++)u[C]=i.charCodeAt(C);const g=new Blob([m],{type:"audio/mpeg"}),W=URL.createObjectURL(g),U=new Audio(W);let f=null;d.alignment&&(f=Ot(r,d.alignment.characters,d.alignment.character_start_times_seconds,d.alignment.character_end_times_seconds)),U.addEventListener("canplaythrough",()=>{Me.current[n]={url:W,audio:U,wordTimestamps:f,sectionIndex:n},console.log(`✅ Section ${n} prefetched and cached (readyState: ${U.readyState}, ${(f==null?void 0:f.length)||0} timestamps)`),c()},{once:!0}),U.addEventListener("error",()=>{console.log(`❌ Section ${n} audio load error`),l(new Error("Audio load failed"))},{once:!0}),U.load()}).catch(d=>{console.log(`Prefetch section ${n} failed:`,d.message),l(d)})}))})},ms=async()=>{console.log("🔵 handleReadAloud called, isHandlingReadAloud:",Ze.current,"isReading:",Ve);const e=Date.now();if(Ze.current>0&&e-Ze.current<500){console.warn("⚠️ handleReadAloud called too quickly, ignoring (debounce). Time since last call:",e-Ze.current,"ms");return}Ze.current=e;try{if(Ve&&ce.current){ft.current&&ft.current.abort();const n=ce.current;n.pause(),n.paused||(console.warn("Audio pause failed - forcing pause state"),n.pause()),ee.current&&(cancelAnimationFrame(ee.current),ee.current=null),Pe(-1),jt(!1),Le(!1),Xe.current=!0,Ze.current=0;return}if(ce.current&&!Ve&&Xe.current){const n=ce.current;n.play(),Le(!0),Xe.current=!1;const s=lt.current;if(s&&s.length>0){const r=R.slice(0,un).map(l=>et(l)).join(" ").split(/\s+/).filter(l=>l.length>0).length;ee.current&&cancelAnimationFrame(ee.current);const c=()=>{if(!n||n.paused||n.ended)return;const l=n.currentTime;let d=!1;for(let i=0;i<s.length;i++){const m=s[i];if(l>=m.start&&l<m.end){Pe(r+i),d=!0;break}}if(!d&&l>=s[s.length-1].end){Pe(-1),ee.current=null;return}ee.current=requestAnimationFrame(c)};ee.current=requestAnimationFrame(c)}Ze.current=0;return}console.log("🎬 Starting narration from beginning"),Le(!0),Xe.current=!1,Bt(0),us(),ds(),console.log("🔵 handleReadAloud completed, narration started")}catch(n){console.error("Error in handleReadAloud:",n),Ze.current=0,Le(!1)}};if(h.useEffect(()=>()=>{ce.current&&(ce.current.pause(),ce.current=null),Ne.current&&(Ne.current.pause(),Ne.current=null),ke.current&&(URL.revokeObjectURL(ke.current.url),ke.current=null),Object.values(Me.current).forEach(e=>{e&&e.url&&URL.revokeObjectURL(e.url)}),Me.current={},ee.current&&(cancelAnimationFrame(ee.current),ee.current=null)},[]),h.useEffect(()=>{!He&&Ne.current&&(Ne.current.pause(),Ne.current=null,ht(!1))},[He]),te)return t.jsx(xs,{});let Ct=!1,Vt="prerequisite",Nt=null;if(!te&&le.length>0&&G!==null){const e=[...le].sort((n,s)=>n.module_number!==s.module_number?n.module_number-s.module_number:n.lesson_number-s.lesson_number);if(In)console.log("🚫 LESSON LOCKED - Daily course completion limit reached (2 courses/day)"),Ct=!0,Vt="daily_limit",Nt=e[0];else{const n=e.findIndex(s=>s.module_number===M&&s.lesson_number===B);if(console.log("🔒 Lesson Lock Check:"),console.log("  Current Module/Lesson:",M,B),console.log("  Requested Lesson Index:",n),console.log("  Completed Lessons:",G.map(s=>`M${s.module_number}L${s.lesson_number}`).join(", ")),n>0){const s=e[n-1];console.log("  Previous Lesson:",`M${s.module_number}L${s.lesson_number}`);const r=Se(s.module_number,s.lesson_number);if(console.log("  Is Previous Completed?",r),r)console.log("  ✅ LESSON UNLOCKED - previous lesson is completed");else{console.log("  ❌ LESSON LOCKED - previous lesson not completed"),Ct=!0,Vt="prerequisite";const c=e.findIndex(l=>!Se(l.module_number,l.lesson_number));Nt=e[c!==-1?c:0]}}else console.log("  ✅ LESSON UNLOCKED - this is the first lesson")}}return!R||R.length===0?t.jsxs("div",{className:"h-screen bg-black text-white flex items-center justify-center flex-col gap-4",children:[t.jsx("div",{className:"text-xl",children:"Lesson not found"}),t.jsx("button",{onClick:()=>Z("/"),className:"px-6 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition",children:"Back to Progress Hub"})]}):t.jsxs(t.Fragment,{children:[t.jsx("style",{children:`
+${currentLessonSections.map(section => `
+Title: ${section.title}
+Content: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
+`).join('\n---\n')}
+      `.trim() : '';
+
+      // Call backend API
+      const response = await fetch('https://ignite-education-api.onrender.com/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: newMessages,
+          lessonContext: lessonContext
+        }),
+      });
+
+      const data = await response.json();
+
+      setIsTyping(false);
+
+      if (data.success) {
+        const newMessageIndex = chatMessages.length + 1;
+        setChatMessages(prev => [...prev, {
+          type: 'assistant',
+          text: data.response,
+          isComplete: false
+        }]);
+        setTypingMessageIndex(newMessageIndex);
+
+        // If this was explaining a selected text, save it to database and state
+        if (currentSelectedText && userMessage.startsWith('Explain \'')) {
+          try {
+            const courseId = await getUserCourseId();
+            // Strip formatting markers from selected text before saving
+            const cleanText = stripFormattingMarkers(currentSelectedText);
+            const savedSection = await saveExplainedSection(
+              user.id,
+              courseId,
+              currentModule,
+              currentLesson,
+              cleanText,
+              data.response
+            );
+
+            // Add to local state with database ID
+            setExplainedSections(prev => [...prev, {
+              text: cleanText,
+              explanation: data.response,
+              id: savedSection.id
+            }]);
+            setSelectedText(''); // Clear selected text
+          } catch (error) {
+            console.error('Error saving explained section:', error);
+            // Still add to local state even if save fails
+            const cleanText = stripFormattingMarkers(currentSelectedText);
+            setExplainedSections(prev => [...prev, {
+              text: cleanText,
+              explanation: data.response,
+              id: Date.now()
+            }]);
+            setSelectedText('');
+          }
+        }
+      } else {
+        throw new Error(data.error || 'Failed to get response');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setIsTyping(false);
+      const newMessageIndex = chatMessages.length + 1;
+      setChatMessages(prev => [...prev, {
+        type: 'assistant',
+        text: 'Sorry, I encountered an error. Please try again! 😊',
+        isComplete: false
+      }]);
+      setTypingMessageIndex(newMessageIndex);
+    }
+  };
+
+  const handleDeleteExplanation = async (sectionId) => {
+    try {
+      // Delete from database
+      await deleteExplainedSection(sectionId);
+
+      // Remove from local state
+      setExplainedSections(prev => prev.filter(section => section.id !== sectionId));
+
+      // Clear any pending timeout
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+
+      // Close the popup and unlock
+      setHoveredExplanation(null);
+      setPopupLocked(false);
+    } catch (error) {
+      console.error('Error deleting explained section:', error);
+    }
+  };
+
+  const handleStartEdit = (explanation) => {
+    setEditedExplanation(explanation);
+    setIsEditingExplanation(true);
+
+    // Focus at the end of the content after render
+    setTimeout(() => {
+      if (editableRef.current) {
+        editableRef.current.focus();
+        // Move cursor to end
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(editableRef.current);
+        range.collapse(false); // false means collapse to end
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, 10);
+  };
+
+  const handleSaveEdit = async (sectionId) => {
+    try {
+      // Update in database
+      await updateExplainedSection(sectionId, editedExplanation);
+
+      // Update local state
+      setExplainedSections(prev =>
+        prev.map(section =>
+          section.id === sectionId
+            ? { ...section, explanation: editedExplanation }
+            : section
+        )
+      );
+
+      // Clear any pending timeout
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+
+      // Exit edit mode and close popup
+      setIsEditingExplanation(false);
+      setEditedExplanation('');
+      setPopupLocked(false);
+      setHoveredExplanation(null);
+    } catch (error) {
+      console.error('Error updating explained section:', error);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingExplanation(false);
+    setEditedExplanation('');
+  };
+
+  const handleReadNoteAloud = async (explanation) => {
+    // If already reading, stop the audio
+    if (isReadingNote && noteAudioRef.current) {
+      noteAudioRef.current.pause();
+      noteAudioRef.current = null;
+      setIsReadingNote(false);
+      return;
+    }
+
+    try {
+      setIsReadingNote(true);
+
+      // Strip markdown formatting from the text
+      const cleanText = explanation
+        .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold **text**
+        .replace(/\*(.+?)\*/g, '$1')     // Remove italic *text*
+        .trim();
+
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: cleanText, voiceGender }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
+
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Create and play audio
+      const audio = new Audio(audioUrl);
+      noteAudioRef.current = audio;
+
+      audio.onended = () => {
+        setIsReadingNote(false);
+        noteAudioRef.current = null;
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      audio.onerror = () => {
+        setIsReadingNote(false);
+        noteAudioRef.current = null;
+        URL.revokeObjectURL(audioUrl);
+      };
+
+      // Set playback speed for note
+      audio.playbackRate = playbackSpeed;
+
+      await audio.play();
+    } catch (error) {
+      console.error('Error reading note aloud:', error);
+      setIsReadingNote(false);
+      noteAudioRef.current = null;
+    }
+  };
+
+  // Scroll handlers for upcoming lessons
+  const handleScrollMouseDown = (e) => {
+    if (!scrollContainerRef.current) return;
+    setIsScrolling(true);
+    setScrollStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+  };
+
+  const handleScrollMouseMove = (e) => {
+    if (!isScrolling || !scrollContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - scrollStartX) * 2; // Multiply for faster scroll
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleScrollMouseUp = () => {
+    setIsScrolling(false);
+  };
+
+  const handleScrollMouseLeave = () => {
+    setIsScrolling(false);
+  };
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0) return;
+
+    const scrollPosition = scrollContainerRef.current.scrollLeft;
+    const gap = 16; // Gap between cards (gap-4 = 1rem = 16px)
+
+    // Calculate which card is currently visible based on scroll position
+    // Need to account for variable widths (completed lessons are slightly wider)
+    let cumulativeWidth = 0;
+    let index = 0;
+
+    for (let i = 0; i < upcomingLessonsToShow.length; i++) {
+      const lesson = upcomingLessonsToShow[i];
+      const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+      // Find the first incomplete lesson (this is the current lesson)
+      const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+      const lessonIsCurrentLesson = i === firstIncompleteIndex;
+      const cardWidth = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06;
+
+      // Check if the scroll position is within this card's range
+      if (scrollPosition < cumulativeWidth + cardWidth / 2) {
+        index = i;
+        break;
+      }
+
+      cumulativeWidth += cardWidth + gap;
+
+      // If we've gone past all cards, set to last card
+      if (i === upcomingLessonsToShow.length - 1) {
+        index = i;
+      }
+    }
+
+    setActiveCardIndex(index);
+  };
+
+  const scrollToCurrentLesson = () => {
+    if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0) return;
+
+    // Find the index of the first incomplete lesson (current lesson)
+    const currentLessonIndex = upcomingLessonsToShow.findIndex(
+      lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+    );
+
+    if (currentLessonIndex !== -1) {
+      // Calculate the scroll position to show the current lesson card
+      const gap = 16; // gap-4 = 16px
+      let scrollPosition = 0;
+
+      // Calculate position based on all previous cards accounting for variable widths
+      for (let i = 0; i < currentLessonIndex; i++) {
+        const lesson = upcomingLessonsToShow[i];
+        const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+        const isCurrentLesson = i === currentLessonIndex;
+        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06;
+        scrollPosition += width + gap;
+      }
+
+      scrollContainerRef.current.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+      setActiveCardIndex(currentLessonIndex);
+    }
+  };
+
+  const handleCloseUpgradeModal = () => {
+    setIsClosingModal(true);
+    setTimeout(() => {
+      setShowUpgradeModal(false);
+      setIsClosingModal(false);
+      setClientSecret(null);
+      setUpgradingToAdFree(false);
+    }, 200);
+  };
+
+  const handleOpenUpgradeModal = async () => {
+    if (!user) {
+      alert('Please sign in to upgrade to ad-free');
+      return;
+    }
+
+    setShowUpgradeModal(true);
+    setUpgradingToAdFree(true);
+
+    try {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.clientSecret) {
+        setClientSecret(data.clientSecret);
+        setUpgradingToAdFree(false);
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+      alert('Failed to start upgrade process. Please try again.');
+      handleCloseUpgradeModal();
+    }
+  };
+
+  // Mount Stripe Checkout when clientSecret is available
+  useEffect(() => {
+    let checkout = null;
+
+    const mountCheckout = async () => {
+      if (clientSecret && checkoutRef.current) {
+        try {
+          const stripe = await stripePromise;
+
+          checkout = await stripe.initEmbeddedCheckout({
+            clientSecret,
+          });
+
+          checkout.mount(checkoutRef.current);
+        } catch (error) {
+          console.error('Error mounting Stripe checkout:', error);
+          setUpgradingToAdFree(false);
+          alert('Failed to load payment form. Please try again.');
+        }
+      }
+    };
+
+    mountCheckout();
+
+    // Cleanup function
+    return () => {
+      if (checkout) {
+        checkout.destroy();
+      }
+    };
+  }, [clientSecret]);
+
+  // Helper function to calculate total number of lessons in the course
+  const getTotalLessonsCount = () => {
+    let totalCount = 0;
+    Object.keys(groupedLessons).forEach(moduleKey => {
+      const moduleData = groupedLessons[moduleKey];
+      const lessonKeys = Object.keys(moduleData).filter(key => key.startsWith('lesson_'));
+      totalCount += lessonKeys.length;
+    });
+    return totalCount;
+  };
+
+  // Helper function to calculate how many lessons have been completed
+  const getCompletedLessonsCount = () => {
+    let completedCount = 0;
+
+    // Count all lessons in modules before the current module
+    for (let m = 1; m < currentModule; m++) {
+      const moduleKey = `module_${m}`;
+      if (groupedLessons[moduleKey]) {
+        const lessonKeys = Object.keys(groupedLessons[moduleKey]).filter(key => key.startsWith('lesson_'));
+        completedCount += lessonKeys.length;
+      }
+    }
+
+    // Add completed lessons in the current module (lessons before current lesson)
+    const currentModuleKey = `module_${currentModule}`;
+    if (groupedLessons[currentModuleKey]) {
+      const lessonKeys = Object.keys(groupedLessons[currentModuleKey])
+        .filter(key => key.startsWith('lesson_'))
+        .map(key => parseInt(key.split('_')[1]))
+        .filter(num => num < currentLesson);
+      completedCount += lessonKeys.length;
+    }
+
+    return completedCount;
+  };
+
+  // Calculate progress percentage (same logic as ProgressHub)
+  const calculateProgressPercentage = () => {
+    const totalLessons = getTotalLessonsCount();
+    if (totalLessons === 0) return 0;
+
+    const completedLessons = getCompletedLessonsCount();
+    return Math.round((completedLessons / totalLessons) * 100);
+  };
+
+  const progressPercentage = Object.keys(groupedLessons).length > 0 ? calculateProgressPercentage() : 0;
+
+  // Helper function to check if a lesson is completed
+  const isLessonCompleted = (moduleNum, lessonNum) => {
+    return completedLessons.some(
+      (completion) => completion.module_number === moduleNum && completion.lesson_number === lessonNum
+    );
+  };
+
+  // Helper function to get current lesson, completed lessons, and upcoming lessons
+  const getAllLessons = () => {
+    if (lessonsMetadata.length === 0) return [];
+
+    // Return all lessons sorted by module and lesson number
+    return lessonsMetadata.sort((a, b) => {
+      if (a.module_number !== b.module_number) {
+        return a.module_number - b.module_number;
+      }
+      return a.lesson_number - b.lesson_number;
+    });
+  };
+
+  const upcomingLessonsToShow = Object.keys(groupedLessons).length > 0 ? getAllLessons() : [];
+
+  // Scroll to current lesson on initial load
+  useEffect(() => {
+    // Only run if we have lessons and the scroll container exists
+    if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0 || loading) return;
+
+    // Find the index of the current lesson
+    // Find the first incomplete lesson (this is the current lesson)
+    const currentLessonIndex = upcomingLessonsToShow.findIndex(
+      lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+    );
+
+    console.log('🎯 LearningHub - Attempting to scroll to current lesson index:', currentLessonIndex);
+    console.log('📚 LearningHub - Total lessons:', upcomingLessonsToShow.length);
+    console.log('📝 LearningHub - All lessons:', upcomingLessonsToShow.map(l => `M${l.module_number}L${l.lesson_number}`));
+
+    if (currentLessonIndex !== -1) {
+      // Calculate the scroll position immediately
+      const container = scrollContainerRef.current;
+      const gap = 16; // gap-4 = 16px
+      let scrollPosition = 0;
+
+      // Sum up widths of all cards before the current lesson
+      for (let i = 0; i < currentLessonIndex; i++) {
+        const lesson = upcomingLessonsToShow[i];
+        const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+        const lessonIsCurrentLesson = i === currentLessonIndex;
+        const width = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06;
+        scrollPosition += width + gap;
+      }
+
+      console.log('📍 LearningHub - Setting initial scroll position:', scrollPosition);
+
+      // Set scroll position immediately without animation
+      container.scrollLeft = scrollPosition;
+
+      // Update active card index to match
+      setActiveCardIndex(currentLessonIndex);
+
+      // Mark carousel as ready to display
+      setIsCarouselReady(true);
+    } else {
+      // No current lesson found, just show the carousel
+      setIsCarouselReady(true);
+    }
+  }, [upcomingLessonsToShow, loading, currentModule, currentLesson, completedLessons]);
+
+  // Track container width for dynamic padding
+  useEffect(() => {
+    if (!scrollContainerRef.current || !isCarouselReady) return;
+
+    const updateContainerWidth = () => {
+      if (scrollContainerRef.current) {
+        setContainerWidth(scrollContainerRef.current.clientWidth);
+      }
+    };
+
+    // Initial measurement
+    updateContainerWidth();
+
+    // Update on window resize
+    window.addEventListener('resize', updateContainerWidth);
+
+    return () => {
+      window.removeEventListener('resize', updateContainerWidth);
+    };
+  }, [upcomingLessonsToShow.length, isCarouselReady]);
+
+  // Extract text content from sections for read-aloud
+  const extractTextFromSection = (section) => {
+    if (section.content_type === 'heading') {
+      const text = section.content?.text || section.title || '';
+      return stripFormattingMarkers(text);
+    }
+
+    if (section.content_type === 'paragraph') {
+      const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text || '';
+      return stripFormattingMarkers(text);
+    }
+
+    return '';
+  };
+
+  // Helper to format explanation text with proper formatting (matching chat display)
+  const formatExplanationText = (text) => {
+    if (!text) return null;
+
+    return text.split('\n').map((line, i) => {
+      // Check if line starts with bullet point or number (with : or -)
+      const bulletMatchColon = line.match(/^[•\-\*]\s+(.+?):\s*(.*)$/);
+      const bulletMatchDash = line.match(/^[•\-\*]\s+(.+?)\s+-\s+(.*)$/);
+      const numberedMatchColon = line.match(/^(\d+)\.\s+(.+?):\s*(.*)$/);
+      const numberedMatchDash = line.match(/^(\d+)\.\s+(.+?)\s+-\s+(.*)$/);
+
+      if (bulletMatchColon) {
+        // Bullet point with colon
+        const titleText = bulletMatchColon[1].replace(/\*\*/g, '');
+        const contentText = bulletMatchColon[2].replace(/\*\*/g, '');
+        return (
+          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+            <span>{bulletMatchColon[0].charAt(0)} </span>
+            <strong className="font-semibold">{titleText}:</strong>
+            <span> {contentText}</span>
+          </p>
+        );
+      } else if (bulletMatchDash) {
+        // Bullet point with dash
+        const titleText = bulletMatchDash[1].replace(/\*\*/g, '');
+        const contentText = bulletMatchDash[2].replace(/\*\*/g, '');
+        return (
+          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+            <span>{bulletMatchDash[0].charAt(0)} </span>
+            <strong className="font-semibold">{titleText}</strong>
+            <span> - {contentText}</span>
+          </p>
+        );
+      } else if (numberedMatchColon) {
+        // Numbered list with colon
+        const titleText = numberedMatchColon[2].replace(/\*\*/g, '');
+        const contentText = numberedMatchColon[3].replace(/\*\*/g, '');
+        return (
+          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+            <span>{numberedMatchColon[1]}. </span>
+            <strong className="font-semibold">{titleText}:</strong>
+            <span> {contentText}</span>
+          </p>
+        );
+      } else if (numberedMatchDash) {
+        // Numbered list with dash
+        const titleText = numberedMatchDash[2].replace(/\*\*/g, '');
+        const contentText = numberedMatchDash[3].replace(/\*\*/g, '');
+        return (
+          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+            <span>{numberedMatchDash[1]}. </span>
+            <strong className="font-semibold">{titleText}</strong>
+            <span> - {contentText}</span>
+          </p>
+        );
+      } else {
+        // Regular text with inline formatting
+        const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|DNA|RNA|Proteins)/g);
+        return (
+          <p key={i} className={i > 0 ? 'mt-2' : ''}>
+            {parts.map((part, j) => {
+              // Check for bold (**text**)
+              if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+                const boldText = part.slice(2, -2).trim();
+                return <strong key={j} className="font-semibold">{boldText}</strong>;
+              }
+              // Check for italic (*text*)
+              else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
+                const italicText = part.slice(1, -1).trim();
+                return <em key={j} className="italic">{italicText}</em>;
+              }
+              // Specific keywords to bold
+              else if (part === 'DNA' || part === 'RNA' || part === 'Proteins') {
+                return <strong key={j} className="font-semibold">{part}</strong>;
+              }
+              return <span key={j}>{part}</span>;
+            })}
+          </p>
+        );
+      }
+    });
+  };
+
+  // Helper to calculate popup position within viewport bounds
+  const getAdjustedPopupPosition = (x, y) => {
+    const popupWidth = 400; // Fixed width
+    const popupMaxHeight = 400;
+    const offset = 20;
+
+    let adjustedX = x;
+    let adjustedY = y - offset;
+    let transformY = '-100%'; // Default: above cursor
+
+    // Check if popup would overflow top of viewport
+    // Estimate popup height (we'll use max height as worst case)
+    if (adjustedY - popupMaxHeight < 0) {
+      // Position below cursor instead
+      adjustedY = y + offset;
+      transformY = '0%';
+    }
+
+    // Check horizontal bounds
+    const halfWidth = popupWidth / 2;
+    if (adjustedX - halfWidth < 0) {
+      adjustedX = halfWidth;
+    } else if (adjustedX + halfWidth > window.innerWidth) {
+      adjustedX = window.innerWidth - halfWidth;
+    }
+
+    return {
+      x: adjustedX,
+      y: adjustedY,
+      transformY
+    };
+  };
+
+  // Helper to render text with explained sections highlighted and word-by-word narration highlighting
+  const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
+    if (!text) return null;
+
+    // Split text into words while preserving spaces
+    const parts = text.split(/(\s+)/); // This keeps the spaces in the array
+    const elements = [];
+    let currentWordIndex = startWordIndex;
+
+    parts.forEach((part, idx) => {
+      // If this is whitespace, render it without highlighting
+      if (!part || /^\s+$/.test(part)) {
+        elements.push(<span key={`space-${idx}`}>{part}</span>);
+        return;
+      }
+
+      // This is an actual word
+      const word = part;
+
+      // Check if this word is part of an explained section
+      let isExplainedSection = false;
+      let explainedSectionId = null;
+
+      explainedSections.forEach((section) => {
+        if (text.indexOf(section.text) !== -1) {
+          const sectionWords = section.text.split(/\s+/).filter(w => w.length > 0);
+          const wordInSection = sectionWords.includes(word.trim());
+          if (wordInSection) {
+            isExplainedSection = true;
+            explainedSectionId = section.id;
+          }
+        }
+      });
+
+      // Determine if this word should be highlighted for narration
+      // Only highlight if:
+      // 1. We're currently reading
+      // 2. This word index matches the current narration word
+      // 3. Either we're narrating the title and this is the title (sectionIndexForHighlight === 'title')
+      //    OR we're narrating a section and this section matches currentNarrationSection
+      // 4. Narration highlighting is not disabled for this text
+      const isInActiveNarrationContext =
+        (sectionIndexForHighlight === 'title' && isNarratingTitle) ||
+        (sectionIndexForHighlight !== 'title' && !isNarratingTitle && sectionIndexForHighlight === currentNarrationSection);
+
+      const isCurrentWord = !disableNarrationHighlight && isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
+
+      // Build className based on highlighting state
+      let className = 'transition-all duration-200';
+      let style = {};
+
+      if (isCurrentWord) {
+        // Narration highlight (light grey) with padding that doesn't shift layout
+        style = {
+          backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
+          borderRadius: '2px',
+          padding: '2px',
+          margin: '-2px' // Negative margin offsets the padding to prevent layout shift
+        };
+      } else if (isExplainedSection) {
+        // Explained section highlight (pink)
+        className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
+        style = {
+          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
+          borderRadius: '2px',
+          padding: '2px 0'
+        };
+      }
+
+      elements.push(
+        <span
+          key={`word-${idx}-${currentWordIndex}`}
+          className={className}
+          style={style}
+          onMouseEnter={isExplainedSection ? (e) => {
+            // Explained section hover logic
+            if (closeTimeoutRef.current) {
+              clearTimeout(closeTimeoutRef.current);
+              closeTimeoutRef.current = null;
+            }
+
+            if (!popupLocked) {
+              setHoveredExplanation(explainedSectionId);
+              const rect = e.currentTarget.getBoundingClientRect();
+              const centerX = rect.left + (rect.width / 2);
+              const bottomY = rect.bottom;
+              const topY = rect.top;
+              const popupHeight = 500;
+              const spaceAbove = topY;
+              const spaceBelow = window.innerHeight - bottomY;
+              const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
+
+              setPopupPosition({
+                x: centerX,
+                y: preferAbove ? topY : bottomY,
+                preferAbove: preferAbove
+              });
+
+              highlightRef.current = e.currentTarget;
+            }
+          } : undefined}
+          onMouseLeave={isExplainedSection ? () => {
+            if (!popupLocked) {
+              closeTimeoutRef.current = setTimeout(() => {
+                setHoveredExplanation(null);
+                highlightRef.current = null;
+              }, 300);
+            }
+          } : undefined}
+        >
+          {word}
+        </span>
+      );
+
+      currentWordIndex++;
+    });
+
+    return elements;
+  };
+
+  // Narrate a single section
+  const narrateSection = async (sectionIndex) => {
+    const entryTime = performance.now();
+    console.log(`🎯 [${entryTime.toFixed(0)}ms] narrateSection(${sectionIndex}) ENTERED`);
+
+    if (sectionIndex >= currentLessonSections.length) {
+      // Finished all sections
+      console.log('✅ Finished narrating all sections');
+      setIsReading(false);
+      setCurrentNarrationSection(0);
+      setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
+      isPausedRef.current = false;
+      // Clear word highlighting timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      return;
+    }
+
+    const section = currentLessonSections[sectionIndex];
+    const sectionText = extractTextFromSection(section);
+
+    if (!sectionText || sectionText.length === 0) {
+      // Skip empty sections and move to next
+      console.log(`⏭️ Skipping empty section ${sectionIndex}`);
+      await narrateSection(sectionIndex + 1);
+      return;
+    }
+
+    console.log(`📖 [${performance.now().toFixed(0)}ms] Narrating section ${sectionIndex} (${section.content_type}): ${sectionText.substring(0, 50)}...`);
+
+    // Scroll when we hit h2 or h3 headers (but skip the first h2 which is learning objectives)
+    const headingLevel = section.content_type === 'heading' ? (section.content?.level || 2) : null;
+    const isH2OrH3Header = headingLevel === 2 || headingLevel === 3;
+
+    if (isH2OrH3Header) {
+      // Find if this is the first h2 header (learning objectives)
+      const firstH2Index = currentLessonSections.findIndex(s =>
+        s.content_type === 'heading' && (s.content?.level || 2) === 2
+      );
+
+      // Skip scrolling only if this is the first h2 header
+      if (sectionIndex !== firstH2Index) {
+        scrollToSection(sectionIndex);
+      }
+    }
+
+    try {
+      let audioUrl;
+      let audio;
+      const cacheCheckTime = performance.now();
+
+      // Log batch cache status
+      const cachedSections = Object.keys(batchPrefetchCache.current);
+      const pendingPrefetches = Object.keys(prefetchPromises.current);
+      console.log(`💾 [${cacheCheckTime.toFixed(0)}ms] Batch cache has sections: [${cachedSections.join(', ')}], Pending: [${pendingPrefetches.join(', ')}]`);
+
+      // Check batch cache first, then single prefetch cache
+      const cachedAudio = batchPrefetchCache.current[sectionIndex];
+      if (cachedAudio) {
+        const cacheHitTime = performance.now();
+        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] BATCH CACHE HIT for section ${sectionIndex} (readyState: ${cachedAudio.audio.readyState})`);
+        audioUrl = cachedAudio.url;
+        audio = cachedAudio.audio;
+        // Store word timestamps if available
+        if (cachedAudio.wordTimestamps) {
+          wordTimestampsRef.current = cachedAudio.wordTimestamps;
+          console.log(`📝 Retrieved ${cachedAudio.wordTimestamps.length} word timestamps from cache`);
+        }
+        delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
+        delete prefetchPromises.current[sectionIndex]; // Remove promise too
+        audioRef.current = audio;
+      } else if (prefetchPromises.current[sectionIndex]) {
+        // Prefetch is in progress - wait for it
+        const waitStartTime = performance.now();
+        console.log(`⏳ [${waitStartTime.toFixed(0)}ms] Waiting for prefetch of section ${sectionIndex} to complete...`);
+
+        try {
+          await prefetchPromises.current[sectionIndex];
+          const waitEndTime = performance.now();
+          console.log(`✅ [${waitEndTime.toFixed(0)}ms] Prefetch completed (waited: ${(waitEndTime - waitStartTime).toFixed(0)}ms)`);
+
+          // Now it should be in cache
+          const nowCached = batchPrefetchCache.current[sectionIndex];
+          if (nowCached) {
+            audioUrl = nowCached.url;
+            audio = nowCached.audio;
+            // Store word timestamps if available
+            if (nowCached.wordTimestamps) {
+              wordTimestampsRef.current = nowCached.wordTimestamps;
+              console.log(`📝 Retrieved ${nowCached.wordTimestamps.length} word timestamps from cache`);
+            }
+            delete batchPrefetchCache.current[sectionIndex];
+            delete prefetchPromises.current[sectionIndex];
+            audioRef.current = audio;
+          } else {
+            throw new Error('Prefetch completed but audio not in cache');
+          }
+        } catch (err) {
+          console.log(`⚠️ Prefetch failed, falling back to on-demand fetch:`, err.message);
+          // Fall through to on-demand fetch
+        }
+      } else if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
+        const cacheHitTime = performance.now();
+        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] SINGLE CACHE HIT for section ${sectionIndex}`);
+        audioUrl = prefetchedAudioRef.current.url;
+        audio = prefetchedAudioRef.current.audio;
+        prefetchedAudioRef.current = null; // Clear after use
+        audioRef.current = audio;
+      }
+
+      // Only fetch on-demand if we haven't gotten audio yet
+      if (!audio) {
+        const fetchStartTime = performance.now();
+        console.log(`❌ [${fetchStartTime.toFixed(0)}ms] CACHE MISS - Fetching section ${sectionIndex} on-demand`);
+
+        // Create new abort controller for this request
+        narrateAbortController.current = new AbortController();
+        const controller = narrateAbortController.current;
+
+        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text: sectionText, voiceGender }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Section narration API error:', response.status, errorText);
+          throw new Error(`Failed to generate speech: ${response.status} - ${errorText}`);
+        }
+
+        const fetchEndTime = performance.now();
+        console.log(`📥 [${fetchEndTime.toFixed(0)}ms] TTS API response received (took: ${(fetchEndTime - fetchStartTime).toFixed(0)}ms)`);
+
+        const data = await response.json();
+        console.log('✅ Section narration API response received:', {
+          hasAudio: !!data.audio_base64,
+          hasAlignment: !!data.alignment,
+          alignmentChars: data.alignment?.characters?.length
+        });
+
+        // Convert base64 audio to blob
+        const audioData = atob(data.audio_base64);
+        const arrayBuffer = new ArrayBuffer(audioData.length);
+        const view = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < audioData.length; i++) {
+          view[i] = audioData.charCodeAt(i);
+        }
+        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+        audioUrl = URL.createObjectURL(audioBlob);
+
+        // Convert character timestamps to word timestamps
+        if (data.alignment) {
+          const wordTimestamps = convertCharacterToWordTimestamps(
+            sectionText,
+            data.alignment.characters,
+            data.alignment.character_start_times_seconds,
+            data.alignment.character_end_times_seconds
+          );
+          wordTimestampsRef.current = wordTimestamps;
+          console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
+        }
+
+        audio = new Audio(audioUrl);
+        audioRef.current = audio;
+        console.log(`🎵 [${performance.now().toFixed(0)}ms] Audio object created from blob`);
+      }
+
+      audio.onended = async () => {
+        const endTime = performance.now();
+        console.log(`⏱️ [${endTime.toFixed(0)}ms] Section ${sectionIndex} ENDED`);
+        URL.revokeObjectURL(audioUrl);
+
+        // Guard: check if this audio is still the current one
+        if (audioRef.current !== audio) {
+          console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
+          return;
+        }
+
+        // Continue to next section immediately for seamless playback
+        if (!isPausedRef.current) {
+          const startNextTime = performance.now();
+          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section ${sectionIndex + 1} (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
+
+          await narrateSection(sectionIndex + 1);
+
+          const playedTime = performance.now();
+          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section ${sectionIndex + 1} PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
+        }
+      };
+
+      audio.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        URL.revokeObjectURL(audioUrl);
+        setIsReading(false);
+      };
+
+      // Set playback speed
+      audio.playbackRate = playbackSpeed;
+
+      const beforePlayTime = performance.now();
+      console.log(`🎬 [${beforePlayTime.toFixed(0)}ms] Calling audio.play() for section ${sectionIndex} (readyState: ${audio.readyState})`);
+
+      await audio.play();
+
+      const afterPlayTime = performance.now();
+      console.log(`✅ [${afterPlayTime.toFixed(0)}ms] audio.play() completed (took: ${(afterPlayTime - beforePlayTime).toFixed(0)}ms) - SECTION ${sectionIndex} NOW PLAYING`);
+      console.log(`⏰ Total time from narrateSection entry to playback: ${(afterPlayTime - entryTime).toFixed(0)}ms`);
+
+      setIsReading(true);
+      setCurrentNarrationSection(sectionIndex);
+
+      // Start word-by-word highlighting
+      // Calculate word offset for this section (total words in all previous sections)
+      const wordsBeforeThisSection = currentLessonSections
+        .slice(0, sectionIndex)
+        .map(s => extractTextFromSection(s))
+        .join(' ')
+        .split(/\s+/)
+        .filter(w => w.length > 0).length;
+
+      // Count words in current section
+      const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
+
+      // Clear any existing word timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+      }
+
+      // Start word-by-word highlighting using actual timestamps
+      const startWordHighlighting = () => {
+        const wordTimestamps = wordTimestampsRef.current;
+
+        if (!wordTimestamps || wordTimestamps.length === 0) {
+          console.warn('⚠️ No word timestamps available for section', sectionIndex);
+          return;
+        }
+
+        console.log(`📝 Section ${sectionIndex}: Using ${wordTimestamps.length} precise word timestamps`);
+
+        setCurrentNarrationWord(wordsBeforeThisSection);
+
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(wordsBeforeThisSection + i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+            setCurrentNarrationWord(-1);
+            wordTimerRef.current = null;
+            return;
+          }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      };
+
+      // If duration is already available, start immediately
+      if (audio.duration && !isNaN(audio.duration)) {
+        startWordHighlighting();
+      } else {
+        // Wait for loadedmetadata event
+        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
+      }
+
+      // Prefetch next section while current one is playing
+      const nextSectionIndex = sectionIndex + 1;
+      if (nextSectionIndex < currentLessonSections.length) {
+        const nextSection = currentLessonSections[nextSectionIndex];
+        const nextSectionText = extractTextFromSection(nextSection);
+
+        if (nextSectionText && nextSectionText.length > 0) {
+          console.log(`⚡ Prefetching section ${nextSectionIndex}...`);
+
+          // Store the prefetch promise so we can wait for it if needed
+          prefetchPromiseRef.current = (async () => {
+            try {
+              const prefetchResponse = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: nextSectionText, voiceGender }),
+              });
+
+              if (prefetchResponse.ok) {
+                const prefetchBlob = await prefetchResponse.blob();
+                const prefetchUrl = URL.createObjectURL(prefetchBlob);
+                const prefetchAudio = new Audio(prefetchUrl);
+
+                // Store for next section (only if we're still on the same section)
+                if (audioRef.current === audio) {
+                  // Clear any old prefetch first
+                  if (prefetchedAudioRef.current) {
+                    URL.revokeObjectURL(prefetchedAudioRef.current.url);
+                  }
+                  prefetchedAudioRef.current = {
+                    url: prefetchUrl,
+                    audio: prefetchAudio,
+                    sectionIndex: nextSectionIndex
+                  };
+                  console.log(`⚡ Section ${nextSectionIndex} prefetched successfully`);
+                } else {
+                  // Section changed, cleanup
+                  URL.revokeObjectURL(prefetchUrl);
+                }
+              }
+            } catch (prefetchError) {
+              console.log('Prefetch failed (non-critical):', prefetchError.message);
+            }
+          })();
+        }
+      }
+
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log(`Section ${sectionIndex} narration cancelled`);
+        return;
+      }
+      console.error('Error narrating section:', error);
+      setIsReading(false);
+    }
+  };
+
+  // Scroll to a specific section with custom smooth animation
+  const scrollToSection = (sectionIndex) => {
+    if (!contentScrollRef.current || !sectionRefs.current[sectionIndex]) return;
+
+    const targetSection = sectionRefs.current[sectionIndex];
+    const container = contentScrollRef.current;
+    const sectionTop = targetSection.offsetTop;
+    const containerPadding = 32;
+    const targetScrollTop = sectionTop - containerPadding;
+
+    // Custom smooth scroll with easing
+    const startScrollTop = container.scrollTop;
+    const distance = targetScrollTop - startScrollTop;
+    const duration = 1200; // Longer duration for smoother scroll
+    let startTime = null;
+
+    // Ease in-out cubic function for smooth acceleration and deceleration
+    const easeInOutCubic = (t) => {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const animateScroll = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+
+      container.scrollTop = startScrollTop + distance * easedProgress;
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  // Narrate the lesson title before starting content
+  const narrateLessonTitle = async () => {
+    console.log(`🎯 [ENTRY] narrateLessonTitle called for: ${lessonName}`);
+    try {
+      console.log(`📖 Narrating lesson title: ${lessonName}`);
+
+      // Create new abort controller for this request
+      narrateAbortController.current = new AbortController();
+      const controller = narrateAbortController.current;
+
+      console.log('🌐 [FETCH] Starting API call to /api/text-to-speech-timestamps...');
+      console.log('📤 [FETCH] Request body:', { text: lessonName, voiceGender });
+
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: lessonName, voiceGender }),
+        signal: controller.signal,
+      });
+
+      console.log('📡 [FETCH] API response received, status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Title narration API error:', response.status, errorText);
+        throw new Error(`Failed to generate speech for lesson title: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Title narration API response received:', {
+        hasAudio: !!data.audio_base64,
+        hasAlignment: !!data.alignment,
+        alignmentChars: data.alignment?.characters?.length
+      });
+
+      // Convert base64 audio to blob
+      const audioData = atob(data.audio_base64);
+      const arrayBuffer = new ArrayBuffer(audioData.length);
+      const view = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < audioData.length; i++) {
+        view[i] = audioData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Convert character timestamps to word timestamps for title
+      if (data.alignment) {
+        const wordTimestamps = convertCharacterToWordTimestamps(
+          lessonName,
+          data.alignment.characters,
+          data.alignment.character_start_times_seconds,
+          data.alignment.character_end_times_seconds
+        );
+        wordTimestampsRef.current = wordTimestamps;
+        console.log(`📝 Converted ${wordTimestamps.length} word timestamps for lesson title`);
+      }
+
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = async () => {
+        const endTime = performance.now();
+        console.log(`⏱️ [${endTime.toFixed(0)}ms] TITLE ENDED`);
+        URL.revokeObjectURL(audioUrl);
+
+        // Clear title narration flag
+        setIsNarratingTitle(false);
+
+        // Guard: check if this audio is still the current one
+        if (audioRef.current !== audio) {
+          console.log('Title audio is no longer active, skipping continuation');
+          return;
+        }
+
+        // Continue to lesson content immediately for seamless playback
+        if (!isPausedRef.current) {
+          const startNextTime = performance.now();
+          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section 0 (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
+
+          await narrateSection(0);
+
+          const playedTime = performance.now();
+          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section 0 PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
+        }
+      };
+
+      audio.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        URL.revokeObjectURL(audioUrl);
+        setIsReading(false);
+      };
+
+      // Set playback speed for title
+      audio.playbackRate = playbackSpeed;
+
+      try {
+        console.log('🎬 Attempting to play title audio...');
+        await audio.play();
+        console.log('✅ Title audio playing successfully');
+      } catch (playError) {
+        console.error('❌ Failed to play title audio:', playError);
+        URL.revokeObjectURL(audioUrl);
+        setIsReading(false);
+        throw playError;
+      }
+
+      // Set flag that we're narrating the title
+      setIsNarratingTitle(true);
+
+      // Start word-by-word highlighting for title
+      const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
+
+      const startTitleWordHighlighting = () => {
+        const wordTimestamps = wordTimestampsRef.current;
+
+        if (!wordTimestamps || wordTimestamps.length === 0) {
+          console.warn('⚠️ No word timestamps available for title');
+          return;
+        }
+
+        console.log(`📝 Title: Using ${wordTimestamps.length} precise word timestamps`);
+
+        setCurrentNarrationWord(0);
+
+        if (wordTimerRef.current) {
+          cancelAnimationFrame(wordTimerRef.current);
+        }
+
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+            setCurrentNarrationWord(-1);
+            setIsNarratingTitle(false); // Title narration finished
+            wordTimerRef.current = null;
+            return;
+          }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      };
+
+      if (audio.duration && !isNaN(audio.duration)) {
+        startTitleWordHighlighting();
+      } else {
+        audio.addEventListener('loadedmetadata', startTitleWordHighlighting, { once: true });
+      }
+
+      // Prefetch first 6 sections in parallel while title is playing
+      if (currentLessonSections && currentLessonSections.length > 0) {
+        const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
+
+        sectionsToPreload.forEach(sectionIndex => {
+          const section = currentLessonSections[sectionIndex];
+          const sectionText = extractTextFromSection(section);
+
+          if (sectionText && sectionText.length > 0) {
+            console.log(`⚡ Prefetching section ${sectionIndex} during title...`);
+
+            // Only create promise if one doesn't exist yet
+            if (!prefetchPromises.current[sectionIndex]) {
+              prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
+                fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ text: sectionText, voiceGender })
+                })
+                  .then(async response => {
+                    if (response.ok) return response.json();
+                    const errorText = await response.text();
+                    console.error(`❌ Title prefetch section ${sectionIndex} API error:`, response.status, errorText);
+                    throw new Error(`Prefetch failed: ${response.status}`);
+                  })
+                  .then(data => {
+                    // Convert base64 audio to blob
+                    const audioData = atob(data.audio_base64);
+                    const arrayBuffer = new ArrayBuffer(audioData.length);
+                    const view = new Uint8Array(arrayBuffer);
+                    for (let i = 0; i < audioData.length; i++) {
+                      view[i] = audioData.charCodeAt(i);
+                    }
+                    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+
+                    // Convert character timestamps to word timestamps
+                    let wordTimestamps = null;
+                    if (data.alignment) {
+                      wordTimestamps = convertCharacterToWordTimestamps(
+                        sectionText,
+                        data.alignment.characters,
+                        data.alignment.character_start_times_seconds,
+                        data.alignment.character_end_times_seconds
+                      );
+                    }
+
+                    // Store in batch cache (may already exist from upfront prefetch)
+                    if (!batchPrefetchCache.current[sectionIndex]) {
+                      // Wait for audio to fully load before caching
+                      audio.addEventListener('canplaythrough', () => {
+                        batchPrefetchCache.current[sectionIndex] = {
+                          url,
+                          audio,
+                          wordTimestamps,
+                          sectionIndex
+                        };
+                        console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
+                        resolve();
+                      }, { once: true });
+
+                      audio.addEventListener('error', () => {
+                        console.log(`❌ Section ${sectionIndex} audio load error during title`);
+                        reject(new Error('Audio load failed'));
+                      }, { once: true });
+
+                      audio.load(); // Start loading audio
+                    } else {
+                      // Already cached from upfront prefetch, clean up duplicate
+                      URL.revokeObjectURL(url);
+                      resolve();
+                    }
+                  })
+                  .catch(err => {
+                    console.log(`Title prefetch section ${sectionIndex} failed:`, err.message);
+                    reject(err);
+                  });
+              });
+            }
+          }
+        });
+      }
+
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        console.log('Lesson title narration cancelled');
+        return;
+      }
+      console.error('Error narrating lesson title:', error);
+      setIsReading(false);
+    }
+  };
+
+  // Prefetch multiple sections upfront for smoother narration
+  const prefetchInitialSections = () => {
+    if (!currentLessonSections || currentLessonSections.length === 0) return;
+
+    // Prefetch first 6 sections in parallel for immediate playback
+    const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
+
+    sectionsToPreload.forEach(sectionIndex => {
+      const section = currentLessonSections[sectionIndex];
+      const sectionText = extractTextFromSection(section);
+
+      if (sectionText && sectionText.length > 0) {
+        console.log(`⚡ Starting upfront prefetch for section ${sectionIndex}`);
+
+        // Store the promise so we can await it if needed
+        prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
+          fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: sectionText, voiceGender })
+          })
+            .then(async response => {
+              if (response.ok) return response.json();
+              const errorText = await response.text();
+              console.error(`❌ Prefetch section ${sectionIndex} API error:`, response.status, errorText);
+              throw new Error(`Prefetch failed: ${response.status}`);
+            })
+            .then(data => {
+              // Convert base64 audio to blob
+              const audioData = atob(data.audio_base64);
+              const arrayBuffer = new ArrayBuffer(audioData.length);
+              const view = new Uint8Array(arrayBuffer);
+              for (let i = 0; i < audioData.length; i++) {
+                view[i] = audioData.charCodeAt(i);
+              }
+              const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+              const url = URL.createObjectURL(blob);
+              const audio = new Audio(url);
+
+              // Convert character timestamps to word timestamps
+              let wordTimestamps = null;
+              if (data.alignment) {
+                wordTimestamps = convertCharacterToWordTimestamps(
+                  sectionText,
+                  data.alignment.characters,
+                  data.alignment.character_start_times_seconds,
+                  data.alignment.character_end_times_seconds
+                );
+              }
+
+              // Wait for audio to fully load before caching
+              audio.addEventListener('canplaythrough', () => {
+                batchPrefetchCache.current[sectionIndex] = {
+                  url,
+                  audio,
+                  wordTimestamps,
+                  sectionIndex
+                };
+                console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
+                resolve(); // Resolve promise when ready
+              }, { once: true });
+
+              audio.addEventListener('error', () => {
+                console.log(`❌ Section ${sectionIndex} audio load error`);
+                reject(new Error('Audio load failed'));
+              }, { once: true });
+
+              audio.load(); // Start loading audio
+            })
+            .catch(err => {
+              console.log(`Prefetch section ${sectionIndex} failed:`, err.message);
+              reject(err);
+            });
+        });
+      }
+    });
+  };
+
+  // Handle read-aloud functionality with ElevenLabs
+  const handleReadAloud = async () => {
+    console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
+
+    // Prevent multiple simultaneous calls - use a 500ms debounce
+    const now = Date.now();
+    if (isHandlingReadAloud.current > 0 && (now - isHandlingReadAloud.current) < 500) {
+      console.warn('⚠️ handleReadAloud called too quickly, ignoring (debounce). Time since last call:', now - isHandlingReadAloud.current, 'ms');
+      return;
+    }
+
+    isHandlingReadAloud.current = now;
+
+    try {
+      // If audio is playing, pause it
+      if (isReading && audioRef.current) {
+      // Abort any in-flight API requests
+      if (narrateAbortController.current) {
+        narrateAbortController.current.abort();
+      }
+
+      // Pause current audio (preserve position and reference for resume)
+      const audio = audioRef.current;
+      audio.pause();
+
+      // Verify pause succeeded
+      if (!audio.paused) {
+        console.warn('Audio pause failed - forcing pause state');
+        audio.pause();
+      }
+
+      // Clear word highlighting timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
+
+      // Update state (keep audioRef and currentNarrationSection for resume)
+      setIsReading(false);
+      isPausedRef.current = true;
+      isHandlingReadAloud.current = 0;
+      return;
+    }
+
+    // If audio exists and is paused, resume it
+    if (audioRef.current && !isReading && isPausedRef.current) {
+      const audio = audioRef.current;
+      audio.play();
+      setIsReading(true);
+      isPausedRef.current = false;
+
+      // Resume word highlighting from current position
+      const wordTimestamps = wordTimestampsRef.current;
+      if (wordTimestamps && wordTimestamps.length > 0) {
+        const wordsBeforeThisSection = currentLessonSections
+          .slice(0, currentNarrationSection)
+          .map(s => extractTextFromSection(s))
+          .join(' ')
+          .split(/\s+/)
+          .filter(w => w.length > 0).length;
+
+        // Clear existing timer
+        if (wordTimerRef.current) {
+          cancelAnimationFrame(wordTimerRef.current);
+        }
+
+        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime; // Current playback position in seconds
+
+          // Find which word should be highlighted based on actual timestamps
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(wordsBeforeThisSection + i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If we're past all words, clear highlighting
+          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+            setCurrentNarrationWord(-1);
+            wordTimerRef.current = null;
+            return;
+          }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      }
+
+      isHandlingReadAloud.current = 0;
+      return;
+    }
+
+      // Start reading from the beginning with lesson title
+      console.log('🎬 Starting narration from beginning');
+      setIsReading(true);
+      isPausedRef.current = false;
+      setCurrentNarrationSection(0);
+
+      // Start prefetching sections immediately in parallel with title
+      prefetchInitialSections();
+
+      narrateLessonTitle();
+
+      console.log('🔵 handleReadAloud completed, narration started');
+    } catch (error) {
+      console.error('Error in handleReadAloud:', error);
+      isHandlingReadAloud.current = 0;
+      setIsReading(false);
+    }
+  };
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (noteAudioRef.current) {
+        noteAudioRef.current.pause();
+        noteAudioRef.current = null;
+      }
+      if (prefetchedAudioRef.current) {
+        URL.revokeObjectURL(prefetchedAudioRef.current.url);
+        prefetchedAudioRef.current = null;
+      }
+      // Cleanup batch prefetch cache
+      Object.values(batchPrefetchCache.current).forEach(cached => {
+        if (cached && cached.url) {
+          URL.revokeObjectURL(cached.url);
+        }
+      });
+      batchPrefetchCache.current = {};
+      // Cleanup word highlighting timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+    };
+  }, []);
+
+  // Cleanup note audio when popup closes
+  useEffect(() => {
+    if (!hoveredExplanation && noteAudioRef.current) {
+      noteAudioRef.current.pause();
+      noteAudioRef.current = null;
+      setIsReadingNote(false);
+    }
+  }, [hoveredExplanation]);
+
+  if (loading) {
+    return <LoadingScreen />;
+  }
+
+  // Check if user is trying to access a lesson ahead of their progress
+  // Only run this check after completedLessons has been loaded to avoid false positives
+  let isLessonLocked = false;
+  let lockReason = 'prerequisite'; // 'prerequisite' or 'daily_limit'
+  let currentLessonToNavigate = null;
+
+  if (!loading && lessonsMetadata.length > 0 && completedLessons !== null) {
+    const allLessons = [...lessonsMetadata].sort((a, b) => {
+      if (a.module_number !== b.module_number) {
+        return a.module_number - b.module_number;
+      }
+      return a.lesson_number - b.lesson_number;
+    });
+
+    // FIRST: Check daily course completion limit
+    if (dailyLimitReached) {
+      console.log('🚫 LESSON LOCKED - Daily course completion limit reached (2 courses/day)');
+      isLessonLocked = true;
+      lockReason = 'daily_limit';
+      // Navigate to first lesson of current course
+      currentLessonToNavigate = allLessons[0];
+    } else {
+      // SECOND: Check if the previous lesson is completed (normal progression check)
+      const requestedLessonIndex = allLessons.findIndex(
+        lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
+      );
+
+      console.log('🔒 Lesson Lock Check:');
+      console.log('  Current Module/Lesson:', currentModule, currentLesson);
+      console.log('  Requested Lesson Index:', requestedLessonIndex);
+      console.log('  Completed Lessons:', completedLessons.map(l => `M${l.module_number}L${l.lesson_number}`).join(', '));
+
+      if (requestedLessonIndex > 0) {
+        // There is a previous lesson - check if it's completed
+        const previousLesson = allLessons[requestedLessonIndex - 1];
+        console.log('  Previous Lesson:', `M${previousLesson.module_number}L${previousLesson.lesson_number}`);
+
+        const isPreviousCompleted = isLessonCompleted(previousLesson.module_number, previousLesson.lesson_number);
+        console.log('  Is Previous Completed?', isPreviousCompleted);
+
+        if (!isPreviousCompleted) {
+          console.log('  ❌ LESSON LOCKED - previous lesson not completed');
+          isLessonLocked = true;
+          lockReason = 'prerequisite';
+          // Find the first incomplete lesson to navigate to
+          const firstIncompleteIndex = allLessons.findIndex(
+            lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+          );
+          currentLessonToNavigate = allLessons[firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0];
+        } else {
+          console.log('  ✅ LESSON UNLOCKED - previous lesson is completed');
+        }
+      } else {
+        console.log('  ✅ LESSON UNLOCKED - this is the first lesson');
+      }
+    }
+  }
+
+  if (!currentLessonSections || currentLessonSections.length === 0) {
+    return (
+      <div className="h-screen bg-black text-white flex items-center justify-center flex-col gap-4">
+        <div className="text-xl">Lesson not found</div>
+        <button
+          onClick={() => navigate('/')}
+          className="px-6 py-2 bg-purple-600 rounded-lg hover:bg-purple-700 transition"
+        >
+          Back to Progress Hub
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <style>{`
         @keyframes slideUpFade {
           from {
             opacity: 0;
@@ -26,40 +2828,1546 @@ Content: ${typeof i.content=="string"?i.content:JSON.stringify(i.content)}
             transform: translateY(0) translateX(-50%);
           }
         }
-      `}),t.jsxs("div",{className:"h-screen bg-black text-white flex",style:{fontFamily:"Geist, -apple-system, BlinkMacSystemFont, sans-serif"},children:[t.jsxs("div",{className:"bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden",style:{width:"507.1px",minWidth:"507.1px"},children:[t.jsxs("div",{className:"flex-shrink-0 px-8",style:{paddingTop:"19.38px",paddingBottom:"5px"},children:[t.jsx("div",{className:"flex items-center justify-between",children:t.jsx("div",{className:"w-auto cursor-pointer",style:{backgroundImage:"url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)",backgroundSize:"contain",backgroundRepeat:"no-repeat",backgroundPosition:"left center",width:"108.8px",height:"36px",marginBottom:"12px",marginLeft:"-5.44px"},onClick:()=>Z("/")})}),t.jsx("h2",{className:"font-semibold",style:{letterSpacing:"0.011em",fontSize:"27px",marginBottom:"0.72px"},children:H})]}),t.jsxs("div",{className:"flex-shrink-0 px-8 relative",style:{paddingTop:"0px",paddingBottom:"4px"},children:[t.jsx("h3",{className:"font-semibold",style:{fontSize:"19px",marginBottom:"2px"},children:J.length>0&&me<J.length&&J[me]?(()=>{const e=J[me],n=Se(e.module_number,e.lesson_number),s=J.findIndex(c=>!Se(c.module_number,c.lesson_number)),r=me===s;return n?"Completed Lesson":r?"Current Lesson":"Upcoming Lesson"})():"Upcoming Lessons"}),t.jsx("div",{ref:se,className:"overflow-x-auto overflow-y-hidden select-none",style:{scrollbarWidth:"none",msOverflowStyle:"none",scrollBehavior:"smooth",cursor:We?"grabbing":"grab",paddingBottom:"9px",scrollSnapType:"x mandatory",opacity:at?1:0,visibility:at?"visible":"hidden",transition:"opacity 0.3s ease-in"},onMouseDown:Vn,onMouseMove:Xn,onMouseUp:Zn,onMouseLeave:es,onScroll:ts,children:t.jsx("div",{className:"flex gap-4",style:{minHeight:"100px",height:"100px",paddingRight:S>0?`${Math.max(0,S-390-16)}px`:"0px"},children:J.length>0?J.map((e,n)=>{const s=Se(e.module_number,e.lesson_number),r=J.findIndex(l=>!Se(l.module_number,l.lesson_number)),c=n===r;return t.jsxs("div",{ref:l=>gt.current[n]=l,className:"relative flex items-center gap-3",style:{width:s||c?"390px":"346.06px",minWidth:s||c?"390px":"346.06px",flexShrink:0,paddingTop:"4px",paddingRight:"5.618px",paddingBottom:"5.618px",paddingLeft:"14px",borderRadius:"0.3rem",background:"#7714E0",height:"90px",scrollSnapAlign:"start",scrollSnapStop:"always"},children:[n!==me&&t.jsx("div",{style:{position:"absolute",top:0,left:0,right:0,bottom:0,backgroundColor:"rgba(0, 0, 0, 0.5)",backdropFilter:"blur(0.75px)",WebkitBackdropFilter:"blur(0.75px)",borderRadius:"0.3rem",pointerEvents:"none",transition:"background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)"}}),t.jsxs("div",{className:"flex-1",children:[t.jsx("h4",{className:"font-semibold truncate text-white",style:{marginBottom:"3px",fontSize:"13px"},children:e.lesson_name||`Lesson ${e.lesson_number}`}),t.jsx("ul",{style:{display:"flex",flexDirection:"column",gap:"0.01rem"},children:(e.bullet_points||[]).slice(0,3).map((l,d)=>t.jsxs("li",{className:"text-xs flex items-start gap-2 text-purple-100",children:[t.jsx("span",{className:"mt-0.5 text-purple-200",children:"•"}),t.jsx("span",{children:l})]},d))})]}),(s||c)&&t.jsx("button",{className:"bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group",style:{width:"48px",height:"48px",display:"flex",alignItems:"center",justifyContent:"center",borderRadius:"0.3rem",marginRight:"10px"},onClick:()=>{Z(`/learning?module=${e.module_number}&lesson=${e.lesson_number}`)},children:t.jsx("svg",{className:"group-hover:stroke-pink-500 transition-colors",width:"26",height:"24",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5",strokeLinecap:"round",strokeLinejoin:"round",children:t.jsx("path",{d:"M5 12h14M12 5l7 7-7 7"})})})]},`${e.module_number}-${e.lesson_number}`)}):t.jsx("div",{className:"flex-1 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center",style:{padding:"7.398px"},children:t.jsx("p",{className:"text-purple-200 text-sm",children:"No more upcoming lessons"})})})}),(()=>{const e=G.length===J.length&&J.length>0,n=J.findIndex(c=>!Se(c.module_number,c.lesson_number)),s=me!==n,r=me<n;return s&&!e&&t.jsx("button",{onClick:ns,className:"absolute bg-white text-black hover:bg-purple-50 transition-all",style:{right:"42px",top:"50%",transform:"translateY(-35%)",width:"40px",height:"40px",borderRadius:"0.3rem",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 4px 6px rgba(0, 0, 0, 0.1)",zIndex:10,opacity:.7},children:r?t.jsx("svg",{width:"20",height:"20",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5",strokeLinecap:"round",strokeLinejoin:"round",children:t.jsx("path",{d:"M5 12h14M12 5l7 7-7 7"})}):t.jsx("svg",{width:"20",height:"20",viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"2.5",strokeLinecap:"round",strokeLinejoin:"round",children:t.jsx("path",{d:"M19 12H5M12 19l-7-7 7-7"})})})})()]}),t.jsxs("div",{className:"flex-1 flex flex-col px-8 overflow-hidden",style:{paddingTop:"0px",paddingBottom:fe?"8px":"17.6px"},children:[t.jsx("h3",{className:"flex-shrink-0 font-semibold",style:{fontSize:"19px",marginBottom:"1px"},children:"Chat with Will"}),t.jsxs("div",{className:"flex-1 flex flex-col overflow-hidden",children:[t.jsxs("div",{ref:$t,className:"bg-white overflow-y-auto hide-scrollbar flex flex-col justify-end",style:{borderRadius:"0.3rem 0.3rem 0 0",marginBottom:"0px",scrollbarWidth:"none",msOverflowStyle:"none",flex:"0.98",minHeight:"0",padding:"1.5rem 1rem 0.8rem 1rem"},children:[ue.map((e,n)=>t.jsx("div",{className:e.type==="user"?"flex justify-end":"",style:{animation:"slideUp 0.3s ease-out",opacity:1,marginBottom:n<ue.length-1?"0.5rem":"0"},children:e.type==="assistant"?t.jsx("div",{className:"p-3 text-black text-sm leading-snug relative group inline-block max-w-[95%]",style:{position:"relative",borderRadius:"8px",backgroundColor:"#f3f4f6"},children:(ye===n&&!e.isComplete?st:!e.isComplete&&ye===null?"":e.text).split(`
-`).map((s,r)=>{const c=s.match(/^[•\-\*]\s+(.+?):\s*(.*)$/),l=s.match(/^[•\-\*]\s+(.+?)\s+-\s+(.*)$/),d=s.match(/^(\d+)\.\s+(.+?):\s*(.*)$/),i=s.match(/^(\d+)\.\s+(.+?)\s+-\s+(.*)$/);if(c){const m=c[1].replace(/\*\*/g,""),u=c[2].replace(/\*\*/g,"");return t.jsxs("p",{className:r>0?"mt-2":"",children:[t.jsxs("span",{children:[c[0].charAt(0)," "]}),t.jsxs("strong",{className:"font-semibold",children:[m,":"]}),t.jsxs("span",{children:[" ",u]})]},r)}else if(l){const m=l[1].replace(/\*\*/g,""),u=l[2].replace(/\*\*/g,"");return t.jsxs("p",{className:r>0?"mt-2":"",children:[t.jsxs("span",{children:[l[0].charAt(0)," "]}),t.jsx("strong",{className:"font-semibold",children:m}),t.jsxs("span",{children:[" - ",u]})]},r)}else if(d){const m=d[2].replace(/\*\*/g,""),u=d[3].replace(/\*\*/g,"");return t.jsxs("p",{className:r>0?"mt-2":"",children:[t.jsxs("span",{children:[d[1],". "]}),t.jsxs("strong",{className:"font-semibold",children:[m,":"]}),t.jsxs("span",{children:[" ",u]})]},r)}else if(i){const m=i[2].replace(/\*\*/g,""),u=i[3].replace(/\*\*/g,"");return t.jsxs("p",{className:r>0?"mt-2":"",children:[t.jsxs("span",{children:[i[1],". "]}),t.jsx("strong",{className:"font-semibold",children:m}),t.jsxs("span",{children:[" - ",u]})]},r)}else{const m=s.split(/(\*\*.*?\*\*|\*.*?\*|DNA|RNA|Proteins)/g);return t.jsx("p",{className:r>0?"mt-2":"",children:m.map((u,g)=>{if(u.startsWith("**")&&u.endsWith("**")&&u.length>4){const W=u.slice(2,-2);return t.jsx("strong",{className:"font-semibold",children:W},g)}else if(u.startsWith("*")&&u.endsWith("*")&&u.length>2&&!u.startsWith("**")){const W=u.slice(1,-1);return t.jsx("em",{className:"italic",children:W},g)}else if(u==="DNA"||u==="RNA"||u==="Proteins")return t.jsx("strong",{className:"font-semibold",children:u},g);return t.jsx("span",{children:u},g)})},r)}})}):t.jsx("div",{className:"p-3 text-white text-sm max-w-[95%] inline-block",style:{position:"relative",borderRadius:"8px",backgroundColor:"#7c3aed"},children:e.text})},n)),dt&&t.jsx("div",{style:{animation:"slideUp 0.3s ease-out",marginTop:"1rem"},children:t.jsx("div",{className:"p-3 text-black text-sm leading-snug inline-block max-w-[95%]",style:{position:"relative",borderRadius:"8px",backgroundColor:"#f3f4f6"},children:t.jsxs("div",{className:"flex gap-1",children:[t.jsx("span",{className:"w-2 h-2 bg-gray-400 rounded-full animate-bounce",style:{animationDelay:"0ms"}}),t.jsx("span",{className:"w-2 h-2 bg-gray-400 rounded-full animate-bounce",style:{animationDelay:"150ms"}}),t.jsx("span",{className:"w-2 h-2 bg-gray-400 rounded-full animate-bounce",style:{animationDelay:"300ms"}})]})})})]}),t.jsxs("div",{className:"flex-shrink-0 bg-gray-100 p-3",style:{marginTop:"0px",borderRadius:"0 0 0.3rem 0.3rem"},children:[t.jsx("form",{"data-chat-form":!0,onSubmit:qn,style:{marginBottom:"8px"},children:t.jsx("input",{type:"text",value:Te,onChange:e=>Ie(e.target.value),onFocus:()=>{Ke(!1),rn(!0)},onBlur:()=>{Ke(!0),rn(!1)},placeholder:ct?"type to understand or select below":"",className:"w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500",style:{borderRadius:"0 0 0.75rem 0.75rem",paddingTop:"0.4rem",paddingBottom:"0.4rem"}})}),rt&&t.jsx("button",{onClick:async()=>{const e=rt,n=[...ue,{type:"user",text:e}];we(n),_e(!0);try{const s=R.length>0?`
-Lesson: ${Re}
+      `}</style>
+      <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+        {/* Left Sidebar - Course Navigation */}
+      <div className="bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden" style={{ width: '507.1px', minWidth: '507.1px' }}>
+        {/* Header */}
+        <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
+          <div className="flex items-center justify-between">
+            <div
+              className="w-auto cursor-pointer"
+              style={{
+                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+                backgroundSize: 'contain',
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'left center',
+                width: '108.8px',
+                height: '36px',
+                marginBottom: '12px',
+                marginLeft: '-5.44px'
+              }}
+              onClick={() => navigate('/')}
+            />
+          </div>
+          <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
+        </div>
+
+        {/* Upcoming Lessons */}
+        <div className="flex-shrink-0 px-8 relative" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
+          <h3 className="font-semibold" style={{ fontSize: '19px', marginBottom: '2px' }}>
+            {upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length && upcomingLessonsToShow[activeCardIndex] ? (
+              (() => {
+                const activeLesson = upcomingLessonsToShow[activeCardIndex];
+                const isCompleted = isLessonCompleted(activeLesson.module_number, activeLesson.lesson_number);
+                // Find the first incomplete lesson (this is the current lesson)
+                const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+                const isCurrentLesson = activeCardIndex === firstIncompleteIndex;
+
+                if (isCompleted) return 'Completed Lesson';
+                if (isCurrentLesson) return 'Current Lesson';
+                return 'Upcoming Lesson';
+              })()
+            ) : 'Upcoming Lessons'}
+          </h3>
+          <div
+            ref={scrollContainerRef}
+            className="overflow-x-auto overflow-y-hidden select-none"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              scrollBehavior: 'smooth',
+              cursor: isScrolling ? 'grabbing' : 'grab',
+              paddingBottom: '9px',
+              scrollSnapType: 'x mandatory',
+              opacity: isCarouselReady ? 1 : 0,
+              visibility: isCarouselReady ? 'visible' : 'hidden',
+              transition: 'opacity 0.3s ease-in'
+            }}
+            onMouseDown={handleScrollMouseDown}
+            onMouseMove={handleScrollMouseMove}
+            onMouseUp={handleScrollMouseUp}
+            onMouseLeave={handleScrollMouseLeave}
+            onScroll={handleScroll}
+          >
+            <div className="flex gap-4" style={{
+              minHeight: '100px',
+              height: '100px',
+              paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 390 - 16)}px` : '0px'
+            }}>
+              {upcomingLessonsToShow.length > 0 ? (
+                upcomingLessonsToShow.map((lesson, index) => {
+                  const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+                  // Find the first incomplete lesson (this is the current lesson)
+                  const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+                  const isCurrentLesson = index === firstIncompleteIndex;
+
+                  return (
+                    <div
+                      key={`${lesson.module_number}-${lesson.lesson_number}`}
+                      ref={(el) => (cardRefs.current[index] = el)}
+                      className="relative flex items-center gap-3"
+                      style={{
+                        width: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
+                        minWidth: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
+                        flexShrink: 0,
+                        paddingTop: '4px',
+                        paddingRight: '5.618px',
+                        paddingBottom: '5.618px',
+                        paddingLeft: '14px',
+                        borderRadius: '0.3rem',
+                        background: '#7714E0',
+                        height: '90px',
+                        scrollSnapAlign: 'start',
+                        scrollSnapStop: 'always'
+                      }}
+                    >
+                        {/* Opacity overlay for non-active cards */}
+                        {index !== activeCardIndex && (
+                          <div
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                              backdropFilter: 'blur(0.75px)',
+                              WebkitBackdropFilter: 'blur(0.75px)',
+                              borderRadius: '0.3rem',
+                              pointerEvents: 'none',
+                              transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
+                            }}
+                          />
+                        )}
+                        <div className="flex-1">
+                          <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
+                            {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
+                          </h4>
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
+                            {(lesson.bullet_points || [])
+                              .slice(0, 3)
+                              .map((bulletPoint, idx) => (
+                                <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
+                                  <span className="mt-0.5 text-purple-200">•</span>
+                                  <span>{bulletPoint}</span>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+
+                        {/* Arrow button for completed and current lessons */}
+                        {(isCompleted || isCurrentLesson) && (
+                          <button
+                            className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                            style={{
+                              width: '48px',
+                              height: '48px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              borderRadius: '0.3rem',
+                              marginRight: '10px'
+                            }}
+                            onClick={() => {
+                              navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
+                            }}
+                          >
+                            <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                          </button>
+                        )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="flex-1 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center" style={{ padding: '7.398px' }}>
+                  <p className="text-purple-200 text-sm">No more upcoming lessons</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Back to Current Lesson Button - Hide when viewing current lesson or when all lessons are completed */}
+          {(() => {
+            // Check if all lessons in the course are completed
+            const allLessonsCompleted = completedLessons.length === upcomingLessonsToShow.length && upcomingLessonsToShow.length > 0;
+
+            // Find the index of the first incomplete lesson (current lesson)
+            const currentLessonIndex = upcomingLessonsToShow.findIndex(
+              l => !isLessonCompleted(l.module_number, l.lesson_number)
+            );
+            // Show button only when NOT viewing the current lesson
+            const isNotViewingCurrentLesson = activeCardIndex !== currentLessonIndex;
+            // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
+            const isViewingCompletedLesson = activeCardIndex < currentLessonIndex;
+
+            return isNotViewingCurrentLesson && !allLessonsCompleted && (
+              <button
+                onClick={scrollToCurrentLesson}
+                className="absolute bg-white text-black hover:bg-purple-50 transition-all"
+                style={{
+                  right: '42px',
+                  top: '50%',
+                  transform: 'translateY(-35%)',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '0.3rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                  zIndex: 10,
+                  opacity: 0.7
+                }}
+              >
+                {isViewingCompletedLesson ? (
+                  // Right-pointing arrow when viewing completed lessons
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                ) : (
+                  // Left-pointing arrow when viewing upcoming lessons
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                  </svg>
+                )}
+              </button>
+            );
+          })()}
+        </div>
+
+        {/* Chat with Will Section - Scrollable */}
+        <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
+          <h3 className="flex-shrink-0 font-semibold" style={{ fontSize: '19px', marginBottom: '1px' }}>Chat with Will</h3>
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col justify-end" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
+              {chatMessages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={msg.type === 'user' ? 'flex justify-end' : ''}
+                  style={{
+                    animation: 'slideUp 0.3s ease-out',
+                    opacity: 1,
+                    marginBottom: idx < chatMessages.length - 1 ? '0.5rem' : '0'
+                  }}
+                >
+                  {msg.type === 'assistant' ? (
+                    <div className="p-3 text-black text-sm leading-snug relative group inline-block max-w-[95%]" style={{
+                      position: 'relative',
+                      borderRadius: '8px',
+                      backgroundColor: '#f3f4f6'
+                    }}>
+                      {(typingMessageIndex === idx && !msg.isComplete ? displayedText : (!msg.isComplete && typingMessageIndex === null ? '' : msg.text)).split('\n').map((line, i) => {
+                        // Check if line starts with bullet point or number (with : or -)
+                        const bulletMatchColon = line.match(/^[•\-\*]\s+(.+?):\s*(.*)$/);
+                        const bulletMatchDash = line.match(/^[•\-\*]\s+(.+?)\s+-\s+(.*)$/);
+                        const numberedMatchColon = line.match(/^(\d+)\.\s+(.+?):\s*(.*)$/);
+                        const numberedMatchDash = line.match(/^(\d+)\.\s+(.+?)\s+-\s+(.*)$/);
+
+                        if (bulletMatchColon) {
+                          // Bullet point with colon
+                          const titleText = bulletMatchColon[1].replace(/\*\*/g, '');
+                          const contentText = bulletMatchColon[2].replace(/\*\*/g, '');
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              <span>{bulletMatchColon[0].charAt(0)} </span>
+                              <strong className="font-semibold">{titleText}:</strong>
+                              <span> {contentText}</span>
+                            </p>
+                          );
+                        } else if (bulletMatchDash) {
+                          // Bullet point with dash
+                          const titleText = bulletMatchDash[1].replace(/\*\*/g, '');
+                          const contentText = bulletMatchDash[2].replace(/\*\*/g, '');
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              <span>{bulletMatchDash[0].charAt(0)} </span>
+                              <strong className="font-semibold">{titleText}</strong>
+                              <span> - {contentText}</span>
+                            </p>
+                          );
+                        } else if (numberedMatchColon) {
+                          // Numbered list with colon
+                          const titleText = numberedMatchColon[2].replace(/\*\*/g, '');
+                          const contentText = numberedMatchColon[3].replace(/\*\*/g, '');
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              <span>{numberedMatchColon[1]}. </span>
+                              <strong className="font-semibold">{titleText}:</strong>
+                              <span> {contentText}</span>
+                            </p>
+                          );
+                        } else if (numberedMatchDash) {
+                          // Numbered list with dash
+                          const titleText = numberedMatchDash[2].replace(/\*\*/g, '');
+                          const contentText = numberedMatchDash[3].replace(/\*\*/g, '');
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              <span>{numberedMatchDash[1]}. </span>
+                              <strong className="font-semibold">{titleText}</strong>
+                              <span> - {contentText}</span>
+                            </p>
+                          );
+                        } else {
+                          // Regular text with inline formatting
+                          const parts = line.split(/(\*\*.*?\*\*|\*.*?\*|DNA|RNA|Proteins)/g);
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                              {parts.map((part, j) => {
+                                // Check for bold (**text**)
+                                if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+                                  const boldText = part.slice(2, -2);
+                                  return <strong key={j} className="font-semibold">{boldText}</strong>;
+                                }
+                                // Check for italic (*text*)
+                                else if (part.startsWith('*') && part.endsWith('*') && part.length > 2 && !part.startsWith('**')) {
+                                  const italicText = part.slice(1, -1);
+                                  return <em key={j} className="italic">{italicText}</em>;
+                                }
+                                // Specific keywords to bold
+                                else if (part === 'DNA' || part === 'RNA' || part === 'Proteins') {
+                                  return <strong key={j} className="font-semibold">{part}</strong>;
+                                }
+                                return <span key={j}>{part}</span>;
+                              })}
+                            </p>
+                          );
+                        }
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-3 text-white text-sm max-w-[95%] inline-block" style={{
+                      position: 'relative',
+                      borderRadius: '8px',
+                      backgroundColor: '#7c3aed'
+                    }}>
+                      {msg.text}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {/* Typing indicator */}
+              {isTyping && (
+                <div
+                  style={{
+                    animation: 'slideUp 0.3s ease-out',
+                    marginTop: '1rem'
+                  }}
+                >
+                  <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%]" style={{
+                    position: 'relative',
+                    borderRadius: '8px',
+                    backgroundColor: '#f3f4f6'
+                  }}>
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex-shrink-0 bg-gray-100 p-3" style={{ marginTop: '0px', borderRadius: '0 0 0.3rem 0.3rem' }}>
+              <form data-chat-form onSubmit={handleSendMessage} style={{ marginBottom: '8px' }}>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onFocus={() => {
+                    setShowPlaceholder(false);
+                    setIsEditingInput(true);
+                  }}
+                  onBlur={() => {
+                    setShowPlaceholder(true);
+                    setIsEditingInput(false);
+                  }}
+                  placeholder={showPlaceholder ? "type to understand or select below" : ""}
+                  className="w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500"
+                  style={{ borderRadius: '0 0 0.75rem 0.75rem', paddingTop: '0.4rem', paddingBottom: '0.4rem' }}
+                />
+              </form>
+              {suggestedQuestion && (
+                <button
+                  key={suggestedQuestion}
+                  onClick={async () => {
+                    const question = suggestedQuestion;
+
+                    // Add user message directly
+                    const newMessages = [...chatMessages, { type: 'user', text: question }];
+                    setChatMessages(newMessages);
+                    setIsTyping(true);
+
+                    try {
+                      // Build lesson context from all sections
+                      const lessonContext = currentLessonSections.length > 0 ? `
+Lesson: ${lessonName}
 
 Content:
-${R.map(l=>{var d,i;return l.content_type==="heading"?`## ${((d=l.content)==null?void 0:d.text)||l.title}`:l.content_type==="paragraph"?typeof l.content=="string"?l.content:((i=l.content)==null?void 0:i.text)||l.content_text||"":""}).filter(Boolean).join(`
+${currentLessonSections.map((section) => {
+  if (section.content_type === 'heading') {
+    return `## ${section.content?.text || section.title}`;
+  } else if (section.content_type === 'paragraph') {
+    return typeof section.content === 'string' ? section.content : section.content?.text || section.content_text || '';
+  }
+  return '';
+}).filter(Boolean).join('\n\n')}
+` : '';
 
-`)}
-`:"",c=await(await fetch("https://ignite-education-api.onrender.com/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:n,lessonContext:s})})).json();if(_e(!1),c.success){const l=n.length;we(d=>[...d,{type:"assistant",text:c.response,isComplete:!1}]),ie(l)}else throw new Error(c.error||"Failed to get response")}catch(s){console.error("Error sending message:",s),_e(!1);const r=n.length;we(c=>[...c,{type:"assistant",text:"Sorry, I encountered an error. Please try again.",isComplete:!1}]),ie(r)}},className:"flex-shrink-0 w-full text-white px-4 py-2 font-medium transition overflow-hidden",style:{borderRadius:"1rem",fontSize:"0.85rem",backgroundColor:"#7714E0",hover:{backgroundColor:"#6610C7"}},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#6610C7",onMouseLeave:e=>e.currentTarget.style.backgroundColor="#7714E0",children:rt.split("").map((e,n)=>t.jsx("span",{style:{display:"inline-block",animation:"letterSlideUp 0.12s ease-out forwards",animationDelay:`${n*.008}s`,opacity:0,transform:"translateY(3px)"},children:e===" "?" ":e},n))},rt)]}),t.jsxs("div",{className:`flex-shrink-0 ${fe?"mt-2":"mt-8"} w-full relative`,children:[!fe&&t.jsx("button",{onClick:ss,className:"absolute -top-5 left-0 text-white hover:text-pink-500 transition text-sm cursor-pointer",children:"Go ad-free for 99p"}),t.jsx(zs,{adClient:"ca-pub-8629703639546275",adSlot:"3322377575",adFormat:"auto",style:{minHeight:"60px"},isAdFree:fe})]})]})]})]}),t.jsxs("div",{className:"flex-1 flex flex-col bg-white text-black overflow-hidden relative",style:{minWidth:"600px",flexShrink:0},children:[Ct&&Nt&&t.jsx("div",{className:"absolute inset-0 flex items-center justify-center z-50",style:{backgroundColor:"rgba(255, 255, 255, 0.5)"},children:t.jsx("div",{className:"text-center flex flex-col gap-4 max-w-md px-6",children:Vt==="daily_limit"?t.jsxs(t.Fragment,{children:[t.jsx("div",{className:"text-2xl text-black font-semibold",children:"Daily Course Limit Reached"}),t.jsxs("div",{className:"text-lg text-gray-700",children:["You've completed 2 courses today. Come back on ",t.jsx("span",{className:"font-semibold",children:_n})," to continue learning."]}),t.jsx("button",{onClick:()=>window.location.href="/",className:"px-6 py-2 rounded-lg transition",style:{backgroundColor:"#EF0B72",color:"white"},onMouseEnter:e=>e.target.style.backgroundColor="#D90A65",onMouseLeave:e=>e.target.style.backgroundColor="#EF0B72",children:"Back to Progress Hub"})]}):t.jsxs(t.Fragment,{children:[t.jsx("div",{className:"text-xl text-black font-semibold",children:"Lesson not available yet"}),t.jsx("button",{onClick:()=>window.location.href=`/learning?module=${Nt.module_number}&lesson=${Nt.lesson_number}`,className:"px-6 py-2 rounded-lg transition",style:{backgroundColor:"#EF0B72",color:"white"},onMouseEnter:e=>e.target.style.backgroundColor="#D90A65",onMouseLeave:e=>e.target.style.backgroundColor="#EF0B72",children:"Go to Current Lesson"})]})})}),t.jsx("div",{ref:Qe,className:"flex-1 overflow-y-auto px-16 py-8 pb-20",style:{scrollbarWidth:"none",msOverflowStyle:"none",position:"relative"},children:t.jsxs("div",{className:"max-w-4xl mx-auto space-y-0",style:{position:"relative",zIndex:2},children:[t.jsxs("div",{style:{marginTop:"2rem",marginBottom:"1.5rem"},children:[t.jsxs("p",{className:"text-xl font-medium",style:{color:"#EF0B72",marginBottom:"0.25rem"},children:["Lesson ",(()=>{const n=[...le].sort((s,r)=>s.module_number!==r.module_number?s.module_number-r.module_number:s.lesson_number-r.lesson_number).findIndex(s=>s.module_number===M&&s.lesson_number===B);return n!==-1?n+1:B})()]}),t.jsx("div",{className:"bg-black text-white px-3 flex items-center",style:{borderRadius:"0.2rem",paddingTop:"1rem",paddingBottom:"1rem",maxWidth:"750px",width:"fit-content"},children:t.jsx("h1",{className:"text-3xl font-medium text-left",children:tt(Re,0,"title",!0)})})]}),t.jsxs("div",{style:{filter:Ct?"blur(8px)":"none",pointerEvents:Ct?"none":"auto"},children:[R.map((e,n)=>{const s=()=>{var r,c,l,d;if(e.content_type==="heading"){const i=((r=e.content)==null?void 0:r.level)||2,m=((c=e.content)==null?void 0:c.text)||e.title,u=`h${i}`,g={1:"text-3xl",2:"text-2xl",3:"text-xl"},W=R.slice(0,n).map(f=>et(f)).join(". ").split(/\s+/).filter(f=>f.length>0).length,U=(f,C)=>{const X=f.split(/(__[^_]+__)/g);let K=C;return X.map((P,oe)=>{const z=P.replace(/__/g,"").split(/\s+/).filter(O=>O.length>0).length;let N;if(P.startsWith("__")&&P.endsWith("__")){const O=P.slice(2,-2);N=t.jsx("u",{children:tt(O,K,n,!0)},oe)}else N=t.jsx("span",{children:tt(P,K,n,!0)},oe);return K+=z,N})};return i===2?t.jsx("div",{className:"bg-black text-white flex items-center mb-2",style:{borderRadius:"0.2rem",paddingTop:"0.35rem",paddingBottom:"0.35rem",paddingLeft:"0.5rem",paddingRight:"0.5rem",maxWidth:"750px",width:"fit-content",marginTop:"3rem"},children:Y.createElement(u,{className:"font-medium",style:{fontSize:"1.4rem"}},U(m,W))}):Y.createElement(u,{className:`${g[i]} font-bold mt-8 mb-2`},U(m,W))}if(e.content_type==="paragraph"){const i=typeof e.content=="string"?e.content:((l=e.content)==null?void 0:l.text)||e.content_text,m=R.slice(0,n).map(f=>et(f)).join(". ").split(/\s+/).filter(f=>f.length>0).length,u=(f,C=0)=>{const X=f.split(new RegExp("(\\*\\*[^*]+\\*\\*|__[^_]+__|\\[(?:[^\\]]+)\\]\\((?:[^)]+)\\)|(?<!\\*)\\*(?!\\*)([^*]+)\\*(?!\\*))","g"));let K=C;return X.map((P,oe)=>{if(P===void 0)return null;const I=P.match(/^\[([^\]]+)\]\(([^)]+)\)$/),N=P.replace(/\*\*/g,"").replace(/__/g,"").replace(new RegExp("(?<!\\*)\\*(?!\\*)","g"),"").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").split(/\s+/).filter(_=>_.length>0).length;let O;if(I){const _=I[1],be=I[2];O=t.jsx("a",{href:be,target:"_blank",rel:"noopener noreferrer",className:"text-blue-600 underline hover:text-blue-800",children:tt(_,K,n)},oe)}else if(P.startsWith("**")&&P.endsWith("**")){const _=P.slice(2,-2);O=t.jsx("strong",{className:"font-semibold",children:tt(_,K,n)},oe)}else if(P.startsWith("__")&&P.endsWith("__")){const _=P.slice(2,-2);O=t.jsx("u",{children:tt(_,K,n)},oe)}else if(P.match(new RegExp("^(?<!\\*)\\*(?!\\*)([^*]+)\\*(?!\\*)$"))){const _=P.slice(1,-1);O=t.jsx("em",{children:tt(_,K,n)},oe)}else O=t.jsx("span",{children:tt(P,K,n)},oe);return K+=N,O})},g=i.split(`
-`),W=g.some(f=>/^[•\-]\s/.test(f.trim())),U=g.filter(f=>f.trim()).length>1;if(W||U){let f=m;return t.jsx("div",{className:"mb-6",children:g.map((C,X)=>{const K=C.trim();if(/^[•\-]\s/.test(K)){const P=K.replace(/^[•\-]\s+/,""),I=P.replace(/\*\*/g,"").replace(/__/g,"").replace(new RegExp("(?<!\\*)\\*(?!\\*)","g"),"").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").split(/\s+/).filter(N=>N.length>0).length,z=t.jsxs("div",{className:"flex items-start gap-2 mb-1",children:[t.jsx("span",{className:"text-black mt-1",children:"•"}),t.jsx("span",{className:"text-base leading-relaxed flex-1",children:u(P,f)})]},X);return f+=I,z}else if(K){const oe=C.replace(/\*\*/g,"").replace(/__/g,"").replace(new RegExp("(?<!\\*)\\*(?!\\*)","g"),"").replace(/\[([^\]]+)\]\([^)]+\)/g,"$1").split(/\s+/).filter(z=>z.length>0).length,I=t.jsx("p",{className:"text-base leading-relaxed mb-2",children:u(C,f)},X);return f+=oe,I}else if(U)return t.jsx("div",{className:"h-2"},X);return null})})}return t.jsx("p",{className:"text-base leading-relaxed mb-6",children:u(i,m)})}if(e.content_type==="image"){const i=e.content||{},m=i.width==="small"?"max-w-sm":i.width==="medium"?"max-w-md":i.width==="large"?"max-w-lg":i.width==="xl"?"max-w-xl":i.width==="2xl"?"max-w-2xl":i.width==="full"?"max-w-full":"max-w-lg";return t.jsxs("div",{className:"my-8 flex flex-col items-center",children:[t.jsx("img",{src:i.url,alt:i.alt||e.title,className:`${m} rounded-lg shadow-lg`}),i.caption&&t.jsx("p",{className:"text-sm text-gray-600 mt-2 italic",children:i.caption})]})}if(e.content_type==="youtube"){const i=e.content||{},m=i.videoId;return t.jsxs("div",{className:"my-8",children:[i.title&&t.jsx("h3",{className:"text-xl font-bold mb-4",children:i.title}),t.jsx("div",{className:"aspect-w-16 aspect-h-9",children:t.jsx("iframe",{src:`https://www.youtube.com/embed/${m}${i.startTime?`?start=${i.startTime}`:""}`,title:i.title||"YouTube video",allow:"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",allowFullScreen:!0,className:"w-full h-96 rounded-lg shadow-lg"})})]})}if(e.content_type==="list"){const i=e.content||{},m=i.type==="ordered"?"ol":"ul",u=i.type==="ordered"?"list-decimal list-inside":"list-disc list-inside";return t.jsx(m,{className:`${u} space-y-3 mb-6`,children:(i.items||[]).map((g,W)=>t.jsx("li",{className:"text-base leading-relaxed",children:g},W))})}if(e.content_type==="bulletlist"){const i=((d=e.content)==null?void 0:d.items)||[];return t.jsx("ul",{className:"list-disc list-inside space-y-2 mb-6",children:i.map((m,u)=>t.jsx("li",{className:"text-base leading-relaxed",children:m},u))})}return e.content&&typeof e.content=="object"?t.jsxs("div",{className:"prose prose-lg max-w-none",children:[e.content.description&&t.jsx("p",{className:"text-lg leading-relaxed mb-6",children:e.content.description}),e.content.points&&Array.isArray(e.content.points)&&t.jsx("ul",{className:"space-y-4 mb-6",children:e.content.points.map((i,m)=>t.jsxs("li",{className:"text-base leading-relaxed",children:[t.jsx("strong",{className:"font-bold",children:i.title})," ",i.description]},m))}),e.content.subsections&&Array.isArray(e.content.subsections)&&t.jsx("div",{className:"space-y-6",children:e.content.subsections.map((i,m)=>t.jsxs("div",{children:[t.jsx("h3",{className:"text-xl font-bold mb-4",children:i.title}),i.description&&t.jsx("p",{className:"text-base leading-relaxed mb-4",children:i.description}),i.list&&t.jsx("ol",{className:"list-decimal list-inside space-y-3",children:i.list.map((u,g)=>t.jsxs("li",{className:"text-base leading-relaxed",children:[u.text&&t.jsxs("span",{children:[u.text," "]}),u.highlight&&t.jsx("strong",{className:"font-bold",children:u.highlight}),u.detail&&t.jsxs("span",{children:[" ",u.detail]})]},g))}),i.image&&t.jsx("div",{className:"my-6 flex justify-center",children:t.jsx("img",{src:i.image,alt:i.title,className:"max-w-md rounded-lg"})})]},m))}),e.content.image&&t.jsx("div",{className:"my-8 flex justify-center",children:t.jsx("img",{src:e.content.image,alt:e.title,className:"max-w-lg rounded-lg shadow-lg"})})]}):t.jsx("p",{className:"text-base leading-relaxed",children:e.content||e.content_text||"No content available for this section."})};return t.jsx("div",{className:"section-content",ref:r=>Pt.current[n]=r,"data-section-index":n,children:s()},e.id||n)}),t.jsx("div",{className:"mt-6 mb-4",children:t.jsxs("div",{className:"flex items-center gap-2 relative",children:[t.jsx("button",{onClick:()=>bn(!0),className:"flex items-center justify-center transition",style:{color:pt===!0?"#EF0B72":"#6B7280",background:"none",border:"none",padding:0,cursor:"pointer"},onMouseEnter:e=>{pt!==!0&&(e.currentTarget.style.color="#EF0B72")},onMouseLeave:e=>{pt!==!0&&(e.currentTarget.style.color="#6B7280")},title:"I liked this lesson",children:t.jsx(Fs,{size:18,fill:"none",strokeWidth:2})}),t.jsx("button",{onClick:()=>bn(!1),className:"flex items-center justify-center transition",style:{color:pt===!1?"#EF0B72":"#6B7280",background:"none",border:"none",padding:0,cursor:"pointer"},onMouseEnter:e=>{pt!==!1&&(e.currentTarget.style.color="#EF0B72")},onMouseLeave:e=>{pt!==!1&&(e.currentTarget.style.color="#6B7280")},title:"I didn't like this lesson",children:t.jsx($s,{size:18,fill:"none",strokeWidth:2})})]})})]})]})}),t.jsxs("div",{className:"absolute bottom-0 left-0 right-0 px-16 py-6 flex items-center justify-center gap-4",style:{zIndex:10},children:[t.jsx("div",{className:"absolute inset-0 pointer-events-none",style:{backdropFilter:"blur(4px)",WebkitBackdropFilter:"blur(4px)",maskImage:"linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)",WebkitMaskImage:"linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)",zIndex:1}}),t.jsx("div",{className:"absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white pointer-events-none",style:{zIndex:2}}),t.jsxs("div",{className:"relative z-10 flex items-center justify-center gap-2 w-full",style:{zIndex:20},children:[t.jsx("button",{onClick:ms,className:"rounded-lg flex items-center justify-center transition text-white",style:{backgroundColor:Ve?"#D10A64":"#EF0B72",width:"43px",height:"43px"},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#D10A64",onMouseLeave:e=>e.currentTarget.style.backgroundColor=Ve?"#D10A64":"#EF0B72",children:Ve?t.jsx(Ps,{size:18,className:"text-white",fill:"white"}):t.jsx(Tn,{size:18,className:"text-white"})}),t.jsx("button",{onClick:On,className:"text-white font-semibold rounded-lg transition",style:{backgroundColor:"#EF0B72",paddingLeft:"43px",paddingRight:"43px",paddingTop:"11px",paddingBottom:"11px",fontSize:"15px"},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#D10A64",onMouseLeave:e=>e.currentTarget.style.backgroundColor="#EF0B72",children:"Continue"}),t.jsx("button",{onClick:wn,className:"rounded-lg flex items-center justify-center transition text-white",style:{backgroundColor:"#EF0B72",width:"43px",height:"43px"},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#D10A64",onMouseLeave:e=>e.currentTarget.style.backgroundColor="#EF0B72",children:t.jsx(Bs,{size:18,className:"text-white"})})]})]})]}),E&&t.jsx("div",{className:"fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn",style:{background:"linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))",animation:L?"fadeOut 0.2s ease-out":"fadeIn 0.2s ease-out"},onClick:Jt,children:t.jsx("div",{className:"relative",children:t.jsxs("div",{className:"bg-white relative flex",style:{width:"850px",height:"65vh",minHeight:"100px",padding:"0px",animation:L?"scaleDown 0.2s ease-out":"scaleUp 0.2s ease-out",borderRadius:"0.3rem",overflow:"hidden"},onClick:e=>e.stopPropagation(),children:[t.jsx("button",{onClick:Jt,className:"absolute top-6 right-6 text-gray-600 hover:text-black z-10",children:t.jsx(Tt,{size:24})}),t.jsx("div",{style:{width:"45.6%"},className:"bg-black p-8 flex flex-col justify-center",children:t.jsxs("div",{style:{marginTop:"-10px"},children:[t.jsxs("h3",{className:"text-white text-2xl font-medium",style:{animation:"fadeIn 1.5s ease-out",animationDelay:"0.5s",opacity:0,animationFillMode:"forwards",lineHeight:"1",marginBottom:"1.3rem"},children:[t.jsx("span",{className:"font-light text-lg",children:"For just 99p a week,"}),t.jsx("br",{}),t.jsx("span",{style:{fontSize:"1.4rem",color:"#FFFFFF"},children:"get exclusive access to"})]}),t.jsxs("div",{className:"space-y-4",children:[t.jsxs("div",{className:"flex items-center gap-3",style:{animation:"fadeInUp 1.5s ease-out",animationDelay:"2s",opacity:0,animationFillMode:"forwards"},children:[t.jsx("div",{className:"bg-white rounded p-1.5 flex-shrink-0",style:{transform:"scale(0.8)"},children:t.jsx("svg",{className:"w-4 h-4 text-black",fill:"none",stroke:"currentColor",viewBox:"0 0 24 24",children:t.jsx("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:5,d:"M5 13l4 4L19 7"})})}),t.jsxs("div",{children:[t.jsx("h4",{className:"font-semibold text-lg mb-0",style:{color:"#EF0B72"},children:"Office Hours"}),t.jsxs("p",{className:"text-white text-sm opacity-90 m-0",style:{marginTop:"-3px",lineHeight:"1.3"},children:["Get personalised support from",t.jsx("br",{}),"course leaders when you need it."]})]})]}),t.jsxs("div",{className:"flex items-center gap-3",style:{animation:"fadeInUp 1.5s ease-out",animationDelay:"3.0s",opacity:0,animationFillMode:"forwards"},children:[t.jsx("div",{className:"bg-white rounded p-1.5 flex-shrink-0",style:{transform:"scale(0.8)"},children:t.jsx("svg",{className:"w-4 h-4 text-black",fill:"none",stroke:"currentColor",viewBox:"0 0 24 24",children:t.jsx("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:5,d:"M5 13l4 4L19 7"})})}),t.jsxs("div",{children:[t.jsx("h4",{className:"font-semibold text-lg mb-0",style:{color:"#EF0B72"},children:"Completely Ad-Free"}),t.jsxs("p",{className:"text-white text-sm opacity-90 m-0",style:{marginTop:"-3px",lineHeight:"1.3"},children:["Learn without distractions with",t.jsx("br",{}),"a completely ad-free experience."]})]})]}),t.jsxs("div",{className:"flex items-center gap-3",style:{animation:"fadeInUp 1.5s ease-out",animationDelay:"4s",opacity:0,animationFillMode:"forwards"},children:[t.jsx("div",{className:"bg-white rounded p-1.5 flex-shrink-0",style:{transform:"scale(0.8)"},children:t.jsx("svg",{className:"w-4 h-4 text-black",fill:"none",stroke:"currentColor",viewBox:"0 0 24 24",children:t.jsx("path",{strokeLinecap:"round",strokeLinejoin:"round",strokeWidth:5,d:"M5 13l4 4L19 7"})})}),t.jsxs("div",{children:[t.jsx("h4",{className:"font-semibold text-lg mb-0",style:{color:"#EF0B72"},children:"Weekly Handpicked Roles"}),t.jsxs("p",{className:"text-white text-sm opacity-90 m-0",style:{marginTop:"-3px",lineHeight:"1.3"},children:["We'll send you the top career",t.jsx("br",{}),"opportunities to you every week."]})]})]}),t.jsx("p",{className:"text-white text-sm mt-6",style:{animation:"fadeIn 1.5s ease-out",animationDelay:"6.0s",opacity:0,animationFillMode:"forwards"},children:"Billed weekly. Cancel anytime."})]})]})}),t.jsx("div",{style:{width:"54.4%",scrollbarWidth:"none",msOverflowStyle:"none"},className:"relative overflow-y-auto",children:t.jsx("div",{ref:Gt,style:{minHeight:"350px",paddingTop:"10px",paddingBottom:"10px"}},b)})]})})}),ne&&t.jsx("div",{className:"fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn",style:{background:"linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))",animation:Ee?"fadeOut 0.2s ease-out":"fadeIn 0.2s ease-out"},onClick:Yt,children:t.jsx("div",{className:"relative w-full px-4",style:{maxWidth:"632.5px"},children:t.jsxs("div",{className:"bg-white text-black relative cursor-pointer hover:opacity-95 transition",style:{animation:Ee?"scaleDown 0.2s ease-out":"scaleUp 0.2s ease-out",borderRadius:"0.3rem",padding:"2rem",position:"relative",zIndex:9999},onClick:jn,children:[t.jsx("button",{onClick:e=>{e.stopPropagation(),Yt()},className:"absolute top-4 right-4 text-gray-600 hover:text-black z-10",children:t.jsx(Tt,{size:24})}),t.jsxs("div",{className:"text-center",children:[t.jsx("p",{className:"text-black font-medium text-lg",style:{marginBottom:"0.5rem",paddingTop:"15px"},children:"Congratulations, you've completed your first lesson."}),t.jsxs("p",{className:"text-black mb-6",children:["Add to your LinkedIn to showcase your progress",t.jsx("br",{}),"and we'll send you a free Ignite Tote Bag."]}),t.jsx("div",{className:"mb-6 flex justify-center",children:t.jsx("img",{src:"https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-16%20at%2022.16.20.png",alt:"Add to LinkedIn",className:"h-auto rounded-lg",style:{width:"85%"}})}),t.jsxs("button",{onClick:e=>{e.stopPropagation(),jn()},className:"w-full text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2",style:{backgroundColor:"#EF0B72"},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#D90A65",onMouseLeave:e=>e.currentTarget.style.backgroundColor="#EF0B72",children:["Add to",t.jsx("img",{src:"https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png",alt:"LinkedIn",style:{height:"18px",marginLeft:"-2px"}})]})]})]})})}),t.jsx(KnowledgeCheck,{isOpen:j,onClose:Dn,onPass:zn,lessonContext:R.length>0?`
-Lesson: ${Re}
-Module: ${M}
+                      const response = await fetch('https://ignite-education-api.onrender.com/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          messages: newMessages,
+                          lessonContext: lessonContext
+                        })
+                      });
+
+                      const data = await response.json();
+
+                      setIsTyping(false);
+
+                      if (data.success) {
+                        const newMessageIndex = newMessages.length;
+                        setChatMessages(prev => [...prev, {
+                          type: 'assistant',
+                          text: data.response,
+                          isComplete: false
+                        }]);
+                        setTypingMessageIndex(newMessageIndex);
+                      } else {
+                        throw new Error(data.error || 'Failed to get response');
+                      }
+                    } catch (error) {
+                      console.error('Error sending message:', error);
+                      setIsTyping(false);
+                      const newMessageIndex = newMessages.length;
+                      setChatMessages(prev => [...prev, {
+                        type: 'assistant',
+                        text: 'Sorry, I encountered an error. Please try again.',
+                        isComplete: false
+                      }]);
+                      setTypingMessageIndex(newMessageIndex);
+                    }
+                  }}
+                  className="flex-shrink-0 w-full text-white px-4 py-2 font-medium transition overflow-hidden"
+                  style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0', hover: { backgroundColor: '#6610C7' } }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#6610C7'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
+                >
+                  {suggestedQuestion.split('').map((char, index) => (
+                    <span
+                      key={index}
+                      style={{
+                        display: 'inline-block',
+                        animation: 'letterSlideUp 0.12s ease-out forwards',
+                        animationDelay: `${index * 0.008}s`,
+                        opacity: 0,
+                        transform: 'translateY(3px)'
+                      }}
+                    >
+                      {char === ' ' ? '\u00A0' : char}
+                    </span>
+                  ))}
+                </button>
+              )}
+            </div>
+
+            {/* Google Display Ad */}
+            <div className={`flex-shrink-0 ${isAdFree ? 'mt-2' : 'mt-8'} w-full relative`}>
+              {/* Ad-Free Upgrade Banner (only show if not ad-free) */}
+              {!isAdFree && (
+                <button
+                  onClick={handleOpenUpgradeModal}
+                  className="absolute -top-5 left-0 text-white hover:text-pink-500 transition text-sm cursor-pointer"
+                >
+                  Go ad-free for 99p
+                </button>
+              )}
+
+              <GoogleAd
+                adClient="ca-pub-8629703639546275"
+                adSlot="3322377575"
+                adFormat="auto"
+                style={{ minHeight: '60px' }}
+                isAdFree={isAdFree}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col bg-white text-black overflow-hidden relative" style={{ minWidth: '600px', flexShrink: 0 }}>
+        {/* Locked Lesson Overlay */}
+        {isLessonLocked && currentLessonToNavigate && (
+          <div className="absolute inset-0 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(255, 255, 255, 0.5)' }}>
+            <div className="text-center flex flex-col gap-4 max-w-md px-6">
+              {lockReason === 'daily_limit' ? (
+                <>
+                  <div className="text-2xl text-black font-semibold">Daily Course Limit Reached</div>
+                  <div className="text-lg text-gray-700">
+                    You've completed 2 courses today. Come back on <span className="font-semibold">{nextAvailableDate}</span> to continue learning.
+                  </div>
+                  <button
+                    onClick={() => window.location.href = '/'}
+                    className="px-6 py-2 rounded-lg transition"
+                    style={{ backgroundColor: '#EF0B72', color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
+                  >
+                    Back to Progress Hub
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="text-xl text-black font-semibold">Lesson not available yet</div>
+                  <button
+                    onClick={() => window.location.href = `/learning?module=${currentLessonToNavigate.module_number}&lesson=${currentLessonToNavigate.lesson_number}`}
+                    className="px-6 py-2 rounded-lg transition"
+                    style={{ backgroundColor: '#EF0B72', color: 'white' }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
+                  >
+                    Go to Current Lesson
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Scrollable Content - All Sections */}
+        <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-16 py-8 pb-20" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', position: 'relative' }}>
+          <div className="max-w-4xl mx-auto space-y-0" style={{ position: 'relative', zIndex: 2 }}>
+            {/* Lesson Title */}
+            <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
+              <p className="text-xl font-medium" style={{ color: '#EF0B72', marginBottom: '0.25rem' }}>
+                Lesson {(() => {
+                  // Calculate global lesson number across all modules
+                  const sortedLessons = [...lessonsMetadata].sort((a, b) => {
+                    if (a.module_number !== b.module_number) return a.module_number - b.module_number;
+                    return a.lesson_number - b.lesson_number;
+                  });
+                  const globalIndex = sortedLessons.findIndex(
+                    l => l.module_number === currentModule && l.lesson_number === currentLesson
+                  );
+                  return globalIndex !== -1 ? globalIndex + 1 : currentLesson;
+                })()}
+              </p>
+              <div className="bg-black text-white px-3 flex items-center" style={{ borderRadius: '0.2rem', paddingTop: '1rem', paddingBottom: '1rem', maxWidth: '750px', width: 'fit-content' }}>
+                <h1 className="text-3xl font-medium text-left">{renderTextWithHighlight(lessonName, 0, 'title', true)}</h1>
+              </div>
+            </div>
+            {/* Render ALL sections */}
+            <div style={{ filter: isLessonLocked ? 'blur(8px)' : 'none', pointerEvents: isLessonLocked ? 'none' : 'auto' }}>
+            {currentLessonSections.map((section, sectionIdx) => {
+              // Determine how to render based on content_type
+              const renderContent = () => {
+                // Handle new content types from CurriculumUpload
+                if (section.content_type === 'heading') {
+                  const level = section.content?.level || 2;
+                  const text = section.content?.text || section.title;
+                  const HeadingTag = `h${level}`;
+                  const sizes = { 1: 'text-3xl', 2: 'text-2xl', 3: 'text-xl' };
+
+                  // Calculate word offset for this section
+                  const wordsBeforeThisSection = currentLessonSections
+                    .slice(0, sectionIdx)
+                    .map(s => extractTextFromSection(s))
+                    .join('. ')
+                    .split(/\s+/)
+                    .filter(w => w.length > 0).length;
+
+                  // Helper function to render text with underline formatting and highlighting
+                  const renderHeadingText = (text, wordOffset) => {
+                    const parts = text.split(/(__[^_]+__)/g);
+                    let currentOffset = wordOffset;
+
+                    return parts.map((part, i) => {
+                      const cleanPart = part.replace(/__/g, '');
+                      const wordCount = cleanPart.split(/\s+/).filter(w => w.length > 0).length;
+
+                      let result;
+                      if (part.startsWith('__') && part.endsWith('__')) {
+                        const innerText = part.slice(2, -2);
+                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx, true)}</u>;
+                      } else {
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx, true)}</span>;
+                      }
+
+                      currentOffset += wordCount;
+                      return result;
+                    });
+                  };
+
+                  // For h2 headings, wrap in black box
+                  if (level === 2) {
+                    return (
+                      <div className="bg-black text-white flex items-center mb-2" style={{ borderRadius: '0.2rem', paddingTop: '0.35rem', paddingBottom: '0.35rem', paddingLeft: '0.5rem', paddingRight: '0.5rem', maxWidth: '750px', width: 'fit-content', marginTop: '3rem' }}>
+                        {React.createElement(HeadingTag, {
+                          className: 'font-medium',
+                          style: { fontSize: '1.4rem' }
+                        }, renderHeadingText(text, wordsBeforeThisSection))}
+                      </div>
+                    );
+                  }
+
+                  return React.createElement(HeadingTag, {
+                    className: `${sizes[level]} font-bold mt-8 mb-2`
+                  }, renderHeadingText(text, wordsBeforeThisSection));
+                }
+
+                if (section.content_type === 'paragraph') {
+                  const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
+
+                  // Calculate word offset for this section
+                  const wordsBeforeThisSection = currentLessonSections
+                    .slice(0, sectionIdx)
+                    .map(s => extractTextFromSection(s))
+                    .join('. ')
+                    .split(/\s+/)
+                    .filter(w => w.length > 0).length;
+
+                  // Helper function to render text with bold and underline formatting
+                  const renderTextWithBold = (text, wordOffset = 0) => {
+                    // Split by bold (**), underline (__), italic (*), and link [text](url) markers
+                    // Match ** before * to avoid conflicts
+                    const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)([^*]+)\*(?!\*))/g);
+                    let currentOffset = wordOffset;
+
+                    return parts.map((part, i) => {
+                      // Skip undefined parts from regex capture groups
+                      if (part === undefined) return null;
+
+                      // Check for link format [text](url)
+                      const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+
+                      // Remove formatting markers to count words
+                      const cleanPart = part
+                        .replace(/\*\*/g, '')
+                        .replace(/__/g, '')
+                        .replace(/(?<!\*)\*(?!\*)/g, '')
+                        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
+                      const wordCount = cleanPart.split(/\s+/).filter(w => w.length > 0).length;
+
+                      let result;
+                      if (linkMatch) {
+                        const linkText = linkMatch[1];
+                        const url = linkMatch[2];
+                        result = (
+                          <a
+                            key={i}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800"
+                          >
+                            {renderTextWithHighlight(linkText, currentOffset, sectionIdx)}
+                          </a>
+                        );
+                      } else if (part.startsWith('**') && part.endsWith('**')) {
+                        const innerText = part.slice(2, -2);
+                        result = <strong key={i} className="font-semibold">{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</strong>;
+                      } else if (part.startsWith('__') && part.endsWith('__')) {
+                        const innerText = part.slice(2, -2);
+                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</u>;
+                      } else if (part.match(/^(?<!\*)\*(?!\*)([^*]+)\*(?!\*)$/)) {
+                        const innerText = part.slice(1, -1);
+                        result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</em>;
+                      } else {
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
+                      }
+
+                      currentOffset += wordCount;
+                      return result;
+                    });
+                  };
+
+                  // Check if text contains bullet points or newlines
+                  const lines = text.split('\n');
+                  const hasBullets = lines.some(line => /^[•\-]\s/.test(line.trim()));
+                  const hasMultipleLines = lines.filter(line => line.trim()).length > 1;
+
+                  if (hasBullets || hasMultipleLines) {
+                    // Render with bullet point formatting or multi-line formatting
+                    let currentWordOffset = wordsBeforeThisSection;
+
+                    return (
+                      <div className="mb-6">
+                        {lines.map((line, idx) => {
+                          const trimmedLine = line.trim();
+                          if (/^[•\-]\s/.test(trimmedLine)) {
+                            // This is a bullet point line
+                            const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
+                            // Calculate word count for this bullet
+                            const cleanBulletText = bulletText
+                              .replace(/\*\*/g, '')
+                              .replace(/__/g, '')
+                              .replace(/(?<!\*)\*(?!\*)/g, '')
+                              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
+                            const bulletWordCount = cleanBulletText.split(/\s+/).filter(w => w.length > 0).length;
+
+                            const element = (
+                              <div key={idx} className="flex items-start gap-2 mb-1">
+                                <span className="text-black mt-1">•</span>
+                                <span className="text-base leading-relaxed flex-1">
+                                  {renderTextWithBold(bulletText, currentWordOffset)}
+                                </span>
+                              </div>
+                            );
+
+                            currentWordOffset += bulletWordCount;
+                            return element;
+                          } else if (trimmedLine) {
+                            // Regular text line
+                            const cleanLineText = line
+                              .replace(/\*\*/g, '')
+                              .replace(/__/g, '')
+                              .replace(/(?<!\*)\*(?!\*)/g, '')
+                              .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
+                            const lineWordCount = cleanLineText.split(/\s+/).filter(w => w.length > 0).length;
+
+                            const element = (
+                              <p key={idx} className="text-base leading-relaxed mb-2">
+                                {renderTextWithBold(line, currentWordOffset)}
+                              </p>
+                            );
+
+                            currentWordOffset += lineWordCount;
+                            return element;
+                          } else if (hasMultipleLines) {
+                            // Empty line - render as spacing between paragraphs
+                            return <div key={idx} className="h-2"></div>;
+                          }
+                          return null;
+                        })}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <p className="text-base leading-relaxed mb-6">
+                      {renderTextWithBold(text, wordsBeforeThisSection)}
+                    </p>
+                  );
+                }
+
+                if (section.content_type === 'image') {
+                  const imageData = section.content || {};
+                  const widthClass =
+                    imageData.width === 'small' ? 'max-w-sm' :
+                    imageData.width === 'medium' ? 'max-w-md' :
+                    imageData.width === 'large' ? 'max-w-lg' :
+                    imageData.width === 'xl' ? 'max-w-xl' :
+                    imageData.width === '2xl' ? 'max-w-2xl' :
+                    imageData.width === 'full' ? 'max-w-full' :
+                    'max-w-lg'; // default to large if not specified
+                  return (
+                    <div className="my-8 flex flex-col items-center">
+                      <img
+                        src={imageData.url}
+                        alt={imageData.alt || section.title}
+                        className={`${widthClass} rounded-lg shadow-lg`}
+                      />
+                      {imageData.caption && (
+                        <p className="text-sm text-gray-600 mt-2 italic">{imageData.caption}</p>
+                      )}
+                    </div>
+                  );
+                }
+
+                if (section.content_type === 'youtube') {
+                  const videoData = section.content || {};
+                  const videoId = videoData.videoId;
+                  return (
+                    <div className="my-8">
+                      {videoData.title && (
+                        <h3 className="text-xl font-bold mb-4">{videoData.title}</h3>
+                      )}
+                      <div className="aspect-w-16 aspect-h-9">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${videoId}${videoData.startTime ? `?start=${videoData.startTime}` : ''}`}
+                          title={videoData.title || 'YouTube video'}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-96 rounded-lg shadow-lg"
+                        />
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (section.content_type === 'list') {
+                  const listData = section.content || {};
+                  const ListTag = listData.type === 'ordered' ? 'ol' : 'ul';
+                  const listClass = listData.type === 'ordered' ? 'list-decimal list-inside' : 'list-disc list-inside';
+                  return (
+                    <ListTag className={`${listClass} space-y-3 mb-6`}>
+                      {(listData.items || []).map((item, idx) => (
+                        <li key={idx} className="text-base leading-relaxed">{item}</li>
+                      ))}
+                    </ListTag>
+                  );
+                }
+
+                if (section.content_type === 'bulletlist') {
+                  const items = section.content?.items || [];
+                  return (
+                    <ul className="list-disc list-inside space-y-2 mb-6">
+                      {items.map((item, idx) => (
+                        <li key={idx} className="text-base leading-relaxed">{item}</li>
+                      ))}
+                    </ul>
+                  );
+                }
+
+                // Legacy content structure support
+                if (section.content && typeof section.content === 'object') {
+                  return (
+                    <div className="prose prose-lg max-w-none">
+                      {/* Main description */}
+                      {section.content.description && (
+                        <p className="text-lg leading-relaxed mb-6">{section.content.description}</p>
+                      )}
+
+                      {/* Bullet points */}
+                      {section.content.points && Array.isArray(section.content.points) && (
+                        <ul className="space-y-4 mb-6">
+                          {section.content.points.map((point, idx) => (
+                            <li key={idx} className="text-base leading-relaxed">
+                              <strong className="font-bold">{point.title}</strong> {point.description}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      {/* Subsections */}
+                      {section.content.subsections && Array.isArray(section.content.subsections) && (
+                        <div className="space-y-6">
+                          {section.content.subsections.map((subsection, idx) => (
+                            <div key={idx}>
+                              <h3 className="text-xl font-bold mb-4">{subsection.title}</h3>
+                              {subsection.description && <p className="text-base leading-relaxed mb-4">{subsection.description}</p>}
+                              {subsection.list && (
+                                <ol className="list-decimal list-inside space-y-3">
+                                  {subsection.list.map((item, itemIdx) => (
+                                    <li key={itemIdx} className="text-base leading-relaxed">
+                                      {item.text && <span>{item.text} </span>}
+                                      {item.highlight && <strong className="font-bold">{item.highlight}</strong>}
+                                      {item.detail && <span> {item.detail}</span>}
+                                    </li>
+                                  ))}
+                                </ol>
+                              )}
+                              {subsection.image && (
+                                <div className="my-6 flex justify-center">
+                                  <img src={subsection.image} alt={subsection.title} className="max-w-md rounded-lg" />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Images */}
+                      {section.content.image && (
+                        <div className="my-8 flex justify-center">
+                          <img src={section.content.image} alt={section.title} className="max-w-lg rounded-lg shadow-lg" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }
+
+                // Fallback to plain text
+                return <p className="text-base leading-relaxed">{section.content || section.content_text || 'No content available for this section.'}</p>;
+              };
+
+              return (
+                <div
+                  key={section.id || sectionIdx}
+                  className="section-content"
+                  ref={(el) => (sectionRefs.current[sectionIdx] = el)}
+                  data-section-index={sectionIdx}
+                >
+                  {/* Don't show auto-generated titles like "Section 1", "Section 2", etc. */}
+                  {/* Headings render their own titles within the content */}
+                  {renderContent()}
+                </div>
+              );
+            })}
+
+            {/* Lesson Rating - positioned at bottom left */}
+            <div className="mt-6 mb-4">
+              <div className="flex items-center gap-2 relative">
+                <button
+                  onClick={() => handleRating(true)}
+                  className="flex items-center justify-center transition"
+                  style={{
+                    color: lessonRating === true ? '#EF0B72' : '#6B7280',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (lessonRating !== true) {
+                      e.currentTarget.style.color = '#EF0B72';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (lessonRating !== true) {
+                      e.currentTarget.style.color = '#6B7280';
+                    }
+                  }}
+                  title="I liked this lesson"
+                >
+                  <ThumbsUp size={18} fill="none" strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => handleRating(false)}
+                  className="flex items-center justify-center transition"
+                  style={{
+                    color: lessonRating === false ? '#EF0B72' : '#6B7280',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (lessonRating !== false) {
+                      e.currentTarget.style.color = '#EF0B72';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (lessonRating !== false) {
+                      e.currentTarget.style.color = '#6B7280';
+                    }
+                  }}
+                  title="I didn't like this lesson"
+                >
+                  <ThumbsDown size={18} fill="none" strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Action Bar */}
+        <div className="absolute bottom-0 left-0 right-0 px-16 py-6 flex items-center justify-center gap-4" style={{ zIndex: 10 }}>
+          {/* Gradient blur backdrop */}
+          <div className="absolute inset-0 pointer-events-none" style={{
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            maskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)',
+            zIndex: 1
+          }}></div>
+
+          {/* White overlay gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white pointer-events-none" style={{ zIndex: 2 }}></div>
+
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-center gap-2 w-full" style={{ zIndex: 20 }}>
+          {/* Speaker Button */}
+          <button
+            onClick={handleReadAloud}
+            className="rounded-lg flex items-center justify-center transition text-white"
+            style={{
+              backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+              width: '43px',
+              height: '43px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
+          >
+            {isReading ? (
+              <Pause size={18} className="text-white" fill="white" />
+            ) : (
+              <Volume2 size={18} className="text-white" />
+            )}
+          </button>
+          <button
+            onClick={handleContinue}
+            className="text-white font-semibold rounded-lg transition"
+            style={{
+              backgroundColor: '#EF0B72',
+              paddingLeft: '43px',
+              paddingRight: '43px',
+              paddingTop: '11px',
+              paddingBottom: '11px',
+              fontSize: '15px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+          >
+            Continue
+          </button>
+          <button
+            onClick={handleOpenFlashcards}
+            className="rounded-lg flex items-center justify-center transition text-white"
+            style={{
+              backgroundColor: '#EF0B72',
+              width: '43px',
+              height: '43px'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+          >
+            <FileText size={18} className="text-white" />
+          </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Upgrade to Ad-Free Modal */}
+      {showUpgradeModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseUpgradeModal}
+        >
+          <div className="relative">
+            <div
+              className="bg-white relative flex"
+              style={{
+                width: '850px',
+                height: '65vh',
+                minHeight: '100px',
+                padding: '0px',
+                animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                overflow: 'hidden'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={handleCloseUpgradeModal}
+                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Left side - Features section (fixed) */}
+              <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
+                <div style={{ marginTop: '-10px' }}>
+                <h3 className="text-white text-2xl font-medium" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '0.5s', opacity: 0, animationFillMode: 'forwards', lineHeight: '1', marginBottom: '1.3rem' }}>
+                  <span className="font-light text-lg">For just 99p a week,</span><br />
+                  <span style={{ fontSize: '1.4rem', color: '#FFFFFF' }}>get exclusive access to</span>
+                </h3>
+
+                <div className="space-y-4">
+                  {/* Office Hours feature */}
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                      <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Office Hours</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Get personalised support from<br />course leaders when you need it.</p>
+                    </div>
+                  </div>
+
+                  {/* Ad-free feature */}
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                      <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Completely Ad-Free</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Learn without distractions with<br />a completely ad-free experience.</p>
+                    </div>
+                  </div>
+
+                  {/* Weekly Handpicked Roles feature */}
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4s', opacity: 0, animationFillMode: 'forwards' }}>
+                    <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                      <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Weekly Handpicked Roles</h4>
+                      <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>We'll send you the top career<br />opportunities to you every week.</p>
+                    </div>
+                  </div>
+
+                  {/* Billing info */}
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                    Billed weekly. Cancel anytime.
+                  </p>
+                </div>
+                </div>
+              </div>
+
+              {/* Right side - Stripe checkout (scrollable) */}
+              <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
+                <div
+                  key={clientSecret}
+                  ref={checkoutRef}
+                  style={{
+                    minHeight: '350px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
+                  }}
+                >
+                  {/* Stripe Checkout will be mounted here */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LinkedIn Modal */}
+      {showLinkedInModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingLinkedInModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseLinkedInModal}
+        >
+          <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
+            {/* Modal Card - Entire card is clickable */}
+            <div
+              className="bg-white text-black relative cursor-pointer hover:opacity-95 transition"
+              style={{
+                animation: isClosingLinkedInModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                padding: '2rem',
+                position: 'relative',
+                zIndex: 9999
+              }}
+              onClick={handleAddToLinkedIn}
+            >
+              {/* Close button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseLinkedInModal();
+                }}
+                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Content */}
+              <div className="text-center">
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
+                  Congratulations, you've completed your first lesson.
+                </p>
+                <p className="text-black mb-6">
+                  Add to your LinkedIn to showcase your progress<br />
+                  and we'll send you a free Ignite Tote Bag.
+                </p>
+
+                {/* Image */}
+                <div className="mb-6 flex justify-center">
+                  <img
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-16%20at%2022.16.20.png"
+                    alt="Add to LinkedIn"
+                    className="h-auto rounded-lg"
+                    style={{ width: '85%' }}
+                  />
+                </div>
+
+                {/* Add to LinkedIn Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToLinkedIn();
+                  }}
+                  className="w-full text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#EF0B72' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D90A65'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+                >
+                  Add to
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
+                    alt="LinkedIn"
+                    style={{ height: '18px', marginLeft: '-2px' }}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Knowledge Check Modal */}
+      <KnowledgeCheck
+        isOpen={showKnowledgeCheck}
+        onClose={handleKnowledgeCheckClose}
+        onPass={handleKnowledgeCheckPass}
+        lessonContext={currentLessonSections.length > 0 ? `
+Lesson: ${lessonName}
+Module: ${currentModule}
 
 Sections:
-${R.map(e=>`
-Title: ${e.title}
-Content: ${typeof e.content=="string"?e.content:JSON.stringify(e.content)}
-`).join(`
----
-`)}
-        `.trim():"",priorLessonsContext:(()=>{const e=Pn();return e.length===0?"":e.map(n=>`
-Lesson: ${n.lessonName}
-Module: ${n.module}, Lesson: ${n.lesson}
+${currentLessonSections.map(section => `
+Title: ${section.title}
+Content: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
+`).join('\n---\n')}
+        `.trim() : ''}
+        priorLessonsContext={(() => {
+          const priorLessons = getPriorLessonsData();
+          if (priorLessons.length === 0) return '';
+          
+          return priorLessons.map(lesson => `
+Lesson: ${lesson.lessonName}
+Module: ${lesson.module}, Lesson: ${lesson.lesson}
 
 Sections:
-${n.sections.map(s=>`
-Title: ${s.title}
-Content: ${typeof s.content=="string"?s.content:JSON.stringify(s.content)}
-`).join(`
----
-`)}
-          `).join(`
+${lesson.sections.map(section => `
+Title: ${section.title}
+Content: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
+`).join('\n---\n')}
+          `).join('\n\n========\n\n').trim();
+        })()}
+        lessonName={lessonName}
+        moduleNum={currentModule}
+        lessonNum={currentLesson}
+        userId={user?.id}
+        firstName={firstName}
+        userRole={userRole}
+        courseName={userCourseName}
+        isFirstLesson={currentModule === 1 && currentLesson === 1}
+        nextLessonName={(() => {
+          const allLessons = [...lessonsMetadata].sort((a, b) => {
+            if (a.module_number !== b.module_number) return a.module_number - b.module_number;
+            return a.lesson_number - b.lesson_number;
+          });
+          const currentIndex = allLessons.findIndex(l => l.module_number === currentModule && l.lesson_number === currentLesson);
+          return currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1].lesson_name : null;
+        })()}
+      />
 
-========
+      {/* Flashcards Modal */}
+      {showFlashcards && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingFlashcards ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseFlashcards}
+        >
+          <div className="relative">
+            {/* Title above the box */}
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+              Flashcards
+            </h2>
 
-`).trim()})(),lessonName:Re,moduleNum:M,lessonNum:B,userId:A==null?void 0:A.id,firstName:ge,userRole:Ce,courseName:H,isFirstLesson:M===1&&B===1,nextLessonName:(()=>{const e=[...le].sort((s,r)=>s.module_number!==r.module_number?s.module_number-r.module_number:s.lesson_number-r.lesson_number),n=e.findIndex(s=>s.module_number===M&&s.lesson_number===B);return n>=0&&n<e.length-1?e[n+1].lesson_name:null})()}),xt&&t.jsx("div",{className:"fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm",style:{background:"linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))",animation:tn?"fadeOut 0.2s ease-out":"fadeIn 0.2s ease-out"},onClick:vn,children:t.jsxs("div",{className:"relative",children:[t.jsx("h2",{className:"text-xl font-semibold text-white pl-1",style:{marginBottom:"0.15rem"},children:"Flashcards"}),t.jsxs("div",{className:"bg-white relative flex flex-col",style:{width:"600px",height:"450px",animation:tn?"scaleDown 0.2s ease-out":"scaleUp 0.2s ease-out",borderRadius:"0.3rem"},onClick:e=>e.stopPropagation(),children:[t.jsx("button",{onClick:vn,className:"absolute top-6 right-6 text-gray-600 hover:text-black z-10",children:t.jsx(Tt,{size:24})}),Ln?t.jsx("div",{className:"flex-1 flex items-center justify-center px-8 py-8",children:q?t.jsx(vs,{animationData:q,loop:!0,autoplay:!0,style:{width:150,height:150}}):t.jsx("p",{className:"text-gray-500",children:"Loading flashcards..."})}):sn?t.jsxs("div",{className:"flex-1 flex flex-col items-center justify-center px-8 py-8",children:[t.jsx("p",{className:"text-red-500 text-center mb-4",children:sn}),t.jsx("button",{onClick:wn,className:"px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors",children:"Retry"})]}):Ue.length===0?t.jsxs("div",{className:"flex-1 flex flex-col items-center justify-center px-8 py-8",children:[t.jsx("p",{className:"text-gray-500 text-center mb-2",children:"No flashcards available for this lesson yet."}),t.jsx("p",{className:"text-gray-400 text-sm text-center",children:"Check back later or contact your instructor."})]}):t.jsxs("div",{className:"flex-1 flex flex-col items-center justify-center px-8 pb-4",style:{paddingTop:"1px"},children:[t.jsxs("div",{className:"flex items-center gap-3 w-full mb-4",children:[t.jsxs("button",{onClick:Hn,disabled:Ae===0,className:"px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5",children:[t.jsx(Os,{size:16}),"Previous"]}),t.jsxs("button",{onClick:Un,disabled:Ae===Ue.length-1,className:"px-3 py-1.5 text-sm text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5",style:{backgroundColor:"#EF0B72"},onMouseEnter:e=>e.currentTarget.style.backgroundColor="#D10A64",onMouseLeave:e=>e.currentTarget.style.backgroundColor="#EF0B72",children:["Next",t.jsx(Ds,{size:16})]}),t.jsxs("div",{className:"text-sm text-gray-500",children:[Ae+1," / ",Ue.length]})]}),t.jsx("div",{onClick:Wn,className:"w-full cursor-pointer select-none",style:{userSelect:"none",WebkitUserSelect:"none",MozUserSelect:"none",msUserSelect:"none",height:"306px"},children:t.jsxs("div",{className:"relative w-full h-full",children:[!Lt&&t.jsx("div",{className:"w-full h-full rounded-lg px-12 py-6",style:{backgroundColor:"#7c3aed"},children:t.jsxs("div",{className:"flex flex-col h-full justify-center",children:[t.jsx("p",{className:"text-base font-medium text-white mb-1.5 text-left",children:"Question"}),t.jsx("p",{className:"text-2xl font-medium text-white text-left",style:{maxWidth:"400px"},children:Ue[Ae].question})]})}),Lt&&t.jsx("div",{className:"w-full h-full bg-black rounded-lg px-4 py-6",children:t.jsx("div",{className:"flex flex-col h-full justify-center",children:t.jsx("div",{className:"overflow-y-auto px-2",children:t.jsx("div",{className:"text-base text-white space-y-2 w-full",children:Ue[Ae].answer.split(`
-`).map((e,n)=>{if(e.trim().startsWith("•")){const r=e.trim().substring(1).trim().split(/(\*\*[^*]+\*\*)/g);return t.jsxs("div",{className:"flex gap-2",children:[t.jsx("span",{className:"flex-shrink-0 text-white",children:"•"}),t.jsx("span",{className:"text-left flex-1",children:r.map((c,l)=>c.startsWith("**")&&c.endsWith("**")?t.jsx("span",{style:{color:"#EF0B72",fontWeight:500},children:c.slice(2,-2)},l):c)})]},n)}else if(e.trim())return t.jsx("p",{className:"mt-3 text-center",children:e},n);return null})})})})})]})}),t.jsx("p",{className:"text-xs text-gray-500 mt-2 text-left w-full",children:Lt?"Click to hide":"Click to reveal"})]})]})]})}),He&&(()=>{var c;const e=(c=an.find(l=>l.id===He))==null?void 0:c.explanation,n=400;let s=vt.x;const r=n/2;return s-r<10?s=r+10:s+r>window.innerWidth-10&&(s=window.innerWidth-r-10),t.jsxs("div",{"data-popup-notes":!0,className:"fixed rounded shadow-xl p-4 z-50",style:{left:`${s}px`,top:vt.preferAbove?"auto":`${vt.y+10}px`,bottom:vt.preferAbove?`${window.innerHeight-vt.y+10}px`:"auto",transform:"translateX(-50%)",maxHeight:"500px",width:"400px",overflowY:"auto",backgroundColor:"#fce7f3",color:"#000",pointerEvents:"auto"},onMouseEnter:()=>{he.current&&(clearTimeout(he.current),he.current=null),At(!0)},onMouseLeave:()=>{mt||(At(!1),he.current=setTimeout(()=>{ze(null)},300))},children:[t.jsxs("div",{className:"flex items-start justify-between",style:{marginBottom:"0.3rem"},children:[t.jsx("h4",{className:"font-semibold text-base text-gray-800",children:"Additional Notes"}),t.jsx("div",{className:"flex gap-1",children:mt?t.jsxs(t.Fragment,{children:[t.jsx("button",{onClick:l=>{l.stopPropagation(),Yn(He)},className:"p-1 hover:bg-pink-200 rounded transition-colors text-gray-700",title:"Save changes",children:t.jsx(Hs,{size:16})}),t.jsx("button",{onClick:l=>{l.stopPropagation(),Jn()},className:"p-1 hover:bg-pink-200 rounded transition-colors text-gray-700",title:"Cancel",children:t.jsx(Tt,{size:16})})]}):t.jsxs(t.Fragment,{children:[t.jsx("button",{onClick:l=>{l.stopPropagation(),Qn(e)},className:`p-1 hover:bg-pink-200 rounded transition-colors ${qt?"text-pink-600":"text-gray-700"}`,title:qt?"Stop reading":"Read aloud",children:t.jsx(Tn,{size:16})}),t.jsx("button",{onClick:l=>{l.stopPropagation(),Kn(e)},className:"p-1 hover:bg-pink-200 rounded transition-colors text-gray-700",title:"Edit explanation",children:t.jsx(Ws,{size:16})}),t.jsx("button",{onClick:l=>{l.stopPropagation(),Gn(He)},className:"p-1 hover:bg-pink-200 rounded transition-colors text-gray-700",title:"Delete explanation",children:t.jsx(Us,{size:16})})]})})]}),t.jsx("div",{ref:Ft,contentEditable:mt,suppressContentEditableWarning:!0,onInput:l=>{mt&&It(l.currentTarget.textContent)},onClick:l=>l.stopPropagation(),className:`text-sm leading-snug text-gray-800 focus:outline-none min-h-[100px] ${mt?"cursor-text":""}`,style:{whiteSpace:"pre-wrap",wordWrap:"break-word"},children:mt?zt:is(e)})]})})()]})]})};export{so as default};
+            <div
+              className="bg-white relative flex flex-col"
+              style={{
+                width: '600px',
+                height: '450px',
+                animation: isClosingFlashcards ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={handleCloseFlashcards}
+                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Flashcard content */}
+              {isLoadingFlashcards ? (
+                <div className="flex-1 flex items-center justify-center px-8 py-8">
+                  {lottieData ? (
+                    <Lottie
+                      animationData={lottieData}
+                      loop={true}
+                      autoplay={true}
+                      style={{ width: 150, height: 150 }}
+                    />
+                  ) : (
+                    <p className="text-gray-500">Loading flashcards...</p>
+                  )}
+                </div>
+              ) : flashcardError ? (
+                <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+                  <p className="text-red-500 text-center mb-4">{flashcardError}</p>
+                  <button
+                    onClick={handleOpenFlashcards}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    Retry
+                  </button>
+                </div>
+              ) : flashcards.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center px-8 py-8">
+                  <p className="text-gray-500 text-center mb-2">No flashcards available for this lesson yet.</p>
+                  <p className="text-gray-400 text-sm text-center">Check back later or contact your instructor.</p>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center px-8 pb-4" style={{ paddingTop: '1px' }}>
+                  {/* Card counter and navigation buttons */}
+                  <div className="flex items-center gap-3 w-full mb-4">
+                    <button
+                      onClick={handlePreviousFlashcard}
+                      disabled={currentFlashcardIndex === 0}
+                      className="px-3 py-1.5 text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    >
+                      <ChevronLeft size={16} />
+                      Previous
+                    </button>
+                    <button
+                      onClick={handleNextFlashcard}
+                      disabled={currentFlashcardIndex === flashcards.length - 1}
+                      className="px-3 py-1.5 text-sm text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                      style={{
+                        backgroundColor: '#EF0B72'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+                    >
+                      Next
+                      <ChevronRight size={16} />
+                    </button>
+                    <div className="text-sm text-gray-500">
+                      {currentFlashcardIndex + 1} / {flashcards.length}
+                    </div>
+                  </div>
+
+                  {/* Flashcard */}
+                  <div
+                    onClick={handleFlipFlashcard}
+                    className="w-full cursor-pointer select-none"
+                    style={{
+                      userSelect: 'none',
+                      WebkitUserSelect: 'none',
+                      MozUserSelect: 'none',
+                      msUserSelect: 'none',
+                      height: '306px'
+                    }}
+                  >
+                    <div className="relative w-full h-full">
+                      {/* Question */}
+                      {!isFlashcardFlipped && (
+                        <div
+                          className="w-full h-full rounded-lg px-12 py-6"
+                          style={{
+                            backgroundColor: '#7c3aed'
+                          }}
+                        >
+                          <div className="flex flex-col h-full justify-center">
+                            <p className="text-base font-medium text-white mb-1.5 text-left">Question</p>
+                            <p className="text-2xl font-medium text-white text-left" style={{ maxWidth: '400px' }}>
+                              {flashcards[currentFlashcardIndex].question}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Answer */}
+                      {isFlashcardFlipped && (
+                        <div
+                          className="w-full h-full bg-black rounded-lg px-4 py-6"
+                        >
+                          <div className="flex flex-col h-full justify-center">
+                            <div className="overflow-y-auto px-2">
+                              <div className="text-base text-white space-y-2 w-full">
+                                {flashcards[currentFlashcardIndex].answer.split('\n').map((line, idx) => {
+                                  if (line.trim().startsWith('•')) {
+                                    const content = line.trim().substring(1).trim();
+                                    // Parse bold text
+                                    const parts = content.split(/(\*\*[^*]+\*\*)/g);
+                                    return (
+                                      <div key={idx} className="flex gap-2">
+                                        <span className="flex-shrink-0 text-white">•</span>
+                                        <span className="text-left flex-1">
+                                          {parts.map((part, i) => {
+                                            if (part.startsWith('**') && part.endsWith('**')) {
+                                              return <span key={i} style={{ color: '#EF0B72', fontWeight: 500 }}>{part.slice(2, -2)}</span>;
+                                            }
+                                            return part;
+                                          })}
+                                        </span>
+                                      </div>
+                                    );
+                                  } else if (line.trim()) {
+                                    return <p key={idx} className="mt-3 text-center">{line}</p>;
+                                  }
+                                  return null;
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Click to reveal/hide text below flashcard */}
+                  <p className="text-xs text-gray-500 mt-2 text-left w-full">
+                    {isFlashcardFlipped ? 'Click to hide' : 'Click to reveal'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Explanation Popup */}
+      {hoveredExplanation && (() => {
+        const explanation = explainedSections.find(s => s.id === hoveredExplanation)?.explanation;
+
+        // Calculate final position
+        const popupWidth = 400;
+        let finalX = popupPosition.x;
+
+        // Ensure popup doesn't overflow horizontally
+        const halfWidth = popupWidth / 2;
+        if (finalX - halfWidth < 10) {
+          finalX = halfWidth + 10;
+        } else if (finalX + halfWidth > window.innerWidth - 10) {
+          finalX = window.innerWidth - halfWidth - 10;
+        }
+
+        return (
+          <div
+            data-popup-notes
+            className="fixed rounded shadow-xl p-4 z-50"
+            style={{
+              left: `${finalX}px`,
+              top: popupPosition.preferAbove ? 'auto' : `${popupPosition.y + 10}px`,
+              bottom: popupPosition.preferAbove ? `${window.innerHeight - popupPosition.y + 10}px` : 'auto',
+              transform: 'translateX(-50%)',
+              maxHeight: '500px',
+              width: '400px',
+              overflowY: 'auto',
+              backgroundColor: '#fce7f3',
+              color: '#000',
+              pointerEvents: 'auto'
+            }}
+            onMouseEnter={() => {
+              // Clear any pending close timeout
+              if (closeTimeoutRef.current) {
+                clearTimeout(closeTimeoutRef.current);
+                closeTimeoutRef.current = null;
+              }
+              setPopupLocked(true);
+            }}
+            onMouseLeave={() => {
+              if (!isEditingExplanation) {
+                setPopupLocked(false);
+                // Add delay before closing
+                closeTimeoutRef.current = setTimeout(() => {
+                  setHoveredExplanation(null);
+                }, 300);
+              }
+            }}
+          >
+            <div className="flex items-start justify-between" style={{ marginBottom: '0.3rem' }}>
+              <h4 className="font-semibold text-base text-gray-800">Additional Notes</h4>
+              <div className="flex gap-1">
+                {!isEditingExplanation ? (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReadNoteAloud(explanation);
+                      }}
+                      className={`p-1 hover:bg-pink-200 rounded transition-colors ${isReadingNote ? 'text-pink-600' : 'text-gray-700'}`}
+                      title={isReadingNote ? "Stop reading" : "Read aloud"}
+                    >
+                      <Volume2 size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleStartEdit(explanation);
+                      }}
+                      className="p-1 hover:bg-pink-200 rounded transition-colors text-gray-700"
+                      title="Edit explanation"
+                    >
+                      <Edit2 size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteExplanation(hoveredExplanation);
+                      }}
+                      className="p-1 hover:bg-pink-200 rounded transition-colors text-gray-700"
+                      title="Delete explanation"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveEdit(hoveredExplanation);
+                      }}
+                      className="p-1 hover:bg-pink-200 rounded transition-colors text-gray-700"
+                      title="Save changes"
+                    >
+                      <Save size={16} />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelEdit();
+                      }}
+                      className="p-1 hover:bg-pink-200 rounded transition-colors text-gray-700"
+                      title="Cancel"
+                    >
+                      <X size={16} />
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+            <div
+              ref={editableRef}
+              contentEditable={isEditingExplanation}
+              suppressContentEditableWarning
+              onInput={(e) => {
+                if (isEditingExplanation) {
+                  setEditedExplanation(e.currentTarget.textContent);
+                }
+              }}
+              onClick={(e) => e.stopPropagation()}
+              className={`text-sm leading-snug text-gray-800 focus:outline-none min-h-[100px] ${
+                isEditingExplanation ? 'cursor-text' : ''
+              }`}
+              style={{
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word'
+              }}
+            >
+              {isEditingExplanation ? editedExplanation : formatExplanationText(explanation)}
+            </div>
+          </div>
+        );
+      })()}
+      </div>
+    </>
+  );
+};
+
+export default LearningHub;
