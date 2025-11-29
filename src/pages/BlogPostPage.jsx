@@ -24,20 +24,35 @@ const BlogPostPage = () => {
   const audioRef = useRef(null);
   const wordTimerRef = useRef(null);
   const wordTimestampsRef = useRef([]);
+  const whiteContentRef = useRef(null);
 
   useEffect(() => {
     fetchPost();
   }, [slug]);
 
-  // Track scroll progress
+  // Track scroll progress - only starts when white content hits viewport top
   useEffect(() => {
     const handleScroll = () => {
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollTop = window.scrollY;
-      const scrollableHeight = documentHeight - windowHeight;
-      const progress = (scrollTop / scrollableHeight) * 100;
-      setScrollProgress(progress);
+      if (!whiteContentRef.current) return;
+
+      const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
+      const whiteContentHeight = whiteContentRef.current.offsetHeight;
+      const viewportHeight = window.innerHeight;
+
+      // Only start progress when white content reaches top of viewport
+      if (whiteContentTop > 0) {
+        setScrollProgress(0);
+        return;
+      }
+
+      // Calculate progress based on how much of white content has scrolled past
+      const scrolledPast = Math.abs(whiteContentTop);
+      const scrollableHeight = whiteContentHeight - viewportHeight;
+
+      if (scrollableHeight > 0) {
+        const progress = Math.min(100, (scrolledPast / scrollableHeight) * 100);
+        setScrollProgress(progress);
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -400,23 +415,22 @@ const BlogPostPage = () => {
               />
             </Link>
           </div>
-          {/* Progress Bar */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10">
-            <div 
-              className="h-full bg-[#EF0B72] transition-all duration-150 ease-out"
+          {/* Progress Bar - only shows pink line when scrolling */}
+          {scrollProgress > 0 && (
+            <div
+              className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
               style={{ width: `${scrollProgress}%` }}
             />
-          </div>
+          )}
         </div>
 
         {/* Hero Section with Black Background */}
         <div className="bg-black">
           <div className="max-w-4xl mx-auto px-6 py-12">
-            {/* Breadcrumb Navigation - Left aligned - 40% less gap */}
+            {/* Breadcrumb Navigation - Left aligned */}
             <nav className="flex items-center gap-2 text-sm text-gray-400 mb-7">
-              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center gap-1">
+              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center">
                 <Home className="w-4 h-4" />
-                <span>Home</span>
               </Link>
               <ChevronRight className="w-4 h-4" />
               <span className="text-gray-500">Posts</span>
@@ -431,23 +445,9 @@ const BlogPostPage = () => {
             </h1>
 
             {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
-            <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
+            <p className="text-xl text-[#EF0B72] mb-7 leading-relaxed text-left">
               {post.excerpt}
             </p>
-
-            {/* Meta Info: Date and Tag - Left aligned */}
-            <div className="flex items-center gap-4 mb-7">
-              <time className="text-gray-400 text-sm">
-                {new Date(post.published_at).toLocaleDateString('en-GB', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric'
-                })}
-              </time>
-              <span className="px-3 py-1 bg-[#EF0B72]/10 border border-[#EF0B72]/20 text-[#EF0B72] text-xs font-medium rounded-full">
-                News
-              </span>
-            </div>
           </div>
         </div>
 
@@ -471,9 +471,9 @@ const BlogPostPage = () => {
         )}
 
         {/* White Content Section */}
-        <div className="bg-white">
+        <div className="bg-white" ref={whiteContentRef}>
           {/* Speaker Button and Listen Duration */}
-          <div className="max-w-4xl mx-auto px-6 py-8">
+          <div className="max-w-4xl mx-auto px-6 py-4">
             <div className="flex items-center gap-3">
               <button
                 onClick={handleReadAloud}
@@ -503,7 +503,7 @@ const BlogPostPage = () => {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto px-6 pb-16">
+          <div className="mx-auto px-6 pb-16" style={{ maxWidth: '762px' }}>
             <article>
               {/* Article Body */}
               <div
