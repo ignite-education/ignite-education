@@ -1195,6 +1195,9 @@ const LearningHub = () => {
     const newMessages = [...chatMessages, { type: 'user', text: userMessage }];
     setChatMessages(newMessages);
     setChatInput('');
+    setSelectedText('');
+    // Clear the text selection in the window
+    window.getSelection()?.removeAllRanges();
     // Reset textarea height after clearing
     if (chatTextareaRef.current) {
       chatTextareaRef.current.style.height = 'auto';
@@ -1884,14 +1887,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const word = part;
 
       // Check if this word is part of an explained section
+      // We need to check if this specific word position falls within the explained text range
       let isExplainedSection = false;
       let explainedSectionId = null;
 
+      // Calculate the character position of this word in the text
+      const textBeforeWord = parts.slice(0, idx).join('');
+      const wordStartPos = textBeforeWord.length;
+      const wordEndPos = wordStartPos + word.length;
+
       explainedSections.forEach((section) => {
-        if (text.indexOf(section.text) !== -1) {
-          const sectionWords = section.text.split(/\s+/).filter(w => w.length > 0);
-          const wordInSection = sectionWords.includes(word.trim());
-          if (wordInSection) {
+        const sectionStartPos = text.indexOf(section.text);
+        if (sectionStartPos !== -1) {
+          const sectionEndPos = sectionStartPos + section.text.length;
+          // Check if this word's position overlaps with the explained section's position
+          if (wordStartPos >= sectionStartPos && wordEndPos <= sectionEndPos) {
             isExplainedSection = true;
             explainedSectionId = section.id;
           }
@@ -1913,7 +1923,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Build className based on highlighting state
       // Always apply padding/margin to ALL words so there's no layout shift when highlight toggles
-      let className = 'transition-colors duration-150';
+      let className = 'transition-colors duration-300';
       let style = {
         padding: '2px',
         margin: '-2px',
