@@ -1923,7 +1923,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Build className based on highlighting state
       // Always apply padding/margin to ALL words so there's no layout shift when highlight toggles
-      let className = 'transition-colors duration-300';
+      let className = 'transition-colors duration-100';
       let style = {
         padding: '2px',
         margin: '-2px',
@@ -1952,23 +1952,26 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             }
 
             if (!popupLocked) {
-              setHoveredExplanation(explainedSectionId);
-              const rect = e.currentTarget.getBoundingClientRect();
-              const centerX = rect.left + (rect.width / 2);
-              const bottomY = rect.bottom;
-              const topY = rect.top;
-              const popupHeight = 500;
-              const spaceAbove = topY;
-              const spaceBelow = window.innerHeight - bottomY;
-              const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
+              // Only update position if hovering a different section (not just a different word in the same section)
+              if (hoveredExplanation !== explainedSectionId) {
+                setHoveredExplanation(explainedSectionId);
+                const rect = e.currentTarget.getBoundingClientRect();
+                const centerX = rect.left + (rect.width / 2);
+                const bottomY = rect.bottom;
+                const topY = rect.top;
+                const popupHeight = 500;
+                const spaceAbove = topY;
+                const spaceBelow = window.innerHeight - bottomY;
+                const preferAbove = spaceAbove > popupHeight || spaceAbove > spaceBelow;
 
-              setPopupPosition({
-                x: centerX,
-                y: preferAbove ? topY : bottomY,
-                preferAbove: preferAbove
-              });
+                setPopupPosition({
+                  x: centerX,
+                  y: preferAbove ? topY : bottomY,
+                  preferAbove: preferAbove
+                });
 
-              highlightRef.current = e.currentTarget;
+                highlightRef.current = e.currentTarget;
+              }
             }
           } : undefined}
           onMouseLeave={isExplainedSection ? () => {
