@@ -323,13 +323,19 @@ const LearningHub = () => {
         const courseId = await getUserCourseId();
 
         // Query Supabase directly - fetches existence AND data in one call
+        // Use maybeSingle() instead of single() to avoid error when no row exists
         const { data, error } = await supabase
           .from('lesson_audio')
           .select('section_audio')
           .eq('course_id', courseId)
           .eq('module_number', currentModule)
           .eq('lesson_number', currentLesson)
-          .single();
+          .maybeSingle();
+
+        if (error) {
+          console.error('Error fetching lesson audio:', error);
+          return;
+        }
 
         if (data?.section_audio) {
           // Mark audio as available
@@ -2717,7 +2723,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           .eq('course_id', courseId)
           .eq('module_number', module)
           .eq('lesson_number', lesson)
-          .single();
+          .maybeSingle();
 
         if (error || !data) {
           throw new Error('Failed to fetch audio');
