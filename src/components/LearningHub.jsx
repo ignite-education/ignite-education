@@ -184,6 +184,7 @@ const LearningHub = () => {
   // Pre-generated lesson audio state
   const [lessonAudio, setLessonAudio] = useState(null);
   const [lessonAudioLoading, setLessonAudioLoading] = useState(false);
+  const prefetchedLessonAudioRef = useRef(null); // Cache prefetched audio data for instant playback
 
   // Voice settings - hardcoded defaults (no user controls)
   const voiceGender = 'male'; // Fixed to male voice
@@ -310,43 +311,56 @@ const LearningHub = () => {
     loadLessonRating();
   }, [user, currentModule, currentLesson]);
 
-  // Check if pre-generated audio exists when lesson changes (fast status check only)
+  // Check and prefetch pre-generated audio when lesson changes (direct Supabase query)
   useEffect(() => {
-    const checkLessonAudioExists = async () => {
+    const checkAndPrefetchLessonAudio = async () => {
       // Reset audio state when lesson changes
       setLessonAudio(null);
       setLessonAudioLoading(true);
+      prefetchedLessonAudioRef.current = null;
 
       try {
         const courseId = await getUserCourseId();
-        // Quick status check - doesn't download the full audio
-        const response = await fetch(
-          `https://ignite-education-api.onrender.com/api/admin/lesson-audio-status/${courseId}/${currentModule}/${currentLesson}`
-        );
 
-        if (response.ok) {
-          const status = await response.json();
-          if (status.hasAudio) {
-            // Mark that audio exists (but don't load it yet)
-            setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
-            console.log('✅ Pre-generated audio available for lesson', {
-              module: currentModule,
-              lesson: currentLesson
-            });
-          } else {
-            console.log('ℹ️ No pre-generated audio for this lesson');
+        // Query Supabase directly - fetches existence AND data in one call
+        const { data, error } = await supabase
+          .from('lesson_audio')
+          .select('section_audio')
+          .eq('course_id', courseId)
+          .eq('module_number', currentModule)
+          .eq('lesson_number', currentLesson)
+          .single();
+
+        if (data?.section_audio) {
+          // Mark audio as available
+          setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
+
+          // Cache the audio data for instant playback
+          prefetchedLessonAudioRef.current = { section_audio: data.section_audio };
+          console.log('✅ Audio data prefetched and ready', {
+            module: currentModule,
+            lesson: currentLesson,
+            sections: data.section_audio.length
+          });
+
+          // Preload first audio file into browser cache for even faster start
+          const firstSection = data.section_audio[0];
+          if (firstSection?.audio_url) {
+            const preloadAudio = new Audio();
+            preloadAudio.preload = 'auto';
+            preloadAudio.src = firstSection.audio_url;
           }
         } else {
           console.log('ℹ️ No pre-generated audio for this lesson');
         }
       } catch (error) {
-        console.error('Error checking pre-generated audio:', error);
+        console.error('Error checking lesson audio:', error);
       } finally {
         setLessonAudioLoading(false);
       }
     };
 
-    checkLessonAudioExists();
+    checkAndPrefetchLessonAudio();
   }, [currentModule, currentLesson]);
 
   // Update current module and lesson when URL params change
@@ -2682,29 +2696,38 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const playPreGeneratedAudio = async () => {
     if (!lessonAudio) return;
 
-    console.log('🎬 Fetching per-section pre-generated audio for lesson');
-
     // Show loading state immediately
     setIsReading(true);
     isPausedRef.current = false;
 
     try {
-      // Fetch the per-section audio data
-      const { courseId, module, lesson } = lessonAudio;
-      const response = await fetch(
-        `https://ignite-education-api.onrender.com/api/lesson-audio/${courseId}/${module}/${lesson}`
-      );
+      let audioData;
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch audio');
+      // Use prefetched data if available (instant playback!)
+      if (prefetchedLessonAudioRef.current) {
+        console.log('🎬 Using prefetched audio data (instant!)');
+        audioData = prefetchedLessonAudioRef.current;
+      } else {
+        // Fallback: query Supabase directly if prefetch hasn't completed
+        console.log('🎬 Fetching audio data from Supabase (prefetch not ready)');
+        const { courseId, module, lesson } = lessonAudio;
+        const { data, error } = await supabase
+          .from('lesson_audio')
+          .select('section_audio')
+          .eq('course_id', courseId)
+          .eq('module_number', module)
+          .eq('lesson_number', lesson)
+          .single();
+
+        if (error || !data) {
+          throw new Error('Failed to fetch audio');
+        }
+        audioData = data;
       }
-
-      const audioData = await response.json();
 
       // Check if this is the new per-section format
       if (!audioData.section_audio) {
-        console.warn('⚠️ Legacy audio format detected, falling back to old playback');
-        // Fall back to on-demand narration if no per-section audio
+        console.warn('⚠️ No section audio available');
         setIsReading(false);
         return;
       }
