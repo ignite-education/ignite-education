@@ -2226,7 +2226,7 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
               {/* Left Column - Blog Posts */}
-              <div className="flex flex-col items-start justify-center" style={{ marginLeft: '20px' }}>
+              <div className="flex flex-col items-start justify-center" style={{ marginLeft: '10%' }}>
                 <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
                   <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
