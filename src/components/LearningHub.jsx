@@ -2174,13 +2174,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           const currentTime = audio.currentTime; // Current playback position in seconds
 
           // Find which word should be highlighted based on actual timestamps
-          // Add small delay for more natural highlighting timing (highlight slightly after word starts)
-          const HIGHLIGHT_DELAY = 0.1; // 100ms delay
           let foundWord = false;
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
-            // Highlight if current time is within this word's time range (with delay)
-            if (currentTime >= (timestamp.start + HIGHLIGHT_DELAY) && currentTime < timestamp.end) {
+            // Highlight if current time is within this word's time range
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
               setCurrentNarrationWord(wordsBeforeThisSection + i);
               foundWord = true;
               break;
@@ -2776,21 +2774,25 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
     }
 
-    // Calculate words before this section (same as narrateSection)
-    // NOTE: This does NOT include title words - each context (title vs sections) has its own word count
+    // Calculate words before this section using the ACTUAL text from pre-generated audio
+    // This ensures word counts match exactly what ElevenLabs received (not frontend text extraction)
     let wordsBeforeThisSection = 0;
     if (sectionIndex === -1) {
       // Title - no words before
       wordsBeforeThisSection = 0;
     } else {
       // For content sections, count words in all previous sections (NOT including title)
-      // This matches exactly how narrateSection calculates it
-      wordsBeforeThisSection = currentLessonSections
-        .slice(0, sectionIndex)
-        .map(s => extractTextFromSection(s))
-        .join(' ')
-        .split(/\s+/)
-        .filter(w => w.length > 0).length;
+      // Use the text stored in sectionAudioDataRef (what was actually sent to ElevenLabs)
+      const sectionAudioArray = sectionAudioDataRef.current;
+      if (sectionAudioArray) {
+        const previousSections = sectionAudioArray
+          .filter(s => s.section_index >= 0 && s.section_index < sectionIndex);
+        wordsBeforeThisSection = previousSections
+          .map(s => s.text || '')
+          .join(' ')
+          .split(/\s+/)
+          .filter(w => w.length > 0).length;
+      }
     }
 
     console.log(`📍 Section ${sectionIndex}: wordsBeforeThisSection = ${wordsBeforeThisSection}`);
@@ -2876,12 +2878,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const currentTime = audio.currentTime;
 
         // Find which word should be highlighted based on actual timestamps
-        // Add small delay for more natural highlighting timing (highlight slightly after word starts)
-        const HIGHLIGHT_DELAY = 0.1; // 100ms delay
         let foundWord = false;
         for (let i = 0; i < wordTimestamps.length; i++) {
           const timestamp = wordTimestamps[i];
-          if (currentTime >= (timestamp.start + HIGHLIGHT_DELAY) && currentTime < timestamp.end) {
+          if (currentTime >= timestamp.start && currentTime < timestamp.end) {
             setCurrentNarrationWord(wordsBeforeThisSection + i);
             foundWord = true;
             break;
@@ -2961,12 +2961,18 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Resume word highlighting from current position
         const wordTimestamps = wordTimestampsRef.current;
         if (wordTimestamps && wordTimestamps.length > 0) {
-          const wordsBeforeThisSection = currentLessonSections
-            .slice(0, currentNarrationSection)
-            .map(s => extractTextFromSection(s))
-            .join(' ')
-            .split(/\s+/)
-            .filter(w => w.length > 0).length;
+          // Calculate words before this section using pre-generated audio text (same as playPregenSection)
+          let wordsBeforeThisSection = 0;
+          const sectionAudioArray = sectionAudioDataRef.current;
+          if (sectionAudioArray && currentNarrationSection > 0) {
+            const previousSections = sectionAudioArray
+              .filter(s => s.section_index >= 0 && s.section_index < currentNarrationSection);
+            wordsBeforeThisSection = previousSections
+              .map(s => s.text || '')
+              .join(' ')
+              .split(/\s+/)
+              .filter(w => w.length > 0).length;
+          }
 
           // Clear existing timer
           if (wordTimerRef.current) {
