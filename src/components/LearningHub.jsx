@@ -2694,6 +2694,24 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`📝 Converted ${wordTimestamps.length} word timestamps for pre-generated audio`);
       }
 
+      // Get section markers for tracking which section we're in
+      const sectionMarkers = audioData.section_markers || [];
+      console.log(`📍 Section markers:`, sectionMarkers.length);
+
+      // Build word counts per section for converting global word index to section-relative
+      // First count words in title
+      const titleMarker = sectionMarkers.find(m => m.section_index === -1);
+      const titleWordCount = titleMarker ? titleMarker.text.split(/\s+/).filter(w => w.length > 0).length : 0;
+
+      // Build cumulative word counts: [titleWords, titleWords + section0Words, ...]
+      const cumulativeWordCounts = [titleWordCount];
+      sectionMarkers.filter(m => m.section_index >= 0).sort((a, b) => a.section_index - b.section_index).forEach(marker => {
+        const sectionWords = marker.text.split(/\s+/).filter(w => w.length > 0).length;
+        cumulativeWordCounts.push(cumulativeWordCounts[cumulativeWordCounts.length - 1] + sectionWords);
+      });
+
+      let lastSectionIndex = -1; // Track to detect section changes for scrolling
+
       audio.onended = () => {
         console.log('✅ Pre-generated audio playback complete');
         URL.revokeObjectURL(audioUrl);
@@ -2701,6 +2719,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         isPausedRef.current = false;
         setCurrentNarrationWord(-1);
         setIsNarratingTitle(false);
+        setCurrentNarrationSection(0);
         audioRef.current = null;
 
         if (wordTimerRef.current) {
@@ -2722,8 +2741,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       await audio.play();
       console.log('✅ Pre-generated audio playing');
       setIsNarratingTitle(true); // Start with title
+      setCurrentNarrationSection(0);
 
-      // Start word-by-word highlighting
+      // Start word-by-word highlighting with section tracking
       const wordTimestamps = wordTimestampsRef.current;
       if (wordTimestamps && wordTimestamps.length > 0) {
         setCurrentNarrationWord(0);
@@ -2740,19 +2760,57 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
           const currentTime = audio.currentTime;
 
-          // Find which word should be highlighted
-          let foundWord = false;
-          for (let i = 0; i < wordTimestamps.length; i++) {
-            const timestamp = wordTimestamps[i];
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
-              setCurrentNarrationWord(i);
-              foundWord = true;
+          // Find which section we're in based on time
+          let currentSectionIdx = -1; // -1 = title
+          for (const marker of sectionMarkers) {
+            if (currentTime >= marker.time_start && currentTime < marker.time_end) {
+              currentSectionIdx = marker.section_index;
               break;
             }
           }
 
+          // Update section state if changed
+          if (currentSectionIdx !== lastSectionIndex) {
+            lastSectionIndex = currentSectionIdx;
+            if (currentSectionIdx === -1) {
+              setIsNarratingTitle(true);
+              setCurrentNarrationSection(0);
+            } else {
+              setIsNarratingTitle(false);
+              setCurrentNarrationSection(currentSectionIdx);
+              // Scroll to the new section
+              scrollToSection(currentSectionIdx);
+            }
+          }
+
+          // Find which word should be highlighted (global index)
+          let globalWordIndex = -1;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              globalWordIndex = i;
+              break;
+            }
+          }
+
+          if (globalWordIndex >= 0) {
+            // Convert global word index to section-relative word index
+            let sectionRelativeWordIndex = globalWordIndex;
+
+            if (currentSectionIdx === -1) {
+              // In title - word index is already relative (0 to titleWordCount-1)
+              sectionRelativeWordIndex = globalWordIndex;
+            } else {
+              // In a section - subtract words from title and previous sections
+              const wordsBeforeThisSection = cumulativeWordCounts[currentSectionIdx] || 0;
+              sectionRelativeWordIndex = globalWordIndex - wordsBeforeThisSection;
+            }
+
+            setCurrentNarrationWord(Math.max(0, sectionRelativeWordIndex));
+          }
+
           // If past all words, clear highlighting
-          if (!foundWord && wordTimestamps.length > 0 && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+          if (globalWordIndex < 0 && wordTimestamps.length > 0 && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
             setCurrentNarrationWord(-1);
             wordTimerRef.current = null;
             return;
