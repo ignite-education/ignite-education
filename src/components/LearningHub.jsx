@@ -3355,11 +3355,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               <div className="flex-1" />
               {chatMessages.map((msg, idx) => (
                 <div
-                  key={idx}
+                  key={`${idx}-${msg.text?.substring(0, 20)}`}
                   className={msg.type === 'user' ? 'flex justify-end' : ''}
                   style={{
-                    animation: 'slideUp 0.25s ease-out forwards',
-                    opacity: 1,
                     marginBottom: idx < chatMessages.length - 1 ? '0.5rem' : '0'
                   }}
                 >
@@ -3367,7 +3365,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                     <div className="p-3 text-black text-sm leading-snug relative group inline-block max-w-[95%]" style={{
                       position: 'relative',
                       borderRadius: '8px',
-                      backgroundColor: '#f3f4f6'
+                      backgroundColor: '#f3f4f6',
+                      animation: 'slideUp 0.25s ease-out forwards'
                     }}>
                       {(typingMessageIndex === idx && !msg.isComplete ? displayedText : (!msg.isComplete && typingMessageIndex === null ? '' : msg.text)).split('\n').map((line, i) => {
                         // Check if line starts with bullet point or number (with : or -)
@@ -3451,7 +3450,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                     <div className="p-3 text-white text-sm max-w-[95%] inline-block" style={{
                       position: 'relative',
                       borderRadius: '8px',
-                      backgroundColor: '#7c3aed'
+                      backgroundColor: '#7c3aed',
+                      animation: 'slideUp 0.25s ease-out forwards'
                     }}>
                       {msg.text}
                     </div>
@@ -3472,9 +3472,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                     backgroundColor: '#f3f4f6'
                   }}>
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                      <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '7px', height: '7px', animationDelay: '0ms' }}></span>
+                      <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '7px', height: '7px', animationDelay: '150ms' }}></span>
+                      <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '7px', height: '7px', animationDelay: '300ms' }}></span>
                     </div>
                   </div>
                 </div>

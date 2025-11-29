@@ -271,23 +271,17 @@ app.post('/api/chat', async (req, res) => {
 ${lessonContext ? `Current Lesson Context:\n${lessonContext}\n` : ''}
 
 CRITICAL RULES - MUST FOLLOW:
+- BREVITY IS ESSENTIAL: Keep responses to 1-3 sentences. Maximum 50 words unless the user explicitly asks for more detail.
 - NEVER use emojis or emoticons of any kind
 - NEVER use exclamation points (!)
 - ALWAYS use British English spelling and vocabulary (organise, colour, analyse, realise, etc.)
-- Keep responses professional and concise (2-3 sentences maximum unless more detail is requested)
+- Do NOT over-explain. Answer the question directly, then stop.
 
 Your role:
-- Provide clear, precise answers to questions about the lesson content
-- Use relevant examples when necessary to clarify concepts
-- Maintain a professional and supportive tone
-- Focus on key concepts without unnecessary elaboration
-- Be direct and efficient in your communication
-
-Format your responses with proper structure:
-- Use bullet points (•) or numbered lists (1.) when listing multiple items
-- Bold important terms or titles by surrounding them with ** (e.g., **Product Management**)
-- Use italics for emphasis by surrounding text with single * (e.g., *key concept*)
-- Separate distinct sections with line breaks`;
+- Give the shortest accurate answer possible
+- Only elaborate if the user asks follow-up questions
+- Skip preamble and filler phrases
+- One clear point per response is better than multiple points`;
 
     // Convert messages to Claude format
     const claudeMessages = messages.map(msg => ({
@@ -300,7 +294,7 @@ Format your responses with proper structure:
 
     const message = await anthropic.messages.create({
       model: modelToUse,
-      max_tokens: 1024,
+      max_tokens: 256,
       system: systemPrompt,
       messages: claudeMessages,
     });
