@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
 import BlogCard from './BlogCard';
 import { getRecentPosts } from '../lib/blogApi';
 
@@ -10,7 +9,6 @@ const BlogCarousel = ({ limit = 5 }) => {
   const [error, setError] = useState(null);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const autoPlayRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPosts();
@@ -60,7 +58,7 @@ const BlogCarousel = ({ limit = 5 }) => {
   };
 
   const handleCardClick = (post) => {
-    navigate(`/blog/${post.slug}`);
+    window.open(`/blog/${post.slug}`, '_blank');
   };
 
   if (loading) {
@@ -124,27 +122,21 @@ const BlogCarousel = ({ limit = 5 }) => {
       </div>
 
       {posts.length > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex justify-center gap-3 mt-6">
           {posts.map((_, index) => (
             <button
               key={index}
               onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentIndex
-                  ? 'w-8 bg-[#EF0B72]'
-                  : 'w-2 bg-white/30 hover:bg-white/50'
+                  ? 'bg-[#EF0B72]'
+                  : 'bg-white/30 hover:bg-white/50'
               }`}
               aria-label={`Go to post ${index + 1}`}
             />
           ))}
         </div>
       )}
-
-      <div className="text-center mt-4">
-        <span className="text-gray-400 text-sm">
-          {currentIndex + 1} / {posts.length}
-        </span>
-      </div>
     </div>
   );
 };
