@@ -1414,30 +1414,51 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
 
     console.log(`✅ All section audio generated: ${sectionAudio.length} sections, ${totalDuration.toFixed(2)}s total`);
 
+    // Debug: Log section audio structure (without the large base64 data)
+    console.log('📊 Section audio structure:');
+    sectionAudio.forEach((s, idx) => {
+      console.log(`  [${idx}] section_index=${s.section_index}, text_length=${s.text?.length}, audio_length=${s.audio_base64?.length}, has_alignment=${!!s.alignment}, duration=${s.duration_seconds?.toFixed(2)}s`);
+    });
+
     // 6. Store in database (upsert)
+    const upsertData = {
+      course_id: courseId,
+      module_number: moduleNumber,
+      lesson_number: lessonNumber,
+      content_hash: contentHash,
+      lesson_name: lessonName,
+      full_text: fullText,
+      section_audio: sectionAudio,
+      voice_gender: voiceGender,
+      voice_id: voiceId,
+      duration_seconds: totalDuration,
+      character_count: totalCharacters,
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('💾 Attempting to upsert lesson audio...');
+    console.log(`  course_id: ${upsertData.course_id}`);
+    console.log(`  module_number: ${upsertData.module_number}`);
+    console.log(`  lesson_number: ${upsertData.lesson_number}`);
+    console.log(`  content_hash: ${upsertData.content_hash?.substring(0, 12)}...`);
+    console.log(`  full_text length: ${upsertData.full_text?.length}`);
+    console.log(`  section_audio count: ${upsertData.section_audio?.length}`);
+    console.log(`  total section_audio JSON size: ${JSON.stringify(upsertData.section_audio).length} chars`);
+
     const { data: insertedAudio, error: insertError } = await supabase
       .from('lesson_audio')
-      .upsert({
-        course_id: courseId,
-        module_number: moduleNumber,
-        lesson_number: lessonNumber,
-        content_hash: contentHash,
-        lesson_name: lessonName,
-        full_text: fullText,
-        section_audio: sectionAudio,
-        voice_gender: voiceGender,
-        voice_id: voiceId,
-        duration_seconds: totalDuration,
-        character_count: totalCharacters,
-        updated_at: new Date().toISOString()
-      }, {
+      .upsert(upsertData, {
         onConflict: 'course_id,module_number,lesson_number'
       })
       .select()
       .single();
 
     if (insertError) {
-      console.error('Error storing lesson audio:', insertError);
+      console.error('❌ Error storing lesson audio:', insertError);
+      console.error('  Error code:', insertError.code);
+      console.error('  Error message:', insertError.message);
+      console.error('  Error details:', insertError.details);
+      console.error('  Error hint:', insertError.hint);
       return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
     }
 
