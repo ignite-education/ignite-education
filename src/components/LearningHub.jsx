@@ -2872,17 +2872,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         return;
       }
 
-      // Fallback: Use on-demand generation (legacy behavior)
-      console.log('⚠️ No pre-generated audio, using on-demand generation');
-      setIsReading(true);
-      isPausedRef.current = false;
-
-      // Start prefetching sections immediately in parallel with title
-      prefetchInitialSections();
-
-      narrateLessonTitle();
-
-      console.log('🔵 handleReadAloud completed, narration started');
+      // No pre-generated audio available - do not use on-demand API
+      console.log('❌ No pre-generated audio available for this lesson');
+      isHandlingReadAloud.current = 0;
+      // Audio not available - silently fail (button will appear inactive)
     } catch (error) {
       console.error('❌ Error in handleReadAloud:', error);
       isHandlingReadAloud.current = 0;
@@ -3963,17 +3956,19 @@ ${currentLessonSections.map((section) => {
 
           {/* Content */}
           <div className="relative z-10 flex items-center justify-center gap-2 w-full" style={{ zIndex: 20 }}>
-          {/* Speaker Button */}
+          {/* Speaker Button - only enabled if pre-generated audio exists */}
           <button
             onClick={handleReadAloud}
-            className="rounded-lg flex items-center justify-center transition text-white"
+            disabled={!lessonAudio && !isReading}
+            className="rounded-lg flex items-center justify-center transition text-white disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+              backgroundColor: isReading ? '#D10A64' : (!lessonAudio ? '#9CA3AF' : '#EF0B72'),
               width: '43px',
               height: '43px'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D10A64'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'}
+            onMouseEnter={(e) => { if (lessonAudio || isReading) e.currentTarget.style.backgroundColor = '#D10A64'; }}
+            onMouseLeave={(e) => { if (lessonAudio || isReading) e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
+            title={!lessonAudio ? 'Audio not available for this lesson' : (isReading ? 'Pause narration' : 'Listen to lesson')}
           >
             {isReading ? (
               <Pause size={18} className="text-white" fill="white" />
