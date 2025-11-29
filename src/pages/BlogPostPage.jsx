@@ -436,7 +436,9 @@ const BlogPostPage = () => {
             </Link>
             <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 group">
               <span className="text-white text-sm font-medium">Discover</span>
-              <ChevronRight className="w-4 h-4 text-white group-hover:text-[#EF0B72] transition-colors" />
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#EF0B72] transition-colors">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
             </a>
           </div>
           {/* Progress Bar - only shows pink line when scrolling */}
@@ -504,17 +506,17 @@ const BlogPostPage = () => {
                 className="rounded-lg flex items-center justify-center transition text-white"
                 style={{
                   backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-                  width: '43px',
-                  height: '43px'
+                  width: '34px',
+                  height: '34px'
                 }}
                 onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
                 title={isReading ? 'Pause narration' : 'Listen to article'}
               >
                 {isReading ? (
-                  <Pause size={18} className="text-white" fill="white" />
+                  <Pause size={15} className="text-white" fill="white" />
                 ) : (
-                  <Volume2 size={18} className="text-white" />
+                  <Volume2 size={15} className="text-white" />
                 )}
               </button>
               <span className="text-black font-light" style={{ fontSize: '1.05rem' }}>
@@ -535,7 +537,8 @@ const BlogPostPage = () => {
                 style={{
                   color: '#000000',
                   fontSize: '18px',
-                  lineHeight: '1.8'
+                  lineHeight: '1.8',
+                  textAlign: 'justify'
                 }}
               >
                 <style>{`
@@ -550,6 +553,7 @@ const BlogPostPage = () => {
                     width: fit-content;
                     margin-top: 3rem;
                     margin-bottom: 0.5rem;
+                    text-align: left;
                   }
                   .prose h3 {
                     color: #000000;
@@ -557,10 +561,12 @@ const BlogPostPage = () => {
                     font-weight: 700;
                     margin-top: 2rem;
                     margin-bottom: 0.5rem;
+                    text-align: left;
                   }
                   .prose p {
                     color: #000000;
                     margin-bottom: 1.5rem;
+                    text-align: justify;
                   }
                   .prose ul, .prose ol {
                     margin-top: 1.5rem;
