@@ -34,55 +34,56 @@ const convertCharacterToWordTimestamps = (text, characters, characterStartTimes,
     return [];
   }
 
-  // Split text into words (preserve original text for matching)
-  const words = text.match(/\S+/g) || []; // Split on whitespace, keep punctuation with words
   const wordTimestamps = [];
-  let charIndex = 0;
+  let wordIndex = 0;
+  let wordStart = null;
+  let wordEnd = null;
+  let currentWord = '';
 
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
+  for (let i = 0; i < characters.length; i++) {
+    const char = characters[i];
+    const isWhitespace = /\s/.test(char);
 
-    // Skip whitespace characters in the character array
-    while (charIndex < characters.length && /\s/.test(characters[charIndex])) {
-      charIndex++;
-    }
-
-    if (charIndex >= characters.length) break;
-
-    // Start time is the first character of this word
-    const wordStartTime = characterStartTimes[charIndex];
-    let wordEndTime = characterEndTimes[charIndex];
-    let wordCharCount = 0;
-
-    // Find all characters that belong to this word
-    for (let j = 0; j < word.length && charIndex + wordCharCount < characters.length; j++) {
-      // Skip whitespace within the word matching
-      while (charIndex + wordCharCount < characters.length && /\s/.test(characters[charIndex + wordCharCount])) {
-        charIndex++;
+    if (isWhitespace) {
+      // End of a word - save it if we have one
+      if (currentWord.length > 0 && wordStart !== null) {
+        wordTimestamps.push({
+          word: currentWord,
+          start: wordStart,
+          end: wordEnd,
+          index: wordIndex
+        });
+        wordIndex++;
+        currentWord = '';
+        wordStart = null;
+        wordEnd = null;
       }
-
-      if (charIndex + wordCharCount < characters.length) {
-        wordEndTime = characterEndTimes[charIndex + wordCharCount];
-        wordCharCount++;
+    } else {
+      // Part of a word
+      if (wordStart === null) {
+        wordStart = characterStartTimes[i];
       }
+      wordEnd = characterEndTimes[i];
+      currentWord += char;
     }
+  }
 
+  // Don't forget the last word if text doesn't end with whitespace
+  if (currentWord.length > 0 && wordStart !== null) {
     wordTimestamps.push({
-      word: word,
-      start: wordStartTime,
-      end: wordEndTime,
-      index: i
+      word: currentWord,
+      start: wordStart,
+      end: wordEnd,
+      index: wordIndex
     });
-
-    charIndex += wordCharCount;
   }
 
   return wordTimestamps;
 };
 
-// Delay highlight by 150ms after word starts - makes highlight feel "in sync" with audio
-// (Visual processing is faster than audio, so highlighting at exact timestamp.start feels "too quick")
-const HIGHLIGHT_LAG_OFFSET = 0.15;
+// Small offset to account for audio buffering delay
+// Negative = highlight later, Positive = highlight earlier
+const HIGHLIGHT_LAG_OFFSET = 0;
 
 const LearningHub = () => {
   const navigate = useNavigate();
