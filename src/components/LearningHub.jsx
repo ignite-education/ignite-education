@@ -2232,6 +2232,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`📝 Section ${sectionIndex}: Using ${wordTimestamps.length} precise word timestamps`);
 
         setCurrentNarrationWord(0); // Start at 0 for this section
+        let lastHighlightedWord = 0; // Track last highlighted word to avoid flickering
 
         // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
         const updateHighlight = () => {
@@ -2242,19 +2243,33 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           const currentTime = audio.currentTime; // Current playback position in seconds
 
           // Find which word should be highlighted based on actual timestamps
-          let foundWord = false;
+          let wordToHighlight = lastHighlightedWord; // Default to keeping current word
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
             // Highlight if current time is within this word's time range
             if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-              setCurrentNarrationWord(i); // Just use i directly (section-relative)
-              foundWord = true;
+              wordToHighlight = i;
               break;
+            }
+            // If we're past this word but before the next word starts, keep highlighting this word
+            // This prevents flickering in gaps between words
+            if (i < wordTimestamps.length - 1) {
+              const nextTimestamp = wordTimestamps[i + 1];
+              if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
+                wordToHighlight = i;
+                break;
+              }
             }
           }
 
+          // Only update state if the word has changed (prevents unnecessary re-renders)
+          if (wordToHighlight !== lastHighlightedWord) {
+            lastHighlightedWord = wordToHighlight;
+            setCurrentNarrationWord(wordToHighlight);
+          }
+
           // If we're past all words, clear highlighting
-          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+          if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
             setCurrentNarrationWord(-1);
             wordTimerRef.current = null;
             return;
@@ -3041,6 +3056,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             cancelAnimationFrame(wordTimerRef.current);
           }
 
+          let lastHighlightedWord = -1; // Track last highlighted word to avoid flickering
+
           // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
           const updateHighlight = () => {
             if (!audio || audio.paused || audio.ended) {
@@ -3050,19 +3067,33 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             const currentTime = audio.currentTime; // Current playback position in seconds
 
             // Find which word should be highlighted based on actual timestamps
-            let foundWord = false;
+            let wordToHighlight = lastHighlightedWord >= 0 ? lastHighlightedWord : 0; // Default to keeping current word
             for (let i = 0; i < wordTimestamps.length; i++) {
               const timestamp = wordTimestamps[i];
               // Highlight if current time is within this word's time range
               if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-                setCurrentNarrationWord(i); // Just use i directly (section-relative)
-                foundWord = true;
+                wordToHighlight = i;
                 break;
+              }
+              // If we're past this word but before the next word starts, keep highlighting this word
+              // This prevents flickering in gaps between words
+              if (i < wordTimestamps.length - 1) {
+                const nextTimestamp = wordTimestamps[i + 1];
+                if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
+                  wordToHighlight = i;
+                  break;
+                }
               }
             }
 
+            // Only update state if the word has changed (prevents unnecessary re-renders)
+            if (wordToHighlight !== lastHighlightedWord) {
+              lastHighlightedWord = wordToHighlight;
+              setCurrentNarrationWord(wordToHighlight);
+            }
+
             // If we're past all words, clear highlighting
-            if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+            if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
               setCurrentNarrationWord(-1);
               wordTimerRef.current = null;
               return;
@@ -3921,7 +3952,7 @@ ${currentLessonSections.map((section) => {
 
                             const element = (
                               <div key={idx} className="flex items-start gap-2 mb-1">
-                                <span className="text-black mt-1">•</span>
+                                <span className="text-black leading-relaxed">•</span>
                                 <span className="text-base leading-relaxed flex-1">
                                   {renderTextWithBold(bulletText, currentWordOffset)}
                                 </span>
@@ -4277,7 +4308,7 @@ ${currentLessonSections.map((section) => {
 
                 <div className="space-y-4">
                   {/* Office Hours feature */}
-                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.4s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -4290,7 +4321,7 @@ ${currentLessonSections.map((section) => {
                   </div>
 
                   {/* Ad-free feature */}
-                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.1s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -4303,7 +4334,7 @@ ${currentLessonSections.map((section) => {
                   </div>
 
                   {/* Weekly Handpicked Roles feature */}
-                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.8s', opacity: 0, animationFillMode: 'forwards' }}>
                     <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                       <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -4316,7 +4347,7 @@ ${currentLessonSections.map((section) => {
                   </div>
 
                   {/* Billing info */}
-                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '6.0s', opacity: 0, animationFillMode: 'forwards' }}>
+                  <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
                     Billed weekly. Cancel anytime.
                   </p>
                 </div>

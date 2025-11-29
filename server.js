@@ -339,6 +339,10 @@ Your role:
       responseText = responseText.charAt(0).toUpperCase() + responseText.slice(1);
     }
 
+    // Convert any dash bullets to dot bullets (•)
+    // Match lines starting with - or — followed by space
+    responseText = responseText.replace(/^[-–—]\s+/gm, '• ');
+
     res.json({
       success: true,
       response: responseText
