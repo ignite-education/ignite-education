@@ -1481,7 +1481,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       .upsert(upsertData, {
         onConflict: 'course_id,module_number,lesson_number'
       })
-      .select()
+      .select('id, created_at')
       .single();
 
     if (insertError) {
