@@ -4648,6 +4648,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Calculate final position
         const popupWidth = 400;
         const popupMaxHeight = 300;
+        const gapFromText = 10;
         const viewportPadding = 10;
         let finalX = popupPosition.x;
         let finalY;
@@ -4661,32 +4662,54 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           finalX = window.innerWidth - halfWidth - viewportPadding;
         }
 
-        // Calculate vertical position to stay within viewport
-        const spaceBelow = window.innerHeight - popupPosition.y - viewportPadding;
-        const spaceAbove = popupPosition.y - viewportPadding;
+        // popupPosition.y is either the top or bottom of the highlighted text depending on preferAbove
+        // Calculate vertical position: 10px gap from text, stay within viewport
+        if (popupPosition.preferAbove) {
+          // Position above the text - popupPosition.y is the top of the text
+          const desiredBottom = popupPosition.y - gapFromText;
+          const desiredTop = desiredBottom - popupMaxHeight;
 
-        if (popupPosition.preferAbove && spaceAbove >= popupMaxHeight) {
-          // Position above - enough space
-          finalY = popupPosition.y - popupMaxHeight - viewportPadding;
-        } else if (!popupPosition.preferAbove && spaceBelow >= popupMaxHeight) {
-          // Position below - enough space
-          finalY = popupPosition.y + viewportPadding;
-        } else if (spaceBelow >= spaceAbove) {
-          // More space below - position below and constrain height
-          finalY = popupPosition.y + viewportPadding;
-          useMaxHeight = Math.max(100, spaceBelow - viewportPadding);
+          if (desiredTop >= viewportPadding) {
+            // Fits above
+            finalY = desiredTop;
+          } else {
+            // Doesn't fit above, constrain height or flip below
+            const spaceAbove = popupPosition.y - gapFromText - viewportPadding;
+            if (spaceAbove >= 100) {
+              // Constrain height to fit above
+              useMaxHeight = spaceAbove;
+              finalY = viewportPadding;
+            } else {
+              // Flip to below (popupPosition.y is top, so add some height estimate)
+              finalY = popupPosition.y + 30 + gapFromText;
+              useMaxHeight = Math.min(popupMaxHeight, window.innerHeight - finalY - viewportPadding);
+            }
+          }
         } else {
-          // More space above - position above and constrain height
-          useMaxHeight = Math.max(100, spaceAbove - viewportPadding);
-          finalY = viewportPadding;
+          // Position below the text - popupPosition.y is the bottom of the text
+          finalY = popupPosition.y + gapFromText;
+
+          const spaceBelow = window.innerHeight - finalY - viewportPadding;
+          if (spaceBelow < popupMaxHeight) {
+            if (spaceBelow >= 100) {
+              // Constrain height to fit below
+              useMaxHeight = spaceBelow;
+            } else {
+              // Flip to above
+              const textTop = popupPosition.y - 30; // Estimate text height
+              finalY = textTop - gapFromText - popupMaxHeight;
+              if (finalY < viewportPadding) {
+                finalY = viewportPadding;
+                useMaxHeight = textTop - gapFromText - viewportPadding;
+              }
+            }
+          }
         }
 
         // Final bounds check
+        useMaxHeight = Math.max(100, useMaxHeight);
         if (finalY < viewportPadding) {
           finalY = viewportPadding;
-        }
-        if (finalY + useMaxHeight > window.innerHeight - viewportPadding) {
-          useMaxHeight = window.innerHeight - finalY - viewportPadding;
         }
 
         return (
