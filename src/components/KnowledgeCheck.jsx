@@ -273,19 +273,30 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       // Continue anyway - don't block the user experience
     }
 
-    // Show final result message with typing animation
+    // Show final result message
     const nextLessonText = nextLessonName || 'the next lesson';
     setChatMessages(prev => {
-      const newMessageIndex = prev.length;
-      setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
-      return [...prev, {
-        type: 'assistant',
-        text: passed
-          ? `You scored ${correctCount}/${TOTAL_QUESTIONS}.\n\nCongratulations. You've passed this lesson and can move on to ${nextLessonText}.`
-          : `You scored ${correctCount}/${TOTAL_QUESTIONS}. You need ${PASS_THRESHOLD} correct answers to pass. Don't worry - you can retake the knowledge check.`,
-        isComplete: false,
-        isPassed: passed
-      }];
+      if (passed) {
+        // For passed messages, don't use typing animation - show immediately
+        return [...prev, {
+          type: 'assistant',
+          text: '',
+          isComplete: true,
+          isPassed: true,
+          score: `${correctCount}/${TOTAL_QUESTIONS}`,
+          congratsText: `Congratulations. You've passed this lesson and can move on to ${nextLessonText}.`
+        }];
+      } else {
+        // For failed messages, use typing animation
+        const newMessageIndex = prev.length;
+        setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+        return [...prev, {
+          type: 'assistant',
+          text: `You scored ${correctCount}/${TOTAL_QUESTIONS}. You need ${PASS_THRESHOLD} correct answers to pass. Don't worry - you can retake the knowledge check.`,
+          isComplete: false,
+          isPassed: false
+        }];
+      }
     });
   };
 
@@ -423,29 +434,41 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 }}
               >
                 {msg.type === 'assistant' ? (
-                  <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isPassed ? 'flex items-start gap-2' : ''}`} style={{
-                    borderRadius: '8px',
-                    backgroundColor: '#f3f4f6'
-                  }}>
-                    {msg.isPassed && (
-                      <CheckCircle size={20} className="text-green-500 flex-shrink-0 mt-0.5" />
-                    )}
-                    <div>
-                      {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
-                        const parts = line.split(/(\*\*.*?\*\*)/g);
-                        return (
-                          <p key={i} className={i > 0 ? 'mt-3' : ''}>
-                            {parts.map((part, j) => {
-                              if (part.startsWith('**') && part.endsWith('**')) {
-                                return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
-                              }
-                              return <span key={j}>{part}</span>;
-                            })}
-                          </p>
-                        );
-                      })}
+                  msg.isPassed ? (
+                    // Special layout for passed message: icon | score + congrats text
+                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%] flex items-start gap-3" style={{
+                      borderRadius: '8px',
+                      backgroundColor: '#f3f4f6'
+                    }}>
+                      <CheckCircle size={20} className="flex-shrink-0 mt-0.5" fill="#22c55e" stroke="#22c55e" />
+                      <div>
+                        <p className="font-medium">You scored {msg.score}.</p>
+                        <p className="mt-2">{msg.congratsText}</p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    // Regular assistant message
+                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%]" style={{
+                      borderRadius: '8px',
+                      backgroundColor: '#f3f4f6'
+                    }}>
+                      <div>
+                        {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
+                          const parts = line.split(/(\*\*.*?\*\*)/g);
+                          return (
+                            <p key={i} className={i > 0 ? 'mt-3' : ''}>
+                              {parts.map((part, j) => {
+                                if (part.startsWith('**') && part.endsWith('**')) {
+                                  return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
+                                }
+                                return <span key={j}>{part}</span>;
+                              })}
+                            </p>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )
                 ) : (
                   <div className="p-3 text-white text-sm max-w-[95%] inline-block" style={{
                     borderRadius: '8px',
