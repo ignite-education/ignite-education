@@ -1143,11 +1143,27 @@ const LearningHub = () => {
     const userMessage = chatInput;
     const currentSelectedText = selectedText; // Store the selected text at send time
 
+    // If a message is currently being typed, mark it as complete with full text
+    if (typingMessageIndex !== null) {
+      setChatMessages(prev => prev.map((msg, idx) =>
+        idx === typingMessageIndex ? { ...msg, isComplete: true } : msg
+      ));
+      setTypingMessageIndex(null);
+      setDisplayedText('');
+    }
+
     // Add user message
     const newMessages = [...chatMessages, { type: 'user', text: userMessage }];
     setChatMessages(newMessages);
     setChatInput('');
     setIsTyping(true);
+
+    // Scroll to bottom so user can see their message
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+    }, 50);
 
     try {
       // Build lesson context from all sections
