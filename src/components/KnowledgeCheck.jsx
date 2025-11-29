@@ -18,6 +18,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const pendingFinalScoreRef = useRef(null);
   const pendingNextQuestionRef = useRef(null);
   const textareaRef = useRef(null);
+  const hasCalledOnPassRef = useRef(false);
 
   // Dynamic question count and pass threshold based on whether it's the first lesson
   const TOTAL_QUESTIONS = isFirstLesson ? 5 : 7;
@@ -253,7 +254,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person as 'the student', 'they', or 'the user'. FOR CORRECT ANSWERS: Keep feedback brief - maximum TWO sentences. Example: 'Great job! You correctly identified the key metrics used during the Launch stage.' FOR INCORRECT/UNSURE ANSWERS: Your feedback MUST be complete and include the full correct answer. NEVER use phrases like 'Let me explain further' without IMMEDIATELY providing the answer. Structure: 1) Brief acknowledgment, 2) Guide them through the complete correct answer with specific details from the lesson. Example of GOOD incorrect response: 'No problem! During the Launch stage, you would focus on coordinating the go-to-market strategy, ensuring launch readiness, and monitoring key metrics like activation rate, churn, and product feedback.' IMPORTANT: NEVER offer to provide more information or help at the end of your response. Do NOT say things like 'I'd be happy to provide more details if that would be helpful' or 'Let me know if you'd like more information'. The user should refer to the lesson content for additional details.",
+          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person. ACCURACY RULE: Only reference things the user ACTUALLY wrote - never fabricate or assume what they said. FOR CORRECT ANSWERS: Keep feedback brief - maximum TWO sentences. FOR INCORRECT/UNSURE ANSWERS: Provide the complete correct answer IN THE SAME MESSAGE. NEVER say 'Let me explain' or 'Let me provide' - just immediately give the answer. BAD example: 'Let me provide a brief explanation to help clarify.' GOOD example: 'The Power-Interest Grid maps stakeholders by their level of power and interest, while RACI defines specific roles: Responsible, Accountable, Consulted, and Informed. You would use the Power-Interest Grid first to identify key stakeholders, then apply RACI to clarify their specific involvement in decisions.' Your response must be COMPLETE and SELF-CONTAINED - do not end with promises to explain more. NEVER offer additional help at the end.",
         }),
       });
 
@@ -335,9 +336,21 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       );
 
       console.log(`✅ Knowledge check logged: ${correctCount}/${TOTAL_QUESTIONS} (${passed ? 'PASSED' : 'FAILED'})`);
+
+      // If passed, call onPass immediately to mark lesson complete
+      // This ensures completion is recorded even if user closes the modal
+      if (passed && !hasCalledOnPassRef.current) {
+        hasCalledOnPassRef.current = true;
+        onPass();
+      }
     } catch (error) {
       console.error('Error logging knowledge check:', error);
       // Continue anyway - don't block the user experience
+      // Still call onPass if they passed, even if logging failed
+      if (passed && !hasCalledOnPassRef.current) {
+        hasCalledOnPassRef.current = true;
+        onPass();
+      }
     }
 
     // Show final result message
@@ -443,6 +456,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       setDisplayedText('');
       pendingFinalScoreRef.current = null;
       pendingNextQuestionRef.current = null;
+      hasCalledOnPassRef.current = false;
 
       onClose();
       setIsClosing(false);
@@ -458,12 +472,14 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     setScore(null);
     pendingFinalScoreRef.current = null;
     pendingNextQuestionRef.current = null;
+    hasCalledOnPassRef.current = false;
     // Start over
     askNextQuestion();
   };
 
   const handleProceed = () => {
-    if (score >= PASS_THRESHOLD) {
+    if (score >= PASS_THRESHOLD && !hasCalledOnPassRef.current) {
+      hasCalledOnPassRef.current = true;
       onPass();
     }
   };
@@ -580,7 +596,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                     // Regular assistant message
                     <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-medium' : ''}`} style={{
                       borderRadius: '8px',
-                      backgroundColor: '#f3f4f6'
+                      backgroundColor: '#f3f4f6',
+                      animation: 'slideUp 0.25s ease-out forwards'
                     }}>
                       <div>
                         {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
@@ -606,7 +623,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 ) : (
                   <div className="p-3 text-white text-sm max-w-[95%] inline-block" style={{
                     borderRadius: '8px',
-                    backgroundColor: '#7c3aed'
+                    backgroundColor: '#7c3aed',
+                    animation: 'slideUp 0.25s ease-out forwards'
                   }}>
                     {msg.text}
                   </div>
@@ -619,7 +637,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
               <div style={{ marginTop: '1rem' }}>
                 <div className="p-3 text-black text-sm inline-block" style={{
                   borderRadius: '8px',
-                  backgroundColor: '#f3f4f6'
+                  backgroundColor: '#f3f4f6',
+                  animation: 'slideUp 0.25s ease-out forwards'
                 }}>
                   <div className="flex" style={{ gap: '3px' }}>
                     <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '6.8px', height: '6.8px', animationDelay: '0ms' }}></span>
@@ -667,12 +686,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 </button>
               </form>
             ) : (
-              <div style={{ paddingTop: '0.4rem' }}>
+              <div className="flex items-center justify-center" style={{ height: '77px' }}>
                 {score >= PASS_THRESHOLD ? (
                   <button
                     onClick={handleProceed}
                     className="w-full text-white px-4 py-2 font-medium transition"
-                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#EF0B72', marginTop: '8px' }}
+                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#EF0B72' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
                   >
@@ -682,7 +701,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   <button
                     onClick={handleClose}
                     className="w-full text-white px-4 py-2 font-medium transition"
-                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0', marginTop: '8px' }}
+                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}
                   >
