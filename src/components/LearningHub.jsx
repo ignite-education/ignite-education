@@ -2648,8 +2648,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Play pre-generated lesson audio with word highlighting
   // Store fetched section audio data for sequential playback
-  const sectionAudioDataRef = useRef(null);
-  const currentPregenSectionRef = useRef(-2); // -2 = not started, -1 = title, 0+ = sections
+  const sectionAudioDataRef = React.useRef(null);
+  const currentPregenSectionRef = React.useRef(-2); // -2 = not started, -1 = title, 0+ = sections
 
   const playPreGeneratedAudio = async () => {
     if (!lessonAudio) return;
