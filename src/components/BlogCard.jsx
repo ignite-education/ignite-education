@@ -10,11 +10,10 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
 
   const cardContent = (
     <div
-      className={`rounded-md overflow-hidden cursor-pointer ${className}`}
-      style={{ width: '115%' }}
+      className={`rounded-md overflow-hidden cursor-pointer group ${className}`}
     >
       {featured_image && (
-        <div className="w-full" style={{ height: '331px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="w-full" style={{ height: '364px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img
             src={featured_image}
             alt={title}
@@ -35,8 +34,8 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
           </p>
         </div>
         <div className="flex-shrink-0">
-          <div className="bg-white rounded-md flex items-center justify-center group" style={{ width: '25px', height: '25px' }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
+          <div className="bg-black rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#EF0B72] transition-colors">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
           </div>
