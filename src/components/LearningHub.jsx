@@ -886,8 +886,34 @@ const LearningHub = () => {
   }, [currentLessonSections, currentModule, currentLesson, loading]);
 
   const handleContinue = async () => {
-    // Trigger knowledge check when user clicks Continue
-    setShowKnowledgeCheck(true);
+    // Check if the current lesson is already completed
+    const currentLessonCompleted = completedLessons.some(
+      (completion) => completion.module_number === currentModule && completion.lesson_number === currentLesson
+    );
+
+    if (currentLessonCompleted) {
+      // Lesson already completed - skip knowledge check and go to next lesson
+      const allLessons = [...lessonsMetadata].sort((a, b) => {
+        if (a.module_number !== b.module_number) return a.module_number - b.module_number;
+        return a.lesson_number - b.lesson_number;
+      });
+      const currentIndex = allLessons.findIndex(l => l.module_number === currentModule && l.lesson_number === currentLesson);
+
+      if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
+        // Navigate to next lesson
+        const nextLesson = allLessons[currentIndex + 1];
+        setCurrentModule(nextLesson.module_number);
+        setCurrentLesson(nextLesson.lesson_number);
+        setCurrentSectionIndex(0);
+        setSearchParams({ module: nextLesson.module_number.toString(), lesson: nextLesson.lesson_number.toString() });
+      } else {
+        // No more lessons - navigate to Progress Hub
+        navigate('/');
+      }
+    } else {
+      // Lesson not completed - trigger knowledge check
+      setShowKnowledgeCheck(true);
+    }
   };
 
   const handleRating = async (rating) => {
