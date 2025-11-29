@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Save, ArrowLeft, Edit, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Edit, Eye, Upload } from 'lucide-react';
 
 const generateSlug = (title) => {
   return title
@@ -18,7 +18,9 @@ const BlogManagement = () => {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const contentEditableRef = useRef(null);
+  const imageInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -164,6 +166,56 @@ const BlogManagement = () => {
     if (url) formatText('createLink', url);
   };
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
+    }
+
+    try {
+      setIsUploadingImage(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `blog_${Date.now()}.${fileExt}`;
+      const filePath = `blog/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
+          throw new Error('Permission denied: Please configure Row-Level Security policies in Supabase for the assets bucket.');
+        }
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('assets')
+        .getPublicUrl(filePath);
+
+      setFormData(prev => ({ ...prev, featured_image: data.publicUrl }));
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image: ' + error.message);
+    } finally {
+      setIsUploadingImage(false);
+      // Reset the input so the same file can be selected again
+      if (imageInputRef.current) {
+        imageInputRef.current.value = '';
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white p-8">
       <div className="max-w-7xl mx-auto">
@@ -245,14 +297,31 @@ const BlogManagement = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Featured Image URL</label>
-              <div className="flex gap-2">
+              <label className="block text-sm font-medium mb-2">Featured Image</label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                </button>
+                <span className="text-gray-400 text-sm">or</span>
                 <input
                   type="text"
                   value={formData.featured_image}
                   onChange={(e) => handleInputChange('featured_image', e.target.value)}
                   className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
-                  placeholder="https://example.com/image.jpg"
+                  placeholder="Paste image URL..."
                 />
                 {formData.featured_image && (
                   <img src={formData.featured_image} alt="Preview" className="w-12 h-12 object-cover rounded" />
