@@ -28,6 +28,9 @@ const BlogPostPage = () => {
   const wordTimerRef = useRef(null);
   const wordTimestampsRef = useRef([]);
   const whiteContentRef = useRef(null);
+  const articleRef = useRef(null);
+  const headerWordIndicesRef = useRef([]); // Tracks word indices where headers start
+  const lastScrolledHeaderRef = useRef(-1); // Tracks which header we last scrolled to
 
   useEffect(() => {
     fetchPost();
@@ -114,12 +117,36 @@ const BlogPostPage = () => {
     return div.textContent || div.innerText || '';
   };
 
-  // Parse content into words when post loads
+  // Parse content into words when post loads and build header word index map
   useEffect(() => {
     if (post?.content) {
       const plainText = extractTextFromHtml(post.content);
       const words = plainText.split(/(\s+)/).filter(word => word.trim().length > 0);
       setContentWords(words);
+
+      // Build a map of word indices where headers (h2, h3) start
+      const div = document.createElement('div');
+      div.innerHTML = post.content;
+      const headerIndices = [];
+      let wordIndex = 0;
+
+      const walkNodes = (node) => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent;
+          const nodeWords = text.split(/(\s+)/).filter(w => w.trim().length > 0);
+          wordIndex += nodeWords.length;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const tagName = node.tagName.toLowerCase();
+          // Record the word index at the start of h2 or h3
+          if (tagName === 'h2' || tagName === 'h3') {
+            headerIndices.push({ wordIndex, tagName });
+          }
+          Array.from(node.childNodes).forEach(walkNodes);
+        }
+      };
+
+      Array.from(div.childNodes).forEach(walkNodes);
+      headerWordIndicesRef.current = headerIndices;
     }
   }, [post]);
 
@@ -168,6 +195,60 @@ const BlogPostPage = () => {
     };
   }, []);
 
+  // Scroll to a header element with smooth animation (matching LearningHub style)
+  const scrollToHeader = (headerIndex) => {
+    if (!articleRef.current) return;
+
+    // Find all h2 and h3 elements in the article
+    const headers = articleRef.current.querySelectorAll('h2, h3');
+    if (headerIndex >= headers.length) return;
+
+    const targetHeader = headers[headerIndex];
+    const navBarHeight = 70; // Account for sticky nav bar plus some padding
+    const targetPosition = targetHeader.getBoundingClientRect().top + window.pageYOffset - navBarHeight;
+
+    // Custom smooth scroll with easing (matching LearningHub)
+    const startPosition = window.pageYOffset;
+    const distance = targetPosition - startPosition;
+    const duration = 1200; // Longer duration for smoother scroll
+    let startTime = null;
+
+    // Ease in-out cubic function for smooth acceleration and deceleration
+    const easeInOutCubic = (t) => {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    };
+
+    const animateScroll = (currentTime) => {
+      if (!startTime) startTime = currentTime;
+      const timeElapsed = currentTime - startTime;
+      const progress = Math.min(timeElapsed / duration, 1);
+      const easedProgress = easeInOutCubic(progress);
+
+      window.scrollTo(0, startPosition + distance * easedProgress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
+  };
+
+  // Check if current word is at a header and scroll if needed
+  const checkAndScrollToHeader = (wordIndex) => {
+    const headers = headerWordIndicesRef.current;
+    for (let i = 0; i < headers.length; i++) {
+      // If we just reached a header's first word and haven't scrolled to it yet
+      if (wordIndex === headers[i].wordIndex && lastScrolledHeaderRef.current < i) {
+        lastScrolledHeaderRef.current = i;
+        scrollToHeader(i);
+        break;
+      }
+    }
+  };
+
   // Handle read aloud functionality
   const handleReadAloud = async () => {
     // If already reading, stop
@@ -181,8 +262,12 @@ const BlogPostPage = () => {
       }
       setIsReading(false);
       setCurrentWordIndex(-1);
+      lastScrolledHeaderRef.current = -1; // Reset scroll tracker
       return;
     }
+
+    // Reset scroll tracker when starting fresh
+    lastScrolledHeaderRef.current = -1;
 
     if (!post?.content) return;
 
@@ -289,6 +374,8 @@ const BlogPostPage = () => {
           if (wordToHighlight !== lastHighlightedWord) {
             lastHighlightedWord = wordToHighlight;
             setCurrentWordIndex(wordToHighlight);
+            // Check if we've reached a header and should scroll
+            checkAndScrollToHeader(wordToHighlight);
           }
 
           wordTimerRef.current = requestAnimationFrame(updateHighlight);
@@ -540,7 +627,7 @@ const BlogPostPage = () => {
           </div>
 
           <div className="max-w-4xl mx-auto px-6 pb-16 flex justify-center">
-            <article className="w-full" style={{ maxWidth: '762px' }}>
+            <article ref={articleRef} className="w-full" style={{ maxWidth: '762px' }}>
               {/* Article Body */}
               <div
                 className="prose prose-lg max-w-none"
