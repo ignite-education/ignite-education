@@ -425,7 +425,7 @@ const LearningHub = () => {
         container.scrollTop = container.scrollHeight;
       }
     }
-  }, [chatMessages]);
+  }, [chatMessages, displayedText]);
 
   // Handle text selection
   useEffect(() => {
