@@ -1524,6 +1524,225 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
   }
 });
 
+// ============================================================================
+// BLOG AUDIO GENERATION ENDPOINT
+// ============================================================================
+
+/**
+ * Generate pre-recorded audio narration for a blog post
+ * Stores audio in Supabase Storage and metadata in blog_post_audio table
+ */
+app.post('/api/admin/generate-blog-audio', async (req, res) => {
+  try {
+    const { blogPostId, forceRegenerate = false, voiceGender = 'male' } = req.body;
+
+    if (!blogPostId) {
+      return res.status(400).json({ error: 'Blog post ID is required' });
+    }
+
+    console.log(`🎤 Generating blog audio for post ${blogPostId}`);
+
+    // 1. Fetch blog post content
+    const { data: post, error: postError } = await supabase
+      .from('blog_posts')
+      .select('id, title, content, slug')
+      .eq('id', blogPostId)
+      .single();
+
+    if (postError || !post) {
+      return res.status(404).json({ error: 'Blog post not found', message: postError?.message });
+    }
+
+    // 2. Extract plain text from HTML content
+    const extractTextFromHtml = (html) => {
+      if (!html) return '';
+      // Remove HTML tags but keep text
+      let text = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove scripts
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove styles
+        .replace(/<br\s*\/?>/gi, ' ') // Replace br with space
+        .replace(/<\/p>/gi, '\n\n') // Add newlines after paragraphs
+        .replace(/<\/h[1-6]>/gi, '\n\n') // Add newlines after headings
+        .replace(/<li>/gi, '\n• ') // Add bullet for list items
+        .replace(/<[^>]+>/g, '') // Remove remaining HTML tags
+        .replace(/&nbsp;/g, ' ') // Replace nbsp
+        .replace(/&amp;/g, '&') // Replace amp
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+      return text;
+    };
+
+    const plainText = extractTextFromHtml(post.content);
+    const contentHash = crypto.createHash('sha256').update(plainText).digest('hex');
+
+    console.log(`📝 Blog text: ${plainText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+
+    // 3. Check if audio already exists with same hash
+    if (!forceRegenerate) {
+      const { data: existing } = await supabase
+        .from('blog_post_audio')
+        .select('id, content_hash, audio_url')
+        .eq('blog_post_id', blogPostId)
+        .single();
+
+      if (existing && existing.content_hash === contentHash && existing.audio_url) {
+        console.log('✅ Blog audio already exists with same hash, skipping regeneration');
+        return res.json({
+          success: true,
+          skipped: true,
+          message: 'Audio already up to date',
+          contentHash
+        });
+      }
+    }
+
+    // 4. Select voice
+    let voiceId;
+    if (voiceGender === 'male') {
+      voiceId = 'JBFqnCBsd6RMkjVDRZzb'; // George - British male
+    } else {
+      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
+    }
+
+    // 5. Generate audio with timestamps
+    console.log(`🎵 Generating audio for blog post: "${post.title.substring(0, 50)}..."`);
+
+    const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+      text: plainText,
+      model_id: 'eleven_multilingual_v2',
+      output_format: 'mp3_44100_128',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
+      }
+    });
+
+    const endTimes = response.alignment?.characterEndTimesSeconds || [];
+    const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
+
+    // 6. Upload audio to Storage
+    const audioBuffer = Buffer.from(response.audioBase64, 'base64');
+    const storagePath = `blog/${post.slug}/narration.mp3`;
+
+    console.log(`📤 Uploading ${storagePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
+
+    const { error: uploadError } = await supabase.storage
+      .from('lesson-audio')
+      .upload(storagePath, audioBuffer, {
+        contentType: 'audio/mpeg',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('❌ Upload failed:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload audio', message: uploadError.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('lesson-audio')
+      .getPublicUrl(storagePath);
+
+    const audioUrl = urlData.publicUrl;
+    console.log(`✅ Uploaded to ${audioUrl}`);
+
+    // 7. Convert character timestamps to word timestamps for highlighting
+    const wordTimestamps = [];
+    if (response.alignment) {
+      const chars = response.alignment.characters;
+      const startTimes = response.alignment.characterStartTimesSeconds;
+      const endTimesArr = response.alignment.characterEndTimesSeconds;
+
+      let currentWord = '';
+      let wordStart = 0;
+      let wordEnd = 0;
+
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        if (char === ' ' || char === '\n') {
+          if (currentWord.trim()) {
+            wordTimestamps.push({
+              word: currentWord.trim(),
+              start: wordStart,
+              end: wordEnd
+            });
+          }
+          currentWord = '';
+          wordStart = endTimesArr[i];
+        } else {
+          if (!currentWord) {
+            wordStart = startTimes[i];
+          }
+          currentWord += char;
+          wordEnd = endTimesArr[i];
+        }
+      }
+
+      // Don't forget the last word
+      if (currentWord.trim()) {
+        wordTimestamps.push({
+          word: currentWord.trim(),
+          start: wordStart,
+          end: wordEnd
+        });
+      }
+    }
+
+    // 8. Store metadata in database
+    const upsertData = {
+      blog_post_id: blogPostId,
+      audio_url: audioUrl,
+      word_timestamps: wordTimestamps,
+      duration_seconds: duration,
+      content_hash: contentHash,
+      updated_at: new Date().toISOString()
+    };
+
+    console.log('💾 Storing blog audio metadata in database...');
+
+    const { data: insertedAudio, error: insertError } = await supabase
+      .from('blog_post_audio')
+      .upsert(upsertData, {
+        onConflict: 'blog_post_id'
+      })
+      .select('id, created_at')
+      .single();
+
+    if (insertError) {
+      console.error('❌ Error storing blog audio metadata:', insertError);
+      return res.status(500).json({ error: 'Failed to store audio metadata', message: insertError.message });
+    }
+
+    console.log(`✅ Blog audio generated successfully: ${duration.toFixed(2)}s`);
+
+    res.json({
+      success: true,
+      blogAudio: {
+        id: insertedAudio.id,
+        blog_post_id: blogPostId,
+        audio_url: audioUrl,
+        duration_seconds: duration,
+        word_count: wordTimestamps.length,
+        content_hash: contentHash,
+        created_at: insertedAudio.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Error generating blog audio:', error);
+    res.status(500).json({ error: 'Failed to generate blog audio', message: error.message });
+  }
+});
+
+// ============================================================================
+// END BLOG AUDIO GENERATION ENDPOINT
+// ============================================================================
+
 let redditRateLimitResetTime = 0;
 
 const REDDIT_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (increased from 5)
@@ -2893,6 +3112,98 @@ console.log('⏰ LinkedIn posts cron job scheduled: Daily at 3 AM');
 // END LINKEDIN ENDPOINTS
 // ============================================================================
 // ============================================================================
+// ============================================================================
+
+// ============================================================================
+// SITEMAP ENDPOINT - Dynamic sitemap with blog posts
+// ============================================================================
+
+/**
+ * Dynamic sitemap endpoint
+ * Generates XML sitemap including static pages and all published blog posts
+ */
+app.get('/sitemap.xml', async (req, res) => {
+  try {
+    // Fetch all published blog posts
+    const { data: blogPosts, error } = await supabase
+      .from('blog_posts')
+      .select('slug, updated_at, published_at')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching blog posts for sitemap:', error);
+    }
+
+    const today = new Date().toISOString().split('T')[0];
+
+    // Static pages
+    const staticPages = [
+      { loc: '/', priority: '1.0', changefreq: 'daily' },
+      { loc: '/welcome', priority: '0.9', changefreq: 'weekly' },
+      { loc: '/privacy', priority: '0.5', changefreq: 'monthly' },
+      { loc: '/terms', priority: '0.5', changefreq: 'monthly' },
+      { loc: '/reset-password', priority: '0.3', changefreq: 'yearly' },
+      { loc: '/courses/product-manager', priority: '0.8', changefreq: 'weekly' },
+      { loc: '/courses/cyber-security-analyst', priority: '0.8', changefreq: 'weekly' },
+      { loc: '/courses/data-analyst', priority: '0.8', changefreq: 'weekly' },
+      { loc: '/courses/ux-designer', priority: '0.8', changefreq: 'weekly' },
+    ];
+
+    // Generate XML
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+
+  <!-- Static Pages -->`;
+
+    // Add static pages
+    for (const page of staticPages) {
+      xml += `
+  <url>
+    <loc>https://www.ignite.education${page.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`;
+    }
+
+    // Add blog posts
+    if (blogPosts && blogPosts.length > 0) {
+      xml += `
+
+  <!-- Blog Posts -->`;
+
+      for (const post of blogPosts) {
+        const lastmod = post.updated_at
+          ? new Date(post.updated_at).toISOString().split('T')[0]
+          : new Date(post.published_at).toISOString().split('T')[0];
+
+        xml += `
+  <url>
+    <loc>https://www.ignite.education/blog/${post.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>`;
+      }
+    }
+
+    xml += `
+</urlset>`;
+
+    res.set('Content-Type', 'application/xml');
+    res.set('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+    res.send(xml);
+
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    res.status(500).send('Error generating sitemap');
+  }
+});
+
+// ============================================================================
+// END SITEMAP ENDPOINT
 // ============================================================================
 
 app.listen(PORT, () => {
