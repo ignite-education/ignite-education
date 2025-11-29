@@ -205,7 +205,7 @@ const BlogPostPage = () => {
     if (headerIndex >= headers.length) return;
 
     const targetHeader = headers[headerIndex];
-    const navBarHeight = 70; // Account for sticky nav bar plus some padding
+    const navBarHeight = 100; // Account for sticky nav bar plus padding so header isn't touching nav
     const targetPosition = targetHeader.getBoundingClientRect().top + window.pageYOffset - navBarHeight;
 
     // Custom smooth scroll with easing (matching LearningHub)
@@ -410,7 +410,7 @@ const BlogPostPage = () => {
 
     let wordCounter = 0;
 
-    const processNode = (node) => {
+    const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent;
         const words = text.split(/(\s+)/);
@@ -420,7 +420,8 @@ const BlogPostPage = () => {
           if (word.trim().length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
-            if (wordCounter === currentWordIndex) {
+            // Don't highlight words inside h2 headings
+            if (wordCounter === currentWordIndex && !insideH2) {
               wordSpan.style.backgroundColor = '#fde7f4';
               wordSpan.style.padding = '2px';
               wordSpan.style.margin = '-2px';
@@ -437,8 +438,11 @@ const BlogPostPage = () => {
         return span;
       } else if (node.nodeType === Node.ELEMENT_NODE) {
         const clone = node.cloneNode(false);
+        const tagName = node.tagName?.toLowerCase();
+        // Check if we're entering an h2 element
+        const isH2 = tagName === 'h2';
         Array.from(node.childNodes).forEach((child) => {
-          clone.appendChild(processNode(child));
+          clone.appendChild(processNode(child, insideH2 || isH2));
         });
         return clone;
       }
@@ -700,7 +704,7 @@ const BlogPostPage = () => {
               </div>
 
               {/* Share Section */}
-              <div className="mt-12 pt-8 border-t border-gray-200">
+              <div className="mt-12 pt-8">
                 <p className="text-sm font-medium text-gray-600 mb-4">Share this article</p>
                 <div className="flex items-center gap-3">
                   {/* Copy URL Button */}
@@ -725,10 +729,10 @@ const BlogPostPage = () => {
                     href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#0A66C2] hover:bg-[#004182] transition-colors"
+                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#0A66C2] hover:bg-[#004182] transition-colors"
                     title="Share on LinkedIn"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
                   </a>
@@ -738,7 +742,7 @@ const BlogPostPage = () => {
                     href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(post.title)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-black hover:bg-gray-800 transition-colors"
+                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-black hover:bg-gray-800 transition-colors"
                     title="Share on X"
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
@@ -751,10 +755,10 @@ const BlogPostPage = () => {
                     href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 rounded-lg bg-[#1877F2] hover:bg-[#0d65d9] transition-colors"
+                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#1877F2] hover:bg-[#0d65d9] transition-colors"
                     title="Share on Facebook"
                   >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
                   </a>
