@@ -80,6 +80,10 @@ const convertCharacterToWordTimestamps = (text, characters, characterStartTimes,
   return wordTimestamps;
 };
 
+// Delay highlight by 150ms after word starts - makes highlight feel "in sync" with audio
+// (Visual processing is faster than audio, so highlighting at exact timestamp.start feels "too quick")
+const HIGHLIGHT_LAG_OFFSET = 0.15;
+
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -1849,9 +1853,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       let style = {};
 
       if (isCurrentWord) {
-        // Narration highlight (light grey) with padding that doesn't shift layout
+        // Narration highlight (light pink) with padding that doesn't shift layout
         style = {
-          backgroundColor: '#e5e7eb', // light grey (equivalent to gray-200)
+          backgroundColor: '#fde7f4', // light pink
           borderRadius: '2px',
           padding: '2px',
           margin: '-2px' // Negative margin offsets the padding to prevent layout shift
@@ -2178,7 +2182,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
             // Highlight if current time is within this word's time range
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
               setCurrentNarrationWord(wordsBeforeThisSection + i);
               foundWord = true;
               break;
@@ -2447,7 +2451,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
             // Highlight if current time is within this word's time range
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
               setCurrentNarrationWord(i);
               foundWord = true;
               break;
@@ -2881,7 +2885,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         let foundWord = false;
         for (let i = 0; i < wordTimestamps.length; i++) {
           const timestamp = wordTimestamps[i];
-          if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+          if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
             setCurrentNarrationWord(wordsBeforeThisSection + i);
             foundWord = true;
             break;
@@ -2992,7 +2996,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             for (let i = 0; i < wordTimestamps.length; i++) {
               const timestamp = wordTimestamps[i];
               // Highlight if current time is within this word's time range
-              if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
                 setCurrentNarrationWord(wordsBeforeThisSection + i);
                 foundWord = true;
                 break;
