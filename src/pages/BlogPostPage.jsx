@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostBySlug, formatDate } from '../lib/blogApi';
+import { supabase } from '../lib/supabase';
 import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause } from 'lucide-react';
 
@@ -18,6 +19,8 @@ const BlogPostPage = () => {
   const [isReading, setIsReading] = useState(false);
   const [currentWordIndex, setCurrentWordIndex] = useState(-1);
   const [contentWords, setContentWords] = useState([]);
+  const [preGeneratedAudio, setPreGeneratedAudio] = useState(null);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(false);
   const audioRef = useRef(null);
   const wordTimerRef = useRef(null);
   const wordTimestampsRef = useRef([]);
@@ -101,6 +104,38 @@ const BlogPostPage = () => {
     }
   }, [post]);
 
+  // Fetch pre-generated audio when post loads
+  useEffect(() => {
+    const fetchPreGeneratedAudio = async () => {
+      if (!post?.id) return;
+
+      try {
+        setIsLoadingAudio(true);
+        const { data, error } = await supabase
+          .from('blog_post_audio')
+          .select('*')
+          .eq('blog_post_id', post.id)
+          .single();
+
+        if (error) {
+          if (error.code !== 'PGRST116') { // Not a "no rows" error
+            console.error('Error fetching pre-generated audio:', error);
+          }
+          setPreGeneratedAudio(null);
+        } else {
+          setPreGeneratedAudio(data);
+        }
+      } catch (err) {
+        console.error('Error fetching pre-generated audio:', err);
+        setPreGeneratedAudio(null);
+      } finally {
+        setIsLoadingAudio(false);
+      }
+    };
+
+    fetchPreGeneratedAudio();
+  }, [post?.id]);
+
   // Cleanup audio on unmount
   useEffect(() => {
     return () => {
@@ -134,34 +169,50 @@ const BlogPostPage = () => {
 
     try {
       setIsReading(true);
-      const plainText = extractTextFromHtml(post.content);
 
-      // Call the text-to-speech API with timestamps
-      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: plainText })
-      });
+      let audioUrl;
+      let shouldRevokeUrl = false;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
+      // Check if pre-generated audio is available
+      if (preGeneratedAudio?.audio_url) {
+        // Use pre-generated audio
+        audioUrl = preGeneratedAudio.audio_url;
 
-      const data = await response.json();
+        // Use pre-generated word timestamps if available
+        if (preGeneratedAudio.word_timestamps) {
+          wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
+        }
+      } else {
+        // Fall back to live TTS API
+        const plainText = extractTextFromHtml(post.content);
 
-      // Convert base64 audio to blob
-      const audioData = atob(data.audio_base64);
-      const arrayBuffer = new ArrayBuffer(audioData.length);
-      const view = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < audioData.length; i++) {
-        view[i] = audioData.charCodeAt(i);
-      }
-      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
+        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: plainText })
+        });
 
-      // Store word timestamps
-      if (data.word_timestamps) {
-        wordTimestampsRef.current = data.word_timestamps;
+        if (!response.ok) {
+          throw new Error('Failed to generate speech');
+        }
+
+        const data = await response.json();
+
+        // Convert base64 audio to blob
+        const audioData = atob(data.audio_base64);
+        const arrayBuffer = new ArrayBuffer(audioData.length);
+        const view = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < audioData.length; i++) {
+          view[i] = audioData.charCodeAt(i);
+        }
+        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+        audioUrl = URL.createObjectURL(audioBlob);
+        shouldRevokeUrl = true;
+
+        // Store word timestamps
+        if (data.word_timestamps) {
+          wordTimestampsRef.current = data.word_timestamps;
+        }
       }
 
       // Create and play audio
@@ -171,14 +222,18 @@ const BlogPostPage = () => {
       audio.onended = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        URL.revokeObjectURL(audioUrl);
+        if (shouldRevokeUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
         audioRef.current = null;
       };
 
       audio.onerror = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        URL.revokeObjectURL(audioUrl);
+        if (shouldRevokeUrl) {
+          URL.revokeObjectURL(audioUrl);
+        }
         audioRef.current = null;
       };
 

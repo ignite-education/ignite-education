@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Save, ArrowLeft, Edit, Eye, Upload } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Edit, Eye, Upload, Volume2 } from 'lucide-react';
 
 const generateSlug = (title) => {
   return title
@@ -19,6 +19,8 @@ const BlogManagement = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioStatus, setAudioStatus] = useState(null);
   const contentEditableRef = useRef(null);
   const imageInputRef = useRef(null);
 
@@ -107,7 +109,7 @@ const BlogManagement = () => {
     }
   };
 
-  const handleSelectPost = (post) => {
+  const handleSelectPost = async (post) => {
     setSelectedPost(post);
     setFormData({
       title: post.title || '',
@@ -123,6 +125,65 @@ const BlogManagement = () => {
       status: post.status || 'draft',
       published_at: post.published_at || ''
     });
+    // Check audio status for this post
+    await checkAudioStatus(post.id);
+  };
+
+  // Check if audio exists for a blog post
+  const checkAudioStatus = async (postId) => {
+    if (!postId) {
+      setAudioStatus(null);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('blog_post_audio')
+        .select('id, created_at, duration_seconds, content_hash')
+        .eq('blog_post_id', postId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error checking audio status:', error);
+      }
+
+      setAudioStatus(data ? { hasAudio: true, ...data } : { hasAudio: false });
+    } catch (error) {
+      console.error('Error checking audio status:', error);
+      setAudioStatus({ hasAudio: false });
+    }
+  };
+
+  // Generate audio for the current blog post
+  const handleGenerateAudio = async () => {
+    if (!selectedPost?.id) {
+      alert('Please save the post first before generating audio');
+      return;
+    }
+
+    setIsGeneratingAudio(true);
+    try {
+      const response = await fetch('https://ignite-education-api.onrender.com/api/admin/generate-blog-audio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          blogPostId: selectedPost.id
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        alert(`Audio generated successfully! Duration: ${data.duration_seconds?.toFixed(1)}s`);
+        await checkAudioStatus(selectedPost.id);
+      } else {
+        const error = await response.json();
+        alert(`Failed to generate audio: ${error.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error generating audio:', error);
+      alert(`Failed to generate audio: ${error.message}`);
+    } finally {
+      setIsGeneratingAudio(false);
+    }
   };
 
   const handleNewPost = () => {
@@ -451,7 +512,7 @@ const BlogManagement = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center flex-wrap">
               <button
                 onClick={handleSavePost}
                 disabled={isSaving || !formData.title || !formData.slug || !formData.excerpt}
@@ -460,7 +521,31 @@ const BlogManagement = () => {
                 <Save className="w-5 h-5" />
                 {isSaving ? 'Saving...' : selectedPost ? 'Update Post' : 'Create Post'}
               </button>
-              
+
+              {selectedPost && (
+                <button
+                  onClick={handleGenerateAudio}
+                  disabled={isGeneratingAudio}
+                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg disabled:opacity-50"
+                  title="Generate narration audio for this blog post"
+                >
+                  <Volume2 className="w-5 h-5" />
+                  {isGeneratingAudio ? 'Generating...' : 'Generate Audio'}
+                </button>
+              )}
+
+              {audioStatus && (
+                <span className={`text-xs px-3 py-1 rounded ${
+                  audioStatus.hasAudio
+                    ? 'bg-green-900/50 text-green-300'
+                    : 'bg-gray-700 text-gray-400'
+                }`}>
+                  {audioStatus.hasAudio
+                    ? `✅ Audio ready (${audioStatus.duration_seconds?.toFixed(1)}s)`
+                    : '❌ No audio'}
+                </span>
+              )}
+
               {selectedPost && formData.status === 'published' && (
                 <a href={`/blog/${formData.slug}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg">
                   <Eye className="w-5 h-5" />
