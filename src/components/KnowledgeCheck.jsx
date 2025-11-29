@@ -284,7 +284,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           isComplete: true,
           isPassed: true,
           score: `${correctCount}/${TOTAL_QUESTIONS}`,
-          congratsText: `Congratulations. You've passed this lesson and can move on to ${nextLessonText}.`
+          congratsLine1: 'Congratulations.',
+          congratsLine2: `You've passed this lesson and can move on to ${nextLessonText}.`
         }];
       } else {
         // For failed messages, use typing animation
@@ -435,20 +436,21 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
-                    // Special layout for passed message: left column (25%) with icon + score | right column (75%) with congrats
+                    // Special layout for passed message: left column (25%) with icon + score stacked | right column (75%) with congrats on two lines
                     <div className="p-3 text-black text-sm leading-snug max-w-[95%] flex" style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6',
                       width: '100%'
                     }}>
-                      <div className="flex items-center gap-2" style={{ width: '25%', flexShrink: 0 }}>
+                      <div className="flex flex-col items-center justify-center" style={{ width: '25%', flexShrink: 0 }}>
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#22c55e' }}>
                           <Check size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
                         </div>
-                        <span className="font-medium">You scored {msg.score}.</span>
+                        <span className="font-medium mt-1">You scored {msg.score}.</span>
                       </div>
                       <div style={{ width: '75%' }}>
-                        <span>{msg.congratsText}</span>
+                        <p>{msg.congratsLine1}</p>
+                        <p className="mt-1">{msg.congratsLine2}</p>
                       </div>
                     </div>
                   ) : (
