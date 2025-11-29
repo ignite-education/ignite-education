@@ -3369,7 +3369,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           <div className="flex-1 flex flex-col overflow-hidden">
             <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
               <div className="flex-1" />
-              {chatMessages.map((msg, idx) => (
+              {chatMessages.map((msg, idx) => {
+                // Don't show empty assistant bubbles (before typing starts)
+                const textToShow = typingMessageIndex === idx && !msg.isComplete ? displayedText : (!msg.isComplete && typingMessageIndex === null ? '' : msg.text);
+                if (msg.type === 'assistant' && !textToShow) return null;
+
+                return (
                 <div
                   key={`${idx}-${msg.text?.substring(0, 20)}`}
                   className={msg.type === 'user' ? 'flex justify-end' : ''}
@@ -3473,7 +3478,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
               {/* Typing indicator */}
               {isTyping && (
                 <div
