@@ -2775,20 +2775,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
 
     // Calculate words before this section (same as narrateSection)
+    // NOTE: This does NOT include title words - each context (title vs sections) has its own word count
     let wordsBeforeThisSection = 0;
     if (sectionIndex === -1) {
       // Title - no words before
       wordsBeforeThisSection = 0;
     } else {
-      // For content sections, count words in title + all previous sections
-      // Title words
-      wordsBeforeThisSection = lessonName.split(/\s+/).filter(w => w.length > 0).length;
-      // Previous section words
-      for (let i = 0; i < sectionIndex && i < currentLessonSections.length; i++) {
-        const text = extractTextFromSection(currentLessonSections[i]);
-        wordsBeforeThisSection += text.split(/\s+/).filter(w => w.length > 0).length;
-      }
+      // For content sections, count words in all previous sections (NOT including title)
+      // This matches exactly how narrateSection calculates it
+      wordsBeforeThisSection = currentLessonSections
+        .slice(0, sectionIndex)
+        .map(s => extractTextFromSection(s))
+        .join(' ')
+        .split(/\s+/)
+        .filter(w => w.length > 0).length;
     }
+
+    console.log(`📍 Section ${sectionIndex}: wordsBeforeThisSection = ${wordsBeforeThisSection}`);
 
     // Update section state
     if (sectionIndex === -1) {
