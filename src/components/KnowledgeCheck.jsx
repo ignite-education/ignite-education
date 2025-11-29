@@ -707,9 +707,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           </div>
 
           {/* Input area */}
-          <div className="flex-shrink-0 bg-gray-100 px-8" style={{ borderRadius: '0 0 0.3rem 0.3rem', height: isComplete ? '68px' : 'auto', paddingTop: isComplete ? '0' : '12px', paddingBottom: isComplete ? '0' : '16px' }}>
+          <div className="flex-shrink-0 bg-gray-100 p-3" style={{ borderRadius: '0 0 0.3rem 0.3rem', height: isComplete ? '68px' : 'auto' }}>
             {!isComplete ? (
-              <form onSubmit={handleSendMessage}>
+              <form onSubmit={handleSendMessage} style={{ marginBottom: '0px' }}>
                 <textarea
                   ref={textareaRef}
                   value={chatInput}
@@ -732,8 +732,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 <button
                   type="submit"
                   disabled={isEvaluating || !chatInput.trim()}
-                  className="text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ borderRadius: '0', fontSize: '0.85rem', backgroundColor: '#7714E0', marginLeft: '-2rem', marginRight: '-2rem', width: 'calc(100% + 4rem)' }}
+                  className="w-full text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                   onMouseEnter={(e) => !isEvaluating && chatInput.trim() && (e.currentTarget.style.backgroundColor = '#6610C7')}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
                 >

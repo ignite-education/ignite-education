@@ -2923,6 +2923,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     const wordTimestamps = wordTimestampsRef.current;
     if (wordTimestamps && wordTimestamps.length > 0) {
       setCurrentNarrationWord(0); // Start at 0 for this section
+      let lastHighlightedWord = 0; // Track last highlighted word to avoid unnecessary state updates
 
       if (wordTimerRef.current) {
         cancelAnimationFrame(wordTimerRef.current);
@@ -2936,18 +2937,33 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const currentTime = audio.currentTime;
 
         // Find which word should be highlighted based on actual timestamps
-        let foundWord = false;
+        let wordToHighlight = lastHighlightedWord; // Default to keeping current word
         for (let i = 0; i < wordTimestamps.length; i++) {
           const timestamp = wordTimestamps[i];
+          // Check if we're within this word's time range (with offset)
           if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-            setCurrentNarrationWord(i); // Just use i directly (section-relative)
-            foundWord = true;
+            wordToHighlight = i;
             break;
+          }
+          // If we're past this word but before the next word starts, keep highlighting this word
+          // This prevents flickering in gaps between words
+          if (i < wordTimestamps.length - 1) {
+            const nextTimestamp = wordTimestamps[i + 1];
+            if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
+              wordToHighlight = i;
+              break;
+            }
           }
         }
 
+        // Only update state if the word has changed (prevents unnecessary re-renders)
+        if (wordToHighlight !== lastHighlightedWord) {
+          lastHighlightedWord = wordToHighlight;
+          setCurrentNarrationWord(wordToHighlight);
+        }
+
         // If we're past all words, clear highlighting
-        if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+        if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
           setCurrentNarrationWord(-1);
           wordTimerRef.current = null;
           return;
@@ -4631,14 +4647,46 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         // Calculate final position
         const popupWidth = 400;
+        const popupMaxHeight = 300;
+        const viewportPadding = 10;
         let finalX = popupPosition.x;
+        let finalY;
+        let useMaxHeight = popupMaxHeight;
 
         // Ensure popup doesn't overflow horizontally
         const halfWidth = popupWidth / 2;
-        if (finalX - halfWidth < 10) {
-          finalX = halfWidth + 10;
-        } else if (finalX + halfWidth > window.innerWidth - 10) {
-          finalX = window.innerWidth - halfWidth - 10;
+        if (finalX - halfWidth < viewportPadding) {
+          finalX = halfWidth + viewportPadding;
+        } else if (finalX + halfWidth > window.innerWidth - viewportPadding) {
+          finalX = window.innerWidth - halfWidth - viewportPadding;
+        }
+
+        // Calculate vertical position to stay within viewport
+        const spaceBelow = window.innerHeight - popupPosition.y - viewportPadding;
+        const spaceAbove = popupPosition.y - viewportPadding;
+
+        if (popupPosition.preferAbove && spaceAbove >= popupMaxHeight) {
+          // Position above - enough space
+          finalY = popupPosition.y - popupMaxHeight - viewportPadding;
+        } else if (!popupPosition.preferAbove && spaceBelow >= popupMaxHeight) {
+          // Position below - enough space
+          finalY = popupPosition.y + viewportPadding;
+        } else if (spaceBelow >= spaceAbove) {
+          // More space below - position below and constrain height
+          finalY = popupPosition.y + viewportPadding;
+          useMaxHeight = Math.max(100, spaceBelow - viewportPadding);
+        } else {
+          // More space above - position above and constrain height
+          useMaxHeight = Math.max(100, spaceAbove - viewportPadding);
+          finalY = viewportPadding;
+        }
+
+        // Final bounds check
+        if (finalY < viewportPadding) {
+          finalY = viewportPadding;
+        }
+        if (finalY + useMaxHeight > window.innerHeight - viewportPadding) {
+          useMaxHeight = window.innerHeight - finalY - viewportPadding;
         }
 
         return (
@@ -4647,10 +4695,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             className="fixed rounded shadow-xl p-4 z-50"
             style={{
               left: `${finalX}px`,
-              top: popupPosition.preferAbove ? 'auto' : `${popupPosition.y + 10}px`,
-              bottom: popupPosition.preferAbove ? `${window.innerHeight - popupPosition.y + 10}px` : 'auto',
+              top: `${finalY}px`,
               transform: 'translateX(-50%)',
-              maxHeight: '500px',
+              maxHeight: `${useMaxHeight}px`,
               width: '400px',
               overflowY: 'auto',
               backgroundColor: '#fce7f3',
