@@ -183,26 +183,43 @@ const BlogManagement = () => {
       return;
     }
 
+    console.log('🎤 Starting audio generation for post:', selectedPost.id);
     setIsGeneratingAudio(true);
     try {
+      const requestBody = { blogPostId: selectedPost.id };
+      console.log('📤 Sending request to generate-blog-audio:', requestBody);
+
       const response = await fetch('https://ignite-education-api.onrender.com/api/admin/generate-blog-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          blogPostId: selectedPost.id
-        })
+        body: JSON.stringify(requestBody)
       });
 
+      console.log('📥 Response status:', response.status, response.statusText);
+
+      const responseText = await response.text();
+      console.log('📥 Response body (raw):', responseText);
+
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('❌ Failed to parse response as JSON:', parseError);
+        console.error('❌ Response was:', responseText.substring(0, 500));
+        alert(`Failed to generate audio: Server returned invalid response. Check console for details.`);
+        return;
+      }
+
       if (response.ok) {
-        const data = await response.json();
-        alert(`Audio generated successfully! Duration: ${data.duration_seconds?.toFixed(1)}s`);
+        console.log('✅ Audio generated successfully:', data);
+        alert(`Audio generated successfully! Duration: ${data.blogAudio?.duration_seconds?.toFixed(1) || 'unknown'}s`);
         await checkAudioStatus(selectedPost.id);
       } else {
-        const error = await response.json();
-        alert(`Failed to generate audio: ${error.error || 'Unknown error'}`);
+        console.error('❌ Server returned error:', data);
+        alert(`Failed to generate audio: ${data.error || data.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error generating audio:', error);
+      console.error('❌ Error generating audio:', error);
       alert(`Failed to generate audio: ${error.message}`);
     } finally {
       setIsGeneratingAudio(false);
