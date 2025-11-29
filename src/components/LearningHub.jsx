@@ -1685,33 +1685,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return '';
   };
 
-  // Helper to calculate words before a section index consistently
-  // Uses stored word_count from pre-generated audio when available, falls back to text extraction
-  const getWordsBeforeSection = (sectionIdx) => {
-    const sectionAudioArray = sectionAudioDataRef.current;
-
-    // If we have pre-generated audio data with word counts, use those (most accurate)
-    if (sectionAudioArray && sectionAudioArray.length > 0) {
-      // Filter to only content sections (section_index >= 0) before this index
-      const previousSections = sectionAudioArray.filter(
-        s => s.section_index >= 0 && s.section_index < sectionIdx
-      );
-      return previousSections.reduce((sum, s) => {
-        // Use stored word_count, or calculate from stored text as fallback
-        const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
-        return sum + wordCount;
-      }, 0);
-    }
-
-    // Fallback: calculate from currentLessonSections using extractTextFromSection
-    return currentLessonSections
-      .slice(0, sectionIdx)
-      .map(s => extractTextFromSection(s))
-      .join(' ')
-      .split(/\s+/)
-      .filter(w => w.length > 0).length;
-  };
-
   // Helper to format explanation text with proper formatting (matching chat display)
   const formatExplanationText = (text) => {
     if (!text) return null;
@@ -2167,16 +2140,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setCurrentNarrationSection(sectionIndex);
 
       // Start word-by-word highlighting
-      // Calculate word offset for this section (total words in all previous sections)
-      const wordsBeforeThisSection = currentLessonSections
-        .slice(0, sectionIndex)
-        .map(s => extractTextFromSection(s))
-        .join(' ')
-        .split(/\s+/)
-        .filter(w => w.length > 0).length;
-
-      // Count words in current section
-      const wordsInSection = sectionText.split(/\s+/).filter(w => w.length > 0).length;
+      // Per-section word indexing: each section starts at word index 0
+      // This eliminates offset calculation mismatches between backend and frontend
 
       // Clear any existing word timer
       if (wordTimerRef.current) {
@@ -2194,7 +2159,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         console.log(`📝 Section ${sectionIndex}: Using ${wordTimestamps.length} precise word timestamps`);
 
-        setCurrentNarrationWord(wordsBeforeThisSection);
+        setCurrentNarrationWord(0); // Start at 0 for this section
 
         // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
         const updateHighlight = () => {
@@ -2210,7 +2175,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             const timestamp = wordTimestamps[i];
             // Highlight if current time is within this word's time range
             if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-              setCurrentNarrationWord(wordsBeforeThisSection + i);
+              setCurrentNarrationWord(i); // Just use i directly (section-relative)
               foundWord = true;
               break;
             }
@@ -2805,28 +2770,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
     }
 
-    // Calculate words before this section using the ACTUAL text from pre-generated audio
-    // This ensures word counts match exactly what ElevenLabs received (not frontend text extraction)
-    let wordsBeforeThisSection = 0;
-    if (sectionIndex === -1) {
-      // Title - no words before
-      wordsBeforeThisSection = 0;
-    } else {
-      // For content sections, sum word counts from all previous sections (NOT including title)
-      // Use stored word_count from metadata to ensure exact match with ElevenLabs timestamps
-      const sectionAudioArray = sectionAudioDataRef.current;
-      if (sectionAudioArray) {
-        const previousSections = sectionAudioArray
-          .filter(s => s.section_index >= 0 && s.section_index < sectionIndex);
-        wordsBeforeThisSection = previousSections.reduce((sum, s) => {
-          // Use stored word_count, or calculate from text as fallback for old data
-          const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
-          return sum + wordCount;
-        }, 0);
-      }
-    }
-
-    console.log(`📍 Section ${sectionIndex}: wordsBeforeThisSection = ${wordsBeforeThisSection}`);
+    // Per-section word indexing: each section starts at word index 0
+    // This eliminates offset calculation mismatches between backend and frontend
+    console.log(`📍 Section ${sectionIndex}: using per-section indexing (starting at 0)`);
 
     // Update section state
     if (sectionIndex === -1) {
@@ -2893,9 +2839,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     console.log(`✅ Pre-generated section ${sectionIndex} now playing`);
 
     // Start word-by-word highlighting (same pattern as narrateSection)
+    // Per-section indexing: word indices are 0-based within each section
     const wordTimestamps = wordTimestampsRef.current;
     if (wordTimestamps && wordTimestamps.length > 0) {
-      setCurrentNarrationWord(wordsBeforeThisSection);
+      setCurrentNarrationWord(0); // Start at 0 for this section
 
       if (wordTimerRef.current) {
         cancelAnimationFrame(wordTimerRef.current);
@@ -2913,7 +2860,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         for (let i = 0; i < wordTimestamps.length; i++) {
           const timestamp = wordTimestamps[i];
           if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-            setCurrentNarrationWord(wordsBeforeThisSection + i);
+            setCurrentNarrationWord(i); // Just use i directly (section-relative)
             foundWord = true;
             break;
           }
@@ -2990,21 +2937,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         isPausedRef.current = false;
 
         // Resume word highlighting from current position
+        // Per-section indexing: word indices are 0-based within each section
         const wordTimestamps = wordTimestampsRef.current;
         if (wordTimestamps && wordTimestamps.length > 0) {
-          // Calculate words before this section using stored word counts (same as playPregenSection)
-          let wordsBeforeThisSection = 0;
-          const sectionAudioArray = sectionAudioDataRef.current;
-          if (sectionAudioArray && currentNarrationSection > 0) {
-            const previousSections = sectionAudioArray
-              .filter(s => s.section_index >= 0 && s.section_index < currentNarrationSection);
-            wordsBeforeThisSection = previousSections.reduce((sum, s) => {
-              // Use stored word_count, or calculate from text as fallback for old data
-              const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
-              return sum + wordCount;
-            }, 0);
-          }
-
           // Clear existing timer
           if (wordTimerRef.current) {
             cancelAnimationFrame(wordTimerRef.current);
@@ -3024,7 +2959,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               const timestamp = wordTimestamps[i];
               // Highlight if current time is within this word's time range
               if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-                setCurrentNarrationWord(wordsBeforeThisSection + i);
+                setCurrentNarrationWord(i); // Just use i directly (section-relative)
                 foundWord = true;
                 break;
               }
@@ -3743,8 +3678,8 @@ ${currentLessonSections.map((section) => {
                   const HeadingTag = `h${level}`;
                   const sizes = { 1: 'text-3xl', 2: 'text-2xl', 3: 'text-xl' };
 
-                  // Calculate word offset for this section using consistent method
-                  const wordsBeforeThisSection = getWordsBeforeSection(sectionIdx);
+                  // Per-section word indexing: always start at 0 for each section
+                  // This matches how narration indexes words within each section
 
                   // Helper function to render text with underline formatting and highlighting
                   const renderHeadingText = (text, wordOffset) => {
@@ -3775,21 +3710,21 @@ ${currentLessonSections.map((section) => {
                         {React.createElement(HeadingTag, {
                           className: 'font-medium',
                           style: { fontSize: '1.4rem' }
-                        }, renderHeadingText(text, wordsBeforeThisSection))}
+                        }, renderHeadingText(text, 0))}
                       </div>
                     );
                   }
 
                   return React.createElement(HeadingTag, {
                     className: `${sizes[level]} font-bold mt-8 mb-2`
-                  }, renderHeadingText(text, wordsBeforeThisSection));
+                  }, renderHeadingText(text, 0));
                 }
 
                 if (section.content_type === 'paragraph') {
                   const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
 
-                  // Calculate word offset for this section using consistent method
-                  const wordsBeforeThisSection = getWordsBeforeSection(sectionIdx);
+                  // Per-section word indexing: always start at 0 for each section
+                  // This matches how narration indexes words within each section
 
                   // Helper function to render text with bold and underline formatting
                   const renderTextWithBold = (text, wordOffset = 0) => {
@@ -3853,7 +3788,8 @@ ${currentLessonSections.map((section) => {
 
                   if (hasBullets || hasMultipleLines) {
                     // Render with bullet point formatting or multi-line formatting
-                    let currentWordOffset = wordsBeforeThisSection;
+                    // Per-section indexing: start at 0, increment within this section
+                    let currentWordOffset = 0;
 
                     return (
                       <div className="mb-6">
@@ -3910,7 +3846,7 @@ ${currentLessonSections.map((section) => {
 
                   return (
                     <p className="text-base leading-relaxed mb-6">
-                      {renderTextWithBold(text, wordsBeforeThisSection)}
+                      {renderTextWithBold(text, 0)}
                     </p>
                   );
                 }
