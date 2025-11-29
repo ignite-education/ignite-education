@@ -731,7 +731,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}
                   >
-                    Back to Content
+                    {lessonName ? `Back to ${lessonName}` : 'Back to Content'}
                   </button>
                 )}
               </div>
