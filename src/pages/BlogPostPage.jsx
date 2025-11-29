@@ -458,28 +458,30 @@ const BlogPostPage = () => {
 
         {/* Hero Section with Black Background */}
         <div className="bg-black">
-          <div className="max-w-4xl mx-auto px-6 py-12">
-            {/* Breadcrumb Navigation - Left aligned */}
-            <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
-              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
-                <Home className="w-4 h-4" />
-              </Link>
-              <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-              <span style={{ color: '#F0F0F2' }}>Posts</span>
-              <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-              <span className="truncate max-w-md" style={{ color: '#F0F0F2' }}>{post.title}</span>
-            </nav>
+          <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
+            <div className="w-full" style={{ maxWidth: '762px' }}>
+              {/* Breadcrumb Navigation - Left aligned */}
+              <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
+                <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
+                  <Home className="w-4 h-4" />
+                </Link>
+                <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
+                <span style={{ color: '#F0F0F2' }}>Posts</span>
+                <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
+                <span className="truncate max-w-md" style={{ color: '#F0F0F2' }}>{post.title}</span>
+              </nav>
 
-            {/* Title with typing animation - Left aligned */}
-            <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
-              {typedTitle}
-              {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
-            </h1>
+              {/* Title with typing animation - Left aligned */}
+              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
+                {typedTitle}
+                {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
+              </h1>
 
-            {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
-            <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
-              {post.excerpt}
-            </p>
+              {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
+              <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
+                {post.excerpt}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -493,7 +495,7 @@ const BlogPostPage = () => {
               {/* White bottom half behind image */}
               <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
               <div className="relative max-w-4xl mx-auto px-6 flex justify-center">
-                <div className="rounded-lg overflow-hidden w-full" style={{ maxWidth: '720px' }}>
+                <div className="rounded-lg overflow-hidden w-full" style={{ maxWidth: '762px' }}>
                   <img
                     src={post.featured_image}
                     alt={post.title}

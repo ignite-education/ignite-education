@@ -21,8 +21,31 @@ const BlogManagement = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioStatus, setAudioStatus] = useState(null);
+  const [currentBlockFormat, setCurrentBlockFormat] = useState('p');
   const contentEditableRef = useRef(null);
   const imageInputRef = useRef(null);
+
+  // Update current block format based on cursor position
+  const updateCurrentFormat = () => {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+
+    let node = selection.anchorNode;
+    if (node.nodeType === Node.TEXT_NODE) {
+      node = node.parentNode;
+    }
+
+    // Walk up the DOM tree to find the block element
+    while (node && node !== contentEditableRef.current) {
+      const tagName = node.tagName?.toLowerCase();
+      if (tagName === 'h2' || tagName === 'h3' || tagName === 'p') {
+        setCurrentBlockFormat(tagName);
+        return;
+      }
+      node = node.parentNode;
+    }
+    setCurrentBlockFormat('p'); // Default to paragraph
+  };
 
   const [formData, setFormData] = useState({
     title: '',
@@ -499,18 +522,33 @@ const BlogManagement = () => {
 
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Content *</label>
-              <div className="bg-white/10 border border-white/20 rounded-t-lg p-2 flex flex-wrap gap-1">
+              <div className="bg-white/10 border border-white/20 rounded-t-lg p-2 flex flex-wrap gap-1 items-center">
                 <button onClick={() => formatText('bold')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><strong>B</strong></button>
                 <button onClick={() => formatText('italic')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><em>I</em></button>
                 <button onClick={() => formatText('underline')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><u>U</u></button>
-                <div className="w-px bg-white/20 mx-1"></div>
-                <button onClick={() => formatText('formatBlock', '<h2>')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">H2</button>
-                <button onClick={() => formatText('formatBlock', '<h3>')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">H3</button>
-                <button onClick={() => formatText('formatBlock', '<p>')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">P</button>
-                <div className="w-px bg-white/20 mx-1"></div>
+                <div className="w-px bg-white/20 mx-1 h-6"></div>
+                <button
+                  onClick={() => { formatText('formatBlock', '<h2>'); setCurrentBlockFormat('h2'); }}
+                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'h2' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
+                >
+                  H2
+                </button>
+                <button
+                  onClick={() => { formatText('formatBlock', '<h3>'); setCurrentBlockFormat('h3'); }}
+                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'h3' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
+                >
+                  H3
+                </button>
+                <button
+                  onClick={() => { formatText('formatBlock', '<p>'); setCurrentBlockFormat('p'); }}
+                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'p' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
+                >
+                  P
+                </button>
+                <div className="w-px bg-white/20 mx-1 h-6"></div>
                 <button onClick={() => formatText('insertUnorderedList')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">• List</button>
                 <button onClick={() => formatText('insertOrderedList')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">1. List</button>
-                <div className="w-px bg-white/20 mx-1"></div>
+                <div className="w-px bg-white/20 mx-1 h-6"></div>
                 <button onClick={insertLink} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">🔗 Link</button>
               </div>
 
@@ -519,6 +557,9 @@ const BlogManagement = () => {
                 contentEditable
                 dangerouslySetInnerHTML={{ __html: formData.content }}
                 onBlur={(e) => setFormData(prev => ({ ...prev, content: e.target.innerHTML }))}
+                onKeyUp={updateCurrentFormat}
+                onMouseUp={updateCurrentFormat}
+                onClick={updateCurrentFormat}
                 className="w-full min-h-[400px] bg-white/10 border border-white/20 border-t-0 rounded-b-lg px-4 py-3 text-white focus:outline-none prose prose-invert max-w-none"
               />
             </div>
