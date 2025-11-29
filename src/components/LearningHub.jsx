@@ -1685,6 +1685,33 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return '';
   };
 
+  // Helper to calculate words before a section index consistently
+  // Uses stored word_count from pre-generated audio when available, falls back to text extraction
+  const getWordsBeforeSection = (sectionIdx) => {
+    const sectionAudioArray = sectionAudioDataRef.current;
+
+    // If we have pre-generated audio data with word counts, use those (most accurate)
+    if (sectionAudioArray && sectionAudioArray.length > 0) {
+      // Filter to only content sections (section_index >= 0) before this index
+      const previousSections = sectionAudioArray.filter(
+        s => s.section_index >= 0 && s.section_index < sectionIdx
+      );
+      return previousSections.reduce((sum, s) => {
+        // Use stored word_count, or calculate from stored text as fallback
+        const wordCount = s.word_count ?? (s.text?.match(/\S+/g)?.length || 0);
+        return sum + wordCount;
+      }, 0);
+    }
+
+    // Fallback: calculate from currentLessonSections using extractTextFromSection
+    return currentLessonSections
+      .slice(0, sectionIdx)
+      .map(s => extractTextFromSection(s))
+      .join(' ')
+      .split(/\s+/)
+      .filter(w => w.length > 0).length;
+  };
+
   // Helper to format explanation text with proper formatting (matching chat display)
   const formatExplanationText = (text) => {
     if (!text) return null;
@@ -3716,14 +3743,8 @@ ${currentLessonSections.map((section) => {
                   const HeadingTag = `h${level}`;
                   const sizes = { 1: 'text-3xl', 2: 'text-2xl', 3: 'text-xl' };
 
-                  // Calculate word offset for this section
-                  // Use single space join to match how narration counts words
-                  const wordsBeforeThisSection = currentLessonSections
-                    .slice(0, sectionIdx)
-                    .map(s => extractTextFromSection(s))
-                    .join(' ')
-                    .split(/\s+/)
-                    .filter(w => w.length > 0).length;
+                  // Calculate word offset for this section using consistent method
+                  const wordsBeforeThisSection = getWordsBeforeSection(sectionIdx);
 
                   // Helper function to render text with underline formatting and highlighting
                   const renderHeadingText = (text, wordOffset) => {
@@ -3767,14 +3788,8 @@ ${currentLessonSections.map((section) => {
                 if (section.content_type === 'paragraph') {
                   const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
 
-                  // Calculate word offset for this section
-                  // Use single space join to match how narration counts words
-                  const wordsBeforeThisSection = currentLessonSections
-                    .slice(0, sectionIdx)
-                    .map(s => extractTextFromSection(s))
-                    .join(' ')
-                    .split(/\s+/)
-                    .filter(w => w.length > 0).length;
+                  // Calculate word offset for this section using consistent method
+                  const wordsBeforeThisSection = getWordsBeforeSection(sectionIdx);
 
                   // Helper function to render text with bold and underline formatting
                   const renderTextWithBold = (text, wordOffset = 0) => {
