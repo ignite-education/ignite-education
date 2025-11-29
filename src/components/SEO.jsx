@@ -53,10 +53,15 @@ const SEO = ({
     updateMetaTag('og:image', ogImage, true);
 
     // Twitter Card tags
+    updateMetaTag('twitter:card', image ? 'summary_large_image' : 'summary');
     updateMetaTag('twitter:title', title);
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', ogImage);
     updateMetaTag('twitter:url', fullUrl);
+
+    // Additional SEO tags
+    updateMetaTag('robots', 'index, follow');
+    updateMetaTag('author', 'Ignite');
 
     // Update canonical URL
     let canonical = document.querySelector('link[rel="canonical"]');
@@ -98,23 +103,26 @@ export default SEO;
  */
 export const generateBlogPostStructuredData = (post, url) => {
   const baseUrl = 'https://www.ignite.education';
-  
+  const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: post.title,
-    description: post.excerpt,
-    image: post.featured_image || post.og_image,
+    headline: post.meta_title || post.title,
+    description: post.meta_description || post.excerpt,
+    image: post.og_image || post.featured_image,
     datePublished: post.published_at,
     dateModified: post.updated_at,
     author: {
       '@type': 'Person',
-      name: post.author_name,
+      name: post.author_name || 'Ignite Team',
       ...(post.author_avatar && { image: post.author_avatar }),
+      ...(post.author_role && { jobTitle: post.author_role }),
     },
     publisher: {
       '@type': 'Organization',
       name: 'Ignite',
+      url: baseUrl,
       logo: {
         '@type': 'ImageObject',
         url: `${baseUrl}/logo.png`,
@@ -122,8 +130,12 @@ export const generateBlogPostStructuredData = (post, url) => {
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': url,
+      '@id': fullUrl,
     },
+    url: fullUrl,
+    articleBody: post.content ? post.content.replace(/<[^>]*>/g, '').substring(0, 500) : undefined,
+    wordCount: post.content ? post.content.replace(/<[^>]*>/g, '').split(/\s+/).length : undefined,
+    inLanguage: 'en-US',
   };
 };
 

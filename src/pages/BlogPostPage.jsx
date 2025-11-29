@@ -4,10 +4,13 @@ import { getPostBySlug, formatDate } from '../lib/blogApi';
 import { supabase } from '../lib/supabase';
 import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause } from 'lucide-react';
+import Lottie from 'lottie-react';
+import { useAnimation } from '../contexts/AnimationContext';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { lottieData, isLoading: animationLoading } = useAnimation();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,27 +33,28 @@ const BlogPostPage = () => {
     fetchPost();
   }, [slug]);
 
-  // Track scroll progress - only starts when white content hits viewport top
+  // Track scroll progress - starts when white content passes bottom of nav bar (~58px)
   useEffect(() => {
     const handleScroll = () => {
       if (!whiteContentRef.current) return;
 
+      const navBarHeight = 58; // Height of sticky nav bar
       const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
       const whiteContentHeight = whiteContentRef.current.offsetHeight;
       const viewportHeight = window.innerHeight;
 
-      // Only start progress when white content reaches top of viewport
-      if (whiteContentTop > 0) {
+      // Only start progress when white content passes below the nav bar
+      if (whiteContentTop > navBarHeight) {
         setScrollProgress(0);
         return;
       }
 
-      // Calculate progress based on how much of white content has scrolled past
-      const scrolledPast = Math.abs(whiteContentTop);
-      const scrollableHeight = whiteContentHeight - viewportHeight;
+      // Calculate progress based on how much of white content has scrolled past the nav bar
+      const scrolledPast = navBarHeight - whiteContentTop;
+      const scrollableHeight = whiteContentHeight - viewportHeight + navBarHeight;
 
       if (scrollableHeight > 0) {
-        const progress = Math.min(100, (scrolledPast / scrollableHeight) * 100);
+        const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
         setScrollProgress(progress);
       }
     };
@@ -204,7 +208,7 @@ const BlogPostPage = () => {
         const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: plainText })
+          body: JSON.stringify({ text: plainText, voiceGender: 'male' })
         });
 
         if (!response.ok) {
@@ -360,7 +364,23 @@ const BlogPostPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#EF0B72]"></div>
+        <div
+          style={{
+            opacity: lottieData && !animationLoading ? 1 : 0,
+            transition: 'opacity 0.3s ease-out'
+          }}
+        >
+          {lottieData && Object.keys(lottieData).length > 0 ? (
+            <Lottie
+              animationData={lottieData}
+              loop={true}
+              autoplay={true}
+              style={{ width: 200, height: 200 }}
+            />
+          ) : (
+            <div className="w-[200px] h-[200px]" />
+          )}
+        </div>
       </div>
     );
   }
@@ -394,7 +414,7 @@ const BlogPostPage = () => {
   return (
     <>
       <SEO
-        title={post.meta_title || post.title}
+        title={`Ignite | ${post.title}`}
         description={post.meta_description || post.excerpt}
         image={post.og_image || post.featured_image}
         url={fullUrl}
@@ -405,15 +425,19 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-black">
         {/* Sticky Top Navigation Bar with Progress Indicator */}
         <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <Link to="/" className="inline-block">
-              <div 
+              <div
                 className="w-32 h-10 bg-contain bg-no-repeat bg-left"
                 style={{
                   backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
                 }}
               />
             </Link>
+            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 group">
+              <span className="text-white text-sm font-medium">Discover</span>
+              <ChevronRight className="w-4 h-4 text-white group-hover:text-[#EF0B72] transition-colors" />
+            </a>
           </div>
           {/* Progress Bar - only shows pink line when scrolling */}
           {scrollProgress > 0 && (
@@ -428,24 +452,24 @@ const BlogPostPage = () => {
         <div className="bg-black">
           <div className="max-w-4xl mx-auto px-6 py-12">
             {/* Breadcrumb Navigation - Left aligned */}
-            <nav className="flex items-center gap-2 text-sm text-gray-400 mb-7">
-              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center">
+            <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
+              <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
                 <Home className="w-4 h-4" />
               </Link>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-gray-500">Posts</span>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-white truncate max-w-md">{post.title}</span>
+              <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
+              <span style={{ color: '#F0F0F2' }}>Posts</span>
+              <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
+              <span className="truncate max-w-md" style={{ color: '#F0F0F2' }}>{post.title}</span>
             </nav>
 
             {/* Title with typing animation - Left aligned */}
             <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
               {typedTitle}
-              {!isTypingComplete && <span className="animate-pulse">|</span>}
+              {!isTypingComplete && <span className="animate-pulse" style={{ fontWeight: 300 }}>|</span>}
             </h1>
 
             {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
-            <p className="text-xl text-[#EF0B72] mb-7 leading-relaxed text-left">
+            <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
               {post.excerpt}
             </p>
           </div>
@@ -493,7 +517,7 @@ const BlogPostPage = () => {
                   <Volume2 size={18} className="text-white" />
                 )}
               </button>
-              <span className="text-black text-sm font-medium">
+              <span className="text-black font-light" style={{ fontSize: '1.05rem' }}>
                 {preGeneratedAudio?.duration_seconds
                   ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute listen`
                   : contentWords.length > 0
@@ -503,8 +527,8 @@ const BlogPostPage = () => {
             </div>
           </div>
 
-          <div className="mx-auto px-6 pb-16" style={{ maxWidth: '762px' }}>
-            <article>
+          <div className="max-w-4xl mx-auto px-6 pb-16">
+            <article style={{ maxWidth: '762px' }}>
               {/* Article Body */}
               <div
                 className="prose prose-lg max-w-none"
@@ -518,21 +542,21 @@ const BlogPostPage = () => {
                   .prose h2 {
                     background-color: black;
                     color: white;
-                    font-size: 1.5rem;
+                    font-size: 1.4rem;
                     font-weight: 500;
                     padding: 0.35rem 0.5rem;
                     border-radius: 0.2rem;
                     max-width: 750px;
                     width: fit-content;
                     margin-top: 3rem;
-                    margin-bottom: 1.5rem;
+                    margin-bottom: 0.5rem;
                   }
                   .prose h3 {
                     color: #000000;
                     font-size: 1.25rem;
-                    font-weight: 600;
-                    margin-top: 2.5rem;
-                    margin-bottom: 1rem;
+                    font-weight: 700;
+                    margin-top: 2rem;
+                    margin-bottom: 0.5rem;
                   }
                   .prose p {
                     color: #000000;

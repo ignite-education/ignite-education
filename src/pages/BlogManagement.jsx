@@ -35,9 +35,11 @@ const BlogManagement = () => {
     author_avatar: '',
     meta_title: '',
     meta_description: '',
+    og_image: '',
     status: 'draft',
     published_at: ''
   });
+  const [showSeoPanel, setShowSeoPanel] = useState(false);
 
   useEffect(() => {
     loadPosts();
@@ -58,17 +60,37 @@ const BlogManagement = () => {
   };
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const updated = { ...prev, [field]: value };
 
-    if (field === 'title' && !selectedPost) {
-      setFormData(prev => ({ ...prev, slug: generateSlug(value) }));
-    }
-    if (field === 'title' && !formData.meta_title) {
-      setFormData(prev => ({ ...prev, meta_title: value.substring(0, 60) }));
-    }
-    if (field === 'excerpt' && !formData.meta_description) {
-      setFormData(prev => ({ ...prev, meta_description: value.substring(0, 160) }));
-    }
+      // Auto-generate slug from title for new posts
+      if (field === 'title' && !selectedPost) {
+        updated.slug = generateSlug(value);
+      }
+
+      // Auto-populate SEO meta title from title (max 60 chars for Google)
+      if (field === 'title') {
+        // Only auto-update if meta_title is empty or was auto-generated
+        if (!prev.meta_title || prev.meta_title === prev.title.substring(0, 60)) {
+          updated.meta_title = value.substring(0, 60);
+        }
+      }
+
+      // Auto-populate SEO meta description from excerpt (max 160 chars for Google)
+      if (field === 'excerpt') {
+        // Only auto-update if meta_description is empty or was auto-generated
+        if (!prev.meta_description || prev.meta_description === prev.excerpt.substring(0, 160)) {
+          updated.meta_description = value.substring(0, 160);
+        }
+      }
+
+      // Auto-populate og_image from featured_image if not set
+      if (field === 'featured_image' && !prev.og_image) {
+        updated.og_image = value;
+      }
+
+      return updated;
+    });
   };
 
   const handleSavePost = async () => {
@@ -122,6 +144,7 @@ const BlogManagement = () => {
       author_avatar: post.author_avatar || '',
       meta_title: post.meta_title || '',
       meta_description: post.meta_description || '',
+      og_image: post.og_image || '',
       status: post.status || 'draft',
       published_at: post.published_at || ''
     });
@@ -199,9 +222,11 @@ const BlogManagement = () => {
       author_avatar: '',
       meta_title: '',
       meta_description: '',
+      og_image: '',
       status: 'draft',
       published_at: ''
     });
+    setShowSeoPanel(false);
   };
 
   const handleDeletePost = async (postId) => {
@@ -510,6 +535,91 @@ const BlogManagement = () => {
                   className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white"
                 />
               </div>
+            </div>
+
+            {/* SEO Settings Panel */}
+            <div className="mb-6 border border-white/20 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowSeoPanel(!showSeoPanel)}
+                className="w-full px-4 py-3 bg-white/5 hover:bg-white/10 flex items-center justify-between text-left"
+              >
+                <span className="font-medium">SEO Settings</span>
+                <span className={`transform transition-transform ${showSeoPanel ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+
+              {showSeoPanel && (
+                <div className="p-4 space-y-4 bg-white/5">
+                  {/* Meta Title */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Meta Title
+                      <span className={`ml-2 text-xs ${formData.meta_title.length > 60 ? 'text-red-400' : 'text-gray-400'}`}>
+                        ({formData.meta_title.length}/60)
+                      </span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.meta_title}
+                      onChange={(e) => handleInputChange('meta_title', e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                      placeholder="SEO title (appears in search results)"
+                      maxLength={70}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Optimal: 50-60 characters. This appears as the clickable headline in search results.</p>
+                  </div>
+
+                  {/* Meta Description */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Meta Description
+                      <span className={`ml-2 text-xs ${formData.meta_description.length > 160 ? 'text-red-400' : 'text-gray-400'}`}>
+                        ({formData.meta_description.length}/160)
+                      </span>
+                    </label>
+                    <textarea
+                      value={formData.meta_description}
+                      onChange={(e) => handleInputChange('meta_description', e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] h-20"
+                      placeholder="SEO description (appears in search results)"
+                      maxLength={170}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Optimal: 150-160 characters. This appears below the title in search results.</p>
+                  </div>
+
+                  {/* OG Image */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Social Share Image (OG Image)</label>
+                    <input
+                      type="text"
+                      value={formData.og_image}
+                      onChange={(e) => handleInputChange('og_image', e.target.value)}
+                      className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                      placeholder="Image URL for social media sharing (defaults to featured image)"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Recommended: 1200x630px. Used when shared on Facebook, Twitter, LinkedIn.</p>
+                    {formData.og_image && (
+                      <div className="mt-2">
+                        <img src={formData.og_image} alt="OG Preview" className="max-w-xs rounded border border-white/20" onError={(e) => e.target.style.display = 'none'} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* SEO Preview */}
+                  <div className="mt-4 p-4 bg-white rounded-lg">
+                    <p className="text-xs text-gray-500 mb-2">Google Search Preview:</p>
+                    <div className="text-blue-600 text-lg hover:underline cursor-pointer truncate">
+                      {formData.meta_title || formData.title || 'Page Title'}
+                    </div>
+                    <div className="text-green-700 text-sm truncate">
+                      ignite.education/blog/{formData.slug || 'post-url'}
+                    </div>
+                    <div className="text-gray-600 text-sm line-clamp-2">
+                      {formData.meta_description || formData.excerpt || 'Page description will appear here...'}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 items-center flex-wrap">
