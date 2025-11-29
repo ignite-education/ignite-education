@@ -239,9 +239,12 @@ const BlogManagement = () => {
       const fileName = `blog_${Date.now()}.${fileExt}`;
       const filePath = `curriculum/${fileName}`;
 
+      // Convert file to ArrayBuffer for proper upload
+      const arrayBuffer = await fileToUpload.arrayBuffer();
+
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, fileToUpload, {
+        .upload(filePath, arrayBuffer, {
           contentType: fileToUpload.type,
           upsert: false
         });
