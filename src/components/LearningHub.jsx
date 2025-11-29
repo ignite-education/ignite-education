@@ -2605,6 +2605,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   // Handle read-aloud functionality with ElevenLabs
   const handleReadAloud = async () => {
     console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
+    console.log('🔍 State check:', { isReading, audioRef: !!audioRef.current, isPausedRef: isPausedRef.current });
 
     // Prevent multiple simultaneous calls - use a 500ms debounce
     const now = Date.now();
@@ -2616,98 +2617,100 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     isHandlingReadAloud.current = now;
 
     try {
-      // If audio is playing, pause it
+      // Case 1: If audio is playing, pause it
       if (isReading && audioRef.current) {
-      // Abort any in-flight API requests
-      if (narrateAbortController.current) {
-        narrateAbortController.current.abort();
-      }
-
-      // Pause current audio (preserve position and reference for resume)
-      const audio = audioRef.current;
-      audio.pause();
-
-      // Verify pause succeeded
-      if (!audio.paused) {
-        console.warn('Audio pause failed - forcing pause state');
-        audio.pause();
-      }
-
-      // Clear word highlighting timer
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-        wordTimerRef.current = null;
-      }
-      setCurrentNarrationWord(-1);
-      setIsNarratingTitle(false);
-
-      // Update state (keep audioRef and currentNarrationSection for resume)
-      setIsReading(false);
-      isPausedRef.current = true;
-      isHandlingReadAloud.current = 0;
-      return;
-    }
-
-    // If audio exists and is paused, resume it
-    if (audioRef.current && !isReading && isPausedRef.current) {
-      const audio = audioRef.current;
-      audio.play();
-      setIsReading(true);
-      isPausedRef.current = false;
-
-      // Resume word highlighting from current position
-      const wordTimestamps = wordTimestampsRef.current;
-      if (wordTimestamps && wordTimestamps.length > 0) {
-        const wordsBeforeThisSection = currentLessonSections
-          .slice(0, currentNarrationSection)
-          .map(s => extractTextFromSection(s))
-          .join(' ')
-          .split(/\s+/)
-          .filter(w => w.length > 0).length;
-
-        // Clear existing timer
-        if (wordTimerRef.current) {
-          cancelAnimationFrame(wordTimerRef.current);
+        console.log('⏸️ Pausing audio');
+        // Abort any in-flight API requests
+        if (narrateAbortController.current) {
+          narrateAbortController.current.abort();
         }
 
-        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
-        const updateHighlight = () => {
-          if (!audio || audio.paused || audio.ended) {
-            return;
-          }
+        // Pause current audio (preserve position and reference for resume)
+        const audio = audioRef.current;
+        audio.pause();
 
-          const currentTime = audio.currentTime; // Current playback position in seconds
+        // Verify pause succeeded
+        if (!audio.paused) {
+          console.warn('Audio pause failed - forcing pause state');
+          audio.pause();
+        }
 
-          // Find which word should be highlighted based on actual timestamps
-          let foundWord = false;
-          for (let i = 0; i < wordTimestamps.length; i++) {
-            const timestamp = wordTimestamps[i];
-            // Highlight if current time is within this word's time range
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
-              setCurrentNarrationWord(wordsBeforeThisSection + i);
-              foundWord = true;
-              break;
-            }
-          }
+        // Clear word highlighting timer
+        if (wordTimerRef.current) {
+          cancelAnimationFrame(wordTimerRef.current);
+          wordTimerRef.current = null;
+        }
+        setCurrentNarrationWord(-1);
+        setIsNarratingTitle(false);
 
-          // If we're past all words, clear highlighting
-          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-            setCurrentNarrationWord(-1);
-            wordTimerRef.current = null;
-            return;
-          }
-
-          wordTimerRef.current = requestAnimationFrame(updateHighlight);
-        };
-
-        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        // Update state (keep audioRef and currentNarrationSection for resume)
+        setIsReading(false);
+        isPausedRef.current = true;
+        isHandlingReadAloud.current = 0;
+        return;
       }
 
-      isHandlingReadAloud.current = 0;
-      return;
-    }
+      // Case 2: If audio exists and is paused, resume it
+      if (audioRef.current && !isReading && isPausedRef.current) {
+        console.log('▶️ Resuming audio');
+        const audio = audioRef.current;
+        audio.play();
+        setIsReading(true);
+        isPausedRef.current = false;
 
-      // Start reading from the beginning with lesson title
+        // Resume word highlighting from current position
+        const wordTimestamps = wordTimestampsRef.current;
+        if (wordTimestamps && wordTimestamps.length > 0) {
+          const wordsBeforeThisSection = currentLessonSections
+            .slice(0, currentNarrationSection)
+            .map(s => extractTextFromSection(s))
+            .join(' ')
+            .split(/\s+/)
+            .filter(w => w.length > 0).length;
+
+          // Clear existing timer
+          if (wordTimerRef.current) {
+            cancelAnimationFrame(wordTimerRef.current);
+          }
+
+          // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
+          const updateHighlight = () => {
+            if (!audio || audio.paused || audio.ended) {
+              return;
+            }
+
+            const currentTime = audio.currentTime; // Current playback position in seconds
+
+            // Find which word should be highlighted based on actual timestamps
+            let foundWord = false;
+            for (let i = 0; i < wordTimestamps.length; i++) {
+              const timestamp = wordTimestamps[i];
+              // Highlight if current time is within this word's time range
+              if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+                setCurrentNarrationWord(wordsBeforeThisSection + i);
+                foundWord = true;
+                break;
+              }
+            }
+
+            // If we're past all words, clear highlighting
+            if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+              setCurrentNarrationWord(-1);
+              wordTimerRef.current = null;
+              return;
+            }
+
+            wordTimerRef.current = requestAnimationFrame(updateHighlight);
+          };
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        }
+
+        isHandlingReadAloud.current = 0;
+        return;
+      }
+
+      // Case 3: Start reading from the beginning with lesson title
       console.log('🎬 Starting narration from beginning');
       setIsReading(true);
       isPausedRef.current = false;
@@ -2720,7 +2723,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       console.log('🔵 handleReadAloud completed, narration started');
     } catch (error) {
-      console.error('Error in handleReadAloud:', error);
+      console.error('❌ Error in handleReadAloud:', error);
       isHandlingReadAloud.current = 0;
       setIsReading(false);
     }
