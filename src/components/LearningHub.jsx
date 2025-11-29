@@ -2174,11 +2174,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           const currentTime = audio.currentTime; // Current playback position in seconds
 
           // Find which word should be highlighted based on actual timestamps
+          // Add small delay for more natural highlighting timing (highlight slightly after word starts)
+          const HIGHLIGHT_DELAY = 0.1; // 100ms delay
           let foundWord = false;
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
-            // Highlight if current time is within this word's time range
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            // Highlight if current time is within this word's time range (with delay)
+            if (currentTime >= (timestamp.start + HIGHLIGHT_DELAY) && currentTime < timestamp.end) {
               setCurrentNarrationWord(wordsBeforeThisSection + i);
               foundWord = true;
               break;
@@ -2874,10 +2876,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const currentTime = audio.currentTime;
 
         // Find which word should be highlighted based on actual timestamps
+        // Add small delay for more natural highlighting timing (highlight slightly after word starts)
+        const HIGHLIGHT_DELAY = 0.1; // 100ms delay
         let foundWord = false;
         for (let i = 0; i < wordTimestamps.length; i++) {
           const timestamp = wordTimestamps[i];
-          if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+          if (currentTime >= (timestamp.start + HIGHLIGHT_DELAY) && currentTime < timestamp.end) {
             setCurrentNarrationWord(wordsBeforeThisSection + i);
             foundWord = true;
             break;
