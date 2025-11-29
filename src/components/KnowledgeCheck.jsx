@@ -50,16 +50,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Build the message based on whether it's the first lesson
         let messageText;
         if (isFirstLesson) {
-          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
+          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.`;
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.\n\n**Ready to begin?**`;
+          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.`;
         }
 
         setChatMessages([{
           type: 'assistant',
           text: messageText,
+          boldSuffix: 'Ready to begin?',
           isComplete: false
         }]);
         setPendingTypingIndex(0);
@@ -252,7 +253,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person as 'the student', 'they', or 'the user'. Your feedback response MUST be complete and self-contained. If the answer is incorrect, incomplete, or they say 'unsure', 'I don't know', or similar, you MUST include the full correct answer in your response. NEVER use phrases like 'Let me explain further' or 'Let me provide more details' without IMMEDIATELY following with the actual answer. Structure: 1) Brief acknowledgment speaking directly to them, 2) Guide them through the complete correct answer with specific details from the lesson. Example of BAD response: 'The student did not provide details. They should have described...' Example of GOOD response: 'No problem! During the Launch stage, you would focus on coordinating the go-to-market strategy, ensuring launch readiness, and monitoring key metrics like activation rate, churn, and product feedback. You would use tools such as...'",
+          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person as 'the student', 'they', or 'the user'. FOR CORRECT ANSWERS: Keep feedback brief - maximum TWO sentences. Example: 'Great job! You correctly identified the key metrics used during the Launch stage.' FOR INCORRECT/UNSURE ANSWERS: Your feedback MUST be complete and include the full correct answer. NEVER use phrases like 'Let me explain further' without IMMEDIATELY providing the answer. Structure: 1) Brief acknowledgment, 2) Guide them through the complete correct answer with specific details from the lesson. Example of GOOD incorrect response: 'No problem! During the Launch stage, you would focus on coordinating the go-to-market strategy, ensuring launch readiness, and monitoring key metrics like activation rate, churn, and product feedback.' IMPORTANT: NEVER offer to provide more information or help at the end of your response. Do NOT say things like 'I'd be happy to provide more details if that would be helpful' or 'Let me know if you'd like more information'. The user should refer to the lesson content for additional details.",
         }),
       });
 
@@ -595,6 +596,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                             </p>
                           );
                         })}
+                        {/* Show bold suffix instantly when message is complete */}
+                        {msg.boldSuffix && msg.isComplete && (
+                          <p className="mt-3 font-medium">{msg.boldSuffix}</p>
+                        )}
                       </div>
                     </div>
                   )
@@ -616,10 +621,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   borderRadius: '8px',
                   backgroundColor: '#f3f4f6'
                 }}>
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  <div className="flex" style={{ gap: '3px' }}>
+                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '6.8px', height: '6.8px', animationDelay: '0ms' }}></span>
+                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '6.8px', height: '6.8px', animationDelay: '150ms' }}></span>
+                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: '6.8px', height: '6.8px', animationDelay: '300ms' }}></span>
                   </div>
                 </div>
               </div>
@@ -662,12 +667,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 </button>
               </form>
             ) : (
-              <div className="space-y-3">
+              <div style={{ paddingTop: '0.4rem' }}>
                 {score >= PASS_THRESHOLD ? (
                   <button
                     onClick={handleProceed}
-                    className="w-full text-white rounded-xl px-5 py-3 text-sm font-semibold transition"
-                    style={{ backgroundColor: '#EF0B72' }}
+                    className="w-full text-white px-4 py-2 font-medium transition"
+                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#EF0B72', marginTop: '8px' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
                   >
@@ -676,8 +681,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 ) : (
                   <button
                     onClick={handleClose}
-                    className="w-full text-white rounded-xl px-5 py-3 text-sm font-semibold transition"
-                    style={{ backgroundColor: '#7714E0' }}
+                    className="w-full text-white px-4 py-2 font-medium transition"
+                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0', marginTop: '8px' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}
                   >
