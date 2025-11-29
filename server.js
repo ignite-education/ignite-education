@@ -1035,7 +1035,377 @@ app.post('/api/text-to-speech-timestamps', async (req, res) => {
   }
 });
 
+// ============================================
+// PRE-GENERATED LESSON AUDIO ENDPOINTS
+// ============================================
 
+// Helper: Extract text from lesson sections
+const extractLessonText = (lessonName, sections) => {
+  const textParts = [lessonName]; // Start with lesson title
+
+  for (const section of sections) {
+    if (section.content_type === 'heading' && section.content?.text) {
+      textParts.push(section.content.text);
+    } else if (section.content_type === 'paragraph' && section.content?.text) {
+      // Strip markdown formatting for cleaner narration
+      let text = section.content.text;
+      text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
+      text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
+      text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
+      textParts.push(text);
+    } else if (section.content_type === 'list' && section.content?.items) {
+      textParts.push(section.content.items.join('. '));
+    }
+  }
+
+  return textParts.join('. ');
+};
+
+// Helper: Build section markers from sections and alignment data
+const buildSectionMarkers = (lessonName, sections, fullText, alignment) => {
+  const markers = [];
+  let charPosition = 0;
+
+  // Helper to find time for a character position
+  const getTimeForChar = (charPos) => {
+    if (!alignment || !alignment.characters) return 0;
+    const idx = Math.min(charPos, alignment.characters.length - 1);
+    return alignment.character_start_times_seconds[idx] || 0;
+  };
+
+  const getEndTimeForChar = (charPos) => {
+    if (!alignment || !alignment.characters) return 0;
+    const idx = Math.min(charPos, alignment.characters.length - 1);
+    return alignment.character_end_times_seconds[idx] || 0;
+  };
+
+  // Add lesson title as first marker
+  const titleEnd = lessonName.length;
+  markers.push({
+    section_index: -1, // -1 for title
+    type: 'title',
+    text: lessonName,
+    char_start: 0,
+    char_end: titleEnd,
+    time_start: getTimeForChar(0),
+    time_end: getEndTimeForChar(titleEnd)
+  });
+  charPosition = titleEnd + 2; // Account for ". " separator
+
+  // Add markers for each section
+  sections.forEach((section, index) => {
+    let sectionText = '';
+
+    if (section.content_type === 'heading' && section.content?.text) {
+      sectionText = section.content.text;
+    } else if (section.content_type === 'paragraph' && section.content?.text) {
+      let text = section.content.text;
+      text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+      text = text.replace(/\*(.*?)\*/g, '$1');
+      text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1');
+      sectionText = text;
+    } else if (section.content_type === 'list' && section.content?.items) {
+      sectionText = section.content.items.join('. ');
+    }
+
+    if (sectionText) {
+      const charEnd = charPosition + sectionText.length;
+      markers.push({
+        section_index: index,
+        type: section.content_type,
+        text: sectionText.substring(0, 100) + (sectionText.length > 100 ? '...' : ''),
+        char_start: charPosition,
+        char_end: charEnd,
+        time_start: getTimeForChar(charPosition),
+        time_end: getEndTimeForChar(charEnd)
+      });
+      charPosition = charEnd + 2; // Account for ". " separator
+    }
+  });
+
+  return markers;
+};
+
+// Helper: Chunk text for ElevenLabs limit
+const chunkText = (text, maxChars = 4800) => {
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  const chunks = [];
+  let currentChunk = '';
+
+  for (const sentence of sentences) {
+    if ((currentChunk + sentence).length > maxChars) {
+      if (currentChunk) chunks.push(currentChunk.trim());
+      currentChunk = sentence;
+    } else {
+      currentChunk += sentence;
+    }
+  }
+  if (currentChunk) chunks.push(currentChunk.trim());
+
+  return chunks;
+};
+
+// GET /api/lesson-audio/:courseId/:module/:lesson - Get pre-generated audio
+app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+
+    const { data, error } = await supabase
+      .from('lesson_audio')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', parseInt(module))
+      .eq('lesson_number', parseInt(lesson))
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Audio not found for this lesson' });
+    }
+
+    res.json({
+      audio_base64: data.audio_base64,
+      alignment_data: data.alignment_data,
+      section_markers: data.section_markers,
+      full_text: data.full_text,
+      duration_seconds: data.duration_seconds,
+      content_hash: data.content_hash,
+      created_at: data.created_at
+    });
+  } catch (error) {
+    console.error('Error fetching lesson audio:', error);
+    res.status(500).json({ error: 'Failed to fetch lesson audio', message: error.message });
+  }
+});
+
+// GET /api/admin/lesson-audio-status/:courseId/:module/:lesson - Check audio status
+app.get('/api/admin/lesson-audio-status/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+    const moduleNum = parseInt(module);
+    const lessonNum = parseInt(lesson);
+
+    // Fetch lesson sections to calculate current content hash
+    const { data: sections, error: sectionsError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum)
+      .order('section_number', { ascending: true });
+
+    if (sectionsError) {
+      return res.status(500).json({ error: 'Failed to fetch lesson sections', message: sectionsError.message });
+    }
+
+    // Get lesson name from first section or default
+    const lessonName = sections?.[0]?.lesson_name || `Lesson ${lessonNum}`;
+    const fullText = extractLessonText(lessonName, sections || []);
+    const currentHash = crypto.createHash('sha256').update(fullText).digest('hex');
+
+    // Check existing audio
+    const { data: audio, error: audioError } = await supabase
+      .from('lesson_audio')
+      .select('content_hash, created_at, duration_seconds')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum)
+      .single();
+
+    const hasAudio = !audioError && audio;
+    const audioHash = audio?.content_hash || null;
+    const needsRegeneration = hasAudio ? (audioHash !== currentHash) : true;
+
+    res.json({
+      hasAudio,
+      contentHash: currentHash,
+      audioHash,
+      needsRegeneration,
+      lastGenerated: audio?.created_at || null,
+      durationSeconds: audio?.duration_seconds || null,
+      characterCount: fullText.length
+    });
+  } catch (error) {
+    console.error('Error checking lesson audio status:', error);
+    res.status(500).json({ error: 'Failed to check audio status', message: error.message });
+  }
+});
+
+// POST /api/admin/generate-lesson-audio - Generate audio for a lesson
+app.post('/api/admin/generate-lesson-audio', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber, forceRegenerate = false, voiceGender = 'male' } = req.body;
+
+    console.log(`🎤 Generating lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    // 1. Fetch lesson sections
+    const { data: sections, error: sectionsError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (sectionsError) {
+      return res.status(500).json({ error: 'Failed to fetch lesson sections', message: sectionsError.message });
+    }
+
+    if (!sections || sections.length === 0) {
+      return res.status(404).json({ error: 'No sections found for this lesson' });
+    }
+
+    // 2. Extract full text
+    const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
+    const fullText = extractLessonText(lessonName, sections);
+    const contentHash = crypto.createHash('sha256').update(fullText).digest('hex');
+
+    console.log(`📝 Lesson text: ${fullText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+
+    // 3. Check if audio already exists with same hash
+    if (!forceRegenerate) {
+      const { data: existing } = await supabase
+        .from('lesson_audio')
+        .select('id, content_hash')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .single();
+
+      if (existing && existing.content_hash === contentHash) {
+        console.log('✅ Audio already exists with same hash, skipping regeneration');
+        return res.json({
+          success: true,
+          skipped: true,
+          message: 'Audio already up to date',
+          contentHash
+        });
+      }
+    }
+
+    // 4. Select voice
+    let voiceId;
+    if (voiceGender === 'male') {
+      voiceId = 'JBFqnCBsd6RMkjVDRZzb'; // George - British male
+    } else {
+      voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
+    }
+
+    // 5. Chunk text if needed and generate audio
+    const chunks = chunkText(fullText, 4800);
+    console.log(`📦 Split into ${chunks.length} chunks`);
+
+    let combinedAudioBase64 = '';
+    let combinedAlignment = {
+      characters: [],
+      character_start_times_seconds: [],
+      character_end_times_seconds: []
+    };
+    let totalDuration = 0;
+    let charOffset = 0;
+
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      console.log(`🎵 Generating chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
+
+      const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+        text: chunk,
+        model_id: 'eleven_multilingual_v2',
+        output_format: 'mp3_44100_128',
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.75,
+          style: 0.0,
+          use_speaker_boost: true
+        }
+      });
+
+      // Get duration from alignment data
+      const chunkEndTimes = response.alignment?.characterEndTimesSeconds || [];
+      const chunkDuration = chunkEndTimes.length > 0 ? chunkEndTimes[chunkEndTimes.length - 1] : 0;
+
+      if (i === 0) {
+        combinedAudioBase64 = response.audioBase64;
+      } else {
+        // For multiple chunks, we need to concatenate the audio
+        // This is simplified - in production you'd want to properly merge MP3 files
+        // For now, we'll concatenate base64 (works but may have small artifacts at boundaries)
+        const existingBuffer = Buffer.from(combinedAudioBase64, 'base64');
+        const newBuffer = Buffer.from(response.audioBase64, 'base64');
+        const combined = Buffer.concat([existingBuffer, newBuffer]);
+        combinedAudioBase64 = combined.toString('base64');
+      }
+
+      // Combine alignment data with time offset
+      if (response.alignment) {
+        for (let j = 0; j < response.alignment.characters.length; j++) {
+          combinedAlignment.characters.push(response.alignment.characters[j]);
+          combinedAlignment.character_start_times_seconds.push(
+            response.alignment.characterStartTimesSeconds[j] + totalDuration
+          );
+          combinedAlignment.character_end_times_seconds.push(
+            response.alignment.characterEndTimesSeconds[j] + totalDuration
+          );
+        }
+      }
+
+      totalDuration += chunkDuration;
+      charOffset += chunk.length;
+    }
+
+    console.log(`✅ Audio generated: ${totalDuration.toFixed(2)}s, ${combinedAlignment.characters.length} chars tracked`);
+
+    // 6. Build section markers
+    const sectionMarkers = buildSectionMarkers(lessonName, sections, fullText, combinedAlignment);
+
+    // 7. Store in database (upsert)
+    const { data: insertedAudio, error: insertError } = await supabase
+      .from('lesson_audio')
+      .upsert({
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        content_hash: contentHash,
+        lesson_name: lessonName,
+        full_text: fullText,
+        audio_base64: combinedAudioBase64,
+        alignment_data: combinedAlignment,
+        section_markers: sectionMarkers,
+        voice_gender: voiceGender,
+        voice_id: voiceId,
+        duration_seconds: totalDuration,
+        character_count: fullText.length,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'course_id,module_number,lesson_number'
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error storing lesson audio:', insertError);
+      return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
+    }
+
+    console.log(`💾 Audio stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    res.json({
+      success: true,
+      lessonAudio: {
+        id: insertedAudio.id,
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        duration_seconds: totalDuration,
+        character_count: fullText.length,
+        content_hash: contentHash,
+        created_at: insertedAudio.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Error generating lesson audio:', error);
+    res.status(500).json({ error: 'Failed to generate lesson audio', message: error.message });
+  }
+});
 
 let redditRateLimitResetTime = 0;
 

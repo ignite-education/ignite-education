@@ -176,6 +176,10 @@ const LearningHub = () => {
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
+  // Pre-generated lesson audio state
+  const [lessonAudio, setLessonAudio] = useState(null);
+  const [lessonAudioLoading, setLessonAudioLoading] = useState(false);
+
   // Voice settings - hardcoded defaults (no user controls)
   const voiceGender = 'male'; // Fixed to male voice
   const playbackSpeed = 1.0; // Fixed to 1x speed
@@ -300,6 +304,42 @@ const LearningHub = () => {
 
     loadLessonRating();
   }, [user, currentModule, currentLesson]);
+
+  // Fetch pre-generated lesson audio when lesson changes
+  useEffect(() => {
+    const fetchLessonAudio = async () => {
+      // Reset audio state when lesson changes
+      setLessonAudio(null);
+      setLessonAudioLoading(true);
+
+      try {
+        const courseId = await getUserCourseId();
+        const response = await fetch(
+          `https://ignite-education-api.onrender.com/api/lesson-audio/${courseId}/${currentModule}/${currentLesson}`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setLessonAudio(data);
+          console.log('✅ Pre-generated audio loaded for lesson', {
+            module: currentModule,
+            lesson: currentLesson,
+            duration: data.duration_seconds
+          });
+        } else if (response.status === 404) {
+          console.log('ℹ️ No pre-generated audio for this lesson');
+        } else {
+          console.warn('⚠️ Failed to fetch pre-generated audio:', response.status);
+        }
+      } catch (error) {
+        console.error('Error fetching pre-generated audio:', error);
+      } finally {
+        setLessonAudioLoading(false);
+      }
+    };
+
+    fetchLessonAudio();
+  }, [currentModule, currentLesson]);
 
   // Update current module and lesson when URL params change
   useEffect(() => {
@@ -2603,10 +2643,119 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     });
   };
 
+  // Play pre-generated lesson audio with word highlighting
+  const playPreGeneratedAudio = () => {
+    if (!lessonAudio) return;
+
+    console.log('🎬 Playing pre-generated audio for lesson');
+
+    // Convert base64 audio to blob
+    const audioData = atob(lessonAudio.audio_base64);
+    const arrayBuffer = new ArrayBuffer(audioData.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < audioData.length; i++) {
+      view[i] = audioData.charCodeAt(i);
+    }
+    const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    // Convert character timestamps to word timestamps for the full lesson
+    if (lessonAudio.alignment_data) {
+      const wordTimestamps = convertCharacterToWordTimestamps(
+        lessonAudio.full_text,
+        lessonAudio.alignment_data.characters,
+        lessonAudio.alignment_data.character_start_times_seconds,
+        lessonAudio.alignment_data.character_end_times_seconds
+      );
+      wordTimestampsRef.current = wordTimestamps;
+      console.log(`📝 Converted ${wordTimestamps.length} word timestamps for pre-generated audio`);
+    }
+
+    audio.onended = () => {
+      console.log('✅ Pre-generated audio playback complete');
+      URL.revokeObjectURL(audioUrl);
+      setIsReading(false);
+      isPausedRef.current = false;
+      setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
+      audioRef.current = null;
+
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+    };
+
+    audio.onerror = (e) => {
+      console.error('Pre-generated audio playback error:', e);
+      URL.revokeObjectURL(audioUrl);
+      setIsReading(false);
+    };
+
+    // Set playback speed
+    audio.playbackRate = playbackSpeed;
+
+    // Play the audio
+    audio.play().then(() => {
+      console.log('✅ Pre-generated audio playing');
+      setIsReading(true);
+      isPausedRef.current = false;
+      setIsNarratingTitle(true); // Start with title
+
+      // Start word-by-word highlighting
+      const wordTimestamps = wordTimestampsRef.current;
+      if (wordTimestamps && wordTimestamps.length > 0) {
+        setCurrentNarrationWord(0);
+
+        if (wordTimerRef.current) {
+          cancelAnimationFrame(wordTimerRef.current);
+        }
+
+        // Use requestAnimationFrame for smooth highlighting synchronized with timestamps
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime;
+
+          // Find which word should be highlighted
+          let foundWord = false;
+          for (let i = 0; i < wordTimestamps.length; i++) {
+            const timestamp = wordTimestamps[i];
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              setCurrentNarrationWord(i);
+              foundWord = true;
+              break;
+            }
+          }
+
+          // If past all words, clear highlighting
+          if (!foundWord && wordTimestamps.length > 0 && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+            setCurrentNarrationWord(-1);
+            wordTimerRef.current = null;
+            return;
+          }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      }
+    }).catch((error) => {
+      console.error('Failed to play pre-generated audio:', error);
+      URL.revokeObjectURL(audioUrl);
+      setIsReading(false);
+    });
+  };
+
   // Handle read-aloud functionality with ElevenLabs
   const handleReadAloud = async () => {
     console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
-    console.log('🔍 State check:', { isReading, audioRef: !!audioRef.current, isPausedRef: isPausedRef.current });
+    console.log('🔍 State check:', { isReading, audioRef: !!audioRef.current, isPausedRef: isPausedRef.current, hasPreGeneratedAudio: !!lessonAudio });
 
     // Prevent multiple simultaneous calls - use a 500ms debounce
     const now = Date.now();
@@ -2711,11 +2860,22 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         return;
       }
 
-      // Case 3: Start reading from the beginning with lesson title
+      // Case 3: Start reading from the beginning
       console.log('🎬 Starting narration from beginning');
+      setCurrentNarrationSection(0);
+
+      // Check if pre-generated audio is available
+      if (lessonAudio) {
+        console.log('🎵 Using pre-generated audio');
+        playPreGeneratedAudio();
+        isHandlingReadAloud.current = 0;
+        return;
+      }
+
+      // Fallback: Use on-demand generation (legacy behavior)
+      console.log('⚠️ No pre-generated audio, using on-demand generation');
       setIsReading(true);
       isPausedRef.current = false;
-      setCurrentNarrationSection(0);
 
       // Start prefetching sections immediately in parallel with title
       prefetchInitialSections();
