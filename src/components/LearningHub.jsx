@@ -419,7 +419,11 @@ const LearningHub = () => {
 
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      const container = chatContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [chatMessages]);
 
@@ -3353,7 +3357,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   key={idx}
                   className={msg.type === 'user' ? 'flex justify-end' : ''}
                   style={{
-                    animation: 'slideUp 0.3s ease-out',
+                    animation: 'slideUp 0.25s ease-out forwards',
                     opacity: 1,
                     marginBottom: idx < chatMessages.length - 1 ? '0.5rem' : '0'
                   }}
@@ -3457,7 +3461,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               {isTyping && (
                 <div
                   style={{
-                    animation: 'slideUp 0.3s ease-out',
+                    animation: 'slideUp 0.25s ease-out forwards',
                     marginTop: '1rem'
                   }}
                 >
