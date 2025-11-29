@@ -2694,21 +2694,24 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         console.log(`📝 Converted ${wordTimestamps.length} word timestamps for pre-generated audio`);
       }
 
-      // Get section markers for tracking which section we're in
-      const sectionMarkers = audioData.section_markers || [];
-      console.log(`📍 Section markers:`, sectionMarkers.length);
+      // Build word boundaries from actual lesson sections (same as old system)
+      // This ensures word counts match exactly what's rendered on screen
+      const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
+      const titleWordCount = titleWords.length;
 
-      // Build word counts per section for converting global word index to section-relative
-      // First count words in title
-      const titleMarker = sectionMarkers.find(m => m.section_index === -1);
-      const titleWordCount = titleMarker ? titleMarker.text.split(/\s+/).filter(w => w.length > 0).length : 0;
-
-      // Build cumulative word counts: [titleWords, titleWords + section0Words, ...]
-      const cumulativeWordCounts = [titleWordCount];
-      sectionMarkers.filter(m => m.section_index >= 0).sort((a, b) => a.section_index - b.section_index).forEach(marker => {
-        const sectionWords = marker.text.split(/\s+/).filter(w => w.length > 0).length;
-        cumulativeWordCounts.push(cumulativeWordCounts[cumulativeWordCounts.length - 1] + sectionWords);
+      // Build section word counts from currentLessonSections using extractTextFromSection
+      const sectionWordCounts = currentLessonSections.map(section => {
+        const text = extractTextFromSection(section);
+        return text.split(/\s+/).filter(w => w.length > 0).length;
       });
+
+      // Build cumulative boundaries: [titleEnd, section0End, section1End, ...]
+      const wordBoundaries = [titleWordCount];
+      sectionWordCounts.forEach((count, idx) => {
+        wordBoundaries.push(wordBoundaries[idx] + count);
+      });
+
+      console.log(`📍 Word boundaries: title=${titleWordCount}, sections=${sectionWordCounts.join(',')}, total=${wordBoundaries[wordBoundaries.length - 1]}`);
 
       let lastSectionIndex = -1; // Track to detect section changes for scrolling
 
@@ -2760,30 +2763,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
           const currentTime = audio.currentTime;
 
-          // Find which section we're in based on time
-          let currentSectionIdx = -1; // -1 = title
-          for (const marker of sectionMarkers) {
-            if (currentTime >= marker.time_start && currentTime < marker.time_end) {
-              currentSectionIdx = marker.section_index;
-              break;
-            }
-          }
-
-          // Update section state if changed
-          if (currentSectionIdx !== lastSectionIndex) {
-            lastSectionIndex = currentSectionIdx;
-            if (currentSectionIdx === -1) {
-              setIsNarratingTitle(true);
-              setCurrentNarrationSection(0);
-            } else {
-              setIsNarratingTitle(false);
-              setCurrentNarrationSection(currentSectionIdx);
-              // Scroll to the new section
-              scrollToSection(currentSectionIdx);
-            }
-          }
-
-          // Find which word should be highlighted (global index)
+          // Find global word index from timestamps
           let globalWordIndex = -1;
           for (let i = 0; i < wordTimestamps.length; i++) {
             const timestamp = wordTimestamps[i];
@@ -2794,19 +2774,42 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           }
 
           if (globalWordIndex >= 0) {
-            // Convert global word index to section-relative word index
-            let sectionRelativeWordIndex = globalWordIndex;
+            // Determine which section this word belongs to based on word boundaries
+            let currentSectionIdx = -1; // -1 = title
+            let wordsBeforeSection = 0;
 
-            if (currentSectionIdx === -1) {
-              // In title - word index is already relative (0 to titleWordCount-1)
-              sectionRelativeWordIndex = globalWordIndex;
+            if (globalWordIndex < titleWordCount) {
+              // In title
+              currentSectionIdx = -1;
+              wordsBeforeSection = 0;
             } else {
-              // In a section - subtract words from title and previous sections
-              const wordsBeforeThisSection = cumulativeWordCounts[currentSectionIdx] || 0;
-              sectionRelativeWordIndex = globalWordIndex - wordsBeforeThisSection;
+              // Find which section based on cumulative word counts
+              for (let i = 0; i < sectionWordCounts.length; i++) {
+                if (globalWordIndex < wordBoundaries[i + 1]) {
+                  currentSectionIdx = i;
+                  wordsBeforeSection = wordBoundaries[i];
+                  break;
+                }
+              }
             }
 
-            setCurrentNarrationWord(Math.max(0, sectionRelativeWordIndex));
+            // Update section state if changed
+            if (currentSectionIdx !== lastSectionIndex) {
+              lastSectionIndex = currentSectionIdx;
+              if (currentSectionIdx === -1) {
+                setIsNarratingTitle(true);
+                setCurrentNarrationSection(0);
+              } else {
+                setIsNarratingTitle(false);
+                setCurrentNarrationSection(currentSectionIdx);
+                // Scroll to the new section
+                scrollToSection(currentSectionIdx);
+              }
+            }
+
+            // Set section-relative word index (what the component expects)
+            const sectionRelativeWord = globalWordIndex - wordsBeforeSection;
+            setCurrentNarrationWord(Math.max(0, sectionRelativeWord));
           }
 
           // If past all words, clear highlighting
