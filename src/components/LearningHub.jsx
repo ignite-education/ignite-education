@@ -1912,23 +1912,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const isCurrentWord = !disableNarrationHighlight && isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
 
       // Build className based on highlighting state
-      let className = '';
-      let style = {};
+      // Always apply padding/margin to ALL words so there's no layout shift when highlight toggles
+      let className = 'transition-colors duration-150';
+      let style = {
+        padding: '2px',
+        margin: '-2px',
+        borderRadius: '2px',
+      };
 
       if (isCurrentWord) {
-        // Narration highlight (light pink) - no padding/margin to avoid layout shift
-        style = {
-          backgroundColor: '#fde7f4', // light pink
-          borderRadius: '2px',
-        };
+        // Narration highlight (light pink)
+        style.backgroundColor = '#fde7f4';
       } else if (isExplainedSection) {
         // Explained section highlight (pink)
-        className = 'transition-colors duration-200 bg-pink-100 cursor-pointer hover:bg-pink-200';
-        style = {
-          backgroundColor: hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3',
-          borderRadius: '2px',
-          padding: '2px 0'
-        };
+        className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
+        style.backgroundColor = hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3';
       }
 
       elements.push(
