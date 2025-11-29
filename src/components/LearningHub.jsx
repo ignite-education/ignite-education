@@ -40,9 +40,16 @@ const convertCharacterToWordTimestamps = (text, characters, characterStartTimes,
   let wordEnd = null;
   let currentWord = '';
 
+  // Characters to skip (bullets, dashes used as bullets) - these are rendered separately in the UI
+  const skipChars = new Set(['•', '–', '—', '-']);
+
   for (let i = 0; i < characters.length; i++) {
     const char = characters[i];
     const isWhitespace = /\s/.test(char);
+
+    // Check if this is a bullet/dash at the start of a line (skip it)
+    // We check if currentWord is empty to only skip leading bullets
+    const isLeadingBullet = skipChars.has(char) && currentWord.length === 0;
 
     if (isWhitespace) {
       // End of a word - save it if we have one
@@ -58,6 +65,9 @@ const convertCharacterToWordTimestamps = (text, characters, characterStartTimes,
         wordStart = null;
         wordEnd = null;
       }
+    } else if (isLeadingBullet) {
+      // Skip leading bullet/dash characters (don't include in word)
+      // But don't end the current word since we haven't started one
     } else {
       // Part of a word
       if (wordStart === null) {
