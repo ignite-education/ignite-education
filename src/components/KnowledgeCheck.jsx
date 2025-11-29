@@ -38,10 +38,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Select a random greeting
         const randomGreeting = greetingVariations[Math.floor(Math.random() * greetingVariations.length)];
 
-        const courseNameText = courseName || "the course";
+        const lessonNameText = lessonName || "this lesson";
         const greetingText = firstName
-          ? `${randomGreeting} ${courseNameText}, ${firstName}`
-          : `${randomGreeting} ${courseNameText}`;
+          ? `${randomGreeting} ${lessonNameText}, ${firstName}`
+          : `${randomGreeting} ${lessonNameText}`;
 
         // Build the message based on whether it's the first lesson
         let messageText;
@@ -431,7 +431,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         <p key={i} className={i > 0 ? 'mt-3' : ''}>
                           {parts.map((part, j) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
-                              return <strong key={j} className="font-bold">{part.slice(2, -2)}</strong>;
+                              return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
                             }
                             return <span key={j}>{part}</span>;
                           })}
