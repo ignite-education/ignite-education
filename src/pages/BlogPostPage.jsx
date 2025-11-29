@@ -425,18 +425,18 @@ const BlogPostPage = () => {
             </nav>
 
             {/* Title with typing animation - Left aligned */}
-            <h1 className="text-5xl font-bold text-white mb-6 leading-tight text-left">
+            <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
               {typedTitle}
               {!isTypingComplete && <span className="animate-pulse">|</span>}
             </h1>
 
             {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
-            <p className="text-xl text-[#EF0B72] mb-6 leading-relaxed text-left">
+            <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
               {post.excerpt}
             </p>
 
             {/* Meta Info: Date and Tag - Left aligned */}
-            <div className="flex items-center gap-4 mb-12">
+            <div className="flex items-center gap-4 mb-7">
               <time className="text-gray-400 text-sm">
                 {new Date(post.published_at).toLocaleDateString('en-GB', {
                   day: 'numeric',
@@ -451,15 +451,15 @@ const BlogPostPage = () => {
           </div>
         </div>
 
-        {/* Featured Image - positioned at black/white transition */}
+        {/* Featured Image - positioned at black/white transition, left aligned */}
         {post.featured_image && (
           <div className="relative">
             {/* Black top half behind image */}
             <div className="absolute top-0 left-0 right-0 h-1/2 bg-black" />
             {/* White bottom half behind image */}
             <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
-            <div className="relative max-w-3xl mx-auto px-6">
-              <div className="rounded-lg overflow-hidden">
+            <div className="relative max-w-4xl mx-auto px-6">
+              <div className="rounded-lg overflow-hidden" style={{ maxWidth: '720px' }}>
                 <img
                   src={post.featured_image}
                   alt={post.title}
@@ -472,35 +472,44 @@ const BlogPostPage = () => {
 
         {/* White Content Section */}
         <div className="bg-white">
-          {/* Speaker Button */}
-          <div className="flex justify-center py-8">
-            <button
-              onClick={handleReadAloud}
-              className="rounded-lg flex items-center justify-center transition text-white"
-              style={{
-                backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-                width: '43px',
-                height: '43px'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
-              title={isReading ? 'Pause narration' : 'Listen to article'}
-            >
-              {isReading ? (
-                <Pause size={18} className="text-white" fill="white" />
-              ) : (
-                <Volume2 size={18} className="text-white" />
-              )}
-            </button>
+          {/* Speaker Button and Listen Duration */}
+          <div className="max-w-4xl mx-auto px-6 py-8">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleReadAloud}
+                className="rounded-lg flex items-center justify-center transition text-white"
+                style={{
+                  backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+                  width: '43px',
+                  height: '43px'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
+                title={isReading ? 'Pause narration' : 'Listen to article'}
+              >
+                {isReading ? (
+                  <Pause size={18} className="text-white" fill="white" />
+                ) : (
+                  <Volume2 size={18} className="text-white" />
+                )}
+              </button>
+              <span className="text-black text-sm font-medium">
+                {preGeneratedAudio?.duration_seconds
+                  ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute listen`
+                  : contentWords.length > 0
+                    ? `${Math.ceil(contentWords.length / 150)} minute listen`
+                    : ''}
+              </span>
+            </div>
           </div>
 
           <div className="max-w-4xl mx-auto px-6 pb-16">
             <article>
               {/* Article Body */}
-              <div 
+              <div
                 className="prose prose-lg max-w-none"
                 style={{
-                  color: '#374151',
+                  color: '#000000',
                   fontSize: '18px',
                   lineHeight: '1.8'
                 }}
@@ -519,14 +528,14 @@ const BlogPostPage = () => {
                     margin-bottom: 1.5rem;
                   }
                   .prose h3 {
-                    color: #111827;
+                    color: #000000;
                     font-size: 1.25rem;
                     font-weight: 600;
                     margin-top: 2.5rem;
                     margin-bottom: 1rem;
                   }
                   .prose p {
-                    color: #374151;
+                    color: #000000;
                     margin-bottom: 1.5rem;
                   }
                   .prose ul, .prose ol {
@@ -535,11 +544,11 @@ const BlogPostPage = () => {
                     padding-left: 1.5rem;
                   }
                   .prose li {
-                    color: #374151;
+                    color: #000000;
                     margin-bottom: 0.75rem;
                   }
                   .prose strong {
-                    color: #111827;
+                    color: #000000;
                     font-weight: 600;
                   }
                   .prose a {
@@ -556,53 +565,14 @@ const BlogPostPage = () => {
                     border-left: 4px solid #EF0B72;
                     padding-left: 1.5rem;
                     font-style: italic;
-                    color: #6B7280;
+                    color: #000000;
                   }
                 `}</style>
                 {renderContentWithHighlighting(post.content)}
               </div>
 
-              {/* Article Footer */}
-              <div className="mt-16 pt-8 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  {/* Author Info */}
-                  <div className="flex items-center gap-3">
-                    {post.author_avatar ? (
-                      <img
-                        src={post.author_avatar}
-                        alt={post.author_name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-[#EF0B72]/20 flex items-center justify-center">
-                        <span className="text-[#EF0B72] text-lg font-bold">
-                          {post.author_name.charAt(0)}
-                        </span>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-gray-900 font-semibold">{post.author_name}</p>
-                      {post.author_role && (
-                        <p className="text-gray-600 text-sm">{post.author_role}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Back to Home Button */}
-                  <Link
-                    to="/"
-                    className="px-6 py-3 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-900 rounded-lg transition-colors inline-flex items-center gap-2"
-                  >
-                    <Home className="w-4 h-4" />
-                    Back to Home
-                  </Link>
-                </div>
-              </div>
             </article>
           </div>
-
-          {/* Bottom Spacing */}
-          <div className="h-24"></div>
         </div>
       </div>
     </>
