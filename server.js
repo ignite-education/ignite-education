@@ -433,7 +433,10 @@ Generate ONLY the question, nothing else.`;
 // Knowledge Check - Evaluate answer
 app.post('/api/knowledge-check/evaluate', async (req, res) => {
   try {
-    const { lessonContext, question, answer } = req.body;
+    const { lessonContext, question, answer, feedbackInstructions } = req.body;
+
+    // Build feedback rules - use provided instructions or defaults
+    const feedbackRules = feedbackInstructions || `If correct: Brief praise (1-2 sentences). If incorrect: Acknowledge their attempt, then provide the correct answer.`;
 
     const systemPrompt = `You are Will, an AI tutor evaluating a student's answer to a knowledge check question.
 
@@ -444,17 +447,18 @@ Question Asked: ${question}
 
 Student's Answer: ${answer}
 
-Your task:
-1. Determine if the student's answer demonstrates sufficient understanding (you should be somewhat lenient - if they show they understand the core concept, mark it correct even if they don't have every detail)
-2. Provide brief, encouraging feedback using British English spelling
-3. If correct: Praise them and briefly confirm why their answer is right
-4. If incorrect: Gently explain what they missed and provide the correct information
-5. Use a calm, professional tone - avoid excessive exclamation points (use at most one per response)
+EVALUATION CRITERIA:
+- Be somewhat lenient - if they show they understand the core concept, mark it correct even if they don't have every detail
+- Use British English spelling
+- Use a calm, professional tone - avoid excessive exclamation points (use at most one per response)
+
+CRITICAL FEEDBACK RULES (YOU MUST FOLLOW THESE EXACTLY):
+${feedbackRules}
 
 Respond in JSON format:
 {
   "isCorrect": true or false,
-  "feedback": "Your encouraging feedback here (2-3 sentences max)"
+  "feedback": "Your feedback here"
 }`;
 
     const message = await anthropic.messages.create({

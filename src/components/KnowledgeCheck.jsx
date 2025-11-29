@@ -253,7 +253,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "STRUCTURE FOR INCORRECT/UNSURE: Start with ONE brief sentence acknowledging their answer, then IMMEDIATELY give the full correct answer. FORBIDDEN PHRASES: Never use 'Let me explain', 'Let me provide', 'Let me clarify', or any variation - these are BANNED. Instead, just state the answer directly. BAD: 'Let me provide a more complete response.' GOOD: 'Effective stakeholder management involves identifying stakeholders, understanding their needs, and engaging them throughout the product lifecycle. Benefits include better decision-making, reduced risks, and increased buy-in. For example, involving key stakeholders early can prevent costly rework later.' FOR CORRECT ANSWERS: Maximum two sentences. RULES: Speak directly to user (you/your). Only reference what they actually wrote. Response must be complete - no promises of more info.",
+          feedbackInstructions: "STRUCTURE FOR INCORRECT/UNSURE: One brief sentence acknowledging their answer, then IMMEDIATELY state the correct answer in full. BANNED PHRASES (never use these or similar): 'Let me explain', 'Let me provide', 'Let me clarify', 'I'd be happy to', 'I apologize', 'The question asked about'. Just give the answer directly. BAD EXAMPLE: 'I'd be happy to provide the correct information.' GOOD EXAMPLE: 'The product lifecycle has four stages: Introduction, Growth, Maturity, and Decline. Product Managers adapt by focusing on market fit in Introduction, scaling in Growth, optimization in Maturity, and deciding whether to sunset or pivot in Decline.' FOR CORRECT ANSWERS: Maximum two sentences of praise. RULES: No offers to help further. No apologies. No restating what the question asked. Just acknowledge and provide the answer.",
         }),
       });
 
@@ -595,15 +595,47 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                     }}>
                       <div>
                         {(typingMessageIndex === idx && !msg.isComplete ? displayedText : msg.text).split('\n').map((line, i) => {
-                          const parts = line.split(/(\*\*.*?\*\*)/g);
+                          // Parse bold markers, handling incomplete ones during typing
+                          const parseBoldText = (text) => {
+                            const result = [];
+                            let remaining = text;
+                            let key = 0;
+
+                            while (remaining.length > 0) {
+                              const boldStart = remaining.indexOf('**');
+
+                              if (boldStart === -1) {
+                                // No more bold markers
+                                if (remaining) result.push(<span key={key++}>{remaining}</span>);
+                                break;
+                              }
+
+                              // Add text before the bold marker
+                              if (boldStart > 0) {
+                                result.push(<span key={key++}>{remaining.substring(0, boldStart)}</span>);
+                              }
+
+                              // Find the closing **
+                              const afterStart = remaining.substring(boldStart + 2);
+                              const boldEnd = afterStart.indexOf('**');
+
+                              if (boldEnd === -1) {
+                                // No closing ** yet (typing in progress) - render as bold without the **
+                                result.push(<strong key={key++} className="font-medium">{afterStart}</strong>);
+                                break;
+                              } else {
+                                // Complete bold section
+                                result.push(<strong key={key++} className="font-medium">{afterStart.substring(0, boldEnd)}</strong>);
+                                remaining = afterStart.substring(boldEnd + 2);
+                              }
+                            }
+
+                            return result;
+                          };
+
                           return (
                             <p key={i} className={i > 0 ? 'mt-3' : ''}>
-                              {parts.map((part, j) => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                  return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
-                                }
-                                return <span key={j}>{part}</span>;
-                              })}
+                              {parseBoldText(line)}
                             </p>
                           );
                         })}
