@@ -16,6 +16,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const [pendingTypingIndex, setPendingTypingIndex] = useState(null);
   const chatContainerRef = useRef(null);
   const pendingFinalScoreRef = useRef(null);
+  const pendingNextQuestionRef = useRef(null);
   const textareaRef = useRef(null);
 
   // Dynamic question count and pass threshold based on whether it's the first lesson
@@ -83,25 +84,45 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
   // Store the text to animate in a ref so we can access it reliably
   const typingTextRef = useRef('');
+  const typingIndexRef = useRef(null);
+  const animationActiveRef = useRef(false);
 
   // Typing animation effect
   useEffect(() => {
-    if (typingMessageIndex === null) return;
+    if (typingMessageIndex === null) {
+      animationActiveRef.current = false;
+      return;
+    }
 
     const message = chatMessages[typingMessageIndex];
-    if (!message || message.isComplete) return;
+    if (!message || message.isComplete) {
+      animationActiveRef.current = false;
+      return;
+    }
 
     const fullText = message.text;
-    if (!fullText) return; // Skip if no text to animate
+    if (!fullText) {
+      animationActiveRef.current = false;
+      return;
+    }
 
-    // Store the text in ref for reliable access
+    // Store the text and index in refs for reliable access
     typingTextRef.current = fullText;
+    typingIndexRef.current = typingMessageIndex;
+    animationActiveRef.current = true;
 
     let currentIndex = 0;
     let pauseCounter = 0;
 
     const typingInterval = setInterval(() => {
+      // Check if animation should still be running
+      if (!animationActiveRef.current) {
+        clearInterval(typingInterval);
+        return;
+      }
+
       const text = typingTextRef.current;
+      const msgIndex = typingIndexRef.current;
 
       // Check if we need to pause (at newline characters)
       if (pauseCounter > 0) {
@@ -125,15 +146,25 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         currentIndex++;
       } else {
         clearInterval(typingInterval);
+        animationActiveRef.current = false;
         // Mark message as complete
         setChatMessages(prev => prev.map((msg, idx) =>
-          idx === typingMessageIndex ? { ...msg, isComplete: true } : msg
+          idx === msgIndex ? { ...msg, isComplete: true } : msg
         ));
         setTypingMessageIndex(null);
         setDisplayedText('');
 
+        // Check if we need to ask the next question after this message completes
+        if (pendingNextQuestionRef.current) {
+          const answersForNextQ = pendingNextQuestionRef.current;
+          pendingNextQuestionRef.current = null;
+          // Small delay before asking next question for better UX
+          setTimeout(() => {
+            askNextQuestion(answersForNextQ);
+          }, 500);
+        }
         // Check if we need to show final score after this message completes
-        if (pendingFinalScoreRef.current) {
+        else if (pendingFinalScoreRef.current) {
           const answersToScore = pendingFinalScoreRef.current;
           pendingFinalScoreRef.current = null;
           // Small delay before showing results for better UX
@@ -144,7 +175,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       }
     }, 45); // Adjust speed here (lower = faster)
 
-    return () => clearInterval(typingInterval);
+    return () => {
+      clearInterval(typingInterval);
+      animationActiveRef.current = false;
+    };
   }, [typingMessageIndex]); // Only depend on typingMessageIndex to avoid resetting animation
 
   const askNextQuestion = async (updatedAnswers = null) => {
@@ -218,7 +252,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "CRITICAL: Your feedback response MUST be complete and self-contained. If the user's answer is incorrect, incomplete, or they say 'unsure', 'I don't know', or similar, you MUST include the full correct answer in your response. NEVER use phrases like 'Let me explain further', 'Let me provide more details', or 'Here's what you need to know' without IMMEDIATELY following with the actual answer. Your response must END with the educational content, not a promise to provide it. Structure: 1) Brief acknowledgment, 2) The complete correct answer with specific details from the lesson. Example of BAD response: 'Let me help you understand this better.' Example of GOOD response: 'The key tools during the Ideation stage include customer interviews, surveys, and market analysis. These help PMs validate assumptions and identify user needs before investing in development.'",
+          feedbackInstructions: "CRITICAL: Always speak DIRECTLY to the user using 'you/your' - NEVER refer to them in third person as 'the student', 'they', or 'the user'. Your feedback response MUST be complete and self-contained. If the answer is incorrect, incomplete, or they say 'unsure', 'I don't know', or similar, you MUST include the full correct answer in your response. NEVER use phrases like 'Let me explain further' or 'Let me provide more details' without IMMEDIATELY following with the actual answer. Structure: 1) Brief acknowledgment speaking directly to them, 2) Guide them through the complete correct answer with specific details from the lesson. Example of BAD response: 'The student did not provide details. They should have described...' Example of GOOD response: 'No problem! During the Launch stage, you would focus on coordinating the go-to-market strategy, ensuring launch readiness, and monitoring key metrics like activation rate, churn, and product feedback. You would use tools such as...'",
         }),
       });
 
@@ -246,14 +280,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           }];
         });
 
-        // Move to next question or finish
+        // Move to next question or finish - wait for typing animation to complete
         if (currentQuestionIndex + 1 < TOTAL_QUESTIONS) {
           const nextIndex = currentQuestionIndex + 1;
           setCurrentQuestionIndex(nextIndex);
-          // Wait a moment before asking next question
-          setTimeout(() => {
-            askNextQuestion(updatedAnswers);
-          }, 1500);
+          // Store answers and wait for typing animation to complete before asking next question
+          pendingNextQuestionRef.current = updatedAnswers;
         } else {
           // All questions answered - store answers and wait for typing animation to complete
           // The final score will be calculated after the feedback message finishes typing
@@ -319,7 +351,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           isPassed: true,
           score: `${correctCount}/${TOTAL_QUESTIONS}`,
           congratsLine1: 'Congratulations!',
-          congratsLine2: `You've passed this lesson and can move on to ${nextLessonText}.`
+          congratsLine2: `You've passed this lesson and can now move on`,
+          congratsLine3: `to ${nextLessonText}.`
         }];
       } else {
         // For failed messages, don't use typing animation - show immediately like passed
@@ -408,6 +441,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       setTypingMessageIndex(null);
       setDisplayedText('');
       pendingFinalScoreRef.current = null;
+      pendingNextQuestionRef.current = null;
 
       onClose();
       setIsClosing(false);
@@ -422,6 +456,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     setIsComplete(false);
     setScore(null);
     pendingFinalScoreRef.current = null;
+    pendingNextQuestionRef.current = null;
     // Start over
     askNextQuestion();
   };
@@ -503,7 +538,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       backgroundColor: '#f3f4f6',
                       width: '100%',
                       padding: '1rem 0.75rem',
-                      minHeight: '5rem'
+                      minHeight: '5rem',
+                      animation: 'slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
                     }}>
                       <div className="flex flex-col items-center justify-center" style={{ width: '35%', flexShrink: 0 }}>
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#22c55e' }}>
@@ -514,6 +550,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
                         <p className="font-medium">{msg.congratsLine1}</p>
                         <p style={{ marginTop: '2px' }}>{msg.congratsLine2}</p>
+                        <p style={{ marginTop: '2px' }}>{msg.congratsLine3}</p>
                       </div>
                     </div>
                   ) : msg.isFailed ? (
@@ -523,7 +560,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       backgroundColor: '#f3f4f6',
                       width: '100%',
                       padding: '1rem 0.75rem',
-                      minHeight: '5rem'
+                      minHeight: '5rem',
+                      animation: 'slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
                     }}>
                       <div className="flex flex-col items-center justify-center" style={{ width: '35%', flexShrink: 0 }}>
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
@@ -573,7 +611,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             })}
 
             {isEvaluating && (
-              <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ marginTop: '1rem' }}>
                 <div className="p-3 text-black text-sm inline-block" style={{
                   borderRadius: '8px',
                   backgroundColor: '#f3f4f6'
