@@ -2313,26 +2313,10 @@ const Auth = () => {
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
-                    const container = authScrollContainerRef.current;
-                    const startPosition = container.scrollTop;
-                    const duration = 1200;
-                    const startTime = performance.now();
-
-                    const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
-
-                    const animateScroll = () => {
-                      const elapsed = performance.now() - startTime;
-                      const progress = Math.min(elapsed / duration, 1);
-                      const easedProgress = easeOutQuart(progress);
-
-                      container.scrollTop = Math.round(startPosition * (1 - easedProgress));
-
-                      if (progress < 1) {
-                        requestAnimationFrame(animateScroll);
-                      }
-                    };
-
-                    requestAnimationFrame(animateScroll);
+                    authScrollContainerRef.current.scrollTo({
+                      top: 0,
+                      behavior: 'smooth'
+                    });
                   }
                 }}
                 className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
