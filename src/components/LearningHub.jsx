@@ -2830,6 +2830,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       );
       wordTimestampsRef.current = wordTimestamps;
       console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
+      console.log(`📝 Section text: "${sectionData.text.substring(0, 100)}..."`);
+      console.log(`📝 First 5 words with timestamps:`, wordTimestamps.slice(0, 5).map(w => `"${w.word}" (${w.start.toFixed(2)}-${w.end.toFixed(2)})`));
     }
 
     // Per-section word indexing: each section starts at word index 0
