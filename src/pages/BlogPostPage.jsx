@@ -333,7 +333,11 @@ const BlogPostPage = () => {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
             if (wordCounter === currentWordIndex) {
-              wordSpan.className = 'bg-pink-200 rounded px-0.5 transition-colors duration-75';
+              wordSpan.style.backgroundColor = '#fde7f4';
+              wordSpan.style.padding = '2px';
+              wordSpan.style.margin = '-2px';
+              wordSpan.style.borderRadius = '2px';
+              wordSpan.style.transition = 'background-color 100ms';
             }
             span.appendChild(wordSpan);
             wordCounter++;
@@ -469,7 +473,7 @@ const BlogPostPage = () => {
             {/* Title with typing animation - Left aligned */}
             <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
               {typedTitle}
-              {!isTypingComplete && <span className="animate-pulse" style={{ fontWeight: 300 }}>|</span>}
+              {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
             </h1>
 
             {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
@@ -488,8 +492,8 @@ const BlogPostPage = () => {
               <div className="absolute top-0 left-0 right-0 h-1/2 bg-black" />
               {/* White bottom half behind image */}
               <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
-              <div className="relative max-w-4xl mx-auto px-6">
-                <div className="rounded-lg overflow-hidden" style={{ maxWidth: '720px' }}>
+              <div className="relative max-w-4xl mx-auto px-6 flex justify-center">
+                <div className="rounded-lg overflow-hidden w-full" style={{ maxWidth: '720px' }}>
                   <img
                     src={post.featured_image}
                     alt={post.title}
@@ -503,8 +507,8 @@ const BlogPostPage = () => {
           {/* Main White Content */}
           <div className="bg-white">
           {/* Speaker Button and Listen Duration */}
-          <div className="max-w-4xl mx-auto px-6 py-4">
-            <div className="flex items-center gap-3">
+          <div className="max-w-4xl mx-auto px-6 py-4 flex justify-center">
+            <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
               <button
                 onClick={handleReadAloud}
                 className="rounded-lg flex items-center justify-center transition text-white"
@@ -533,8 +537,8 @@ const BlogPostPage = () => {
             </div>
           </div>
 
-          <div className="max-w-4xl mx-auto px-6 pb-16">
-            <article style={{ maxWidth: '762px' }}>
+          <div className="max-w-4xl mx-auto px-6 pb-16 flex justify-center">
+            <article className="w-full" style={{ maxWidth: '762px' }}>
               {/* Article Body */}
               <div
                 className="prose prose-lg max-w-none"
