@@ -13,7 +13,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const [isClosing, setIsClosing] = useState(false);
   const [typingMessageIndex, setTypingMessageIndex] = useState(null);
   const [displayedText, setDisplayedText] = useState('');
+  const [pendingTypingIndex, setPendingTypingIndex] = useState(null);
   const chatContainerRef = useRef(null);
+  const pendingFinalScoreRef = useRef(null);
+  const textareaRef = useRef(null);
 
   // Dynamic question count and pass threshold based on whether it's the first lesson
   const TOTAL_QUESTIONS = isFirstLesson ? 5 : 7;
@@ -58,9 +61,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           text: messageText,
           isComplete: false
         }]);
-        setTimeout(() => {
-          setTypingMessageIndex(0);
-        }, 0);
+        setPendingTypingIndex(0);
       }, 800);
     }
   }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
@@ -72,6 +73,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
   }, [chatMessages, displayedText]);
 
+  // Handle pending typing animation - start when the message exists in chatMessages
+  useEffect(() => {
+    if (pendingTypingIndex !== null && chatMessages[pendingTypingIndex]) {
+      setTypingMessageIndex(pendingTypingIndex);
+      setPendingTypingIndex(null);
+    }
+  }, [pendingTypingIndex, chatMessages]);
+
+  // Store the text to animate in a ref so we can access it reliably
+  const typingTextRef = useRef('');
+
   // Typing animation effect
   useEffect(() => {
     if (typingMessageIndex === null) return;
@@ -82,26 +94,31 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     const fullText = message.text;
     if (!fullText) return; // Skip if no text to animate
 
+    // Store the text in ref for reliable access
+    typingTextRef.current = fullText;
+
     let currentIndex = 0;
     let pauseCounter = 0;
 
     const typingInterval = setInterval(() => {
+      const text = typingTextRef.current;
+
       // Check if we need to pause (at newline characters)
       if (pauseCounter > 0) {
         pauseCounter--;
         return;
       }
 
-      if (currentIndex < fullText.length) {
-        setDisplayedText(fullText.substring(0, currentIndex + 1));
+      if (currentIndex < text.length) {
+        setDisplayedText(text.substring(0, currentIndex + 1));
 
         // Add pause after newline characters
-        if (fullText[currentIndex] === '\n') {
+        if (text[currentIndex] === '\n') {
           pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
         }
 
         // Add pause after sentence-ending punctuation (. ! ?)
-        if (fullText[currentIndex] === '.' || fullText[currentIndex] === '!' || fullText[currentIndex] === '?') {
+        if (text[currentIndex] === '.' || text[currentIndex] === '!' || text[currentIndex] === '?') {
           pauseCounter = 7; // Pause for ~315ms (7 * 45ms)
         }
 
@@ -114,11 +131,21 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         ));
         setTypingMessageIndex(null);
         setDisplayedText('');
+
+        // Check if we need to show final score after this message completes
+        if (pendingFinalScoreRef.current) {
+          const answersToScore = pendingFinalScoreRef.current;
+          pendingFinalScoreRef.current = null;
+          // Small delay before showing results for better UX
+          setTimeout(() => {
+            calculateFinalScore(answersToScore);
+          }, 800);
+        }
       }
     }, 45); // Adjust speed here (lower = faster)
 
     return () => clearInterval(typingInterval);
-  }, [typingMessageIndex, chatMessages]); // Include chatMessages to ensure we get the latest message content
+  }, [typingMessageIndex]); // Only depend on typingMessageIndex to avoid resetting animation
 
   const askNextQuestion = async (updatedAnswers = null) => {
     try {
@@ -152,7 +179,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       if (data.success) {
         setChatMessages(prev => {
           const newMessageIndex = prev.length;
-          setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+          setPendingTypingIndex(newMessageIndex);
           return [...prev, {
             type: 'assistant',
             text: `${questionNum}. ${data.question}`,
@@ -167,7 +194,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       console.error('Error getting question:', error);
       setChatMessages(prev => {
         const newMessageIndex = prev.length;
-        setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+        setPendingTypingIndex(newMessageIndex);
         return [...prev, {
           type: 'assistant',
           text: 'Sorry, I encountered an error getting the next question. Please try again! 😊',
@@ -191,7 +218,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "If the answer is incorrect, incomplete, or the user says they are unsure, you MUST provide the correct answer with a clear explanation in your feedback. Never end with phrases like 'Let me explain further' or 'Let me provide more information' without actually providing the complete answer. Always include specific examples from the lesson content.",
+          feedbackInstructions: "CRITICAL: Your feedback response MUST be complete and self-contained. If the user's answer is incorrect, incomplete, or they say 'unsure', 'I don't know', or similar, you MUST include the full correct answer in your response. NEVER use phrases like 'Let me explain further', 'Let me provide more details', or 'Here's what you need to know' without IMMEDIATELY following with the actual answer. Your response must END with the educational content, not a promise to provide it. Structure: 1) Brief acknowledgment, 2) The complete correct answer with specific details from the lesson. Example of BAD response: 'Let me help you understand this better.' Example of GOOD response: 'The key tools during the Ideation stage include customer interviews, surveys, and market analysis. These help PMs validate assumptions and identify user needs before investing in development.'",
         }),
       });
 
@@ -211,7 +238,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Show feedback with typing animation
         setChatMessages(prev => {
           const newMessageIndex = prev.length;
-          setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+          setPendingTypingIndex(newMessageIndex);
           return [...prev, {
             type: 'assistant',
             text: data.feedback,
@@ -228,8 +255,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             askNextQuestion(updatedAnswers);
           }, 1500);
         } else {
-          // All questions answered, calculate final score
-          calculateFinalScore(updatedAnswers);
+          // All questions answered - store answers and wait for typing animation to complete
+          // The final score will be calculated after the feedback message finishes typing
+          pendingFinalScoreRef.current = updatedAnswers;
         }
       } else {
         throw new Error(data.error || 'Failed to evaluate answer');
@@ -238,7 +266,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       console.error('Error evaluating answer:', error);
       setChatMessages(prev => {
         const newMessageIndex = prev.length;
-        setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+        setPendingTypingIndex(newMessageIndex);
         return [...prev, {
           type: 'assistant',
           text: 'Sorry, I encountered an error evaluating your answer. Please try again! 😊',
@@ -310,6 +338,13 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     });
   };
 
+  const autoResizeTextarea = () => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px';
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim() || isEvaluating || isComplete) return;
@@ -319,6 +354,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     // Add user message
     setChatMessages(prev => [...prev, { type: 'user', text: userAnswer }]);
     setChatInput('');
+    // Reset textarea height after clearing
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
 
     // If this is the first message (response to greeting), start asking questions
     if (chatMessages.length === 1 && currentQuestionIndex === 0) {
@@ -368,6 +407,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       setScore(null);
       setTypingMessageIndex(null);
       setDisplayedText('');
+      pendingFinalScoreRef.current = null;
 
       onClose();
       setIsClosing(false);
@@ -381,6 +421,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     setCurrentQuestionIndex(0);
     setIsComplete(false);
     setScore(null);
+    pendingFinalScoreRef.current = null;
     // Start over
     askNextQuestion();
   };
@@ -435,13 +476,24 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex flex-col min-h-full justify-end">
-            {chatMessages.map((msg, idx) => (
+            {chatMessages.map((msg, idx) => {
+              // Calculate spacing: more space around user messages for visual separation
+              const isUserMessage = msg.type === 'user';
+              const prevIsAssistant = idx > 0 && chatMessages[idx - 1]?.type === 'assistant';
+              const nextIsAssistant = idx < chatMessages.length - 1 && chatMessages[idx + 1]?.type === 'assistant';
+
+              // Add top margin when user message follows assistant message
+              const marginTop = isUserMessage && prevIsAssistant ? '1rem' : '0';
+              // Add bottom margin when user message precedes assistant message
+              const marginBottom = idx < chatMessages.length - 1
+                ? (isUserMessage && nextIsAssistant ? '1rem' : '0.5rem')
+                : '0';
+
+              return (
               <div
                 key={idx}
                 className={msg.type === 'user' ? 'flex justify-end' : ''}
-                style={{
-                  marginBottom: idx < chatMessages.length - 1 ? (msg.type === 'user' && chatMessages[idx + 1]?.type === 'assistant' ? '1.5rem' : '0.5rem') : '0'
-                }}
+                style={{ marginTop, marginBottom }}
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
@@ -461,7 +513,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
                         <p className="font-medium">{msg.congratsLine1}</p>
-                        <p className="mt-1">{msg.congratsLine2}</p>
+                        <p style={{ marginTop: '2px' }}>{msg.congratsLine2}</p>
                       </div>
                     </div>
                   ) : msg.isFailed ? (
@@ -481,8 +533,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
                         <p className="font-medium">{msg.failedLine1}</p>
-                        <p className="mt-1">{msg.failedLine2}</p>
-                        <p className="mt-1">{msg.failedLine3}</p>
+                        <p style={{ marginTop: '2px' }}>{msg.failedLine2}</p>
+                        <p style={{ marginTop: '2px' }}>{msg.failedLine3}</p>
                       </div>
                     </div>
                   ) : (
@@ -517,7 +569,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {isEvaluating && (
               <div style={{ marginTop: '0.5rem' }}>
@@ -540,14 +593,24 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           <div className="flex-shrink-0 bg-gray-100 px-8 pb-4 pt-3" style={{ borderRadius: '0 0 0.3rem 0.3rem' }}>
             {!isComplete ? (
               <form onSubmit={handleSendMessage}>
-                <input
-                  type="text"
+                <textarea
+                  ref={textareaRef}
                   value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    autoResizeTextarea();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
                   placeholder="type your answer here"
                   disabled={isEvaluating}
-                  className="w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500 disabled:opacity-50"
-                  style={{ paddingTop: '0.4rem', paddingBottom: '0.4rem', marginBottom: '8px' }}
+                  rows={1}
+                  className="w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500 disabled:opacity-50 resize-none"
+                  style={{ paddingTop: '0.4rem', paddingBottom: '0.4rem', marginBottom: '8px', overflow: 'hidden' }}
                 />
                 <button
                   type="submit"
