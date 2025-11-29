@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostBySlug, formatDate } from '../lib/blogApi';
 import SEO, { generateBlogPostStructuredData } from '../components/SEO';
-import { Home, ChevronRight } from 'lucide-react';
+import { Home, ChevronRight, Volume2, Pause } from 'lucide-react';
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -13,6 +13,14 @@ const BlogPostPage = () => {
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Narration state
+  const [isReading, setIsReading] = useState(false);
+  const [currentWordIndex, setCurrentWordIndex] = useState(-1);
+  const [contentWords, setContentWords] = useState([]);
+  const audioRef = useRef(null);
+  const wordTimerRef = useRef(null);
+  const wordTimestampsRef = useRef([]);
 
   useEffect(() => {
     fetchPost();
@@ -76,6 +84,208 @@ const BlogPostPage = () => {
 
     return () => {};
   }, [post]);
+
+  // Extract plain text from HTML content and split into words
+  const extractTextFromHtml = (html) => {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+  };
+
+  // Parse content into words when post loads
+  useEffect(() => {
+    if (post?.content) {
+      const plainText = extractTextFromHtml(post.content);
+      const words = plainText.split(/(\s+)/).filter(word => word.trim().length > 0);
+      setContentWords(words);
+    }
+  }, [post]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Handle read aloud functionality
+  const handleReadAloud = async () => {
+    // If already reading, stop
+    if (isReading) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+      }
+      setIsReading(false);
+      setCurrentWordIndex(-1);
+      return;
+    }
+
+    if (!post?.content) return;
+
+    try {
+      setIsReading(true);
+      const plainText = extractTextFromHtml(post.content);
+
+      // Call the text-to-speech API with timestamps
+      const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: plainText })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
+
+      const data = await response.json();
+
+      // Convert base64 audio to blob
+      const audioData = atob(data.audio_base64);
+      const arrayBuffer = new ArrayBuffer(audioData.length);
+      const view = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < audioData.length; i++) {
+        view[i] = audioData.charCodeAt(i);
+      }
+      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+      // Store word timestamps
+      if (data.word_timestamps) {
+        wordTimestampsRef.current = data.word_timestamps;
+      }
+
+      // Create and play audio
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setIsReading(false);
+        setCurrentWordIndex(-1);
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+      };
+
+      audio.onerror = () => {
+        setIsReading(false);
+        setCurrentWordIndex(-1);
+        URL.revokeObjectURL(audioUrl);
+        audioRef.current = null;
+      };
+
+      await audio.play();
+
+      // Start word highlighting
+      const startWordHighlighting = () => {
+        setCurrentWordIndex(0);
+        let lastHighlightedWord = 0;
+
+        const updateHighlight = () => {
+          if (!audio || audio.paused || audio.ended) {
+            return;
+          }
+
+          const currentTime = audio.currentTime;
+          let wordToHighlight = lastHighlightedWord;
+
+          for (let i = 0; i < wordTimestampsRef.current.length; i++) {
+            const timestamp = wordTimestampsRef.current[i];
+            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+              wordToHighlight = i;
+              break;
+            }
+            if (currentTime >= timestamp.end && i < wordTimestampsRef.current.length - 1) {
+              const nextTimestamp = wordTimestampsRef.current[i + 1];
+              if (currentTime < nextTimestamp.start) {
+                wordToHighlight = i;
+                break;
+              }
+            }
+          }
+
+          if (wordToHighlight !== lastHighlightedWord) {
+            lastHighlightedWord = wordToHighlight;
+            setCurrentWordIndex(wordToHighlight);
+          }
+
+          wordTimerRef.current = requestAnimationFrame(updateHighlight);
+        };
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      };
+
+      if (audio.duration && !isNaN(audio.duration)) {
+        startWordHighlighting();
+      } else {
+        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
+      }
+
+    } catch (error) {
+      console.error('Error reading aloud:', error);
+      setIsReading(false);
+      setCurrentWordIndex(-1);
+    }
+  };
+
+  // Render content with word highlighting
+  const renderContentWithHighlighting = (html) => {
+    if (!isReading || currentWordIndex < 0) {
+      return <div dangerouslySetInnerHTML={{ __html: html }} />;
+    }
+
+    // Parse the HTML and wrap words with highlighting
+    const div = document.createElement('div');
+    div.innerHTML = html;
+
+    let wordCounter = 0;
+
+    const processNode = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent;
+        const words = text.split(/(\s+)/);
+        const span = document.createElement('span');
+
+        words.forEach((word) => {
+          if (word.trim().length > 0) {
+            const wordSpan = document.createElement('span');
+            wordSpan.textContent = word;
+            if (wordCounter === currentWordIndex) {
+              wordSpan.className = 'bg-pink-200 rounded px-0.5 transition-colors duration-75';
+            }
+            span.appendChild(wordSpan);
+            wordCounter++;
+          } else {
+            span.appendChild(document.createTextNode(word));
+          }
+        });
+
+        return span;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        const clone = node.cloneNode(false);
+        Array.from(node.childNodes).forEach((child) => {
+          clone.appendChild(processNode(child));
+        });
+        return clone;
+      }
+      return node.cloneNode(true);
+    };
+
+    const processedDiv = document.createElement('div');
+    Array.from(div.childNodes).forEach((child) => {
+      processedDiv.appendChild(processNode(child));
+    });
+
+    return <div dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }} />;
+  };
 
   if (loading) {
     return (
@@ -186,22 +396,19 @@ const BlogPostPage = () => {
           </div>
         </div>
 
-        {/* Featured Image with gradient transition */}
+        {/* Featured Image - positioned at black/white transition */}
         {post.featured_image && (
           <div className="relative">
-            <div className="max-w-5xl mx-auto px-6">
-              <div className="relative rounded-lg overflow-hidden">
+            {/* Black top half behind image */}
+            <div className="absolute top-0 left-0 right-0 h-1/2 bg-black" />
+            {/* White bottom half behind image */}
+            <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-white" />
+            <div className="relative max-w-3xl mx-auto px-6">
+              <div className="rounded-lg overflow-hidden">
                 <img
                   src={post.featured_image}
                   alt={post.title}
                   className="w-full h-auto object-cover"
-                />
-                {/* Gradient overlay at bottom half */}
-                <div 
-                  className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent, white)'
-                  }}
                 />
               </div>
             </div>
@@ -210,7 +417,29 @@ const BlogPostPage = () => {
 
         {/* White Content Section */}
         <div className="bg-white">
-          <div className="max-w-4xl mx-auto px-6 py-16">
+          {/* Speaker Button */}
+          <div className="flex justify-center py-8">
+            <button
+              onClick={handleReadAloud}
+              className="rounded-lg flex items-center justify-center transition text-white"
+              style={{
+                backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+                width: '43px',
+                height: '43px'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
+              title={isReading ? 'Pause narration' : 'Listen to article'}
+            >
+              {isReading ? (
+                <Pause size={18} className="text-white" fill="white" />
+              ) : (
+                <Volume2 size={18} className="text-white" />
+              )}
+            </button>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-6 pb-16">
             <article>
               {/* Article Body */}
               <div 
@@ -275,7 +504,7 @@ const BlogPostPage = () => {
                     color: #6B7280;
                   }
                 `}</style>
-                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                {renderContentWithHighlighting(post.content)}
               </div>
 
               {/* Article Footer */}
