@@ -358,7 +358,7 @@ app.get('/api/health', (req, res) => {
 // Knowledge Check - Generate question
 app.post('/api/knowledge-check/question', async (req, res) => {
   try {
-    const { lessonContext, priorLessonsContext, questionNumber, totalQuestions, previousQA, isAboutPriorLessons, numPriorQuestions } = req.body;
+    const { lessonContext, priorLessonsContext, questionNumber, totalQuestions, previousQA, isAboutPriorLessons, numPriorQuestions, useBritishEnglish } = req.body;
 
     // Build a list of previously asked questions to avoid repetition
     const previousQuestions = previousQA?.map(qa => qa.question).join('\n') || 'None yet';
@@ -383,6 +383,11 @@ ${contentToUse}`;
 - If this is prior question 2, pick from a DIFFERENT lesson than prior question 1`
       : '- Focus exclusively on the current lesson content';
 
+    // British English instruction
+    const languageInstruction = useBritishEnglish
+      ? `- IMPORTANT: Use British English spelling throughout (e.g., 'prioritise' not 'prioritize', 'organisation' not 'organization', 'colour' not 'color', 'analyse' not 'analyze')`
+      : '';
+
     const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions}.
 
 ${contextSection}
@@ -399,6 +404,7 @@ Your task:
 - Keep the question concise and clear
 - Be friendly and encouraging in your tone
 ${priorLessonInstruction}
+${languageInstruction}
 
 Generate ONLY the question, nothing else.`;
 
@@ -449,7 +455,7 @@ Student's Answer: ${answer}
 
 EVALUATION CRITERIA:
 - Be somewhat lenient - if they show they understand the core concept, mark it correct even if they don't have every detail
-- Use British English spelling
+- IMPORTANT: Use British English spelling throughout (e.g., 'prioritise' not 'prioritize', 'organisation' not 'organization', 'colour' not 'color', 'analyse' not 'analyze', 'behaviour' not 'behavior')
 - Use a calm, professional tone - avoid excessive exclamation points (use at most one per response)
 
 CRITICAL - SOURCE OF TRUTH:

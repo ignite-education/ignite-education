@@ -67,12 +67,41 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
   }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
 
+  // Track if user has manually scrolled up
+  const userScrolledUpRef = useRef(false);
+  const lastScrollTopRef = useRef(0);
+
+  // Handle scroll events to detect if user scrolled up
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // Within 50px of bottom
+
+      // If user scrolled up (away from bottom), mark it
+      if (!isAtBottom && scrollTop < lastScrollTopRef.current) {
+        userScrolledUpRef.current = true;
+      }
+      // If user scrolled back to bottom, reset the flag
+      if (isAtBottom) {
+        userScrolledUpRef.current = false;
+      }
+
+      lastScrollTopRef.current = scrollTop;
+    }
+  };
+
   useEffect(() => {
     // Auto-scroll to bottom when new messages arrive or during typing
-    if (chatContainerRef.current) {
+    // But only if user hasn't manually scrolled up
+    if (chatContainerRef.current && !userScrolledUpRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages, displayedText]);
+
+  // Reset scroll flag when a new message is added (not during typing)
+  useEffect(() => {
+    userScrolledUpRef.current = false;
+  }, [chatMessages.length]);
 
   // Handle pending typing animation - start when the message exists in chatMessages
   useEffect(() => {
@@ -517,6 +546,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           {/* Chat messages */}
           <div
             ref={chatContainerRef}
+            onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-8 py-8 hide-scrollbar"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
@@ -677,7 +707,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           </div>
 
           {/* Input area */}
-          <div className="flex-shrink-0 bg-gray-100 px-8" style={{ borderRadius: '0 0 0.3rem 0.3rem', height: isComplete ? '105px' : 'auto', paddingTop: isComplete ? '0' : '12px', paddingBottom: isComplete ? '0' : '16px' }}>
+          <div className="flex-shrink-0 bg-gray-100 px-8" style={{ borderRadius: '0 0 0.3rem 0.3rem', height: isComplete ? '68px' : 'auto', paddingTop: isComplete ? '0' : '12px', paddingBottom: isComplete ? '0' : '16px' }}>
             {!isComplete ? (
               <form onSubmit={handleSendMessage}>
                 <textarea
