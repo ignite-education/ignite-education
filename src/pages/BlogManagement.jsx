@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Save, ArrowLeft, Edit, Eye, Upload, Volume2 } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List } from 'lucide-react';
 
 const generateSlug = (title) => {
   return title
@@ -21,37 +21,17 @@ const BlogManagement = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioStatus, setAudioStatus] = useState(null);
-  const [currentBlockFormat, setCurrentBlockFormat] = useState('p');
-  const contentEditableRef = useRef(null);
   const imageInputRef = useRef(null);
 
-  // Update current block format based on cursor position
-  const updateCurrentFormat = () => {
-    const selection = window.getSelection();
-    if (!selection.rangeCount) return;
-
-    let node = selection.anchorNode;
-    if (node.nodeType === Node.TEXT_NODE) {
-      node = node.parentNode;
-    }
-
-    // Walk up the DOM tree to find the block element
-    while (node && node !== contentEditableRef.current) {
-      const tagName = node.tagName?.toLowerCase();
-      if (tagName === 'h2' || tagName === 'h3' || tagName === 'p') {
-        setCurrentBlockFormat(tagName);
-        return;
-      }
-      node = node.parentNode;
-    }
-    setCurrentBlockFormat('p'); // Default to paragraph
-  };
+  // Content blocks state
+  const [contentBlocks, setContentBlocks] = useState([
+    { id: Date.now(), type: 'paragraph', content: '' }
+  ]);
 
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
     excerpt: '',
-    content: '',
     featured_image: '',
     author_name: 'Ignite Team',
     author_role: '',
@@ -82,32 +62,90 @@ const BlogManagement = () => {
     }
   };
 
+  // Convert HTML content to blocks
+  const htmlToBlocks = (html) => {
+    if (!html) return [{ id: Date.now(), type: 'paragraph', content: '' }];
+
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const blocks = [];
+
+    const processNode = (node) => {
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const tagName = node.tagName.toLowerCase();
+
+        if (tagName === 'h2') {
+          blocks.push({ id: Date.now() + blocks.length, type: 'h2', content: node.innerHTML });
+        } else if (tagName === 'h3') {
+          blocks.push({ id: Date.now() + blocks.length, type: 'h3', content: node.innerHTML });
+        } else if (tagName === 'p') {
+          blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: node.innerHTML });
+        } else if (tagName === 'ul') {
+          const items = Array.from(node.querySelectorAll('li')).map(li => li.innerHTML);
+          blocks.push({ id: Date.now() + blocks.length, type: 'bulletlist', content: { items } });
+        } else if (tagName === 'ol') {
+          const items = Array.from(node.querySelectorAll('li')).map(li => li.innerHTML);
+          blocks.push({ id: Date.now() + blocks.length, type: 'numberedlist', content: { items } });
+        } else if (tagName === 'blockquote') {
+          blocks.push({ id: Date.now() + blocks.length, type: 'quote', content: node.innerHTML });
+        } else {
+          // For other elements, treat as paragraph
+          if (node.textContent.trim()) {
+            blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: node.innerHTML });
+          }
+        }
+      } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+        blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: node.textContent });
+      }
+    };
+
+    Array.from(div.childNodes).forEach(processNode);
+
+    return blocks.length > 0 ? blocks : [{ id: Date.now(), type: 'paragraph', content: '' }];
+  };
+
+  // Convert blocks to HTML content
+  const blocksToHtml = () => {
+    return contentBlocks.map(block => {
+      switch (block.type) {
+        case 'h2':
+          return `<h2>${block.content}</h2>`;
+        case 'h3':
+          return `<h3>${block.content}</h3>`;
+        case 'paragraph':
+          return `<p>${block.content}</p>`;
+        case 'bulletlist':
+          return `<ul>${(block.content?.items || []).map(item => `<li>${item}</li>`).join('')}</ul>`;
+        case 'numberedlist':
+          return `<ol>${(block.content?.items || []).map(item => `<li>${item}</li>`).join('')}</ol>`;
+        case 'quote':
+          return `<blockquote>${block.content}</blockquote>`;
+        default:
+          return `<p>${block.content}</p>`;
+      }
+    }).join('\n');
+  };
+
   const handleInputChange = (field, value) => {
     setFormData(prev => {
       const updated = { ...prev, [field]: value };
 
-      // Auto-generate slug from title for new posts
       if (field === 'title' && !selectedPost) {
         updated.slug = generateSlug(value);
       }
 
-      // Auto-populate SEO meta title from title (max 60 chars for Google)
       if (field === 'title') {
-        // Only auto-update if meta_title is empty or was auto-generated
         if (!prev.meta_title || prev.meta_title === prev.title.substring(0, 60)) {
           updated.meta_title = value.substring(0, 60);
         }
       }
 
-      // Auto-populate SEO meta description from excerpt (max 160 chars for Google)
       if (field === 'excerpt') {
-        // Only auto-update if meta_description is empty or was auto-generated
         if (!prev.meta_description || prev.meta_description === prev.excerpt.substring(0, 160)) {
           updated.meta_description = value.substring(0, 160);
         }
       }
 
-      // Auto-populate og_image from featured_image if not set
       if (field === 'featured_image' && !prev.og_image) {
         updated.og_image = value;
       }
@@ -119,13 +157,13 @@ const BlogManagement = () => {
   const handleSavePost = async () => {
     try {
       setIsSaving(true);
-      const content = contentEditableRef.current?.innerHTML || formData.content;
+      const content = blocksToHtml();
 
       const postData = {
         ...formData,
         content,
-        published_at: formData.status === 'published' && !formData.published_at 
-          ? new Date().toISOString() 
+        published_at: formData.status === 'published' && !formData.published_at
+          ? new Date().toISOString()
           : formData.published_at
       };
 
@@ -160,7 +198,6 @@ const BlogManagement = () => {
       title: post.title || '',
       slug: post.slug || '',
       excerpt: post.excerpt || '',
-      content: post.content || '',
       featured_image: post.featured_image || '',
       author_name: post.author_name || 'Ignite Team',
       author_role: post.author_role || '',
@@ -171,11 +208,11 @@ const BlogManagement = () => {
       status: post.status || 'draft',
       published_at: post.published_at || ''
     });
-    // Check audio status for this post
+    // Convert HTML content to blocks
+    setContentBlocks(htmlToBlocks(post.content));
     await checkAudioStatus(post.id);
   };
 
-  // Check if audio exists for a blog post
   const checkAudioStatus = async (postId) => {
     if (!postId) {
       setAudioStatus(null);
@@ -199,50 +236,30 @@ const BlogManagement = () => {
     }
   };
 
-  // Generate audio for the current blog post
   const handleGenerateAudio = async () => {
     if (!selectedPost?.id) {
       alert('Please save the post first before generating audio');
       return;
     }
 
-    console.log('🎤 Starting audio generation for post:', selectedPost.id);
     setIsGeneratingAudio(true);
     try {
-      const requestBody = { blogPostId: selectedPost.id };
-      console.log('📤 Sending request to generate-blog-audio:', requestBody);
-
       const response = await fetch('https://ignite-education-api.onrender.com/api/admin/generate-blog-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify({ blogPostId: selectedPost.id })
       });
 
-      console.log('📥 Response status:', response.status, response.statusText);
-
-      const responseText = await response.text();
-      console.log('📥 Response body (raw):', responseText);
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('❌ Failed to parse response as JSON:', parseError);
-        console.error('❌ Response was:', responseText.substring(0, 500));
-        alert(`Failed to generate audio: Server returned invalid response. Check console for details.`);
-        return;
-      }
+      const data = await response.json();
 
       if (response.ok) {
-        console.log('✅ Audio generated successfully:', data);
         alert(`Audio generated successfully! Duration: ${data.blogAudio?.duration_seconds?.toFixed(1) || 'unknown'}s`);
         await checkAudioStatus(selectedPost.id);
       } else {
-        console.error('❌ Server returned error:', data);
         alert(`Failed to generate audio: ${data.error || data.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('❌ Error generating audio:', error);
+      console.error('Error generating audio:', error);
       alert(`Failed to generate audio: ${error.message}`);
     } finally {
       setIsGeneratingAudio(false);
@@ -255,7 +272,6 @@ const BlogManagement = () => {
       title: '',
       slug: '',
       excerpt: '',
-      content: '',
       featured_image: '',
       author_name: 'Ignite Team',
       author_role: '',
@@ -266,6 +282,7 @@ const BlogManagement = () => {
       status: 'draft',
       published_at: ''
     });
+    setContentBlocks([{ id: Date.now(), type: 'paragraph', content: '' }]);
     setShowSeoPanel(false);
   };
 
@@ -282,14 +299,50 @@ const BlogManagement = () => {
     }
   };
 
-  const formatText = (command, value = null) => {
-    document.execCommand(command, false, value);
-    contentEditableRef.current?.focus();
+  // Block management functions
+  const addBlock = (type) => {
+    const newBlock = {
+      id: Date.now(),
+      type,
+      content: type === 'bulletlist' || type === 'numberedlist' ? { items: [''] } : ''
+    };
+    setContentBlocks([...contentBlocks, newBlock]);
   };
 
-  const insertLink = () => {
-    const url = prompt('Enter URL:');
-    if (url) formatText('createLink', url);
+  const addBlockAt = (type, index) => {
+    const newBlock = {
+      id: Date.now(),
+      type,
+      content: type === 'bulletlist' || type === 'numberedlist' ? { items: [''] } : ''
+    };
+    const newBlocks = [...contentBlocks];
+    newBlocks.splice(index, 0, newBlock);
+    setContentBlocks(newBlocks);
+  };
+
+  const updateBlock = (id, content) => {
+    setContentBlocks(contentBlocks.map(block =>
+      block.id === id ? { ...block, content } : block
+    ));
+  };
+
+  const removeBlock = (id) => {
+    if (contentBlocks.length <= 1) return;
+    setContentBlocks(contentBlocks.filter(block => block.id !== id));
+  };
+
+  const moveBlockUp = (index) => {
+    if (index === 0) return;
+    const newBlocks = [...contentBlocks];
+    [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+    setContentBlocks(newBlocks);
+  };
+
+  const moveBlockDown = (index) => {
+    if (index === contentBlocks.length - 1) return;
+    const newBlocks = [...contentBlocks];
+    [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+    setContentBlocks(newBlocks);
   };
 
   const resizeImage = (file, maxSizeKB = 5000) => {
@@ -300,12 +353,9 @@ const BlogManagement = () => {
         img.onload = () => {
           const canvas = document.createElement('canvas');
           let { width, height } = img;
-
-          // Max dimensions for blog featured images
           const maxWidth = 1920;
           const maxHeight = 1080;
 
-          // Scale down if dimensions are too large
           if (width > maxWidth || height > maxHeight) {
             const ratio = Math.min(maxWidth / width, maxHeight / height);
             width = Math.round(width * ratio);
@@ -314,11 +364,9 @@ const BlogManagement = () => {
 
           canvas.width = width;
           canvas.height = height;
-
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Start with high quality and reduce if needed
           let quality = 0.9;
           const tryCompress = () => {
             canvas.toBlob(
@@ -346,7 +394,6 @@ const BlogManagement = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
@@ -355,7 +402,6 @@ const BlogManagement = () => {
     try {
       setIsUploadingImage(true);
 
-      // Resize if file is too large (over 5MB)
       let fileToUpload = file;
       if (file.size > 5 * 1024 * 1024) {
         fileToUpload = await resizeImage(file, 5000);
@@ -365,7 +411,6 @@ const BlogManagement = () => {
       const fileName = `blog_${Date.now()}.${fileExt}`;
       const filePath = `curriculum/${fileName}`;
 
-      // Convert file to ArrayBuffer for proper upload
       const arrayBuffer = await fileToUpload.arrayBuffer();
 
       const { error: uploadError } = await supabase.storage
@@ -392,11 +437,109 @@ const BlogManagement = () => {
       alert('Error uploading image: ' + error.message);
     } finally {
       setIsUploadingImage(false);
-      // Reset the input so the same file can be selected again
       if (imageInputRef.current) {
         imageInputRef.current.value = '';
       }
     }
+  };
+
+  // Get block type label and color
+  const getBlockInfo = (type) => {
+    switch (type) {
+      case 'h2':
+        return { label: 'Heading 2', color: 'bg-purple-600', textClass: 'text-2xl font-bold' };
+      case 'h3':
+        return { label: 'Heading 3', color: 'bg-blue-600', textClass: 'text-xl font-semibold' };
+      case 'paragraph':
+        return { label: 'Paragraph', color: 'bg-gray-600', textClass: '' };
+      case 'bulletlist':
+        return { label: 'Bullet List', color: 'bg-green-600', textClass: '' };
+      case 'numberedlist':
+        return { label: 'Numbered List', color: 'bg-teal-600', textClass: '' };
+      case 'quote':
+        return { label: 'Quote', color: 'bg-amber-600', textClass: 'italic' };
+      default:
+        return { label: 'Text', color: 'bg-gray-600', textClass: '' };
+    }
+  };
+
+  // Render block editor based on type
+  const renderBlockEditor = (block, index) => {
+    const { textClass } = getBlockInfo(block.type);
+
+    if (block.type === 'bulletlist' || block.type === 'numberedlist') {
+      const items = block.content?.items || [''];
+      return (
+        <div className="space-y-2">
+          {items.map((item, itemIndex) => (
+            <div key={itemIndex} className="flex items-center gap-2">
+              <span className="text-gray-400 w-6 text-center">
+                {block.type === 'bulletlist' ? '•' : `${itemIndex + 1}.`}
+              </span>
+              <input
+                type="text"
+                value={item}
+                onChange={(e) => {
+                  const newItems = [...items];
+                  newItems[itemIndex] = e.target.value;
+                  updateBlock(block.id, { items: newItems });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const newItems = [...items];
+                    newItems.splice(itemIndex + 1, 0, '');
+                    updateBlock(block.id, { items: newItems });
+                  } else if (e.key === 'Backspace' && item === '' && items.length > 1) {
+                    e.preventDefault();
+                    const newItems = items.filter((_, i) => i !== itemIndex);
+                    updateBlock(block.id, { items: newItems });
+                  }
+                }}
+                className="flex-1 bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                placeholder="List item..."
+              />
+              {items.length > 1 && (
+                <button
+                  onClick={() => {
+                    const newItems = items.filter((_, i) => i !== itemIndex);
+                    updateBlock(block.id, { items: newItems });
+                  }}
+                  className="p-1 hover:bg-red-900/30 text-red-400 rounded"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
+          ))}
+          <button
+            onClick={() => updateBlock(block.id, { items: [...items, ''] })}
+            className="text-sm text-gray-400 hover:text-white ml-8"
+          >
+            + Add item
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <textarea
+        value={block.content}
+        onChange={(e) => updateBlock(block.id, e.target.value)}
+        onInput={(e) => {
+          e.target.style.height = 'auto';
+          e.target.style.height = e.target.scrollHeight + 'px';
+        }}
+        placeholder={
+          block.type === 'h2' ? 'Section heading...' :
+          block.type === 'h3' ? 'Subsection heading...' :
+          block.type === 'quote' ? 'Enter quote...' :
+          'Enter paragraph text...'
+        }
+        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none min-h-[60px] ${textClass}`}
+        style={{ height: 'auto' }}
+      />
+    );
   };
 
   return (
@@ -511,57 +654,95 @@ const BlogManagement = () => {
                     src={formData.featured_image}
                     alt="Preview"
                     className="w-12 h-12 object-cover rounded"
-                    onError={(e) => {
-                      console.error('Image failed to load:', formData.featured_image);
-                      e.target.style.display = 'none';
-                    }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
                   />
                 )}
               </div>
             </div>
 
+            {/* Content Blocks Section */}
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Content *</label>
-              <div className="bg-white/10 border border-white/20 rounded-t-lg p-2 flex flex-wrap gap-1 items-center">
-                <button onClick={() => formatText('bold')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><strong>B</strong></button>
-                <button onClick={() => formatText('italic')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><em>I</em></button>
-                <button onClick={() => formatText('underline')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded"><u>U</u></button>
-                <div className="w-px bg-white/20 mx-1 h-6"></div>
-                <button
-                  onClick={() => { formatText('formatBlock', '<h2>'); setCurrentBlockFormat('h2'); }}
-                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'h2' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  H2
+
+              {/* Add Block Buttons */}
+              <div className="bg-white/10 border border-white/20 rounded-t-lg p-3 flex flex-wrap gap-2">
+                <button onClick={() => addBlock('h2')} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium">
+                  + Heading 2
                 </button>
-                <button
-                  onClick={() => { formatText('formatBlock', '<h3>'); setCurrentBlockFormat('h3'); }}
-                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'h3' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  H3
+                <button onClick={() => addBlock('h3')} className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 rounded text-sm font-medium">
+                  + Heading 3
                 </button>
-                <button
-                  onClick={() => { formatText('formatBlock', '<p>'); setCurrentBlockFormat('p'); }}
-                  className={`px-3 py-1 rounded font-medium ${currentBlockFormat === 'p' ? 'bg-[#EF0B72] text-white' : 'bg-white/10 hover:bg-white/20'}`}
-                >
-                  P
+                <button onClick={() => addBlock('paragraph')} className="px-3 py-1.5 bg-gray-600 hover:bg-gray-700 rounded text-sm font-medium">
+                  + Paragraph
                 </button>
-                <div className="w-px bg-white/20 mx-1 h-6"></div>
-                <button onClick={() => formatText('insertUnorderedList')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">• List</button>
-                <button onClick={() => formatText('insertOrderedList')} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">1. List</button>
-                <div className="w-px bg-white/20 mx-1 h-6"></div>
-                <button onClick={insertLink} className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded">🔗 Link</button>
+                <button onClick={() => addBlock('bulletlist')} className="px-3 py-1.5 bg-green-600 hover:bg-green-700 rounded text-sm font-medium flex items-center gap-1">
+                  <List size={14} /> Bullet List
+                </button>
+                <button onClick={() => addBlock('numberedlist')} className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 rounded text-sm font-medium">
+                  1. Numbered List
+                </button>
+                <button onClick={() => addBlock('quote')} className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 rounded text-sm font-medium">
+                  " Quote
+                </button>
               </div>
 
-              <div
-                ref={contentEditableRef}
-                contentEditable
-                dangerouslySetInnerHTML={{ __html: formData.content }}
-                onBlur={(e) => setFormData(prev => ({ ...prev, content: e.target.innerHTML }))}
-                onKeyUp={updateCurrentFormat}
-                onMouseUp={updateCurrentFormat}
-                onClick={updateCurrentFormat}
-                className="w-full min-h-[400px] bg-white/10 border border-white/20 border-t-0 rounded-b-lg px-4 py-3 text-white focus:outline-none prose prose-invert max-w-none"
-              />
+              {/* Content Blocks */}
+              <div className="bg-white/5 border border-white/20 border-t-0 rounded-b-lg p-4 space-y-4">
+                {contentBlocks.map((block, index) => {
+                  const { label, color } = getBlockInfo(block.type);
+
+                  return (
+                    <div key={block.id}>
+                      {/* Insert buttons between blocks */}
+                      {index > 0 && (
+                        <div className="flex justify-center mb-2 -mt-2">
+                          <div className="flex gap-1 bg-gray-800 rounded p-1 opacity-0 hover:opacity-100 transition-opacity">
+                            <button onClick={() => addBlockAt('h2', index)} className="px-2 py-0.5 text-xs bg-purple-600/50 hover:bg-purple-600 rounded">+H2</button>
+                            <button onClick={() => addBlockAt('h3', index)} className="px-2 py-0.5 text-xs bg-blue-600/50 hover:bg-blue-600 rounded">+H3</button>
+                            <button onClick={() => addBlockAt('paragraph', index)} className="px-2 py-0.5 text-xs bg-gray-600/50 hover:bg-gray-600 rounded">+P</button>
+                            <button onClick={() => addBlockAt('bulletlist', index)} className="px-2 py-0.5 text-xs bg-green-600/50 hover:bg-green-600 rounded">+List</button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bg-white/5 border border-white/10 rounded-lg overflow-hidden">
+                        {/* Block header */}
+                        <div className="flex items-center justify-between px-3 py-2 bg-white/5">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded ${color}`}>{label}</span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => moveBlockUp(index)}
+                              disabled={index === 0}
+                              className="p-1 hover:bg-white/10 rounded disabled:opacity-30"
+                            >
+                              <MoveUp size={14} />
+                            </button>
+                            <button
+                              onClick={() => moveBlockDown(index)}
+                              disabled={index === contentBlocks.length - 1}
+                              className="p-1 hover:bg-white/10 rounded disabled:opacity-30"
+                            >
+                              <MoveDown size={14} />
+                            </button>
+                            <button
+                              onClick={() => removeBlock(block.id)}
+                              disabled={contentBlocks.length <= 1}
+                              className="p-1 hover:bg-red-900/30 text-red-400 rounded disabled:opacity-30"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Block content */}
+                        <div className="p-3">
+                          {renderBlockEditor(block, index)}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -608,7 +789,6 @@ const BlogManagement = () => {
 
               {showSeoPanel && (
                 <div className="p-4 space-y-4 bg-white/5">
-                  {/* Meta Title */}
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Meta Title
@@ -624,10 +804,8 @@ const BlogManagement = () => {
                       placeholder="SEO title (appears in search results)"
                       maxLength={70}
                     />
-                    <p className="text-xs text-gray-400 mt-1">Optimal: 50-60 characters. This appears as the clickable headline in search results.</p>
                   </div>
 
-                  {/* Meta Description */}
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Meta Description
@@ -642,10 +820,8 @@ const BlogManagement = () => {
                       placeholder="SEO description (appears in search results)"
                       maxLength={170}
                     />
-                    <p className="text-xs text-gray-400 mt-1">Optimal: 150-160 characters. This appears below the title in search results.</p>
                   </div>
 
-                  {/* OG Image */}
                   <div>
                     <label className="block text-sm font-medium mb-2">Social Share Image (OG Image)</label>
                     <input
@@ -653,17 +829,10 @@ const BlogManagement = () => {
                       value={formData.og_image}
                       onChange={(e) => handleInputChange('og_image', e.target.value)}
                       className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
-                      placeholder="Image URL for social media sharing (defaults to featured image)"
+                      placeholder="Image URL for social media sharing"
                     />
-                    <p className="text-xs text-gray-400 mt-1">Recommended: 1200x630px. Used when shared on Facebook, Twitter, LinkedIn.</p>
-                    {formData.og_image && (
-                      <div className="mt-2">
-                        <img src={formData.og_image} alt="OG Preview" className="max-w-xs rounded border border-white/20" onError={(e) => e.target.style.display = 'none'} />
-                      </div>
-                    )}
                   </div>
 
-                  {/* SEO Preview */}
                   <div className="mt-4 p-4 bg-white rounded-lg">
                     <p className="text-xs text-gray-500 mb-2">Google Search Preview:</p>
                     <div className="text-blue-600 text-lg hover:underline cursor-pointer truncate">
@@ -695,7 +864,6 @@ const BlogManagement = () => {
                   onClick={handleGenerateAudio}
                   disabled={isGeneratingAudio}
                   className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg disabled:opacity-50"
-                  title="Generate narration audio for this blog post"
                 >
                   <Volume2 className="w-5 h-5" />
                   {isGeneratingAudio ? 'Generating...' : 'Generate Audio'}
@@ -704,13 +872,9 @@ const BlogManagement = () => {
 
               {audioStatus && (
                 <span className={`text-xs px-3 py-1 rounded ${
-                  audioStatus.hasAudio
-                    ? 'bg-green-900/50 text-green-300'
-                    : 'bg-gray-700 text-gray-400'
+                  audioStatus.hasAudio ? 'bg-green-900/50 text-green-300' : 'bg-gray-700 text-gray-400'
                 }`}>
-                  {audioStatus.hasAudio
-                    ? `✅ Audio ready (${audioStatus.duration_seconds?.toFixed(1)}s)`
-                    : '❌ No audio'}
+                  {audioStatus.hasAudio ? `✅ Audio ready (${audioStatus.duration_seconds?.toFixed(1)}s)` : '❌ No audio'}
                 </span>
               )}
 
