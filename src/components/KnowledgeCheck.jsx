@@ -290,14 +290,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           congratsLine2: `You've passed this lesson and can move on to ${nextLessonText}.`
         }];
       } else {
-        // For failed messages, use typing animation
-        const newMessageIndex = prev.length;
-        setTimeout(() => setTypingMessageIndex(newMessageIndex), 0);
+        // For failed messages, don't use typing animation - show immediately like passed
         return [...prev, {
           type: 'assistant',
-          text: `You scored ${correctCount}/${TOTAL_QUESTIONS}. You need ${PASS_THRESHOLD} correct answers to pass. Don't worry - you can retake the knowledge check.`,
-          isComplete: false,
-          isPassed: false
+          text: '',
+          isComplete: true,
+          isPassed: false,
+          isFailed: true,
+          score: `${correctCount}/${TOTAL_QUESTIONS}`,
+          failedLine1: 'Almost.',
+          failedLine2: "You haven't met the pass mark for the lesson. Re-visit the lesson content, and try this check again."
         }];
       }
     });
@@ -439,7 +441,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
                     // Special layout for passed message: left column (35%) with icon + score stacked | right column (65%) with congrats on two lines
-                    <div className="text-black text-sm leading-snug max-w-[95%] flex items-center" style={{
+                    <div className="text-black text-sm leading-snug flex items-center" style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6',
                       width: '100%',
@@ -455,6 +457,26 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
                         <p className="font-medium">{msg.congratsLine1}</p>
                         <p className="mt-1">{msg.congratsLine2}</p>
+                      </div>
+                    </div>
+                  ) : msg.isFailed ? (
+                    // Special layout for failed message: left column (35%) with orange X icon + score stacked | right column (65%) with "Almost" message
+                    <div className="text-black text-sm leading-snug flex items-center" style={{
+                      borderRadius: '8px',
+                      backgroundColor: '#f3f4f6',
+                      width: '100%',
+                      padding: '1rem 0.75rem',
+                      minHeight: '5rem'
+                    }}>
+                      <div className="flex flex-col items-center justify-center" style={{ width: '35%', flexShrink: 0 }}>
+                        <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
+                          <X size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
+                        </div>
+                        <span className="font-medium mt-1">You scored {msg.score}</span>
+                      </div>
+                      <div className="flex flex-col justify-center" style={{ width: '65%' }}>
+                        <p className="font-medium">{msg.failedLine1}</p>
+                        <p className="mt-1">{msg.failedLine2}</p>
                       </div>
                     </div>
                   ) : (
