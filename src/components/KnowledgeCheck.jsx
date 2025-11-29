@@ -732,8 +732,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 <button
                   type="submit"
                   disabled={isEvaluating || !chatInput.trim()}
-                  className="w-full text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
+                  className="text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ borderRadius: '0', fontSize: '0.85rem', backgroundColor: '#7714E0', marginLeft: '-2rem', marginRight: '-2rem', width: 'calc(100% + 4rem)' }}
                   onMouseEnter={(e) => !isEvaluating && chatInput.trim() && (e.currentTarget.style.backgroundColor = '#6610C7')}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
                 >
