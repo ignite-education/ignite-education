@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, CheckCircle } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { logKnowledgeCheck } from '../lib/api';
 
 const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
@@ -435,16 +435,21 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
-                    // Special layout for passed message: [icon + score] | congrats text
-                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%] flex items-center gap-4" style={{
+                    // Special layout for passed message: left column (25%) with icon + score | right column (75%) with congrats
+                    <div className="p-3 text-black text-sm leading-snug max-w-[95%] flex" style={{
                       borderRadius: '8px',
-                      backgroundColor: '#f3f4f6'
+                      backgroundColor: '#f3f4f6',
+                      width: '100%'
                     }}>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <CheckCircle size={20} fill="#22c55e" stroke="#22c55e" />
+                      <div className="flex items-center gap-2" style={{ width: '25%', flexShrink: 0 }}>
+                        <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#22c55e' }}>
+                          <Check size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
+                        </div>
                         <span className="font-medium">You scored {msg.score}.</span>
                       </div>
-                      <span>{msg.congratsText}</span>
+                      <div style={{ width: '75%' }}>
+                        <span>{msg.congratsText}</span>
+                      </div>
                     </div>
                   ) : (
                     // Regular assistant message
