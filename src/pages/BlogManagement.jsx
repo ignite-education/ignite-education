@@ -237,7 +237,7 @@ const BlogManagement = () => {
 
       const fileExt = fileToUpload.type === 'image/jpeg' ? 'jpg' : file.name.split('.').pop();
       const fileName = `blog_${Date.now()}.${fileExt}`;
-      const filePath = `blog/${fileName}`;
+      const filePath = `curriculum/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('assets')
