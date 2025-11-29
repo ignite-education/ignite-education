@@ -281,7 +281,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           question: chatMessages[chatMessages.length - 1].text,
           answer: userAnswer,
           useBritishEnglish: true,
-          feedbackInstructions: "STRUCTURE FOR INCORRECT/UNSURE: One brief sentence acknowledging their answer, then IMMEDIATELY state the correct answer in full. BANNED PHRASES (never use these or similar): 'Let me explain', 'Let me provide', 'Let me clarify', 'I'd be happy to', 'I apologize', 'The question asked about'. Just give the answer directly. BAD EXAMPLE: 'I'd be happy to provide the correct information.' GOOD EXAMPLE: 'The product lifecycle has four stages: Introduction, Growth, Maturity, and Decline. Product Managers adapt by focusing on market fit in Introduction, scaling in Growth, optimization in Maturity, and deciding whether to sunset or pivot in Decline.' FOR CORRECT ANSWERS: Maximum two sentences of praise. RULES: No offers to help further. No apologies. No restating what the question asked. Just acknowledge and provide the answer.",
+          feedbackInstructions: "MAXIMUM 3 SENTENCES TOTAL for all feedback. FOR INCORRECT/UNSURE: One sentence acknowledging, then 1-2 sentences with the correct answer. FOR CORRECT: 1-2 sentences of praise only. BANNED PHRASES: 'Let me explain', 'Let me provide', 'Let me clarify', 'I'd be happy to', 'I apologize', 'The question asked about'. NEVER use bullet points, dashes (-), or lists. Write as flowing prose only. No offers to help further. No apologies.",
         }),
       });
 

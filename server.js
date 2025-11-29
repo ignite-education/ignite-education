@@ -467,10 +467,17 @@ CRITICAL - SOURCE OF TRUTH:
 CRITICAL FEEDBACK RULES (YOU MUST FOLLOW THESE EXACTLY):
 ${feedbackRules}
 
+FORMATTING RULES:
+- MAXIMUM 3 SENTENCES TOTAL - this is a strict limit, never exceed it
+- Write feedback as plain prose only
+- NEVER use bullet points, dashes, or lists
+- NEVER use line breaks or newlines within the feedback
+- Keep feedback concise and direct
+
 Respond in JSON format:
 {
   "isCorrect": true or false,
-  "feedback": "Your feedback here"
+  "feedback": "Your feedback in 3 sentences or fewer, no line breaks or bullet points"
 }`;
 
     const message = await anthropic.messages.create({
