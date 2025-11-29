@@ -50,7 +50,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
+          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
