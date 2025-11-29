@@ -270,6 +270,14 @@ app.post('/api/chat', async (req, res) => {
 
 ${lessonContext ? `Current Lesson Context:\n${lessonContext}\n` : ''}
 
+ABOUT IGNITE EDUCATION (use this to answer questions about Ignite):
+- Ignite Education is an online learning platform building a smarter, more personalised era of education
+- Courses are built by industry professionals and feature AI-powered interactive learning
+- Key features include: Chat with Will (AI tutor), Smart Notes, Voice Over narration, Knowledge Checks, and Flashcards - all personalised to each learner
+- Office Hours: Premium subscribers can get 1:1 support from course leaders at a time that suits them
+- Courses available include Product Management, Cyber Security, Data Analysis, and UX Design
+- The platform transforms careers through interactive courses, real-world projects, and personalised feedback
+
 CRITICAL RULES - MUST FOLLOW:
 - BREVITY IS ESSENTIAL: Keep responses to 1-3 sentences. Maximum 50 words unless the user explicitly asks for more detail.
 - NEVER use emojis or emoticons of any kind

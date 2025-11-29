@@ -158,6 +158,7 @@ const LearningHub = () => {
   const editableRef = React.useRef(null);
   const scrollContainerRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
+  const chatTextareaRef = React.useRef(null);
   const checkoutRef = React.useRef(null);
   const cardRefs = React.useRef([]);
   const sectionRefs = React.useRef([]);
@@ -1136,6 +1137,13 @@ const LearningHub = () => {
     }
   };
 
+  const autoResizeChatTextarea = () => {
+    if (chatTextareaRef.current) {
+      chatTextareaRef.current.style.height = 'auto';
+      chatTextareaRef.current.style.height = Math.min(chatTextareaRef.current.scrollHeight, 120) + 'px';
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -1156,6 +1164,10 @@ const LearningHub = () => {
     const newMessages = [...chatMessages, { type: 'user', text: userMessage }];
     setChatMessages(newMessages);
     setChatInput('');
+    // Reset textarea height after clearing
+    if (chatTextareaRef.current) {
+      chatTextareaRef.current.style.height = 'auto';
+    }
     setIsTyping(true);
 
     // Scroll to bottom so user can see their message
@@ -3504,10 +3516,19 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             </div>
             <div className="flex-shrink-0 bg-gray-100 p-3" style={{ marginTop: '0px', borderRadius: '0 0 0.3rem 0.3rem' }}>
               <form data-chat-form onSubmit={handleSendMessage} style={{ marginBottom: '8px' }}>
-                <input
-                  type="text"
+                <textarea
+                  ref={chatTextareaRef}
                   value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
+                  onChange={(e) => {
+                    setChatInput(e.target.value);
+                    autoResizeChatTextarea();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e);
+                    }
+                  }}
                   onFocus={() => {
                     setShowPlaceholder(false);
                     setIsEditingInput(true);
@@ -3517,8 +3538,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                     setIsEditingInput(false);
                   }}
                   placeholder={showPlaceholder ? "type to understand or select below" : ""}
-                  className="w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500"
-                  style={{ borderRadius: '0 0 0.75rem 0.75rem', paddingTop: '0.4rem', paddingBottom: '0.4rem' }}
+                  rows={1}
+                  className="w-full bg-gray-100 px-5 text-sm text-center focus:outline-none placeholder-gray-500 text-black caret-gray-500 resize-none"
+                  style={{ borderRadius: '0 0 0.75rem 0.75rem', paddingTop: '0.4rem', paddingBottom: '0.4rem', overflow: 'hidden' }}
                 />
               </form>
               {suggestedQuestion && (
