@@ -2315,22 +2315,17 @@ const Auth = () => {
                   if (authScrollContainerRef.current) {
                     const container = authScrollContainerRef.current;
                     const startPosition = container.scrollTop;
-                    const duration = 1500;
-                    let startTime = null;
+                    const duration = 1200;
+                    const startTime = performance.now();
 
-                    const easeInOutCubic = (t) => {
-                      return t < 0.5
-                        ? 4 * t * t * t
-                        : 1 - Math.pow(-2 * t + 2, 3) / 2;
-                    };
+                    const easeOutQuart = (t) => 1 - Math.pow(1 - t, 4);
 
-                    const animateScroll = (currentTime) => {
-                      if (!startTime) startTime = currentTime;
-                      const timeElapsed = currentTime - startTime;
-                      const progress = Math.min(timeElapsed / duration, 1);
-                      const easedProgress = easeInOutCubic(progress);
+                    const animateScroll = () => {
+                      const elapsed = performance.now() - startTime;
+                      const progress = Math.min(elapsed / duration, 1);
+                      const easedProgress = easeOutQuart(progress);
 
-                      container.scrollTop = startPosition * (1 - easedProgress);
+                      container.scrollTop = Math.round(startPosition * (1 - easedProgress));
 
                       if (progress < 1) {
                         requestAnimationFrame(animateScroll);
@@ -2351,7 +2346,7 @@ const Auth = () => {
             <div className="flex justify-center gap-8 px-4 pb-12">
               <a
                 href="mailto:hello@ignite.education"
-                className="text-white hover:text-pink-500 transition font-semibold"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
                 Contact
@@ -2360,7 +2355,7 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/jobs/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-pink-500 transition font-semibold"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
                 Careers
@@ -2369,21 +2364,21 @@ const Auth = () => {
                 href="https://www.linkedin.com/school/ignite-courses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-pink-500 transition font-semibold"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
                 LinkedIn
               </a>
               <a
                 href="/privacy"
-                className="text-white hover:text-pink-500 transition font-semibold"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
                 Policy
               </a>
               <a
                 href="/terms"
-                className="text-white hover:text-pink-500 transition font-semibold"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
                 Terms
