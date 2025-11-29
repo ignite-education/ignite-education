@@ -1146,6 +1146,7 @@ const chunkText = (text, maxChars = 4800) => {
 };
 
 // GET /api/lesson-audio/:courseId/:module/:lesson - Get pre-generated audio
+// Returns per-section audio for sequential playback with perfect word highlighting
 app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
   try {
     const { courseId, module, lesson } = req.params;
@@ -1162,15 +1163,27 @@ app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
       return res.status(404).json({ error: 'Audio not found for this lesson' });
     }
 
-    res.json({
-      audio_base64: data.audio_base64,
-      alignment_data: data.alignment_data,
-      section_markers: data.section_markers,
-      full_text: data.full_text,
-      duration_seconds: data.duration_seconds,
-      content_hash: data.content_hash,
-      created_at: data.created_at
-    });
+    // Return per-section audio if available, otherwise fall back to old format
+    if (data.section_audio) {
+      res.json({
+        section_audio: data.section_audio,
+        full_text: data.full_text,
+        duration_seconds: data.duration_seconds,
+        content_hash: data.content_hash,
+        created_at: data.created_at
+      });
+    } else {
+      // Legacy format for backwards compatibility
+      res.json({
+        audio_base64: data.audio_base64,
+        alignment_data: data.alignment_data,
+        section_markers: data.section_markers,
+        full_text: data.full_text,
+        duration_seconds: data.duration_seconds,
+        content_hash: data.content_hash,
+        created_at: data.created_at
+      });
+    }
   } catch (error) {
     console.error('Error fetching lesson audio:', error);
     res.status(500).json({ error: 'Failed to fetch lesson audio', message: error.message });
@@ -1231,11 +1244,12 @@ app.get('/api/admin/lesson-audio-status/:courseId/:module/:lesson', async (req, 
 });
 
 // POST /api/admin/generate-lesson-audio - Generate audio for a lesson
+// NEW: Generates per-section audio for perfect word highlighting sync
 app.post('/api/admin/generate-lesson-audio', async (req, res) => {
   try {
     const { courseId, moduleNumber, lessonNumber, forceRegenerate = false, voiceGender = 'male' } = req.body;
 
-    console.log(`🎤 Generating lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`🎤 Generating per-section lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     // 1. Fetch lesson sections
     const { data: sections, error: sectionsError } = await supabase
@@ -1254,7 +1268,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(404).json({ error: 'No sections found for this lesson' });
     }
 
-    // 2. Extract full text
+    // 2. Extract full text for hash calculation
     const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
     const fullText = extractLessonText(lessonName, sections);
     const contentHash = crypto.createHash('sha256').update(fullText).digest('hex');
@@ -1265,14 +1279,14 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
     if (!forceRegenerate) {
       const { data: existing } = await supabase
         .from('lesson_audio')
-        .select('id, content_hash')
+        .select('id, content_hash, section_audio')
         .eq('course_id', courseId)
         .eq('module_number', moduleNumber)
         .eq('lesson_number', lessonNumber)
         .single();
 
-      if (existing && existing.content_hash === contentHash) {
-        console.log('✅ Audio already exists with same hash, skipping regeneration');
+      if (existing && existing.content_hash === contentHash && existing.section_audio) {
+        console.log('✅ Per-section audio already exists with same hash, skipping regeneration');
         return res.json({
           success: true,
           skipped: true,
@@ -1290,25 +1304,32 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
     }
 
-    // 5. Chunk text if needed and generate audio
-    const chunks = chunkText(fullText, 4800);
-    console.log(`📦 Split into ${chunks.length} chunks`);
-
-    let combinedAudioBase64 = '';
-    let combinedAlignment = {
-      characters: [],
-      character_start_times_seconds: [],
-      character_end_times_seconds: []
-    };
+    // 5. Generate audio for each section separately
+    const sectionAudio = [];
     let totalDuration = 0;
-    let charOffset = 0;
+    let totalCharacters = 0;
 
-    for (let i = 0; i < chunks.length; i++) {
-      const chunk = chunks[i];
-      console.log(`🎵 Generating chunk ${i + 1}/${chunks.length} (${chunk.length} chars)`);
+    // Helper to extract text from section (same logic as extractLessonText but per-section)
+    const extractSectionText = (section) => {
+      if (section.content_type === 'heading' && section.content?.text) {
+        return section.content.text;
+      } else if (section.content_type === 'paragraph' && section.content?.text) {
+        let text = section.content.text;
+        text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
+        text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
+        text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
+        return text;
+      } else if (section.content_type === 'list' && section.content?.items) {
+        return section.content.items.join('. ');
+      }
+      return '';
+    };
 
-      const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
-        text: chunk,
+    // Generate audio for lesson title (section_index = -1)
+    console.log(`🎵 Generating title audio: "${lessonName.substring(0, 50)}..."`);
+    try {
+      const titleResponse = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+        text: lessonName,
         model_id: 'eleven_multilingual_v2',
         output_format: 'mp3_44100_128',
         voice_settings: {
@@ -1319,45 +1340,81 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         }
       });
 
-      // Get duration from alignment data
-      const chunkEndTimes = response.alignment?.characterEndTimesSeconds || [];
-      const chunkDuration = chunkEndTimes.length > 0 ? chunkEndTimes[chunkEndTimes.length - 1] : 0;
+      const titleEndTimes = titleResponse.alignment?.characterEndTimesSeconds || [];
+      const titleDuration = titleEndTimes.length > 0 ? titleEndTimes[titleEndTimes.length - 1] : 0;
 
-      if (i === 0) {
-        combinedAudioBase64 = response.audioBase64;
-      } else {
-        // For multiple chunks, we need to concatenate the audio
-        // This is simplified - in production you'd want to properly merge MP3 files
-        // For now, we'll concatenate base64 (works but may have small artifacts at boundaries)
-        const existingBuffer = Buffer.from(combinedAudioBase64, 'base64');
-        const newBuffer = Buffer.from(response.audioBase64, 'base64');
-        const combined = Buffer.concat([existingBuffer, newBuffer]);
-        combinedAudioBase64 = combined.toString('base64');
-      }
+      sectionAudio.push({
+        section_index: -1,
+        text: lessonName,
+        audio_base64: titleResponse.audioBase64,
+        alignment: titleResponse.alignment ? {
+          characters: titleResponse.alignment.characters,
+          character_start_times_seconds: titleResponse.alignment.characterStartTimesSeconds,
+          character_end_times_seconds: titleResponse.alignment.characterEndTimesSeconds
+        } : null,
+        duration_seconds: titleDuration
+      });
 
-      // Combine alignment data with time offset
-      if (response.alignment) {
-        for (let j = 0; j < response.alignment.characters.length; j++) {
-          combinedAlignment.characters.push(response.alignment.characters[j]);
-          combinedAlignment.character_start_times_seconds.push(
-            response.alignment.characterStartTimesSeconds[j] + totalDuration
-          );
-          combinedAlignment.character_end_times_seconds.push(
-            response.alignment.characterEndTimesSeconds[j] + totalDuration
-          );
-        }
-      }
-
-      totalDuration += chunkDuration;
-      charOffset += chunk.length;
+      totalDuration += titleDuration;
+      totalCharacters += lessonName.length;
+      console.log(`✅ Title audio: ${titleDuration.toFixed(2)}s`);
+    } catch (err) {
+      console.error('Error generating title audio:', err);
+      // Continue without title audio
     }
 
-    console.log(`✅ Audio generated: ${totalDuration.toFixed(2)}s, ${combinedAlignment.characters.length} chars tracked`);
+    // Generate audio for each content section
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const sectionText = extractSectionText(section);
 
-    // 6. Build section markers
-    const sectionMarkers = buildSectionMarkers(lessonName, sections, fullText, combinedAlignment);
+      if (!sectionText || sectionText.length === 0) {
+        console.log(`⏭️ Skipping empty section ${i}`);
+        continue;
+      }
 
-    // 7. Store in database (upsert)
+      console.log(`🎵 Generating section ${i} audio (${section.content_type}): "${sectionText.substring(0, 50)}..."`);
+
+      try {
+        const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+          text: sectionText,
+          model_id: 'eleven_multilingual_v2',
+          output_format: 'mp3_44100_128',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        });
+
+        const sectionEndTimes = response.alignment?.characterEndTimesSeconds || [];
+        const sectionDuration = sectionEndTimes.length > 0 ? sectionEndTimes[sectionEndTimes.length - 1] : 0;
+
+        sectionAudio.push({
+          section_index: i,
+          text: sectionText,
+          audio_base64: response.audioBase64,
+          alignment: response.alignment ? {
+            characters: response.alignment.characters,
+            character_start_times_seconds: response.alignment.characterStartTimesSeconds,
+            character_end_times_seconds: response.alignment.characterEndTimesSeconds
+          } : null,
+          duration_seconds: sectionDuration
+        });
+
+        totalDuration += sectionDuration;
+        totalCharacters += sectionText.length;
+        console.log(`✅ Section ${i} audio: ${sectionDuration.toFixed(2)}s`);
+      } catch (err) {
+        console.error(`Error generating section ${i} audio:`, err);
+        // Continue with next section
+      }
+    }
+
+    console.log(`✅ All section audio generated: ${sectionAudio.length} sections, ${totalDuration.toFixed(2)}s total`);
+
+    // 6. Store in database (upsert)
     const { data: insertedAudio, error: insertError } = await supabase
       .from('lesson_audio')
       .upsert({
@@ -1367,13 +1424,11 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         content_hash: contentHash,
         lesson_name: lessonName,
         full_text: fullText,
-        audio_base64: combinedAudioBase64,
-        alignment_data: combinedAlignment,
-        section_markers: sectionMarkers,
+        section_audio: sectionAudio,
         voice_gender: voiceGender,
         voice_id: voiceId,
         duration_seconds: totalDuration,
-        character_count: fullText.length,
+        character_count: totalCharacters,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'course_id,module_number,lesson_number'
@@ -1386,7 +1441,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
     }
 
-    console.log(`💾 Audio stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`💾 Per-section audio stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     res.json({
       success: true,
@@ -1395,8 +1450,9 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         course_id: courseId,
         module_number: moduleNumber,
         lesson_number: lessonNumber,
+        section_count: sectionAudio.length,
         duration_seconds: totalDuration,
-        character_count: fullText.length,
+        character_count: totalCharacters,
         content_hash: contentHash,
         created_at: insertedAudio.created_at
       }

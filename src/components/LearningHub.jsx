@@ -2647,17 +2647,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   // Play pre-generated lesson audio with word highlighting
+  // Store fetched section audio data for sequential playback
+  const sectionAudioDataRef = useRef(null);
+  const currentPregenSectionRef = useRef(-2); // -2 = not started, -1 = title, 0+ = sections
+
   const playPreGeneratedAudio = async () => {
     if (!lessonAudio) return;
 
-    console.log('🎬 Fetching and playing pre-generated audio for lesson');
+    console.log('🎬 Fetching per-section pre-generated audio for lesson');
 
     // Show loading state immediately
     setIsReading(true);
     isPausedRef.current = false;
 
     try {
-      // Fetch the full audio data now (on-demand)
+      // Fetch the per-section audio data
       const { courseId, module, lesson } = lessonAudio;
       const response = await fetch(
         `https://ignite-education-api.onrender.com/api/lesson-audio/${courseId}/${module}/${lesson}`
@@ -2669,164 +2673,204 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       const audioData = await response.json();
 
-      // Convert base64 audio to blob
-      const binaryData = atob(audioData.audio_base64);
-      const arrayBuffer = new ArrayBuffer(binaryData.length);
-      const view = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < binaryData.length; i++) {
-        view[i] = binaryData.charCodeAt(i);
-      }
-      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      // Convert character timestamps to word timestamps for the full lesson
-      if (audioData.alignment_data) {
-        const wordTimestamps = convertCharacterToWordTimestamps(
-          audioData.full_text,
-          audioData.alignment_data.characters,
-          audioData.alignment_data.character_start_times_seconds,
-          audioData.alignment_data.character_end_times_seconds
-        );
-        wordTimestampsRef.current = wordTimestamps;
-        console.log(`📝 Converted ${wordTimestamps.length} word timestamps for pre-generated audio`);
+      // Check if this is the new per-section format
+      if (!audioData.section_audio) {
+        console.warn('⚠️ Legacy audio format detected, falling back to old playback');
+        // Fall back to on-demand narration if no per-section audio
+        setIsReading(false);
+        return;
       }
 
-      // Build word boundaries from actual lesson sections (same as old system)
-      // This ensures word counts match exactly what's rendered on screen
-      const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
-      const titleWordCount = titleWords.length;
+      console.log(`📦 Loaded ${audioData.section_audio.length} section audio segments`);
+      sectionAudioDataRef.current = audioData.section_audio;
+      currentPregenSectionRef.current = -2;
 
-      // Build section word counts from currentLessonSections using extractTextFromSection
-      const sectionWordCounts = currentLessonSections.map(section => {
-        const text = extractTextFromSection(section);
-        return text.split(/\s+/).filter(w => w.length > 0).length;
-      });
-
-      // Build cumulative boundaries: [titleEnd, section0End, section1End, ...]
-      const wordBoundaries = [titleWordCount];
-      sectionWordCounts.forEach((count, idx) => {
-        wordBoundaries.push(wordBoundaries[idx] + count);
-      });
-
-      console.log(`📍 Word boundaries: title=${titleWordCount}, sections=${sectionWordCounts.join(',')}, total=${wordBoundaries[wordBoundaries.length - 1]}`);
-
-      let lastSectionIndex = -1; // Track to detect section changes for scrolling
-
-      audio.onended = () => {
-        console.log('✅ Pre-generated audio playback complete');
-        URL.revokeObjectURL(audioUrl);
-        setIsReading(false);
-        isPausedRef.current = false;
-        setCurrentNarrationWord(-1);
-        setIsNarratingTitle(false);
-        setCurrentNarrationSection(0);
-        audioRef.current = null;
-
-        if (wordTimerRef.current) {
-          cancelAnimationFrame(wordTimerRef.current);
-          wordTimerRef.current = null;
+      // Start playing from the first section (title if available, otherwise section 0)
+      const firstSection = audioData.section_audio[0];
+      if (firstSection) {
+        if (firstSection.section_index === -1) {
+          // Start with title
+          setIsNarratingTitle(true);
+          setCurrentNarrationSection(0);
+          await playPregenSection(0); // Index in section_audio array
+        } else {
+          // No title, start with first content section
+          setIsNarratingTitle(false);
+          setCurrentNarrationSection(firstSection.section_index);
+          await playPregenSection(0);
         }
-      };
-
-      audio.onerror = (e) => {
-        console.error('Pre-generated audio playback error:', e);
-        URL.revokeObjectURL(audioUrl);
-        setIsReading(false);
-      };
-
-      // Set playback speed
-      audio.playbackRate = playbackSpeed;
-
-      // Play the audio
-      await audio.play();
-      console.log('✅ Pre-generated audio playing');
-      setIsNarratingTitle(true); // Start with title
-      setCurrentNarrationSection(0);
-
-      // Start word-by-word highlighting with section tracking
-      const wordTimestamps = wordTimestampsRef.current;
-      if (wordTimestamps && wordTimestamps.length > 0) {
-        setCurrentNarrationWord(0);
-
-        if (wordTimerRef.current) {
-          cancelAnimationFrame(wordTimerRef.current);
-        }
-
-        // Use requestAnimationFrame for smooth highlighting synchronized with timestamps
-        const updateHighlight = () => {
-          if (!audio || audio.paused || audio.ended) {
-            return;
-          }
-
-          const currentTime = audio.currentTime;
-
-          // Find global word index from timestamps
-          let globalWordIndex = -1;
-          for (let i = 0; i < wordTimestamps.length; i++) {
-            const timestamp = wordTimestamps[i];
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
-              globalWordIndex = i;
-              break;
-            }
-          }
-
-          if (globalWordIndex >= 0) {
-            // Determine which section this word belongs to based on word boundaries
-            let currentSectionIdx = -1; // -1 = title
-            let wordsBeforeSection = 0;
-
-            if (globalWordIndex < titleWordCount) {
-              // In title
-              currentSectionIdx = -1;
-              wordsBeforeSection = 0;
-            } else {
-              // Find which section based on cumulative word counts
-              for (let i = 0; i < sectionWordCounts.length; i++) {
-                if (globalWordIndex < wordBoundaries[i + 1]) {
-                  currentSectionIdx = i;
-                  wordsBeforeSection = wordBoundaries[i];
-                  break;
-                }
-              }
-            }
-
-            // Update section state if changed
-            if (currentSectionIdx !== lastSectionIndex) {
-              lastSectionIndex = currentSectionIdx;
-              if (currentSectionIdx === -1) {
-                setIsNarratingTitle(true);
-                setCurrentNarrationSection(0);
-              } else {
-                setIsNarratingTitle(false);
-                setCurrentNarrationSection(currentSectionIdx);
-                // Scroll to the new section
-                scrollToSection(currentSectionIdx);
-              }
-            }
-
-            // Set section-relative word index (what the component expects)
-            const sectionRelativeWord = globalWordIndex - wordsBeforeSection;
-            setCurrentNarrationWord(Math.max(0, sectionRelativeWord));
-          }
-
-          // If past all words, clear highlighting
-          if (globalWordIndex < 0 && wordTimestamps.length > 0 && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-            setCurrentNarrationWord(-1);
-            wordTimerRef.current = null;
-            return;
-          }
-
-          wordTimerRef.current = requestAnimationFrame(updateHighlight);
-        };
-
-        wordTimerRef.current = requestAnimationFrame(updateHighlight);
       }
     } catch (error) {
       console.error('Failed to play pre-generated audio:', error);
       setIsReading(false);
+    }
+  };
+
+  // Play a specific section from the pre-generated audio array
+  const playPregenSection = async (arrayIndex) => {
+    const sectionAudioArray = sectionAudioDataRef.current;
+    if (!sectionAudioArray || arrayIndex >= sectionAudioArray.length) {
+      // Finished all sections
+      console.log('✅ Finished playing all pre-generated sections');
+      setIsReading(false);
+      setCurrentNarrationSection(0);
+      setCurrentNarrationWord(-1);
+      setIsNarratingTitle(false);
+      isPausedRef.current = false;
+      sectionAudioDataRef.current = null;
+      currentPregenSectionRef.current = -2;
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+      return;
+    }
+
+    const sectionData = sectionAudioArray[arrayIndex];
+    const sectionIndex = sectionData.section_index; // -1 for title, 0+ for content sections
+    currentPregenSectionRef.current = sectionIndex;
+
+    console.log(`🎵 Playing pre-generated section ${sectionIndex} (array index ${arrayIndex}): "${sectionData.text?.substring(0, 50)}..."`);
+
+    // Convert base64 audio to blob
+    const binaryData = atob(sectionData.audio_base64);
+    const arrayBuffer = new ArrayBuffer(binaryData.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < binaryData.length; i++) {
+      view[i] = binaryData.charCodeAt(i);
+    }
+    const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
+    const audioUrl = URL.createObjectURL(audioBlob);
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    // Convert character timestamps to word timestamps for this section
+    if (sectionData.alignment) {
+      const wordTimestamps = convertCharacterToWordTimestamps(
+        sectionData.text,
+        sectionData.alignment.characters,
+        sectionData.alignment.character_start_times_seconds,
+        sectionData.alignment.character_end_times_seconds
+      );
+      wordTimestampsRef.current = wordTimestamps;
+      console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
+    }
+
+    // Calculate words before this section (same as narrateSection)
+    let wordsBeforeThisSection = 0;
+    if (sectionIndex === -1) {
+      // Title - no words before
+      wordsBeforeThisSection = 0;
+    } else {
+      // For content sections, count words in title + all previous sections
+      // Title words
+      wordsBeforeThisSection = lessonName.split(/\s+/).filter(w => w.length > 0).length;
+      // Previous section words
+      for (let i = 0; i < sectionIndex && i < currentLessonSections.length; i++) {
+        const text = extractTextFromSection(currentLessonSections[i]);
+        wordsBeforeThisSection += text.split(/\s+/).filter(w => w.length > 0).length;
+      }
+    }
+
+    // Update section state
+    if (sectionIndex === -1) {
+      setIsNarratingTitle(true);
+      setCurrentNarrationSection(0);
+    } else {
+      setIsNarratingTitle(false);
+      setCurrentNarrationSection(sectionIndex);
+
+      // Scroll to section for h2/h3 headers (same logic as narrateSection)
+      if (sectionIndex < currentLessonSections.length) {
+        const section = currentLessonSections[sectionIndex];
+        const headingLevel = section.content_type === 'heading' ? (section.content?.level || 2) : null;
+        const isH2OrH3Header = headingLevel === 2 || headingLevel === 3;
+
+        if (isH2OrH3Header) {
+          const firstH2Index = currentLessonSections.findIndex(s =>
+            s.content_type === 'heading' && (s.content?.level || 2) === 2
+          );
+          if (sectionIndex !== firstH2Index) {
+            scrollToSection(sectionIndex);
+          }
+        }
+      }
+    }
+
+    audio.onended = async () => {
+      console.log(`⏱️ Pre-generated section ${sectionIndex} ended`);
+      URL.revokeObjectURL(audioUrl);
+
+      // Clear word highlighting timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+
+      // Guard: check if this audio is still the current one
+      if (audioRef.current !== audio) {
+        console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
+        return;
+      }
+
+      // Continue to next section
+      if (!isPausedRef.current) {
+        await playPregenSection(arrayIndex + 1);
+      }
+    };
+
+    audio.onerror = (e) => {
+      console.error('Pre-generated section audio playback error:', e);
+      URL.revokeObjectURL(audioUrl);
+      setIsReading(false);
+    };
+
+    // Set playback speed
+    audio.playbackRate = playbackSpeed;
+
+    // Play the audio
+    await audio.play();
+    console.log(`✅ Pre-generated section ${sectionIndex} now playing`);
+
+    // Start word-by-word highlighting (same pattern as narrateSection)
+    const wordTimestamps = wordTimestampsRef.current;
+    if (wordTimestamps && wordTimestamps.length > 0) {
+      setCurrentNarrationWord(wordsBeforeThisSection);
+
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+      }
+
+      const updateHighlight = () => {
+        if (!audio || audio.paused || audio.ended) {
+          return;
+        }
+
+        const currentTime = audio.currentTime;
+
+        // Find which word should be highlighted based on actual timestamps
+        let foundWord = false;
+        for (let i = 0; i < wordTimestamps.length; i++) {
+          const timestamp = wordTimestamps[i];
+          if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            setCurrentNarrationWord(wordsBeforeThisSection + i);
+            foundWord = true;
+            break;
+          }
+        }
+
+        // If we're past all words, clear highlighting
+        if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+          setCurrentNarrationWord(-1);
+          wordTimerRef.current = null;
+          return;
+        }
+
+        wordTimerRef.current = requestAnimationFrame(updateHighlight);
+      };
+
+      wordTimerRef.current = requestAnimationFrame(updateHighlight);
     }
   };
 
