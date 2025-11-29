@@ -376,6 +376,13 @@ ${contentToUse}`;
       contextSection += `\n\nNote: The student has completed prior lessons, but this question should focus ONLY on the current lesson content above.`;
     }
 
+    // For prior lesson questions, add instruction to pick from different lessons
+    const priorLessonInstruction = isAboutPriorLessons
+      ? `- IMPORTANT: The prior lessons content contains MULTIPLE lessons separated by "========". You MUST randomly select a lesson from ANYWHERE in the content - do NOT always pick from the first lesson. Spread your questions across different lessons.
+- This question should test recall and understanding from lessons completed BEFORE the current lesson
+- If this is prior question 2, pick from a DIFFERENT lesson than prior question 1`
+      : '- Focus exclusively on the current lesson content';
+
     const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions}.
 
 ${contextSection}
@@ -391,7 +398,7 @@ Your task:
 - Make sure the question can be answered based on the content provided
 - Keep the question concise and clear
 - Be friendly and encouraging in your tone
-${isAboutPriorLessons ? '- This question should test recall and understanding from lessons completed BEFORE the current lesson' : '- Focus exclusively on the current lesson content'}
+${priorLessonInstruction}
 
 Generate ONLY the question, nothing else.`;
 
