@@ -241,7 +241,10 @@ const BlogManagement = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, fileToUpload);
+        .upload(filePath, fileToUpload, {
+          contentType: fileToUpload.type,
+          upsert: false
+        });
 
       if (uploadError) {
         if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
@@ -375,7 +378,15 @@ const BlogManagement = () => {
                   placeholder="Paste image URL..."
                 />
                 {formData.featured_image && (
-                  <img src={formData.featured_image} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                  <img
+                    src={formData.featured_image}
+                    alt="Preview"
+                    className="w-12 h-12 object-cover rounded"
+                    onError={(e) => {
+                      console.error('Image failed to load:', formData.featured_image);
+                      e.target.style.display = 'none';
+                    }}
+                  />
                 )}
               </div>
             </div>
