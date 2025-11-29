@@ -2231,7 +2231,7 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
 
-                <div className="w-full max-w-md">
+                <div className="w-full" style={{ maxWidth: '30.8rem' }}>
                   <BlogCarousel limit={5} />
                 </div>
               </div>
