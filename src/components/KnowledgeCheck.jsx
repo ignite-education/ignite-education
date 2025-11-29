@@ -435,16 +435,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
-                    // Special layout for passed message: icon | score + congrats text
-                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%] flex items-start gap-3" style={{
+                    // Special layout for passed message: [icon + score] | congrats text
+                    <div className="p-3 text-black text-sm leading-snug inline-block max-w-[95%] flex items-center gap-4" style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6'
                     }}>
-                      <CheckCircle size={20} className="flex-shrink-0 mt-0.5" fill="#22c55e" stroke="#22c55e" />
-                      <div>
-                        <p className="font-medium">You scored {msg.score}.</p>
-                        <p className="mt-2">{msg.congratsText}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <CheckCircle size={20} fill="#22c55e" stroke="#22c55e" />
+                        <span className="font-medium">You scored {msg.score}.</span>
                       </div>
+                      <span>{msg.congratsText}</span>
                     </div>
                   ) : (
                     // Regular assistant message
