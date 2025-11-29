@@ -1502,7 +1502,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         course_id: courseId,
         module_number: moduleNumber,
         lesson_number: lessonNumber,
-        section_count: sectionAudio.length,
+        section_count: sectionAudioMetadata.length,
         duration_seconds: totalDuration,
         character_count: totalCharacters,
         content_hash: contentHash,
