@@ -38,14 +38,15 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Select a random greeting
         const randomGreeting = greetingVariations[Math.floor(Math.random() * greetingVariations.length)];
 
+        const courseNameText = courseName || "the course";
         const greetingText = firstName
-          ? `${randomGreeting}, ${firstName}`
-          : `${randomGreeting}`;
+          ? `${randomGreeting} ${courseNameText}, ${firstName}`
+          : `${randomGreeting} ${courseNameText}`;
 
         // Build the message based on whether it's the first lesson
         let messageText;
         if (isFirstLesson) {
-          messageText = `${greetingText}.\n\nI'll now ask you 5 questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed, and that you answer the question asked. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\nReady to begin?`;
+          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
