@@ -1323,30 +1323,36 @@ const Auth = () => {
               const pinkStart = fullFirstLine.length + 1; // +1 for the space
               const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
               const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
+              const isTypingFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
+              const isTypingSecondLine = typedTagline.length > pinkStart && !isTaglineTypingComplete;
 
               return (
                 <>
                   {/* First line - white text */}
-                  <span style={{ display: 'block' }}>
-                    {/* Typed portion - visible */}
-                    <span>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
-                    {/* Remaining portion - invisible but takes up space */}
-                    <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
-                    {/* Cursor after typed text on first line */}
-                    {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
-                      <span className="animate-blink" style={{ marginLeft: '-0.5em' }}>|</span>
-                    )}
+                  <span style={{ display: 'block', position: 'relative' }}>
+                    {/* Full text as invisible placeholder for stable width */}
+                    <span aria-hidden="true" style={{ opacity: 0 }}>{fullFirstLine}</span>
+                    {/* Overlay with typed + cursor positioned exactly */}
+                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0, display: 'flex', justifyContent: 'center' }}>
+                      <span>
+                        {fullFirstLine.substring(0, firstLineTypedLength)}
+                        {isTypingFirstLine && <span className="animate-blink">|</span>}
+                        <span style={{ opacity: 0 }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
+                      </span>
+                    </span>
                   </span>
                   {/* Second line - pink text */}
-                  <span style={{ display: 'block', color: '#EF0B72' }}>
-                    {/* Typed portion - visible */}
-                    <span>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
-                    {/* Remaining portion - invisible but takes up space */}
-                    <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
-                    {/* Cursor after typed text on second line */}
-                    {typedTagline.length > pinkStart && !isTaglineTypingComplete && (
-                      <span className="animate-blink" style={{ marginLeft: '-0.5em' }}>|</span>
-                    )}
+                  <span style={{ display: 'block', position: 'relative', color: '#EF0B72' }}>
+                    {/* Full text as invisible placeholder for stable width */}
+                    <span aria-hidden="true" style={{ opacity: 0 }}>{fullSecondLine}</span>
+                    {/* Overlay with typed + cursor positioned exactly */}
+                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0, display: 'flex', justifyContent: 'center' }}>
+                      <span>
+                        {fullSecondLine.substring(0, secondLineTypedLength)}
+                        {isTypingSecondLine && <span className="animate-blink">|</span>}
+                        <span style={{ opacity: 0 }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
+                      </span>
+                    </span>
                   </span>
                 </>
               );
@@ -1363,7 +1369,7 @@ const Auth = () => {
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-5 py-4 rounded auth-form-card"
+          className="bg-white text-black px-5 py-4 rounded-md auth-form-card"
           style={{
             animation: 'scaleUp 0.2s ease-out'
           }}
@@ -1381,7 +1387,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-xl px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1396,7 +1402,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('linkedin_oidc')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-xl px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
+              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-lg px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
             >
               <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -1424,7 +1430,7 @@ const Auth = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
                   placeholder="John"
                   disabled={isLogin}
                 />
@@ -1436,7 +1442,7 @@ const Auth = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
                   placeholder="Doe"
                   disabled={isLogin}
                 />
@@ -1451,7 +1457,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
                   placeholder="you@example.com"
                 />
               </div>
@@ -1464,7 +1470,7 @@ const Auth = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
                   placeholder="••••••••"
                 />
               </div>
@@ -1473,7 +1479,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
             </button>
@@ -1496,7 +1502,7 @@ const Auth = () => {
                 }
               }}
               disabled={loading}
-              className="w-full bg-yellow-500 text-black rounded-xl px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+              className="w-full bg-yellow-500 text-black rounded-lg px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
             >
               🔍 Google AdSense Verification - Click Here
             </button>
@@ -2535,7 +2541,7 @@ const Auth = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#EF0B72] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Sending...' : 'Send Reset Link'}
                   </button>
