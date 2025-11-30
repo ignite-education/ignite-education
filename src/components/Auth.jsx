@@ -1781,10 +1781,10 @@ const Auth = () => {
                           onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         >
-                        <div className="flex flex-col h-full" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
-                          <h4 className="text-lg font-semibold" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
+                        <div className="flex flex-col h-full auth-course-card-content" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
+                          <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
-                            <p className="text-xs text-black mb-2" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
+                            <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
                               {(() => {
                                 const firstSentenceEnd = course.description.indexOf('. ');
                                 return firstSentenceEnd !== -1
@@ -1794,11 +1794,11 @@ const Auth = () => {
                             </p>
                           )}
                           {course.module_names && (
-                            <div className="pb-8">
+                            <div className="pb-8 auth-course-card-modules">
                               <p className="text-xs text-black font-semibold mb-1">Modules:</p>
                               <ul className="text-xs text-black space-y-0.5">
                                 {course.module_names.split(', ').slice(0, course.title.length > 25 ? 4 : 5).map((moduleName, idx) => (
-                                  <li key={idx} className="flex items-start">
+                                  <li key={idx} className={`flex items-start auth-course-card-module-item ${idx >= 3 ? 'auth-course-card-module-extra' : ''}`}>
                                     <span className="mr-1.5">•</span>
                                     <span className="line-clamp-1">{moduleName}</span>
                                   </li>

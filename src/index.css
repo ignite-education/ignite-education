@@ -459,8 +459,44 @@ body {
 
   .auth-course-card {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 !important;
+    height: calc((100vw - 3rem) / 2) !important;
+    aspect-ratio: unset !important;
+  }
+
+  /* Course card content on mobile - show title, 1 sentence description, 3 modules */
+  .auth-course-card-content {
+    padding: 10px !important;
+    overflow: hidden !important;
+  }
+
+  .auth-course-card-title {
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .auth-course-card-description {
+    -webkit-line-clamp: 2 !important;
+    font-size: 0.65rem !important;
+    line-height: 1.3 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .auth-course-card-modules {
+    padding-bottom: 0 !important;
+  }
+
+  .auth-course-card-modules p {
+    font-size: 0.65rem !important;
+    margin-bottom: 2px !important;
+  }
+
+  .auth-course-card-modules ul {
+    font-size: 0.6rem !important;
+  }
+
+  .auth-course-card-module-extra {
+    display: none !important;
   }
 
 }
