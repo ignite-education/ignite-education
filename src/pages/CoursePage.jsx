@@ -22,6 +22,7 @@ const CoursePage = () => {
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [expandedFAQ, setExpandedFAQ] = useState(0);
 
   // Refs
   const curriculumSectionRef = useRef(null);
@@ -587,25 +588,13 @@ const CoursePage = () => {
                 </div>
               </div>
 
-              {/* Curriculum Section - Two Column Layout */}
+              {/* Curriculum Section - Two Column Layout with expanded container */}
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
-                <div className="mb-8" ref={curriculumSectionRef}>
-                  <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
+                <div className="mb-8" ref={curriculumSectionRef} style={{ marginLeft: '-120px', marginRight: '-120px' }}>
+                  <h2 className="font-semibold text-gray-900 text-2xl mb-4" style={{ marginLeft: '120px' }}>Curriculum</h2>
                   <div className="flex gap-6">
-                    {/* Left Column - Sticky Image */}
-                    <div className="flex-shrink-0" style={{ width: '37.5%' }}>
-                      <div className="sticky top-24">
-                        <img
-                          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
-                          alt="Course curriculum illustration"
-                          className="w-full rounded-lg object-cover"
-                          style={{ maxHeight: '500px' }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Right Column - Scrollable Curriculum Content (62.5% = 50% + 25% increase) */}
-                    <div className="bg-[#F0F0F2] p-6 rounded-lg" style={{ width: '62.5%' }}>
+                    {/* Left Column - Curriculum Content (expands to fill available space) */}
+                    <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
                       <div className="space-y-6">
                         {course.module_structure.map((module, moduleIndex) => (
                           <div key={moduleIndex}>
@@ -633,6 +622,18 @@ const CoursePage = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+
+                    {/* Right Column - Sticky Image (fixed width to maintain original size) */}
+                    <div className="flex-shrink-0" style={{ width: '286px' }}>
+                      <div className="sticky top-24">
+                        <img
+                          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                          alt="Course curriculum illustration"
+                          className="w-full rounded-lg object-cover"
+                          style={{ maxHeight: '500px' }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -747,15 +748,84 @@ const CoursePage = () => {
                 </div>
               )}
 
+              {/* FAQs Section */}
+              <div className="mb-8">
+                <h2 className="font-semibold text-gray-900 text-2xl mb-4">FAQs</h2>
+                <div className="space-y-3">
+                  {[
+                    {
+                      question: 'What is Ignite?',
+                      answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
+                    },
+                    {
+                      question: 'Who is Ignite for?',
+                      answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
+                    },
+                    {
+                      question: 'How much does Ignite cost?',
+                      answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
+                    },
+                    {
+                      question: 'What can I learn on Ignite?',
+                      answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
+                    },
+                    {
+                      question: 'Can I learn at my own pace?',
+                      answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
+                    },
+                    {
+                      question: 'What makes Ignite different?',
+                      answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
+                    }
+                  ].map((faq, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded cursor-pointer"
+                      style={{
+                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: expandedFAQ === idx ? 'auto' : '3.75rem',
+                        overflow: 'hidden',
+                        paddingTop: '1rem',
+                        paddingRight: '1rem',
+                        paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
+                        paddingLeft: '1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        border: expandedFAQ === idx ? '1px solid #E5E5E5' : '1px solid transparent'
+                      }}
+                      onMouseEnter={() => setExpandedFAQ(idx)}
+                    >
+                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '18px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
+                        {faq.question}
+                      </h4>
+                      {expandedFAQ === idx && (
+                        <p className="text-gray-700 text-sm" style={{
+                          marginTop: '0.5rem',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '100ms',
+                          opacity: 0
+                        }}>
+                          {faq.answer}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Get Started CTA Button */}
               <div className="mt-12 mb-8 text-left">
-                <Link
-                  to="/welcome"
+                <a
+                  href="/welcome"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-block bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors"
                   style={{ padding: '0.85rem 1.7rem', fontSize: '1rem' }}
                 >
                   Get Started
-                </Link>
+                </a>
               </div>
             </div>
           </div>
