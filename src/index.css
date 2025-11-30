@@ -353,8 +353,8 @@ body {
   }
 
   .auth-features-container {
-    min-height: 220px !important;
-    height: auto !important;
+    min-height: 280px !important;
+    height: 280px !important;
     margin-top: 2rem !important;
     width: 100% !important;
   }
