@@ -1315,27 +1315,38 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', display: 'flex', justifyContent: 'center' }}>
-          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'left', display: 'inline-block' }}>
+        <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
+          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
             {(() => {
-              const pinkStart = 'Upskill. Reskill. '.length;
+              const fullFirstLine = 'Upskill. Reskill.';
+              const fullSecondLine = "Get ready for what's next.";
+              const pinkStart = fullFirstLine.length + 1; // +1 for the space
               const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
               const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
-              // Use non-breaking spaces to maintain width during typing
-              const fullFirstLine = 'Upskill. Reskill.';
-              const fullSecondLine = 'Get ready for what\'s next.';
               const firstLineTyped = whiteText.trimEnd();
               const secondLineTyped = pinkText;
 
               return (
                 <>
-                  <span style={{ display: 'block', minWidth: 'max-content' }}>
-                    {firstLineTyped || '\u00A0'}
-                    {whiteText.length < pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                  {/* First line - white text */}
+                  <span style={{ display: 'block', position: 'relative' }}>
+                    {/* Invisible placeholder to hold space */}
+                    <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
+                    {/* Visible typed text overlaid */}
+                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
+                      {firstLineTyped}
+                      {whiteText.length < pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                    </span>
                   </span>
-                  <span style={{ display: 'block', color: '#EF0B72', minWidth: 'max-content' }}>
-                    {secondLineTyped || '\u00A0'}
-                    {whiteText.length >= pinkStart && !isTaglineTypingComplete && <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>}
+                  {/* Second line - pink text */}
+                  <span style={{ display: 'block', position: 'relative', color: '#EF0B72' }}>
+                    {/* Invisible placeholder to hold space */}
+                    <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+                    {/* Visible typed text overlaid */}
+                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
+                      {secondLineTyped}
+                      {whiteText.length >= pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                    </span>
                   </span>
                 </>
               );
