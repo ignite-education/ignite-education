@@ -566,7 +566,7 @@ const CoursePage = () => {
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
                 <div className="mb-8 lg:-mx-24" ref={curriculumSectionRef}>
                   <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
-                  <div className="flex gap-6">
+                  <div className="flex gap-6 items-stretch">
                     {/* Left Column - Curriculum Content */}
                     <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
                       <div className="space-y-6">
@@ -600,7 +600,7 @@ const CoursePage = () => {
                     </div>
 
                     {/* Right Column - Sticky Image (hidden on narrow viewports) */}
-                    <div className="flex-shrink-0 hidden lg:block" style={{ width: '315px' }}>
+                    <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
                       <div className="sticky top-24">
                         <img
                           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
@@ -747,34 +747,36 @@ const CoursePage = () => {
                       className="rounded cursor-pointer"
                       style={{
                         backgroundColor: '#F0F0F2',
-                        transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1), background-color 500ms cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: expandedFAQ === idx ? 'calc(6.525rem + 4.5px)' : '3.75rem',
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
-                        paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
+                        paddingBottom: expandedFAQ === idx ? '10px' : '1rem',
                         paddingLeft: '1.2rem',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        opacity: 1
+                        justifyContent: 'flex-start'
                       }}
                       onMouseEnter={() => setExpandedFAQ(idx)}
                     >
                       <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                         {faq.question}
                       </h4>
-                      {expandedFAQ === idx && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: 'calc(0.1rem + 2px)',
-                          paddingBottom: '3px',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          {faq.answer}
-                        </p>
-                      )}
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateRows: expandedFAQ === idx ? '1fr' : '0fr',
+                          transition: 'grid-template-rows 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+                        }}
+                      >
+                        <div style={{ overflow: 'hidden' }}>
+                          <p className="text-black text-sm" style={{
+                            marginTop: 'calc(0.1rem + 2px)',
+                            paddingBottom: '0'
+                          }}>
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -786,8 +788,7 @@ const CoursePage = () => {
                   href="/welcome"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-block bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors"
-                  style={{ padding: '0.85rem 1.7rem', fontSize: '1rem' }}
+                  className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   Get Started
                 </a>
@@ -875,12 +876,12 @@ const CoursePage = () => {
           <div className="relative">
             {/* Title above the box */}
             <h3 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
-              Become a Course Leader
+              Course Leader
             </h3>
 
             <div
-              className="bg-white rounded-lg p-8 w-full relative"
-              style={{ maxWidth: '440px' }}
+              className="bg-white rounded-lg w-full relative"
+              style={{ maxWidth: '484px', padding: '1.8rem 2rem' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close button */}
@@ -894,8 +895,8 @@ const CoursePage = () => {
                 <X size={24} />
               </button>
 
-              <p className="mb-6 text-sm" style={{ color: '#000000' }}>
-                Share your expertise and help shape the next generation of professionals. Fill out the form below to learn more.
+              <p className="mb-5 text-sm" style={{ color: '#000000' }}>
+                Share your expertise and help shape the next generation of professionals. Fill out the form to learn more.
               </p>
 
                 <form
@@ -923,44 +924,44 @@ const CoursePage = () => {
                   className="space-y-4"
                 >
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#000000' }}>Name</label>
                     <input
                       type="text"
                       required
                       value={leaderForm.name}
                       onChange={(e) => setLeaderForm({ ...leaderForm, name: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
                       placeholder="Your full name"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#000000' }}>Email</label>
                     <input
                       type="email"
                       required
                       value={leaderForm.email}
                       onChange={(e) => setLeaderForm({ ...leaderForm, email: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
                       placeholder="your@email.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">LinkedIn Profile</label>
+                    <label className="block text-sm font-medium mb-1" style={{ color: '#000000' }}>LinkedIn Profile</label>
                     <input
                       type="url"
                       required
                       value={leaderForm.linkedin}
                       onChange={(e) => setLeaderForm({ ...leaderForm, linkedin: e.target.value })}
-                      className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent outline-none transition-all"
                       placeholder="https://linkedin.com/in/yourprofile"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors mt-2"
+                    className="w-full py-2.5 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors mt-1"
                   >
                     Submit
                   </button>
