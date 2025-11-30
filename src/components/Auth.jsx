@@ -1598,7 +1598,7 @@ const Auth = () => {
             }}
             aria-label="Scroll to learn more"
           >
-            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+            <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
           </button>
         </div>
       </div>
@@ -1677,7 +1677,7 @@ const Auth = () => {
                   }}
                   aria-label="Scroll to courses"
                 >
-                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                  <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
                 </button>
               </div>
             </div>
@@ -1694,7 +1694,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to courses"
             >
-              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+              <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -1702,7 +1702,7 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className="min-h-screen flex items-center justify-center px-8 relative"
+          className="min-h-screen flex items-center justify-center px-8 relative auth-section-3"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1710,20 +1710,20 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-12 px-4 w-full items-center">
+            <div className="grid grid-cols-2 gap-12 px-4 w-full items-center auth-section-3-grid">
               {/* Left Column - Description */}
-              <div className="flex items-center justify-center" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
+              <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
+                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg text-white mb-6 max-w-2xl text-left" style={{ lineHeight: '1.425' }}>
+                  <p className="text-lg text-white mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                     alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
-                    className="rounded-lg"
+                    className="rounded-lg auth-section-3-image"
                     style={{ width: '70%' }}
                     loading="lazy"
                     width="1400"
@@ -1733,7 +1733,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative" style={{ marginLeft: '-50px', overflow: 'visible' }}>
+              <div className="relative auth-section-3-right" style={{ marginLeft: '-50px', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-visible"
@@ -1865,7 +1865,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to learning model"
             >
-              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+              <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -2093,7 +2093,7 @@ const Auth = () => {
                 }}
                 aria-label="Scroll to testimonials"
               >
-                <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
               </button>
             </div>
             </div>
@@ -2360,7 +2360,7 @@ const Auth = () => {
                   }}
                   aria-label="Scroll to LinkedIn and FAQs"
                 >
-                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                  <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
                 </button>
               </div>
             </div>
