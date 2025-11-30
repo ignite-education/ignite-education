@@ -471,9 +471,9 @@ body {
 
   .auth-course-card {
     width: 100% !important;
-    height: 12rem !important;
-    min-height: 12rem !important;
-    max-height: 12rem !important;
+    height: 12.5rem !important;
+    min-height: 12.5rem !important;
+    max-height: 12.5rem !important;
     aspect-ratio: unset !important;
     overflow: hidden !important;
     border-radius: 0.3rem !important;
