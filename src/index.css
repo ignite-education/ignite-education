@@ -250,6 +250,8 @@ body {
     min-width: unset !important;
     overflow-x: hidden !important;
     background: #000 !important;
+    top: 0 !important;
+    padding-top: 0 !important;
   }
 
   /* Vertically center content on mobile */
@@ -258,9 +260,11 @@ body {
     padding-right: 1rem !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
-    height: 100vh !important;
-    height: 100svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
-    overflow: hidden !important;
+    margin-top: 0 !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
+    height: auto !important;
+    overflow: visible !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
