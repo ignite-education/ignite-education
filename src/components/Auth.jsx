@@ -1642,7 +1642,7 @@ const Auth = () => {
               </div>
 
               {/* Mobile Arrow - inside content container for proper centering */}
-              <div className="md:hidden auth-section-2-mobile-arrow mt-12">
+              <div className="md:hidden auth-section-2-mobile-arrow mt-8">
                 <button
                   onClick={scrollToCourses}
                   className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
