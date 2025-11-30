@@ -350,6 +350,7 @@ body {
     min-height: 200px !important;
     height: 200px !important;
     overflow: hidden !important;
+    padding-top: 2rem !important;
   }
 
   .auth-features-container {
