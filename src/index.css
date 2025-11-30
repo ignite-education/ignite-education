@@ -262,26 +262,39 @@ body {
     justify-content: center !important;
   }
 
-  /* Compact logo on mobile */
+  /* Logo on mobile - 15% bigger than base 90px = ~103px */
   .auth-logo {
-    width: 90px !important;
+    width: 103px !important;
     height: auto !important;
-    min-height: 28px !important;
+    min-height: 32px !important;
     margin-bottom: 0.5rem !important;
     display: block !important;
   }
 
-  /* Compact tagline on mobile */
+  /* Tagline on mobile - 15% bigger than 1rem = ~1.15rem */
   .auth-tagline {
-    font-size: 1rem !important;
+    font-size: 1.15rem !important;
     margin-bottom: 0.5rem !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
 
-  /* Compact form card padding on mobile */
+  /* Form title on mobile - 10% smaller than text-lg (1.125rem) = ~1rem */
+  .auth-form-title {
+    font-size: 1rem !important;
+  }
+
+  /* Form card on mobile - rounded-xl to match buttons */
   .auth-form-card {
     padding: 0.75rem !important;
+    border-radius: 0.75rem !important;
+  }
+
+  /* Prevent iOS zoom on input focus - must be 16px or larger */
+  .auth-form-card input,
+  .auth-form-card select,
+  .auth-form-card textarea {
+    font-size: 16px !important;
   }
 
   /* Stack email/password fields vertically on mobile (but keep name fields side by side) */

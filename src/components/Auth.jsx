@@ -35,6 +35,8 @@ const Auth = () => {
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const [typedEducationText, setTypedEducationText] = useState('');
   const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
+  const [typedTagline, setTypedTagline] = useState('');
+  const [isTaglineTypingComplete, setIsTaglineTypingComplete] = useState(false);
   const coursesSectionRef = useRef(null);
   const courseCardsScrollRef = useRef(null);
   const learningModelSectionRef = useRef(null);
@@ -63,6 +65,7 @@ const Auth = () => {
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
 
@@ -298,6 +301,23 @@ const Auth = () => {
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
+  }, []);
+
+  // Track mobile viewport for conditional rendering
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Start tagline typing animation on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startTaglineTyping();
+    }, 300); // Small delay before starting
+    return () => clearTimeout(timer);
   }, []);
 
   // Intersection observer for animating words when section comes into view
@@ -642,6 +662,38 @@ const Auth = () => {
         }, 500); // 500ms delay
       }
     }, 75); // 75ms per character
+  };
+
+  // Typing animation for tagline (Upskill. Reskill. Get ready for what's next.)
+  const startTaglineTyping = () => {
+    const fullText = 'Upskill. Reskill. Get ready for what\'s next.';
+    const pausePositions = [
+      { after: 'Upskill.'.length, duration: 300 },
+      { after: 'Upskill. Reskill.'.length, duration: 300 }
+    ];
+    let currentIndex = 0;
+    let isPaused = false;
+
+    const typingInterval = setInterval(() => {
+      if (isPaused) return;
+
+      if (currentIndex <= fullText.length) {
+        setTypedTagline(fullText.substring(0, currentIndex));
+
+        const pausePoint = pausePositions.find(p => currentIndex === p.after);
+        if (pausePoint) {
+          isPaused = true;
+          setTimeout(() => {
+            isPaused = false;
+          }, pausePoint.duration);
+        }
+
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTaglineTypingComplete(true);
+      }
+    }, 50); // 50ms per character for faster typing
   };
 
   // Typing animation for education text
@@ -1207,19 +1259,21 @@ const Auth = () => {
         keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
         url="https://www.ignite.education/welcome"
       />
-      {/* Background - Progress Hub */}
-      <div
-        className="auth-progress-bg"
-        style={{
-          filter: 'blur(1px) brightness(0.7)',
-          pointerEvents: 'none',
-          opacity: 0,
-          animation: 'fadeIn 1s ease-out forwards',
-          background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
-        }}
-      >
-        <ProgressHub />
-      </div>
+      {/* Background - Progress Hub (not rendered on mobile for performance) */}
+      {!isMobile && (
+        <div
+          className="auth-progress-bg"
+          style={{
+            filter: 'blur(1px) brightness(0.7)',
+            pointerEvents: 'none',
+            opacity: 0,
+            animation: 'fadeIn 1s ease-out forwards',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+          }}
+        >
+          <ProgressHub />
+        </div>
+      )}
 
       {/* Auth Overlay - Scrollable Container */}
       <div
@@ -1254,13 +1308,25 @@ const Auth = () => {
 
         {/* Tagline - on both sign in and create account pages */}
         <h1 className="text-xl font-semibold text-white text-center px-2 auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
-          Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
+          {(() => {
+            const pinkStart = 'Upskill. Reskill. '.length;
+            const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
+            const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
+            return (
+              <>
+                {whiteText}
+                {whiteText.length >= pinkStart && <br />}
+                <span style={{ color: '#EF0B72' }}>{pinkText}</span>
+                {!isTaglineTypingComplete && <span className="animate-blink">|</span>}
+              </>
+            );
+          })()}
         </h1>
 
         <div className="w-full">
 
         {/* Title above the box */}
-        <h2 className="text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
+        <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
           {isLogin ? 'Welcome Back' : 'Create Account'}
         </h2>
 
