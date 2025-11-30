@@ -418,8 +418,10 @@ body {
 
   .auth-section-3-title {
     font-size: 2rem !important;
-    min-height: unset !important;
+    min-height: 5rem !important;
+    height: 5rem !important;
     text-align: left !important;
+    overflow: hidden !important;
   }
 
   .auth-section-3-description {
@@ -476,10 +478,13 @@ body {
   }
 
   .auth-course-card-description {
-    -webkit-line-clamp: 1 !important;
+    -webkit-line-clamp: 2 !important;
     font-size: 0.75rem !important;
     line-height: 1.4 !important;
     margin-bottom: 0.25rem !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   .auth-course-card-modules {
