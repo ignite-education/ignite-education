@@ -553,7 +553,7 @@ const CoursePage = () => {
 
               {/* Full Course Description */}
               <div className="mb-8">
-                <p className="text-gray-700 text-lg leading-relaxed">
+                <p className="text-black text-lg leading-relaxed">
                   {course.description}
                 </p>
               </div>
@@ -568,7 +568,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                     </svg>
                   </div>
-                  <span className="text-sm text-gray-700 leading-tight">Certificate upon<br/>completion</span>
+                  <span className="text-sm text-black leading-tight">Certificate upon<br/>completion</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
@@ -576,7 +576,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-gray-700 leading-tight">Taught by industry<br/>expert instructors</span>
+                  <span className="text-sm text-black leading-tight">Taught by industry<br/>expert instructors</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
@@ -584,7 +584,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-gray-700 leading-tight">Self-paced<br/>learning</span>
+                  <span className="text-sm text-black leading-tight">Self-paced<br/>learning</span>
                 </div>
               </div>
 
@@ -640,32 +640,13 @@ const CoursePage = () => {
                 </div>
               )}
 
-              {/* Testimonials Section */}
+              {/* Feedback Section */}
               <div className="mb-8">
-                <h2 className="font-semibold text-gray-900 text-2xl mb-4">What Our Students Say</h2>
+                <h2 className="font-semibold text-gray-900 text-2xl mb-4">Feedback</h2>
                 <div className="bg-[#F0F0F2] p-6 rounded-lg">
-                  {testimonial.isPlaceholder ? (
-                    <p className="text-gray-600 italic text-lg">{testimonial.quote}</p>
-                  ) : (
-                    <div>
-                      <p className="text-gray-900 text-lg font-medium mb-4">
-                        "{testimonial.quote}"
-                      </p>
-                      <div className="flex items-center gap-3">
-                        {testimonial.avatar && (
-                          <img
-                            src={testimonial.avatar}
-                            alt={testimonial.name}
-                            className="w-12 h-12 rounded-full object-cover"
-                          />
-                        )}
-                        <div>
-                          <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                          {testimonial.role && <p className="text-sm text-gray-600">{testimonial.role}</p>}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <p className="text-black text-lg font-medium">
+                    "The {course.title} course was great! For someone new to the PM world, this is a great introduction and allowed me to connect with the community"
+                  </p>
                 </div>
               </div>
 
@@ -696,16 +677,16 @@ const CoursePage = () => {
                               <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                              <h4 className="font-semibold text-gray-900" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
                                 {coach.name}
                               </h4>
                               {coach.position && (
-                                <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '4px' }}>
                                   {coach.position}
                                 </p>
                               )}
                               {coach.description && (
-                                <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                <p className="text-gray-900" style={{ fontSize: '15px', lineHeight: '1.5' }}>
                                   {coach.description}
                                 </p>
                               )}
@@ -726,16 +707,16 @@ const CoursePage = () => {
                               <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-black" style={{ fontSize: '14px', lineHeight: '1.3', marginBottom: '0px' }}>
+                              <h4 className="font-semibold text-gray-900" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
                                 {coach.name}
                               </h4>
                               {coach.position && (
-                                <p className="text-black font-medium" style={{ fontSize: '12px', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>
+                                <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '4px' }}>
                                   {coach.position}
                                 </p>
                               )}
                               {coach.description && (
-                                <p className="text-black" style={{ fontSize: '13px', lineHeight: '1.5' }}>
+                                <p className="text-gray-900" style={{ fontSize: '15px', lineHeight: '1.5' }}>
                                   {coach.description}
                                 </p>
                               )}
@@ -782,7 +763,7 @@ const CoursePage = () => {
                       key={idx}
                       className="rounded cursor-pointer"
                       style={{
-                        backgroundColor: '#000000',
+                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                         transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                         height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
                         overflow: 'hidden',
@@ -797,11 +778,11 @@ const CoursePage = () => {
                       }}
                       onMouseEnter={() => setExpandedFAQ(idx)}
                     >
-                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#FFFFFF' }}>
+                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                         {faq.question}
                       </h4>
                       {expandedFAQ === idx && (
-                        <p className="text-white text-sm" style={{
+                        <p className="text-black text-sm" style={{
                           marginTop: 'calc(0.1rem + 2px)',
                           paddingBottom: '3px',
                           animation: 'fadeIn 200ms ease-in forwards',
