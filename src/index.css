@@ -668,7 +668,7 @@ body {
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
     padding-left: 1rem !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   .auth-section-4-card-expanded {
@@ -691,6 +691,10 @@ body {
   .auth-section-4-card-title-closed br,
   .auth-section-4-card-title-expanded br {
     display: none !important;
+  }
+
+  .auth-section-4-card-expanded .text-sm {
+    font-size: 0.85rem !important;
   }
 
   .auth-section-4-arrow {
