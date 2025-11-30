@@ -2626,15 +2626,15 @@ const Auth = () => {
         }}
         onClick={() => setSelectedCourseModal(null)}
       >
-        <div className="relative">
+        <div className="relative auth-course-modal-container">
           <>
             {/* Title above the box */}
-            <h2 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
+            <h2 className="font-semibold text-white pl-1 auth-course-modal-title" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
               {selectedCourse.title}
             </h2>
 
           <div
-            className="bg-white relative flex flex-col animate-scaleUp"
+            className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
             style={{
               width: '720px',
               height: '70vh',
