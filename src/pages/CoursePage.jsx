@@ -29,6 +29,12 @@ const CoursePage = () => {
   const [showLeaderModal, setShowLeaderModal] = useState(false);
   const [leaderForm, setLeaderForm] = useState({ name: '', email: '', linkedin: '' });
 
+  // Register interest modal state (for coming_soon courses)
+  const [showInterestModal, setShowInterestModal] = useState(false);
+  const [interestForm, setInterestForm] = useState({ email: '' });
+  const [interestSubmitting, setInterestSubmitting] = useState(false);
+  const [interestSubmitted, setInterestSubmitted] = useState(false);
+
   // Refs
   const curriculumSectionRef = useRef(null);
   const whiteContentRef = useRef(null);
@@ -707,7 +713,7 @@ const CoursePage = () => {
                 <h2 className="font-semibold text-gray-900 text-2xl mb-4">Feedback</h2>
                 <div className="bg-[#F0F0F2] p-6 rounded-lg">
                   <p className="text-black text-lg font-medium">
-                    "The {course.title} course was great! For someone new to the PM world, this is a great introduction and allowed me to connect with the community"
+                    "The {course.title} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community"
                   </p>
                 </div>
               </div>
@@ -845,16 +851,25 @@ const CoursePage = () => {
                 </div>
               </div>
 
-              {/* Get Started CTA Button */}
+              {/* Get Started / Register Interest CTA Button */}
               <div className="mt-8 mb-8 text-left">
-                <a
-                  href="/welcome"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-                >
-                  Get Started
-                </a>
+                {course.status === 'coming_soon' ? (
+                  <button
+                    onClick={() => setShowInterestModal(true)}
+                    className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Register Interest
+                  </button>
+                ) : (
+                  <a
+                    href="/welcome"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
+                  >
+                    Get Started
+                  </a>
+                )}
               </div>
 
               {/* Share Section */}
@@ -1029,6 +1044,119 @@ const CoursePage = () => {
                     Submit
                   </button>
                 </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Register Interest Modal (for coming_soon courses) */}
+      {showInterestModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: 'fadeIn 0.2s ease-out'
+          }}
+          onClick={() => {
+            setShowInterestModal(false);
+            setInterestForm({ email: '' });
+            setInterestSubmitted(false);
+          }}
+        >
+          <div className="relative px-4 sm:px-0" style={{ width: '100%', maxWidth: '484px' }}>
+            {/* Title above the box */}
+            <h3 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
+              Register Interest
+            </h3>
+
+            <div
+              className="bg-white rounded-lg w-full relative"
+              style={{ padding: '1.8rem 2rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setShowInterestModal(false);
+                  setInterestForm({ email: '' });
+                  setInterestSubmitted(false);
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              {interestSubmitted ? (
+                <div className="text-center py-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Check className="w-6 h-6 text-green-600" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">You're on the list!</h4>
+                  <p className="text-sm text-gray-600">
+                    We'll notify you when {course?.title} launches.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <p className="mb-5 text-sm" style={{ color: '#000000' }}>
+                    Be the first to know when <strong>{course?.title}</strong> launches. Enter your email to get notified.
+                  </p>
+
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      setInterestSubmitting(true);
+
+                      try {
+                        // Insert into course_requests table
+                        const { error } = await supabase
+                          .from('course_requests')
+                          .insert({
+                            email: interestForm.email,
+                            course_name: course?.name || courseSlug
+                          });
+
+                        if (error) {
+                          // If duplicate, still show success
+                          if (error.code === '23505') {
+                            setInterestSubmitted(true);
+                          } else {
+                            console.error('Error registering interest:', error);
+                            alert('Something went wrong. Please try again.');
+                          }
+                        } else {
+                          setInterestSubmitted(true);
+                        }
+                      } catch (err) {
+                        console.error('Error:', err);
+                        alert('Something went wrong. Please try again.');
+                      } finally {
+                        setInterestSubmitting(false);
+                      }
+                    }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-medium mb-1" style={{ color: '#000000' }}>Email</label>
+                      <input
+                        type="email"
+                        required
+                        value={interestForm.email}
+                        onChange={(e) => setInterestForm({ ...interestForm, email: e.target.value })}
+                        placeholder="you@example.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={interestSubmitting}
+                      className="w-full py-2.5 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors mt-1 disabled:opacity-50"
+                    >
+                      {interestSubmitting ? 'Submitting...' : 'Notify Me'}
+                    </button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
         </div>
