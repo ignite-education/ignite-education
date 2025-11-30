@@ -287,6 +287,11 @@ body {
     flex-direction: column !important;
     gap: 0.5rem !important;
   }
+
+  /* Hide LinkedIn button on mobile */
+  .auth-linkedin-btn {
+    display: none !important;
+  }
 }
 
 /* Respect users' reduced motion preferences for accessibility */
