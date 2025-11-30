@@ -215,6 +215,29 @@ const LearningHub = () => {
     }, 2500);
   }, []);
 
+  // Set Safari theme color to black for this page
+  useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
+
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#000000');
+    }
+
+    const originalHtmlBg = document.documentElement.style.backgroundColor;
+    const originalBodyBg = document.body.style.backgroundColor;
+    document.documentElement.style.backgroundColor = '#000000';
+    document.body.style.backgroundColor = '#000000';
+
+    return () => {
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', originalColor);
+      }
+      document.documentElement.style.backgroundColor = originalHtmlBg;
+      document.body.style.backgroundColor = originalBodyBg;
+    };
+  }, []);
+
   // Refresh user session after successful payment
   useEffect(() => {
     const refreshUserSession = async () => {
