@@ -1350,6 +1350,8 @@ const Auth = () => {
       >
       {/* First Section - Auth Form */}
       <div className="min-h-screen flex items-center justify-center px-8 relative auth-section-1" style={{ scrollSnapAlign: 'start' }}>
+      {/* Mobile background overlay */}
+      <div className="auth-section-1-overlay" />
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <img

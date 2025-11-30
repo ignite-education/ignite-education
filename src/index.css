@@ -238,6 +238,11 @@ body {
   animation: expandUnderline 0.4s ease-out forwards;
 }
 
+/* Hide mobile overlay on desktop */
+.auth-section-1-overlay {
+  display: none;
+}
+
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
   /* Hide ProgressHub background on mobile, show plain black */
@@ -276,19 +281,21 @@ body {
     background-repeat: no-repeat !important;
   }
 
-  .auth-section-1::before {
-    content: '' !important;
+  .auth-section-1-overlay {
+    display: block !important;
     position: absolute !important;
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     background: rgba(0, 0, 0, 0.7) !important;
     z-index: 1 !important;
     pointer-events: none !important;
   }
 
-  .auth-section-1 > * {
+  .auth-section-1 > *:not(.auth-section-1-overlay) {
     position: relative !important;
     z-index: 2 !important;
   }
