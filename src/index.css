@@ -328,23 +328,24 @@ body {
   .auth-section-2 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    padding-top: 0 !important;
+    padding-top: 3rem !important;
     padding-bottom: 0 !important;
     min-height: 100vh !important;
     min-height: 100svh !important;
     height: auto !important;
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: center !important;
   }
 
   .auth-education-heading {
-    font-size: 2rem !important;
+    font-size: 1.8rem !important;
     min-height: auto !important;
   }
 
   .auth-features-container {
     min-height: auto !important;
+    margin-top: 2rem !important;
   }
 }
 
