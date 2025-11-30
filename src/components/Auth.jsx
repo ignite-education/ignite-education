@@ -1223,7 +1223,7 @@ const Auth = () => {
       {/* Auth Overlay - Scrollable Container */}
       <div
         ref={authScrollContainerRef}
-        className="fixed inset-0 backdrop-blur-sm animate-fadeIn overflow-y-auto"
+        className="fixed inset-0 backdrop-blur-sm animate-fadeIn overflow-y-auto auth-scroll-container"
         style={{
           background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75))',
           animation: 'fadeIn 0.2s ease-out',

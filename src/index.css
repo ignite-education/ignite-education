@@ -240,6 +240,12 @@ body {
 
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
+  /* Remove minimum width on scroll container so content stays centered */
+  .auth-scroll-container {
+    min-width: unset !important;
+    overflow-x: hidden !important;
+  }
+
   /* Reduce container padding on mobile */
   .auth-section-1 {
     padding-left: 1rem !important;
