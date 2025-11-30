@@ -641,7 +641,7 @@ const CoursePage = () => {
               )}
 
               {/* Feedback Section */}
-              <div className="mb-8">
+              <div className="mt-9 mb-8">
                 <h2 className="font-semibold text-gray-900 text-2xl mb-4">Feedback</h2>
                 <div className="bg-[#F0F0F2] p-6 rounded-lg">
                   <p className="text-black text-lg font-medium">
@@ -652,32 +652,32 @@ const CoursePage = () => {
 
               {/* Course Coaches Section */}
               {coaches.length > 0 && (
-                <div className="mb-8">
+                <div className="mt-9 mb-8">
                   <h2 className="font-semibold text-gray-900 text-2xl mb-4">Course Leaders</h2>
                   <div className="flex flex-col gap-4">
                     {coaches.map((coach, index) => (
-                      <div key={index} className="flex gap-4 items-start">
+                      <div key={index} className="flex gap-4 items-start group cursor-pointer">
                         {coach.linkedin_url ? (
                           <a
                             href={coach.linkedin_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex gap-4 items-start flex-1 group"
+                            className="flex gap-4 items-start flex-1"
                           >
                             {coach.image_url ? (
                               <img
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
-                                className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                className="w-20 h-20 rounded object-cover flex-shrink-0"
                                 loading="lazy"
-                                width="64"
-                                height="64"
+                                width="80"
+                                height="80"
                               />
                             ) : (
-                              <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                              <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-gray-900" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
+                              <h4 className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
                                 {coach.name}
                               </h4>
                               {coach.position && (
@@ -698,16 +698,16 @@ const CoursePage = () => {
                               <img
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
-                                className="w-16 h-16 rounded object-cover flex-shrink-0"
+                                className="w-20 h-20 rounded object-cover flex-shrink-0"
                                 loading="lazy"
-                                width="64"
-                                height="64"
+                                width="80"
+                                height="80"
                               />
                             ) : (
-                              <div className="w-16 h-16 rounded bg-gray-200 flex-shrink-0" />
+                              <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-gray-900" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
+                              <h4 className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}>
                                 {coach.name}
                               </h4>
                               {coach.position && (
@@ -730,7 +730,7 @@ const CoursePage = () => {
               )}
 
               {/* FAQs Section */}
-              <div className="mb-8">
+              <div className="mt-9 mb-8">
                 <h2 className="font-semibold text-gray-900 text-2xl mb-4">FAQs</h2>
                 <div className="space-y-3">
                   {[
@@ -763,13 +763,13 @@ const CoursePage = () => {
                       key={idx}
                       className="rounded cursor-pointer"
                       style={{
-                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                        backgroundColor: '#F0F0F2',
                         transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
+                        height: 'calc(7.25rem + 5px)',
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
-                        paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
+                        paddingBottom: '1.2rem',
                         paddingLeft: '1.2rem',
                         display: 'flex',
                         flexDirection: 'column',
@@ -781,17 +781,14 @@ const CoursePage = () => {
                       <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                         {faq.question}
                       </h4>
-                      {expandedFAQ === idx && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: 'calc(0.1rem + 2px)',
-                          paddingBottom: '3px',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          {faq.answer}
-                        </p>
-                      )}
+                      <p className="text-black text-sm" style={{
+                        marginTop: 'calc(0.1rem + 2px)',
+                        paddingBottom: '3px',
+                        transition: 'opacity 300ms ease-in',
+                        opacity: expandedFAQ === idx ? 1 : 0
+                      }}>
+                        {faq.answer}
+                      </p>
                     </div>
                   ))}
                 </div>
