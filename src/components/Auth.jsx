@@ -1861,23 +1861,22 @@ const Auth = () => {
                   )}
                   </div>
                 </div>
+                {/* Scroll Down Arrow - positioned relative to course cards */}
+                <div className="flex justify-center auth-section-3-arrow" style={{ marginTop: '1.5rem' }}>
+                  <button
+                    onClick={scrollToLearningModel}
+                    className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+                    style={{
+                      animation: 'subtleBounce 2s infinite',
+                      padding: '11px'
+                    }}
+                    aria-label="Scroll to learning model"
+                  >
+                    <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Scroll Down Arrow - Absolutely positioned */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
-            <button
-              onClick={scrollToLearningModel}
-              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-              style={{
-                animation: 'subtleBounce 2s infinite',
-                padding: '11px'
-              }}
-              aria-label="Scroll to learning model"
-            >
-              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-            </button>
           </div>
         </div>
 
@@ -2676,7 +2675,7 @@ const Auth = () => {
                 )}
 
                 {/* Full description */}
-                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
+                <div className="text-black leading-relaxed mb-6 auth-course-modal-description" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
                     const firstSentenceEnd = description.indexOf('. ');
@@ -2738,7 +2737,7 @@ const Auth = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                         </svg>
                       </div>
-                      <span className="leading-tight">Taught by industry<br/>experts.</span>
+                      <span className="leading-tight">Taught by industry<br/>experts</span>
                     </div>
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>

@@ -444,6 +444,11 @@ body {
     width: 100% !important;
   }
 
+  .auth-section-3-arrow {
+    margin-top: 1.5rem !important;
+    justify-content: center !important;
+  }
+
   .auth-course-cards-scroll {
     padding: 0.5rem 0 !important;
     overflow-x: auto !important;
@@ -579,6 +584,10 @@ body {
     margin-bottom: 0.5rem !important;
   }
 
+  /* Course modal description - adjust top margin on mobile */
+  .auth-course-modal-description {
+    margin-top: 0 !important;
+  }
 
 }
 
