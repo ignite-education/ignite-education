@@ -668,9 +668,9 @@ const Auth = () => {
   const startTaglineTyping = () => {
     const fullText = 'Upskill. Reskill. Get ready for what\'s next.';
     const pausePositions = [
-      { after: 'Upskill.'.length, duration: 300 },
-      { after: 'Upskill. Reskill.'.length, duration: 300 },
-      { after: fullText.length, duration: 300 } // Pause at end before cursor disappears
+      { after: 'Upskill.'.length, duration: 375 },
+      { after: 'Upskill. Reskill.'.length, duration: 375 },
+      { after: fullText.length, duration: 375 } // Pause at end before cursor disappears
     ];
     let currentIndex = 0;
     let isPaused = false;
@@ -1329,30 +1329,22 @@ const Auth = () => {
               return (
                 <>
                   {/* First line - white text */}
-                  <span style={{ display: 'block', position: 'relative' }}>
-                    {/* Full text as invisible placeholder for stable width */}
-                    <span aria-hidden="true" style={{ opacity: 0 }}>{fullFirstLine}</span>
-                    {/* Overlay with typed + cursor positioned exactly */}
-                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0, display: 'flex', justifyContent: 'center' }}>
-                      <span>
-                        {fullFirstLine.substring(0, firstLineTypedLength)}
-                        {isTypingFirstLine && <span className="animate-blink">|</span>}
-                        <span style={{ opacity: 0 }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
-                      </span>
-                    </span>
+                  <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+                    {/* Typed portion */}
+                    <span>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
+                    {/* Cursor - zero width, doesn't affect layout */}
+                    {isTypingFirstLine && <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>}
+                    {/* Remaining portion - invisible */}
+                    <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
                   </span>
                   {/* Second line - pink text */}
-                  <span style={{ display: 'block', position: 'relative', color: '#EF0B72' }}>
-                    {/* Full text as invisible placeholder for stable width */}
-                    <span aria-hidden="true" style={{ opacity: 0 }}>{fullSecondLine}</span>
-                    {/* Overlay with typed + cursor positioned exactly */}
-                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0, display: 'flex', justifyContent: 'center' }}>
-                      <span>
-                        {fullSecondLine.substring(0, secondLineTypedLength)}
-                        {isTypingSecondLine && <span className="animate-blink">|</span>}
-                        <span style={{ opacity: 0 }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
-                      </span>
-                    </span>
+                  <span style={{ display: 'block', color: '#EF0B72', whiteSpace: 'nowrap' }}>
+                    {/* Typed portion */}
+                    <span>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
+                    {/* Cursor - zero width, doesn't affect layout */}
+                    {isTypingSecondLine && <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>}
+                    {/* Remaining portion - invisible */}
+                    <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
                   </span>
                 </>
               );
@@ -1387,7 +1379,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

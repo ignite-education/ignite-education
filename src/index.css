@@ -271,9 +271,9 @@ body {
     display: block !important;
   }
 
-  /* Tagline on mobile - 10% bigger than previous 1.25rem = ~1.375rem */
+  /* Tagline on mobile */
   .auth-tagline {
-    font-size: 1.375rem !important;
+    font-size: 1.5rem !important;
     margin-bottom: 0.5rem !important;
     padding-top: 0.5rem !important;
     padding-bottom: 0.5rem !important;
