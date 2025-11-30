@@ -548,7 +548,7 @@ body {
   }
 
   .auth-course-modal-title {
-    font-size: 1.1rem !important;
+    font-size: 1.3rem !important;
     padding-left: 0.25rem !important;
   }
 
@@ -587,6 +587,10 @@ body {
   /* Course modal description - adjust top margin on mobile */
   .auth-course-modal-description {
     margin-top: 0 !important;
+  }
+
+  .auth-course-modal-first-sentence {
+    font-size: 1rem !important;
   }
 
   /* Section 4 - Learning Model */
