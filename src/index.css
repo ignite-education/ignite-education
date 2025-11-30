@@ -270,9 +270,9 @@ body {
     justify-content: center !important;
   }
 
-  /* Logo on mobile - 15% bigger than base 90px = ~103px */
+  /* Logo on mobile - 15% bigger than 103px = ~118px */
   .auth-logo {
-    width: 103px !important;
+    width: 118px !important;
     height: auto !important;
     min-height: 32px !important;
     margin-top: 1.5rem !important;
