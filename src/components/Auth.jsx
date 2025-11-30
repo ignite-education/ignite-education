@@ -1919,11 +1919,12 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: isMobile ? 'auto' : (activeCard === 0 ? '10rem' : '5rem'),
+                      maxHeight: isMobile ? (activeCard === 0 ? '10rem' : '3rem') : 'none',
                       overflow: 'hidden',
-                      paddingTop: '1rem',
+                      paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
-                      paddingBottom: '1rem',
-                      paddingLeft: isMobile ? '1rem' : '1.2rem',
+                      paddingBottom: isMobile ? '0.7rem' : '1rem',
+                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -1965,11 +1966,12 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: isMobile ? 'auto' : (activeCard === 1 ? '10rem' : '5rem'),
+                      maxHeight: isMobile ? (activeCard === 1 ? '10rem' : '3rem') : 'none',
                       overflow: 'hidden',
-                      paddingTop: '1rem',
+                      paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
-                      paddingBottom: '1rem',
-                      paddingLeft: isMobile ? '1rem' : '1.2rem',
+                      paddingBottom: isMobile ? '0.7rem' : '1rem',
+                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -2011,11 +2013,12 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: isMobile ? 'auto' : (activeCard === 2 ? '10rem' : '5rem'),
+                      maxHeight: isMobile ? (activeCard === 2 ? '10rem' : '3rem') : 'none',
                       overflow: 'hidden',
-                      paddingTop: '1rem',
+                      paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
-                      paddingBottom: '1rem',
-                      paddingLeft: isMobile ? '1rem' : '1.2rem',
+                      paddingBottom: isMobile ? '0.7rem' : '1rem',
+                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -2053,11 +2056,12 @@ const Auth = () => {
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                       height: isMobile ? 'auto' : (activeCard === 3 ? '10rem' : '5rem'),
+                      maxHeight: isMobile ? (activeCard === 3 ? '10rem' : '3rem') : 'none',
                       overflow: 'hidden',
-                      paddingTop: '1rem',
+                      paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
-                      paddingBottom: '1rem',
-                      paddingLeft: isMobile ? '1rem' : '1.2rem',
+                      paddingBottom: isMobile ? '0.7rem' : '1rem',
+                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -2074,7 +2078,10 @@ const Auth = () => {
                         animationDelay: '300ms',
                         opacity: 0
                       }}>
-                        Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                        {isMobile
+                          ? "Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers."
+                          : "Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn."
+                        }
                       </p>
                     )}
                   </div>
