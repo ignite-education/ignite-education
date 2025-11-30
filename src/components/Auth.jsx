@@ -1554,7 +1554,7 @@ const Auth = () => {
         </div>
 
         {/* Scroll Down Arrow */}
-        <div className="mt-8 auth-scroll-arrow">
+        <div className="mt-8">
           <button
             onClick={scrollToMarketing}
             className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
