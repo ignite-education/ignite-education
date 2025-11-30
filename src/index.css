@@ -599,8 +599,8 @@ body {
 
   /* Section 4 - Learning Model */
   .auth-section-4 {
-    padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
     min-height: 100vh !important;
     min-height: 100svh !important;
     align-items: flex-start !important;
@@ -648,6 +648,7 @@ body {
     height: 3rem !important;
     padding-top: 0.8rem !important;
     padding-bottom: 0.8rem !important;
+    justify-content: center !important;
   }
 
   .auth-section-4-card-expanded {
@@ -660,7 +661,7 @@ body {
   }
 
   .auth-section-4-card-title-expanded {
-    font-size: 1.1rem !important;
+    font-size: 0.9rem !important;
     white-space: nowrap !important;
   }
 

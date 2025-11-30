@@ -1931,7 +1931,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
-                      Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
+                      Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
                     </h4>
                     {activeCard === 0 && (
                       <p className="text-black text-sm" style={{
@@ -1973,7 +1973,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
-                      Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
+                      Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
                     </h4>
                     {activeCard === 1 && (
                       <p className="text-black text-sm" style={{
@@ -2015,7 +2015,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
-                      Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
+                      Connect with <br />the <span style={{ color: '#7714E0' }}>global community.</span>
                     </h4>
                     {activeCard === 2 && (
                       <p className="text-black text-sm" style={{
@@ -2057,7 +2057,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
-                      Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                      Get certified <br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                     </h4>
                     {activeCard === 3 && (
                       <p className="text-black text-sm" style={{
