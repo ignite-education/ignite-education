@@ -339,12 +339,20 @@ body {
   }
 
   .auth-education-heading {
-    font-size: 1.8rem !important;
+    font-size: 2rem !important;
     min-height: auto !important;
   }
 
   .auth-features-container {
     min-height: auto !important;
+    margin-top: 2rem !important;
+  }
+
+  .auth-section-2-arrow {
+    position: static !important;
+    transform: none !important;
+    display: flex !important;
+    justify-content: center !important;
     margin-top: 2rem !important;
   }
 }
