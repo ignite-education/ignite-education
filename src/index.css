@@ -326,24 +326,34 @@ body {
 
   /* Section 2 - Education Philosophy */
   .auth-section-2 {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
     min-height: 100vh !important;
     min-height: 100svh !important;
     height: auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Fixed height container to prevent layout shifts */
+  .auth-section-2 .max-w-4xl {
+    height: calc(100svh - 4rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
     justify-content: center !important;
   }
 
   .auth-education-heading {
     font-size: 2rem !important;
     min-height: 180px !important;
+    height: 180px !important;
   }
 
   .auth-features-container {
     min-height: 220px !important;
+    height: 220px !important;
     margin-top: 1rem !important;
     width: 100% !important;
   }
@@ -351,6 +361,7 @@ body {
   /* Mobile arrow container - reserve space */
   .auth-section-2-mobile-arrow {
     min-height: 70px !important;
+    height: 70px !important;
     display: flex !important;
     align-items: flex-start !important;
     justify-content: center !important;
@@ -360,7 +371,6 @@ body {
     gap: 1rem !important;
     width: 100% !important;
     max-width: 100% !important;
-    min-height: 200px !important;
   }
 
   .auth-promises-list > * + * {
