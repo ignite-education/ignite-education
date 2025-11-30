@@ -573,7 +573,7 @@ const CoursePage = () => {
               to="/welcome"
               className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
             >
-              Get Started
+              {course?.status === 'coming_soon' ? 'Register Interest' : 'Get Started'}
             </Link>
           </div>
           {/* Progress Bar - pink line when scrolling */}
