@@ -640,8 +640,14 @@ body {
     gap: 0.25rem !important;
   }
 
-  .auth-section-4-cards.space-y-3 > * + * {
+  .auth-section-4-cards.space-y-3 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0 !important;
     margin-top: 0.25rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  .auth-section-4-cards > .auth-section-4-card {
+    margin-bottom: 0 !important;
   }
 
   .auth-section-4-media {
