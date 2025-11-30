@@ -269,8 +269,9 @@ body {
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
+    background-color: #000 !important;
     background-image: url('https://auth.ignite.education/storage/v1/object/public/assets/Ignite%202.png') !important;
-    background-size: auto 100vh !important;
+    background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
   }
