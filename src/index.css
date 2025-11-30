@@ -271,12 +271,12 @@ body {
     display: block !important;
   }
 
-  /* Tagline on mobile - 15% bigger than 1rem = ~1.15rem */
+  /* Tagline on mobile - 25% bigger than 1rem = ~1.25rem */
   .auth-tagline {
-    font-size: 1.15rem !important;
+    font-size: 1.25rem !important;
     margin-bottom: 0.5rem !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
   }
 
   /* Form title on mobile - 10% smaller than text-lg (1.125rem) = ~1rem */

@@ -693,7 +693,7 @@ const Auth = () => {
         clearInterval(typingInterval);
         setIsTaglineTypingComplete(true);
       }
-    }, 50); // 50ms per character for faster typing
+    }, 80); // 80ms per character for slower typing
   };
 
   // Typing animation for education text
@@ -1307,20 +1307,27 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-xl font-semibold text-white text-center px-2 auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
-          {(() => {
-            const pinkStart = 'Upskill. Reskill. '.length;
-            const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
-            const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
-            return (
-              <>
-                {whiteText}
-                {whiteText.length >= pinkStart && <br />}
-                <span style={{ color: '#EF0B72' }}>{pinkText}</span>
-                {!isTaglineTypingComplete && <span className="animate-blink">|</span>}
-              </>
-            );
-          })()}
+        <h1 className="text-xl font-semibold text-white text-center px-2 auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', position: 'relative' }}>
+          {/* Invisible placeholder to reserve space */}
+          <span style={{ visibility: 'hidden' }} aria-hidden="true">
+            Upskill. Reskill.<br />Get ready for what's next.
+          </span>
+          {/* Visible typed text - positioned absolutely over placeholder */}
+          <span style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+            {(() => {
+              const pinkStart = 'Upskill. Reskill. '.length;
+              const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
+              const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
+              return (
+                <>
+                  {whiteText}
+                  {whiteText.length >= pinkStart && <br />}
+                  <span style={{ color: '#EF0B72' }}>{pinkText}</span>
+                  {!isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                </>
+              );
+            })()}
+          </span>
         </h1>
 
         <div className="w-full">
