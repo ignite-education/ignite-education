@@ -1782,7 +1782,7 @@ const Auth = () => {
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
-                          className="absolute inset-0 bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl aspect-square cursor-pointer"
+                          className="absolute inset-0 bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl aspect-square cursor-pointer auth-course-card-inner"
                           style={{ transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out' }}
                           onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}

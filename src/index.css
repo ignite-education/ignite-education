@@ -409,7 +409,7 @@ body {
   .auth-section-3-grid {
     display: flex !important;
     flex-direction: column !important;
-    gap: 2rem !important;
+    gap: 1.5rem !important;
     padding: 0 !important;
   }
 
@@ -465,18 +465,28 @@ body {
 
   .auth-course-card {
     width: 100% !important;
-    height: 13rem !important;
-    min-height: 13rem !important;
-    max-height: 13rem !important;
+    height: 12rem !important;
+    min-height: 12rem !important;
+    max-height: 12rem !important;
     aspect-ratio: unset !important;
     overflow: hidden !important;
-    border-radius: 0.5rem !important;
+    border-radius: 0.3rem !important;
+  }
+
+  .auth-course-card-inner {
+    position: relative !important;
+    height: 100% !important;
+    aspect-ratio: unset !important;
+    overflow: hidden !important;
   }
 
   /* Course card content on mobile - show title, 1 sentence description, 3 modules */
   .auth-course-card-content {
     padding: 0.625rem !important;
+    padding-bottom: 2.5rem !important;
     overflow: hidden !important;
+    height: auto !important;
+    max-height: calc(12rem - 2.5rem) !important;
   }
 
   .auth-course-card-title {
