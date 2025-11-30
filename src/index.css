@@ -637,11 +637,11 @@ body {
   .auth-section-4-cards {
     width: 100% !important;
     order: 1 !important;
-    gap: 0.2rem !important;
+    gap: 0.1rem !important;
   }
 
   .auth-section-4-cards > * + * {
-    margin-top: 0.2rem !important;
+    margin-top: 0.1rem !important;
   }
 
   .auth-section-4-media {
@@ -652,31 +652,33 @@ body {
 
   .auth-section-4-media-box {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1 !important;
+    height: 12rem !important;
+    aspect-ratio: unset !important;
     padding: 1rem !important;
   }
 
   .auth-section-4-card-closed {
     height: 3rem !important;
-    padding-top: 0.7rem !important;
-    padding-bottom: 0.7rem !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
     padding-left: 1rem !important;
     justify-content: center !important;
   }
 
   .auth-section-4-card-expanded {
     height: 6rem !important;
+    padding-top: 0.5rem !important;
+    padding-left: 1rem !important;
     padding-bottom: 1rem !important;
   }
 
   .auth-section-4-card-title-closed {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
     white-space: nowrap !important;
   }
 
   .auth-section-4-card-title-expanded {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
     white-space: nowrap !important;
   }
 
