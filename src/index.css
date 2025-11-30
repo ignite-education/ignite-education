@@ -339,11 +339,11 @@ body {
 
   .auth-education-heading {
     font-size: 2rem !important;
-    min-height: auto !important;
+    min-height: 180px !important;
   }
 
   .auth-features-container {
-    min-height: auto !important;
+    min-height: 220px !important;
     margin-top: 2rem !important;
     width: 100% !important;
   }
@@ -378,6 +378,8 @@ body {
     display: flex !important;
     justify-content: center !important;
     margin-top: 2rem !important;
+    width: 100% !important;
+    left: auto !important;
   }
 }
 
