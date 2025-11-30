@@ -1918,12 +1918,12 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 0 ? '10rem' : '5rem',
+                      height: isMobile ? 'auto' : (activeCard === 0 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem',
+                      paddingLeft: isMobile ? '1rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -1939,7 +1939,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 0 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.2rem',
+                        marginTop: '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -1964,12 +1964,12 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 1 ? '10rem' : '5rem',
+                      height: isMobile ? 'auto' : (activeCard === 1 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem',
+                      paddingLeft: isMobile ? '1rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -1985,7 +1985,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 1 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.2rem',
+                        marginTop: '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -2010,12 +2010,12 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 2 ? '10rem' : '5rem',
+                      height: isMobile ? 'auto' : (activeCard === 2 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem',
+                      paddingLeft: isMobile ? '1rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -2027,7 +2027,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 2 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.2rem',
+                        marginTop: '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -2052,12 +2052,12 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: activeCard === 3 ? '10rem' : '5rem',
+                      height: isMobile ? 'auto' : (activeCard === 3 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: '1rem',
-                      paddingLeft: '1.2rem',
+                      paddingLeft: isMobile ? '1rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'flex-start',
@@ -2069,7 +2069,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 3 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.2rem',
+                        marginTop: '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
