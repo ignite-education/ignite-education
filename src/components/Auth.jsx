@@ -1237,7 +1237,7 @@ const Auth = () => {
         }}
       >
       {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-8 relative" style={{ scrollSnapAlign: 'start' }}>
+      <div className="min-h-screen flex items-center justify-center px-8 relative auth-section-1" style={{ scrollSnapAlign: 'start' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <div
@@ -1320,7 +1320,7 @@ const Auth = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 auth-form-grid ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
               <div>
                 <label className="block text-sm font-medium mb-0.5">First Name</label>
                 <input
@@ -1347,7 +1347,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 auth-form-grid">
               <div>
                 <label className="block text-sm font-medium mb-0.5">Email</label>
                 <input
@@ -1408,7 +1408,7 @@ const Auth = () => {
 
           <div className="text-center" style={{ marginTop: '0.5rem' }}>
             {isLogin ? (
-              <div className="flex items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-4 auth-links">
                 <button
                   onClick={() => {
                     setIsLogin(!isLogin);

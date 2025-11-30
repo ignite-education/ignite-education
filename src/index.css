@@ -238,6 +238,26 @@ body {
   animation: expandUnderline 0.4s ease-out forwards;
 }
 
+/* Auth page mobile overrides */
+@media (max-width: 767px) {
+  /* Reduce container padding on mobile */
+  .auth-section-1 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Stack form fields vertically on mobile */
+  .auth-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stack account links vertically on mobile */
+  .auth-links {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+}
+
 /* Respect users' reduced motion preferences for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
