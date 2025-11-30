@@ -323,6 +323,11 @@ body {
   .auth-linkedin-btn {
     display: none !important;
   }
+
+  /* Section 2 - Education Philosophy heading */
+  .auth-education-heading {
+    font-size: 2rem !important;
+  }
 }
 
 /* Respect users' reduced motion preferences for accessibility */
