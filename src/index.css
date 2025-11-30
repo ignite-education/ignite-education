@@ -402,6 +402,8 @@ body {
     padding-right: 1rem !important;
     min-height: 100vh !important;
     min-height: 100svh !important;
+    align-items: flex-start !important;
+    padding-top: 3rem !important;
   }
 
   .auth-section-3-grid {
@@ -464,7 +466,10 @@ body {
   .auth-course-card {
     width: 100% !important;
     height: 10rem !important;
+    min-height: 10rem !important;
+    max-height: 10rem !important;
     aspect-ratio: unset !important;
+    overflow: hidden !important;
   }
 
   /* Course card content on mobile - show title, 1 sentence description, 3 modules */
