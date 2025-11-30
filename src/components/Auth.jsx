@@ -303,6 +303,22 @@ const Auth = () => {
     };
   }, []);
 
+  // Set Safari mobile theme color to black for auth page
+  useEffect(() => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
+
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', '#000000');
+    }
+
+    return () => {
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', originalColor);
+      }
+    };
+  }, []);
+
   // Track mobile viewport for conditional rendering
   useEffect(() => {
     const handleResize = () => {
@@ -1633,7 +1649,7 @@ const Auth = () => {
                         </div>
                         <div className="leading-snug font-light">
                           <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
-                          <div className="text-base text-white auth-promise-subtext">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
+                          <div className="text-base text-white auth-promise-subtext">You don't need any experience to study. Our curricula is built for all backgrounds.</div>
                         </div>
                       </div>
                     </>
