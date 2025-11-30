@@ -305,6 +305,7 @@ const Auth = () => {
 
   // Set Safari mobile theme color to black for auth page
   useEffect(() => {
+    // Update theme-color meta tag
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
 
@@ -312,10 +313,18 @@ const Auth = () => {
       metaThemeColor.setAttribute('content', '#000000');
     }
 
+    // Also set html/body background for Safari mobile browser chrome detection
+    const originalHtmlBg = document.documentElement.style.backgroundColor;
+    const originalBodyBg = document.body.style.backgroundColor;
+    document.documentElement.style.backgroundColor = '#000000';
+    document.body.style.backgroundColor = '#000000';
+
     return () => {
       if (metaThemeColor) {
         metaThemeColor.setAttribute('content', originalColor);
       }
+      document.documentElement.style.backgroundColor = originalHtmlBg;
+      document.body.style.backgroundColor = originalBodyBg;
     };
   }, []);
 
