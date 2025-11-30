@@ -72,16 +72,23 @@ const SEO = ({
     }
     canonical.setAttribute('href', fullUrl);
 
-    // Add structured data if provided
+    // Add structured data if provided (supports single object or array of objects)
     if (structuredData) {
-      let script = document.querySelector('script[data-seo="structured"]');
-      if (!script) {
-        script = document.createElement('script');
+      // Remove any existing SEO structured data scripts
+      const existingScripts = document.querySelectorAll('script[data-seo="structured"]');
+      existingScripts.forEach(script => script.remove());
+
+      // Handle array of structured data objects (multiple schemas per page)
+      const dataArray = Array.isArray(structuredData) ? structuredData : [structuredData];
+
+      dataArray.forEach((data, index) => {
+        const script = document.createElement('script');
         script.setAttribute('type', 'application/ld+json');
         script.setAttribute('data-seo', 'structured');
+        script.setAttribute('data-seo-index', String(index));
+        script.textContent = JSON.stringify(data);
         document.head.appendChild(script);
-      }
-      script.textContent = JSON.stringify(structuredData);
+      });
     }
 
     // Cleanup function

@@ -349,46 +349,134 @@ const CoursePage = () => {
     return description;
   };
 
-  // Generate SEO keywords from course data
+  // FAQ data for both display and structured data
+  const COURSE_FAQS = [
+    {
+      question: 'What is Ignite?',
+      answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
+    },
+    {
+      question: 'Who is Ignite for?',
+      answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
+    },
+    {
+      question: 'How much does Ignite cost?',
+      answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
+    },
+    {
+      question: 'What can I learn on Ignite?',
+      answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
+    },
+    {
+      question: 'Can I learn at my own pace?',
+      answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
+    },
+    {
+      question: 'What makes Ignite different?',
+      answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
+    }
+  ];
+
+  // Generate SEO keywords from course data - enhanced with curriculum skills
   const generateKeywords = (courseData) => {
+    // Extract lesson names as skill keywords
+    const skills = courseData.module_structure?.flatMap(m =>
+      m.lessons?.map(l => l.name.toLowerCase()) || []
+    ).slice(0, 8) || [];
+
     const baseKeywords = [
       courseData.title,
       `${courseData.title} course`,
-      `${courseData.title} training`,
+      `learn ${courseData.title.toLowerCase()}`,
+      `${courseData.title.toLowerCase()} training`,
+      `${courseData.title.toLowerCase()} certification`,
+      `free ${courseData.title.toLowerCase()} course`,
       'online course',
       'professional development',
       'career training',
-      'Ignite Education'
+      'Ignite Education',
+      ...skills
     ];
-    return baseKeywords.join(', ');
+
+    return [...new Set(baseKeywords)].join(', ');
   };
 
-  // Generate structured data for SEO
-  const generateCourseStructuredData = (courseData) => {
-    const teaches = courseData.module_structure?.map(m => m.name) || [];
+  // Generate Course structured data for SEO - enhanced with instructors
+  const generateCourseStructuredData = (courseData, courseCoaches) => {
+    const baseUrl = 'https://www.ignite.education';
+
+    // Extract skills from curriculum (module names + lesson names)
+    const teaches = courseData.module_structure?.flatMap(m => [
+      m.name,
+      ...(m.lessons?.map(l => l.name) || [])
+    ]) || [];
 
     return {
       "@context": "https://schema.org",
       "@type": "Course",
       "name": courseData.title,
       "description": courseData.description,
+      "url": `${baseUrl}/courses/${courseSlug}`,
       "provider": {
         "@type": "EducationalOrganization",
         "name": "Ignite Education",
-        "url": "https://www.ignite.education"
+        "url": baseUrl,
+        "sameAs": [
+          "https://www.linkedin.com/company/igniteeducation"
+        ]
       },
       "educationalLevel": "Beginner to Advanced",
       "courseMode": "online",
+      "isAccessibleForFree": true,
       "availableLanguage": "en",
       "teaches": teaches,
-      "isAccessibleForFree": true,
+      "numberOfCredits": courseData.module_structure?.length || 0,
       "hasCourseInstance": {
         "@type": "CourseInstance",
         "courseMode": "online",
-        "courseWorkload": `PT${courseData.lessons || 10}H`
+        "courseWorkload": `PT${(courseData.lessons || 10) * 2}H`
       },
-      "url": `https://www.ignite.education/courses/${courseSlug}`
+      "instructor": courseCoaches?.map(coach => ({
+        "@type": "Person",
+        "name": coach.name,
+        "jobTitle": coach.position,
+        "image": coach.image_url
+      })) || []
     };
+  };
+
+  // Generate FAQ structured data for SEO
+  const generateFAQStructuredData = (faqs) => ({
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  });
+
+  // Generate Breadcrumb structured data for SEO
+  const generateBreadcrumbStructuredData = (courseTitle) => ({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.ignite.education" },
+      { "@type": "ListItem", "position": 2, "name": "Courses", "item": "https://www.ignite.education/welcome" },
+      { "@type": "ListItem", "position": 3, "name": courseTitle, "item": `https://www.ignite.education/courses/${courseSlug}` }
+    ]
+  });
+
+  // Combine all structured data into an array for SEO component
+  const getCombinedStructuredData = (courseData, courseCoaches) => {
+    return [
+      generateCourseStructuredData(courseData, courseCoaches),
+      generateFAQStructuredData(COURSE_FAQS),
+      generateBreadcrumbStructuredData(courseData.title)
+    ];
   };
 
   // Get testimonial for this course
@@ -460,7 +548,7 @@ const CoursePage = () => {
         keywords={generateKeywords(course)}
         url={`https://www.ignite.education/courses/${courseSlug}`}
         type="course"
-        structuredData={generateCourseStructuredData(course)}
+        structuredData={getCombinedStructuredData(course, coaches)}
       />
 
       <div className="min-h-screen bg-black">
@@ -716,32 +804,7 @@ const CoursePage = () => {
               <div className="mt-9 mb-8">
                 <h2 className="font-semibold text-gray-900 text-2xl mb-4">FAQs</h2>
                 <div className="space-y-3">
-                  {[
-                    {
-                      question: 'What is Ignite?',
-                      answer: 'Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today\'s competitive job market.'
-                    },
-                    {
-                      question: 'Who is Ignite for?',
-                      answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.'
-                    },
-                    {
-                      question: 'How much does Ignite cost?',
-                      answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
-                    },
-                    {
-                      question: 'What can I learn on Ignite?',
-                      answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.'
-                    },
-                    {
-                      question: 'Can I learn at my own pace?',
-                      answer: 'Absolutely. Ignite courses are self-paced, so you can learn when and where it works best for you. We suggest completing 2 to 4 lessons per week for the best results and maximum knowledge retention.'
-                    },
-                    {
-                      question: 'What makes Ignite different?',
-                      answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.'
-                    }
-                  ].map((faq, idx) => (
+                  {COURSE_FAQS.map((faq, idx) => (
                     <div
                       key={idx}
                       className="rounded cursor-pointer"
@@ -873,7 +936,7 @@ const CoursePage = () => {
             setLeaderForm({ name: '', email: '', linkedin: '' });
           }}
         >
-          <div className="relative">
+          <div className="relative px-4 sm:px-0" style={{ width: '100%', maxWidth: '484px' }}>
             {/* Title above the box */}
             <h3 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
               Course Leader
@@ -881,7 +944,7 @@ const CoursePage = () => {
 
             <div
               className="bg-white rounded-lg w-full relative"
-              style={{ maxWidth: '484px', padding: '1.8rem 2rem' }}
+              style={{ padding: '1.8rem 2rem' }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close button */}
