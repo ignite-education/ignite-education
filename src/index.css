@@ -437,32 +437,28 @@ body {
   }
 
   .auth-course-cards-scroll {
-    padding: 0.5rem 0 !important;
+    padding: 0.5rem 1rem !important;
     overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
   .auth-course-cards-container {
-    margin-right: 0 !important;
+    margin-right: 1rem !important;
   }
 
   .auth-course-cards-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.75rem !important;
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.5rem !important;
+    width: calc(100vw - 3rem) !important;
+    min-width: calc(100vw - 3rem) !important;
+    max-width: calc(100vw - 3rem) !important;
   }
 
   .auth-course-card {
     width: 100% !important;
-    height: 80px !important;
-    transition: height 0.3s ease-out !important;
-  }
-
-  .auth-course-card:active,
-  .auth-course-card:focus-within {
-    height: 200px !important;
+    height: auto !important;
+    aspect-ratio: 1 !important;
   }
 
 }
