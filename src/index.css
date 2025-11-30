@@ -344,7 +344,7 @@ body {
 
   .auth-features-container {
     min-height: 220px !important;
-    margin-top: 2rem !important;
+    margin-top: 1rem !important;
     width: 100% !important;
   }
 
@@ -360,6 +360,7 @@ body {
     gap: 1rem !important;
     width: 100% !important;
     max-width: 100% !important;
+    min-height: 200px !important;
   }
 
   .auth-promises-list > * + * {
