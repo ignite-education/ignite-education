@@ -389,40 +389,9 @@ const CoursePage = () => {
   // Get testimonial for this course
   const testimonial = getTestimonialForCourse(courseSlug);
 
-  // Loading state
+  // Loading state - return null to keep showing Suspense fallback (LoadingScreen)
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="inline-block">
-              <div
-                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-                }}
-              />
-            </Link>
-            <Link
-              to="/welcome"
-              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-center min-h-[80vh]">
-          <div className="text-center">
-            <div className="animate-pulse">
-              <div className="w-16 h-16 border-4 border-[#EF0B72] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-400">Loading course...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Error/404 state
@@ -625,8 +594,8 @@ const CoursePage = () => {
                       </div>
                     </div>
 
-                    {/* Right Column - Sticky Image (10% larger than before) */}
-                    <div className="flex-shrink-0" style={{ width: '315px' }}>
+                    {/* Right Column - Sticky Image (hidden on narrow viewports) */}
+                    <div className="flex-shrink-0 hidden lg:block" style={{ width: '315px' }}>
                       <div className="sticky top-24">
                         <img
                           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
@@ -765,7 +734,7 @@ const CoursePage = () => {
                       style={{
                         backgroundColor: '#F0F0F2',
                         transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1), background-color 500ms cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
+                        height: expandedFAQ === idx ? 'calc(6.525rem + 4.5px)' : '3.75rem',
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
