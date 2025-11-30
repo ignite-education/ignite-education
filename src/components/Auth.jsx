@@ -2639,6 +2639,15 @@ const Auth = () => {
       >
         <div className="relative auth-course-modal-container">
           <>
+            {/* Close button - positioned outside modal on mobile */}
+            <button
+              onClick={() => setSelectedCourseModal(null)}
+              className="absolute text-white hover:text-gray-300 z-10 auth-course-modal-close"
+              style={{ top: '-2.5rem', right: '0' }}
+            >
+              <X size={24} />
+            </button>
+
             {/* Title above the box */}
             <h2 className="font-semibold text-white pl-1 auth-course-modal-title" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
               {selectedCourse.title}
@@ -2649,17 +2658,11 @@ const Auth = () => {
             style={{
               width: '720px',
               height: '70vh',
-              borderRadius: '6px'
+              borderRadius: '6px',
+              overflow: 'hidden'
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close button */}
-            <button
-              onClick={() => setSelectedCourseModal(null)}
-              className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
-            >
-              <X size={24} />
-            </button>
 
             {/* Scrollable Content */}
             <div
@@ -2736,7 +2739,7 @@ const Auth = () => {
                           <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                         </svg>
                       </div>
-                      <span className="leading-tight">Taught by industry<br/>expert instructors</span>
+                      <span className="leading-tight">Taught by industry<br/>experts.</span>
                     </div>
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
@@ -2978,7 +2981,7 @@ const Auth = () => {
                 }}
                 className="w-full font-semibold py-3 rounded-lg transition bg-[#EF0B72] text-white hover:bg-[#D50A65]"
               >
-                Get Started
+                {selectedCourse.status === 'coming_soon' ? 'Register Interest' : 'Get Started'}
               </button>
                 </div>
               </div>
