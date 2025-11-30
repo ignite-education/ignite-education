@@ -1598,7 +1598,7 @@ const Auth = () => {
             }}
             aria-label="Scroll to learn more"
           >
-            <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
           </button>
         </div>
       </div>
@@ -1677,7 +1677,7 @@ const Auth = () => {
                   }}
                   aria-label="Scroll to courses"
                 >
-                  <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
                 </button>
               </div>
             </div>
@@ -1694,7 +1694,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to courses"
             >
-              <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -1865,7 +1865,7 @@ const Auth = () => {
               }}
               aria-label="Scroll to learning model"
             >
-              <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
             </button>
           </div>
         </div>
@@ -2093,7 +2093,7 @@ const Auth = () => {
                 }}
                 aria-label="Scroll to testimonials"
               >
-                <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+                <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
               </button>
             </div>
             </div>
@@ -2360,7 +2360,7 @@ const Auth = () => {
                   }}
                   aria-label="Scroll to LinkedIn and FAQs"
                 >
-                  <ChevronDown size={24} className="text-[#EF0B72] md:text-black group-hover:text-[#EF0B72] transition" />
+                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
                 </button>
               </div>
             </div>
