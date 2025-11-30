@@ -629,6 +629,11 @@ body {
   .auth-section-4-cards {
     width: 100% !important;
     order: 1 !important;
+    gap: 0.5rem !important;
+  }
+
+  .auth-section-4-cards > * + * {
+    margin-top: 0.5rem !important;
   }
 
   .auth-section-4-media {
@@ -646,8 +651,9 @@ body {
 
   .auth-section-4-card-closed {
     height: 3rem !important;
-    padding-top: 0.8rem !important;
-    padding-bottom: 0.8rem !important;
+    padding-top: 0.7rem !important;
+    padding-bottom: 0.7rem !important;
+    padding-left: 1rem !important;
     justify-content: center !important;
   }
 
@@ -656,12 +662,12 @@ body {
   }
 
   .auth-section-4-card-title-closed {
-    font-size: 0.9rem !important;
+    font-size: 1.1rem !important;
     white-space: nowrap !important;
   }
 
   .auth-section-4-card-title-expanded {
-    font-size: 0.9rem !important;
+    font-size: 1.1rem !important;
     white-space: nowrap !important;
   }
 
