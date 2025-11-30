@@ -282,8 +282,8 @@ body {
   /* Tagline on mobile */
   .auth-tagline {
     margin-bottom: 0.5rem !important;
-    padding-top: 0.6rem !important;
-    padding-bottom: 0.6rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
   }
 
   .auth-tagline h1 {
