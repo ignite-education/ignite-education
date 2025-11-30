@@ -1598,7 +1598,7 @@ const Auth = () => {
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: '280px', marginTop: '7.526px' }}>
-                <div className="space-y-3 text-left">
+                <div className="space-y-3 text-left auth-promises-list">
                   {isEducationTypingComplete && (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
@@ -1609,7 +1609,7 @@ const Auth = () => {
                         </div>
                         <div className="leading-snug font-light">
                           <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
-                          <div className="text-base text-white">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
+                          <div className="text-base text-white auth-promise-subtext">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
                         </div>
                       </div>
 
@@ -1621,7 +1621,7 @@ const Auth = () => {
                         </div>
                         <div className="leading-snug font-light">
                           <div className="text-lg font-semibold text-white">Ignite is Free</div>
-                          <div className="text-base text-white">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
+                          <div className="text-base text-white auth-promise-subtext">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
                         </div>
                       </div>
 
@@ -1633,7 +1633,7 @@ const Auth = () => {
                         </div>
                         <div className="leading-snug font-light">
                           <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
-                          <div className="text-base text-white">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
+                          <div className="text-base text-white auth-promise-subtext">You don't need any experience to study. Our curricula is built for all educational backgrounds.</div>
                         </div>
                       </div>
                     </>
