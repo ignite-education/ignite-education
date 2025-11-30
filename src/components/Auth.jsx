@@ -1321,32 +1321,32 @@ const Auth = () => {
               const fullFirstLine = 'Upskill. Reskill.';
               const fullSecondLine = "Get ready for what's next.";
               const pinkStart = fullFirstLine.length + 1; // +1 for the space
-              const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
-              const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
-              const firstLineTyped = whiteText.trimEnd();
-              const secondLineTyped = pinkText;
+              const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
+              const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
 
               return (
                 <>
                   {/* First line - white text */}
-                  <span style={{ display: 'block', position: 'relative' }}>
-                    {/* Invisible placeholder to hold space */}
-                    <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
-                    {/* Visible typed text overlaid */}
-                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
-                      {firstLineTyped}
-                      {whiteText.length < pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
-                    </span>
+                  <span style={{ display: 'block' }}>
+                    {/* Typed portion - visible */}
+                    <span>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
+                    {/* Remaining portion - invisible but takes up space */}
+                    <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
+                    {/* Cursor after typed text on first line */}
+                    {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
+                      <span className="animate-blink" style={{ marginLeft: '-0.5em' }}>|</span>
+                    )}
                   </span>
                   {/* Second line - pink text */}
-                  <span style={{ display: 'block', position: 'relative', color: '#EF0B72' }}>
-                    {/* Invisible placeholder to hold space */}
-                    <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
-                    {/* Visible typed text overlaid */}
-                    <span style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
-                      {secondLineTyped}
-                      {whiteText.length >= pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
-                    </span>
+                  <span style={{ display: 'block', color: '#EF0B72' }}>
+                    {/* Typed portion - visible */}
+                    <span>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
+                    {/* Remaining portion - invisible but takes up space */}
+                    <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
+                    {/* Cursor after typed text on second line */}
+                    {typedTagline.length > pinkStart && !isTaglineTypingComplete && (
+                      <span className="animate-blink" style={{ marginLeft: '-0.5em' }}>|</span>
+                    )}
                   </span>
                 </>
               );
