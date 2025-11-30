@@ -347,8 +347,9 @@ body {
 
   .auth-education-heading {
     font-size: 2rem !important;
-    min-height: 180px !important;
-    height: 180px !important;
+    min-height: 200px !important;
+    height: 200px !important;
+    overflow: hidden !important;
   }
 
   .auth-features-container {
