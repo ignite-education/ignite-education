@@ -21,9 +21,39 @@ const CoursePage = () => {
   const [error, setError] = useState(null);
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Ref for curriculum section to handle sticky behavior
+  // Refs
   const curriculumSectionRef = useRef(null);
+  const whiteContentRef = useRef(null);
+
+  // Track scroll progress for pink progress bar
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!whiteContentRef.current) return;
+
+      const navBarHeight = 58;
+      const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
+      const whiteContentHeight = whiteContentRef.current.offsetHeight;
+      const viewportHeight = window.innerHeight;
+
+      if (whiteContentTop > navBarHeight) {
+        setScrollProgress(0);
+        return;
+      }
+
+      const scrolledPast = navBarHeight - whiteContentTop;
+      const scrollableHeight = whiteContentHeight - viewportHeight + navBarHeight;
+
+      if (scrollableHeight > 0) {
+        const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
+        setScrollProgress(progress);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Convert URL slug to possible database name formats
   const slugToNameVariations = (slug) => {
@@ -450,7 +480,7 @@ const CoursePage = () => {
   return (
     <>
       <SEO
-        title={`${course.title} Course - Ignite Education`}
+        title={`Ignite | ${course.title}`}
         description={course.description}
         keywords={generateKeywords(course)}
         url={`https://www.ignite.education/courses/${courseSlug}`}
@@ -477,6 +507,13 @@ const CoursePage = () => {
               Get Started
             </Link>
           </div>
+          {/* Progress Bar - pink line when scrolling */}
+          {scrollProgress > 0 && (
+            <div
+              className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
+              style={{ width: `${scrollProgress}%` }}
+            />
+          )}
         </div>
 
         {/* Hero Section with Black Background */}
@@ -509,7 +546,7 @@ const CoursePage = () => {
         </div>
 
         {/* White Content Section */}
-        <div className="bg-white">
+        <div className="bg-white" ref={whiteContentRef}>
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
 
@@ -556,7 +593,7 @@ const CoursePage = () => {
                   <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
                   <div className="flex gap-6">
                     {/* Left Column - Sticky Image */}
-                    <div className="w-1/2 flex-shrink-0">
+                    <div className="flex-shrink-0" style={{ width: '37.5%' }}>
                       <div className="sticky top-24">
                         <img
                           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
@@ -567,8 +604,8 @@ const CoursePage = () => {
                       </div>
                     </div>
 
-                    {/* Right Column - Scrollable Curriculum Content */}
-                    <div className="w-1/2 bg-[#F0F0F2] p-6 rounded-lg">
+                    {/* Right Column - Scrollable Curriculum Content (62.5% = 50% + 25% increase) */}
+                    <div className="bg-[#F0F0F2] p-6 rounded-lg" style={{ width: '62.5%' }}>
                       <div className="space-y-6">
                         {course.module_structure.map((module, moduleIndex) => (
                           <div key={moduleIndex}>
@@ -711,10 +748,11 @@ const CoursePage = () => {
               )}
 
               {/* Get Started CTA Button */}
-              <div className="mt-12 mb-8 text-center">
+              <div className="mt-12 mb-8 text-left">
                 <Link
                   to="/welcome"
-                  className="inline-block px-8 py-4 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors text-lg"
+                  className="inline-block bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors"
+                  style={{ padding: '0.85rem 1.7rem', fontSize: '1rem' }}
                 >
                   Get Started
                 </Link>
