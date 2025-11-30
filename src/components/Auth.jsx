@@ -1241,13 +1241,13 @@ const Auth = () => {
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <img
-          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
           alt="Ignite Education"
-          className="mx-auto auth-logo"
+          className="auth-logo object-contain"
           style={{
-            width: 'clamp(100px, 25vw, 140px)',
-            height: 'auto',
-            marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
+            width: '120px',
+            height: '40px',
+            marginBottom: '0.5rem'
           }}
         />
 
@@ -1318,7 +1318,7 @@ const Auth = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 auth-form-grid ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
               <div>
                 <label className="block text-sm font-medium mb-0.5">First Name</label>
                 <input
@@ -1345,7 +1345,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 auth-form-grid">
+            <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
               <div>
                 <label className="block text-sm font-medium mb-0.5">Email</label>
                 <input

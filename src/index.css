@@ -277,8 +277,8 @@ body {
     padding: 0.75rem !important;
   }
 
-  /* Stack form fields vertically on mobile */
-  .auth-form-grid {
+  /* Stack email/password fields vertically on mobile (but keep name fields side by side) */
+  .auth-form-grid-stack {
     grid-template-columns: 1fr !important;
   }
 
