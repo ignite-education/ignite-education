@@ -637,11 +637,11 @@ body {
   .auth-section-4-cards {
     width: 100% !important;
     order: 1 !important;
-    gap: 0.3rem !important;
+    gap: 0.2rem !important;
   }
 
   .auth-section-4-cards > * + * {
-    margin-top: 0.3rem !important;
+    margin-top: 0.2rem !important;
   }
 
   .auth-section-4-media {
