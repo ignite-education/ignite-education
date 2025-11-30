@@ -750,7 +750,7 @@ const CoursePage = () => {
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
-                        paddingBottom: expandedFAQ === idx ? '10px' : '1rem',
+                        paddingBottom: expandedFAQ === idx ? '1rem' : '1rem',
                         paddingLeft: '1.2rem',
                         display: 'flex',
                         flexDirection: 'column',
