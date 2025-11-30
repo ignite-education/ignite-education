@@ -422,6 +422,7 @@ body {
     height: 5rem !important;
     text-align: left !important;
     overflow: hidden !important;
+    margin-bottom: 1rem !important;
   }
 
   .auth-section-3-description {
@@ -478,13 +479,14 @@ body {
   }
 
   .auth-course-card-description {
-    -webkit-line-clamp: 2 !important;
-    font-size: 0.75rem !important;
+    font-size: 0.9rem !important;
     line-height: 1.4 !important;
     margin-bottom: 0.25rem !important;
     white-space: normal !important;
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    width: 100% !important;
   }
 
   .auth-course-card-modules {
@@ -492,12 +494,12 @@ body {
   }
 
   .auth-course-card-modules p {
-    font-size: 0.65rem !important;
+    font-size: 0.9rem !important;
     margin-bottom: 0.125rem !important;
   }
 
   .auth-course-card-modules ul {
-    font-size: 0.6rem !important;
+    font-size: 0.9rem !important;
   }
 
   .auth-course-card-module-extra {
