@@ -257,6 +257,7 @@ body {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
     height: 100vh !important;
+    height: 100dvh !important;  /* Dynamic viewport height - accounts for mobile browser chrome */
     overflow: hidden !important;
     display: flex !important;
     align-items: center !important;
@@ -315,6 +316,11 @@ body {
   /* Hide LinkedIn button on mobile */
   .auth-linkedin-btn {
     display: none !important;
+  }
+
+  /* Reduce scroll arrow margin on mobile */
+  .auth-scroll-arrow {
+    margin-top: 1rem !important;
   }
 }
 
