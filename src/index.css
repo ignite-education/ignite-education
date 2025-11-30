@@ -274,13 +274,10 @@ body {
     align-items: center !important;
     justify-content: center !important;
     position: relative !important;
-    background-color: #000 !important;
-    background-image:
-      linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-      url('https://auth.ignite.education/storage/v1/object/public/assets/Ignite%202.png') !important;
-    background-size: cover, cover !important;
-    background-position: center, center !important;
-    background-repeat: no-repeat, no-repeat !important;
+    background:
+      linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)) center/cover no-repeat,
+      url('https://auth.ignite.education/storage/v1/object/public/assets/Ignite%202.png') center/cover no-repeat,
+      #000 !important;
   }
 
   /* Hide the overlay div since we're using CSS gradient instead */
