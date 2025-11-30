@@ -2663,7 +2663,7 @@ const Auth = () => {
 
             {/* Scrollable Content */}
             <div
-              className="flex-1 overflow-y-auto px-8"
+              className="flex-1 overflow-y-auto px-8 auth-course-modal-content"
               style={{ scrollbarWidth: 'none', paddingTop: '25.6px', paddingBottom: '20px' }}
             >
               <div>
@@ -2719,7 +2719,7 @@ const Auth = () => {
 
                 {/* Course Benefits - Single Row Layout */}
                 <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-7.2px', marginBottom: '19.2px' }}>
-                  <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full">
+                  <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full auth-course-modal-benefits">
                     <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
                       <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
                         <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">

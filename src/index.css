@@ -429,7 +429,7 @@ body {
 
   .auth-section-3-description {
     text-align: left !important;
-    font-size: 1rem !important;
+    font-size: 0.9rem !important;
     margin-bottom: 0 !important;
   }
 
@@ -551,6 +551,28 @@ body {
     max-width: 100% !important;
     height: 80vh !important;
     border-radius: 0.5rem !important;
+  }
+
+  .auth-course-modal-content {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .auth-course-modal-benefits {
+    font-size: 0.9rem !important;
+    gap: 0.5rem !important;
+  }
+
+  .auth-course-modal-benefits > div {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding-left: 0 !important;
+  }
+
+  .auth-course-modal-benefits > div > div:first-child {
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem !important;
   }
 
 }
