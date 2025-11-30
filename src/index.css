@@ -240,19 +240,26 @@ body {
 
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
+  /* Hide ProgressHub background on mobile, show plain black */
+  .auth-progress-bg {
+    display: none !important;
+  }
+
   /* Remove minimum width on scroll container so content stays centered */
   .auth-scroll-container {
     min-width: unset !important;
     overflow-x: hidden !important;
+    background: #000 !important;
   }
 
-  /* Reduce container padding on mobile */
+  /* Vertically center content on mobile */
   .auth-section-1 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-    min-height: auto !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 
   /* Compact logo on mobile */

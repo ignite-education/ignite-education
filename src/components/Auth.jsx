@@ -1209,6 +1209,7 @@ const Auth = () => {
       />
       {/* Background - Progress Hub */}
       <div
+        className="auth-progress-bg"
         style={{
           filter: 'blur(1px) brightness(0.7)',
           pointerEvents: 'none',
