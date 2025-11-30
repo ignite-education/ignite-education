@@ -22,7 +22,7 @@ const SEO = ({
   useEffect(() => {
     // Update title
     if (title) {
-      document.title = `${title} | Ignite Learning`;
+      document.title = title;
     }
 
     // Update or create meta tags

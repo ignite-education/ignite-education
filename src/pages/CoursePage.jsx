@@ -590,10 +590,10 @@ const CoursePage = () => {
 
               {/* Curriculum Section - Two Column Layout with expanded container */}
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
-                <div className="mb-8" ref={curriculumSectionRef} style={{ marginLeft: '-120px', marginRight: '-120px' }}>
-                  <h2 className="font-semibold text-gray-900 text-2xl mb-4" style={{ marginLeft: '120px' }}>Curriculum</h2>
+                <div className="mb-8" ref={curriculumSectionRef} style={{ marginLeft: '-96px', marginRight: '-96px' }}>
+                  <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
                   <div className="flex gap-6">
-                    {/* Left Column - Curriculum Content (expands to fill available space) */}
+                    {/* Left Column - Curriculum Content */}
                     <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
                       <div className="space-y-6">
                         {course.module_structure.map((module, moduleIndex) => (
@@ -625,8 +625,8 @@ const CoursePage = () => {
                       </div>
                     </div>
 
-                    {/* Right Column - Sticky Image (fixed width to maintain original size) */}
-                    <div className="flex-shrink-0" style={{ width: '286px' }}>
+                    {/* Right Column - Sticky Image (10% larger than before) */}
+                    <div className="flex-shrink-0" style={{ width: '315px' }}>
                       <div className="sticky top-24">
                         <img
                           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
@@ -782,9 +782,9 @@ const CoursePage = () => {
                       key={idx}
                       className="rounded cursor-pointer"
                       style={{
-                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                        backgroundColor: '#000000',
                         transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: expandedFAQ === idx ? 'auto' : '3.75rem',
+                        height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
@@ -793,18 +793,19 @@ const CoursePage = () => {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        border: expandedFAQ === idx ? '1px solid #E5E5E5' : '1px solid transparent'
+                        opacity: 1
                       }}
                       onMouseEnter={() => setExpandedFAQ(idx)}
                     >
-                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '18px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
+                      <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#EF0B72' : '#FFFFFF' }}>
                         {faq.question}
                       </h4>
                       {expandedFAQ === idx && (
-                        <p className="text-gray-700 text-sm" style={{
-                          marginTop: '0.5rem',
+                        <p className="text-white text-sm" style={{
+                          marginTop: 'calc(0.1rem + 2px)',
+                          paddingBottom: '3px',
                           animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '100ms',
+                          animationDelay: '300ms',
                           opacity: 0
                         }}>
                           {faq.answer}
