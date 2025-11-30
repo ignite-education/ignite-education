@@ -419,11 +419,11 @@ body {
   .auth-section-3-title {
     font-size: 2rem !important;
     min-height: unset !important;
-    text-align: center !important;
+    text-align: left !important;
   }
 
   .auth-section-3-description {
-    text-align: center !important;
+    text-align: left !important;
   }
 
   .auth-section-3-image {
@@ -433,6 +433,36 @@ body {
   .auth-section-3-right {
     margin-left: 0 !important;
     order: 2 !important;
+    width: 100% !important;
+  }
+
+  .auth-course-cards-scroll {
+    padding: 0.5rem 0 !important;
+    overflow-x: auto !important;
+  }
+
+  .auth-course-cards-container {
+    margin-right: 0 !important;
+  }
+
+  .auth-course-cards-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .auth-course-card {
+    width: 100% !important;
+    height: 80px !important;
+    transition: height 0.3s ease-out !important;
+  }
+
+  .auth-course-card:active,
+  .auth-course-card:focus-within {
+    height: 200px !important;
   }
 
 }

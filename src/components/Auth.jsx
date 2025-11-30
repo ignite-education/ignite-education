@@ -1736,7 +1736,7 @@ const Auth = () => {
               <div className="relative auth-section-3-right" style={{ marginLeft: '-50px', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
-                  className="overflow-x-auto overflow-y-visible"
+                  className="overflow-x-auto overflow-y-visible auth-course-cards-scroll"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
@@ -1750,17 +1750,17 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-3" style={{ marginRight: '300px' }}>
+                  <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: '300px' }}>
                   {courses.length > 0 ? (() => {
                     const pages = [];
                     for (let i = 0; i < courses.length; i += 4) {
                       pages.push(courses.slice(i, i + 4));
                     }
                     return pages.map((pageCourses, pageIndex) => (
-                      <div 
+                      <div
                         key={`page-${pageIndex}`}
-                        className="grid grid-cols-2 gap-3 flex-shrink-0"
-                        style={{ 
+                        className="grid grid-cols-2 gap-3 flex-shrink-0 auth-course-cards-grid"
+                        style={{
           width: '510px', minWidth: '510px', maxWidth: '510px', overflow: 'visible'
                         }}
                       >
@@ -1771,7 +1771,7 @@ const Auth = () => {
                       <div
                         key={course.name}
                         data-course-card
-                        className="relative cursor-pointer flex-shrink-0"
+                        className="relative cursor-pointer flex-shrink-0 auth-course-card"
                         style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
