@@ -1640,11 +1640,28 @@ const Auth = () => {
                   )}
                 </div>
               </div>
+
+              {/* Mobile Arrow - inside content container for proper centering */}
+              {isMobile && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={scrollToCourses}
+                    className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+                    style={{
+                      animation: 'subtleBounce 2s infinite',
+                      padding: '11px'
+                    }}
+                    aria-label="Scroll to courses"
+                  >
+                    <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Scroll Down Arrow - Absolutely positioned */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 auth-section-2-arrow">
+          {/* Scroll Down Arrow - Absolutely positioned (desktop only) */}
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 auth-section-2-arrow hidden md:flex">
             <button
               onClick={scrollToCourses}
               className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}

@@ -372,15 +372,6 @@ body {
     font-size: 0.9rem !important;
   }
 
-  .auth-section-2-arrow {
-    position: static !important;
-    transform: none !important;
-    display: flex !important;
-    justify-content: center !important;
-    margin-top: 2rem !important;
-    width: 100% !important;
-    left: auto !important;
-  }
 }
 
 /* Respect users' reduced motion preferences for accessibility */
