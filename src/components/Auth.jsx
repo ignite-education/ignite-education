@@ -490,22 +490,24 @@ const Auth = () => {
 
       // Use viewport width to determine if mobile (< 768px)
       const isMobile = window.innerWidth < 768;
-      // On mobile, the grid is 35rem (560px), on desktop it's 510px
-      // Cards beyond the first page should be blurred
-      const pageWidth = isMobile ? 560 : 520;
+      const viewportWidth = window.innerWidth;
 
       cards.forEach((card, globalIndex) => {
         const cardRect = card.getBoundingClientRect();
         const cardLeft = cardRect.left;
-        const cardRight = cardRect.right;
 
-        // A card should NOT be blurred if it's in the first visible page (left-most 4 cards)
-        // Check if card is within the first page width
-        const relativeLeft = cardLeft - containerLeft;
-
-        // Blur cards that start beyond the page width (outside the first 2x2 grid)
-        if (relativeLeft > pageWidth) {
-          newBlurredCards.push(globalIndex);
+        if (isMobile) {
+          // On mobile: blur cards whose left edge is beyond the viewport
+          // This means only the leftmost 2 cards (in the visible column) are clear
+          if (cardLeft >= viewportWidth - 16) { // 16px = 1rem padding
+            newBlurredCards.push(globalIndex);
+          }
+        } else {
+          // On desktop: blur cards beyond the first page width (510px)
+          const relativeLeft = cardLeft - containerLeft;
+          if (relativeLeft > 520) {
+            newBlurredCards.push(globalIndex);
+          }
         }
       });
 

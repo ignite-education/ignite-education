@@ -424,7 +424,7 @@ body {
     height: 5rem !important;
     text-align: left !important;
     overflow: hidden !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.5rem !important;
   }
 
   .auth-section-3-description {
@@ -483,10 +483,8 @@ body {
   /* Course card content on mobile - show title, 1 sentence description, 3 modules */
   .auth-course-card-content {
     padding: 0.625rem !important;
-    padding-bottom: 2.5rem !important;
-    overflow: hidden !important;
+    overflow: visible !important;
     height: auto !important;
-    max-height: calc(12rem - 2.5rem) !important;
   }
 
   .auth-course-card-title {
