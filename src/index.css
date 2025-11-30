@@ -431,6 +431,7 @@ body {
     text-align: left !important;
     font-size: 0.9rem !important;
     margin-bottom: 0 !important;
+    max-width: 90% !important;
   }
 
   .auth-section-3-image {
@@ -554,6 +555,7 @@ body {
   }
 
   .auth-course-modal-content {
+    padding-top: 1rem !important;
     padding-left: 1.4rem !important;
     padding-right: 1.4rem !important;
     overflow-x: hidden !important;
@@ -577,11 +579,6 @@ body {
     margin-bottom: 0.5rem !important;
   }
 
-  /* Close button positioned outside modal to top right */
-  .auth-course-modal-close {
-    top: -2.5rem !important;
-    right: 0 !important;
-  }
 
 }
 

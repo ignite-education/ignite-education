@@ -2639,19 +2639,18 @@ const Auth = () => {
       >
         <div className="relative auth-course-modal-container">
           <>
-            {/* Close button - positioned outside modal on mobile */}
-            <button
-              onClick={() => setSelectedCourseModal(null)}
-              className="absolute text-white hover:text-gray-300 z-10 auth-course-modal-close"
-              style={{ top: '-2.5rem', right: '0' }}
-            >
-              <X size={24} />
-            </button>
-
-            {/* Title above the box */}
-            <h2 className="font-semibold text-white pl-1 auth-course-modal-title" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
-              {selectedCourse.title}
-            </h2>
+            {/* Title and close button row - above the box */}
+            <div className="flex justify-between items-center" style={{ marginBottom: '0.15rem' }}>
+              <h2 className="font-semibold text-white pl-1 auth-course-modal-title" style={{ fontSize: '1.35rem' }}>
+                {selectedCourse.title}
+              </h2>
+              <button
+                onClick={() => setSelectedCourseModal(null)}
+                className="text-white hover:text-gray-300 z-10 auth-course-modal-close"
+              >
+                <X size={24} />
+              </button>
+            </div>
 
           <div
             className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
@@ -2667,7 +2666,7 @@ const Auth = () => {
             {/* Scrollable Content */}
             <div
               className="flex-1 overflow-y-auto px-8 auth-course-modal-content"
-              style={{ scrollbarWidth: 'none', paddingTop: '25.6px', paddingBottom: '20px' }}
+              style={{ scrollbarWidth: 'none', paddingTop: '1.6rem', paddingBottom: '1.25rem' }}
             >
               <div>
                 {selectedCourse.status === 'requested' && (
