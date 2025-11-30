@@ -613,7 +613,9 @@ body {
 
   .auth-section-4-title {
     font-size: 2rem !important;
-    min-height: auto !important;
+    min-height: 7.5rem !important;
+    height: 7.5rem !important;
+    overflow: hidden !important;
     margin-top: 0 !important;
     margin-bottom: 1rem !important;
   }
@@ -644,6 +646,8 @@ body {
 
   .auth-section-4-card-closed {
     height: 3rem !important;
+    padding-top: 0.8rem !important;
+    padding-bottom: 0.8rem !important;
   }
 
   .auth-section-4-card-expanded {
@@ -652,10 +656,17 @@ body {
 
   .auth-section-4-card-title-closed {
     font-size: 0.9rem !important;
+    white-space: nowrap !important;
   }
 
   .auth-section-4-card-title-expanded {
-    font-size: 1.2rem !important;
+    font-size: 1.1rem !important;
+    white-space: nowrap !important;
+  }
+
+  .auth-section-4-card-title-closed br,
+  .auth-section-4-card-title-expanded br {
+    display: none !important;
   }
 
 }
