@@ -415,6 +415,7 @@ body {
 
   .auth-section-3-left {
     padding: 0 !important;
+    padding-left: 1rem !important;
     order: 1 !important;
   }
 
@@ -442,11 +443,14 @@ body {
     margin-left: 0 !important;
     order: 2 !important;
     width: 100% !important;
+    padding-left: 1rem !important;
   }
 
   .auth-section-3-arrow {
     margin-top: 1.5rem !important;
+    margin-left: -1rem !important;
     justify-content: center !important;
+    width: calc(100% + 1rem) !important;
   }
 
   .auth-course-cards-scroll {
@@ -636,6 +640,22 @@ body {
     height: auto !important;
     aspect-ratio: 1 / 1 !important;
     padding: 1rem !important;
+  }
+
+  .auth-section-4-card-closed {
+    height: 3rem !important;
+  }
+
+  .auth-section-4-card-expanded {
+    height: 6rem !important;
+  }
+
+  .auth-section-4-card-title-closed {
+    font-size: 0.9rem !important;
+  }
+
+  .auth-section-4-card-title-expanded {
+    font-size: 1.2rem !important;
   }
 
 }

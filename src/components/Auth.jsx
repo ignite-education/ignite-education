@@ -821,7 +821,9 @@ const Auth = () => {
 
   // Typing animation for learning tagline
   const startLearningTaglineTyping = () => {
-    const fullText = 'Building a smarter, \nmore personalised era of education.';
+    const fullText = isMobile
+      ? 'Building a smarter,\nmore personalised\nera of education.'
+      : 'Building a smarter, \nmore personalised era of education.';
     const pauseAfter = 'Building a smarter,'.length;
     let currentIndex = 0;
     let isPaused = false;
@@ -1053,8 +1055,10 @@ const Auth = () => {
   // Helper to render typed learning tagline with purple highlights
   const renderTypedLearningTagline = () => {
     const text = typedLearningTagline;
-    const fullText = 'Building a smarter, \nmore personalised era of education.';
-    const firstLineLength = 'Building a smarter, '.length;
+    const fullText = isMobile
+      ? 'Building a smarter,\nmore personalised\nera of education.'
+      : 'Building a smarter, \nmore personalised era of education.';
+    const firstLineLength = 'Building a smarter,'.length;
 
     let result = [];
     let lastIndex = 0;
@@ -1907,10 +1911,10 @@ const Auth = () => {
                         setIsCardManuallySelected(true);
                       }, 300);
                     }}
-                    className={`rounded cursor-pointer ${
+                    className={`rounded cursor-pointer auth-section-4-card ${
                       activeCard === 0
-                        ? 'shadow-xl'
-                        : ''
+                        ? 'shadow-xl auth-section-4-card-expanded'
+                        : 'auth-section-4-card-closed'
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1926,7 +1930,7 @@ const Auth = () => {
                       backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
+                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
                       Levelling up learning<br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span>
                     </h4>
                     {activeCard === 0 && (
@@ -1949,10 +1953,10 @@ const Auth = () => {
                         setIsCardManuallySelected(true);
                       }, 300);
                     }}
-                    className={`rounded cursor-pointer ${
+                    className={`rounded cursor-pointer auth-section-4-card ${
                       activeCard === 1
-                        ? 'shadow-xl'
-                        : ''
+                        ? 'shadow-xl auth-section-4-card-expanded'
+                        : 'auth-section-4-card-closed'
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1968,7 +1972,7 @@ const Auth = () => {
                       backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
+                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
                       Personalised support<br />from <span style={{ color: '#7714E0' }}>industry professionals.</span>
                     </h4>
                     {activeCard === 1 && (
@@ -1991,10 +1995,10 @@ const Auth = () => {
                         setIsCardManuallySelected(true);
                       }, 300);
                     }}
-                    className={`rounded cursor-pointer ${
+                    className={`rounded cursor-pointer auth-section-4-card ${
                       activeCard === 2
-                        ? 'shadow-xl'
-                        : ''
+                        ? 'shadow-xl auth-section-4-card-expanded'
+                        : 'auth-section-4-card-closed'
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -2010,7 +2014,7 @@ const Auth = () => {
                       backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
+                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
                       Connect with<br />the <span style={{ color: '#7714E0' }}>global community.</span>
                     </h4>
                     {activeCard === 2 && (
@@ -2033,10 +2037,10 @@ const Auth = () => {
                         setIsCardManuallySelected(true);
                       }, 300);
                     }}
-                    className={`rounded cursor-pointer ${
+                    className={`rounded cursor-pointer auth-section-4-card ${
                       activeCard === 3
-                        ? 'shadow-xl'
-                        : ''
+                        ? 'shadow-xl auth-section-4-card-expanded'
+                        : 'auth-section-4-card-closed'
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
@@ -2052,7 +2056,7 @@ const Auth = () => {
                       backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
-                    <h4 className="font-semibold text-black leading-tight transition-all duration-500" style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
+                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
                       Get certified<br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                     </h4>
                     {activeCard === 3 && (
@@ -2716,6 +2720,23 @@ const Auth = () => {
                     }
                     return <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
                   })()}
+                  <a
+                    href={`/courses/${selectedCourse.name?.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="auth-course-modal-learn-more"
+                    style={{
+                      display: 'block',
+                      marginTop: '0.7rem',
+                      fontSize: '15px',
+                      fontWeight: 500,
+                      color: '#000',
+                      textDecoration: 'none',
+                      transition: 'color 0.2s ease'
+                    }}
+                    onMouseEnter={(e) => e.target.style.color = '#EF0B72'}
+                    onMouseLeave={(e) => e.target.style.color = '#000'}
+                  >
+                    Learn more &gt;
+                  </a>
                 </div>
 
                 {/* Course Benefits - Single Row Layout */}
