@@ -258,7 +258,10 @@ body {
   /* Compact logo on mobile */
   .auth-logo {
     width: 90px !important;
+    height: auto !important;
+    min-height: 28px !important;
     margin-bottom: 0.5rem !important;
+    display: block !important;
   }
 
   /* Compact tagline on mobile */
