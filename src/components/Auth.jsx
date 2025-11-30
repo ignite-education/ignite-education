@@ -1643,7 +1643,7 @@ const Auth = () => {
 
               {/* Mobile Arrow - inside content container for proper centering */}
               {isMobile && (
-                <div className="flex justify-center mt-8">
+                <div className="flex justify-center mt-12">
                   <button
                     onClick={scrollToCourses}
                     className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}

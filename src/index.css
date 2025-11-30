@@ -326,7 +326,7 @@ body {
 
   /* Section 2 - Education Philosophy */
   .auth-section-2 {
-    padding-top: 0 !important;
+    padding-top: 3rem !important;
     padding-bottom: 0 !important;
     min-height: 100vh !important;
     min-height: 100svh !important;
@@ -334,7 +334,7 @@ body {
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   .auth-education-heading {
