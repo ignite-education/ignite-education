@@ -607,6 +607,14 @@ body {
     padding-top: 3rem !important;
   }
 
+  .auth-section-4 > .max-w-4xl {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
   .auth-section-4-content {
     padding: 0 !important;
   }
