@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
@@ -22,6 +22,19 @@ const CoursePage = () => {
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
 
+  // Ref for curriculum section to handle sticky behavior
+  const curriculumSectionRef = useRef(null);
+
+  // Convert URL slug to possible database name formats
+  const slugToNameVariations = (slug) => {
+    // Return array of possible name formats to try
+    return [
+      slug, // exact match (e.g., "product-manager")
+      slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), // Title Case with spaces (e.g., "Product Manager")
+      slug.replace(/-/g, ' '), // lowercase with spaces
+    ];
+  };
+
   // Fetch course data on mount
   useEffect(() => {
     fetchCourseData();
@@ -32,25 +45,59 @@ const CoursePage = () => {
       setLoading(true);
       setError(null);
 
-      // Fetch course by name/slug from courses table
+      // Get all possible name variations for the slug
+      const nameVariations = slugToNameVariations(courseSlug);
+
+      // Fetch course by trying different name formats
       const { data: courseData, error: courseError } = await supabase
         .from('courses')
         .select('*')
-        .eq('name', courseSlug)
+        .in('name', nameVariations)
         .in('status', ['live', 'coming_soon'])
         .single();
 
       if (courseError || !courseData) {
-        setError('Course not found');
+        // If single() fails, try fetching all and find the first match
+        const { data: allCourses } = await supabase
+          .from('courses')
+          .select('*')
+          .in('status', ['live', 'coming_soon']);
+
+        // Find course by case-insensitive match
+        const foundCourse = allCourses?.find(c => {
+          const normalizedName = c.name.toLowerCase().replace(/\s+/g, '-');
+          const normalizedSlug = courseSlug.toLowerCase();
+          return normalizedName === normalizedSlug ||
+                 c.name.toLowerCase() === normalizedSlug.replace(/-/g, ' ') ||
+                 c.name === courseSlug;
+        });
+
+        if (!foundCourse) {
+          setError('Course not found');
+          setLoading(false);
+          return;
+        }
+
+        setCourse(foundCourse);
+
+        // Fetch coaches for this course using the actual course name
+        try {
+          const coachesData = await getCoachesForCourse(foundCourse.name);
+          setCoaches(coachesData || []);
+        } catch (coachError) {
+          console.error('Error fetching coaches:', coachError);
+          setCoaches([]);
+        }
+
         setLoading(false);
         return;
       }
 
       setCourse(courseData);
 
-      // Fetch coaches for this course
+      // Fetch coaches for this course using the actual course name
       try {
-        const coachesData = await getCoachesForCourse(courseSlug);
+        const coachesData = await getCoachesForCourse(courseData.name);
         setCoaches(coachesData || []);
       } catch (coachError) {
         console.error('Error fetching coaches:', coachError);
@@ -326,14 +373,12 @@ const CoursePage = () => {
                 }}
               />
             </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-sm font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
+            <Link
+              to="/welcome"
+              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              Get Started
+            </Link>
           </div>
         </div>
 
@@ -364,14 +409,12 @@ const CoursePage = () => {
                 }}
               />
             </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-sm font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
+            <Link
+              to="/welcome"
+              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              Get Started
+            </Link>
           </div>
         </div>
 
@@ -427,14 +470,12 @@ const CoursePage = () => {
                 }}
               />
             </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-sm font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
+            <Link
+              to="/welcome"
+              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              Get Started
+            </Link>
           </div>
         </div>
 
@@ -509,37 +550,54 @@ const CoursePage = () => {
                 </div>
               </div>
 
-              {/* Curriculum Section */}
+              {/* Curriculum Section - Two Column Layout */}
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
-                <div className="mb-8 bg-[#F0F0F2] p-6 rounded-lg">
+                <div className="mb-8" ref={curriculumSectionRef}>
                   <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
-                  <div className="space-y-6">
-                    {course.module_structure.map((module, moduleIndex) => (
-                      <div key={moduleIndex}>
-                        {/* Module Title */}
-                        <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0' }}>
-                          Module {moduleIndex + 1} - {module.name}
-                        </h3>
-
-                        {/* Module Description and Lessons */}
-                        <div>
-                          {/* AI-Generated Module Intro */}
-                          <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
-                            {generateModuleIntro(module)}
-                          </p>
-
-                          {/* Lesson List */}
-                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
-                            {(module.lessons || []).map((lesson, lessonIndex) => (
-                              <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
-                                <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                                <span className="font-medium text-gray-900">{lesson.name}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
+                  <div className="flex gap-6">
+                    {/* Left Column - Sticky Image */}
+                    <div className="w-1/2 flex-shrink-0">
+                      <div className="sticky top-24">
+                        <img
+                          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                          alt="Course curriculum illustration"
+                          className="w-full rounded-lg object-cover"
+                          style={{ maxHeight: '500px' }}
+                        />
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Right Column - Scrollable Curriculum Content */}
+                    <div className="w-1/2 bg-[#F0F0F2] p-6 rounded-lg">
+                      <div className="space-y-6">
+                        {course.module_structure.map((module, moduleIndex) => (
+                          <div key={moduleIndex}>
+                            {/* Module Title */}
+                            <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0' }}>
+                              Module {moduleIndex + 1} - {module.name}
+                            </h3>
+
+                            {/* Module Description and Lessons */}
+                            <div>
+                              {/* AI-Generated Module Intro */}
+                              <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
+                                {generateModuleIntro(module)}
+                              </p>
+
+                              {/* Lesson List */}
+                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
+                                {(module.lessons || []).map((lesson, lessonIndex) => (
+                                  <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                                    <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
+                                    <span className="font-medium text-gray-900">{lesson.name}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -658,7 +716,7 @@ const CoursePage = () => {
                   to="/welcome"
                   className="inline-block px-8 py-4 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors text-lg"
                 >
-                  Get Started - It's Free
+                  Get Started
                 </Link>
               </div>
             </div>
