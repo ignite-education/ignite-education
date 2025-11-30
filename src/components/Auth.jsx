@@ -668,9 +668,9 @@ const Auth = () => {
   const startTaglineTyping = () => {
     const fullText = 'Upskill. Reskill. Get ready for what\'s next.';
     const pausePositions = [
-      { after: 'Upskill.'.length, duration: 375 },
-      { after: 'Upskill. Reskill.'.length, duration: 375 },
-      { after: fullText.length, duration: 375 } // Pause at end before cursor disappears
+      { after: 'Upskill.'.length, duration: 500 },
+      { after: 'Upskill. Reskill.'.length, duration: 500 },
+      { after: fullText.length, duration: 500 } // Pause at end before cursor disappears
     ];
     let currentIndex = 0;
     let isPaused = false;
