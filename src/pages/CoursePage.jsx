@@ -763,7 +763,7 @@ const CoursePage = () => {
                       key={idx}
                       className="rounded cursor-pointer"
                       style={{
-                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                        backgroundColor: '#F0F0F2',
                         transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1), background-color 500ms cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 500ms cubic-bezier(0.4, 0, 0.2, 1)',
                         height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
                         overflow: 'hidden',
