@@ -347,14 +347,32 @@ body {
   .auth-features-container {
     min-height: auto !important;
     margin-top: 2rem !important;
+    width: 100% !important;
   }
 
   .auth-promises-list {
     gap: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .auth-promises-list > * + * {
     margin-top: 1rem !important;
+  }
+
+  /* Center the content container on mobile while keeping text left-aligned */
+  .auth-section-2 .max-w-3xl {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .auth-section-2 .max-w-4xl {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   .auth-promise-subtext {
@@ -362,11 +380,11 @@ body {
   }
 
   .auth-section-2-arrow {
-    position: static !important;
-    transform: none !important;
-    display: flex !important;
-    justify-content: center !important;
-    margin-top: 2rem !important;
+    position: absolute !important;
+    bottom: 2rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin-top: 0 !important;
   }
 }
 

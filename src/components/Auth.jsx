@@ -707,12 +707,12 @@ const Auth = () => {
   // Typing animation for education text
   const startEducationTyping = () => {
     const fullText = isMobile
-      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for everyone.'
+      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
       : 'Education should be \naccessible, personalised and integrated for everyone.';
     const pausePositions = isMobile
       ? [
           { after: 'Education should\nbe accessible,'.length, duration: 500 },
-          { after: 'Education should\nbe accessible,\npersonalised and'.length, duration: 500 }
+          { after: 'Education should\nbe accessible,\npersonalised'.length, duration: 500 }
         ]
       : [
           { after: 'Education should be \naccessible,'.length, duration: 500 },
@@ -862,7 +862,7 @@ const Auth = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
     const fullText = isMobile
-      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for everyone.'
+      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
       : 'Education should be \naccessible, personalised and integrated for everyone.';
 
     // Split text into parts and highlight the key words
