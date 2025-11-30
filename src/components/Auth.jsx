@@ -669,31 +669,39 @@ const Auth = () => {
     const fullText = 'Upskill. Reskill. Get ready for what\'s next.';
     const pausePositions = [
       { after: 'Upskill.'.length, duration: 300 },
-      { after: 'Upskill. Reskill.'.length, duration: 300 }
+      { after: 'Upskill. Reskill.'.length, duration: 300 },
+      { after: fullText.length, duration: 300 } // Pause at end before cursor disappears
     ];
     let currentIndex = 0;
     let isPaused = false;
 
-    const typingInterval = setInterval(() => {
-      if (isPaused) return;
+    // 300ms intro delay before typing starts
+    setTimeout(() => {
+      const typingInterval = setInterval(() => {
+        if (isPaused) return;
 
-      if (currentIndex <= fullText.length) {
-        setTypedTagline(fullText.substring(0, currentIndex));
+        if (currentIndex <= fullText.length) {
+          setTypedTagline(fullText.substring(0, currentIndex));
 
-        const pausePoint = pausePositions.find(p => currentIndex === p.after);
-        if (pausePoint) {
-          isPaused = true;
-          setTimeout(() => {
-            isPaused = false;
-          }, pausePoint.duration);
+          const pausePoint = pausePositions.find(p => currentIndex === p.after);
+          if (pausePoint) {
+            isPaused = true;
+            setTimeout(() => {
+              isPaused = false;
+              // If this was the final pause, mark as complete
+              if (currentIndex >= fullText.length) {
+                clearInterval(typingInterval);
+                setIsTaglineTypingComplete(true);
+              }
+            }, pausePoint.duration);
+          }
+
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
         }
-
-        currentIndex++;
-      } else {
-        clearInterval(typingInterval);
-        setIsTaglineTypingComplete(true);
-      }
-    }, 80); // 80ms per character for slower typing
+      }, 80); // 80ms per character for slower typing
+    }, 300); // 300ms intro delay
   };
 
   // Typing animation for education text
@@ -1307,28 +1315,33 @@ const Auth = () => {
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-xl font-semibold text-white text-center px-2 auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', position: 'relative' }}>
-          {/* Invisible placeholder to reserve space */}
-          <span style={{ visibility: 'hidden' }} aria-hidden="true">
-            Upskill. Reskill.<br />Get ready for what's next.
-          </span>
-          {/* Visible typed text - positioned absolutely over placeholder */}
-          <span style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+        <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', display: 'flex', justifyContent: 'center' }}>
+          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'left', display: 'inline-block' }}>
             {(() => {
               const pinkStart = 'Upskill. Reskill. '.length;
               const whiteText = typedTagline.substring(0, Math.min(typedTagline.length, pinkStart));
               const pinkText = typedTagline.length > pinkStart ? typedTagline.substring(pinkStart) : '';
+              // Use non-breaking spaces to maintain width during typing
+              const fullFirstLine = 'Upskill. Reskill.';
+              const fullSecondLine = 'Get ready for what\'s next.';
+              const firstLineTyped = whiteText.trimEnd();
+              const secondLineTyped = pinkText;
+
               return (
                 <>
-                  {whiteText}
-                  {whiteText.length >= pinkStart && <br />}
-                  <span style={{ color: '#EF0B72' }}>{pinkText}</span>
-                  {!isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                  <span style={{ display: 'block', minWidth: 'max-content' }}>
+                    {firstLineTyped || '\u00A0'}
+                    {whiteText.length < pinkStart && !isTaglineTypingComplete && <span className="animate-blink">|</span>}
+                  </span>
+                  <span style={{ display: 'block', color: '#EF0B72', minWidth: 'max-content' }}>
+                    {secondLineTyped || '\u00A0'}
+                    {whiteText.length >= pinkStart && !isTaglineTypingComplete && <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>}
+                  </span>
                 </>
               );
             })()}
-          </span>
-        </h1>
+          </h1>
+        </div>
 
         <div className="w-full">
 
