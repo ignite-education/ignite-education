@@ -250,6 +250,28 @@ body {
   .auth-section-1 {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+    min-height: auto !important;
+  }
+
+  /* Compact logo on mobile */
+  .auth-logo {
+    width: 90px !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Compact tagline on mobile */
+  .auth-tagline {
+    font-size: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Compact form card padding on mobile */
+  .auth-form-card {
+    padding: 0.75rem !important;
   }
 
   /* Stack form fields vertically on mobile */

@@ -1240,21 +1240,19 @@ const Auth = () => {
       <div className="min-h-screen flex items-center justify-center px-8 relative auth-section-1" style={{ scrollSnapAlign: 'start' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
-        <div
-          className="mx-auto"
+        <img
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
+          alt="Ignite Education"
+          className="mx-auto auth-logo"
           style={{
-            backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
-            backgroundSize: 'contain',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
             width: 'clamp(100px, 25vw, 140px)',
-            height: 'clamp(32px, 8vw, 44.8px)',
+            height: 'auto',
             marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)'
           }}
         />
 
         {/* Tagline - on both sign in and create account pages */}
-        <h1 className="text-xl font-semibold text-white text-center px-2" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
+        <h1 className="text-xl font-semibold text-white text-center px-2 auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)', lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)' }}>
           Upskill. Reskill.<br /><span style={{ color: '#EF0B72' }}>Get ready for what's next.</span>
         </h1>
 
@@ -1267,7 +1265,7 @@ const Auth = () => {
 
         {/* Form Card */}
         <div
-          className="bg-white text-black px-5 py-4 rounded"
+          className="bg-white text-black px-5 py-4 rounded auth-form-card"
           style={{
             animation: 'scaleUp 0.2s ease-out'
           }}
