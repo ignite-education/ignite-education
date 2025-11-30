@@ -238,11 +238,6 @@ body {
   animation: expandUnderline 0.4s ease-out forwards;
 }
 
-/* Hide mobile overlay on desktop */
-.auth-section-1-overlay {
-  display: none;
-}
-
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
   /* Hide ProgressHub background on mobile, show plain black */
@@ -251,14 +246,10 @@ body {
   }
 
   /* Remove minimum width on scroll container so content stays centered */
-  /* Apply background image with dark gradient overlay (same pattern as desktop) */
   .auth-scroll-container {
     min-width: unset !important;
     overflow-x: hidden !important;
-    background:
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75)),
-      url('https://auth.ignite.education/storage/v1/object/public/assets/Ignite%202.png') center/cover no-repeat,
-      #000 !important;
+    background: #000 !important;
     top: 0 !important;
     padding-top: 0 !important;
   }
@@ -277,12 +268,6 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    position: relative !important;
-  }
-
-  /* Hide the overlay div on mobile */
-  .auth-section-1-overlay {
-    display: none !important;
   }
 
   /* Logo on mobile - 15% bigger than 103px = ~118px */
