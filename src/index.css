@@ -589,6 +589,51 @@ body {
     margin-top: 0 !important;
   }
 
+  /* Section 4 - Learning Model */
+  .auth-section-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important;
+    align-items: flex-start !important;
+    padding-top: 3rem !important;
+  }
+
+  .auth-section-4-content {
+    padding: 0 !important;
+  }
+
+  .auth-section-4-title {
+    font-size: 2rem !important;
+    min-height: auto !important;
+    margin-top: 0 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .auth-section-4-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .auth-section-4-cards {
+    width: 100% !important;
+    order: 1 !important;
+  }
+
+  .auth-section-4-media {
+    width: 100% !important;
+    order: 2 !important;
+    margin-top: 1rem !important;
+  }
+
+  .auth-section-4-media-box {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1 !important;
+    padding: 1rem !important;
+  }
+
 }
 
 /* Respect users' reduced motion preferences for accessibility */

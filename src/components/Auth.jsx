@@ -1883,7 +1883,7 @@ const Auth = () => {
       {/* Fourth Section - Learning Model */}
         <div
           ref={learningModelSectionRef}
-          className="min-h-screen flex items-center justify-center px-8"
+          className="min-h-screen flex items-center justify-center px-8 auth-section-4"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1891,14 +1891,14 @@ const Auth = () => {
         >
           <div className="max-w-4xl mx-auto text-white text-left">
             {/* Learning Model Section */}
-            <div className="px-4">
-              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0.5rem', marginTop: '2rem' }}>
+            <div className="px-4 auth-section-4-content">
+              <h3 className="font-bold text-white text-left auth-section-4-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0.5rem', marginTop: '2rem' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
-              <div className="grid grid-cols-2 gap-3 items-center">
+              <div className="grid grid-cols-2 gap-3 items-center auth-section-4-grid">
                 {/* Left Column - Feature Cards */}
-                <div className="space-y-3 flex-shrink-0">
+                <div className="space-y-3 flex-shrink-0 auth-section-4-cards">
                   {/* Card 1 - AI smarts */}
                   <div
                     onMouseEnter={() => {
@@ -2069,8 +2069,8 @@ const Auth = () => {
                 </div>
 
                 {/* Right Column - Dynamic Content */}
-                <div className="flex items-center justify-center">
-                  <div className="rounded transition-all duration-500 bg-white p-8" style={{ height: '27.25rem', width: '32.2rem' }}>
+                <div className="flex items-center justify-center auth-section-4-media">
+                  <div className="rounded transition-all duration-500 bg-white p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
                     {activeCard === 2 && (
                       <video
                         autoPlay
