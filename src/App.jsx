@@ -19,7 +19,7 @@ const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
 const Certificate = lazy(() => import('./components/Certificate'))
-const CourseRedirect = lazy(() => import('./pages/CourseRedirect'))
+const CoursePage = lazy(() => import('./pages/CoursePage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const BlogManagement = lazy(() => import('./pages/BlogManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
@@ -95,7 +95,7 @@ function App() {
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/certificate/:certificateId" element={<Certificate />} />
-            <Route path="/courses/:courseSlug" element={<CourseRedirect />} />
+            <Route path="/courses/:courseSlug" element={<CoursePage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/admin/blog" element={
               <ProtectedRoute>
