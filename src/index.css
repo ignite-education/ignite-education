@@ -284,13 +284,11 @@ body {
   .auth-section-1-overlay {
     display: block !important;
     position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: rgba(0, 0, 0, 0.7) !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    background-color: rgba(0, 0, 0, 0.75) !important;
     z-index: 1 !important;
     pointer-events: none !important;
   }
