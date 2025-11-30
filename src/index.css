@@ -363,6 +363,7 @@ body {
   .auth-section-2-mobile-arrow {
     min-height: 70px !important;
     height: 70px !important;
+    margin-top: 2rem !important;
     display: flex !important;
     align-items: flex-start !important;
     justify-content: center !important;
