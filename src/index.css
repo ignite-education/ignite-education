@@ -275,6 +275,7 @@ body {
     width: 103px !important;
     height: auto !important;
     min-height: 32px !important;
+    margin-top: 1.5rem !important;
     margin-bottom: 0.5rem !important;
     display: block !important;
   }
