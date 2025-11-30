@@ -1642,21 +1642,19 @@ const Auth = () => {
               </div>
 
               {/* Mobile Arrow - inside content container for proper centering */}
-              {isMobile && (
-                <div className="flex justify-center mt-12">
-                  <button
-                    onClick={scrollToCourses}
-                    className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-                    style={{
-                      animation: 'subtleBounce 2s infinite',
-                      padding: '11px'
-                    }}
-                    aria-label="Scroll to courses"
-                  >
-                    <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-                  </button>
-                </div>
-              )}
+              <div className="md:hidden auth-section-2-mobile-arrow mt-12">
+                <button
+                  onClick={scrollToCourses}
+                  className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
+                  style={{
+                    animation: 'subtleBounce 2s infinite',
+                    padding: '11px'
+                  }}
+                  aria-label="Scroll to courses"
+                >
+                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+                </button>
+              </div>
             </div>
           </div>
 
