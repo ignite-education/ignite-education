@@ -1331,16 +1331,30 @@ const Auth = () => {
                   {/* First line - white text */}
                   <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
                     {fullFirstLine.split('').map((char, i) => (
-                      <span key={i} style={{ color: i < firstLineTypedLength ? 'white' : 'transparent' }}>{char}</span>
+                      <span key={i}>
+                        {i === firstLineTypedLength && isTypingFirstLine && (
+                          <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>
+                        )}
+                        <span style={{ color: i < firstLineTypedLength ? 'white' : 'transparent' }}>{char}</span>
+                      </span>
                     ))}
-                    {isTypingFirstLine && <span className="animate-blink" style={{ position: 'absolute', marginLeft: '-0.1em' }}>|</span>}
+                    {firstLineTypedLength === fullFirstLine.length && isTypingFirstLine && (
+                      <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>
+                    )}
                   </span>
                   {/* Second line - pink text */}
                   <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
                     {fullSecondLine.split('').map((char, i) => (
-                      <span key={i} style={{ color: i < secondLineTypedLength ? '#EF0B72' : 'transparent' }}>{char}</span>
+                      <span key={i}>
+                        {i === secondLineTypedLength && isTypingSecondLine && (
+                          <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>
+                        )}
+                        <span style={{ color: i < secondLineTypedLength ? '#EF0B72' : 'transparent' }}>{char}</span>
+                      </span>
                     ))}
-                    {isTypingSecondLine && <span className="animate-blink" style={{ position: 'absolute', marginLeft: '-0.1em', color: '#EF0B72' }}>|</span>}
+                    {secondLineTypedLength === fullSecondLine.length && isTypingSecondLine && (
+                      <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>
+                    )}
                   </span>
                 </>
               );
