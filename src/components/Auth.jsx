@@ -495,11 +495,14 @@ const Auth = () => {
       cards.forEach((card, globalIndex) => {
         const cardRect = card.getBoundingClientRect();
         const cardLeft = cardRect.left;
+        const cardRight = cardRect.right;
 
         if (isMobile) {
-          // On mobile: blur cards whose left edge is beyond the viewport
-          // This means only the leftmost 2 cards (in the visible column) are clear
-          if (cardLeft >= viewportWidth - 16) { // 16px = 1rem padding
+          // On mobile with 2x2 grid: blur cards in the right column (not fully visible)
+          // A card is in the "right column" if its right edge is beyond the viewport
+          // or if its left edge starts beyond half the viewport width
+          const halfViewport = viewportWidth / 2;
+          if (cardLeft > halfViewport) {
             newBlurredCards.push(globalIndex);
           }
         } else {
