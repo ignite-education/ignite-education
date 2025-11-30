@@ -763,13 +763,13 @@ const CoursePage = () => {
                       key={idx}
                       className="rounded cursor-pointer"
                       style={{
-                        backgroundColor: '#F0F0F2',
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: 'calc(7.25rem + 5px)',
+                        backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
+                        transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1), background-color 500ms cubic-bezier(0.4, 0, 0.2, 1), padding-bottom 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
                         overflow: 'hidden',
                         paddingTop: '1rem',
                         paddingRight: '1rem',
-                        paddingBottom: '1.2rem',
+                        paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
                         paddingLeft: '1.2rem',
                         display: 'flex',
                         flexDirection: 'column',
@@ -781,14 +781,17 @@ const CoursePage = () => {
                       <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                         {faq.question}
                       </h4>
-                      <p className="text-black text-sm" style={{
-                        marginTop: 'calc(0.1rem + 2px)',
-                        paddingBottom: '3px',
-                        transition: 'opacity 300ms ease-in',
-                        opacity: expandedFAQ === idx ? 1 : 0
-                      }}>
-                        {faq.answer}
-                      </p>
+                      {expandedFAQ === idx && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: 'calc(0.1rem + 2px)',
+                          paddingBottom: '3px',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}>
+                          {faq.answer}
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
