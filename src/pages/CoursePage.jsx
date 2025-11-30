@@ -795,7 +795,6 @@ const CoursePage = () => {
 
               {/* Share Section */}
               <div className="mt-6 pt-4">
-                <p className="text-sm font-medium text-gray-600 mb-4">Share this course</p>
                 <div className="flex items-center gap-3">
                   {/* Copy URL Button */}
                   <button
@@ -803,7 +802,6 @@ const CoursePage = () => {
                       const shareUrl = `https://ignite.education/courses/${courseSlug}`;
                       navigator.clipboard.writeText(shareUrl);
                       setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
                     }}
                     className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
                     style={{
@@ -874,26 +872,31 @@ const CoursePage = () => {
             setLeaderForm({ name: '', email: '', linkedin: '' });
           }}
         >
-          <div
-            className="bg-white rounded-lg p-8 w-full relative"
-            style={{ maxWidth: '440px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={() => {
-                setShowLeaderModal(false);
-                setLeaderForm({ name: '', email: '', linkedin: '' });
-              }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <X size={24} />
-            </button>
+          <div className="relative">
+            {/* Title above the box */}
+            <h3 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
+              Become a Course Leader
+            </h3>
 
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Become a Course Leader</h3>
-                <p className="text-black mb-6 text-sm" style={{ color: '#374151' }}>
-                  Share your expertise and help shape the next generation of professionals. Fill out the form below to learn more.
-                </p>
+            <div
+              className="bg-white rounded-lg p-8 w-full relative"
+              style={{ maxWidth: '440px' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setShowLeaderModal(false);
+                  setLeaderForm({ name: '', email: '', linkedin: '' });
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <p className="mb-6 text-sm" style={{ color: '#000000' }}>
+                Share your expertise and help shape the next generation of professionals. Fill out the form below to learn more.
+              </p>
 
                 <form
                   onSubmit={(e) => {
@@ -962,6 +965,7 @@ const CoursePage = () => {
                     Submit
                   </button>
                 </form>
+            </div>
           </div>
         </div>
       )}
