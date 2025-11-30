@@ -706,11 +706,18 @@ const Auth = () => {
 
   // Typing animation for education text
   const startEducationTyping = () => {
-    const fullText = 'Education should be \naccessible, personalised and integrated for everyone.';
-    const pausePositions = [
-      { after: 'Education should be \naccessible,'.length, duration: 500 },
-      { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
-    ];
+    const fullText = isMobile
+      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for everyone.'
+      : 'Education should be \naccessible, personalised and integrated for everyone.';
+    const pausePositions = isMobile
+      ? [
+          { after: 'Education should\nbe accessible,'.length, duration: 500 },
+          { after: 'Education should\nbe accessible,\npersonalised and'.length, duration: 500 }
+        ]
+      : [
+          { after: 'Education should be \naccessible,'.length, duration: 500 },
+          { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
+        ];
     let currentIndex = 0;
     let isPaused = false;
 
@@ -854,7 +861,9 @@ const Auth = () => {
   const renderTypedEducation = () => {
     const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
-    const fullText = 'Education should be \naccessible, personalised and integrated for everyone.';
+    const fullText = isMobile
+      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for everyone.'
+      : 'Education should be \naccessible, personalised and integrated for everyone.';
 
     // Split text into parts and highlight the key words
     let result = [];
@@ -1573,7 +1582,7 @@ const Auth = () => {
       {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
-          className="min-h-screen flex items-center justify-center px-8 relative"
+          className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
@@ -1588,7 +1597,7 @@ const Auth = () => {
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="w-full" style={{ minHeight: '280px', marginTop: '7.526px' }}>
+              <div className="w-full auth-features-container" style={{ minHeight: '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left">
                   {isEducationTypingComplete && (
                     <>
