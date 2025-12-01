@@ -2677,7 +2677,7 @@ const Auth = () => {
                         className="auth-course-modal-learn-more"
                         style={{
                           fontSize: '15px',
-                          fontWeight: 500,
+                          fontWeight: 600,
                           color: '#000',
                           textDecoration: 'none',
                           transition: 'color 0.2s ease',
@@ -2704,13 +2704,13 @@ const Auth = () => {
 
                         return (
                           <>
-                            <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>
+                            <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>
                               {before}
                               <span style={{ color: '#EF0B72' }}>{pink}</span>
                               {after}
                             </span>
                             {restOfDescription && (
-                              <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'inline', marginTop: '0.7rem' }}> {restOfDescription}{learnMoreLink}</span>
+                              <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription} {learnMoreLink}</span>
                             )}
                             {!restOfDescription && learnMoreLink}
                           </>
@@ -2719,15 +2719,15 @@ const Auth = () => {
 
                       return (
                         <>
-                          <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
+                          <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>{firstSentence}</span>
                           {restOfDescription && (
-                            <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'inline', marginTop: '0.7rem' }}> {restOfDescription}{learnMoreLink}</span>
+                            <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription} {learnMoreLink}</span>
                           )}
                           {!restOfDescription && learnMoreLink}
                         </>
                       );
                     }
-                    return <><span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>{learnMoreLink}</>;
+                    return <><span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>{description}</span> {learnMoreLink}</>;
                   })()}
                 </div>
 
