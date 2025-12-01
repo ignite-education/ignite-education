@@ -1229,7 +1229,7 @@ const Auth = () => {
 
     const interval = setInterval(() => {
       setActiveCard((prev) => (prev + 1) % 4); // Rotate through 0, 1, 2, 3
-    }, 8000); // Change every 8 seconds
+    }, 6000); // Change every 6 seconds
 
     return () => clearInterval(interval);
   }, [animateWords, isLogin, selectedCourseModal, isCardManuallySelected, isLearningTaglineTypingComplete]);
@@ -1239,7 +1239,7 @@ const Auth = () => {
     if (isCardManuallySelected) {
       const timer = setTimeout(() => {
         setIsCardManuallySelected(false);
-      }, 8000); // Resume auto-rotation after 8 seconds of manual selection
+      }, 6000); // Resume auto-rotation after 6 seconds of manual selection
       return () => clearTimeout(timer);
     }
   }, [isCardManuallySelected, activeCard]);
@@ -1902,7 +1902,7 @@ const Auth = () => {
                       paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'flex-start',
+                      justifyContent: (isMobile && activeCard !== 0) ? 'center' : 'flex-start',
                       backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
@@ -1915,7 +1915,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 0 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.5rem',
+                        marginTop: isMobile ? '0.3rem' : '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -1948,7 +1948,7 @@ const Auth = () => {
                       paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'flex-start',
+                      justifyContent: (isMobile && activeCard !== 1) ? 'center' : 'flex-start',
                       backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
@@ -1961,7 +1961,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 1 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.5rem',
+                        marginTop: isMobile ? '0.3rem' : '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -1994,7 +1994,7 @@ const Auth = () => {
                       paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'flex-start',
+                      justifyContent: (isMobile && activeCard !== 2) ? 'center' : 'flex-start',
                       backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
@@ -2003,7 +2003,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 2 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.5rem',
+                        marginTop: isMobile ? '0.3rem' : '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -2036,7 +2036,7 @@ const Auth = () => {
                       paddingLeft: isMobile ? '0.7rem' : '1.2rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      justifyContent: 'flex-start',
+                      justifyContent: (isMobile && activeCard !== 3) ? 'center' : 'flex-start',
                       backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
                     }}
                   >
@@ -2045,7 +2045,7 @@ const Auth = () => {
                     </h4>
                     {activeCard === 3 && (
                       <p className="text-black text-sm" style={{
-                        marginTop: '0.5rem',
+                        marginTop: isMobile ? '0.3rem' : '0.5rem',
                         animation: 'fadeIn 200ms ease-in forwards',
                         animationDelay: '300ms',
                         opacity: 0
@@ -2061,7 +2061,7 @@ const Auth = () => {
 
                 {/* Right Column - Dynamic Content */}
                 <div className="flex items-center justify-center auth-section-4-media">
-                  <div className="rounded transition-all duration-500 bg-white p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
+                  <div className="rounded transition-all duration-500 bg-black p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
                     {activeCard === 2 && (
                       <video
                         autoPlay
@@ -2646,7 +2646,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
             style={{
               width: '720px',
-              height: isMobile ? '50vh' : '70vh',
+              height: isMobile ? '31.25rem' : '70vh',
               borderRadius: '6px',
               overflow: 'hidden'
             }}
@@ -2677,7 +2677,7 @@ const Auth = () => {
                         className="auth-course-modal-learn-more"
                         style={{
                           fontSize: '15px',
-                          fontWeight: 600,
+                          fontWeight: 500,
                           color: '#000',
                           textDecoration: 'none',
                           transition: 'color 0.2s ease',
