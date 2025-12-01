@@ -167,7 +167,7 @@ const Auth = () => {
     taglineText,
     {
       charDelay: 80,
-      startDelay: 300,
+      startDelay: 500,
       pausePoints: [
         { after: 8, duration: 500 },   // After "Upskill."
         { after: 17, duration: 500 },  // After "Upskill. Reskill."
@@ -486,10 +486,31 @@ const Auth = () => {
       setError('');
     };
 
+    // Handle page restoration from bfcache (back-forward cache)
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        // Page was restored from bfcache
+        setLoading(false);
+        setError('');
+      }
+    };
+
+    // Handle visibility change (when tab becomes visible again)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        setLoading(false);
+        setError('');
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('pageshow', handlePageShow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('pageshow', handlePageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
