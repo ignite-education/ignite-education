@@ -943,35 +943,40 @@ const Auth = () => {
     const fullSecondLine = "Get ready for what's next.";
     const pinkStart = fullFirstLine.length + 1; // +1 for the space/newline between lines
 
-    const result = [];
-
     // First line (white) - only show what's been typed
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
-    if (firstLineTypedLength > 0) {
-      result.push(
-        <span key="line1" style={{ display: 'block', color: 'white' }}>
-          {fullFirstLine.substring(0, firstLineTypedLength)}
+
+    // Second line typed length
+    const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
+
+    return (
+      <>
+        {/* First line (white) */}
+        <span style={{ display: 'block', color: 'white' }}>
+          {firstLineTypedLength > 0 && fullFirstLine.substring(0, firstLineTypedLength)}
           {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
             <span className="animate-blink font-light">|</span>
           )}
+          {/* Invisible placeholder if first line not started yet */}
+          {firstLineTypedLength === 0 && <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>}
         </span>
-      );
-    }
 
-    // Second line (pink) - only if we've started typing it
-    if (typedTagline.length > pinkStart) {
-      const secondLineTypedLength = typedTagline.length - pinkStart;
-      result.push(
-        <span key="line2" style={{ display: 'block', color: '#EF0B72' }}>
-          {fullSecondLine.substring(0, secondLineTypedLength)}
-          {!isTaglineTypingComplete && (
-            <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>
+        {/* Second line (pink) - always rendered, with placeholder for height */}
+        <span style={{ display: 'block', color: '#EF0B72' }}>
+          {secondLineTypedLength > 0 ? (
+            <>
+              {fullSecondLine.substring(0, secondLineTypedLength)}
+              {!isTaglineTypingComplete && (
+                <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>
+              )}
+            </>
+          ) : (
+            /* Invisible placeholder to reserve space */
+            <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
           )}
         </span>
-      );
-    }
-
-    return result;
+      </>
+    );
   };
 
   // Helper to render typed courses title with purple highlights
