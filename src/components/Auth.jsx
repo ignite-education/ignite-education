@@ -1334,7 +1334,7 @@ const Auth = () => {
               return (
                 <>
                   {/* First line - white text */}
-                  <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+                  <span style={{ display: 'block', whiteSpace: 'nowrap', textRendering: 'geometricPrecision', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
                     {fullFirstLine.split('').map((char, i) => (
                       <span key={i}>
                         {i === firstLineTypedLength && isTypingFirstLine && (
@@ -1348,7 +1348,7 @@ const Auth = () => {
                     )}
                   </span>
                   {/* Second line - pink text */}
-                  <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+                  <span style={{ display: 'block', whiteSpace: 'nowrap', textRendering: 'geometricPrecision', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
                     {fullSecondLine.split('').map((char, i) => (
                       <span key={i}>
                         {i === secondLineTypedLength && isTypingSecondLine && (
