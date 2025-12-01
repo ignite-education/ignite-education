@@ -1289,6 +1289,14 @@ const Auth = () => {
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           minWidth: '1300px',
           overflowX: 'auto',
+          backgroundColor: '#000'
+        }}
+      >
+      {/* First Section - Auth Form */}
+      <div
+        className="min-h-screen flex items-center justify-center px-8 relative auth-section-1"
+        style={{
+          scrollSnapAlign: 'start',
           backgroundImage: !isMobile ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20(3).png)' : 'none',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
@@ -1296,8 +1304,6 @@ const Auth = () => {
           backgroundColor: '#000'
         }}
       >
-      {/* First Section - Auth Form */}
-      <div className="min-h-screen flex items-center justify-center px-8 relative auth-section-1" style={{ scrollSnapAlign: 'start' }}>
       <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <img
