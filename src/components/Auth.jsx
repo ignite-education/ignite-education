@@ -161,7 +161,8 @@ const Auth = () => {
   const [blogFaqTypingEnabled, setBlogFaqTypingEnabled] = useState(false);
 
   // Typing animations using requestAnimationFrame hook
-  const taglineText = "Upskill. Reskill. Get ready for what's next.";
+  // No space between lines - the space is handled by the line break in rendering
+  const taglineText = "Upskill. Reskill.Get ready for what's next.";
   const { displayText: typedTagline, isComplete: isTaglineTypingComplete } = useTypingAnimation(
     taglineText,
     {
@@ -169,7 +170,7 @@ const Auth = () => {
       startDelay: 300,
       pausePoints: [
         { after: 8, duration: 500 },   // After "Upskill."
-        { after: 18, duration: 500 },  // After "Upskill. Reskill."
+        { after: 17, duration: 500 },  // After "Upskill. Reskill."
         { after: taglineText.length, duration: 500 }
       ],
       enabled: taglineTypingEnabled
@@ -941,7 +942,7 @@ const Auth = () => {
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
-    const pinkStart = fullFirstLine.length + 1; // +1 for the space/newline between lines
+    const pinkStart = fullFirstLine.length; // No space between lines
 
     // First line (white) - only show what's been typed
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
