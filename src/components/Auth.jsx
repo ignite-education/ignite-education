@@ -2646,7 +2646,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
             style={{
               width: '720px',
-              height: isMobile ? '55vh' : '70vh',
+              height: isMobile ? '50vh' : '70vh',
               borderRadius: '6px',
               overflow: 'hidden'
             }}
@@ -2669,6 +2669,26 @@ const Auth = () => {
                 <div className="text-black leading-relaxed mb-6 auth-course-modal-description" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
+                    const learnMoreLink = (
+                      <a
+                        href={`/courses/${selectedCourse.name?.toLowerCase().replace(/\s+/g, '-')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="auth-course-modal-learn-more"
+                        style={{
+                          fontSize: '15px',
+                          fontWeight: 500,
+                          color: '#000',
+                          textDecoration: 'none',
+                          transition: 'color 0.2s ease',
+                          marginLeft: '0.3rem'
+                        }}
+                        onMouseEnter={(e) => e.target.style.color = '#EF0B72'}
+                        onMouseLeave={(e) => e.target.style.color = '#000'}
+                      >
+                        Learn more &gt;
+                      </a>
+                    );
                     const firstSentenceEnd = description.indexOf('. ');
                     if (firstSentenceEnd !== -1) {
                       const firstSentence = description.substring(0, firstSentenceEnd + 1);
@@ -2690,8 +2710,9 @@ const Auth = () => {
                               {after}
                             </span>
                             {restOfDescription && (
-                              <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                              <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'inline', marginTop: '0.7rem' }}> {restOfDescription}{learnMoreLink}</span>
                             )}
+                            {!restOfDescription && learnMoreLink}
                           </>
                         );
                       }
@@ -2700,72 +2721,54 @@ const Auth = () => {
                         <>
                           <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{firstSentence}</span>
                           {restOfDescription && (
-                            <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription}</span>
+                            <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'inline', marginTop: '0.7rem' }}> {restOfDescription}{learnMoreLink}</span>
                           )}
+                          {!restOfDescription && learnMoreLink}
                         </>
                       );
                     }
-                    return <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>;
+                    return <><span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: '20px' }}>{description}</span>{learnMoreLink}</>;
                   })()}
-                  <a
-                    href={`/courses/${selectedCourse.name?.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="auth-course-modal-learn-more"
-                    style={{
-                      display: 'block',
-                      marginTop: '0.7rem',
-                      fontSize: '15px',
-                      fontWeight: 500,
-                      color: '#000',
-                      textDecoration: 'none',
-                      transition: 'color 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = '#EF0B72'}
-                    onMouseLeave={(e) => e.target.style.color = '#000'}
-                  >
-                    Learn more &gt;
-                  </a>
                 </div>
 
-                {/* Course Benefits - Single Row Layout */}
-                <div className="flex items-center" style={{ minHeight: '80px', marginTop: '-7.2px', marginBottom: '19.2px' }}>
-                  <div className="grid grid-cols-3 gap-x-8 text-base text-black font-medium w-full auth-course-modal-benefits">
-                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
-                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
-                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                        </svg>
-                      </div>
-                      <span className="leading-tight">Certificate upon<br/>completion</span>
+                {/* Course Benefits - matching CoursePage layout */}
+                <div className="mb-8 grid grid-cols-3 gap-4 auth-course-modal-benefits">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="mb-2">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF0B72" strokeWidth="1.5">
+                        <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+                      </svg>
                     </div>
-                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
-                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
-                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                        </svg>
-                      </div>
-                      <span className="leading-tight">Taught by<br/>experts</span>
+                    <span className="text-sm text-black leading-tight">Certificate upon<br/>completion</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="mb-2">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF0B72" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                      </svg>
                     </div>
-                    <div className="flex items-center" style={{ paddingLeft: '1rem' }}>
-                      <div className="bg-white rounded p-0.5 flex-shrink-0" style={{ marginRight: '11.52px', transform: 'scale(1.92)' }}>
-                        <svg className="w-4 h-4" fill="none" stroke="#EF0B72" viewBox="0 0 24 24" strokeWidth="1.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-                        </svg>
-                      </div>
-                      <span className="leading-tight">Self-paced<br/>learning</span>
+                    <span className="text-sm text-black leading-tight">Built by<br/>industry experts</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center">
+                    <div className="mb-2">
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF0B72" strokeWidth="1.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
                     </div>
+                    <span className="text-sm text-black leading-tight">Self-paced<br/>learning</span>
                   </div>
                 </div>
 
 
                 {/* Curriculum Section */}
                 {selectedCourse.module_structure && Array.isArray(selectedCourse.module_structure) && selectedCourse.module_structure.length > 0 ? (
-                  <div className="mb-6" style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', paddingTop: '1.6rem', paddingRight: '2rem', paddingBottom: '2rem', paddingLeft: '2rem' }}>
-                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.3rem' }}>
+                  <div className="mb-6">
+                    <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.5rem' }}>
                       Curriculum
                     </h3>
+                    <div style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', paddingTop: '1.2rem', paddingRight: '2rem', paddingBottom: '2rem', paddingLeft: '2rem' }}>
                     <div className="space-y-6">
                       {selectedCourse.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>
@@ -2793,6 +2796,7 @@ const Auth = () => {
                           </div>
                         </div>
                       ))}
+                    </div>
                     </div>
                   </div>
                 ) : (
