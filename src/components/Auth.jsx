@@ -938,7 +938,7 @@ const Auth = () => {
   };
 
   // Helper to render typed tagline without per-character spans (fixes Chrome shaking)
-  // Uses layered approach: invisible full text for spacing + visible typed text on top
+  // Uses layered approach: invisible full text for centering + visible typed text overlay
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
@@ -949,27 +949,21 @@ const Auth = () => {
     const isTypingFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
     const isTypingSecondLine = typedTagline.length > pinkStart && !isTaglineTypingComplete;
 
+    // Render untyped portion as transparent, typed portion as visible - all in one string
+    // This keeps text centered while characters "appear" in place
     return (
       <>
         {/* First line - white text */}
-        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Invisible full text for spacing */}
-          <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
-          {/* Visible typed text positioned on top */}
-          <span style={{ position: 'absolute', left: 0, top: 0, color: 'white' }}>
-            {fullFirstLine.substring(0, firstLineTypedLength)}
-            {isTypingFirstLine && <span className="animate-blink">|</span>}
-          </span>
+        <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+          <span style={{ color: 'white' }}>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
+          <span style={{ color: 'transparent' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
+          {isTypingFirstLine && <span className="animate-blink" style={{ color: 'white', marginLeft: '-0.5ch' }}>|</span>}
         </span>
         {/* Second line - pink text */}
-        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Invisible full text for spacing */}
-          <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
-          {/* Visible typed text positioned on top */}
-          <span style={{ position: 'absolute', left: 0, top: 0, color: '#EF0B72' }}>
-            {fullSecondLine.substring(0, secondLineTypedLength)}
-            {isTypingSecondLine && <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>}
-          </span>
+        <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
+          <span style={{ color: '#EF0B72' }}>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
+          <span style={{ color: 'transparent' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
+          {isTypingSecondLine && <span className="animate-blink" style={{ color: '#EF0B72', marginLeft: '-0.5ch' }}>|</span>}
         </span>
       </>
     );
