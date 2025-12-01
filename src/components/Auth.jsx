@@ -1772,7 +1772,7 @@ const Auth = () => {
                           onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         >
-                        <div className="flex flex-col h-full auth-course-card-content" style={{ padding: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
+                        <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
                             <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
@@ -1894,8 +1894,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? 'auto' : (activeCard === 0 ? '10rem' : '5rem'),
-                      maxHeight: isMobile ? (activeCard === 0 ? '10rem' : '3rem') : 'none',
+                      height: isMobile ? (activeCard === 0 ? '7rem' : '3rem') : (activeCard === 0 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
@@ -1941,8 +1940,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? 'auto' : (activeCard === 1 ? '10rem' : '5rem'),
-                      maxHeight: isMobile ? (activeCard === 1 ? '10rem' : '3rem') : 'none',
+                      height: isMobile ? (activeCard === 1 ? '7rem' : '3rem') : (activeCard === 1 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
@@ -1988,8 +1986,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? 'auto' : (activeCard === 2 ? '10rem' : '5rem'),
-                      maxHeight: isMobile ? (activeCard === 2 ? '10rem' : '3rem') : 'none',
+                      height: isMobile ? (activeCard === 2 ? '7rem' : '3rem') : (activeCard === 2 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
@@ -2031,8 +2028,7 @@ const Auth = () => {
                     }`}
                     style={{
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? 'auto' : (activeCard === 3 ? '10rem' : '5rem'),
-                      maxHeight: isMobile ? (activeCard === 3 ? '10rem' : '3rem') : 'none',
+                      height: isMobile ? (activeCard === 3 ? '7rem' : '3rem') : (activeCard === 3 ? '10rem' : '5rem'),
                       overflow: 'hidden',
                       paddingTop: isMobile ? '0.7rem' : '1rem',
                       paddingRight: '1rem',
@@ -2650,7 +2646,7 @@ const Auth = () => {
             className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
             style={{
               width: '720px',
-              height: '70vh',
+              height: isMobile ? '55vh' : '70vh',
               borderRadius: '6px',
               overflow: 'hidden'
             }}
