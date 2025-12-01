@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProgressHub from './ProgressHub';
@@ -8,6 +8,105 @@ import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO from './SEO';
 import BlogCarousel from './BlogCarousel';
+
+// Custom hook for typing animations using requestAnimationFrame
+// This prevents Chrome's timer throttling issues that cause glitchy animations
+const useTypingAnimation = (fullText, config = {}) => {
+  const {
+    charDelay = 75,
+    startDelay = 0,
+    pausePoints = [],
+    enabled = true,
+    onComplete = null
+  } = config;
+
+  const [displayText, setDisplayText] = useState('');
+  const [isComplete, setIsComplete] = useState(false);
+  const animationRef = useRef(null);
+  const stateRef = useRef({
+    startTime: null,
+    currentIndex: 0,
+    totalPauseTime: 0,
+    activePauseEnd: 0
+  });
+
+  useEffect(() => {
+    if (!enabled || !fullText) {
+      return;
+    }
+
+    // Reset state when enabled or text changes
+    stateRef.current = {
+      startTime: null,
+      currentIndex: 0,
+      totalPauseTime: 0,
+      activePauseEnd: 0
+    };
+    setDisplayText('');
+    setIsComplete(false);
+
+    const animate = (timestamp) => {
+      const state = stateRef.current;
+
+      if (!state.startTime) {
+        state.startTime = timestamp;
+      }
+
+      const elapsed = timestamp - state.startTime;
+
+      // Handle start delay
+      if (elapsed < startDelay) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Handle active pause
+      if (state.activePauseEnd > 0 && timestamp < state.activePauseEnd) {
+        animationRef.current = requestAnimationFrame(animate);
+        return;
+      }
+
+      // Calculate target index based on elapsed time minus pauses
+      const typingElapsed = elapsed - startDelay - state.totalPauseTime;
+      const targetIndex = Math.min(
+        Math.floor(typingElapsed / charDelay),
+        fullText.length
+      );
+
+      // Update if we've advanced
+      if (targetIndex > state.currentIndex) {
+        state.currentIndex = targetIndex;
+        setDisplayText(fullText.substring(0, targetIndex));
+
+        // Check for pause point at this position
+        const pausePoint = pausePoints.find(p => p.after === targetIndex);
+        if (pausePoint) {
+          state.activePauseEnd = timestamp + pausePoint.duration;
+          state.totalPauseTime += pausePoint.duration;
+        }
+      }
+
+      // Check if complete
+      if (state.currentIndex >= fullText.length) {
+        setIsComplete(true);
+        if (onComplete) onComplete();
+        return;
+      }
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [fullText, charDelay, startDelay, JSON.stringify(pausePoints), enabled]);
+
+  return { displayText, isComplete };
+};
 
 const Auth = () => {
   // Debounce helper to prevent rapid state updates
@@ -33,10 +132,6 @@ const Auth = () => {
   const [activeCard, setActiveCard] = useState(0);
   const [isCardManuallySelected, setIsCardManuallySelected] = useState(false);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
-  const [typedEducationText, setTypedEducationText] = useState('');
-  const [isEducationTypingComplete, setIsEducationTypingComplete] = useState(false);
-  const [typedTagline, setTypedTagline] = useState('');
-  const [isTaglineTypingComplete, setIsTaglineTypingComplete] = useState(false);
   const coursesSectionRef = useRef(null);
   const courseCardsScrollRef = useRef(null);
   const learningModelSectionRef = useRef(null);
@@ -44,12 +139,6 @@ const Auth = () => {
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
   const [blurredCards, setBlurredCards] = useState([]);
-  const [typedCoursesTitle, setTypedCoursesTitle] = useState('');
-  const [isCourseTitleTypingComplete, setIsCourseTitleTypingComplete] = useState(false);
-  const [typedLearningTagline, setTypedLearningTagline] = useState('');
-  const [isLearningTaglineTypingComplete, setIsLearningTaglineTypingComplete] = useState(false);
-  const [typedTestimonialsHeading, setTypedTestimonialsHeading] = useState('');
-  const [isTestimonialsHeadingTypingComplete, setIsTestimonialsHeadingTypingComplete] = useState(false);
   const [animateTestimonials, setAnimateTestimonials] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
@@ -59,13 +148,114 @@ const Auth = () => {
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
-
-  const [typedFAQHeading, setTypedFAQHeading] = useState('');
-  const [typedBlogHeading, setTypedBlogHeading] = useState('');
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+
+  // Typing animation enable flags (triggered by intersection observers)
+  const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
+  const [educationTypingEnabled, setEducationTypingEnabled] = useState(false);
+  const [courseTitleTypingEnabled, setCourseTitleTypingEnabled] = useState(false);
+  const [learningTaglineTypingEnabled, setLearningTaglineTypingEnabled] = useState(false);
+  const [testimonialsTypingEnabled, setTestimonialsTypingEnabled] = useState(false);
+  const [blogFaqTypingEnabled, setBlogFaqTypingEnabled] = useState(false);
+
+  // Typing animations using requestAnimationFrame hook
+  const taglineText = "Upskill. Reskill. Get ready for what's next.";
+  const { displayText: typedTagline, isComplete: isTaglineTypingComplete } = useTypingAnimation(
+    taglineText,
+    {
+      charDelay: 80,
+      startDelay: 300,
+      pausePoints: [
+        { after: 8, duration: 500 },   // After "Upskill."
+        { after: 18, duration: 500 },  // After "Upskill. Reskill."
+        { after: taglineText.length, duration: 500 }
+      ],
+      enabled: taglineTypingEnabled
+    }
+  );
+
+  const educationTextDesktop = 'Education should be \naccessible, personalised and integrated for everyone.';
+  const educationTextMobile = 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.';
+  const educationFullText = isMobile ? educationTextMobile : educationTextDesktop;
+  const { displayText: typedEducationText, isComplete: isEducationTypingComplete } = useTypingAnimation(
+    educationFullText,
+    {
+      charDelay: 90,
+      startDelay: 2000,
+      pausePoints: isMobile
+        ? [
+            { after: 'Education should\nbe accessible,'.length, duration: 500 },
+            { after: 'Education should\nbe accessible,\npersonalised'.length, duration: 500 }
+          ]
+        : [
+            { after: 'Education should be \naccessible,'.length, duration: 500 },
+            { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
+          ],
+      enabled: educationTypingEnabled
+    }
+  );
+
+  const coursesTitleText = 'The best courses.\nFor the best students.';
+  const { displayText: typedCoursesTitle, isComplete: isCourseTitleTypingComplete } = useTypingAnimation(
+    coursesTitleText,
+    {
+      charDelay: 75,
+      startDelay: 1000,
+      pausePoints: [{ after: 17, duration: 1000 }], // After "The best courses."
+      enabled: courseTitleTypingEnabled
+    }
+  );
+
+  const learningTaglineDesktop = 'Building a smarter, \nmore personalised era of education.';
+  const learningTaglineMobile = 'Building a smarter,\nmore personalised\nera of education.';
+  const learningFullText = isMobile ? learningTaglineMobile : learningTaglineDesktop;
+  const { displayText: typedLearningTagline, isComplete: isLearningTaglineTypingComplete } = useTypingAnimation(
+    learningFullText,
+    {
+      charDelay: 75,
+      startDelay: 1000,
+      pausePoints: [{ after: 19, duration: 700 }], // After "Building a smarter,"
+      enabled: learningTaglineTypingEnabled
+    }
+  );
+
+  const testimonialsHeadingText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
+  const { displayText: typedTestimonialsHeading, isComplete: isTestimonialsHeadingTypingComplete } = useTypingAnimation(
+    testimonialsHeadingText,
+    {
+      charDelay: 75,
+      startDelay: 1000,
+      pausePoints: [
+        { after: 23, duration: 700 },  // After "Ignite is for everyone."
+        { after: 37, duration: 500 },  // After "The curious,"
+        { after: 52, duration: 500 }   // After "the committed,"
+      ],
+      enabled: testimonialsTypingEnabled
+    }
+  );
+
+  const blogHeadingText = 'Latest from Ignite';
+  const { displayText: typedBlogHeading, isComplete: isBlogHeadingComplete } = useTypingAnimation(
+    blogHeadingText,
+    {
+      charDelay: 75,
+      startDelay: 0,
+      enabled: blogFaqTypingEnabled
+    }
+  );
+
+  const faqHeadingText = 'FAQs';
+  const { displayText: typedFAQHeading } = useTypingAnimation(
+    faqHeadingText,
+    {
+      charDelay: 75,
+      startDelay: 500, // Start after blog heading would typically finish
+      enabled: blogFaqTypingEnabled && isBlogHeadingComplete
+    }
+  );
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
 
@@ -339,10 +529,7 @@ const Auth = () => {
 
   // Start tagline typing animation on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      startTaglineTyping();
-    }, 300); // Small delay before starting
-    return () => clearTimeout(timer);
+    setTaglineTypingEnabled(true);
   }, []);
 
   // Intersection observer for animating words when section comes into view
@@ -355,8 +542,8 @@ const Auth = () => {
           if (entry.isIntersecting && !animateWords) {
             debounce('marketingAnimation', () => {
               setAnimateWords(true);
-              // Start typing animation
-              startEducationTyping();
+              // Enable education typing animation
+              setEducationTypingEnabled(true);
             }, 50);
           }
         });
@@ -551,9 +738,9 @@ const Auth = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isCourseTitleTypingComplete) {
+          if (entry.isIntersecting && !courseTitleTypingEnabled) {
             debounce('coursesAnimation', () => {
-              startCourseTitleTyping();
+              setCourseTitleTypingEnabled(true);
             }, 50);
           }
         });
@@ -568,7 +755,7 @@ const Auth = () => {
         observer.unobserve(coursesSectionRef.current);
       }
     };
-  }, [isLogin, isCourseTitleTypingComplete, selectedCourseModal]);
+  }, [isLogin, courseTitleTypingEnabled, selectedCourseModal]);
 
   // Intersection observer for learning model section typing animation
   useEffect(() => {
@@ -577,9 +764,9 @@ const Auth = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && !isLearningTaglineTypingComplete) {
+          if (entry.isIntersecting && !learningTaglineTypingEnabled) {
             debounce('learningAnimation', () => {
-              startLearningTaglineTyping();
+              setLearningTaglineTypingEnabled(true);
             }, 50);
           }
         });
@@ -594,7 +781,7 @@ const Auth = () => {
         observer.unobserve(learningModelSectionRef.current);
       }
     };
-  }, [isLogin, isLearningTaglineTypingComplete, selectedCourseModal]);
+  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal]);
 
   // Intersection observer for testimonials section animation
   useEffect(() => {
@@ -608,8 +795,8 @@ const Auth = () => {
               if (!animateTestimonials) {
                 setAnimateTestimonials(true);
               }
-              if (!isTestimonialsHeadingTypingComplete) {
-                startTestimonialsHeadingTyping();
+              if (!testimonialsTypingEnabled) {
+                setTestimonialsTypingEnabled(true);
               }
             }, 50);
           }
@@ -625,7 +812,7 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials, isTestimonialsHeadingTypingComplete, selectedCourseModal]);
+  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal]);
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
@@ -645,10 +832,9 @@ const Auth = () => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && !blogFaqTypingEnabled) {
             debounce('blogFAQAnimation', () => {
-              // Start typing animations for headings
-              startBlogFAQHeadingsTyping();
+              setBlogFaqTypingEnabled(true);
             }, 50);
           }
         });
@@ -663,237 +849,12 @@ const Auth = () => {
         observer.unobserve(linkedInFAQSectionRef.current);
       }
     };
-  }, [isLogin, selectedCourseModal]);
+  }, [isLogin, selectedCourseModal, blogFaqTypingEnabled]);
 
 
 
 
 
-
-  // Typing animation for Blog and FAQ headings
-  const startBlogFAQHeadingsTyping = () => {
-    const blogText = 'Latest from Ignite';
-    const faqText = 'FAQs';
-    let blogIndex = 0;
-    let faqIndex = 0;
-
-    // Start typing blog heading immediately
-    const blogInterval = setInterval(() => {
-      if (blogIndex <= blogText.length) {
-        setTypedBlogHeading(blogText.substring(0, blogIndex));
-        blogIndex++;
-      } else {
-        clearInterval(blogInterval);
-
-        // Wait 500ms, then type FAQ heading
-        setTimeout(() => {
-          const faqInterval = setInterval(() => {
-            if (faqIndex <= faqText.length) {
-              setTypedFAQHeading(faqText.substring(0, faqIndex));
-              faqIndex++;
-            } else {
-              clearInterval(faqInterval);
-            }
-          }, 75); // 75ms per character
-        }, 500); // 500ms delay
-      }
-    }, 75); // 75ms per character
-  };
-
-  // Typing animation for tagline (Upskill. Reskill. Get ready for what's next.)
-  const startTaglineTyping = () => {
-    const fullText = 'Upskill. Reskill. Get ready for what\'s next.';
-    const pausePositions = [
-      { after: 'Upskill.'.length, duration: 500 },
-      { after: 'Upskill. Reskill.'.length, duration: 500 },
-      { after: fullText.length, duration: 500 } // Pause at end before cursor disappears
-    ];
-    let currentIndex = 0;
-    let isPaused = false;
-
-    // 300ms intro delay before typing starts
-    setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (isPaused) return;
-
-        if (currentIndex <= fullText.length) {
-          setTypedTagline(fullText.substring(0, currentIndex));
-
-          const pausePoint = pausePositions.find(p => currentIndex === p.after);
-          if (pausePoint) {
-            isPaused = true;
-            setTimeout(() => {
-              isPaused = false;
-              // If this was the final pause, mark as complete
-              if (currentIndex >= fullText.length) {
-                clearInterval(typingInterval);
-                setIsTaglineTypingComplete(true);
-              }
-            }, pausePoint.duration);
-          }
-
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-        }
-      }, 80); // 80ms per character for slower typing
-    }, 300); // 300ms intro delay
-  };
-
-  // Typing animation for education text
-  const startEducationTyping = () => {
-    const fullText = isMobile
-      ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
-      : 'Education should be \naccessible, personalised and integrated for everyone.';
-    const pausePositions = isMobile
-      ? [
-          { after: 'Education should\nbe accessible,'.length, duration: 500 },
-          { after: 'Education should\nbe accessible,\npersonalised'.length, duration: 500 }
-        ]
-      : [
-          { after: 'Education should be \naccessible,'.length, duration: 500 },
-          { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
-        ];
-    let currentIndex = 0;
-    let isPaused = false;
-
-    // Add delay before starting typing
-    setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (isPaused) return; // Skip typing if paused
-
-        if (currentIndex <= fullText.length) {
-          setTypedEducationText(fullText.substring(0, currentIndex));
-
-          // Check if we should pause at this position
-          const pausePoint = pausePositions.find(p => currentIndex === p.after);
-          if (pausePoint) {
-            isPaused = true;
-            setTimeout(() => {
-              isPaused = false;
-            }, pausePoint.duration);
-          }
-
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          // Keep the typing indicator for 0.5 seconds before marking as complete
-          setTimeout(() => {
-            setIsEducationTypingComplete(true);
-          }, 500);
-        }
-      }, 90); // 90ms per character for slower typing
-    }, 2000); // 2000ms delay before starting
-  };
-
-  // Typing animation for courses title
-  const startCourseTitleTyping = () => {
-    const fullText = 'The best courses.\nFor the best students.';
-    const firstLineLength = 'The best courses.'.length;
-    let currentIndex = 0;
-    let isPaused = false;
-
-    // Add delay before starting typing
-    setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (isPaused) return; // Skip typing if paused
-
-        if (currentIndex <= fullText.length) {
-          setTypedCoursesTitle(fullText.substring(0, currentIndex));
-
-          // Check if we just finished the first line
-          if (currentIndex === firstLineLength) {
-            isPaused = true;
-            // Resume typing after 1 second
-            setTimeout(() => {
-              isPaused = false;
-            }, 1000);
-          }
-
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setIsCourseTitleTypingComplete(true);
-        }
-      }, 75); // 75ms per character
-    }, 1000); // 1000ms delay before starting
-  };
-
-  // Typing animation for learning tagline
-  const startLearningTaglineTyping = () => {
-    const fullText = isMobile
-      ? 'Building a smarter,\nmore personalised\nera of education.'
-      : 'Building a smarter, \nmore personalised era of education.';
-    const pauseAfter = 'Building a smarter,'.length;
-    let currentIndex = 0;
-    let isPaused = false;
-
-    // Add delay before starting typing
-    setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (isPaused) return;
-
-        if (currentIndex <= fullText.length) {
-          setTypedLearningTagline(fullText.substring(0, currentIndex));
-
-          // Pause after "Building a smarter,"
-          if (currentIndex === pauseAfter) {
-            isPaused = true;
-            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
-          }
-
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setIsLearningTaglineTypingComplete(true);
-        }
-      }, 75); // 75ms per character
-    }, 1000); // 1000ms delay before starting
-  };
-
-  // Typing animation for testimonials heading
-  const startTestimonialsHeadingTyping = () => {
-    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
-    const pauseAfterEveryone = 'Ignite is for everyone.'.length;
-    const pauseAfterCurious = 'Ignite is for everyone.\nThe curious,'.length;
-    const pauseAfterCommitted = 'Ignite is for everyone.\nThe curious, the committed,'.length;
-    let currentIndex = 0;
-    let isPaused = false;
-
-    // Add delay before starting typing
-    setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (isPaused) return;
-
-        if (currentIndex <= fullText.length) {
-          setTypedTestimonialsHeading(fullText.substring(0, currentIndex));
-
-          // Pause after "everyone"
-          if (currentIndex === pauseAfterEveryone) {
-            isPaused = true;
-            setTimeout(() => { isPaused = false; }, 700); // 700ms pause
-          }
-          
-          // Pause after "curious,"
-          if (currentIndex === pauseAfterCurious) {
-            isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
-          }
-          
-          // Pause after "committed,"
-          if (currentIndex === pauseAfterCommitted) {
-            isPaused = true;
-            setTimeout(() => { isPaused = false; }, 500); // 500ms pause
-          }
-
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTestimonialsHeadingTypingComplete(true);
-        }
-      }, 75); // 75ms per character
-    }, 1000); // 1000ms delay before starting
-  };
 
   // Helper to render typed text with pink highlights for key words
   const renderTypedEducation = () => {
