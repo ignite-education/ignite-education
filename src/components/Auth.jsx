@@ -1300,8 +1300,8 @@ const Auth = () => {
           backgroundImage: !isMobile
             ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)'
             : 'url(https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20design.png)',
-          backgroundSize: 'auto 97%',
-          backgroundPosition: 'left center',
+          backgroundSize: isMobile ? 'auto 100%' : 'auto 97%',
+          backgroundPosition: isMobile ? 'center center' : 'left center',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#000'
         }}
