@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ProgressHub from './ProgressHub';
 import Onboarding from './Onboarding';
 import { ChevronDown, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -1277,20 +1276,20 @@ const Auth = () => {
         keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
         url="https://www.ignite.education/welcome"
       />
-      {/* Background - Progress Hub (not rendered on mobile for performance) */}
+      {/* Background - Static image (not rendered on mobile for performance) */}
       {!isMobile && (
         <div
           className="auth-progress-bg"
           style={{
-            filter: 'blur(1px) brightness(0.7)',
             pointerEvents: 'none',
             opacity: 0,
             animation: 'fadeIn 1s ease-out forwards',
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+            backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20(3).png)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
           }}
-        >
-          <ProgressHub />
-        </div>
+        />
       )}
 
       {/* Auth Overlay - Scrollable Container */}
