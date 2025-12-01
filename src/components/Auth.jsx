@@ -957,48 +957,62 @@ const Auth = () => {
       <>
         {/* First line - white text with clip reveal */}
         <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Full text - always rendered, clipped to show typed portion */}
+          {/* Invisible full text for consistent width/centering */}
+          <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
+          {/* Visible clipped text layered on top */}
           <span style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
             color: 'white',
             clipPath: `inset(0 ${100 - firstLinePercent}% 0 0)`
           }}>{fullFirstLine}</span>
-          {/* Invisible full text for spacing */}
-          <span style={{ visibility: 'hidden', position: 'absolute', left: 0, top: 0 }}>{fullFirstLine}</span>
-          {/* Cursor - absolutely positioned based on typed length */}
+          {/* Cursor - positioned using typed text width */}
           {isTypingFirstLine && (
-            <span
-              className="animate-blink"
-              style={{
-                position: 'absolute',
-                left: `${firstLinePercent}%`,
-                top: 0,
-                color: 'white',
-                transform: 'translateX(-50%)'
-              }}
-            >|</span>
+            <span style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
+                <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
+                <span className="animate-blink" style={{ color: 'white' }}>|</span>
+              </span>
+            </span>
           )}
         </span>
         {/* Second line - pink text with clip reveal */}
         <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Full text - always rendered, clipped to show typed portion */}
+          {/* Invisible full text for consistent width/centering */}
+          <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+          {/* Visible clipped text layered on top */}
           <span style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
             color: '#EF0B72',
             clipPath: `inset(0 ${100 - secondLinePercent}% 0 0)`
           }}>{fullSecondLine}</span>
-          {/* Invisible full text for spacing */}
-          <span style={{ visibility: 'hidden', position: 'absolute', left: 0, top: 0 }}>{fullSecondLine}</span>
-          {/* Cursor - absolutely positioned based on typed length */}
+          {/* Cursor - positioned using typed text width */}
           {isTypingSecondLine && (
-            <span
-              className="animate-blink"
-              style={{
-                position: 'absolute',
-                left: `${secondLinePercent}%`,
-                top: 0,
-                color: '#EF0B72',
-                transform: 'translateX(-50%)'
-              }}
-            >|</span>
+            <span style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
+                <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
+                <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>
+              </span>
+            </span>
           )}
         </span>
       </>
