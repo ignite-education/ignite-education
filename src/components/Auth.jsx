@@ -951,19 +951,19 @@ const Auth = () => {
 
     // Render untyped portion as transparent, typed portion as visible - all in one string
     // This keeps text centered while characters "appear" in place
-    // Cursor is placed between typed and untyped spans
+    // Cursor has zero width to avoid layout shifts
     return (
       <>
         {/* First line - white text */}
         <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
           <span style={{ color: 'white' }}>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
-          {isTypingFirstLine && <span className="animate-blink" style={{ color: 'white' }}>|</span>}
+          {isTypingFirstLine && <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: 'white' }}>|</span>}
           <span style={{ color: 'transparent' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
         </span>
         {/* Second line - pink text */}
         <span style={{ display: 'block', whiteSpace: 'nowrap' }}>
           <span style={{ color: '#EF0B72' }}>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
-          {isTypingSecondLine && <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>}
+          {isTypingSecondLine && <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>}
           <span style={{ color: 'transparent' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
         </span>
       </>
