@@ -937,8 +937,7 @@ const Auth = () => {
     return result;
   };
 
-  // Helper to render typed tagline - uses clip-path to reveal text without DOM changes
-  // This prevents Chrome layout recalculations that cause shaking
+  // Helper to render typed tagline - simple approach without cursor to avoid Chrome shaking
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
@@ -946,8 +945,6 @@ const Auth = () => {
 
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
     const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
-    const isTypingFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
-    const isTypingSecondLine = typedTagline.length > pinkStart && !isTaglineTypingComplete;
 
     // Calculate reveal percentage for clip-path
     const firstLinePercent = (firstLineTypedLength / fullFirstLine.length) * 100;
@@ -968,22 +965,6 @@ const Auth = () => {
             color: 'white',
             clipPath: `inset(0 ${100 - firstLinePercent}% 0 0)`
           }}>{fullFirstLine}</span>
-          {/* Cursor - positioned using typed text width */}
-          {isTypingFirstLine && (
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
-              <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
-                <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(0, firstLineTypedLength)}</span>
-                <span className="animate-blink" style={{ color: 'white' }}>|</span>
-              </span>
-            </span>
-          )}
         </span>
         {/* Second line - pink text with clip reveal */}
         <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
@@ -998,22 +979,6 @@ const Auth = () => {
             color: '#EF0B72',
             clipPath: `inset(0 ${100 - secondLinePercent}% 0 0)`
           }}>{fullSecondLine}</span>
-          {/* Cursor - positioned using typed text width */}
-          {isTypingSecondLine && (
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: '100%',
-              display: 'flex',
-              justifyContent: 'center'
-            }}>
-              <span style={{ position: 'relative', whiteSpace: 'nowrap' }}>
-                <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(0, secondLineTypedLength)}</span>
-                <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>
-              </span>
-            </span>
-          )}
         </span>
       </>
     );
