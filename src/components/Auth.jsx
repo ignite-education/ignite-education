@@ -1297,9 +1297,9 @@ const Auth = () => {
         className="min-h-screen flex items-center justify-center px-8 relative auth-section-1"
         style={{
           scrollSnapAlign: 'start',
-          backgroundImage: !isMobile ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)' : 'none',
-          backgroundSize: '97%',
-          backgroundPosition: 'center',
+          backgroundImage: !isMobile ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%284%29.png)' : 'none',
+          backgroundSize: '97vw',
+          backgroundPosition: 'left center',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#000'
         }}
