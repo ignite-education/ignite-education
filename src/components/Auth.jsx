@@ -937,6 +937,43 @@ const Auth = () => {
     return result;
   };
 
+  // Helper to render typed tagline without per-character spans (fixes Chrome shaking)
+  const renderTypedTagline = () => {
+    const fullFirstLine = 'Upskill. Reskill.';
+    const fullSecondLine = "Get ready for what's next.";
+    const pinkStart = fullFirstLine.length + 1; // +1 for space between lines
+
+    const result = [];
+
+    // First line (white)
+    const firstLineText = typedTagline.substring(0, Math.min(typedTagline.length, fullFirstLine.length));
+    if (firstLineText) {
+      result.push(
+        <span key="line1" style={{ display: 'block', color: 'white' }}>
+          {firstLineText}
+          {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
+            <span className="animate-blink">|</span>
+          )}
+        </span>
+      );
+    }
+
+    // Second line (pink) - only if we've started typing it
+    if (typedTagline.length > pinkStart) {
+      const secondLineText = typedTagline.substring(pinkStart);
+      result.push(
+        <span key="line2" style={{ display: 'block', color: '#EF0B72' }}>
+          {secondLineText}
+          {!isTaglineTypingComplete && (
+            <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>
+          )}
+        </span>
+      );
+    }
+
+    return result;
+  };
+
   // Helper to render typed courses title with purple highlights
   const renderTypedCoursesTitle = () => {
     const text = typedCoursesTitle;
@@ -1322,48 +1359,7 @@ const Auth = () => {
         {/* Tagline - on both sign in and create account pages */}
         <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
           <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
-            {(() => {
-              const fullFirstLine = 'Upskill. Reskill.';
-              const fullSecondLine = "Get ready for what's next.";
-              const pinkStart = fullFirstLine.length + 1; // +1 for the space
-              const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
-              const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
-              const isTypingFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
-              const isTypingSecondLine = typedTagline.length > pinkStart && !isTaglineTypingComplete;
-
-              return (
-                <>
-                  {/* First line - white text */}
-                  <span style={{ display: 'block', whiteSpace: 'nowrap', textRendering: 'geometricPrecision', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
-                    {fullFirstLine.split('').map((char, i) => (
-                      <span key={i}>
-                        {i === firstLineTypedLength && isTypingFirstLine && (
-                          <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>
-                        )}
-                        <span style={{ color: 'white', visibility: i < firstLineTypedLength ? 'visible' : 'hidden' }}>{char}</span>
-                      </span>
-                    ))}
-                    {firstLineTypedLength === fullFirstLine.length && isTypingFirstLine && (
-                      <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>
-                    )}
-                  </span>
-                  {/* Second line - pink text */}
-                  <span style={{ display: 'block', whiteSpace: 'nowrap', textRendering: 'geometricPrecision', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale' }}>
-                    {fullSecondLine.split('').map((char, i) => (
-                      <span key={i}>
-                        {i === secondLineTypedLength && isTypingSecondLine && (
-                          <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>
-                        )}
-                        <span style={{ color: '#EF0B72', visibility: i < secondLineTypedLength ? 'visible' : 'hidden' }}>{char}</span>
-                      </span>
-                    ))}
-                    {secondLineTypedLength === fullSecondLine.length && isTypingSecondLine && (
-                      <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>
-                    )}
-                  </span>
-                </>
-              );
-            })()}
+            {renderTypedTagline()}
           </h1>
         </div>
 
