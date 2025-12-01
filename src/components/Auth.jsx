@@ -976,7 +976,11 @@ const Auth = () => {
         {/* First line (white) */}
         <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
-          {showCursorOnFirstLine && <span className="animate-blink font-light">|</span>}
+          {showCursorOnFirstLine ? (
+            <span className="animate-blink font-light">|</span>
+          ) : firstLineTypedLength === fullFirstLine.length && (
+            <span style={{ visibility: 'hidden' }}>|</span>
+          )}
         </span>
 
         {/* Second line (pink) - always present for height */}
