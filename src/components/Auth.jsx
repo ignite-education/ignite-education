@@ -1281,6 +1281,8 @@ const Auth = () => {
         <div
           className="auth-progress-bg"
           style={{
+            position: 'fixed',
+            inset: 0,
             pointerEvents: 'none',
             opacity: 0,
             animation: 'fadeIn 1s ease-out forwards',
