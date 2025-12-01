@@ -1298,7 +1298,7 @@ const Auth = () => {
         style={{
           scrollSnapAlign: 'start',
           backgroundImage: !isMobile ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)' : 'none',
-          backgroundSize: '95%',
+          backgroundSize: '97%',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           backgroundColor: '#000'
