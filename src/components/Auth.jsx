@@ -1276,30 +1276,11 @@ const Auth = () => {
         keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
         url="https://www.ignite.education/welcome"
       />
-      {/* Background - Static image (not rendered on mobile for performance) */}
-      {!isMobile && (
-        <div
-          className="auth-progress-bg"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            pointerEvents: 'none',
-            opacity: 0,
-            animation: 'fadeIn 1s ease-out forwards',
-            backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20(3).png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat'
-          }}
-        />
-      )}
-
-      {/* Auth Overlay - Scrollable Container */}
+      {/* Auth Scrollable Container */}
       <div
         ref={authScrollContainerRef}
-        className="fixed inset-0 backdrop-blur-sm animate-fadeIn overflow-y-auto auth-scroll-container"
+        className="fixed inset-0 animate-fadeIn overflow-y-auto auth-scroll-container"
         style={{
-          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75))',
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
@@ -1307,7 +1288,12 @@ const Auth = () => {
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           minWidth: '1300px',
-          overflowX: 'auto'
+          overflowX: 'auto',
+          backgroundImage: !isMobile ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20(3).png)' : 'none',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundColor: '#000'
         }}
       >
       {/* First Section - Auth Form */}
