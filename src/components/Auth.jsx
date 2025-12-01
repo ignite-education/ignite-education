@@ -959,54 +959,33 @@ const Auth = () => {
     return result;
   };
 
-  // Helper to render typed tagline - matches renderTypedEducation pattern
+  // Helper to render typed tagline - simple smooth typing animation
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
-    const pinkStart = fullFirstLine.length; // No space between lines
+    const pinkStart = fullFirstLine.length;
 
-    // First line (white) - only show what's been typed
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
-
-    // Second line typed length
     const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
+
+    const showCursorOnFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
+    const showCursorOnSecondLine = typedTagline.length > fullFirstLine.length && !isTaglineTypingComplete;
 
     return (
       <>
         {/* First line (white) */}
         <span style={{ display: 'block', color: 'white' }}>
-          {firstLineTypedLength > 0 ? (
-            <>
-              {fullFirstLine.substring(0, firstLineTypedLength)}
-              {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
-                <span className="animate-blink font-light">|</span>
-              )}
-              {/* Invisible remainder to maintain width */}
-              <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
-            </>
-          ) : (
-            <>
-              {/* Cursor at start, then invisible placeholder */}
-              {!isTaglineTypingComplete && <span className="animate-blink font-light">|</span>}
-              <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(1)}</span>
-            </>
-          )}
+          {fullFirstLine.substring(0, firstLineTypedLength)}
+          {showCursorOnFirstLine && <span className="animate-blink font-light">|</span>}
         </span>
 
-        {/* Second line (pink) - always rendered, with placeholder for height */}
-        <span style={{ display: 'block', color: '#EF0B72' }}>
-          {secondLineTypedLength > 0 ? (
-            <>
-              {fullSecondLine.substring(0, secondLineTypedLength)}
-              {!isTaglineTypingComplete && (
-                <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>
-              )}
-            </>
-          ) : (
-            /* Invisible placeholder to reserve space */
-            <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
-          )}
-        </span>
+        {/* Second line (pink) */}
+        {(secondLineTypedLength > 0 || isTaglineTypingComplete) && (
+          <span style={{ display: 'block', color: '#EF0B72' }}>
+            {fullSecondLine.substring(0, secondLineTypedLength)}
+            {showCursorOnSecondLine && <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>}
+          </span>
+        )}
       </>
     );
   };
