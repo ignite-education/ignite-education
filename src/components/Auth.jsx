@@ -937,51 +937,41 @@ const Auth = () => {
     return result;
   };
 
-  // Helper to render typed tagline - simple approach without cursor to avoid Chrome shaking
+  // Helper to render typed tagline - matches renderTypedEducation pattern
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
-    const pinkStart = fullFirstLine.length + 1; // +1 for space between lines
+    const pinkStart = fullFirstLine.length + 1; // +1 for the space/newline between lines
 
+    const result = [];
+
+    // First line (white) - only show what's been typed
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
-    const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
-
-    // Calculate reveal percentage for clip-path
-    const firstLinePercent = (firstLineTypedLength / fullFirstLine.length) * 100;
-    const secondLinePercent = (secondLineTypedLength / fullSecondLine.length) * 100;
-
-    return (
-      <>
-        {/* First line - white text with clip reveal */}
-        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Invisible full text for consistent width/centering */}
-          <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
-          {/* Visible clipped text layered on top */}
-          <span style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            color: 'white',
-            clipPath: `inset(0 ${100 - firstLinePercent}% 0 0)`
-          }}>{fullFirstLine}</span>
+    if (firstLineTypedLength > 0) {
+      result.push(
+        <span key="line1" style={{ display: 'block', color: 'white' }}>
+          {fullFirstLine.substring(0, firstLineTypedLength)}
+          {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
+            <span className="animate-blink font-light">|</span>
+          )}
         </span>
-        {/* Second line - pink text with clip reveal */}
-        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
-          {/* Invisible full text for consistent width/centering */}
-          <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
-          {/* Visible clipped text layered on top */}
-          <span style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: '100%',
-            color: '#EF0B72',
-            clipPath: `inset(0 ${100 - secondLinePercent}% 0 0)`
-          }}>{fullSecondLine}</span>
+      );
+    }
+
+    // Second line (pink) - only if we've started typing it
+    if (typedTagline.length > pinkStart) {
+      const secondLineTypedLength = typedTagline.length - pinkStart;
+      result.push(
+        <span key="line2" style={{ display: 'block', color: '#EF0B72' }}>
+          {fullSecondLine.substring(0, secondLineTypedLength)}
+          {!isTaglineTypingComplete && (
+            <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>
+          )}
         </span>
-      </>
-    );
+      );
+    }
+
+    return result;
   };
 
   // Helper to render typed courses title with purple highlights
