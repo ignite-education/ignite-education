@@ -938,40 +938,41 @@ const Auth = () => {
   };
 
   // Helper to render typed tagline without per-character spans (fixes Chrome shaking)
+  // Uses layered approach: invisible full text for spacing + visible typed text on top
   const renderTypedTagline = () => {
     const fullFirstLine = 'Upskill. Reskill.';
     const fullSecondLine = "Get ready for what's next.";
     const pinkStart = fullFirstLine.length + 1; // +1 for space between lines
 
-    const result = [];
+    const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
+    const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
+    const isTypingFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
+    const isTypingSecondLine = typedTagline.length > pinkStart && !isTaglineTypingComplete;
 
-    // First line (white)
-    const firstLineText = typedTagline.substring(0, Math.min(typedTagline.length, fullFirstLine.length));
-    if (firstLineText) {
-      result.push(
-        <span key="line1" style={{ display: 'block', color: 'white' }}>
-          {firstLineText}
-          {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
-            <span className="animate-blink">|</span>
-          )}
+    return (
+      <>
+        {/* First line - white text */}
+        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
+          {/* Invisible full text for spacing */}
+          <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>
+          {/* Visible typed text positioned on top */}
+          <span style={{ position: 'absolute', left: 0, top: 0, color: 'white' }}>
+            {fullFirstLine.substring(0, firstLineTypedLength)}
+            {isTypingFirstLine && <span className="animate-blink">|</span>}
+          </span>
         </span>
-      );
-    }
-
-    // Second line (pink) - only if we've started typing it
-    if (typedTagline.length > pinkStart) {
-      const secondLineText = typedTagline.substring(pinkStart);
-      result.push(
-        <span key="line2" style={{ display: 'block', color: '#EF0B72' }}>
-          {secondLineText}
-          {!isTaglineTypingComplete && (
-            <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>
-          )}
+        {/* Second line - pink text */}
+        <span style={{ display: 'block', position: 'relative', whiteSpace: 'nowrap' }}>
+          {/* Invisible full text for spacing */}
+          <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+          {/* Visible typed text positioned on top */}
+          <span style={{ position: 'absolute', left: 0, top: 0, color: '#EF0B72' }}>
+            {fullSecondLine.substring(0, secondLineTypedLength)}
+            {isTypingSecondLine && <span className="animate-blink" style={{ color: '#EF0B72' }}>|</span>}
+          </span>
         </span>
-      );
-    }
-
-    return result;
+      </>
+    );
   };
 
   // Helper to render typed courses title with purple highlights
