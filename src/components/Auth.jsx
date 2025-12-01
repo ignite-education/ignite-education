@@ -1340,7 +1340,7 @@ const Auth = () => {
                         {i === firstLineTypedLength && isTypingFirstLine && (
                           <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible' }}>|</span>
                         )}
-                        <span style={{ color: i < firstLineTypedLength ? 'white' : 'transparent' }}>{char}</span>
+                        <span style={{ color: 'white', visibility: i < firstLineTypedLength ? 'visible' : 'hidden' }}>{char}</span>
                       </span>
                     ))}
                     {firstLineTypedLength === fullFirstLine.length && isTypingFirstLine && (
@@ -1354,7 +1354,7 @@ const Auth = () => {
                         {i === secondLineTypedLength && isTypingSecondLine && (
                           <span className="animate-blink" style={{ display: 'inline-block', width: 0, overflow: 'visible', color: '#EF0B72' }}>|</span>
                         )}
-                        <span style={{ color: i < secondLineTypedLength ? '#EF0B72' : 'transparent' }}>{char}</span>
+                        <span style={{ color: '#EF0B72', visibility: i < secondLineTypedLength ? 'visible' : 'hidden' }}>{char}</span>
                       </span>
                     ))}
                     {secondLineTypedLength === fullSecondLine.length && isTypingSecondLine && (
