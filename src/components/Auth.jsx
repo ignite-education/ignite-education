@@ -975,12 +975,22 @@ const Auth = () => {
       <>
         {/* First line (white) */}
         <span style={{ display: 'block', color: 'white' }}>
-          {firstLineTypedLength > 0 && fullFirstLine.substring(0, firstLineTypedLength)}
-          {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
-            <span className="animate-blink font-light">|</span>
+          {firstLineTypedLength > 0 ? (
+            <>
+              {fullFirstLine.substring(0, firstLineTypedLength)}
+              {typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete && (
+                <span className="animate-blink font-light">|</span>
+              )}
+              {/* Invisible remainder to maintain width */}
+              <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
+            </>
+          ) : (
+            <>
+              {/* Cursor at start, then invisible placeholder */}
+              {!isTaglineTypingComplete && <span className="animate-blink font-light">|</span>}
+              <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(1)}</span>
+            </>
           )}
-          {/* Invisible placeholder if first line not started yet */}
-          {firstLineTypedLength === 0 && <span style={{ visibility: 'hidden' }}>{fullFirstLine}</span>}
         </span>
 
         {/* Second line (pink) - always rendered, with placeholder for height */}
