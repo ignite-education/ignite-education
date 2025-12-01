@@ -979,13 +979,17 @@ const Auth = () => {
           {showCursorOnFirstLine && <span className="animate-blink font-light">|</span>}
         </span>
 
-        {/* Second line (pink) */}
-        {(secondLineTypedLength > 0 || isTaglineTypingComplete) && (
-          <span style={{ display: 'block', color: '#EF0B72' }}>
-            {fullSecondLine.substring(0, secondLineTypedLength)}
-            {showCursorOnSecondLine && <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>}
-          </span>
-        )}
+        {/* Second line (pink) - always present for height */}
+        <span style={{ display: 'block', color: '#EF0B72' }}>
+          {secondLineTypedLength > 0 ? (
+            <>
+              {fullSecondLine.substring(0, secondLineTypedLength)}
+              {showCursorOnSecondLine && <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>}
+            </>
+          ) : (
+            <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+          )}
+        </span>
       </>
     );
   };
