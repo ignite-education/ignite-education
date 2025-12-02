@@ -146,7 +146,6 @@ const Auth = () => {
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [activeUseCaseIndex, setActiveUseCaseIndex] = useState(0);
-  const [useCaseTouchStart, setUseCaseTouchStart] = useState(null);
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
@@ -2261,28 +2260,7 @@ const Auth = () => {
 
 
                 {/* Right Column - 2x2 Grid of Cards */}
-                <div
-                  className="auth-usecase-container flex items-center justify-center"
-                  onTouchStart={(e) => {
-                    if (isMobile) setUseCaseTouchStart(e.touches[0].clientX);
-                  }}
-                  onTouchEnd={(e) => {
-                    if (!isMobile || useCaseTouchStart === null) return;
-                    const touchEnd = e.changedTouches[0].clientX;
-                    const diff = useCaseTouchStart - touchEnd;
-                    const minSwipeDistance = 50;
-                    if (Math.abs(diff) > minSwipeDistance) {
-                      if (diff > 0) {
-                        // Swipe left - next card
-                        setActiveUseCaseIndex((prev) => (prev + 1) % 4);
-                      } else {
-                        // Swipe right - previous card
-                        setActiveUseCaseIndex((prev) => (prev - 1 + 4) % 4);
-                      }
-                    }
-                    setUseCaseTouchStart(null);
-                  }}
-                >
+                <div className="auth-usecase-container flex items-center justify-center">
                   <div className="auth-usecase-grid relative" style={{ width: isMobile ? '100%' : '21.35rem', height: isMobile ? 'auto' : '20.3rem' }}>
                     {(() => {
                       const useCaseCards = [
@@ -2308,119 +2286,122 @@ const Auth = () => {
                         }
                       ];
 
-                      // Calculate position for each card on mobile
-                      // Cards slide based on activeUseCaseIndex - leftmost position is expanded
-                      const getCardPosition = (cardIndex) => {
-                        // Calculate relative position from active card
-                        // Position 0 = leftmost (expanded), 1/2/3 = to the right (collapsed)
-                        let relativePos = cardIndex - activeUseCaseIndex;
-                        if (relativePos < 0) relativePos += 4; // Wrap around
-                        return relativePos;
-                      };
-
-                      return useCaseCards.map((card, idx) => {
-                        const position = getCardPosition(idx);
-                        const isExpanded = isMobile && position === 0;
-
-                        // Calculate x offset: expanded card width (13rem) + gap (0.75rem) + collapsed cards
-                        // Position 0: 0rem (leftmost)
-                        // Position 1: 13rem + 0.75rem = 13.75rem
-                        // Position 2: 13.75rem + 5.5rem + 0.75rem = 20rem
-                        // Position 3: 20rem + 5.5rem + 0.75rem = 26.25rem
-                        const getXOffset = (pos) => {
-                          if (pos === 0) return 0;
-                          // First collapsed card starts after expanded card
-                          const expandedWidth = 13; // rem
-                          const collapsedWidth = 5.5; // rem
-                          const gap = 0.75; // rem
-                          if (pos === 1) return expandedWidth + gap;
-                          if (pos === 2) return expandedWidth + gap + collapsedWidth + gap;
-                          if (pos === 3) return expandedWidth + gap + (collapsedWidth + gap) * 2;
-                          return 0;
-                        };
+                      if (isMobile) {
+                        // Mobile layout: 1 expanded card on left, 4 collapsed cards in 2x2 grid on right
+                        const activeCard = useCaseCards[activeUseCaseIndex];
+                        const collapsedWidth = 4.5; // rem
+                        const collapsedHeight = 4.5; // rem
+                        const gap = 0.5; // rem between collapsed cards
+                        const expandedWidth = 13; // rem
+                        const collapsedStartX = expandedWidth + 1; // rem - where collapsed cards start
 
                         return (
-                          <div
-                            key={idx}
-                            onMouseEnter={() => {
-                              if (!isMobile) setHoveredUseCase(idx);
-                            }}
-                            onMouseLeave={() => {
-                              if (!isMobile) setHoveredUseCase(null);
-                            }}
-                            onClick={() => {
-                              if (isMobile && !isExpanded) {
-                                setActiveUseCaseIndex(idx);
-                              }
-                            }}
-                            className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isExpanded ? 'expanded' : ''}`}
-                            style={{
-                              height: isMobile ? (isExpanded ? '7rem' : '5.5rem') : '9.775rem',
-                              width: isMobile ? (isExpanded ? '13rem' : '5.5rem') : '10.3rem',
-                              minHeight: isExpanded ? '7rem' : undefined,
-                              top: isMobile ? undefined : card.position.top,
-                              left: isMobile ? undefined : card.position.left,
-                              position: isMobile ? 'absolute' : 'absolute',
-                              transform: isMobile ? `translateX(${getXOffset(position)}rem)` : 'none',
-                              zIndex: isExpanded ? 10 : 1,
-                              padding: isMobile ? (isExpanded ? '1rem' : '0.75rem') : '1.5rem',
-                              opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
-                              transition: 'all 300ms ease-in-out',
-                              pointerEvents: 'auto',
-                              flexShrink: 0
-                            }}
-                          >
-                            <div className={`flex flex-col ${isExpanded ? 'items-start' : 'items-center'} justify-center text-center`} style={{ width: '100%' }}>
-                              <h4 className="font-semibold leading-tight" style={{
-                                color: '#7714E0',
-                                fontSize: isMobile ? (isExpanded ? '0.875rem' : '0.65rem') : '1.125rem',
-                                textAlign: isExpanded ? 'left' : 'center',
-                                width: '100%'
-                              }}>
-                                {isMobile ? (
-                                  isExpanded ? card.title : (
-                                    card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
-                                  )
-                                ) : (
-                                  card.title === 'Career Break Returners' ? (
-                                    <>Career Break<br />Returners</>
-                                  ) : card.title === 'Upskilling in Role' ? (
-                                    <>Upskilling<br />in Role</>
-                                  ) : card.title
-                                )}
-                              </h4>
-                              {/* Show description on mobile when expanded (leftmost) - first sentence only */}
-                              {isExpanded && (
-                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{ width: '100%' }}>
-                                  {card.description.split('.')[0] + '.'}
+                          <>
+                            {/* Expanded card on the left - shows active card content */}
+                            <div
+                              className="auth-usecase-card expanded rounded flex items-start justify-start bg-white"
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                height: '7rem',
+                                width: `${expandedWidth}rem`,
+                                padding: '1rem',
+                                zIndex: 10,
+                                transition: 'all 300ms ease-in-out'
+                              }}
+                            >
+                              <div className="flex flex-col items-start justify-center" style={{ width: '100%' }}>
+                                <h4 className="font-semibold leading-tight" style={{
+                                  color: '#7714E0',
+                                  fontSize: '0.875rem',
+                                  textAlign: 'left',
+                                  width: '100%',
+                                  transition: 'all 300ms ease-in-out'
+                                }}>
+                                  {activeCard.title}
+                                </h4>
+                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
+                                  width: '100%',
+                                  transition: 'all 300ms ease-in-out'
+                                }}>
+                                  {activeCard.description.split('.')[0] + '.'}
                                 </p>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        );
-                      });
-                    })()}
 
-                    {/* Use case indicator dots - mobile only */}
-                    {isMobile && (
-                      <div className="auth-usecase-indicators flex gap-2" style={{ position: 'absolute', top: '8rem', left: '0', width: '13rem' }}>
-                        {[0, 1, 2, 3].map((idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setActiveUseCaseIndex(idx)}
-                            className="rounded-full transition-all duration-300"
-                            style={{
-                              width: activeUseCaseIndex === idx ? '1.5rem' : '0.5rem',
-                              height: '0.5rem',
-                              backgroundColor: activeUseCaseIndex === idx ? '#7714E0' : 'rgba(255, 255, 255, 0.5)',
-                              border: 'none',
-                              cursor: 'pointer'
-                            }}
-                            aria-label={`View use case ${idx + 1}`}
-                          />
-                        ))}
-                      </div>
-                    )}
+                            {/* 4 collapsed cards on the right in 2x2 grid */}
+                            {useCaseCards.map((card, idx) => {
+                              const row = Math.floor(idx / 2); // 0 or 1
+                              const col = idx % 2; // 0 or 1
+                              const xPos = collapsedStartX + col * (collapsedWidth + gap);
+                              const yPos = row * (collapsedHeight + gap);
+                              const isActive = idx === activeUseCaseIndex;
+
+                              return (
+                                <div
+                                  key={idx}
+                                  onClick={() => setActiveUseCaseIndex(idx)}
+                                  className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer bg-white"
+                                  style={{
+                                    position: 'absolute',
+                                    top: `${yPos}rem`,
+                                    left: `${xPos}rem`,
+                                    height: `${collapsedHeight}rem`,
+                                    width: `${collapsedWidth}rem`,
+                                    padding: '0.5rem',
+                                    zIndex: 1,
+                                    transition: 'all 300ms ease-in-out',
+                                    opacity: isActive ? 1 : 0.7,
+                                    border: isActive ? '2px solid #7714E0' : '2px solid transparent'
+                                  }}
+                                >
+                                  <h4 className="font-semibold leading-tight text-center" style={{
+                                    color: '#7714E0',
+                                    fontSize: '0.6rem'
+                                  }}>
+                                    {card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title}
+                                  </h4>
+                                </div>
+                              );
+                            })}
+                          </>
+                        );
+                      }
+
+                      // Desktop layout - unchanged
+                      return useCaseCards.map((card, idx) => (
+                        <div
+                          key={idx}
+                          onMouseEnter={() => setHoveredUseCase(idx)}
+                          onMouseLeave={() => setHoveredUseCase(null)}
+                          className="auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                          style={{
+                            height: '9.775rem',
+                            width: '10.3rem',
+                            top: card.position.top,
+                            left: card.position.left,
+                            padding: '1.5rem',
+                            opacity: hoveredUseCase !== null ? 0 : 1,
+                            transition: 'all 300ms ease-in-out',
+                            pointerEvents: 'auto'
+                          }}
+                        >
+                          <div className="flex flex-col items-center justify-center text-center">
+                            <h4 className="font-semibold leading-tight" style={{
+                              color: '#7714E0',
+                              fontSize: '1.125rem'
+                            }}>
+                              {card.title === 'Career Break Returners' ? (
+                                <>Career Break<br />Returners</>
+                              ) : card.title === 'Upskilling in Role' ? (
+                                <>Upskilling<br />in Role</>
+                              ) : card.title}
+                            </h4>
+                          </div>
+                        </div>
+                      ));
+                    })()}
 
                     {/* Single overlay card that covers entire grid - desktop only */}
                     {!isMobile && (
