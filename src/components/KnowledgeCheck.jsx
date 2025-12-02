@@ -91,12 +91,12 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   };
 
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive or during typing
+    // Auto-scroll to bottom when new messages arrive
     // But only if user hasn't manually scrolled up
     if (chatContainerRef.current && !userScrolledUpRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-  }, [chatMessages, displayedText]);
+  }, [chatMessages]);
 
   // Reset scroll flag when a new message is added (not during typing)
   useEffect(() => {
