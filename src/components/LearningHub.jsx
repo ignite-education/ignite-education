@@ -3490,11 +3490,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             const isNotViewingCurrentLesson = activeCardIndex !== currentLessonIndex;
             // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
             const isViewingCompletedLesson = activeCardIndex < currentLessonIndex;
+            // Should the button be visible?
+            const showButton = isNotViewingCurrentLesson && !allLessonsCompleted;
 
-            return isNotViewingCurrentLesson && !allLessonsCompleted && (
+            return (
               <button
                 onClick={scrollToCurrentLesson}
-                className="absolute bg-white text-black hover:bg-purple-50 transition-all"
+                className="absolute bg-white text-black hover:bg-purple-50"
                 style={{
                   right: '42px',
                   top: '50%',
@@ -3507,20 +3509,47 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                   justifyContent: 'center',
                   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                   zIndex: 10,
-                  opacity: 0.7
+                  opacity: showButton ? 0.7 : 0,
+                  pointerEvents: showButton ? 'auto' : 'none',
+                  transition: 'opacity 0.3s ease-in-out'
                 }}
               >
-                {isViewingCompletedLesson ? (
-                  // Right-pointing arrow when viewing completed lessons
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                ) : (
-                  // Left-pointing arrow when viewing upcoming lessons
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
-                  </svg>
-                )}
+                {/* Right-pointing arrow */}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    position: 'absolute',
+                    opacity: isViewingCompletedLesson ? 1 : 0,
+                    transition: 'opacity 0.3s ease-in-out'
+                  }}
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+                {/* Left-pointing arrow */}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    position: 'absolute',
+                    opacity: isViewingCompletedLesson ? 0 : 1,
+                    transition: 'opacity 0.3s ease-in-out'
+                  }}
+                >
+                  <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
               </button>
             );
           })()}
