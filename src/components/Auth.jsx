@@ -145,6 +145,7 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
+  const [expandedUseCaseMobile, setExpandedUseCaseMobile] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const linkedInFAQSectionRef = useRef(null);
@@ -2106,25 +2107,25 @@ const Auth = () => {
       {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
-          className="min-h-screen flex items-center justify-center px-8"
+          className="auth-section-5 min-h-screen flex items-center justify-center px-8"
           style={{
             background: 'black',
             scrollSnapAlign: 'start'
           }}
         >
-          <div className="w-full text-white text-left">
+          <div className="auth-section-5-content w-full text-white text-left">
             {/* Title Container */}
             <div className="max-w-4xl mx-auto px-4">
-              <h3 className="font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '2.8rem' }}>
+              <h3 className="auth-section-5-title font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '7.5rem', marginBottom: '2.8rem' }}>
                 {renderTypedTestimonialsHeading()}
               </h3>
             </div>
 
             {/* Testimonials and Cards Container */}
-            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="mx-auto">
+            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="auth-section-5-grid mx-auto">
               <div className="grid grid-cols-2 gap-12 items-start">
                 {/* Left Column - Testimonials Slider */}
-                <div className="flex flex-col justify-center"
+                <div className="auth-testimonial-container flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
                   onMouseLeave={() => setIsTestimonialHovered(false)}>
                   <div className="relative">
@@ -2162,7 +2163,7 @@ const Auth = () => {
                     ].map((testimonial, idx) => (
                       <div
                         key={idx}
-                        className="bg-white p-6 rounded flex items-center justify-center"
+                        className="auth-testimonial-card bg-white p-6 rounded flex items-center justify-center"
                         style={{
                           position: idx === 0 ? 'relative' : 'absolute',
                           top: idx === 0 ? 'auto' : 0,
@@ -2171,23 +2172,23 @@ const Auth = () => {
                           opacity: currentTestimonialIndex === idx ? 1 : 0,
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                          width: '576px',
-                          height: '324.8px',
+                          width: '36rem',
+                          height: '20.3rem',
                           overflow: 'visible'
                         }}
                       >
-                        <div style={{ paddingBottom: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '10px' }}>
-                          <p className="text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
+                        <div style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.625rem' }}>
+                          <p className="auth-testimonial-quote text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
                         </div>
                         {/* Avatar positioned on bottom edge */}
                         <div
-                          className="w-24 h-24 rounded flex-shrink-0"
+                          className="auth-testimonial-avatar w-24 h-24 rounded flex-shrink-0"
                           style={{
                             position: 'absolute',
-                            bottom: '-40px',
-                            left: '44px',
+                            bottom: '-2.5rem',
+                            left: '2.75rem',
                             backgroundImage: `url(${testimonial.avatar})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
@@ -2195,10 +2196,11 @@ const Auth = () => {
                         ></div>
                         {/* Name and role positioned at bottom edge */}
                         <div
+                          className="auth-testimonial-info"
                           style={{
                             position: 'absolute',
-                            bottom: '12px',
-                            left: '155px',
+                            bottom: '0.75rem',
+                            left: '9.6875rem',
                             lineHeight: '1.2'
                           }}
                         >
@@ -2210,7 +2212,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="flex justify-center gap-2" style={{ width: '576px', marginTop: '1rem', marginLeft: '20px' }}>
+                  <div className="auth-testimonial-indicators flex justify-center gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
@@ -2221,9 +2223,9 @@ const Auth = () => {
                             : 'bg-white hover:bg-gray-300'
                         }`}
                         style={{
-                          width: currentTestimonialIndex === idx ? '32px' : '10px',
-                          height: '10px',
-                          borderRadius: '2px'
+                          width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
+                          height: '0.625rem',
+                          borderRadius: '0.125rem'
                         }}
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
@@ -2233,8 +2235,8 @@ const Auth = () => {
 
 
                 {/* Right Column - 2x2 Grid of Cards */}
-                <div className="flex items-center justify-center">
-                  <div className="relative" style={{ width: '21.35rem', height: '20.3rem' }}>
+                <div className="auth-usecase-container flex items-center justify-center">
+                  <div className="auth-usecase-grid relative" style={{ width: '21.35rem', height: '20.3rem' }}>
                     {[
                       {
                         title: 'Recent Graduates',
@@ -2260,22 +2262,29 @@ const Auth = () => {
                       <div
                         key={idx}
                         onMouseEnter={() => {
-                          setHoveredUseCase(idx);
+                          if (!isMobile) setHoveredUseCase(idx);
                         }}
                         onMouseLeave={() => {
-                          setHoveredUseCase(null);
+                          if (!isMobile) setHoveredUseCase(null);
                         }}
-                        className="rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                        onClick={() => {
+                          if (isMobile) {
+                            setExpandedUseCaseMobile(expandedUseCaseMobile === idx ? null : idx);
+                          }
+                        }}
+                        className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isMobile && expandedUseCaseMobile === idx ? 'expanded' : ''}`}
                         style={{
-                          height: '9.775rem',
-                          width: '10.3rem',
-                          top: card.position.top,
-                          left: card.position.left,
+                          height: isMobile && expandedUseCaseMobile === idx ? 'auto' : '9.775rem',
+                          width: isMobile ? (expandedUseCaseMobile === idx ? '18rem' : '10.3rem') : '10.3rem',
+                          minHeight: isMobile && expandedUseCaseMobile === idx ? '12rem' : undefined,
+                          top: isMobile ? undefined : card.position.top,
+                          left: isMobile ? undefined : card.position.left,
                           zIndex: 1,
                           padding: '1.5rem',
-                          opacity: hoveredUseCase !== null ? 0 : 1,
-                          transition: 'opacity 300ms ease-in-out',
-                          pointerEvents: 'auto'
+                          opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
+                          transition: 'all 300ms ease-in-out',
+                          pointerEvents: 'auto',
+                          flexShrink: 0
                         }}
                       >
                         <div className="flex flex-col items-center justify-center text-center">
@@ -2288,59 +2297,69 @@ const Auth = () => {
                               <>Upskilling<br />in Role</>
                             ) : card.title}
                           </h4>
+                          {/* Show description on mobile when expanded */}
+                          {isMobile && expandedUseCaseMobile === idx && (
+                            <p className="text-black text-sm leading-relaxed mt-3" style={{
+                              animation: 'fadeIn 300ms ease-in forwards'
+                            }}>
+                              {card.description}
+                            </p>
+                          )}
                         </div>
                       </div>
                     ))}
 
-                    {/* Single overlay card that covers entire grid */}
-                    <div
-                      onMouseEnter={() => {
-                        if (hoveredUseCase !== null) {
-                          setHoveredUseCase(hoveredUseCase);
-                        }
-                      }}
-                      onMouseLeave={() => {
-                        setHoveredUseCase(null);
-                      }}
-                      className="absolute rounded flex items-center justify-center bg-white"
-                      style={{
-                        top: 0,
-                        left: 0,
-                        width: '21.35rem',
-                        height: '20.3rem',
-                        zIndex: 10,
-                        padding: '2rem',
-                        opacity: hoveredUseCase !== null ? 1 : 0,
-                        visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
-                        transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
-                        pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
-                      }}
-                    >
-                      <div className="flex flex-col items-center justify-center text-center" style={{
-                        animation: hoveredUseCase !== null ? 'fadeIn 400ms ease-in forwards' : 'none',
-                        animationDelay: '100ms',
-                        opacity: 0
-                      }}>
-                        <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
-                          color: '#7714E0'
+                    {/* Single overlay card that covers entire grid - desktop only */}
+                    {!isMobile && (
+                      <div
+                        onMouseEnter={() => {
+                          if (hoveredUseCase !== null) {
+                            setHoveredUseCase(hoveredUseCase);
+                          }
+                        }}
+                        onMouseLeave={() => {
+                          setHoveredUseCase(null);
+                        }}
+                        className="auth-usecase-overlay absolute rounded flex items-center justify-center bg-white"
+                        style={{
+                          top: 0,
+                          left: 0,
+                          width: '21.35rem',
+                          height: '20.3rem',
+                          zIndex: 10,
+                          padding: '2rem',
+                          opacity: hoveredUseCase !== null ? 1 : 0,
+                          visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
+                          transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
+                          pointerEvents: hoveredUseCase !== null ? 'auto' : 'none'
+                        }}
+                      >
+                        <div className="flex flex-col items-center justify-center text-center" style={{
+                          animation: hoveredUseCase !== null ? 'fadeIn 400ms ease-in forwards' : 'none',
+                          animationDelay: '100ms',
+                          opacity: 0
                         }}>
-                          {hoveredUseCase !== null ? [
-                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
-                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
-                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
-                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
-                          ][hoveredUseCase].title : ''}
-                        </h4>
-                        <p className="text-black text-base leading-relaxed">
-                          {hoveredUseCase !== null ? [
-                            { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
-                            { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
-                            { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
-                            { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
-                          ][hoveredUseCase].description : ''}
-                        </p>
+                          <h4 className="font-semibold leading-tight text-2xl mb-4" style={{
+                            color: '#7714E0'
+                          }}>
+                            {hoveredUseCase !== null ? [
+                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                            ][hoveredUseCase].title : ''}
+                          </h4>
+                          <p className="text-black text-base leading-relaxed">
+                            {hoveredUseCase !== null ? [
+                              { title: 'Recent Graduates', description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.' },
+                              { title: 'Career Break Returners', description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.' },
+                              { title: 'Upskilling in Role', description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.' },
+                              { title: 'Pivotting Careers', description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.' }
+                            ][hoveredUseCase].description : ''}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
