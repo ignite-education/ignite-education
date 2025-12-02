@@ -2512,7 +2512,7 @@ const Auth = () => {
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
-                Policy
+                Privacy
               </a>
               <a
                 href="/terms"
