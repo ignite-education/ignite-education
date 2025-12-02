@@ -1697,11 +1697,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     // Only run if we have lessons and the scroll container exists
     if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0 || loading) return;
 
-    // Find the index of the current lesson
-    // Find the first incomplete lesson (this is the current lesson)
-    const currentLessonIndex = upcomingLessonsToShow.findIndex(
-      lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+    // Find the index of the lesson specified in URL params (currentModule/currentLesson)
+    let currentLessonIndex = upcomingLessonsToShow.findIndex(
+      lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
     );
+
+    // Fallback: if URL lesson not found, use first incomplete lesson
+    if (currentLessonIndex === -1) {
+      currentLessonIndex = upcomingLessonsToShow.findIndex(
+        lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
+      );
+    }
 
     console.log('🎯 LearningHub - Attempting to scroll to current lesson index:', currentLessonIndex);
     console.log('📚 LearningHub - Total lessons:', upcomingLessonsToShow.length);
