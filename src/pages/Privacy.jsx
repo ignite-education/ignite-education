@@ -1,51 +1,56 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { Home, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
-import Breadcrumbs from '../components/Breadcrumbs';
 
 const Privacy = () => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-black">
       <SEO
         title="Privacy Policy"
         description="Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws."
         keywords="privacy policy, data protection, GDPR, UK data privacy, personal information, Ignite Education privacy"
         url="https://www.ignite.education/privacy"
       />
-      {/* Header with Logo */}
-      <div className="fixed top-0 left-0 w-full bg-black z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center py-4">
-            <button
-              onClick={() => navigate('/welcome')}
-              className="flex items-center hover:opacity-80 transition-opacity"
-            >
-              <img
-                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
-                alt="Ignite Education Logo"
-                className="w-32 h-12 object-contain object-left"
-              />
-            </button>
-          </div>
+
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50 bg-black">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
+          <Link to="/" className="inline-block">
+            <div
+              className="w-32 h-10 bg-contain bg-no-repeat bg-left"
+              style={{
+                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
+              }}
+            />
+          </Link>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-4xl px-4 sm:px-6 lg:px-8 pt-24 pb-16">
-        <div style={{ marginLeft: '48px' }}>
-          <Breadcrumbs customItems={[
-            { name: 'Home', href: '/' },
-            { name: 'Privacy Policy' }
-          ]} />
-          <h1 className="text-4xl font-bold mb-8 mt-6">Privacy Policy</h1>
+      {/* Hero Section (Black) */}
+      <div className="bg-black">
+        <div className="max-w-4xl mx-auto px-6 py-12">
+          {/* Breadcrumb Navigation */}
+          <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
+            <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
+              <Home className="w-4 h-4" />
+            </Link>
+            <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
+            <span style={{ color: '#F0F0F2' }}>Privacy Policy</span>
+          </nav>
 
+          <h1 className="text-4xl font-bold text-white">Privacy Policy</h1>
+        </div>
+      </div>
+
+      {/* White Content Section */}
+      <div className="bg-white">
+        <div className="max-w-4xl mx-auto px-6 py-12">
           {/* Policy Content */}
-          <div className="space-y-8 text-gray-100 leading-relaxed">
+          <div className="space-y-8 text-gray-900 leading-relaxed">
 
           {/* Version Info */}
-          <div className="text-sm text-white">
+          <div className="text-sm text-gray-900">
             <p><strong>Version Number:</strong> v1</p>
             <p><strong>Last Updated:</strong> November 2, 2025</p>
             <p><strong>Effective Date:</strong> November 2, 2025</p>
@@ -347,14 +352,14 @@ const Privacy = () => {
           </section>
 
           {/* Closing Statement */}
-          <section className="border-t border-gray-700 pt-6">
+          <section className="border-t border-gray-200 pt-6">
             <p className="mb-4 font-semibold">
               By using Ignite Education, you acknowledge that you have read and understood this Privacy Policy and agree to its terms.
             </p>
             <p className="mb-4 font-semibold">
               If you do not agree with this Privacy Policy, please discontinue use of our Website immediately.
             </p>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500">
               This Privacy Policy was created to comply with UK GDPR and data protection laws. For specific legal advice regarding your data rights or our practices, please consult with a legal professional.
             </p>
           </section>
