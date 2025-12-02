@@ -175,6 +175,8 @@ const LearningHub = () => {
   const sectionRefs = React.useRef([]);
   const contentScrollRef = React.useRef(null);
   const isInitialMountRef = React.useRef(true);
+  const userScrolledUpRef = React.useRef(false);
+  const lastScrollTopRef = React.useRef(0);
   const [isReading, setIsReading] = React.useState(false);
   const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
   const [currentNarrationWord, setCurrentNarrationWord] = React.useState(-1); // Track which word is being spoken
@@ -455,15 +457,30 @@ const LearningHub = () => {
     }
   }, [currentModule, currentLesson]);
 
-  useEffect(() => {
+  // Handle chat scroll to detect if user scrolled up
+  const handleChatScroll = () => {
     if (chatContainerRef.current) {
-      const container = chatContainerRef.current;
-      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-      if (isNearBottom) {
-        container.scrollTop = container.scrollHeight;
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+
+      // If user scrolled up (away from bottom), mark it
+      if (!isAtBottom && scrollTop < lastScrollTopRef.current) {
+        userScrolledUpRef.current = true;
       }
+      // If user scrolled back to bottom, reset the flag
+      if (isAtBottom) {
+        userScrolledUpRef.current = false;
+      }
+      lastScrollTopRef.current = scrollTop;
     }
-  }, [chatMessages]);
+  };
+
+  useEffect(() => {
+    // Auto-scroll to bottom during typing, but only if user hasn't scrolled up
+    if (chatContainerRef.current && !userScrolledUpRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages, displayedText]);
 
   // Handle text selection
   useEffect(() => {
@@ -3560,7 +3577,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
           <h3 className="flex-shrink-0 font-semibold" style={{ fontSize: '19px', marginBottom: '1px' }}>Chat with Will</h3>
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div ref={chatContainerRef} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
+            <div ref={chatContainerRef} onScroll={handleChatScroll} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
               <div className="flex-1" />
               {chatMessages.map((msg, idx) => {
                 // Don't show empty assistant bubbles (before typing starts)
