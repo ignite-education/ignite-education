@@ -653,6 +653,9 @@ const LearningHub = () => {
     };
 
     const observer = new IntersectionObserver((entries) => {
+      // Skip until carousel is initialized to prevent overriding the correct initial position
+      if (!isCarouselReady) return;
+
       // Find the most visible card
       let mostVisibleCard = null;
       let highestRatio = 0;
@@ -678,7 +681,9 @@ const LearningHub = () => {
     });
 
     // Force initial check - manually determine which card is most visible
+    // Only run after carousel is initialized to prevent overriding the correct position
     requestAnimationFrame(() => {
+      if (!isCarouselReady) return;
       if (scrollContainerRef.current && cardRefs.current.length > 0) {
         const scrollLeft = scrollContainerRef.current.scrollLeft;
         const containerWidth = scrollContainerRef.current.clientWidth;
@@ -712,7 +717,7 @@ const LearningHub = () => {
     return () => {
       observer.disconnect();
     };
-  }, [groupedLessons, currentModule, currentLesson]);
+  }, [groupedLessons, currentModule, currentLesson, isCarouselReady]);
 
   const fetchLessonData = async () => {
     try {
