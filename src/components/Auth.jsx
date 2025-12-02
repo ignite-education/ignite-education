@@ -2490,13 +2490,13 @@ const Auth = () => {
                 Contact
               </a>
               <a
-                href="https://www.linkedin.com/school/ignite-courses/jobs/"
+                href="https://shop.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
-                Careers
+                Store
               </a>
               <a
                 href="https://www.linkedin.com/school/ignite-courses/"
