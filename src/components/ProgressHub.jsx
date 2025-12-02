@@ -2919,20 +2919,20 @@ const ProgressHub = () => {
               {/* Footer Links */}
               <div className="flex gap-4 text-white font-semibold flex-shrink-0" style={{ fontSize: '14px', paddingTop: '2px', marginTop: '1px' }}>
                 <button
-                  className="hover:text-pink-500 transition"
+                  className="hover:text-[#EF0B72] transition"
                   onClick={() => window.open('https://www.linkedin.com/school/ignite-courses', '_blank', 'noopener,noreferrer')}
                 >
                   LinkedIn
                 </button>
-                <button className="hover:text-pink-500 transition" onClick={handleOpenSettings}>Settings</button>
+                <button className="hover:text-[#EF0B72] transition" onClick={handleOpenSettings}>Settings</button>
                 <button
-                  className="hover:text-pink-500 transition"
+                  className="hover:text-[#EF0B72] transition"
                   onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.firstName} ${user.lastName}&body=My Ignite Account is ${user.email}`}
                 >
                   Support
                 </button>
                 <button
-                  className="hover:text-pink-500 transition"
+                  className="hover:text-[#EF0B72] transition"
                   onClick={() => window.location.href = `mailto:feedback@ignite.education?subject=Feedback: ${user.firstName} ${user.lastName}`}
                 >
                   Feedback
