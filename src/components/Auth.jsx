@@ -2302,8 +2302,8 @@ const Auth = () => {
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
-                                height: '9rem',
-                                width: '9rem',
+                                height: '7rem',
+                                width: '7rem',
                                 padding: '1rem',
                                 zIndex: 10,
                                 transition: 'all 300ms ease-in-out'
@@ -2343,7 +2343,7 @@ const Auth = () => {
                                   style={{
                                     position: 'absolute',
                                     top: `${yPos}rem`,
-                                    left: `calc(9rem + 1rem + ${col * (collapsedWidth + gap)}rem)`,
+                                    left: `calc(7rem + 1rem + ${col * (collapsedWidth + gap)}rem)`,
                                     height: `${collapsedHeight}rem`,
                                     width: `${collapsedWidth}rem`,
                                     padding: '0.5rem',
