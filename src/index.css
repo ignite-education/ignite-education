@@ -771,11 +771,11 @@ body {
 
   /* Testimonial card - fixed identical size for all cards, centered */
   .auth-testimonial-card {
-    width: 15rem !important;
-    max-width: 15rem !important;
-    height: 10rem !important;
-    min-height: 10rem !important;
-    max-height: 10rem !important;
+    width: 20rem !important;
+    max-width: 20rem !important;
+    height: 15rem !important;
+    min-height: 15rem !important;
+    max-height: 15rem !important;
     padding: 1rem !important;
     margin: 0 auto !important;
     overflow: hidden !important;
@@ -804,7 +804,7 @@ body {
 
   .auth-testimonial-indicators {
     width: 100% !important;
-    max-width: 15rem !important;
+    max-width: 20rem !important;
     margin-top: 2rem !important;
     margin-left: 0 !important;
     justify-content: center !important;
