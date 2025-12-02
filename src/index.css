@@ -771,8 +771,8 @@ body {
 
   /* Testimonial card - fixed identical size for all cards, left aligned */
   .auth-testimonial-card {
-    width: 20rem !important;
-    max-width: 20rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
     height: 14rem !important;
     min-height: 14rem !important;
     max-height: 14rem !important;
@@ -804,7 +804,7 @@ body {
 
   .auth-testimonial-info {
     left: 7rem !important;
-    bottom: 0.25rem !important;
+    bottom: 0.75rem !important;
     font-size: 0.8rem !important;
   }
 
