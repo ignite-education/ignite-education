@@ -2274,32 +2274,37 @@ const Auth = () => {
                         }}
                         className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isMobile && expandedUseCaseMobile === idx ? 'expanded' : ''}`}
                         style={{
-                          height: isMobile && expandedUseCaseMobile === idx ? 'auto' : '9.775rem',
-                          width: isMobile ? (expandedUseCaseMobile === idx ? '18rem' : '10.3rem') : '10.3rem',
-                          minHeight: isMobile && expandedUseCaseMobile === idx ? '12rem' : undefined,
+                          height: isMobile ? (expandedUseCaseMobile === idx ? 'auto' : '5.5rem') : '9.775rem',
+                          width: isMobile ? (expandedUseCaseMobile === idx ? '16rem' : '5.5rem') : '10.3rem',
+                          minHeight: isMobile && expandedUseCaseMobile === idx ? '8rem' : undefined,
                           top: isMobile ? undefined : card.position.top,
                           left: isMobile ? undefined : card.position.left,
-                          zIndex: 1,
-                          padding: '1.5rem',
+                          zIndex: isMobile && expandedUseCaseMobile === idx ? 10 : 1,
+                          padding: isMobile ? '0.75rem' : '1.5rem',
                           opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
                           transition: 'all 300ms ease-in-out',
                           pointerEvents: 'auto',
                           flexShrink: 0
                         }}
                       >
-                        <div className="flex flex-col items-center justify-center text-center">
-                          <h4 className="font-semibold leading-tight text-lg" style={{
-                            color: '#7714E0'
+                        <div className={`flex flex-col ${isMobile && expandedUseCaseMobile === idx ? 'items-start' : 'items-center'} justify-center text-center`}>
+                          <h4 className="font-semibold leading-tight" style={{
+                            color: '#7714E0',
+                            fontSize: isMobile ? '0.75rem' : '1.125rem'
                           }}>
-                            {card.title === 'Career Break Returners' ? (
-                              <>Career Break<br />Returners</>
-                            ) : card.title === 'Upskilling in Role' ? (
-                              <>Upskilling<br />in Role</>
-                            ) : card.title}
+                            {isMobile ? (
+                              card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
+                            ) : (
+                              card.title === 'Career Break Returners' ? (
+                                <>Career Break<br />Returners</>
+                              ) : card.title === 'Upskilling in Role' ? (
+                                <>Upskilling<br />in Role</>
+                              ) : card.title
+                            )}
                           </h4>
                           {/* Show description on mobile when expanded */}
                           {isMobile && expandedUseCaseMobile === idx && (
-                            <p className="text-black text-sm leading-relaxed mt-3" style={{
+                            <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
                               animation: 'fadeIn 300ms ease-in forwards'
                             }}>
                               {card.description}
@@ -2365,7 +2370,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="flex justify-center mt-12">
+            <div className="auth-section-5-arrow flex justify-center mt-12">
                 <button
                   onClick={() => {
                     linkedInFAQSectionRef.current?.scrollIntoView({
@@ -2376,7 +2381,7 @@ const Auth = () => {
                   className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
                   style={{
                     animation: 'subtleBounce 2s infinite',
-                    padding: '11px'
+                    padding: '0.6875rem'
                   }}
                   aria-label="Scroll to LinkedIn and FAQs"
                 >
