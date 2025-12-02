@@ -1735,11 +1735,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       console.log('📍 LearningHub - Setting initial scroll position:', scrollPosition);
 
-      // Defer scroll to next frame to ensure DOM is ready (Safari fix)
+      // Temporarily disable scroll-snap and smooth scroll for programmatic positioning (Safari fix)
+      const originalScrollSnap = container.style.scrollSnapType;
+      const originalScrollBehavior = container.style.scrollBehavior;
+      container.style.scrollSnapType = 'none';
+      container.style.scrollBehavior = 'auto';
+
+      // Defer scroll to next frame to ensure DOM is ready
       requestAnimationFrame(() => {
         container.scrollLeft = scrollPosition;
         setActiveCardIndex(currentLessonIndex);
-        setIsCarouselReady(true);
+
+        // Re-enable scroll-snap after scroll is set
+        requestAnimationFrame(() => {
+          container.style.scrollSnapType = originalScrollSnap;
+          container.style.scrollBehavior = originalScrollBehavior;
+          setIsCarouselReady(true);
+        });
       });
     } else {
       // No current lesson found, just show the carousel
