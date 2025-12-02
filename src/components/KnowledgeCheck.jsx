@@ -733,7 +733,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   type="submit"
                   disabled={isEvaluating || !chatInput.trim()}
                   className="w-full text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
+                  style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                   onMouseEnter={(e) => !isEvaluating && chatInput.trim() && (e.currentTarget.style.backgroundColor = '#6610C7')}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
                 >
@@ -746,7 +746,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   <button
                     onClick={handleProceed}
                     className="w-full text-white px-4 py-2 font-medium transition"
-                    style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#EF0B72' }}
+                    style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#EF0B72' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
                   >

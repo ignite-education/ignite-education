@@ -3787,7 +3787,7 @@ ${currentLessonSections.map((section) => {
                     }
                   }}
                   className="flex-shrink-0 w-full text-white px-4 py-2 font-medium transition overflow-hidden"
-                  style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0', hover: { backgroundColor: '#6610C7' } }}
+                  style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#7714E0', hover: { backgroundColor: '#6610C7' } }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#6610C7'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
                 >
