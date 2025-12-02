@@ -735,7 +735,7 @@ body {
     min-height: 5.5rem !important;
     height: 5.5rem !important;
     flex-shrink: 0 !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: 1.5rem !important;
     position: relative !important;
   }
 
@@ -752,7 +752,7 @@ body {
 
   .auth-section-5-grid > div {
     grid-template-columns: 1fr !important;
-    gap: 0.5rem !important;
+    gap: 1rem !important;
     display: flex !important;
     flex-direction: column !important;
     flex: 1 !important;
