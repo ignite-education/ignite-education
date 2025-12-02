@@ -1735,14 +1735,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       console.log('📍 LearningHub - Setting initial scroll position:', scrollPosition);
 
-      // Set scroll position immediately without animation
-      container.scrollLeft = scrollPosition;
-
-      // Update active card index to match
-      setActiveCardIndex(currentLessonIndex);
-
-      // Mark carousel as ready to display
-      setIsCarouselReady(true);
+      // Defer scroll to next frame to ensure DOM is ready (Safari fix)
+      requestAnimationFrame(() => {
+        container.scrollLeft = scrollPosition;
+        setActiveCardIndex(currentLessonIndex);
+        setIsCarouselReady(true);
+      });
     } else {
       // No current lesson found, just show the carousel
       setIsCarouselReady(true);
