@@ -3331,20 +3331,34 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         {/* Upcoming Lessons */}
         <div className="flex-shrink-0 px-8 relative" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
-          <h3 className="font-semibold" style={{ fontSize: '19px', marginBottom: '2px' }}>
-            {upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length && upcomingLessonsToShow[activeCardIndex] ? (
-              (() => {
-                const activeLesson = upcomingLessonsToShow[activeCardIndex];
-                const isCompleted = isLessonCompleted(activeLesson.module_number, activeLesson.lesson_number);
-                // Find the first incomplete lesson (this is the current lesson)
-                const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-                const isCurrentLesson = activeCardIndex === firstIncompleteIndex;
+          <h3 className="font-semibold" style={{ fontSize: '19px', marginBottom: '2px', position: 'relative', height: '1.5em' }}>
+            {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => {
+              const activeLesson = upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length ? upcomingLessonsToShow[activeCardIndex] : null;
+              const isCompleted = activeLesson ? isLessonCompleted(activeLesson.module_number, activeLesson.lesson_number) : false;
+              const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+              const isCurrentLesson = activeLesson && activeCardIndex === firstIncompleteIndex;
 
-                if (isCompleted) return 'Completed Lesson';
-                if (isCurrentLesson) return 'Current Lesson';
-                return 'Upcoming Lesson';
-              })()
-            ) : 'Upcoming Lessons'}
+              let currentLabel = 'Upcoming Lesson';
+              if (isCompleted) currentLabel = 'Completed Lesson';
+              else if (isCurrentLesson) currentLabel = 'Current Lesson';
+
+              const isActive = label === currentLabel;
+
+              return (
+                <span
+                  key={label}
+                  style={{
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    opacity: isActive ? 1 : 0,
+                    transition: 'opacity 0.3s ease-in-out'
+                  }}
+                >
+                  {label}
+                </span>
+              );
+            })}
           </h3>
           <div
             ref={scrollContainerRef}
@@ -3399,23 +3413,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       }}
                     >
                         {/* Opacity overlay for non-active cards */}
-                        {index !== activeCardIndex && (
-                          <div
-                            style={{
-                              position: 'absolute',
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                              backdropFilter: 'blur(0.75px)',
-                              WebkitBackdropFilter: 'blur(0.75px)',
-                              borderRadius: '0.3rem',
-                              pointerEvents: 'none',
-                              transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
-                            }}
-                          />
-                        )}
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: index !== activeCardIndex ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
+                            backdropFilter: index !== activeCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                            WebkitBackdropFilter: index !== activeCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                            borderRadius: '0.3rem',
+                            pointerEvents: 'none',
+                            transition: 'background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out, -webkit-backdrop-filter 0.3s ease-in-out'
+                          }}
+                        />
                         <div className="flex-1">
                           <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                             {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
