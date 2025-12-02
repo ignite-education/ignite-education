@@ -463,7 +463,7 @@ const LearningHub = () => {
         container.scrollTop = container.scrollHeight;
       }
     }
-  }, [chatMessages, displayedText]);
+  }, [chatMessages]);
 
   // Handle text selection
   useEffect(() => {
