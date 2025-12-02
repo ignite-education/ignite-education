@@ -545,17 +545,30 @@ const LearningHub = () => {
     let pauseCounter = 0;
 
     const typingInterval = setInterval(() => {
-      // Check if we need to pause (at newline characters)
+      // Check if we need to pause
       if (pauseCounter > 0) {
         pauseCounter--;
         return;
       }
 
       if (currentIndex < fullText.length) {
+        // Check if NEXT character is a newline - pause BEFORE showing it
+        if (fullText[currentIndex] === '\n') {
+          // Skip the newline and show it together with the next character
+          if (currentIndex + 1 < fullText.length) {
+            setDisplayedText(fullText.substring(0, currentIndex + 2));
+            currentIndex += 2;
+          } else {
+            setDisplayedText(fullText.substring(0, currentIndex + 1));
+            currentIndex++;
+          }
+          return;
+        }
+
         setDisplayedText(fullText.substring(0, currentIndex + 1));
 
-        // Add pause after newline characters
-        if (fullText[currentIndex] === '\n') {
+        // Add pause BEFORE newline (if next char is newline)
+        if (currentIndex + 1 < fullText.length && fullText[currentIndex + 1] === '\n') {
           pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
         }
 

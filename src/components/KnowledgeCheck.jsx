@@ -160,10 +160,23 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       }
 
       if (currentIndex < text.length) {
+        // Check if current character is a newline - show it together with next character
+        if (text[currentIndex] === '\n') {
+          // Skip the newline and show it together with the next character
+          if (currentIndex + 1 < text.length) {
+            setDisplayedText(text.substring(0, currentIndex + 2));
+            currentIndex += 2;
+          } else {
+            setDisplayedText(text.substring(0, currentIndex + 1));
+            currentIndex++;
+          }
+          return;
+        }
+
         setDisplayedText(text.substring(0, currentIndex + 1));
 
-        // Add pause after newline characters
-        if (text[currentIndex] === '\n') {
+        // Add pause BEFORE newline (if next char is newline)
+        if (currentIndex + 1 < text.length && text[currentIndex + 1] === '\n') {
           pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
         }
 
