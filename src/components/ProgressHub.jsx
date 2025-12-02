@@ -2461,20 +2461,34 @@ const ProgressHub = () => {
 
               {/* Upcoming Lessons */}
               <div className="flex-shrink-0 relative" style={{ marginTop: '3px', minHeight: '160px' }}>
-                <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '0.05rem' }}>
-                  {upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length && upcomingLessons[snappedCardIndex] ? (
-                    (() => {
-                      const snappedLesson = upcomingLessons[snappedCardIndex];
-                      const isCompleted = isLessonCompleted(snappedLesson.module_number, snappedLesson.lesson_number);
-                      // Find the first incomplete lesson (this is the current lesson)
-                      const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-                      const isCurrentLesson = snappedCardIndex === firstIncompleteIndex;
+                <h2 className="font-semibold" style={{ fontSize: '19px', marginBottom: '0.05rem', position: 'relative', height: '1.5em' }}>
+                  {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => {
+                    const snappedLesson = upcomingLessons.length > 0 && snappedCardIndex < upcomingLessons.length ? upcomingLessons[snappedCardIndex] : null;
+                    const isCompleted = snappedLesson ? isLessonCompleted(snappedLesson.module_number, snappedLesson.lesson_number) : false;
+                    const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+                    const isCurrentLessonCard = snappedLesson && snappedCardIndex === firstIncompleteIndex;
 
-                      if (isCompleted) return 'Completed Lesson';
-                      if (isCurrentLesson) return 'Current Lesson';
-                      return 'Upcoming Lesson';
-                    })()
-                  ) : 'Upcoming Lessons'}
+                    let currentLabel = 'Upcoming Lesson';
+                    if (isCompleted) currentLabel = 'Completed Lesson';
+                    else if (isCurrentLessonCard) currentLabel = 'Current Lesson';
+
+                    const isActive = label === currentLabel;
+
+                    return (
+                      <span
+                        key={label}
+                        style={{
+                          position: 'absolute',
+                          left: 0,
+                          top: 0,
+                          opacity: isActive ? 1 : 0,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                      >
+                        {label}
+                      </span>
+                    );
+                  })}
                 </h2>
                 <div
                   ref={scrollContainerRef}
@@ -2535,23 +2549,21 @@ const ProgressHub = () => {
                           }}
                         >
                             {/* Opacity overlay for non-snapped cards */}
-                            {index !== snappedCardIndex && (
-                              <div
-                                style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  right: 0,
-                                  bottom: 0,
-                                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                                  backdropFilter: 'blur(0.75px)',
-                                  WebkitBackdropFilter: 'blur(0.75px)',
-                                  borderRadius: '0.3rem',
-                                  pointerEvents: 'none',
-                                  transition: 'background-color 0.4s cubic-bezier(0.4, 0.0, 0.2, 1), backdrop-filter 0.4s cubic-bezier(0.4, 0.0, 0.2, 1)'
-                                }}
-                              />
-                            )}
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                bottom: 0,
+                                backgroundColor: index !== snappedCardIndex ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
+                                backdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                                WebkitBackdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                                borderRadius: '0.3rem',
+                                pointerEvents: 'none',
+                                transition: 'background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out, -webkit-backdrop-filter 0.3s ease-in-out'
+                              }}
+                            />
                             <div className="flex-1">
                               <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
                                 {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
@@ -2620,11 +2632,13 @@ const ProgressHub = () => {
                   const isNotViewingCurrentLesson = snappedCardIndex !== currentLessonIndex;
                   // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
                   const isViewingCompletedLesson = snappedCardIndex < currentLessonIndex;
+                  // Should the button be visible?
+                  const showButton = isNotViewingCurrentLesson && !allLessonsCompleted;
 
-                  return isNotViewingCurrentLesson && !allLessonsCompleted && (
+                  return (
                     <button
                       onClick={scrollToCurrentLesson}
-                      className="absolute bg-white text-black hover:bg-purple-50 transition-all"
+                      className="absolute bg-white text-black hover:bg-purple-50"
                       style={{
                         right: '16px',
                         top: '50%',
@@ -2637,20 +2651,47 @@ const ProgressHub = () => {
                         justifyContent: 'center',
                         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                         zIndex: 10,
-                        opacity: 0.7
+                        opacity: showButton ? 0.7 : 0,
+                        pointerEvents: showButton ? 'auto' : 'none',
+                        transition: 'opacity 0.3s ease-in-out'
                       }}
                     >
-                      {isViewingCompletedLesson ? (
-                        // Right-pointing arrow when viewing completed lessons
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M5 12h14M12 5l7 7-7 7"/>
-                        </svg>
-                      ) : (
-                        // Left-pointing arrow when viewing upcoming lessons
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 12H5M12 19l-7-7 7-7"/>
-                        </svg>
-                      )}
+                      {/* Right-pointing arrow */}
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          position: 'absolute',
+                          opacity: isViewingCompletedLesson ? 1 : 0,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                      </svg>
+                      {/* Left-pointing arrow */}
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{
+                          position: 'absolute',
+                          opacity: isViewingCompletedLesson ? 0 : 1,
+                          transition: 'opacity 0.3s ease-in-out'
+                        }}
+                      >
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                      </svg>
                     </button>
                   );
                 })()}
