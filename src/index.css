@@ -852,9 +852,9 @@ body {
 
   /* Expanded card - 80% bigger (leftmost position) */
   .auth-usecase-card.expanded {
-    width: 10rem !important;
-    height: auto !important;
-    min-height: 10rem !important;
+    width: 13rem !important;
+    height: 7rem !important;
+    min-height: 7rem !important;
     padding: 1rem !important;
   }
 

@@ -2330,9 +2330,9 @@ const Auth = () => {
                             }}
                             className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isExpanded ? 'expanded' : ''}`}
                             style={{
-                              height: isMobile ? (isExpanded ? 'auto' : '5.5rem') : '9.775rem',
-                              width: isMobile ? (isExpanded ? '10rem' : '5.5rem') : '10.3rem',
-                              minHeight: isExpanded ? '10rem' : undefined,
+                              height: isMobile ? (isExpanded ? '7rem' : '5.5rem') : '9.775rem',
+                              width: isMobile ? (isExpanded ? '13rem' : '5.5rem') : '10.3rem',
+                              minHeight: isExpanded ? '7rem' : undefined,
                               top: isMobile ? undefined : card.position.top,
                               left: isMobile ? undefined : card.position.left,
                               zIndex: isExpanded ? 10 : 1,
@@ -2360,12 +2360,12 @@ const Auth = () => {
                                   ) : card.title
                                 )}
                               </h4>
-                              {/* Show description on mobile when expanded (leftmost) */}
+                              {/* Show description on mobile when expanded (leftmost) - first sentence only */}
                               {isExpanded && (
                                 <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
                                   animation: 'fadeIn 300ms ease-in forwards'
                                 }}>
-                                  {card.description}
+                                  {card.description.split('.')[0] + '.'}
                                 </p>
                               )}
                             </div>
