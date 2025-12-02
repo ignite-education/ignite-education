@@ -166,8 +166,8 @@ const Auth = () => {
   const { displayText: typedTagline, isComplete: isTaglineTypingComplete } = useTypingAnimation(
     taglineText,
     {
-      charDelay: 80,
-      startDelay: 500,
+      charDelay: 90,
+      startDelay: 700,
       pausePoints: [
         { after: 8, duration: 500 },   // After "Upskill."
         { after: 17, duration: 500 },  // After "Upskill. Reskill."
@@ -184,7 +184,7 @@ const Auth = () => {
     educationFullText,
     {
       charDelay: 90,
-      startDelay: 2000,
+      startDelay: 1500,
       pausePoints: isMobile
         ? [
             { after: 'Education should\nbe accessible,'.length, duration: 500 },
