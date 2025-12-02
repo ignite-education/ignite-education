@@ -543,6 +543,7 @@ const LearningHub = () => {
     const fullText = message.text;
     let currentIndex = 0;
     let pauseCounter = 0;
+    let pendingNewline = false; // Track if we're waiting to show a newline after pause
 
     const typingInterval = setInterval(() => {
       // Check if we need to pause
@@ -552,9 +553,10 @@ const LearningHub = () => {
       }
 
       if (currentIndex < fullText.length) {
-        // Check if NEXT character is a newline - pause BEFORE showing it
-        if (fullText[currentIndex] === '\n') {
-          // Skip the newline and show it together with the next character
+        // After pause completes, show newline + next character together
+        if (pendingNewline) {
+          pendingNewline = false;
+          // currentIndex is at the newline, show it with next char
           if (currentIndex + 1 < fullText.length) {
             setDisplayedText(fullText.substring(0, currentIndex + 2));
             currentIndex += 2;
@@ -570,6 +572,9 @@ const LearningHub = () => {
         // Add pause BEFORE newline (if next char is newline)
         if (currentIndex + 1 < fullText.length && fullText[currentIndex + 1] === '\n') {
           pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
+          pendingNewline = true;
+          currentIndex++; // Move to the newline position
+          return;
         }
 
         // Add pause after sentence-ending punctuation (. ! ?)

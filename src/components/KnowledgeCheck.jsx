@@ -142,6 +142,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
     let currentIndex = 0;
     let pauseCounter = 0;
+    let pendingNewline = false; // Track if we're waiting to show a newline after pause
 
     const typingInterval = setInterval(() => {
       // Check if animation should still be running
@@ -153,16 +154,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       const text = typingTextRef.current;
       const msgIndex = typingIndexRef.current;
 
-      // Check if we need to pause (at newline characters)
+      // Check if we need to pause
       if (pauseCounter > 0) {
         pauseCounter--;
         return;
       }
 
       if (currentIndex < text.length) {
-        // Check if current character is a newline - show it together with next character
-        if (text[currentIndex] === '\n') {
-          // Skip the newline and show it together with the next character
+        // After pause completes, show newline + next character together
+        if (pendingNewline) {
+          pendingNewline = false;
+          // currentIndex is at the newline, show it with next char
           if (currentIndex + 1 < text.length) {
             setDisplayedText(text.substring(0, currentIndex + 2));
             currentIndex += 2;
@@ -178,6 +180,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Add pause BEFORE newline (if next char is newline)
         if (currentIndex + 1 < text.length && text[currentIndex + 1] === '\n') {
           pauseCounter = 15; // Pause for ~675ms (15 * 45ms)
+          pendingNewline = true;
+          currentIndex++; // Move to the newline position
+          return;
         }
 
         // Add pause after sentence-ending punctuation (. ! ?)
