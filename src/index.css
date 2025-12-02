@@ -778,7 +778,7 @@ body {
     max-height: 13rem !important;
     padding: 1rem !important;
     margin: 0 !important;
-    overflow: hidden !important;
+    overflow: visible !important;
   }
 
   .auth-testimonial-quote {
@@ -787,6 +787,7 @@ body {
     -webkit-line-clamp: 5 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
+    max-width: 90% !important;
   }
 
   .auth-testimonial-quote-wrapper {
@@ -802,7 +803,7 @@ body {
   }
 
   .auth-testimonial-info {
-    left: 5rem !important;
+    left: 7rem !important;
     bottom: 0.25rem !important;
     font-size: 0.85rem !important;
   }
@@ -811,7 +812,7 @@ body {
     width: 20rem !important;
     max-width: 20rem !important;
     margin-top: 2rem !important;
-    margin-left: 0 !important;
+    margin-left: 7rem !important;
     justify-content: flex-start !important;
   }
 
