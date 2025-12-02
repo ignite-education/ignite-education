@@ -2114,10 +2114,17 @@ const Auth = () => {
           }}
         >
           <div className="auth-section-5-content w-full text-white text-left">
-            {/* Title Container */}
-            <div className="max-w-4xl mx-auto px-4">
-              <h3 className="auth-section-5-title font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '7.5rem', marginBottom: '2.8rem' }}>
-                {renderTypedTestimonialsHeading()}
+            {/* Title Container - reserves space for both lines to prevent layout shift */}
+            <div className="auth-section-5-title-container max-w-4xl mx-auto px-4">
+              <h3 className="auth-section-5-title font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '5rem' : '7.5rem', marginBottom: isMobile ? '0.5rem' : '1.5rem' }}>
+                {/* Invisible placeholder to reserve space */}
+                <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
+                  Ignite is for everyone.<br />The curious, the committed, the ambitious.
+                </span>
+                {/* Actual typed content */}
+                <span style={{ position: 'relative' }}>
+                  {renderTypedTestimonialsHeading()}
+                </span>
               </h3>
             </div>
 
