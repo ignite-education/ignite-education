@@ -2283,7 +2283,7 @@ const Auth = () => {
                     setUseCaseTouchStart(null);
                   }}
                 >
-                  <div className="auth-usecase-grid relative" style={{ width: '21.35rem', height: '20.3rem' }}>
+                  <div className="auth-usecase-grid relative" style={{ width: isMobile ? '100%' : '21.35rem', height: isMobile ? 'auto' : '20.3rem' }}>
                     {(() => {
                       const useCaseCards = [
                         {
@@ -2308,25 +2308,50 @@ const Auth = () => {
                         }
                       ];
 
-                      // On mobile, reorder cards so activeUseCaseIndex is first (leftmost)
-                      const orderedCards = isMobile
-                        ? [...useCaseCards.slice(activeUseCaseIndex), ...useCaseCards.slice(0, activeUseCaseIndex)]
-                        : useCaseCards;
+                      // Calculate position for each card on mobile
+                      // Cards slide based on activeUseCaseIndex - leftmost position is expanded
+                      const getCardPosition = (cardIndex) => {
+                        // Calculate relative position from active card
+                        // Position 0 = leftmost (expanded), 1/2/3 = to the right (collapsed)
+                        let relativePos = cardIndex - activeUseCaseIndex;
+                        if (relativePos < 0) relativePos += 4; // Wrap around
+                        return relativePos;
+                      };
 
-                      return orderedCards.map((card, idx) => {
-                        const originalIdx = isMobile
-                          ? (idx + activeUseCaseIndex) % 4
-                          : idx;
-                        const isExpanded = isMobile && idx === 0; // Leftmost card is always expanded on mobile
+                      return useCaseCards.map((card, idx) => {
+                        const position = getCardPosition(idx);
+                        const isExpanded = isMobile && position === 0;
+
+                        // Calculate x offset: expanded card width (13rem) + gap (0.75rem) + collapsed cards
+                        // Position 0: 0rem (leftmost)
+                        // Position 1: 13rem + 0.75rem = 13.75rem
+                        // Position 2: 13.75rem + 5.5rem + 0.75rem = 20rem
+                        // Position 3: 20rem + 5.5rem + 0.75rem = 26.25rem
+                        const getXOffset = (pos) => {
+                          if (pos === 0) return 0;
+                          // First collapsed card starts after expanded card
+                          const expandedWidth = 13; // rem
+                          const collapsedWidth = 5.5; // rem
+                          const gap = 0.75; // rem
+                          if (pos === 1) return expandedWidth + gap;
+                          if (pos === 2) return expandedWidth + gap + collapsedWidth + gap;
+                          if (pos === 3) return expandedWidth + gap + (collapsedWidth + gap) * 2;
+                          return 0;
+                        };
 
                         return (
                           <div
-                            key={originalIdx}
+                            key={idx}
                             onMouseEnter={() => {
-                              if (!isMobile) setHoveredUseCase(originalIdx);
+                              if (!isMobile) setHoveredUseCase(idx);
                             }}
                             onMouseLeave={() => {
                               if (!isMobile) setHoveredUseCase(null);
+                            }}
+                            onClick={() => {
+                              if (isMobile && !isExpanded) {
+                                setActiveUseCaseIndex(idx);
+                              }
                             }}
                             className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isExpanded ? 'expanded' : ''}`}
                             style={{
@@ -2335,6 +2360,8 @@ const Auth = () => {
                               minHeight: isExpanded ? '7rem' : undefined,
                               top: isMobile ? undefined : card.position.top,
                               left: isMobile ? undefined : card.position.left,
+                              position: isMobile ? 'absolute' : 'absolute',
+                              transform: isMobile ? `translateX(${getXOffset(position)}rem)` : 'none',
                               zIndex: isExpanded ? 10 : 1,
                               padding: isMobile ? (isExpanded ? '1rem' : '0.75rem') : '1.5rem',
                               opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
@@ -2343,10 +2370,12 @@ const Auth = () => {
                               flexShrink: 0
                             }}
                           >
-                            <div className={`flex flex-col ${isExpanded ? 'items-start' : 'items-center'} justify-center text-center`}>
+                            <div className={`flex flex-col ${isExpanded ? 'items-start' : 'items-center'} justify-center text-center`} style={{ width: '100%' }}>
                               <h4 className="font-semibold leading-tight" style={{
                                 color: '#7714E0',
-                                fontSize: isMobile ? (isExpanded ? '0.875rem' : '0.75rem') : '1.125rem'
+                                fontSize: isMobile ? (isExpanded ? '0.875rem' : '0.65rem') : '1.125rem',
+                                textAlign: isExpanded ? 'left' : 'center',
+                                width: '100%'
                               }}>
                                 {isMobile ? (
                                   isExpanded ? card.title : (
@@ -2362,9 +2391,7 @@ const Auth = () => {
                               </h4>
                               {/* Show description on mobile when expanded (leftmost) - first sentence only */}
                               {isExpanded && (
-                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
-                                  animation: 'fadeIn 300ms ease-in forwards'
-                                }}>
+                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{ width: '100%' }}>
                                   {card.description.split('.')[0] + '.'}
                                 </p>
                               )}
@@ -2376,7 +2403,7 @@ const Auth = () => {
 
                     {/* Use case indicator dots - mobile only */}
                     {isMobile && (
-                      <div className="auth-usecase-indicators flex justify-center gap-2" style={{ marginTop: '1rem', width: '100%' }}>
+                      <div className="auth-usecase-indicators flex gap-2" style={{ position: 'absolute', top: '8rem', left: '0', width: '13rem' }}>
                         {[0, 1, 2, 3].map((idx) => (
                           <button
                             key={idx}
