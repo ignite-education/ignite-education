@@ -811,7 +811,7 @@ body {
   .auth-testimonial-indicators {
     width: 20rem !important;
     max-width: 20rem !important;
-    margin-top: 1rem !important;
+    margin-top: 0.75rem !important;
     margin-left: 7rem !important;
     justify-content: flex-start !important;
   }

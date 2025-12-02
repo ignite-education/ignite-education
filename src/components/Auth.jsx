@@ -146,6 +146,7 @@ const Auth = () => {
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [expandedUseCaseMobile, setExpandedUseCaseMobile] = useState(null);
+  const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const linkedInFAQSectionRef = useRef(null);
@@ -2134,7 +2135,24 @@ const Auth = () => {
                 {/* Left Column - Testimonials Slider */}
                 <div className="auth-testimonial-container flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
-                  onMouseLeave={() => setIsTestimonialHovered(false)}>
+                  onMouseLeave={() => setIsTestimonialHovered(false)}
+                  onTouchStart={(e) => setTestimonialTouchStart(e.touches[0].clientX)}
+                  onTouchEnd={(e) => {
+                    if (testimonialTouchStart === null) return;
+                    const touchEnd = e.changedTouches[0].clientX;
+                    const diff = testimonialTouchStart - touchEnd;
+                    const minSwipeDistance = 50;
+                    if (Math.abs(diff) > minSwipeDistance) {
+                      if (diff > 0) {
+                        // Swipe left - next testimonial
+                        setCurrentTestimonialIndex((prev) => (prev + 1) % 5);
+                      } else {
+                        // Swipe right - previous testimonial
+                        setCurrentTestimonialIndex((prev) => (prev - 1 + 5) % 5);
+                      }
+                    }
+                    setTestimonialTouchStart(null);
+                  }}>
                   <div className="relative">
                     {[
                       {
