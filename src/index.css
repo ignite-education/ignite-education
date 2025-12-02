@@ -773,9 +773,9 @@ body {
   .auth-testimonial-card {
     width: 20rem !important;
     max-width: 20rem !important;
-    height: 13rem !important;
-    min-height: 13rem !important;
-    max-height: 13rem !important;
+    height: 14rem !important;
+    min-height: 14rem !important;
+    max-height: 14rem !important;
     padding: 1rem !important;
     margin: 0 !important;
     overflow: visible !important;
@@ -798,7 +798,7 @@ body {
   .auth-testimonial-avatar {
     width: 5rem !important;
     height: 5rem !important;
-    bottom: -2.5rem !important;
+    bottom: -1.5rem !important;
     left: 1rem !important;
   }
 
