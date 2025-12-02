@@ -2301,7 +2301,7 @@ const Auth = () => {
                               className="auth-usecase-expanded rounded flex items-center justify-center bg-white"
                               style={{
                                 width: '50%',
-                                padding: '1rem',
+                                padding: '0.75rem',
                                 minHeight: '9.5rem',
                                 transition: 'all 300ms ease-in-out'
                               }}
@@ -2340,14 +2340,14 @@ const Auth = () => {
                                     className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer bg-white"
                                     style={{
                                       aspectRatio: '1',
-                                      padding: '0.5rem',
+                                      padding: '0.3rem',
                                       transition: 'all 300ms ease-in-out',
                                       opacity: isActive ? 1 : 0.7
                                     }}
                                   >
                                     <h4 className="font-semibold leading-tight text-center" style={{
                                       color: '#7714E0',
-                                      fontSize: '0.8rem'
+                                      fontSize: '1rem'
                                     }}>
                                       {card.title === 'Upskilling in Role' ? (
                                         <>Upskilling<br />in Role</>
