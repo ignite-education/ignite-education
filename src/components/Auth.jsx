@@ -2287,82 +2287,76 @@ const Auth = () => {
                       ];
 
                       if (isMobile) {
-                        // Mobile layout: 1 expanded card on left, 4 collapsed cards in 2x2 grid on right
+                        // Mobile layout: Two equal columns - expanded card left, 2x2 grid right
                         const activeCard = useCaseCards[activeUseCaseIndex];
-                        const collapsedWidth = 4.5; // rem
-                        const collapsedHeight = 4.5; // rem
-                        const gap = 0.5; // rem between collapsed cards
 
                         return (
-                          <>
-                            {/* Expanded card on the left - shows active card content */}
+                          <div className="auth-usecase-two-column" style={{
+                            display: 'flex',
+                            width: '100%',
+                            gap: '0.75rem'
+                          }}>
+                            {/* Left Column - 50% width - Expanded card */}
                             <div
-                              className="auth-usecase-card expanded rounded flex items-start justify-start bg-white"
+                              className="auth-usecase-expanded rounded flex items-start justify-start bg-white"
                               style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                height: '7rem',
-                                width: '7rem',
+                                width: '50%',
                                 padding: '1rem',
-                                zIndex: 10,
+                                minHeight: '9.5rem',
                                 transition: 'all 300ms ease-in-out'
                               }}
                             >
-                              <div className="flex flex-col items-start justify-center" style={{ width: '100%' }}>
+                              <div className="flex flex-col items-start justify-start" style={{ width: '100%' }}>
                                 <h4 className="font-semibold leading-tight" style={{
                                   color: '#7714E0',
                                   fontSize: '0.875rem',
                                   textAlign: 'left',
-                                  width: '100%',
-                                  transition: 'all 300ms ease-in-out'
+                                  width: '100%'
                                 }}>
                                   {activeCard.title}
                                 </h4>
-                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
-                                  width: '100%',
-                                  transition: 'all 300ms ease-in-out'
-                                }}>
+                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{ width: '100%' }}>
                                   {activeCard.description.split('.')[0] + '.'}
                                 </p>
                               </div>
                             </div>
 
-                            {/* 4 collapsed cards on the right in 2x2 grid */}
-                            {useCaseCards.map((card, idx) => {
-                              const row = Math.floor(idx / 2); // 0 or 1
-                              const col = idx % 2; // 0 or 1
-                              const yPos = row * (collapsedHeight + gap);
-                              const isActive = idx === activeUseCaseIndex;
-
-                              return (
-                                <div
-                                  key={idx}
-                                  onClick={() => setActiveUseCaseIndex(idx)}
-                                  className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer bg-white"
-                                  style={{
-                                    position: 'absolute',
-                                    top: `${yPos}rem`,
-                                    left: `calc(7rem + 1rem + ${col * (collapsedWidth + gap)}rem)`,
-                                    height: `${collapsedHeight}rem`,
-                                    width: `${collapsedWidth}rem`,
-                                    padding: '0.5rem',
-                                    zIndex: 1,
-                                    transition: 'all 300ms ease-in-out',
-                                    opacity: isActive ? 1 : 0.7,
-                                    border: isActive ? '2px solid #7714E0' : '2px solid transparent'
-                                  }}
-                                >
-                                  <h4 className="font-semibold leading-tight text-center" style={{
-                                    color: '#7714E0',
-                                    fontSize: '0.6rem'
-                                  }}>
-                                    {card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title}
-                                  </h4>
-                                </div>
-                              );
-                            })}
-                          </>
+                            {/* Right Column - 50% width - 2x2 grid of collapsed cards */}
+                            <div
+                              className="auth-usecase-grid-right"
+                              style={{
+                                width: '50%',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '0.5rem'
+                              }}
+                            >
+                              {useCaseCards.map((card, idx) => {
+                                const isActive = idx === activeUseCaseIndex;
+                                return (
+                                  <div
+                                    key={idx}
+                                    onClick={() => setActiveUseCaseIndex(idx)}
+                                    className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer bg-white"
+                                    style={{
+                                      aspectRatio: '1',
+                                      padding: '0.5rem',
+                                      transition: 'all 300ms ease-in-out',
+                                      opacity: isActive ? 1 : 0.7,
+                                      border: isActive ? '2px solid #7714E0' : '2px solid transparent'
+                                    }}
+                                  >
+                                    <h4 className="font-semibold leading-tight text-center" style={{
+                                      color: '#7714E0',
+                                      fontSize: '0.6rem'
+                                    }}>
+                                      {card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title}
+                                    </h4>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
                         );
                       }
 
