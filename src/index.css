@@ -850,11 +850,16 @@ body {
     font-size: 0.8rem !important;
   }
 
-  /* Expanded card - expands to the right */
+  /* Expanded card - 80% bigger (leftmost position) */
   .auth-usecase-card.expanded {
-    width: 16rem !important;
+    width: 10rem !important;
     height: auto !important;
-    min-height: 8rem !important;
+    min-height: 10rem !important;
+    padding: 1rem !important;
+  }
+
+  .auth-usecase-card.expanded h4 {
+    font-size: 0.875rem !important;
   }
 
   /* Down arrow container */

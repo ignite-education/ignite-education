@@ -145,7 +145,8 @@ const Auth = () => {
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
-  const [expandedUseCaseMobile, setExpandedUseCaseMobile] = useState(null);
+  const [activeUseCaseIndex, setActiveUseCaseIndex] = useState(0);
+  const [useCaseTouchStart, setUseCaseTouchStart] = useState(null);
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
@@ -2260,84 +2261,139 @@ const Auth = () => {
 
 
                 {/* Right Column - 2x2 Grid of Cards */}
-                <div className="auth-usecase-container flex items-center justify-center">
-                  <div className="auth-usecase-grid relative" style={{ width: '21.35rem', height: '20.3rem' }}>
-                    {[
-                      {
-                        title: 'Recent Graduates',
-                        description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.',
-                        position: { top: '0', left: '0' }
-                      },
-                      {
-                        title: 'Career Break Returners',
-                        description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
-                        position: { top: '0', left: '11.05rem' }
-                      },
-                      {
-                        title: 'Upskilling in Role',
-                        description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
-                        position: { top: '10.525rem', left: '0' }
-                      },
-                      {
-                        title: 'Pivotting Careers',
-                        description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
-                        position: { top: '10.525rem', left: '11.05rem' }
+                <div
+                  className="auth-usecase-container flex items-center justify-center"
+                  onTouchStart={(e) => {
+                    if (isMobile) setUseCaseTouchStart(e.touches[0].clientX);
+                  }}
+                  onTouchEnd={(e) => {
+                    if (!isMobile || useCaseTouchStart === null) return;
+                    const touchEnd = e.changedTouches[0].clientX;
+                    const diff = useCaseTouchStart - touchEnd;
+                    const minSwipeDistance = 50;
+                    if (Math.abs(diff) > minSwipeDistance) {
+                      if (diff > 0) {
+                        // Swipe left - next card
+                        setActiveUseCaseIndex((prev) => (prev + 1) % 4);
+                      } else {
+                        // Swipe right - previous card
+                        setActiveUseCaseIndex((prev) => (prev - 1 + 4) % 4);
                       }
-                    ].map((card, idx) => (
-                      <div
-                        key={idx}
-                        onMouseEnter={() => {
-                          if (!isMobile) setHoveredUseCase(idx);
-                        }}
-                        onMouseLeave={() => {
-                          if (!isMobile) setHoveredUseCase(null);
-                        }}
-                        onClick={() => {
-                          if (isMobile) {
-                            setExpandedUseCaseMobile(expandedUseCaseMobile === idx ? null : idx);
-                          }
-                        }}
-                        className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isMobile && expandedUseCaseMobile === idx ? 'expanded' : ''}`}
-                        style={{
-                          height: isMobile ? (expandedUseCaseMobile === idx ? 'auto' : '5.5rem') : '9.775rem',
-                          width: isMobile ? (expandedUseCaseMobile === idx ? '16rem' : '5.5rem') : '10.3rem',
-                          minHeight: isMobile && expandedUseCaseMobile === idx ? '8rem' : undefined,
-                          top: isMobile ? undefined : card.position.top,
-                          left: isMobile ? undefined : card.position.left,
-                          zIndex: isMobile && expandedUseCaseMobile === idx ? 10 : 1,
-                          padding: isMobile ? '0.75rem' : '1.5rem',
-                          opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
-                          transition: 'all 300ms ease-in-out',
-                          pointerEvents: 'auto',
-                          flexShrink: 0
-                        }}
-                      >
-                        <div className={`flex flex-col ${isMobile && expandedUseCaseMobile === idx ? 'items-start' : 'items-center'} justify-center text-center`}>
-                          <h4 className="font-semibold leading-tight" style={{
-                            color: '#7714E0',
-                            fontSize: isMobile ? '0.75rem' : '1.125rem'
-                          }}>
-                            {isMobile ? (
-                              card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
-                            ) : (
-                              card.title === 'Career Break Returners' ? (
-                                <>Career Break<br />Returners</>
-                              ) : card.title === 'Upskilling in Role' ? (
-                                <>Upskilling<br />in Role</>
-                              ) : card.title
-                            )}
-                          </h4>
-                          {/* Show description on mobile when expanded */}
-                          {isMobile && expandedUseCaseMobile === idx && (
-                            <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
-                              animation: 'fadeIn 300ms ease-in forwards'
-                            }}>
-                              {card.description}
-                            </p>
-                          )}
-                        </div>
+                    }
+                    setUseCaseTouchStart(null);
+                  }}
+                >
+                  <div className="auth-usecase-grid relative" style={{ width: '21.35rem', height: '20.3rem' }}>
+                    {(() => {
+                      const useCaseCards = [
+                        {
+                          title: 'Recent Graduates',
+                          description: 'Launch your career with industry-relevant skills and hands-on experience that employers value. Our comprehensive courses provide you with practical knowledge and real-world projects to build a strong portfolio.',
+                          position: { top: '0', left: '0' }
+                        },
+                        {
+                          title: 'Career Break Returners',
+                          description: 'Refresh your skills and confidently re-enter the workforce with updated knowledge and support. We understand the challenges of returning to work and provide a supportive environment to rebuild your confidence.',
+                          position: { top: '0', left: '11.05rem' }
+                        },
+                        {
+                          title: 'Upskilling in Role',
+                          description: 'Stay ahead in your current position by mastering the latest tools and techniques in your field. Learn at your own pace while applying new skills directly to your current role for immediate impact.',
+                          position: { top: '10.525rem', left: '0' }
+                        },
+                        {
+                          title: 'Pivotting Careers',
+                          description: 'Transform your career path with comprehensive training designed to help you transition successfully. We provide structured learning paths that bridge your existing experience with new career opportunities.',
+                          position: { top: '10.525rem', left: '11.05rem' }
+                        }
+                      ];
+
+                      // On mobile, reorder cards so activeUseCaseIndex is first (leftmost)
+                      const orderedCards = isMobile
+                        ? [...useCaseCards.slice(activeUseCaseIndex), ...useCaseCards.slice(0, activeUseCaseIndex)]
+                        : useCaseCards;
+
+                      return orderedCards.map((card, idx) => {
+                        const originalIdx = isMobile
+                          ? (idx + activeUseCaseIndex) % 4
+                          : idx;
+                        const isExpanded = isMobile && idx === 0; // Leftmost card is always expanded on mobile
+
+                        return (
+                          <div
+                            key={originalIdx}
+                            onMouseEnter={() => {
+                              if (!isMobile) setHoveredUseCase(originalIdx);
+                            }}
+                            onMouseLeave={() => {
+                              if (!isMobile) setHoveredUseCase(null);
+                            }}
+                            className={`auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white ${isMobile ? '' : 'absolute'} ${isExpanded ? 'expanded' : ''}`}
+                            style={{
+                              height: isMobile ? (isExpanded ? 'auto' : '5.5rem') : '9.775rem',
+                              width: isMobile ? (isExpanded ? '10rem' : '5.5rem') : '10.3rem',
+                              minHeight: isExpanded ? '10rem' : undefined,
+                              top: isMobile ? undefined : card.position.top,
+                              left: isMobile ? undefined : card.position.left,
+                              zIndex: isExpanded ? 10 : 1,
+                              padding: isMobile ? (isExpanded ? '1rem' : '0.75rem') : '1.5rem',
+                              opacity: !isMobile && hoveredUseCase !== null ? 0 : 1,
+                              transition: 'all 300ms ease-in-out',
+                              pointerEvents: 'auto',
+                              flexShrink: 0
+                            }}
+                          >
+                            <div className={`flex flex-col ${isExpanded ? 'items-start' : 'items-center'} justify-center text-center`}>
+                              <h4 className="font-semibold leading-tight" style={{
+                                color: '#7714E0',
+                                fontSize: isMobile ? (isExpanded ? '0.875rem' : '0.75rem') : '1.125rem'
+                              }}>
+                                {isMobile ? (
+                                  isExpanded ? card.title : (
+                                    card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
+                                  )
+                                ) : (
+                                  card.title === 'Career Break Returners' ? (
+                                    <>Career Break<br />Returners</>
+                                  ) : card.title === 'Upskilling in Role' ? (
+                                    <>Upskilling<br />in Role</>
+                                  ) : card.title
+                                )}
+                              </h4>
+                              {/* Show description on mobile when expanded (leftmost) */}
+                              {isExpanded && (
+                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{
+                                  animation: 'fadeIn 300ms ease-in forwards'
+                                }}>
+                                  {card.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+
+                    {/* Use case indicator dots - mobile only */}
+                    {isMobile && (
+                      <div className="auth-usecase-indicators flex justify-center gap-2" style={{ marginTop: '1rem', width: '100%' }}>
+                        {[0, 1, 2, 3].map((idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setActiveUseCaseIndex(idx)}
+                            className="rounded-full transition-all duration-300"
+                            style={{
+                              width: activeUseCaseIndex === idx ? '1.5rem' : '0.5rem',
+                              height: '0.5rem',
+                              backgroundColor: activeUseCaseIndex === idx ? '#7714E0' : 'rgba(255, 255, 255, 0.5)',
+                              border: 'none',
+                              cursor: 'pointer'
+                            }}
+                            aria-label={`View use case ${idx + 1}`}
+                          />
+                        ))}
                       </div>
-                    ))}
+                    )}
 
                     {/* Single overlay card that covers entire grid - desktop only */}
                     {!isMobile && (
