@@ -771,8 +771,8 @@ body {
 
   /* Testimonial card - fixed identical size for all cards, left aligned */
   .auth-testimonial-card {
-    width: 18rem !important;
-    max-width: 18rem !important;
+    width: 20rem !important;
+    max-width: 20rem !important;
     height: 13rem !important;
     min-height: 13rem !important;
     max-height: 13rem !important;
@@ -782,16 +782,21 @@ body {
   }
 
   .auth-testimonial-quote {
-    font-size: 0.85rem !important;
+    font-size: 1.1rem !important;
     display: -webkit-box !important;
     -webkit-line-clamp: 5 !important;
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
   }
 
+  .auth-testimonial-quote-wrapper {
+    margin-top: 0.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
   .auth-testimonial-avatar {
-    width: 3rem !important;
-    height: 3rem !important;
+    width: 5rem !important;
+    height: 5rem !important;
     bottom: -1.5rem !important;
     left: 1rem !important;
   }
@@ -803,8 +808,8 @@ body {
   }
 
   .auth-testimonial-indicators {
-    width: 18rem !important;
-    max-width: 18rem !important;
+    width: 20rem !important;
+    max-width: 20rem !important;
     margin-top: 2rem !important;
     margin-left: 0 !important;
     justify-content: flex-start !important;
