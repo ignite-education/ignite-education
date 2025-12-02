@@ -2131,7 +2131,7 @@ const Auth = () => {
 
             {/* Testimonials and Cards Container */}
             <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="auth-section-5-grid mx-auto">
-              <div className="grid grid-cols-2 gap-12 items-start">
+              <div className="grid grid-cols-2 gap-8 items-start">
                 {/* Left Column - Testimonials Slider */}
                 <div className="auth-testimonial-container flex flex-col justify-center"
                   onMouseEnter={() => setIsTestimonialHovered(true)}
@@ -2188,7 +2188,7 @@ const Auth = () => {
                     ].map((testimonial, idx) => (
                       <div
                         key={idx}
-                        className="auth-testimonial-card bg-white p-6 rounded flex items-center justify-center"
+                        className="auth-testimonial-card bg-white rounded flex items-center justify-center"
                         style={{
                           position: idx === 0 ? 'relative' : 'absolute',
                           top: idx === 0 ? 'auto' : 0,
@@ -2198,8 +2198,9 @@ const Auth = () => {
                           pointerEvents: currentTestimonialIndex === idx ? 'auto' : 'none',
                           transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           width: '36rem',
-                          height: '20.3rem',
-                          overflow: 'visible'
+                          height: '19rem',
+                          overflow: 'visible',
+                          padding: '1rem 1.5rem 1.5rem 1.5rem'
                         }}
                       >
                         <div className="auth-testimonial-quote-wrapper" style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.625rem' }}>
