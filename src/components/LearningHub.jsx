@@ -124,7 +124,7 @@ const LearningHub = () => {
     {
       type: 'assistant',
       text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
-      isComplete: false
+      isComplete: true
     }
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -209,10 +209,6 @@ const LearningHub = () => {
 
   useEffect(() => {
     fetchLessonData();
-    // Start typing animation for initial greeting message with a slight delay
-    setTimeout(() => {
-      setTypingMessageIndex(0);
-    }, 2500);
   }, []);
 
   // Set Safari theme color to black for this page
@@ -416,9 +412,9 @@ const LearningHub = () => {
     }
   }, [searchParams]);
 
-  // Reset chat conversation and scroll position when lesson changes
+  // Reset audio and scroll position when lesson changes (chat persists)
   useEffect(() => {
-    // Skip on initial mount to preserve welcome message
+    // Skip on initial mount
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
       return;
@@ -449,27 +445,10 @@ const LearningHub = () => {
     setIsReading(false);
     setCurrentNarrationSection(0);
 
-    // Reset chat to initial greeting
-    setChatMessages([
-      {
-        type: 'assistant',
-        text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
-        isComplete: false
-      }
-    ]);
-
-    // Clear chat input field
-    setChatInput('');
-
     // Scroll lesson content to top
     if (contentScrollRef.current) {
       contentScrollRef.current.scrollTop = 0;
     }
-
-    // Start typing animation for greeting message
-    setTimeout(() => {
-      setTypingMessageIndex(0);
-    }, 100);
   }, [currentModule, currentLesson]);
 
   useEffect(() => {
