@@ -21,8 +21,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const hasCalledOnPassRef = useRef(false);
 
   // Dynamic question count and pass threshold based on whether it's the first lesson
-  const TOTAL_QUESTIONS = isFirstLesson ? 5 : 7;
-  const PASS_THRESHOLD = isFirstLesson ? 4 : 5;
+  const TOTAL_QUESTIONS = isFirstLesson ? 3 : 5;
+  const PASS_THRESHOLD = isFirstLesson ? 2 : 4;
   const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 2;
 
   useEffect(() => {
@@ -50,11 +50,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         // Build the message based on whether it's the first lesson
         let messageText;
         if (isFirstLesson) {
-          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to score 80% or above to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
+          messageText = `${greetingText}.\n\nI'll now ask you three questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to answer two or more correctly to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         } else {
           const courseNameText = courseName || "course";
           const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you seven questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by five questions from ${lessonNameText}. You need to answer five or more correctly to pass.\n\n**Ready to begin?**`;
+          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by three questions from ${lessonNameText}. You need to answer four or more correctly to pass.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
@@ -519,10 +519,18 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       onClick={handleClose}
     >
       <div className="relative">
-        {/* Title above the box */}
-        <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-          Knowledge Check
-        </h2>
+        {/* Title and close button row - above the box */}
+        <div className="flex justify-between items-center" style={{ marginBottom: '0.15rem' }}>
+          <h2 className="text-xl font-semibold text-white pl-1">
+            Knowledge Check
+          </h2>
+          <button
+            onClick={handleClose}
+            className="text-white hover:text-gray-300 z-10"
+          >
+            <X size={24} />
+          </button>
+        </div>
 
         <div
           className="bg-white relative flex flex-col"
@@ -535,13 +543,6 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close button */}
-          <button
-            onClick={handleClose}
-            className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
-          >
-            <X size={24} />
-          </button>
 
           {/* Chat messages */}
           <div
