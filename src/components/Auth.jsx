@@ -2298,7 +2298,7 @@ const Auth = () => {
                           }}>
                             {/* Left Column - 50% width - Expanded card */}
                             <div
-                              className="auth-usecase-expanded rounded flex items-start justify-start bg-white"
+                              className="auth-usecase-expanded rounded flex items-center justify-center bg-white"
                               style={{
                                 width: '50%',
                                 padding: '1rem',
@@ -2306,16 +2306,16 @@ const Auth = () => {
                                 transition: 'all 300ms ease-in-out'
                               }}
                             >
-                              <div className="flex flex-col items-start justify-start" style={{ width: '100%' }}>
+                              <div className="flex flex-col items-center justify-center" style={{ width: '100%' }}>
                                 <h4 className="font-semibold leading-tight" style={{
                                   color: '#7714E0',
-                                  fontSize: '0.875rem',
-                                  textAlign: 'left',
+                                  fontSize: '1rem',
+                                  textAlign: 'center',
                                   width: '100%'
                                 }}>
                                   {activeCard.title}
                                 </h4>
-                                <p className="text-black text-xs leading-relaxed mt-2 text-left" style={{ width: '100%' }}>
+                                <p className="text-black leading-relaxed mt-2" style={{ width: '100%', fontSize: '0.8rem', textAlign: 'center' }}>
                                   {activeCard.description.split('.')[0] + '.'}
                                 </p>
                               </div>
@@ -2342,15 +2342,20 @@ const Auth = () => {
                                       aspectRatio: '1',
                                       padding: '0.5rem',
                                       transition: 'all 300ms ease-in-out',
-                                      opacity: isActive ? 1 : 0.7,
-                                      border: isActive ? '2px solid #7714E0' : '2px solid transparent'
+                                      opacity: isActive ? 1 : 0.7
                                     }}
                                   >
                                     <h4 className="font-semibold leading-tight text-center" style={{
                                       color: '#7714E0',
-                                      fontSize: '0.6rem'
+                                      fontSize: '0.8rem'
                                     }}>
-                                      {card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title}
+                                      {card.title === 'Upskilling in Role' ? (
+                                        <>Upskilling<br />in Role</>
+                                      ) : card.title === 'Career Break Returners' ? (
+                                        <>Career<br />Break<br />Returners</>
+                                      ) : (
+                                        card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
+                                      )}
                                     </h4>
                                   </div>
                                 );
