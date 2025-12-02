@@ -283,13 +283,18 @@ FORMATTING RULES:
 - NEVER use exclamation points (!)
 - ALWAYS use British English spelling and vocabulary (organise, colour, analyse, realise, etc.)
 - Use **bold** for key terms and important concepts
-- Use bullet points (•) when listing multiple items or steps
 - Keep paragraphs short and scannable
+
+BULLET POINT RULES (important):
+- Use bullet points (•) ONLY for actual list items, not for introductory or transitional sentences
+- Sentences that introduce a list (e.g., "Common reasons include:") should be regular paragraph text, NOT bulleted
+- Sentences containing examples inline (e.g., "Examples include X and Y") should be regular paragraph text, NOT bulleted
+- Only bullet the specific items being listed, not the context around them
+- Closing/summary sentences should be regular paragraph text, NOT bulleted
 
 Your role:
 - Provide clear, helpful explanations that aid understanding
 - Use examples from the lesson context when relevant
-- Structure longer answers with bullet points for readability
 - Answer the question directly, then provide supporting detail if helpful`;
 
     // Convert messages to Claude format
