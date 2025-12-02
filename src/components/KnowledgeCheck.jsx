@@ -67,41 +67,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
   }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
 
-  // Track if user has manually scrolled up
-  const userScrolledUpRef = useRef(false);
-  const lastScrollTopRef = useRef(0);
-
-  // Handle scroll events to detect if user scrolled up
-  const handleScroll = () => {
+  useEffect(() => {
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 50; // Within 50px of bottom
+      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
 
-      // If user scrolled up (away from bottom), mark it
-      if (!isAtBottom && scrollTop < lastScrollTopRef.current) {
-        userScrolledUpRef.current = true;
-      }
-      // If user scrolled back to bottom, reset the flag
+      // Only auto-scroll if user is already near the bottom
       if (isAtBottom) {
-        userScrolledUpRef.current = false;
+        chatContainerRef.current.scrollTop = scrollHeight;
       }
-
-      lastScrollTopRef.current = scrollTop;
-    }
-  };
-
-  useEffect(() => {
-    // Auto-scroll to bottom during typing
-    // But only if user hasn't manually scrolled up
-    if (chatContainerRef.current && !userScrolledUpRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [chatMessages, displayedText]);
-
-  // Reset scroll flag when a new message is added (not during typing)
-  useEffect(() => {
-    userScrolledUpRef.current = false;
-  }, [chatMessages.length]);
 
   // Handle pending typing animation - start when the message exists in chatMessages
   useEffect(() => {
@@ -565,7 +541,6 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           {/* Chat messages */}
           <div
             ref={chatContainerRef}
-            onScroll={handleScroll}
             className="flex-1 overflow-y-auto px-8 py-8 hide-scrollbar"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
