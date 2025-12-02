@@ -124,7 +124,7 @@ const LearningHub = () => {
     {
       type: 'assistant',
       text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
-      isComplete: true
+      isComplete: false
     }
   ]);
   const [chatInput, setChatInput] = useState('');
@@ -209,6 +209,10 @@ const LearningHub = () => {
 
   useEffect(() => {
     fetchLessonData();
+    // Start typing animation for initial greeting message with a slight delay
+    setTimeout(() => {
+      setTypingMessageIndex(0);
+    }, 2500);
   }, []);
 
   // Set Safari theme color to black for this page
