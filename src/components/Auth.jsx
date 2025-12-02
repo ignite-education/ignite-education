@@ -2292,8 +2292,6 @@ const Auth = () => {
                         const collapsedWidth = 4.5; // rem
                         const collapsedHeight = 4.5; // rem
                         const gap = 0.5; // rem between collapsed cards
-                        const expandedWidth = 13; // rem
-                        const collapsedStartX = expandedWidth + 1; // rem - where collapsed cards start
 
                         return (
                           <>
@@ -2304,8 +2302,8 @@ const Auth = () => {
                                 position: 'absolute',
                                 top: 0,
                                 left: 0,
-                                height: '7rem',
-                                width: `${expandedWidth}rem`,
+                                height: '10rem',
+                                width: '45vw',
                                 padding: '1rem',
                                 zIndex: 10,
                                 transition: 'all 300ms ease-in-out'
@@ -2334,7 +2332,6 @@ const Auth = () => {
                             {useCaseCards.map((card, idx) => {
                               const row = Math.floor(idx / 2); // 0 or 1
                               const col = idx % 2; // 0 or 1
-                              const xPos = collapsedStartX + col * (collapsedWidth + gap);
                               const yPos = row * (collapsedHeight + gap);
                               const isActive = idx === activeUseCaseIndex;
 
@@ -2346,7 +2343,7 @@ const Auth = () => {
                                   style={{
                                     position: 'absolute',
                                     top: `${yPos}rem`,
-                                    left: `${xPos}rem`,
+                                    left: `calc(45vw + 1rem + ${col * (collapsedWidth + gap)}rem)`,
                                     height: `${collapsedHeight}rem`,
                                     width: `${collapsedWidth}rem`,
                                     padding: '0.5rem',
