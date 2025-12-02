@@ -759,17 +759,17 @@ body {
     overflow: hidden !important;
   }
 
-  /* Testimonial container - centered horizontally */
+  /* Testimonial container - left aligned to match heading */
   .auth-testimonial-container {
     width: 100% !important;
     display: flex !important;
     flex-direction: column !important;
-    align-items: center !important;
+    align-items: flex-start !important;
     justify-content: center !important;
     flex: 1 !important;
   }
 
-  /* Testimonial card - fixed identical size for all cards, centered */
+  /* Testimonial card - fixed identical size for all cards, left aligned */
   .auth-testimonial-card {
     width: 20rem !important;
     max-width: 20rem !important;
@@ -777,7 +777,7 @@ body {
     min-height: 15rem !important;
     max-height: 15rem !important;
     padding: 1rem !important;
-    margin: 0 auto !important;
+    margin: 0 !important;
     overflow: hidden !important;
   }
 
@@ -803,11 +803,11 @@ body {
   }
 
   .auth-testimonial-indicators {
-    width: 100% !important;
+    width: 20rem !important;
     max-width: 20rem !important;
     margin-top: 2rem !important;
     margin-left: 0 !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
   }
 
   /* Use case cards - horizontal swipeable carousel */
