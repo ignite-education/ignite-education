@@ -1602,7 +1602,8 @@ const Auth = () => {
           ref={marketingSectionRef}
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
           style={{
-            background: 'black'
+            background: 'black',
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="max-w-4xl w-full text-white">
@@ -1696,7 +1697,8 @@ const Auth = () => {
           ref={coursesSectionRef}
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-3"
           style={{
-            background: 'black'
+            background: 'black',
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="max-w-7xl w-full text-white">
@@ -1865,7 +1867,8 @@ const Auth = () => {
           ref={learningModelSectionRef}
           className="min-h-screen flex items-center justify-center px-8 auth-section-4"
           style={{
-            background: 'black'
+            background: 'black',
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="max-w-4xl mx-auto text-white text-left">
@@ -2107,7 +2110,8 @@ const Auth = () => {
           ref={testimonialsSectionRef}
           className="auth-section-5 min-h-screen flex items-center justify-center px-8"
           style={{
-            background: 'black'
+            background: 'black',
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="auth-section-5-content w-full text-white text-left">
@@ -2478,7 +2482,8 @@ const Auth = () => {
           ref={linkedInFAQSectionRef}
           className="min-h-screen flex items-center justify-center px-8"
           style={{
-            background: 'black'
+            background: 'black',
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="max-w-7xl w-full text-white">
