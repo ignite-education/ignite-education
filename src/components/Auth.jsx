@@ -794,7 +794,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.3, rootMargin: '-100px 0px -100px 0px' }
+      { threshold: isMobile ? 0.05 : 0.3, rootMargin: isMobile ? '0px' : '-100px 0px -100px 0px' }
     );
 
     observer.observe(learningModelSectionRef.current);
@@ -804,7 +804,7 @@ const Auth = () => {
         observer.unobserve(learningModelSectionRef.current);
       }
     };
-  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal]);
+  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal, isMobile]);
 
   // Intersection observer for testimonials section animation
   useEffect(() => {
@@ -1903,9 +1903,9 @@ const Auth = () => {
                   {/* Feature 1 - AI smarts */}
                   <div className="auth-section-4-mobile-feature">
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
-                      Get ahead with <span style={{ color: '#7714E0' }}>smart AI integration</span>
+                      Levelling up learning with <span style={{ color: '#7714E0' }}>smart AI integration</span>
                     </h4>
-                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                    <p className="text-white text-sm" style={{ marginBottom: '1rem' }}>
                       Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
                     </p>
                     <div
@@ -1927,9 +1927,9 @@ const Auth = () => {
                   {/* Feature 2 - Personalised support */}
                   <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
-                      Personalised with <span style={{ color: '#7714E0' }}>industry experts</span>
+                      Personalised support from <span style={{ color: '#7714E0' }}>industry professionals</span>
                     </h4>
-                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                    <p className="text-white text-sm" style={{ marginBottom: '1rem' }}>
                       Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
                     </p>
                     <div
@@ -1953,7 +1953,7 @@ const Auth = () => {
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
                       Connect with the <span style={{ color: '#7714E0' }}>global community</span>
                     </h4>
-                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                    <p className="text-white text-sm" style={{ marginBottom: '1rem' }}>
                       Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
                     </p>
                     <div
@@ -1975,10 +1975,10 @@ const Auth = () => {
                   {/* Feature 4 - Get certified */}
                   <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
-                      Get certified to <span style={{ color: '#7714E0' }}>take on your next role</span>
+                      Get certified to <span style={{ color: '#7714E0' }}>take on your next role.</span>
                     </h4>
-                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
-                      Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers.
+                    <p className="text-white text-sm" style={{ marginBottom: '1rem' }}>
+                      Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
                     </p>
                     <div
                       className="auth-section-4-lottie-placeholder"
