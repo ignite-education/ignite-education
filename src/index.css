@@ -253,7 +253,7 @@ body {
     background: #000 !important;
     top: 0 !important;
     padding-top: 0 !important;
-    scroll-snap-type: y proximity !important;
+    scroll-snap-type: y mandatory !important;
   }
 
   /* Vertically center content on mobile */
@@ -340,7 +340,7 @@ body {
     flex-direction: column !important;
     align-items: center !important;
     justify-content: flex-start !important;
-    scroll-snap-align: none !important;
+    scroll-snap-align: start !important;
   }
 
   /* Let content flow naturally */
