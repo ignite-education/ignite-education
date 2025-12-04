@@ -444,9 +444,13 @@ body {
     color: #000000 !important;
   }
 
-  /* Make section 3 title text and cursor black on mobile */
+  /* Make section 3 title text and cursor black on mobile, keep pink text pink */
   .auth-section-3-title span {
     color: #000000 !important;
+  }
+
+  .auth-section-3-title span[style*="color"] {
+    color: #EF0B72 !important;
   }
 
   .auth-section-3-description,
@@ -499,9 +503,9 @@ body {
 
   .auth-course-card {
     width: 100% !important;
-    height: 12.5rem !important;
-    min-height: 12.5rem !important;
-    max-height: 12.5rem !important;
+    height: 15rem !important;
+    min-height: 15rem !important;
+    max-height: 15rem !important;
     aspect-ratio: unset !important;
     overflow: hidden !important;
     border-radius: 0.3rem !important;
@@ -586,7 +590,7 @@ body {
   .auth-course-modal {
     width: 100% !important;
     max-width: 100% !important;
-    height: 80vh !important;
+    height: 25rem !important;
     border-radius: 0.5rem !important;
   }
 
