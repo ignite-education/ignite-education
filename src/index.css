@@ -465,17 +465,18 @@ body {
 
   .auth-section-3-description-wrapper {
     width: 100% !important;
-    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .auth-section-3-image {
     display: block !important;
-    float: right !important;
+    order: 2 !important;
     width: 45% !important;
-    margin-top: 4rem !important;
-    margin-left: 1rem !important;
+    margin-top: 1rem !important;
+    margin-left: 0 !important;
     margin-bottom: 0.5rem !important;
-    margin-right: -1rem !important;
+    margin-right: 0 !important;
     border-radius: 0.5rem !important;
   }
 
