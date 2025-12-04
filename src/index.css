@@ -472,12 +472,12 @@ body {
   .auth-section-3-image {
     display: block !important;
     order: 2 !important;
-    width: 45% !important;
+    width: 100vw !important;
     margin-top: 1rem !important;
-    margin-left: 0 !important;
+    margin-left: -2rem !important;
     margin-bottom: 0.5rem !important;
     margin-right: 0 !important;
-    border-radius: 0.5rem !important;
+    border-radius: 0 !important;
   }
 
   .auth-section-3-right {
