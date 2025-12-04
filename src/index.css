@@ -470,7 +470,7 @@ body {
   .auth-section-3-image-mobile {
     display: block !important;
     width: 90% !important;
-    margin-top: -5rem !important;
+    margin-top: -6rem !important;
     margin-left: -1rem !important;
     margin-bottom: 0 !important;
     margin-right: auto !important;
@@ -648,7 +648,7 @@ body {
     padding-right: 2rem !important;
     height: auto !important;
     align-items: flex-start !important;
-    padding-top: 11rem !important;
+    padding-top: 12rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
   }
