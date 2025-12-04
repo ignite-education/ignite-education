@@ -358,7 +358,7 @@ body {
 
   .auth-education-heading {
     font-size: 2.3rem !important;
-    min-height: auto !important;
+    min-height: 12rem !important;
     height: auto !important;
     overflow: visible !important;
     padding-top: 0 !important;
@@ -634,7 +634,7 @@ body {
 
   .auth-section-4-title {
     font-size: 2rem !important;
-    min-height: auto !important;
+    min-height: 7.5rem !important;
     height: auto !important;
     overflow: visible !important;
     margin-top: 0 !important;
@@ -744,7 +744,7 @@ body {
     font-size: 2rem !important;
     text-align: left !important;
     width: 100% !important;
-    min-height: auto !important;
+    min-height: 5rem !important;
     height: auto !important;
     flex-shrink: 0 !important;
     margin-bottom: 1.5rem !important;
@@ -886,6 +886,28 @@ body {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
+  }
+
+  /* Section 6 - Blog title container reserves space for typing animation */
+  .auth-section-6-blog-title-container {
+    min-height: 2.5rem !important;
+    padding-top: 0 !important;
+  }
+
+  .auth-section-6-blog-title {
+    min-height: 2.5rem !important;
+    padding-top: 0 !important;
+  }
+
+  /* Section 6 - FAQ title container reserves space for typing animation */
+  .auth-section-6-faq-title-container {
+    min-height: 2.5rem !important;
+    padding-top: 0 !important;
+  }
+
+  .auth-section-6-faq-title {
+    min-height: 2.5rem !important;
+    padding-top: 0 !important;
   }
 
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */

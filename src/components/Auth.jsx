@@ -2493,9 +2493,9 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
               {/* Left Column - Blog Posts */}
-              <div className="flex flex-col items-start justify-center" style={{ marginLeft: '10%' }}>
-                <div className="flex justify-start w-full" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
-                  <h3 className="font-bold text-white text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
+              <div className="flex flex-col items-start justify-center auth-section-6-blog-column" style={{ marginLeft: '10%' }}>
+                <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
+                  <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
 
                 <div className="w-full" style={{ maxWidth: '30.8rem' }}>
@@ -2504,9 +2504,9 @@ const Auth = () => {
               </div>
 
               {/* Right Column - FAQs */}
-              <div>
-                <div className="flex justify-start" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)', width: '85%', margin: '0 auto' }}>
-                  <h3 className="font-bold text-white mb-2 text-left" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
+              <div className="auth-section-6-faq-column">
+                <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)', width: '85%', margin: '0 auto' }}>
+                  <h3 className="font-bold text-white mb-2 text-left auth-section-6-faq-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
                 </div>
 
                 <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
