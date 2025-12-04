@@ -1347,7 +1347,7 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'y proximity' : 'y mandatory',
+          scrollSnapType: 'y mandatory',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           minWidth: '1300px',
@@ -2480,7 +2480,7 @@ const Auth = () => {
       {/* Sixth Section - LinkedIn & FAQs */}
         <div
           ref={linkedInFAQSectionRef}
-          className="min-h-screen flex items-center justify-center px-8"
+          className="min-h-screen flex items-center justify-center px-8 auth-section-6"
           style={{
             background: 'black',
             scrollSnapAlign: isMobile ? 'none' : 'start'

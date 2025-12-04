@@ -329,13 +329,15 @@ body {
 
   /* Section 2 - Education Philosophy */
   .auth-section-2 {
+    min-height: auto !important;
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     height: auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-start !important;
+    scroll-snap-align: none !important;
   }
 
   /* Let content flow naturally */
@@ -397,12 +399,14 @@ body {
 
   /* Section 3 - Courses */
   .auth-section-3 {
+    min-height: auto !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
     height: auto !important;
     align-items: flex-start !important;
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
+    scroll-snap-align: none !important;
   }
 
   .auth-section-3-grid {
@@ -598,12 +602,14 @@ body {
 
   /* Section 4 - Learning Model */
   .auth-section-4 {
+    min-height: auto !important;
     padding-left: 2rem !important;
     padding-right: 2rem !important;
     height: auto !important;
     align-items: flex-start !important;
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
+    scroll-snap-align: none !important;
   }
 
   .auth-section-4 > .max-w-4xl {
@@ -695,12 +701,14 @@ body {
 
   /* Section 5 - Testimonials & Use Cases (match Section 4 padding) */
   .auth-section-5 {
+    min-height: auto !important;
     padding-left: 2rem !important;
     padding-right: 2rem !important;
     height: auto !important;
     overflow: visible !important;
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
+    scroll-snap-align: none !important;
   }
 
   /* Stack content vertically on mobile */
@@ -863,13 +871,22 @@ body {
     font-size: 0.6rem !important;
   }
 
-  /* Down arrow container */
+  /* Section 6 - LinkedIn & FAQs */
+  .auth-section-6 {
+    min-height: auto !important;
+    height: auto !important;
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+    scroll-snap-align: none !important;
+  }
+
+  /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */
+  .auth-section-2-mobile-arrow,
+  .auth-section-2-arrow,
+  .auth-section-3-arrow,
+  .auth-section-4-arrow,
   .auth-section-5-arrow {
-    flex-shrink: 0 !important;
-    margin-top: 0.5rem !important;
-    width: 100% !important;
-    display: flex !important;
-    justify-content: center !important;
+    display: none !important;
   }
 
 }
