@@ -365,7 +365,7 @@ body {
   }
 
   .auth-features-container {
-    min-height: auto !important;
+    min-height: 12rem !important;
     height: auto !important;
     margin-top: 2rem !important;
     width: 100% !important;
@@ -415,6 +415,7 @@ body {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
+    background: #F0F0F2 !important;
   }
 
   .auth-section-3-grid {
@@ -717,6 +718,7 @@ body {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
+    background: #FFFFFF !important;
   }
 
   /* Stack content vertically on mobile */
