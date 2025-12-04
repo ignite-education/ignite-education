@@ -465,11 +465,10 @@ body {
 
   .auth-section-3-image {
     display: block !important;
-    order: 3 !important;
     width: 70% !important;
-    margin-top: 1rem !important;
-    margin-left: 0 !important;
-    margin-bottom: -50% !important;
+    margin-top: 2rem !important;
+    margin-left: 1rem !important;
+    margin-bottom: 0 !important;
     margin-right: auto !important;
     border-radius: 0.5rem !important;
     position: relative !important;

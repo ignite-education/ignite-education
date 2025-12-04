@@ -1716,15 +1716,6 @@ const Auth = () => {
                   <p className="text-lg text-white mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
-                  <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
-                    alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
-                    className="rounded-lg auth-section-3-image"
-                    style={{ width: '70%' }}
-                    loading="lazy"
-                    width="1400"
-                    height="900"
-                  />
                 </div>
               </div>
 
@@ -1862,6 +1853,17 @@ const Auth = () => {
                 </div>
               </div>
             </div>
+
+            {/* Image positioned to overlap sections 3 and 4 */}
+            <img
+              src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+              alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
+              className="rounded-lg auth-section-3-image"
+              style={{ width: '70%' }}
+              loading="lazy"
+              width="1400"
+              height="900"
+            />
           </div>
         </div>
 
