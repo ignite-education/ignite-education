@@ -591,8 +591,8 @@ body {
   .auth-course-card-plus svg {
     width: 1rem !important;
     height: 1rem !important;
-    color: #F0F0F2 !important;
-    stroke: #F0F0F2 !important;
+    color: #000000 !important;
+    stroke: #000000 !important;
   }
 
   /* Course modal on mobile */
@@ -843,6 +843,9 @@ body {
     -webkit-box-orient: vertical !important;
     overflow: hidden !important;
     max-width: 95% !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   .auth-testimonial-quote-wrapper {
@@ -863,11 +866,16 @@ body {
     font-size: 0.8rem !important;
   }
 
+  .auth-testimonial-role {
+    color: #000000 !important;
+  }
+
   .auth-testimonial-indicators {
     width: 20rem !important;
     max-width: 20rem !important;
     margin-top: 0.75rem !important;
     margin-left: 7rem !important;
+    margin-bottom: 2rem !important;
     justify-content: flex-start !important;
   }
 

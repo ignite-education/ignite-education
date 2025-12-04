@@ -1154,11 +1154,9 @@ const Auth = () => {
   // Helper to render typed testimonials heading with white first line and pink second line
   const renderTypedTestimonialsHeading = () => {
     const text = typedTestimonialsHeading;
-    const fullText = 'Ignite is for everyone.\nThe curious, the committed, the ambitious.';
     const firstLineLength = 'Ignite is for everyone.'.length;
 
     let result = [];
-    let lastIndex = 0;
 
     for (let i = 0; i < text.length; i++) {
       const char = text[i];
@@ -1166,7 +1164,6 @@ const Auth = () => {
       // Handle line breaks
       if (char === '\n') {
         result.push(<br key={`br-${i}`} />);
-        lastIndex = i + 1;
         continue;
       }
 
@@ -1174,11 +1171,16 @@ const Auth = () => {
       const isSecondLine = i > firstLineLength;
 
       if (isSecondLine) {
-        // Find the end of current pink section
+        // Find the end of current segment (next newline or comma+space for mobile line breaks)
         let nextBreakOrEnd = text.length;
         for (let j = i; j < text.length; j++) {
           if (text[j] === '\n') {
             nextBreakOrEnd = j;
+            break;
+          }
+          // On mobile, break after comma+space
+          if (isMobile && text[j] === ',' && j + 1 < text.length && text[j + 1] === ' ') {
+            nextBreakOrEnd = j + 2; // Include comma and space
             break;
           }
         }
@@ -1190,8 +1192,11 @@ const Auth = () => {
               {pinkChunk}
             </span>
           );
+          // On mobile, add line break after comma phrases
+          if (isMobile && pinkChunk.endsWith(', ')) {
+            result.push(<br key={`mobile-br-${i}`} />);
+          }
           i = nextBreakOrEnd - 1;
-          lastIndex = nextBreakOrEnd;
         }
       } else {
         // First line - white text (black on mobile)
@@ -1211,7 +1216,6 @@ const Auth = () => {
             </span>
           );
           i = nextBreakOrEnd - 1;
-          lastIndex = nextBreakOrEnd;
         }
       }
     }
@@ -2230,10 +2234,14 @@ const Auth = () => {
           <div className="auth-section-5-content w-full text-white text-left">
             {/* Title Container - reserves space for both lines to prevent layout shift */}
             <div className="auth-section-5-title-container max-w-4xl mx-auto px-4">
-              <h3 className="auth-section-5-title font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '5rem' : '7.5rem', marginBottom: isMobile ? '1.5rem' : '1.5rem' }}>
+              <h3 className="auth-section-5-title font-bold text-white text-left" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '7.5rem', marginBottom: isMobile ? '1.5rem' : '1.5rem' }}>
                 {/* Invisible placeholder to reserve space */}
                 <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
-                  Ignite is for everyone.<br />The curious, the committed, the ambitious.
+                  {isMobile ? (
+                    <>Ignite is for everyone.<br />The curious,<br />the committed,<br />the ambitious.</>
+                  ) : (
+                    <>Ignite is for everyone.<br />The curious, the committed, the ambitious.</>
+                  )}
                 </span>
                 {/* Actual typed content */}
                 <span style={{ position: 'relative' }}>
@@ -2344,7 +2352,7 @@ const Auth = () => {
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
-                          <div className="text-sm text-gray-600">{testimonial.role}</div>
+                          <div className="auth-testimonial-role text-sm text-gray-600">{testimonial.role}</div>
                         </div>
                       </div>
                     ))}
@@ -2412,7 +2420,7 @@ const Auth = () => {
                           }}>
                             {/* Left Column - 50% width - Expanded card */}
                             <div
-                              className="auth-usecase-expanded rounded flex items-center justify-center bg-white"
+                              className="auth-usecase-expanded rounded flex items-start justify-start bg-white"
                               style={{
                                 width: '50%',
                                 padding: '0.75rem',
@@ -2420,16 +2428,16 @@ const Auth = () => {
                                 transition: 'all 300ms ease-in-out'
                               }}
                             >
-                              <div className="flex flex-col items-center justify-center" style={{ width: '100%' }}>
+                              <div className="flex flex-col items-start justify-start" style={{ width: '100%' }}>
                                 <h4 className="font-semibold leading-tight" style={{
                                   color: '#7714E0',
-                                  fontSize: '1rem',
-                                  textAlign: 'center',
+                                  fontSize: '1.1rem',
+                                  textAlign: 'left',
                                   width: '100%'
                                 }}>
                                   {activeCard.title}
                                 </h4>
-                                <p className="text-black leading-relaxed mt-2" style={{ width: '100%', fontSize: '0.8rem', textAlign: 'center' }}>
+                                <p className="text-black leading-relaxed mt-2" style={{ width: '100%', fontSize: '1rem', textAlign: 'left' }}>
                                   {activeCard.description.split('.')[0] + '.'}
                                 </p>
                               </div>
@@ -2451,12 +2459,13 @@ const Auth = () => {
                                   <div
                                     key={idx}
                                     onClick={() => setActiveUseCaseIndex(idx)}
-                                    className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer bg-white"
+                                    className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer"
                                     style={{
                                       aspectRatio: '1',
                                       padding: '0.3rem',
                                       transition: 'all 300ms ease-in-out',
-                                      opacity: isActive ? 1 : 0.7
+                                      opacity: isActive ? 1 : 0.7,
+                                      backgroundColor: isActive ? '#FFFFFF' : '#F0F0F2'
                                     }}
                                   >
                                     <h4 className="font-semibold leading-tight text-center" style={{
