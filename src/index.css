@@ -514,6 +514,10 @@ body {
     max-width: 35rem !important;
   }
 
+  .auth-course-cards-grid:last-child {
+    padding-right: 0.5rem !important;
+  }
+
   .auth-course-card {
     width: 100% !important;
     height: 15rem !important;
