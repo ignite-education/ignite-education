@@ -457,7 +457,7 @@ body {
   .auth-section-3 .auth-section-3-description,
   p.auth-section-3-description {
     text-align: left !important;
-    font-size: 0.9rem !important;
+    font-size: 1.1rem !important;
     margin-bottom: 0 !important;
     color: #000000 !important;
     max-width: 90% !important;
@@ -559,7 +559,7 @@ body {
   }
 
   .auth-course-card-module-extra {
-    display: none !important;
+    display: flex !important;
   }
 
   /* Plus icon on mobile - position within the constrained card height */
@@ -590,7 +590,7 @@ body {
   .auth-course-modal {
     width: 100% !important;
     max-width: 100% !important;
-    height: 25rem !important;
+    height: 30rem !important;
     border-radius: 0.5rem !important;
   }
 
