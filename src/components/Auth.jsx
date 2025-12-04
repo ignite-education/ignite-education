@@ -1611,14 +1611,14 @@ const Auth = () => {
         >
           <div className="max-w-4xl w-full text-white">
             <div className="w-full max-w-3xl mx-auto px-4">
-              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block auth-education-heading" style={{ minHeight: '240px' }}>
+              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block auth-education-heading" style={{ minHeight: isMobile ? undefined : '240px' }}>
                 <span style={{ display: 'inline', whiteSpace: 'normal' }}>
                   {renderTypedEducation()}
                 </span>
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="w-full auth-features-container" style={{ minHeight: '280px', marginTop: '7.526px' }}>
+              <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left auth-promises-list">
                   {isEducationTypingComplete && (
                     <>
@@ -1913,9 +1913,9 @@ const Auth = () => {
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
                       {isMobile ? (
-                        <>Get ahead with <span style={{ color: '#7714E0' }}>smart AI integration.</span></>
+                        <>Get ahead with <span style={{ color: '#7714E0' }}>smart AI integration</span></>
                       ) : (
-                        <>Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration.</span></>
+                        <>Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration</span></>
                       )}
                     </h4>
                     {activeCard === 0 && (
@@ -1959,9 +1959,9 @@ const Auth = () => {
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
                       {isMobile ? (
-                        <>Personalised with <span style={{ color: '#7714E0' }}>industry experts.</span></>
+                        <>Personalised with <span style={{ color: '#7714E0' }}>industry experts</span></>
                       ) : (
-                        <>Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals.</span></>
+                        <>Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals</span></>
                       )}
                     </h4>
                     {activeCard === 1 && (
@@ -2004,7 +2004,7 @@ const Auth = () => {
                     }}
                   >
                     <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
-                      Connect with <br />the <span style={{ color: '#7714E0' }}>global community.</span>
+                      Connect with <br />the <span style={{ color: '#7714E0' }}>global community</span>
                     </h4>
                     {activeCard === 2 && (
                       <p className="text-black text-sm" style={{

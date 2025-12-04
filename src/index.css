@@ -358,15 +358,15 @@ body {
 
   .auth-education-heading {
     font-size: 2.3rem !important;
-    min-height: 12rem !important;
-    height: auto !important;
+    min-height: 14rem !important;
+    height: 14rem !important;
     overflow: visible !important;
     padding-top: 0 !important;
   }
 
   .auth-features-container {
-    min-height: 12rem !important;
-    height: auto !important;
+    min-height: 14rem !important;
+    height: 14rem !important;
     margin-top: 2rem !important;
     width: 100% !important;
   }
