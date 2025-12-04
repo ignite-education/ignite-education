@@ -1351,11 +1351,11 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: 'y mandatory',
+          scrollSnapType: isMobile ? 'none' : 'y mandatory',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
-          minWidth: '1300px',
-          overflowX: 'auto',
+          minWidth: isMobile ? 'auto' : '1300px',
+          overflowX: isMobile ? 'hidden' : 'auto',
           backgroundColor: '#000'
         }}
       >
@@ -2423,7 +2423,7 @@ const Auth = () => {
                                   color: '#7714E0',
                                   fontSize: '1.1rem',
                                   textAlign: 'left',
-                                  marginBottom: '0.5rem'
+                                  marginBottom: '0'
                                 }}>
                                   {card.title}
                                 </h4>
@@ -2606,37 +2606,40 @@ const Auth = () => {
                   <div
                     key={idx}
                     className="auth-faq-card rounded cursor-pointer"
+                    onClick={() => setExpandedFAQ(expandedFAQ === idx ? -1 : idx)}
                     style={{
                       backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: expandedFAQ === idx ? 'auto' : '3.75rem',
-                      minHeight: expandedFAQ === idx ? 'auto' : '3.75rem',
+                      transition: 'background-color 300ms ease, padding 300ms ease',
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
                       paddingBottom: expandedFAQ === idx ? '1.2rem' : '1rem',
-                      paddingLeft: '1.2rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'flex-start',
-                      opacity: 1
+                      paddingLeft: '1.2rem'
                     }}
                     onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
-                    <h4 className="auth-faq-question font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
+                    <h4 className="auth-faq-question font-semibold leading-tight transition-all duration-300" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                       {faq.question}
                     </h4>
-                    {expandedFAQ === idx && (
-                      <p className="text-black text-sm" style={{
-                        marginTop: 'calc(0.1rem + 2px)',
-                        paddingBottom: '3px',
-                        animation: 'fadeIn 200ms ease-in forwards',
-                        animationDelay: '300ms',
-                        opacity: 0
-                      }}>
-                        {faq.answer}
-                      </p>
-                    )}
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateRows: expandedFAQ === idx ? '1fr' : '0fr',
+                        transition: 'grid-template-rows 300ms ease-in-out'
+                      }}
+                    >
+                      <div style={{ overflow: 'hidden' }}>
+                        <p className="text-black text-sm" style={{
+                          marginTop: 'calc(0.1rem + 2px)',
+                          paddingBottom: '3px',
+                          opacity: expandedFAQ === idx ? 1 : 0,
+                          transition: 'opacity 200ms ease-in-out',
+                          transitionDelay: expandedFAQ === idx ? '100ms' : '0ms'
+                        }}>
+                          {faq.answer}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 ))}
                 </div>

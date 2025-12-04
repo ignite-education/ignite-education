@@ -952,7 +952,7 @@ body {
   .auth-section-6 .grid-cols-2 {
     display: flex !important;
     flex-direction: column-reverse !important;
-    gap: 2rem !important;
+    gap: 3rem !important;
   }
 
   /* Section 6 - FAQ column (appears first on mobile) */
@@ -999,7 +999,7 @@ body {
   }
 
   .auth-faq-question {
-    font-size: 1.3rem !important;
+    font-size: 1.1rem !important;
   }
 
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */
