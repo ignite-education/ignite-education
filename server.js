@@ -2579,22 +2579,44 @@ app.get('/api/reddit-posts-cached', async (req, res) => {
     const subreddit = req.query.subreddit || 'ProductManagement';
     const limit = parseInt(req.query.limit) || 20;
 
-    console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit}, last 7 days)`);
+    console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit}, hybrid sorting)`);
 
-    const { data, error} = await supabase
+    const now = new Date();
+    const twoDaysAgo = new Date(now - 2 * 24 * 60 * 60 * 1000).toISOString();
+    const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Get recent "hot" posts from last 48 hours (sorted by upvotes)
+    const { data: hotPosts, error: hotError } = await supabase
       .from('reddit_posts_cache')
       .select('*')
       .eq('subreddit', subreddit)
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
+      .gte('created_at', twoDaysAgo)
       .order('upvotes', { ascending: false })
       .limit(limit);
 
-    if (error) {
-      throw error;
+    if (hotError) {
+      throw hotError;
     }
 
+    // Get older posts from 2-7 days ago (sorted by recency)
+    const { data: olderPosts, error: olderError } = await supabase
+      .from('reddit_posts_cache')
+      .select('*')
+      .eq('subreddit', subreddit)
+      .lt('created_at', twoDaysAgo)
+      .gte('created_at', sevenDaysAgo)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (olderError) {
+      throw olderError;
+    }
+
+    // Combine: hot recent posts first, then older posts by date
+    const combinedData = [...(hotPosts || []), ...(olderPosts || [])].slice(0, limit);
+
     // Transform to match frontend expected format
-    const posts = (data || []).map(post => ({
+    const posts = combinedData.map(post => ({
       id: post.id,
       author: post.author,
       author_icon: post.author_icon,

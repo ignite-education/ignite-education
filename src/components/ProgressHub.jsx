@@ -759,8 +759,8 @@ const ProgressHub = () => {
           source: 'reddit'
         }));
 
-      // Sort by upvotes (top posts first)
-      const allPosts = redditPosts.sort((a, b) => b.upvotes - a.upvotes);
+      // Posts already sorted by backend (hot recent + chronological older)
+      const allPosts = redditPosts;
 
       console.log('📊 Total posts to display:', allPosts.length, '(Reddit:', redditPosts.length, ')');
 
