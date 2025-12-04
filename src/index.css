@@ -414,7 +414,7 @@ body {
     height: auto !important;
     align-items: flex-start !important;
     padding-top: 3rem !important;
-    padding-bottom: 1.5rem !important;
+    padding-bottom: 0 !important;
     scroll-snap-align: none !important;
     background: #FFFFFF !important;
   }
