@@ -1713,18 +1713,20 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg text-white mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425' }}>
-                    We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
-                  </p>
-                  <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
-                    alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
-                    className="rounded-lg auth-section-3-image"
-                    style={{ width: '70%' }}
-                    loading="lazy"
-                    width="1400"
-                    height="900"
-                  />
+                  <div className="auth-section-3-description-wrapper">
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                      alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
+                      className="rounded-lg auth-section-3-image"
+                      style={{ width: '70%' }}
+                      loading="lazy"
+                      width="1400"
+                      height="900"
+                    />
+                    <p className="text-lg text-white mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425' }}>
+                      We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
+                    </p>
+                  </div>
                 </div>
               </div>
 

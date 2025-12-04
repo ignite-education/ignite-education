@@ -463,8 +463,20 @@ body {
     max-width: 90% !important;
   }
 
+  .auth-section-3-description-wrapper {
+    width: 100% !important;
+    overflow: hidden !important;
+  }
+
   .auth-section-3-image {
-    display: none !important;
+    display: block !important;
+    float: right !important;
+    width: 45% !important;
+    margin-top: 4rem !important;
+    margin-left: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    margin-right: -1rem !important;
+    border-radius: 0.5rem !important;
   }
 
   .auth-section-3-right {
