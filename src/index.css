@@ -463,21 +463,18 @@ body {
     max-width: 90% !important;
   }
 
-  .auth-section-3-description-wrapper {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
   .auth-section-3-image {
     display: block !important;
-    order: 2 !important;
-    width: 100vw !important;
+    order: 3 !important;
+    width: 70% !important;
     margin-top: 1rem !important;
-    margin-left: -2rem !important;
-    margin-bottom: 0.5rem !important;
-    margin-right: 0 !important;
-    border-radius: 0 !important;
+    margin-left: 0 !important;
+    margin-bottom: -50% !important;
+    margin-right: auto !important;
+    border-radius: 0.5rem !important;
+    position: relative !important;
+    z-index: 10 !important;
+    transform: translateY(50%) !important;
   }
 
   .auth-section-3-right {
@@ -603,7 +600,7 @@ body {
   .auth-course-modal {
     width: 100% !important;
     max-width: 100% !important;
-    height: 30rem !important;
+    height: 32rem !important;
     border-radius: 0.5rem !important;
   }
 
@@ -648,7 +645,7 @@ body {
     padding-right: 2rem !important;
     height: auto !important;
     align-items: flex-start !important;
-    padding-top: 3rem !important;
+    padding-top: 8rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
   }
