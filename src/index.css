@@ -253,6 +253,7 @@ body {
     background: #000 !important;
     top: 0 !important;
     padding-top: 0 !important;
+    scroll-snap-type: y proximity !important;
   }
 
   /* Vertically center content on mobile */
