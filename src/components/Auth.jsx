@@ -1597,6 +1597,9 @@ const Auth = () => {
       </div>
       </div>
 
+      {/* Wrapper for sections 2-6 on mobile - single snap target */}
+      <div className="auth-sections-2-6-wrapper">
+
       {/* Second Section - Education Philosophy */}
         <div
           ref={marketingSectionRef}
@@ -2634,6 +2637,8 @@ const Auth = () => {
             </div>
           </div>
         </div>
+
+      </div>{/* End of auth-sections-2-6-wrapper */}
     </div>
 
     {/* Password Reset Modal */}
