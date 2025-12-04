@@ -410,7 +410,7 @@ body {
   .auth-section-3 {
     min-height: auto !important;
     padding-left: 1rem !important;
-    padding-right: 1rem !important;
+    padding-right: 0 !important;
     height: auto !important;
     align-items: flex-start !important;
     padding-top: 3rem !important;
@@ -501,7 +501,7 @@ body {
   }
 
   .auth-course-cards-container {
-    margin-right: 1rem !important;
+    margin-right: 0 !important;
   }
 
   .auth-course-cards-grid {
@@ -648,7 +648,7 @@ body {
     padding-right: 2rem !important;
     height: auto !important;
     align-items: flex-start !important;
-    padding-top: 12rem !important;
+    padding-top: 13rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
   }
