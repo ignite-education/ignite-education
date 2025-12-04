@@ -585,11 +585,14 @@ body {
     right: 0.5rem !important;
     width: 1.75rem !important;
     height: 1.75rem !important;
+    background-color: #FFFFFF !important;
   }
 
   .auth-course-card-plus svg {
     width: 1rem !important;
     height: 1rem !important;
+    color: #F0F0F2 !important;
+    stroke: #F0F0F2 !important;
   }
 
   /* Course modal on mobile */
@@ -782,7 +785,7 @@ body {
     font-size: 2rem !important;
     text-align: left !important;
     width: 100% !important;
-    min-height: 5rem !important;
+    min-height: 10rem !important;
     height: auto !important;
     flex-shrink: 0 !important;
     margin-bottom: 1.5rem !important;
@@ -869,7 +872,7 @@ body {
   }
 
   .auth-testimonial-indicators button.bg-white {
-    background-color: #000000 !important;
+    background-color: #F0F0F2 !important;
   }
 
   /* Use case cards - stacked layout */
