@@ -467,10 +467,10 @@ body {
     display: block !important;
     width: 80% !important;
     margin-top: 1.4rem !important;
-    margin-left: auto !important;
+    margin-left: -1rem !important;
     margin-bottom: 0 !important;
-    margin-right: -1rem !important;
-    border-radius: 0.5rem !important;
+    margin-right: auto !important;
+    border-radius: 0 !important;
     position: relative !important;
     z-index: 10 !important;
     transform: translateY(50%) !important;
