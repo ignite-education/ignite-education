@@ -432,7 +432,9 @@ body {
     order: 1 !important;
   }
 
-  .auth-section-3-title {
+  .auth-section-3-title,
+  .auth-section-3 .auth-section-3-title,
+  h3.auth-section-3-title {
     font-size: 2rem !important;
     min-height: 5rem !important;
     height: 5rem !important;
@@ -442,7 +444,14 @@ body {
     color: #000000 !important;
   }
 
-  .auth-section-3-description {
+  /* Make section 3 title text and cursor black on mobile */
+  .auth-section-3-title span {
+    color: #000000 !important;
+  }
+
+  .auth-section-3-description,
+  .auth-section-3 .auth-section-3-description,
+  p.auth-section-3-description {
     text-align: left !important;
     font-size: 0.9rem !important;
     margin-bottom: 0 !important;
@@ -504,6 +513,7 @@ body {
     height: 100% !important;
     aspect-ratio: unset !important;
     overflow: hidden !important;
+    background: #F0F0F2 !important;
   }
 
   /* Course card content on mobile - show title, 1 sentence description, 3 modules */
@@ -511,6 +521,7 @@ body {
     padding: 0.625rem !important;
     overflow: visible !important;
     height: auto !important;
+    background-color: #F0F0F2 !important;
   }
 
   .auth-course-card-title {
