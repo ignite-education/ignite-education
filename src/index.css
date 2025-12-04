@@ -367,7 +367,8 @@ body {
   .auth-features-container {
     min-height: 14rem !important;
     height: 14rem !important;
-    margin-top: 2rem !important;
+    margin-top: 3rem !important;
+    margin-bottom: 3rem !important;
     width: 100% !important;
   }
 
@@ -415,7 +416,7 @@ body {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
-    background: #F0F0F2 !important;
+    background: #FFFFFF !important;
   }
 
   .auth-section-3-grid {
@@ -438,12 +439,14 @@ body {
     text-align: left !important;
     overflow: hidden !important;
     margin-bottom: 0.5rem !important;
+    color: #000000 !important;
   }
 
   .auth-section-3-description {
     text-align: left !important;
     font-size: 0.9rem !important;
     margin-bottom: 0 !important;
+    color: #000000 !important;
     max-width: 90% !important;
   }
 
@@ -493,6 +496,7 @@ body {
     aspect-ratio: unset !important;
     overflow: hidden !important;
     border-radius: 0.3rem !important;
+    background: #F0F0F2 !important;
   }
 
   .auth-course-card-inner {
