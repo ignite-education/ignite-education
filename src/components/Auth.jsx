@@ -1897,212 +1897,302 @@ const Auth = () => {
                 {renderTypedLearningTagline()}
               </h3>
 
-              <div className="grid grid-cols-2 gap-3 items-center auth-section-4-grid">
-                {/* Left Column - Feature Cards */}
-                <div className="space-y-3 flex-shrink-0 auth-section-4-cards">
-                  {/* Card 1 - AI smarts */}
-                  <div
-                    onMouseEnter={() => {
-                      setTimeout(() => {
-                        setActiveCard(0);
-                        setIsCardManuallySelected(true);
-                      }, 300);
-                    }}
-                    className={`rounded cursor-pointer auth-section-4-card ${
-                      activeCard === 0
-                        ? 'shadow-xl auth-section-4-card-expanded'
-                        : 'auth-section-4-card-closed'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? (activeCard === 0 ? '7rem' : '3rem') : (activeCard === 0 ? '10rem' : '5rem'),
-                      overflow: 'hidden',
-                      paddingTop: isMobile ? '0.7rem' : '1rem',
-                      paddingRight: '1rem',
-                      paddingBottom: isMobile ? '0.7rem' : '1rem',
-                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: (isMobile && activeCard !== 0) ? 'center' : 'flex-start',
-                      backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
-                    }}
-                  >
-                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
-                      {isMobile ? (
-                        <>Get ahead with <span style={{ color: '#7714E0' }}>smart AI integration</span></>
-                      ) : (
-                        <>Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration</span></>
-                      )}
+              {/* Mobile Features List */}
+              {isMobile ? (
+                <div className="auth-section-4-mobile-features">
+                  {/* Feature 1 - AI smarts */}
+                  <div className="auth-section-4-mobile-feature">
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                      Get ahead with <span style={{ color: '#7714E0' }}>smart AI integration</span>
                     </h4>
-                    {activeCard === 0 && (
-                      <p className="text-black text-sm" style={{
-                        marginTop: isMobile ? '0.3rem' : '0.5rem',
-                        animation: 'fadeIn 200ms ease-in forwards',
-                        animationDelay: '300ms',
-                        opacity: 0
-                      }}>
-                        Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
-                      </p>
-                    )}
+                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                      Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                    </p>
+                    <div
+                      className="auth-section-4-lottie-placeholder"
+                      style={{
+                        width: '75vw',
+                        height: '75vw',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {/* Lottie animation placeholder */}
+                    </div>
                   </div>
 
-                  {/* Card 2 - Personalised support */}
-                  <div
-                    onMouseEnter={() => {
-                      setTimeout(() => {
-                        setActiveCard(1);
-                        setIsCardManuallySelected(true);
-                      }, 300);
-                    }}
-                    className={`rounded cursor-pointer auth-section-4-card ${
-                      activeCard === 1
-                        ? 'shadow-xl auth-section-4-card-expanded'
-                        : 'auth-section-4-card-closed'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? (activeCard === 1 ? '7rem' : '3rem') : (activeCard === 1 ? '10rem' : '5rem'),
-                      overflow: 'hidden',
-                      paddingTop: isMobile ? '0.7rem' : '1rem',
-                      paddingRight: '1rem',
-                      paddingBottom: isMobile ? '0.7rem' : '1rem',
-                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: (isMobile && activeCard !== 1) ? 'center' : 'flex-start',
-                      backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
-                    }}
-                  >
-                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
-                      {isMobile ? (
-                        <>Personalised with <span style={{ color: '#7714E0' }}>industry experts</span></>
-                      ) : (
-                        <>Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals</span></>
-                      )}
+                  {/* Feature 2 - Personalised support */}
+                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                      Personalised with <span style={{ color: '#7714E0' }}>industry experts</span>
                     </h4>
-                    {activeCard === 1 && (
-                      <p className="text-black text-sm" style={{
-                        marginTop: isMobile ? '0.3rem' : '0.5rem',
-                        animation: 'fadeIn 200ms ease-in forwards',
-                        animationDelay: '300ms',
-                        opacity: 0
-                      }}>
-                        Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
-                      </p>
-                    )}
+                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                      Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                    </p>
+                    <div
+                      className="auth-section-4-lottie-placeholder"
+                      style={{
+                        width: '75vw',
+                        height: '75vw',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {/* Lottie animation placeholder */}
+                    </div>
                   </div>
 
-                  {/* Card 3 - Community */}
-                  <div
-                    onMouseEnter={() => {
-                      setTimeout(() => {
-                        setActiveCard(2);
-                        setIsCardManuallySelected(true);
-                      }, 300);
-                    }}
-                    className={`rounded cursor-pointer auth-section-4-card ${
-                      activeCard === 2
-                        ? 'shadow-xl auth-section-4-card-expanded'
-                        : 'auth-section-4-card-closed'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? (activeCard === 2 ? '7rem' : '3rem') : (activeCard === 2 ? '10rem' : '5rem'),
-                      overflow: 'hidden',
-                      paddingTop: isMobile ? '0.7rem' : '1rem',
-                      paddingRight: '1rem',
-                      paddingBottom: isMobile ? '0.7rem' : '1rem',
-                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: (isMobile && activeCard !== 2) ? 'center' : 'flex-start',
-                      backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
-                    }}
-                  >
-                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
-                      Connect with <br />the <span style={{ color: '#7714E0' }}>global community</span>
+                  {/* Feature 3 - Community */}
+                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                      Connect with the <span style={{ color: '#7714E0' }}>global community</span>
                     </h4>
-                    {activeCard === 2 && (
-                      <p className="text-black text-sm" style={{
-                        marginTop: isMobile ? '0.3rem' : '0.5rem',
-                        animation: 'fadeIn 200ms ease-in forwards',
-                        animationDelay: '300ms',
-                        opacity: 0
-                      }}>
-                        Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
-                      </p>
-                    )}
+                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                      Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                    </p>
+                    <div
+                      className="auth-section-4-lottie-placeholder"
+                      style={{
+                        width: '75vw',
+                        height: '75vw',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {/* Lottie animation placeholder */}
+                    </div>
                   </div>
 
-                  {/* Card 4 - Get certified */}
-                  <div
-                    onMouseEnter={() => {
-                      setTimeout(() => {
-                        setActiveCard(3);
-                        setIsCardManuallySelected(true);
-                      }, 300);
-                    }}
-                    className={`rounded cursor-pointer auth-section-4-card ${
-                      activeCard === 3
-                        ? 'shadow-xl auth-section-4-card-expanded'
-                        : 'auth-section-4-card-closed'
-                    }`}
-                    style={{
-                      transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: isMobile ? (activeCard === 3 ? '7rem' : '3rem') : (activeCard === 3 ? '10rem' : '5rem'),
-                      overflow: 'hidden',
-                      paddingTop: isMobile ? '0.7rem' : '1rem',
-                      paddingRight: '1rem',
-                      paddingBottom: isMobile ? '0.7rem' : '1rem',
-                      paddingLeft: isMobile ? '0.7rem' : '1.2rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: (isMobile && activeCard !== 3) ? 'center' : 'flex-start',
-                      backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
-                    }}
-                  >
-                    <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
-                      Get certified <br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                  {/* Feature 4 - Get certified */}
+                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                      Get certified to <span style={{ color: '#7714E0' }}>take on your next role</span>
                     </h4>
-                    {activeCard === 3 && (
-                      <p className="text-black text-sm" style={{
-                        marginTop: isMobile ? '0.3rem' : '0.5rem',
-                        animation: 'fadeIn 200ms ease-in forwards',
-                        animationDelay: '300ms',
-                        opacity: 0
-                      }}>
-                        {isMobile
-                          ? "Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers."
-                          : "Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn."
-                        }
-                      </p>
-                    )}
+                    <p className="text-gray-300 text-sm" style={{ marginBottom: '1rem' }}>
+                      Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers.
+                    </p>
+                    <div
+                      className="auth-section-4-lottie-placeholder"
+                      style={{
+                        width: '75vw',
+                        height: '75vw',
+                        backgroundColor: '#1a1a1a',
+                        borderRadius: '0.5rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      {/* Lottie animation placeholder */}
+                    </div>
                   </div>
                 </div>
-
-                {/* Right Column - Dynamic Content */}
-                <div className="flex items-center justify-center auth-section-4-media">
-                  <div className="rounded transition-all duration-500 bg-black p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
-                    {activeCard === 2 && (
-                      <video
-                        autoPlay
-                        muted
-                        loop
-                        controls
-                        className="w-full h-full rounded object-cover"
-                        style={{
+              ) : (
+                <div className="grid grid-cols-2 gap-3 items-center auth-section-4-grid">
+                  {/* Left Column - Feature Cards */}
+                  <div className="space-y-3 flex-shrink-0 auth-section-4-cards">
+                    {/* Card 1 - AI smarts */}
+                    <div
+                      onMouseEnter={() => {
+                        setTimeout(() => {
+                          setActiveCard(0);
+                          setIsCardManuallySelected(true);
+                        }, 300);
+                      }}
+                      className={`rounded cursor-pointer auth-section-4-card ${
+                        activeCard === 0
+                          ? 'shadow-xl auth-section-4-card-expanded'
+                          : 'auth-section-4-card-closed'
+                      }`}
+                      style={{
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: activeCard === 0 ? '10rem' : '5rem',
+                        overflow: 'hidden',
+                        paddingTop: '1rem',
+                        paddingRight: '1rem',
+                        paddingBottom: '1rem',
+                        paddingLeft: '1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
+                      }}
+                    >
+                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
+                        Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration</span>
+                      </h4>
+                      {activeCard === 0 && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: '0.5rem',
                           animation: 'fadeIn 200ms ease-in forwards',
                           animationDelay: '300ms',
                           opacity: 0
-                        }}
-                      >
-                        <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-24%20at%2017.59.52.mov" type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
+                        }}>
+                          Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card 2 - Personalised support */}
+                    <div
+                      onMouseEnter={() => {
+                        setTimeout(() => {
+                          setActiveCard(1);
+                          setIsCardManuallySelected(true);
+                        }, 300);
+                      }}
+                      className={`rounded cursor-pointer auth-section-4-card ${
+                        activeCard === 1
+                          ? 'shadow-xl auth-section-4-card-expanded'
+                          : 'auth-section-4-card-closed'
+                      }`}
+                      style={{
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: activeCard === 1 ? '10rem' : '5rem',
+                        overflow: 'hidden',
+                        paddingTop: '1rem',
+                        paddingRight: '1rem',
+                        paddingBottom: '1rem',
+                        paddingLeft: '1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
+                      }}
+                    >
+                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
+                        Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals</span>
+                      </h4>
+                      {activeCard === 1 && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: '0.5rem',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}>
+                          Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card 3 - Community */}
+                    <div
+                      onMouseEnter={() => {
+                        setTimeout(() => {
+                          setActiveCard(2);
+                          setIsCardManuallySelected(true);
+                        }, 300);
+                      }}
+                      className={`rounded cursor-pointer auth-section-4-card ${
+                        activeCard === 2
+                          ? 'shadow-xl auth-section-4-card-expanded'
+                          : 'auth-section-4-card-closed'
+                      }`}
+                      style={{
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: activeCard === 2 ? '10rem' : '5rem',
+                        overflow: 'hidden',
+                        paddingTop: '1rem',
+                        paddingRight: '1rem',
+                        paddingBottom: '1rem',
+                        paddingLeft: '1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
+                      }}
+                    >
+                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
+                        Connect with <br />the <span style={{ color: '#7714E0' }}>global community</span>
+                      </h4>
+                      {activeCard === 2 && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: '0.5rem',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}>
+                          Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Card 4 - Get certified */}
+                    <div
+                      onMouseEnter={() => {
+                        setTimeout(() => {
+                          setActiveCard(3);
+                          setIsCardManuallySelected(true);
+                        }, 300);
+                      }}
+                      className={`rounded cursor-pointer auth-section-4-card ${
+                        activeCard === 3
+                          ? 'shadow-xl auth-section-4-card-expanded'
+                          : 'auth-section-4-card-closed'
+                      }`}
+                      style={{
+                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                        height: activeCard === 3 ? '10rem' : '5rem',
+                        overflow: 'hidden',
+                        paddingTop: '1rem',
+                        paddingRight: '1rem',
+                        paddingBottom: '1rem',
+                        paddingLeft: '1.2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-start',
+                        backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
+                      }}
+                    >
+                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
+                        Get certified <br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                      </h4>
+                      {activeCard === 3 && (
+                        <p className="text-black text-sm" style={{
+                          marginTop: '0.5rem',
+                          animation: 'fadeIn 200ms ease-in forwards',
+                          animationDelay: '300ms',
+                          opacity: 0
+                        }}>
+                          Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column - Dynamic Content */}
+                  <div className="flex items-center justify-center auth-section-4-media">
+                    <div className="rounded transition-all duration-500 bg-black p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
+                      {activeCard === 2 && (
+                        <video
+                          autoPlay
+                          muted
+                          loop
+                          controls
+                          className="w-full h-full rounded object-cover"
+                          style={{
+                            animation: 'fadeIn 200ms ease-in forwards',
+                            animationDelay: '300ms',
+                            opacity: 0
+                          }}
+                        >
+                          <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-24%20at%2017.59.52.mov" type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
             {/* Scroll Down Arrow */}
             <div className="flex justify-center mt-8 auth-section-4-arrow">
