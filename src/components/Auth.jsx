@@ -1912,12 +1912,13 @@ const Auth = () => {
                       className="auth-section-4-lottie-placeholder"
                       style={{
                         width: '75vw',
-                        height: '75vw',
+                        height: '63.75vw',
                         backgroundColor: '#1a1a1a',
                         borderRadius: '0.5rem',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        margin: '0 auto'
                       }}
                     >
                       {/* Lottie animation placeholder */}
@@ -1936,12 +1937,13 @@ const Auth = () => {
                       className="auth-section-4-lottie-placeholder"
                       style={{
                         width: '75vw',
-                        height: '75vw',
+                        height: '63.75vw',
                         backgroundColor: '#1a1a1a',
                         borderRadius: '0.5rem',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        margin: '0 auto'
                       }}
                     >
                       {/* Lottie animation placeholder */}
@@ -1951,7 +1953,7 @@ const Auth = () => {
                   {/* Feature 3 - Community */}
                   <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                      Connect with the <span style={{ color: '#7714E0' }}>global community</span>
+                      Connect with the<br /><span style={{ color: '#7714E0' }}>global community</span>
                     </h4>
                     <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
                       Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
@@ -1960,12 +1962,13 @@ const Auth = () => {
                       className="auth-section-4-lottie-placeholder"
                       style={{
                         width: '75vw',
-                        height: '75vw',
+                        height: '63.75vw',
                         backgroundColor: '#1a1a1a',
                         borderRadius: '0.5rem',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        margin: '0 auto'
                       }}
                     >
                       {/* Lottie animation placeholder */}
@@ -1975,7 +1978,7 @@ const Auth = () => {
                   {/* Feature 4 - Get certified */}
                   <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                      Get certified to <span style={{ color: '#7714E0' }}>take on your next role.</span>
+                      Get certified to<br /><span style={{ color: '#7714E0' }}>take on your next role</span>
                     </h4>
                     <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
@@ -1984,12 +1987,13 @@ const Auth = () => {
                       className="auth-section-4-lottie-placeholder"
                       style={{
                         width: '75vw',
-                        height: '75vw',
+                        height: '63.75vw',
                         backgroundColor: '#1a1a1a',
                         borderRadius: '0.5rem',
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        margin: '0 auto'
                       }}
                     >
                       {/* Lottie animation placeholder */}

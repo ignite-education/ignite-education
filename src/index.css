@@ -675,7 +675,7 @@ body {
     height: auto !important;
     overflow: visible !important;
     margin-top: 0 !important;
-    margin-bottom: 2rem !important;
+    margin-bottom: 3rem !important;
   }
 
   .auth-section-4-grid {
@@ -787,6 +787,7 @@ body {
     flex-shrink: 0 !important;
     margin-bottom: 1.5rem !important;
     position: relative !important;
+    color: #000000 !important;
   }
 
   /* Grid container - stack vertically */
@@ -829,6 +830,7 @@ body {
     padding: 1rem !important;
     margin: 0 !important;
     overflow: visible !important;
+    background-color: #F0F0F2 !important;
   }
 
   .auth-testimonial-quote {
@@ -866,7 +868,11 @@ body {
     justify-content: flex-start !important;
   }
 
-  /* Use case cards - two column layout */
+  .auth-testimonial-indicators button.bg-white {
+    background-color: #000000 !important;
+  }
+
+  /* Use case cards - stacked layout */
   .auth-usecase-container {
     width: 100% !important;
     justify-content: flex-start !important;
@@ -881,30 +887,33 @@ body {
     padding: 0 !important;
   }
 
-  /* Two-column layout container */
+  /* Stacked layout container - squares on top, expanded below */
   .auth-usecase-two-column {
     display: flex !important;
+    flex-direction: column-reverse !important;
     width: 100% !important;
     gap: 0.75rem !important;
   }
 
-  /* Expanded card - left column */
+  /* Expanded card - full width below */
   .auth-usecase-expanded {
-    width: 50% !important;
-    min-height: 9.5rem !important;
+    width: 100% !important;
+    min-height: auto !important;
     padding: 1rem !important;
+    order: 2 !important;
   }
 
   .auth-usecase-expanded h4 {
-    font-size: 0.875rem !important;
+    font-size: 1rem !important;
   }
 
-  /* 2x2 grid - right column */
+  /* Single row of squares - full width on top */
   .auth-usecase-grid-right {
-    width: 50% !important;
+    width: 100% !important;
     display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
+    grid-template-columns: repeat(4, 1fr) !important;
     gap: 0.5rem !important;
+    order: 1 !important;
   }
 
   /* Small cards in the grid */
