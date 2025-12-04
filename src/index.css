@@ -998,6 +998,10 @@ body {
     padding-top: 0 !important;
   }
 
+  .auth-faq-question {
+    font-size: 1.3rem !important;
+  }
+
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */
   .auth-section-2-mobile-arrow,
   .auth-section-2-arrow,

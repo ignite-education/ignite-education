@@ -2605,11 +2605,12 @@ const Auth = () => {
                 ].map((faq, idx) => (
                   <div
                     key={idx}
-                    className="rounded cursor-pointer"
+                    className="auth-faq-card rounded cursor-pointer"
                     style={{
                       backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                       transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                      height: expandedFAQ === idx ? 'calc(7.25rem + 5px)' : '3.75rem',
+                      height: expandedFAQ === idx ? 'auto' : '3.75rem',
+                      minHeight: expandedFAQ === idx ? 'auto' : '3.75rem',
                       overflow: 'hidden',
                       paddingTop: '1rem',
                       paddingRight: '1rem',
@@ -2622,7 +2623,7 @@ const Auth = () => {
                     }}
                     onMouseEnter={() => debounce('faqExpand', () => setExpandedFAQ(idx), 250)}
                   >
-                    <h4 className="font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
+                    <h4 className="auth-faq-question font-semibold leading-tight transition-all duration-500" style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}>
                       {faq.question}
                     </h4>
                     {expandedFAQ === idx && (
