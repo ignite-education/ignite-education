@@ -1351,11 +1351,11 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'none' : 'y mandatory',
+          scrollSnapType: 'y mandatory',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
-          minWidth: isMobile ? 'auto' : '1300px',
-          overflowX: isMobile ? 'hidden' : 'auto',
+          minWidth: '1300px',
+          overflowX: 'auto',
           backgroundColor: '#000'
         }}
       >
@@ -1775,7 +1775,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="relative cursor-pointer flex-shrink-0 auth-course-card"
-                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.7)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
+                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.85)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
@@ -2558,7 +2558,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '25px' }}>
+            <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
               {/* Left Column - Blog Posts */}
               <div className="flex flex-col items-start justify-center auth-section-6-blog-column" style={{ marginLeft: '10%' }}>
                 <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>

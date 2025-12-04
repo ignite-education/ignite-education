@@ -253,12 +253,12 @@ body {
     background: #000 !important;
     top: 0 !important;
     padding-top: 0 !important;
-    scroll-snap-type: none !important;
+    scroll-snap-type: y mandatory !important;
   }
 
-  /* Wrapper for sections 2-6 - no snap on mobile */
+  /* Wrapper for sections 2-6 - single snap target containing all remaining content */
   .auth-sections-2-6-wrapper {
-    scroll-snap-align: none !important;
+    scroll-snap-align: start !important;
   }
 
   /* Vertically center content on mobile */
@@ -275,7 +275,8 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    scroll-snap-align: none !important;
+    scroll-snap-align: start !important;
+    scroll-snap-stop: always !important;
   }
 
   /* Logo on mobile - 15% bigger than 103px = ~118px */
