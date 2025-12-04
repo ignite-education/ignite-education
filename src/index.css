@@ -944,6 +944,34 @@ body {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
     scroll-snap-align: none !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Section 6 grid - stack vertically on mobile with FAQ first */
+  .auth-section-6 .grid-cols-2 {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 2rem !important;
+  }
+
+  /* Section 6 - FAQ column (appears first on mobile) */
+  .auth-section-6-faq-column {
+    width: 100% !important;
+    order: 2 !important;
+  }
+
+  .auth-section-6-faq-column .space-y-3 {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  /* Section 6 - Blog column (appears second on mobile) */
+  .auth-section-6-blog-column {
+    width: 100% !important;
+    margin-left: 0 !important;
+    order: 1 !important;
   }
 
   /* Section 6 - Blog title container reserves space for typing animation */
@@ -961,6 +989,8 @@ body {
   .auth-section-6-faq-title-container {
     min-height: 2.5rem !important;
     padding-top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
 
   .auth-section-6-faq-title {

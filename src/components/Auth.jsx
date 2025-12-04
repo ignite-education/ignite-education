@@ -2409,81 +2409,29 @@ const Auth = () => {
                       ];
 
                       if (isMobile) {
-                        // Mobile layout: Two equal columns - expanded card left, 2x2 grid right
-                        const activeCard = useCaseCards[activeUseCaseIndex];
-
+                        // Mobile layout: Simple list of use cases
                         return (
-                          <div className="auth-usecase-two-column" style={{
+                          <div className="auth-usecase-mobile-list" style={{
                             display: 'flex',
+                            flexDirection: 'column',
                             width: '100%',
-                            gap: '0.75rem'
+                            gap: '1.5rem'
                           }}>
-                            {/* Left Column - 50% width - Expanded card */}
-                            <div
-                              className="auth-usecase-expanded rounded flex items-start justify-start bg-white"
-                              style={{
-                                width: '50%',
-                                padding: '0.75rem',
-                                minHeight: '9.5rem',
-                                transition: 'all 300ms ease-in-out'
-                              }}
-                            >
-                              <div className="flex flex-col items-start justify-start" style={{ width: '100%' }}>
+                            {useCaseCards.map((card, idx) => (
+                              <div key={idx} className="auth-usecase-mobile-item">
                                 <h4 className="font-semibold leading-tight" style={{
                                   color: '#7714E0',
                                   fontSize: '1.1rem',
                                   textAlign: 'left',
-                                  width: '100%'
+                                  marginBottom: '0.5rem'
                                 }}>
-                                  {activeCard.title}
+                                  {card.title}
                                 </h4>
-                                <p className="text-black leading-relaxed mt-2" style={{ width: '100%', fontSize: '1rem', textAlign: 'left' }}>
-                                  {activeCard.description.split('.')[0] + '.'}
+                                <p className="text-black leading-relaxed" style={{ fontSize: '1rem', textAlign: 'left' }}>
+                                  {card.description.split('.')[0] + '.'}
                                 </p>
                               </div>
-                            </div>
-
-                            {/* Right Column - 50% width - 2x2 grid of collapsed cards */}
-                            <div
-                              className="auth-usecase-grid-right"
-                              style={{
-                                width: '50%',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '0.5rem'
-                              }}
-                            >
-                              {useCaseCards.map((card, idx) => {
-                                const isActive = idx === activeUseCaseIndex;
-                                return (
-                                  <div
-                                    key={idx}
-                                    onClick={() => setActiveUseCaseIndex(idx)}
-                                    className="auth-usecase-card-small rounded flex items-center justify-center cursor-pointer"
-                                    style={{
-                                      aspectRatio: '1',
-                                      padding: '0.3rem',
-                                      transition: 'all 300ms ease-in-out',
-                                      opacity: isActive ? 1 : 0.7,
-                                      backgroundColor: isActive ? '#FFFFFF' : '#F0F0F2'
-                                    }}
-                                  >
-                                    <h4 className="font-semibold leading-tight text-center" style={{
-                                      color: '#7714E0',
-                                      fontSize: '1rem'
-                                    }}>
-                                      {card.title === 'Upskilling in Role' ? (
-                                        <>Upskilling<br />in Role</>
-                                      ) : card.title === 'Career Break Returners' ? (
-                                        <>Career<br />Break<br />Returners</>
-                                      ) : (
-                                        card.title.split(' ').length > 2 ? card.title.split(' ').slice(0, 2).join(' ') : card.title
-                                      )}
-                                    </h4>
-                                  </div>
-                                );
-                              })}
-                            </div>
+                            ))}
                           </div>
                         );
                       }
