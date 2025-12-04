@@ -495,13 +495,13 @@ body {
   }
 
   .auth-course-cards-scroll {
-    padding: 0.5rem 0 0.25rem 0 !important;
+    padding: 0.5rem 0.5rem 0.25rem 0 !important;
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
   }
 
   .auth-course-cards-container {
-    margin-right: 0 !important;
+    margin-right: 0.5rem !important;
   }
 
   .auth-course-cards-grid {
