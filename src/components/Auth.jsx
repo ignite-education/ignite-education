@@ -196,7 +196,7 @@ const Auth = () => {
             { after: 'Education should be \naccessible,'.length, duration: 500 },
             { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
           ],
-      enabled: educationTypingEnabled
+      enabled: educationTypingEnabled && !isMobile  // Disable animation on mobile
     }
   );
 
@@ -239,9 +239,9 @@ const Auth = () => {
     }
   );
 
-  const blogHeadingText = 'Latest from Ignite';
-  const { displayText: typedBlogHeading, isComplete: isBlogHeadingComplete } = useTypingAnimation(
-    blogHeadingText,
+  const faqHeadingText = 'FAQs';
+  const { displayText: typedFAQHeading, isComplete: isFAQHeadingComplete } = useTypingAnimation(
+    faqHeadingText,
     {
       charDelay: 75,
       startDelay: 0,
@@ -249,13 +249,13 @@ const Auth = () => {
     }
   );
 
-  const faqHeadingText = 'FAQs';
-  const { displayText: typedFAQHeading } = useTypingAnimation(
-    faqHeadingText,
+  const blogHeadingText = 'Latest from Ignite';
+  const { displayText: typedBlogHeading } = useTypingAnimation(
+    blogHeadingText,
     {
       charDelay: 75,
-      startDelay: 500, // Start after blog heading would typically finish
-      enabled: blogFaqTypingEnabled && isBlogHeadingComplete
+      startDelay: 500, // Start after FAQ heading finishes
+      enabled: blogFaqTypingEnabled && isFAQHeadingComplete
     }
   );
 
@@ -881,11 +881,13 @@ const Auth = () => {
 
   // Helper to render typed text with pink highlights for key words
   const renderTypedEducation = () => {
-    const text = typedEducationText;
     const words = ['accessible', 'personalised', 'integrated'];
     const fullText = isMobile
       ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
       : 'Education should be \naccessible, personalised and integrated for everyone.';
+
+    // On mobile, show full text immediately (no animation)
+    const text = isMobile ? fullText : typedEducationText;
 
     // Split text into parts and highlight the key words
     let result = [];
@@ -951,8 +953,8 @@ const Auth = () => {
       }
     }
 
-    // Add cursor if typing is not complete
-    if (!isEducationTypingComplete) {
+    // Add cursor if typing is not complete (not on mobile since we show full text)
+    if (!isEducationTypingComplete && !isMobile) {
       result.push(
         <span key="cursor" className="text-white animate-blink font-light">|</span>
       );
@@ -1068,7 +1070,7 @@ const Auth = () => {
     // Add cursor if typing is not complete
     if (!isCourseTitleTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-light">|</span>
+        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
       );
     }
 
@@ -1222,7 +1224,7 @@ const Auth = () => {
 
     if (!isTestimonialsHeadingTypingComplete) {
       result.push(
-        <span key="cursor" className={isMobile ? "text-black animate-blink font-light" : "text-white animate-blink font-light"}>|</span>
+        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
       );
     }
 
@@ -1775,7 +1777,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="relative cursor-pointer flex-shrink-0 auth-course-card"
-                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.85)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
+                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.95)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
