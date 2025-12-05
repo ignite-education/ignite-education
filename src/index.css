@@ -953,6 +953,7 @@ body {
     display: flex !important;
     flex-direction: column-reverse !important;
     gap: 3rem !important;
+    margin-bottom: 1rem !important;
   }
 
   /* Section 6 - FAQ column (appears first on mobile) */
@@ -999,7 +1000,11 @@ body {
   }
 
   .auth-faq-question {
-    font-size: 1.1rem !important;
+    font-size: 1.3rem !important;
+  }
+
+  .auth-section-6-get-started {
+    padding-bottom: 3rem !important;
   }
 
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */

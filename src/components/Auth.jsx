@@ -1626,7 +1626,7 @@ const Auth = () => {
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left auth-promises-list">
-                  {isEducationTypingComplete && (
+                  {(isEducationTypingComplete || isMobile) && (
                     <>
                       <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
@@ -2649,7 +2649,7 @@ const Auth = () => {
             </div>
 
             {/* Get Started Button */}
-            <div className="flex justify-center px-4 pb-8" style={{ paddingTop: '0px' }}>
+            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '0px' }}>
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
