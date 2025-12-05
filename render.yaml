@@ -45,3 +45,10 @@ services:
         sync: false
       - key: VITE_REDDIT_USER_AGENT
         sync: false
+
+  # Cron job to refresh Reddit cache daily at 6 AM UTC
+  - type: cron
+    name: reddit-cache-refresh
+    schedule: "0 6 * * *"
+    buildCommand: ""
+    startCommand: curl -X POST https://ignite-education-api.onrender.com/api/reddit-cache/refresh
