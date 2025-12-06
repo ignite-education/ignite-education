@@ -3113,7 +3113,7 @@ const ProgressHub = () => {
                           transition: 'max-height 0.3s ease-out, opacity 0.25s ease-out'
                         }}
                       >
-                        <div className={`bg-gray-800 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
+                        <div className={`rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`} style={{ backgroundColor: '#171717' }}>
                           {postComments[post.id] !== 'AUTH_REQUIRED' && (
                             <h4 className="text-xs font-semibold text-gray-400 mb-3">
                               Comments ({postComments[post.id]?.length || 0})
