@@ -1057,7 +1057,7 @@ const Auth = () => {
         const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`white-${i}`} className="text-white">
+            <span key={`white-${i}`} style={{ color: isMobile ? 'white' : 'black' }}>
               {chunk}
             </span>
           );
@@ -1706,7 +1706,7 @@ const Auth = () => {
           ref={coursesSectionRef}
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-3"
           style={{
-            background: 'black',
+            background: isMobile ? 'black' : 'white',
             scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
@@ -1719,7 +1719,7 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg text-white mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425' }}>
+                  <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   {/* Desktop image - inside left column */}
