@@ -243,7 +243,7 @@ body {
 @media (min-width: 768px) {
   .auth-section-2 {
     min-height: auto;
-    height: 30rem;
+    height: 40rem;
     padding-top: 6rem;
     padding-bottom: 6rem;
   }

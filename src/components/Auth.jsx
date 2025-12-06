@@ -1703,7 +1703,7 @@ const Auth = () => {
                         key={course.name}
                         data-course-card
                         className="relative cursor-pointer flex-shrink-0 auth-course-card"
-                        style={{ width: '249px', height: '249px', scrollSnapAlign: 'start', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.95)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
+                        style={{ width: '249px', height: '249px', scrollSnapAlign: isMobile ? 'start' : 'none', scrollMarginLeft: '5px', filter: isBlurred ? 'blur(1px) brightness(0.95)' : 'none', transition: 'filter 200ms ease-out', overflow: 'visible' }}
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
@@ -1811,7 +1811,7 @@ const Auth = () => {
           <div className="max-w-4xl mx-auto text-white text-left">
             {/* Learning Model Section */}
             <div className="px-4 auth-section-4-content">
-              <h3 className="font-bold text-white text-left auth-section-4-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0.5rem', marginTop: '2rem' }}>
+              <h3 className="font-bold text-white text-left auth-section-4-title" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: '1.2', minHeight: '120px', marginBottom: isMobile ? '0.5rem' : '1.5rem', marginTop: '2rem' }}>
                 {renderTypedLearningTagline()}
               </h3>
 
