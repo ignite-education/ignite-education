@@ -1630,13 +1630,13 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className="min-h-screen flex items-center justify-center px-8 relative auth-section-3"
+          className={`min-h-screen flex ${isMobile ? 'items-center' : 'items-start'} justify-center px-8 relative auth-section-3`}
           style={{
             background: isMobile ? 'black' : 'white',
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="max-w-7xl w-full text-white">
+          <div className="max-w-7xl w-full text-white" style={{ marginTop: isMobile ? '0' : '10rem' }}>
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-12 px-4 w-full items-center auth-section-3-grid">
               {/* Left Column - Description */}
