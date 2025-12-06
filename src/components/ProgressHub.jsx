@@ -3115,7 +3115,7 @@ const ProgressHub = () => {
                       >
                         <div className={`rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`} style={{ backgroundColor: '#171717' }}>
                           {postComments[post.id] !== 'AUTH_REQUIRED' && (
-                            <h4 className="text-xs font-semibold text-gray-400 mb-3">
+                            <h4 className="text-xs font-semibold text-white mb-3">
                               Comments ({postComments[post.id]?.length || 0})
                             </h4>
                           )}
@@ -3209,8 +3209,8 @@ const ProgressHub = () => {
                                     </div>
                                     <div className="flex-1">
                                       <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs text-gray-400">u/{commentAuthor}</span>
-                                        <span className="text-xs text-gray-500">• {timeAgo}</span>
+                                        <span className="text-xs text-white">u/{commentAuthor}</span>
+                                        <span className="text-xs text-white">• {timeAgo}</span>
                                       </div>
                                       <p className="text-xs text-gray-300">{comment.content}</p>
                                     </div>
