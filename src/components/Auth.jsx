@@ -1695,10 +1695,10 @@ const Auth = () => {
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
-                          className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl aspect-square cursor-pointer auth-course-card-inner"
-                          style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
+                          className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner"
+                          style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out, box-shadow 300ms ease-in-out' }}
+                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; e.currentTarget.style.boxShadow = '0 17px 35px -8px rgb(0 0 0 / 0.18)'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                         <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "#F0F0F2", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
