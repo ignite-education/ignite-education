@@ -3704,7 +3704,7 @@ const ProgressHub = () => {
                 </button>
                 <button
                   onClick={() => setSettingsTab('danger')}
-                  className={`pb-2 px-1 font-medium transition ${settingsTab === 'danger' ? 'text-red-600 border-b-2 border-red-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`pb-2 px-1 font-medium transition ${settingsTab === 'danger' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Account Actions
                 </button>
