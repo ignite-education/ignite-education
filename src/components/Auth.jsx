@@ -1703,7 +1703,7 @@ const Auth = () => {
                         <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "#F0F0F2", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
-                            <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: isMobile ? 4 : 5, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
+                            <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: isMobile ? 4 : 6, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
                               {(() => {
                                 const firstSentenceEnd = course.description.indexOf('. ');
                                 return firstSentenceEnd !== -1
