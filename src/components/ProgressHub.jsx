@@ -3021,7 +3021,10 @@ const ProgressHub = () => {
                       }}
                     >
                     <div
-                      className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative cursor-pointer"
+                      className="rounded-lg p-5 transition relative cursor-pointer"
+                      style={{ backgroundColor: '#171717' }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#212121'}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#171717'}
                       onClick={() => {
                         if (expandedPostId !== post.id) {
                           setExpandedPostId(post.id);
