@@ -285,6 +285,28 @@ body {
 
   .auth-section-3-right {
     overflow: visible;
+    position: relative;
+  }
+
+  .auth-section-3-right::before,
+  .auth-section-3-right::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 15px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .auth-section-3-right::before {
+    left: 0;
+    background: linear-gradient(to right, white 0%, transparent 100%);
+  }
+
+  .auth-section-3-right::after {
+    right: 0;
+    background: linear-gradient(to left, white 0%, transparent 100%);
   }
 
   .auth-course-cards-container {

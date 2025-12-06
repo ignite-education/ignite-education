@@ -1804,8 +1804,8 @@ const Auth = () => {
                 alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                 className="rounded-lg auth-section-3-image"
                 style={{
-                  width: '34%',
-                  maxWidth: '425px',
+                  width: '35.7%',
+                  maxWidth: '446px',
                   transform: 'translateY(50%)'
                 }}
                 loading="lazy"
