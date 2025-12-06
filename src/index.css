@@ -253,12 +253,13 @@ body {
     height: auto;
     padding-top: 6rem;
     padding-bottom: 6rem;
+    overflow: visible;
   }
 
   .auth-section-4 {
     min-height: auto;
     height: auto;
-    padding-top: 6rem;
+    padding-top: 20rem;
     padding-bottom: 6rem;
   }
 
@@ -276,9 +277,10 @@ body {
     padding-bottom: 6rem;
   }
 
-  /* Allow course card shadows to extend beyond container */
+  /* Allow course card shadows to extend beyond container while keeping horizontal scroll */
   .auth-course-cards-scroll {
-    overflow: visible;
+    overflow-x: auto;
+    overflow-y: visible;
   }
 
   .auth-section-3-right {
