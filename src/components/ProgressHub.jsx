@@ -78,7 +78,6 @@ const ProgressHub = () => {
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [hoverTimer, setHoverTimer] = useState(null);
   const [leaveTimer, setLeaveTimer] = useState(null);
-  const [visiblePosts, setVisiblePosts] = useState(new Set());
   const postRefs = useRef({});
   const [collapsedHeights, setCollapsedHeights] = useState({});
   const [isCollapsing, setIsCollapsing] = useState({});
@@ -2089,30 +2088,25 @@ const ProgressHub = () => {
     const timer = setTimeout(() => {
       const postId = expandedPostId;
 
-      // Check if post is out of viewport before collapsing
-      if (postId && !visiblePosts.has(postId)) {
-        // Post is out of view - capture current height before collapsing
-        const postElement = postRefs.current[postId];
-        if (postElement) {
-          const currentHeight = postElement.offsetHeight;
-          setCollapsedHeights(prev => ({ ...prev, [postId]: currentHeight }));
-          setIsCollapsing(prev => ({ ...prev, [postId]: true }));
-        }
-      }
+      if (postId) {
+        // Start collapse animation for all posts (visible or not)
+        setIsCollapsing(prev => ({ ...prev, [postId]: true }));
 
-      setExpandedPostId(null);
+        // Clear expandedPostId after a brief moment to trigger the CSS transition
+        setTimeout(() => {
+          setExpandedPostId(null);
+        }, 50);
 
-      // Clear the collapsed state after animation completes
-      setTimeout(() => {
-        if (postId) {
+        // Clear the collapsed state after animation completes
+        setTimeout(() => {
           setIsCollapsing(prev => ({ ...prev, [postId]: false }));
           setCollapsedHeights(prev => {
             const newHeights = { ...prev };
             delete newHeights[postId];
             return newHeights;
           });
-        }
-      }, 300);
+        }, 350);
+      }
     }, 1000);
 
     setLeaveTimer(timer);
@@ -3106,14 +3100,14 @@ const ProgressHub = () => {
                     </div>
 
                     {/* Comments Section - Separate box below post, aligned right, 90% width */}
-                    {(expandedPostId === post.id || (isCollapsing[post.id] && collapsedHeights[post.id])) && (
+                    {(expandedPostId === post.id || isCollapsing[post.id]) && (
                       <div
-                        className="ml-auto mt-2 animate-fadeIn"
+                        className="ml-auto mt-2 overflow-hidden"
                         style={{
                           width: '90%',
-                          animation: 'slideDown 0.3s ease-out',
+                          maxHeight: expandedPostId === post.id ? '2000px' : '0px',
                           opacity: expandedPostId === post.id ? 1 : 0,
-                          transition: 'opacity 0.3s ease-out'
+                          transition: 'max-height 0.3s ease-out, opacity 0.25s ease-out'
                         }}
                       >
                         <div className={`bg-gray-800 rounded-lg ${postComments[post.id] === 'AUTH_REQUIRED' ? 'p-3' : 'p-4'}`}>
