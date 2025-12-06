@@ -251,15 +251,15 @@ body {
   .auth-section-3 {
     min-height: auto;
     height: auto;
-    padding-top: 6rem;
-    padding-bottom: 6rem;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
     overflow: visible;
   }
 
   .auth-section-4 {
     min-height: auto;
     height: auto;
-    padding-top: 20rem;
+    padding-top: 15rem;
     padding-bottom: 6rem;
   }
 
