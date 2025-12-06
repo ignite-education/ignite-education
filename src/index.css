@@ -243,7 +243,7 @@ body {
 @media (min-width: 768px) {
   .auth-section-2 {
     min-height: auto;
-    height: auto;
+    height: 50rem;
     padding-top: 6rem;
     padding-bottom: 6rem;
   }
@@ -274,6 +274,23 @@ body {
     height: auto;
     padding-top: 6rem;
     padding-bottom: 6rem;
+  }
+
+  /* Allow course card shadows to extend beyond container */
+  .auth-course-cards-scroll {
+    overflow: visible;
+  }
+
+  .auth-section-3-right {
+    overflow: visible;
+  }
+
+  .auth-course-cards-container {
+    overflow: visible;
+  }
+
+  .auth-course-cards-grid {
+    overflow: visible;
   }
 }
 

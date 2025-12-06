@@ -128,8 +128,6 @@ const Auth = () => {
   const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
-  const [activeCard, setActiveCard] = useState(0);
-  const [isCardManuallySelected, setIsCardManuallySelected] = useState(false);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const coursesSectionRef = useRef(null);
   const courseCardsScrollRef = useRef(null);
@@ -1231,27 +1229,6 @@ const Auth = () => {
     return result;
   };
 
-  // Auto-rotate through cards
-  useEffect(() => {
-    if (!animateWords || isLogin || selectedCourseModal || isCardManuallySelected || !isLearningTaglineTypingComplete) return;
-
-    const interval = setInterval(() => {
-      setActiveCard((prev) => (prev + 1) % 4); // Rotate through 0, 1, 2, 3
-    }, 6000); // Change every 6 seconds
-
-    return () => clearInterval(interval);
-  }, [animateWords, isLogin, selectedCourseModal, isCardManuallySelected, isLearningTaglineTypingComplete]);
-
-  // Resume auto-rotation after manual selection
-  useEffect(() => {
-    if (isCardManuallySelected) {
-      const timer = setTimeout(() => {
-        setIsCardManuallySelected(false);
-      }, 6000); // Resume auto-rotation after 6 seconds of manual selection
-      return () => clearTimeout(timer);
-    }
-  }, [isCardManuallySelected, activeCard]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -1839,306 +1816,143 @@ const Auth = () => {
                 {renderTypedLearningTagline()}
               </h3>
 
-              {/* Mobile Features List */}
-              {isMobile ? (
-                <div className="auth-section-4-mobile-features">
-                  {/* Feature 1 - AI smarts */}
-                  <div className="auth-section-4-mobile-feature">
-                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+              {/* Features List */}
+              <div className="auth-section-4-features">
+                {/* Feature 1 - AI smarts */}
+                <div className="auth-section-4-feature" style={{
+                  display: isMobile ? 'block' : 'grid',
+                  gridTemplateColumns: isMobile ? undefined : '1fr 1fr',
+                  gap: isMobile ? undefined : '3rem',
+                  alignItems: isMobile ? undefined : 'center'
+                }}>
+                  <div>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
                       Levelling up learning with <span style={{ color: '#FFFFFF' }}>smart AI integration</span>
                     </h4>
-                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
                     </p>
-                    <div
-                      className="auth-section-4-lottie-placeholder"
-                      style={{
-                        width: '75vw',
-                        height: '63.75vw',
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto'
-                      }}
-                    >
-                      {/* Lottie animation placeholder */}
-                    </div>
                   </div>
+                  <div
+                    className="auth-section-4-lottie-placeholder"
+                    style={{
+                      width: isMobile ? '75vw' : '100%',
+                      height: isMobile ? '63.75vw' : undefined,
+                      aspectRatio: isMobile ? undefined : '4/3',
+                      backgroundColor: '#1a1a1a',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: isMobile ? '0 auto' : undefined
+                    }}
+                  >
+                    {/* Lottie animation placeholder */}
+                  </div>
+                </div>
 
-                  {/* Feature 2 - Personalised support */}
-                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
-                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+                {/* Feature 2 - Personalised support */}
+                <div className="auth-section-4-feature" style={{
+                  marginTop: isMobile ? '2rem' : '3rem',
+                  display: isMobile ? 'block' : 'grid',
+                  gridTemplateColumns: isMobile ? undefined : '1fr 1fr',
+                  gap: isMobile ? undefined : '3rem',
+                  alignItems: isMobile ? undefined : 'center'
+                }}>
+                  <div>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
                       Personalised support from <span style={{ color: '#FFFFFF' }}>industry professionals</span>
                     </h4>
-                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
                     </p>
-                    <div
-                      className="auth-section-4-lottie-placeholder"
-                      style={{
-                        width: '75vw',
-                        height: '63.75vw',
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto'
-                      }}
-                    >
-                      {/* Lottie animation placeholder */}
-                    </div>
                   </div>
+                  <div
+                    className="auth-section-4-lottie-placeholder"
+                    style={{
+                      width: isMobile ? '75vw' : '100%',
+                      height: isMobile ? '63.75vw' : undefined,
+                      aspectRatio: isMobile ? undefined : '4/3',
+                      backgroundColor: '#1a1a1a',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: isMobile ? '0 auto' : undefined
+                    }}
+                  >
+                    {/* Lottie animation placeholder */}
+                  </div>
+                </div>
 
-                  {/* Feature 3 - Community */}
-                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
-                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                      Connect with the<br /><span style={{ color: '#FFFFFF' }}>global community</span>
+                {/* Feature 3 - Community */}
+                <div className="auth-section-4-feature" style={{
+                  marginTop: isMobile ? '2rem' : '3rem',
+                  display: isMobile ? 'block' : 'grid',
+                  gridTemplateColumns: isMobile ? undefined : '1fr 1fr',
+                  gap: isMobile ? undefined : '3rem',
+                  alignItems: isMobile ? undefined : 'center'
+                }}>
+                  <div>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
+                      Connect with the {isMobile && <br />}<span style={{ color: '#FFFFFF' }}>global community</span>
                     </h4>
-                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
                     </p>
-                    <div
-                      className="auth-section-4-lottie-placeholder"
-                      style={{
-                        width: '75vw',
-                        height: '63.75vw',
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto'
-                      }}
-                    >
-                      {/* Lottie animation placeholder */}
-                    </div>
                   </div>
+                  <div
+                    className="auth-section-4-lottie-placeholder"
+                    style={{
+                      width: isMobile ? '75vw' : '100%',
+                      height: isMobile ? '63.75vw' : undefined,
+                      aspectRatio: isMobile ? undefined : '4/3',
+                      backgroundColor: '#1a1a1a',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: isMobile ? '0 auto' : undefined
+                    }}
+                  >
+                    {/* Lottie animation placeholder */}
+                  </div>
+                </div>
 
-                  {/* Feature 4 - Get certified */}
-                  <div className="auth-section-4-mobile-feature" style={{ marginTop: '2rem' }}>
-                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                      Get certified to<br /><span style={{ color: '#FFFFFF' }}>take on your next role</span>
+                {/* Feature 4 - Get certified */}
+                <div className="auth-section-4-feature" style={{
+                  marginTop: isMobile ? '2rem' : '3rem',
+                  display: isMobile ? 'block' : 'grid',
+                  gridTemplateColumns: isMobile ? undefined : '1fr 1fr',
+                  gap: isMobile ? undefined : '3rem',
+                  alignItems: isMobile ? undefined : 'center'
+                }}>
+                  <div>
+                    <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
+                      Get certified to {isMobile && <br />}<span style={{ color: '#FFFFFF' }}>take on your next role</span>
                     </h4>
-                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>
+                    <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
                     </p>
-                    <div
-                      className="auth-section-4-lottie-placeholder"
-                      style={{
-                        width: '75vw',
-                        height: '63.75vw',
-                        backgroundColor: '#1a1a1a',
-                        borderRadius: '0.5rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto'
-                      }}
-                    >
-                      {/* Lottie animation placeholder */}
-                    </div>
+                  </div>
+                  <div
+                    className="auth-section-4-lottie-placeholder"
+                    style={{
+                      width: isMobile ? '75vw' : '100%',
+                      height: isMobile ? '63.75vw' : undefined,
+                      aspectRatio: isMobile ? undefined : '4/3',
+                      backgroundColor: '#1a1a1a',
+                      borderRadius: '0.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: isMobile ? '0 auto' : undefined
+                    }}
+                  >
+                    {/* Lottie animation placeholder */}
                   </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-3 items-center auth-section-4-grid">
-                  {/* Left Column - Feature Cards */}
-                  <div className="space-y-3 flex-shrink-0 auth-section-4-cards">
-                    {/* Card 1 - AI smarts */}
-                    <div
-                      onMouseEnter={() => {
-                        setTimeout(() => {
-                          setActiveCard(0);
-                          setIsCardManuallySelected(true);
-                        }, 300);
-                      }}
-                      className={`rounded cursor-pointer auth-section-4-card ${
-                        activeCard === 0
-                          ? 'shadow-xl auth-section-4-card-expanded'
-                          : 'auth-section-4-card-closed'
-                      }`}
-                      style={{
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: activeCard === 0 ? '10rem' : '5rem',
-                        overflow: 'hidden',
-                        paddingTop: '1rem',
-                        paddingRight: '1rem',
-                        paddingBottom: '1rem',
-                        paddingLeft: '1.2rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        backgroundColor: activeCard === 0 ? '#FFFFFF' : '#F0F0F2'
-                      }}
-                    >
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 0 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 0 ? '23px' : '20px' }}>
-                        Levelling up learning <br />with <span style={{ color: '#7714E0' }}>smart AI integration</span>
-                      </h4>
-                      {activeCard === 0 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.5rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Card 2 - Personalised support */}
-                    <div
-                      onMouseEnter={() => {
-                        setTimeout(() => {
-                          setActiveCard(1);
-                          setIsCardManuallySelected(true);
-                        }, 300);
-                      }}
-                      className={`rounded cursor-pointer auth-section-4-card ${
-                        activeCard === 1
-                          ? 'shadow-xl auth-section-4-card-expanded'
-                          : 'auth-section-4-card-closed'
-                      }`}
-                      style={{
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: activeCard === 1 ? '10rem' : '5rem',
-                        overflow: 'hidden',
-                        paddingTop: '1rem',
-                        paddingRight: '1rem',
-                        paddingBottom: '1rem',
-                        paddingLeft: '1.2rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        backgroundColor: activeCard === 1 ? '#FFFFFF' : '#F0F0F2'
-                      }}
-                    >
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 1 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 1 ? '23px' : '20px' }}>
-                        Personalised support <br />from <span style={{ color: '#7714E0' }}>industry professionals</span>
-                      </h4>
-                      {activeCard === 1 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.5rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Card 3 - Community */}
-                    <div
-                      onMouseEnter={() => {
-                        setTimeout(() => {
-                          setActiveCard(2);
-                          setIsCardManuallySelected(true);
-                        }, 300);
-                      }}
-                      className={`rounded cursor-pointer auth-section-4-card ${
-                        activeCard === 2
-                          ? 'shadow-xl auth-section-4-card-expanded'
-                          : 'auth-section-4-card-closed'
-                      }`}
-                      style={{
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: activeCard === 2 ? '10rem' : '5rem',
-                        overflow: 'hidden',
-                        paddingTop: '1rem',
-                        paddingRight: '1rem',
-                        paddingBottom: '1rem',
-                        paddingLeft: '1.2rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        backgroundColor: activeCard === 2 ? '#FFFFFF' : '#F0F0F2'
-                      }}
-                    >
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 2 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 2 ? '23px' : '20px' }}>
-                        Connect with <br />the <span style={{ color: '#7714E0' }}>global community</span>
-                      </h4>
-                      {activeCard === 2 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.5rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Card 4 - Get certified */}
-                    <div
-                      onMouseEnter={() => {
-                        setTimeout(() => {
-                          setActiveCard(3);
-                          setIsCardManuallySelected(true);
-                        }, 300);
-                      }}
-                      className={`rounded cursor-pointer auth-section-4-card ${
-                        activeCard === 3
-                          ? 'shadow-xl auth-section-4-card-expanded'
-                          : 'auth-section-4-card-closed'
-                      }`}
-                      style={{
-                        transition: 'all 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-                        height: activeCard === 3 ? '10rem' : '5rem',
-                        overflow: 'hidden',
-                        paddingTop: '1rem',
-                        paddingRight: '1rem',
-                        paddingBottom: '1rem',
-                        paddingLeft: '1.2rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        backgroundColor: activeCard === 3 ? '#FFFFFF' : '#F0F0F2'
-                      }}
-                    >
-                      <h4 className={`font-semibold text-black leading-tight transition-all duration-500 ${activeCard === 3 ? 'auth-section-4-card-title-expanded' : 'auth-section-4-card-title-closed'}`} style={{ fontSize: activeCard === 3 ? '23px' : '20px' }}>
-                        Get certified <br />to <span style={{ color: '#7714E0' }}>take on your next role.</span>
-                      </h4>
-                      {activeCard === 3 && (
-                        <p className="text-black text-sm" style={{
-                          marginTop: '0.5rem',
-                          animation: 'fadeIn 200ms ease-in forwards',
-                          animationDelay: '300ms',
-                          opacity: 0
-                        }}>
-                          Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Column - Dynamic Content */}
-                  <div className="flex items-center justify-center auth-section-4-media">
-                    <div className="rounded transition-all duration-500 bg-black p-8 auth-section-4-media-box" style={{ height: '27.25rem', width: '32.2rem' }}>
-                      {activeCard === 2 && (
-                        <video
-                          autoPlay
-                          muted
-                          loop
-                          controls
-                          className="w-full h-full rounded object-cover"
-                          style={{
-                            animation: 'fadeIn 200ms ease-in forwards',
-                            animationDelay: '300ms',
-                            opacity: 0
-                          }}
-                        >
-                          <source src="https://auth.ignite.education/storage/v1/object/public/assets/Screen%20Recording%202025-11-24%20at%2017.59.52.mov" type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
 
                         </div>
           </div>
