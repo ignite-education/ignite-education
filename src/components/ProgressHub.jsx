@@ -3137,11 +3137,12 @@ const ProgressHub = () => {
                                     }
                                   }}
                                   placeholder="Add a comment..."
-                                  className="flex-1 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500"
+                                  className="flex-1 bg-white text-black text-xs px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-gray-500"
                                 />
                                 <button
                                   onClick={() => handleSubmitComment(post.id)}
-                                  className="bg-pink-500 text-white text-xs px-3 py-2 rounded-lg hover:bg-pink-600 transition font-semibold"
+                                  className="text-white text-xs px-3 py-2 rounded-lg transition font-semibold hover:opacity-90"
+                                  style={{ backgroundColor: '#EF0B72' }}
                                 >
                                   Post
                                 </button>
