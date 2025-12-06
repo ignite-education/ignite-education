@@ -1213,7 +1213,7 @@ const Auth = () => {
         const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`white-${i}`} className={isMobile ? "text-black" : "text-white"}>
+            <span key={`white-${i}`} className="text-black">
               {chunk}
             </span>
           );
@@ -1224,7 +1224,7 @@ const Auth = () => {
 
     if (!isTestimonialsHeadingTypingComplete) {
       result.push(
-        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
+        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'black' }}>|</span>
       );
     }
 
@@ -1306,27 +1306,6 @@ const Auth = () => {
 
   const scrollToMarketing = () => {
     marketingSectionRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
-  const scrollToTestimonials = () => {
-    testimonialsSectionRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
-  const scrollToCourses = () => {
-    coursesSectionRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
-  const scrollToLearningModel = () => {
-    learningModelSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
@@ -1612,7 +1591,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
           style={{
             background: 'black',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="max-w-4xl w-full text-white">
@@ -1668,36 +1647,7 @@ const Auth = () => {
                 </div>
               </div>
 
-              {/* Mobile Arrow - inside content container for proper centering */}
-              <div className="md:hidden auth-section-2-mobile-arrow mt-8">
-                <button
-                  onClick={scrollToCourses}
-                  className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-                  style={{
-                    animation: 'subtleBounce 2s infinite',
-                    padding: '11px'
-                  }}
-                  aria-label="Scroll to courses"
-                >
-                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-                </button>
               </div>
-            </div>
-          </div>
-
-          {/* Scroll Down Arrow - Absolutely positioned (desktop only) */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 auth-section-2-arrow hidden md:flex">
-            <button
-              onClick={scrollToCourses}
-              className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-              style={{
-                animation: 'subtleBounce 2s infinite',
-                padding: '11px'
-              }}
-              aria-label="Scroll to courses"
-            >
-              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-            </button>
           </div>
         </div>
 
@@ -1707,7 +1657,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-3"
           style={{
             background: isMobile ? 'black' : 'white',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="max-w-7xl w-full text-white">
@@ -1781,12 +1731,12 @@ const Auth = () => {
                         onClick={() => setSelectedCourseModal(course.name)}
                       >
                         <div
-                          className="absolute inset-0 bg-white text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl aspect-square cursor-pointer auth-course-card-inner"
-                          style={{ transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out' }}
+                          className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start hover:shadow-2xl aspect-square cursor-pointer auth-course-card-inner"
+                          style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out' }}
                           onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; }}
                         >
-                        <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "white", borderRadius: "inherit" }}>
+                        <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "#F0F0F2", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
                             <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
@@ -1855,21 +1805,7 @@ const Auth = () => {
                   )}
                   </div>
                 </div>
-                {/* Scroll Down Arrow - positioned relative to course cards */}
-                <div className="flex justify-center auth-section-3-arrow" style={{ marginTop: '1.5rem' }}>
-                  <button
-                    onClick={scrollToLearningModel}
-                    className={`bg-white hover:bg-gray-100 transition shadow-lg group ${isLogin ? 'rounded-full' : 'rounded-lg'}`}
-                    style={{
-                      animation: 'subtleBounce 2s infinite',
-                      padding: '11px'
-                    }}
-                    aria-label="Scroll to learning model"
-                  >
-                    <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-                  </button>
-                </div>
-              </div>
+                              </div>
             </div>
 
             {/* Mobile image - positioned to overlap sections 3 and 4 */}
@@ -1893,7 +1829,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 auth-section-4"
           style={{
             background: 'black',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="max-w-4xl mx-auto text-white text-left">
@@ -2204,21 +2140,7 @@ const Auth = () => {
                 </div>
               )}
 
-            {/* Scroll Down Arrow */}
-            <div className="flex justify-center mt-8 auth-section-4-arrow">
-              <button
-                onClick={scrollToTestimonials}
-                className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
-                style={{
-                  animation: 'subtleBounce 2s infinite',
-                  padding: '11px'
-                }}
-                aria-label="Scroll to testimonials"
-              >
-                <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-              </button>
-            </div>
-            </div>
+                        </div>
           </div>
 
 
@@ -2229,8 +2151,8 @@ const Auth = () => {
           ref={testimonialsSectionRef}
           className="auth-section-5 min-h-screen flex items-center justify-center px-8"
           style={{
-            background: 'black',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            background: isMobile ? 'black' : 'white',
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="auth-section-5-content w-full text-white text-left">
@@ -2311,8 +2233,9 @@ const Auth = () => {
                     ].map((testimonial, idx) => (
                       <div
                         key={idx}
-                        className="auth-testimonial-card bg-white rounded flex items-center justify-center"
+                        className="auth-testimonial-card rounded flex items-center justify-center"
                         style={{
+                          backgroundColor: '#F0F0F2',
                           position: idx === 0 ? 'relative' : 'absolute',
                           top: idx === 0 ? 'auto' : 0,
                           left: idx === 0 ? 'auto' : 0,
@@ -2444,8 +2367,9 @@ const Auth = () => {
                           key={idx}
                           onMouseEnter={() => setHoveredUseCase(idx)}
                           onMouseLeave={() => setHoveredUseCase(null)}
-                          className="auth-usecase-card rounded flex items-center justify-center cursor-pointer bg-white absolute"
+                          className="auth-usecase-card rounded flex items-center justify-center cursor-pointer absolute"
                           style={{
+                            backgroundColor: '#F0F0F2',
                             height: '9.775rem',
                             width: '10.3rem',
                             top: card.position.top,
@@ -2483,8 +2407,9 @@ const Auth = () => {
                         onMouseLeave={() => {
                           setHoveredUseCase(null);
                         }}
-                        className="auth-usecase-overlay absolute rounded flex items-center justify-center bg-white"
+                        className="auth-usecase-overlay absolute rounded flex items-center justify-center"
                         style={{
+                          backgroundColor: '#F0F0F2',
                           top: 0,
                           left: 0,
                           width: '21.35rem',
@@ -2528,25 +2453,7 @@ const Auth = () => {
               </div>
             </div>
 
-            <div className="auth-section-5-arrow flex justify-center mt-12">
-                <button
-                  onClick={() => {
-                    linkedInFAQSectionRef.current?.scrollIntoView({
-                      behavior: 'smooth',
-                      block: 'start'
-                    });
-                  }}
-                  className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
-                  style={{
-                    animation: 'subtleBounce 2s infinite',
-                    padding: '0.6875rem'
-                  }}
-                  aria-label="Scroll to LinkedIn and FAQs"
-                >
-                  <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-                </button>
-              </div>
-            </div>
+                        </div>
           </div>
 
       {/* Sixth Section - LinkedIn & FAQs */}
@@ -2555,7 +2462,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 auth-section-6"
           style={{
             background: 'black',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="max-w-7xl w-full text-white">
