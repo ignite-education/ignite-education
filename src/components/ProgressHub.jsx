@@ -3849,8 +3849,8 @@ const ProgressHub = () => {
 
                   <button
                     type="submit"
-                    className="w-full bg-pink-500 text-white px-5 py-3 text-sm font-semibold hover:bg-pink-600 transition"
-                    style={{ borderRadius: '0.3rem' }}
+                    className="w-full text-white px-5 py-3 text-sm font-semibold transition"
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#EF0B72' }}
                   >
                     Save Changes
                   </button>
@@ -3909,8 +3909,8 @@ const ProgressHub = () => {
 
                   <button
                     type="submit"
-                    className="w-full bg-pink-500 text-white px-5 py-3 text-sm font-semibold hover:bg-pink-600 transition"
-                    style={{ borderRadius: '0.3rem' }}
+                    className="w-full text-white px-5 py-3 text-sm font-semibold transition"
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#EF0B72' }}
                   >
                     Save Preferences
                   </button>
@@ -3919,8 +3919,8 @@ const ProgressHub = () => {
 
               {/* Danger Zone Tab */}
               {settingsTab === 'danger' && (
-                <div className="space-y-3.2">
-                  <div className="p-4">
+                <div className="space-y-[0.5rem]">
+                  <div className="pt-[0.5rem] px-4 pb-4">
                     <h3 className="font-semibold text-black mb-0.8">Log Out</h3>
                     <p className="text-sm text-gray-700 mb-3">Sign out of your account on this device.</p>
                     <button
@@ -3931,7 +3931,7 @@ const ProgressHub = () => {
                     </button>
                   </div>
 
-                  <div className="p-4">
+                  <div className="pt-[0.5rem] px-4 pb-4">
                     <h3 className="font-semibold text-black mb-0.8">Delete Account</h3>
                     <p className="text-sm text-gray-700 mb-3">
                       Permanently delete your account and all associated data. This action cannot be undone.
