@@ -1642,7 +1642,7 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '0rem' }}>
+                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : 'auto', marginBottom: isMobile ? '0rem' : '2rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
