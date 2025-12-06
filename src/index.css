@@ -273,8 +273,8 @@ body {
   .auth-section-6 {
     min-height: auto;
     height: auto;
-    padding-top: 3rem;
-    padding-bottom: 6rem;
+    padding-top: 5rem;
+    padding-bottom: 2rem;
   }
 
   /* Allow course card shadows to extend beyond container while keeping horizontal scroll */
