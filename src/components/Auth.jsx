@@ -1636,7 +1636,7 @@ const Auth = () => {
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="max-w-7xl w-full text-white" style={{ marginTop: isMobile ? '0' : '10rem' }}>
+          <div className="max-w-7xl w-full text-white" style={{ marginTop: isMobile ? '0' : '-5rem' }}>
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-12 px-4 w-full items-center auth-section-3-grid">
               {/* Left Column - Description */}
@@ -1797,7 +1797,8 @@ const Auth = () => {
               width: '100%',
               maxWidth: '80rem',
               paddingLeft: 'calc(1rem + 52.8px)',
-              paddingRight: '1rem'
+              paddingRight: '1rem',
+              pointerEvents: 'none'
             }}>
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
