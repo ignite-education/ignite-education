@@ -954,7 +954,7 @@ const Auth = () => {
     // Add cursor if typing is not complete (not on mobile since we show full text)
     if (!isEducationTypingComplete && !isMobile) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-light">|</span>
+        <span key="cursor" className="text-white animate-blink font-thin">|</span>
       );
     }
 
@@ -979,7 +979,7 @@ const Auth = () => {
         <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
           {showCursorOnFirstLine ? (
-            <span className="animate-blink font-light">|</span>
+            <span className="animate-blink font-thin">|</span>
           ) : firstLineTypedLength === fullFirstLine.length && (
             <span style={{ visibility: 'hidden' }}>|</span>
           )}
@@ -990,7 +990,7 @@ const Auth = () => {
           {secondLineTypedLength > 0 ? (
             <>
               {fullSecondLine.substring(0, secondLineTypedLength)}
-              {showCursorOnSecondLine && <span className="animate-blink font-light" style={{ color: '#EF0B72' }}>|</span>}
+              {showCursorOnSecondLine && <span className="animate-blink font-thin" style={{ color: '#EF0B72' }}>|</span>}
             </>
           ) : (
             <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
@@ -1068,7 +1068,7 @@ const Auth = () => {
     // Add cursor if typing is not complete
     if (!isCourseTitleTypingComplete) {
       result.push(
-        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
+        <span key="cursor" className="animate-blink font-thin" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
       );
     }
 
@@ -1144,7 +1144,7 @@ const Auth = () => {
 
     if (!isLearningTaglineTypingComplete) {
       result.push(
-        <span key="cursor" className="text-white animate-blink font-light">|</span>
+        <span key="cursor" className="text-white animate-blink font-thin">|</span>
       );
     }
 
@@ -1222,7 +1222,7 @@ const Auth = () => {
 
     if (!isTestimonialsHeadingTypingComplete) {
       result.push(
-        <span key="cursor" className="animate-blink font-light" style={{ color: isMobile ? '#F0F0F2' : 'black' }}>|</span>
+        <span key="cursor" className="animate-blink font-thin" style={{ color: isMobile ? '#F0F0F2' : 'black' }}>|</span>
       );
     }
 
@@ -1697,13 +1697,13 @@ const Auth = () => {
                         <div
                           className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner"
                           style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out, box-shadow 300ms ease-in-out' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; e.currentTarget.style.boxShadow = '0 17px 35px -8px rgb(0 0 0 / 0.18)'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; e.currentTarget.style.boxShadow = '0 14px 30px -7px rgb(0 0 0 / 0.15)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                         <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "#F0F0F2", borderRadius: "inherit" }}>
                           <h4 className="text-lg font-semibold auth-course-card-title" style={{ color: '#7714E0', marginBottom: '5.1px', lineHeight: '23px' }}>{course.title}</h4>
                           {course.description && (
-                            <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
+                            <p className="text-xs text-black mb-2 auth-course-card-description" style={{ display: '-webkit-box', WebkitLineClamp: isMobile ? 4 : 5, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.4' }}>
                               {(() => {
                                 const firstSentenceEnd = course.description.indexOf('. ');
                                 return firstSentenceEnd !== -1
