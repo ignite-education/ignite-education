@@ -3514,7 +3514,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 style={{
                   right: '42px',
                   top: '50%',
-                  transform: 'translateY(-35%)',
+                  transform: 'translateY(calc(-35% - 3px))',
                   width: '40px',
                   height: '40px',
                   borderRadius: '0.3rem',
