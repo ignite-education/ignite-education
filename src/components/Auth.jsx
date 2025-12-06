@@ -1786,22 +1786,28 @@ const Auth = () => {
             )}
           </div>
 
-          {/* Desktop image - positioned to overlap sections 3 and 4 */}
+          {/* Desktop image - positioned to overlap sections 3 and 4, left-aligned with text */}
           {!isMobile && (
             <div style={{
               position: 'absolute',
               bottom: '0',
               left: '50%',
-              transform: 'translate(-50%, 50%)',
+              transform: 'translateX(-50%)',
               zIndex: 10,
-              width: '50%',
-              maxWidth: '600px'
+              width: '100%',
+              maxWidth: '80rem',
+              paddingLeft: 'calc(1rem + 52.8px)',
+              paddingRight: '1rem'
             }}>
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                 alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                 className="rounded-lg auth-section-3-image"
-                style={{ width: '100%' }}
+                style={{
+                  width: '34%',
+                  maxWidth: '425px',
+                  transform: 'translateY(50%)'
+                }}
                 loading="lazy"
                 width="1400"
                 height="900"
