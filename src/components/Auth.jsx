@@ -1728,8 +1728,8 @@ const Auth = () => {
                         </div>
 
                         {/* Plus Icon */}
-                        <div className={`absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded auth-course-card-plus ${isMobile ? 'bg-gray-200 text-gray-600' : 'text-black'}`} style={{ backgroundColor: isMobile ? undefined : 'white' }}>
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div className={`absolute bottom-3 right-3 flex items-center justify-center rounded auth-course-card-plus ${isMobile ? 'bg-gray-200 text-gray-600' : 'text-black'}`} style={{ backgroundColor: isMobile ? undefined : 'white', width: isMobile ? '2rem' : '1.7rem', height: isMobile ? '2rem' : '1.7rem' }}>
+                          <svg style={{ width: isMobile ? '1.25rem' : '1.0625rem', height: isMobile ? '1.25rem' : '1.0625rem' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                           </svg>
                         </div>
@@ -2299,24 +2299,13 @@ const Auth = () => {
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
-              {/* Left Column - Blog Posts */}
-              <div className="flex flex-col items-start justify-center auth-section-6-blog-column" style={{ marginLeft: '10%' }}>
-                <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)' }}>
-                  <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
+              {/* Left Column - FAQs */}
+              <div className="auth-section-6-faq-column" style={{ marginLeft: '10%' }}>
+                <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%' }}>
+                  <h3 className="font-bold text-white mb-2 text-left auth-section-6-faq-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0' }}>{typedFAQHeading}</h3>
                 </div>
 
-                <div className="w-full" style={{ maxWidth: '30.8rem' }}>
-                  <BlogCarousel limit={5} />
-                </div>
-              </div>
-
-              {/* Right Column - FAQs */}
-              <div className="auth-section-6-faq-column">
-                <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: 'calc(2.4rem + 60px + 0.5rem)', width: '85%', margin: '0 auto' }}>
-                  <h3 className="font-bold text-white mb-2 text-left auth-section-6-faq-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: '60px' }}>{typedFAQHeading}</h3>
-                </div>
-
-                <div className="space-y-3" style={{ height: '30.5rem', width: '85%', margin: '0 auto' }}>
+                <div className="space-y-3" style={{ height: '30.5rem', width: '85%' }}>
                 {[
                   {
                     question: 'What is Ignite?',
@@ -2382,6 +2371,17 @@ const Auth = () => {
                     </div>
                   </div>
                 ))}
+                </div>
+              </div>
+
+              {/* Right Column - Blog Posts */}
+              <div className="flex flex-col items-start justify-center auth-section-6-blog-column">
+                <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%', margin: '0 auto' }}>
+                  <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
+                </div>
+
+                <div className="w-full" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
+                  <BlogCarousel limit={5} />
                 </div>
               </div>
             </div>
