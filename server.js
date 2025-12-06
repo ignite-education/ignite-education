@@ -2581,15 +2581,33 @@ app.get('/api/reddit-posts-cached', async (req, res) => {
 
     console.log(`📦 Fetching cached posts for r/${subreddit} (limit: ${limit})`);
 
-    const { data, error } = await supabase
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+    // Try to get posts from last 14 days, sorted by upvotes
+    let { data, error } = await supabase
       .from('reddit_posts_cache')
       .select('*')
       .eq('subreddit', subreddit)
+      .gte('created_at', fourteenDaysAgo)
       .order('upvotes', { ascending: false })
       .limit(limit);
 
     if (error) {
       throw error;
+    }
+
+    // Fallback: if no recent posts, get top posts regardless of age
+    if (!data || data.length === 0) {
+      console.log(`⚠️ No posts in last 14 days, falling back to all-time top posts`);
+      const fallback = await supabase
+        .from('reddit_posts_cache')
+        .select('*')
+        .eq('subreddit', subreddit)
+        .order('upvotes', { ascending: false })
+        .limit(limit);
+
+      if (fallback.error) throw fallback.error;
+      data = fallback.data;
     }
 
     // Transform to match frontend expected format
