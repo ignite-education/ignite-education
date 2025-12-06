@@ -239,6 +239,44 @@ body {
   animation: expandUnderline 0.4s ease-out forwards;
 }
 
+/* Auth page desktop overrides - content-based section heights */
+@media (min-width: 768px) {
+  .auth-section-2 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .auth-section-3 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .auth-section-4 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .auth-section-5 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+
+  .auth-section-6 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
   /* Hide ProgressHub background on mobile, show plain black */

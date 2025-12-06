@@ -1332,7 +1332,7 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'y mandatory' : 'none',
+          scrollSnapType: isMobile ? 'y mandatory' : 'y proximity',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           minWidth: '1300px',
