@@ -1312,8 +1312,7 @@ const Auth = () => {
           scrollSnapType: isMobile ? 'y mandatory' : 'y proximity',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
-          minWidth: '1300px',
-          overflowX: 'auto',
+          overflowX: 'hidden',
           backgroundColor: '#000'
         }}
       >
