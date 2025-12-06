@@ -318,6 +318,43 @@ body {
   }
 }
 
+/* Section 5 tablet/small desktop - stack vertically to prevent overlap */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .auth-section-5-grid {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+
+  .auth-section-5-grid > div {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+
+  .auth-testimonial-container {
+    width: 100% !important;
+    align-items: center !important;
+  }
+
+  .auth-testimonial-card {
+    width: 100% !important;
+    max-width: 36rem !important;
+  }
+
+  .auth-testimonial-indicators {
+    width: 100% !important;
+    max-width: 36rem !important;
+  }
+
+  .auth-usecase-container {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  .auth-usecase-grid {
+    width: 21.35rem !important;
+  }
+}
+
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
   /* Hide ProgressHub background on mobile, show plain black */

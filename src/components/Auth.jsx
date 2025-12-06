@@ -1642,7 +1642,7 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : 'auto', marginBottom: isMobile ? '0rem' : '2rem' }}>
+                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : 'auto', marginBottom: isMobile ? '0rem' : '1rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
@@ -1728,7 +1728,7 @@ const Auth = () => {
                         </div>
 
                         {/* Plus Icon */}
-                        <div className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center bg-gray-200 text-gray-600 rounded auth-course-card-plus">
+                        <div className={`absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center rounded auth-course-card-plus ${isMobile ? 'bg-gray-200 text-gray-600' : 'text-black'}`} style={{ backgroundColor: isMobile ? undefined : 'white' }}>
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                           </svg>
