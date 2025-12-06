@@ -2677,15 +2677,7 @@ app.get('/api/reddit-comments-cached', async (req, res) => {
   }
 });
 
-// Run initial cache on startup (async, don't block server start)
-setTimeout(async () => {
-  console.log('\n🚀 Running initial Reddit cache refresh...');
-  for (const subreddit of SUBREDDITS_TO_CACHE) {
-    await fetchAndCacheRedditData(subreddit);
-  }
-}, 5000); // Wait 5 seconds after startup
-
-// Schedule daily cache refresh at 6 AM UTC
+// Schedule daily cache refresh at 6 AM UTC (no startup refresh to avoid Reddit rate limits)
 const scheduleNextRefresh = () => {
   const now = new Date();
   const next6AM = new Date();

@@ -2073,29 +2073,7 @@ const ProgressHub = () => {
     }
   };
 
-  // Handle post hover with debounce
-  const handlePostHover = (post) => {
-    // Clear any existing hover timer
-    if (hoverTimer) {
-      clearTimeout(hoverTimer);
-    }
-
-    // Clear any existing leave timer (in case user hovers back over)
-    if (leaveTimer) {
-      clearTimeout(leaveTimer);
-      setLeaveTimer(null);
-    }
-
-    // Set new timer - only load after 2000ms hover
-    const timer = setTimeout(() => {
-      setExpandedPostId(post.id);
-      fetchRedditCommentsForPost(post);
-    }, 2000);
-
-    setHoverTimer(timer);
-  };
-
-  // Handle mouse leave - clear timer and close post with 1-second delay
+  // Handle mouse leave - close post with 1-second delay
   const handlePostLeave = () => {
     if (hoverTimer) {
       clearTimeout(hoverTimer);
@@ -3040,7 +3018,6 @@ const ProgressHub = () => {
                       key={post.id}
                       ref={(el) => postRefs.current[post.id] = el}
                       data-post-id={post.id}
-                      onMouseEnter={() => handlePostHover(post)}
                       onMouseLeave={handlePostLeave}
                       style={{
                         minHeight: isCollapsing[post.id] && collapsedHeights[post.id]
@@ -3050,12 +3027,18 @@ const ProgressHub = () => {
                       }}
                     >
                     <div
-                      className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative"
+                      className="bg-gray-900 rounded-lg p-5 hover:bg-gray-800 transition relative cursor-pointer"
+                      onClick={() => {
+                        if (expandedPostId !== post.id) {
+                          setExpandedPostId(post.id);
+                          fetchRedditCommentsForPost(post);
+                        }
+                      }}
                     >
                       {/* Admin delete/block button */}
                       {userRole === 'admin' && (
                         <button
-                          onClick={() => handleDeletePost(post.id)}
+                          onClick={(e) => { e.stopPropagation(); handleDeletePost(post.id); }}
                           className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition"
                           title={post.source === 'reddit' ? 'Remove post from forum (admin only)' : 'Delete post (admin only)'}
                         >
@@ -3090,18 +3073,19 @@ const ProgressHub = () => {
                             <div className="flex items-center gap-1.5">
                               <button
                                 className={`hover:text-white transition ${likedPosts.has(post.id) ? 'text-pink-500' : ''}`}
-                                onClick={() => handleLikePost(post.id)}
+                                onClick={(e) => { e.stopPropagation(); handleLikePost(post.id); }}
                               >
                                 <ThumbsUp size={14} fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                               </button>
                               <span className="font-semibold text-xs">{post.upvotes}</span>
-                              <button className="hover:text-white transition">
+                              <button className="hover:text-white transition" onClick={(e) => e.stopPropagation()}>
                                 <ThumbsDown size={14} />
                               </button>
                             </div>
                             <button
                               className="flex items-center gap-1 hover:text-white transition"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 // Toggle expanded state
                                 if (expandedPostId === post.id) {
                                   setExpandedPostId(null);
