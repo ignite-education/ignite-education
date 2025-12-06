@@ -1749,6 +1749,9 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
 // ============================================================================
 
 let redditRateLimitResetTime = 0;
+let redditRequestCount = 0;
+let lastRedditRequestTime = 0;
+let redditOAuthToken = { token: null, timestamp: 0 };
 
 const REDDIT_CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (increased from 5)
 const REDDIT_CACHE_MINIMUM_REFRESH = 2 * 60 * 1000; // 2 minutes minimum between refreshes
