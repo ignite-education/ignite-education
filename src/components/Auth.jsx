@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallba
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Onboarding from './Onboarding';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Home, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO from './SEO';
@@ -2638,22 +2638,8 @@ const Auth = () => {
         onClick={() => setSelectedCourseModal(null)}
       >
         <div className="relative auth-course-modal-container">
-          <>
-            {/* Title and close button row - above the box */}
-            <div className="flex justify-between items-center" style={{ marginBottom: '0.15rem' }}>
-              <h2 className="font-semibold text-white pl-1 auth-course-modal-title" style={{ fontSize: '1.35rem' }}>
-                {selectedCourse.title}
-              </h2>
-              <button
-                onClick={() => setSelectedCourseModal(null)}
-                className="text-white hover:text-gray-300 z-10 auth-course-modal-close"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
           <div
-            className="bg-white relative flex flex-col animate-scaleUp auth-course-modal"
+            className="relative flex flex-col animate-scaleUp auth-course-modal"
             style={{
               width: '720px',
               height: isMobile ? '31.25rem' : '70vh',
@@ -2662,11 +2648,47 @@ const Auth = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Black Header Section */}
+            <div className="bg-black px-8 pt-6 pb-6 relative auth-course-modal-header">
+              {/* Close button - top right */}
+              <button
+                onClick={() => setSelectedCourseModal(null)}
+                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 auth-course-modal-close"
+              >
+                <X size={24} />
+              </button>
 
-            {/* Scrollable Content */}
+              {/* Breadcrumb Navigation */}
+              <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: '#F0F0F2' }}>
+                <Home className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4" />
+                <span>Courses</span>
+                <ChevronRight className="w-4 h-4" />
+                <span>{selectedCourse.title}</span>
+              </nav>
+
+              {/* Course Title */}
+              <h2 className="text-3xl font-bold text-white mb-3 auth-course-modal-title">
+                {selectedCourse.title}
+              </h2>
+
+              {/* Description excerpt - pink */}
+              <p className="text-[#EF0B72] auth-course-modal-excerpt" style={{ fontSize: '1.1rem', lineHeight: '1.5' }}>
+                {(() => {
+                  const description = selectedCourse.description || '';
+                  const firstSentenceEnd = description.indexOf('. ');
+                  if (firstSentenceEnd !== -1) {
+                    return description.substring(0, firstSentenceEnd + 1);
+                  }
+                  return description;
+                })()}
+              </p>
+            </div>
+
+            {/* White Content Section */}
             <div
-              className="flex-1 overflow-y-auto px-8 auth-course-modal-content"
-              style={{ scrollbarWidth: 'none', paddingTop: '1.6rem', paddingBottom: '1.25rem' }}
+              className="bg-white flex-1 overflow-y-auto px-8 auth-course-modal-content"
+              style={{ scrollbarWidth: 'none', paddingTop: '1.5rem', paddingBottom: '1.25rem' }}
             >
               <div>
                 {selectedCourse.status === 'requested' && (
@@ -2675,8 +2697,8 @@ const Auth = () => {
                   </div>
                 )}
 
-                {/* Full description */}
-                <div className="text-black leading-relaxed mb-6 auth-course-modal-description" style={{ maxWidth: '100%', marginTop: '0.3rem' }}>
+                {/* Rest of description */}
+                <div className="text-black leading-relaxed mb-6 auth-course-modal-description" style={{ maxWidth: '100%' }}>
                   {(() => {
                     const description = selectedCourse.description || '';
                     const learnMoreLink = (
@@ -2701,43 +2723,17 @@ const Auth = () => {
                     );
                     const firstSentenceEnd = description.indexOf('. ');
                     if (firstSentenceEnd !== -1) {
-                      const firstSentence = description.substring(0, firstSentenceEnd + 1);
                       const restOfDescription = description.substring(firstSentenceEnd + 1).trim();
-                      // Highlight "leading products from concept to launch" in pink
-                      const pinkPhrase = 'leading products from concept to launch';
-                      const pinkIndex = firstSentence.toLowerCase().indexOf(pinkPhrase);
-
-                      if (pinkIndex !== -1) {
-                        const before = firstSentence.substring(0, pinkIndex);
-                        const pink = firstSentence.substring(pinkIndex, pinkIndex + pinkPhrase.length);
-                        const after = firstSentence.substring(pinkIndex + pinkPhrase.length);
-
+                      if (restOfDescription) {
                         return (
-                          <>
-                            <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>
-                              {before}
-                              <span style={{ color: '#EF0B72' }}>{pink}</span>
-                              {after}
-                            </span>
-                            {restOfDescription && (
-                              <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription} {learnMoreLink}</span>
-                            )}
-                            {!restOfDescription && learnMoreLink}
-                          </>
+                          <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px' }}>
+                            {restOfDescription} {learnMoreLink}
+                          </span>
                         );
                       }
-
-                      return (
-                        <>
-                          <span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>{firstSentence}</span>
-                          {restOfDescription && (
-                            <span className="auth-course-modal-rest-description" style={{ fontWeight: 400, fontSize: '15px', display: 'block', marginTop: '0.7rem' }}>{restOfDescription} {learnMoreLink}</span>
-                          )}
-                          {!restOfDescription && learnMoreLink}
-                        </>
-                      );
+                      return learnMoreLink;
                     }
-                    return <><span className="auth-course-modal-first-sentence" style={{ fontWeight: 600, fontSize: isMobile ? '1.4rem' : '20px' }}>{description}</span> {learnMoreLink}</>;
+                    return learnMoreLink;
                   })()}
                 </div>
 
@@ -3007,7 +3003,6 @@ const Auth = () => {
               </div>
             </div>
           </div>
-          </>
         </div>
       </div>
     )}
