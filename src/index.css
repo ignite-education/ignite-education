@@ -294,7 +294,7 @@ body {
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 50px;
+    width: 25px;
     pointer-events: none;
     z-index: 20;
   }
@@ -771,6 +771,7 @@ body {
     height: 32rem !important;
     border-radius: 0.5rem !important;
     overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
   }
 
   .auth-course-modal-header {
