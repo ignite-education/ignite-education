@@ -199,7 +199,7 @@ const Auth = () => {
     learningFullText,
     {
       charDelay: 75,
-      startDelay: 1000,
+      startDelay: 500,
       pausePoints: [{ after: 19, duration: 700 }], // After "Building a smarter,"
       enabled: learningTaglineTypingEnabled
     }
@@ -1279,9 +1279,9 @@ const Auth = () => {
       }
     }
 
-    if (!isTestimonialsHeadingTypingComplete) {
+    if (!isTestimonialsHeadingTypingComplete && isMobile) {
       result.push(
-        <span key="cursor" className="animate-blink font-thin" style={{ color: isMobile ? '#F0F0F2' : 'black' }}>|</span>
+        <span key="cursor" className="animate-blink font-thin" style={{ color: '#F0F0F2' }}>|</span>
       );
     }
 
@@ -1642,7 +1642,7 @@ const Auth = () => {
                 <div className="space-y-3 text-left auth-promises-list">
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1654,7 +1654,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1666,7 +1666,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1728,7 +1728,7 @@ const Auth = () => {
                       display: none;
                     }
                   `}</style>
-                  <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: '300px' }}>
+                  <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: '320px' }}>
                   {courses.length > 0 ? (() => {
                     const pages = [];
                     for (let i = 0; i < courses.length; i += 4) {
@@ -1756,7 +1756,7 @@ const Auth = () => {
                         <div
                           className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner"
                           style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', isolation: 'isolate', willChange: 'transform', zIndex: 1, backfaceVisibility: 'hidden', transition: 'transform 100ms ease-in-out, box-shadow 300ms ease-in-out' }}
-                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; e.currentTarget.style.boxShadow = '0 14px 30px -7px rgb(0 0 0 / 0.15)'; }}
+                          onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.015)'; e.currentTarget.style.zIndex = '20'; e.currentTarget.style.boxShadow = '0 14px 30px -7px rgb(0 0 0 / 0.135)'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.zIndex = '1'; e.currentTarget.style.boxShadow = 'none'; }}
                         >
                         <div className="flex flex-col h-full auth-course-card-content" style={{ paddingTop: isMobile ? "15px" : "13px", paddingLeft: isMobile ? "15px" : "13px", paddingRight: "13px", paddingBottom: "13px", backgroundColor: "#F0F0F2", borderRadius: "inherit" }}>
@@ -2380,12 +2380,12 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
               {/* Left Column - FAQs */}
-              <div className="auth-section-6-faq-column" style={{ marginLeft: '10%' }}>
+              <div className="auth-section-6-faq-column">
                 <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%' }}>
                   <h3 className="font-bold text-white mb-2 text-left auth-section-6-faq-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0' }}>{typedFAQHeading}</h3>
                 </div>
 
-                <div className="space-y-3" style={{ height: '30.5rem', width: '85%' }}>
+                <div className="space-y-3" style={{ width: '85%' }}>
                 {[
                   {
                     question: 'What is Ignite?',
@@ -2455,7 +2455,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Blog Posts */}
-              <div className="flex flex-col items-start justify-center auth-section-6-blog-column">
+              <div className="flex flex-col items-end justify-center auth-section-6-blog-column">
                 <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%', margin: '0 auto' }}>
                   <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
@@ -2467,7 +2467,7 @@ const Auth = () => {
             </div>
 
             {/* Get Started Button */}
-            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '0px' }}>
+            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '2rem' }}>
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
