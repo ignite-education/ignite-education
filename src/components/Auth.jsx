@@ -146,6 +146,7 @@ const Auth = () => {
   const [activeUseCaseIndex, setActiveUseCaseIndex] = useState(0);
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [testimonialMouseStart, setTestimonialMouseStart] = useState(null);
+  const [hasSection2Snapped, setHasSection2Snapped] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const linkedInFAQSectionRef = useRef(null);
@@ -560,6 +561,29 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateWords, selectedCourseModal]);
+
+  // Intersection observer to snap section 2 to top on desktop
+  useEffect(() => {
+    if (isMobile || isLogin || hasSection2Snapped || selectedCourseModal) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasSection2Snapped) {
+            setHasSection2Snapped(true);
+            entry.target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+
+    if (marketingSectionRef.current) {
+      observer.observe(marketingSectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [isMobile, isLogin, hasSection2Snapped, selectedCourseModal]);
 
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
@@ -1547,7 +1571,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
           style={{
             background: 'black',
-            scrollSnapAlign: isMobile ? 'none' : 'start'
+            scrollSnapAlign: 'none'
           }}
         >
           <div className="max-w-4xl w-full text-white">
