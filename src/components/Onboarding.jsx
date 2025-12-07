@@ -177,15 +177,12 @@ const Onboarding = ({ firstName, userId }) => {
 
         console.log('Update successful, data:', data);
 
-        // Wait a moment for the database to fully commit the transaction
-        await new Promise(resolve => setTimeout(resolve, 500));
-
         console.log('Redirecting to progress hub');
-        // Force a full page reload to ensure ProtectedRoute re-checks
-        // Clear the onboarding cache before redirecting
+        // Clear the onboarding cache before navigating
         clearOnboardingCache();
 
-        window.location.href = '/';
+        // Use React Router navigation instead of full page reload to avoid race condition
+        navigate('/', { replace: true });
       } catch (error) {
         console.error('Error updating user:', error);
         alert(`There was an error saving your preferences: ${error.message}`);
