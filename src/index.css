@@ -770,6 +770,7 @@ body {
     max-width: 100% !important;
     height: 32rem !important;
     border-radius: 0.5rem !important;
+    overflow-x: hidden !important;
   }
 
   .auth-course-modal-header {
