@@ -566,12 +566,40 @@ const Auth = () => {
   useEffect(() => {
     if (isMobile || isLogin || hasSection2Snapped || selectedCourseModal) return;
 
+    const smoothScrollTo = (element, duration = 1200) => {
+      const container = authScrollContainerRef.current;
+      if (!container || !element) return;
+
+      const targetPosition = element.offsetTop;
+      const startPosition = container.scrollTop;
+      const distance = targetPosition - startPosition;
+      let startTime = null;
+
+      // Ease-out cubic for smooth deceleration
+      const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+      const animation = (currentTime) => {
+        if (startTime === null) startTime = currentTime;
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+
+        container.scrollTop = startPosition + (distance * easedProgress);
+
+        if (progress < 1) {
+          requestAnimationFrame(animation);
+        }
+      };
+
+      requestAnimationFrame(animation);
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasSection2Snapped) {
             setHasSection2Snapped(true);
-            entry.target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            smoothScrollTo(entry.target, 1200);
           }
         });
       },
@@ -1587,7 +1615,7 @@ const Auth = () => {
                 <div className="space-y-3 text-left auth-promises-list">
                   {(isEducationTypingComplete || isMobile) && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1599,7 +1627,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.4s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1611,7 +1639,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4.4s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
