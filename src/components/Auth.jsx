@@ -566,7 +566,10 @@ const Auth = () => {
   useEffect(() => {
     if (isMobile || isLogin || hasSection2Snapped || selectedCourseModal) return;
 
-    const smoothScrollTo = (element, duration = 1200) => {
+    let isAnimating = false;
+    let animationId = null;
+
+    const smoothScrollTo = (element, duration = 800) => {
       const container = authScrollContainerRef.current;
       if (!container || !element) return;
 
@@ -574,11 +577,14 @@ const Auth = () => {
       const startPosition = container.scrollTop;
       const distance = targetPosition - startPosition;
       let startTime = null;
+      isAnimating = true;
 
       // Ease-out cubic for smooth deceleration
       const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
       const animation = (currentTime) => {
+        if (!isAnimating) return; // Stop if cancelled
+
         if (startTime === null) startTime = currentTime;
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
@@ -587,19 +593,34 @@ const Auth = () => {
         container.scrollTop = startPosition + (distance * easedProgress);
 
         if (progress < 1) {
-          requestAnimationFrame(animation);
+          animationId = requestAnimationFrame(animation);
+        } else {
+          isAnimating = false;
         }
       };
 
-      requestAnimationFrame(animation);
+      animationId = requestAnimationFrame(animation);
     };
+
+    // Cancel animation on user scroll
+    const handleWheel = () => {
+      if (isAnimating) {
+        isAnimating = false;
+        if (animationId) cancelAnimationFrame(animationId);
+      }
+    };
+
+    const container = authScrollContainerRef.current;
+    if (container) {
+      container.addEventListener('wheel', handleWheel, { passive: true });
+    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasSection2Snapped) {
             setHasSection2Snapped(true);
-            smoothScrollTo(entry.target, 1200);
+            smoothScrollTo(entry.target, 800);
           }
         });
       },
@@ -610,7 +631,13 @@ const Auth = () => {
       observer.observe(marketingSectionRef.current);
     }
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (container) {
+        container.removeEventListener('wheel', handleWheel);
+      }
+      if (animationId) cancelAnimationFrame(animationId);
+    };
   }, [isMobile, isLogin, hasSection2Snapped, selectedCourseModal]);
 
   // Fetch courses from Supabase and preload coach data
