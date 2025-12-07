@@ -154,7 +154,6 @@ const Auth = () => {
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
-  const [educationTypingEnabled, setEducationTypingEnabled] = useState(false);
   const [courseTitleTypingEnabled, setCourseTitleTypingEnabled] = useState(false);
   const [learningTaglineTypingEnabled, setLearningTaglineTypingEnabled] = useState(false);
   const [testimonialsTypingEnabled, setTestimonialsTypingEnabled] = useState(false);
@@ -177,26 +176,8 @@ const Auth = () => {
     }
   );
 
-  const educationTextDesktop = 'Education should be \naccessible, personalised and integrated for everyone.';
-  const educationTextMobile = 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.';
-  const educationFullText = isMobile ? educationTextMobile : educationTextDesktop;
-  const { displayText: typedEducationText, isComplete: isEducationTypingComplete } = useTypingAnimation(
-    educationFullText,
-    {
-      charDelay: 90,
-      startDelay: 1500,
-      pausePoints: isMobile
-        ? [
-            { after: 'Education should\nbe accessible,'.length, duration: 500 },
-            { after: 'Education should\nbe accessible,\npersonalised'.length, duration: 500 }
-          ]
-        : [
-            { after: 'Education should be \naccessible,'.length, duration: 500 },
-            { after: 'Education should be \naccessible, personalised'.length, duration: 500 }
-          ],
-      enabled: educationTypingEnabled && !isMobile  // Disable animation on mobile
-    }
-  );
+  // Animation disabled - show full text immediately on both mobile and desktop
+  const isEducationTypingComplete = true;
 
   const coursesTitleText = 'The best courses.\nFor the best students.';
   const { displayText: typedCoursesTitle, isComplete: isCourseTitleTypingComplete } = useTypingAnimation(
@@ -563,8 +544,6 @@ const Auth = () => {
           if (entry.isIntersecting && !animateWords) {
             debounce('marketingAnimation', () => {
               setAnimateWords(true);
-              // Enable education typing animation
-              setEducationTypingEnabled(true);
             }, 50);
           }
         });
@@ -884,8 +863,8 @@ const Auth = () => {
       ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
       : 'Education should be \naccessible, personalised and integrated for everyone.';
 
-    // On mobile, show full text immediately (no animation)
-    const text = isMobile ? fullText : typedEducationText;
+    // Show full text immediately (no animation)
+    const text = fullText;
 
     // Split text into parts and highlight the key words
     let result = [];
@@ -1642,7 +1621,7 @@ const Auth = () => {
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
                 <div className="flex flex-col items-start">
-                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : 'auto', marginBottom: isMobile ? '0rem' : '1rem' }}>
+                  <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : '6rem', marginBottom: isMobile ? '0rem' : '1rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
                   <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
@@ -2123,7 +2102,7 @@ const Auth = () => {
                         className={`transition-all duration-300 ${
                           currentTestimonialIndex === idx
                             ? 'bg-[#EF0B72]'
-                            : 'bg-white hover:bg-gray-300'
+                            : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
                         }`}
                         style={{
                           width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
