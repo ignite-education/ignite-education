@@ -1640,9 +1640,9 @@ const Auth = () => {
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
                 <div className="space-y-3 text-left auth-promises-list">
-                  {(isEducationTypingComplete || isMobile) && (
+                  {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '0.8s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1654,7 +1654,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1666,7 +1666,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4.4s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3.2s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
