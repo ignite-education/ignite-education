@@ -2638,26 +2638,27 @@ const Auth = () => {
         onClick={() => setSelectedCourseModal(null)}
       >
         <div className="relative auth-course-modal-container">
+          {/* Close button - outside modal, top right */}
+          <button
+            onClick={() => setSelectedCourseModal(null)}
+            className="absolute text-white hover:text-gray-300 z-10 auth-course-modal-close"
+            style={{ top: '-2rem', right: '0' }}
+          >
+            <X size={24} />
+          </button>
+
           <div
-            className="relative flex flex-col animate-scaleUp auth-course-modal"
+            className="relative flex flex-col animate-scaleUp auth-course-modal overflow-y-auto"
             style={{
               width: '720px',
               height: isMobile ? '31.25rem' : '70vh',
               borderRadius: '6px',
-              overflow: 'hidden'
+              scrollbarWidth: 'none'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Black Header Section */}
-            <div className="bg-black px-8 pt-6 pb-6 relative auth-course-modal-header">
-              {/* Close button - top right */}
-              <button
-                onClick={() => setSelectedCourseModal(null)}
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10 auth-course-modal-close"
-              >
-                <X size={24} />
-              </button>
-
+            <div className="bg-black px-8 relative auth-course-modal-header" style={{ paddingTop: '2.5rem', paddingBottom: '2.5rem' }}>
               {/* Breadcrumb Navigation */}
               <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: '#F0F0F2' }}>
                 <Home className="w-4 h-4" />
@@ -2668,7 +2669,7 @@ const Auth = () => {
               </nav>
 
               {/* Course Title */}
-              <h2 className="text-3xl font-bold text-white mb-3 auth-course-modal-title">
+              <h2 className="text-3xl font-semibold text-white mb-3 auth-course-modal-title">
                 {selectedCourse.title}
               </h2>
 
@@ -2687,8 +2688,8 @@ const Auth = () => {
 
             {/* White Content Section */}
             <div
-              className="bg-white flex-1 overflow-y-auto px-8 auth-course-modal-content"
-              style={{ scrollbarWidth: 'none', paddingTop: '1.5rem', paddingBottom: '1.25rem' }}
+              className="bg-white px-8 auth-course-modal-content"
+              style={{ paddingTop: '1.5rem', paddingBottom: '1.25rem' }}
             >
               <div>
                 {selectedCourse.status === 'requested' && (
