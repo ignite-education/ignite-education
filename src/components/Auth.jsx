@@ -2660,7 +2660,7 @@ const Auth = () => {
             {/* Black Header Section */}
             <div className="bg-black px-8 relative auth-course-modal-header" style={{ paddingTop: '1.4rem', paddingBottom: '2.5rem' }}>
               {/* Breadcrumb Navigation */}
-              <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: '#F0F0F2' }}>
+              <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: '#F0F0F2' }}>
                 <Home className="w-4 h-4" />
                 <ChevronRight className="w-4 h-4" />
                 <span>Courses</span>
@@ -2669,7 +2669,7 @@ const Auth = () => {
               </nav>
 
               {/* Course Title */}
-              <h2 className="text-3xl font-semibold text-white mb-3 auth-course-modal-title">
+              <h2 className="font-semibold text-white mb-6 auth-course-modal-title" style={{ fontSize: '2rem' }}>
                 {selectedCourse.title}
               </h2>
 
