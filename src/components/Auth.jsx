@@ -153,6 +153,7 @@ const Auth = () => {
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -522,10 +523,11 @@ const Auth = () => {
     };
   }, []);
 
-  // Track mobile viewport for conditional rendering
+  // Track mobile and tablet viewport for conditional rendering
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -1114,7 +1116,7 @@ const Auth = () => {
         const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`white-${i}`} style={{ color: isMobile ? 'white' : 'black' }}>
+            <span key={`white-${i}`} style={{ color: 'black' }}>
               {chunk}
             </span>
           );
@@ -1124,10 +1126,10 @@ const Auth = () => {
       }
     }
 
-    // Add cursor if typing is not complete
-    if (!isCourseTitleTypingComplete) {
+    // Add cursor if typing is not complete (desktop only)
+    if (!isCourseTitleTypingComplete && !isMobile) {
       result.push(
-        <span key="cursor" className="animate-blink font-thin" style={{ color: isMobile ? '#F0F0F2' : 'white' }}>|</span>
+        <span key="cursor" className="animate-blink font-thin" style={{ color: 'white' }}>|</span>
       );
     }
 
@@ -1368,7 +1370,7 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'y mandatory' : 'y proximity',
+          scrollSnapType: isMobile ? 'none' : 'y proximity',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           overflowX: 'hidden',
@@ -1889,7 +1891,15 @@ const Auth = () => {
             {/* Learning Model Section */}
             <div className="px-4 auth-section-4-content">
               <h3 className="font-bold text-white text-left auth-section-4-title" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: '1.2', minHeight: '120px', marginBottom: isMobile ? '0.5rem' : '1.5rem', marginTop: '2rem' }}>
-                {renderTypedLearningTagline()}
+                {isMobile ? (
+                  <>
+                    <span className="text-white">Building a smarter,</span>
+                    <br />
+                    <span style={{ color: '#EF0B72' }}>more personalised</span>
+                    <br />
+                    <span style={{ color: '#EF0B72' }}>era of education.</span>
+                  </>
+                ) : renderTypedLearningTagline()}
               </h3>
 
               {/* Features List */}
@@ -2059,7 +2069,17 @@ const Auth = () => {
                 </span>
                 {/* Actual typed content */}
                 <span style={{ position: 'relative' }}>
-                  {renderTypedTestimonialsHeading()}
+                  {isMobile ? (
+                    <>
+                      <span className="text-black">Ignite is for everyone.</span>
+                      <br />
+                      <span style={{ color: '#EF0B72' }}>The curious,</span>
+                      <br />
+                      <span style={{ color: '#EF0B72' }}>the committed,</span>
+                      <br />
+                      <span style={{ color: '#EF0B72' }}>the ambitious.</span>
+                    </>
+                  ) : renderTypedTestimonialsHeading()}
                 </span>
               </h3>
             </div>
@@ -2219,7 +2239,7 @@ const Auth = () => {
 
                 {/* Right Column - 2x2 Grid of Cards */}
                 <div className="auth-usecase-container flex items-center justify-center">
-                  <div className="auth-usecase-grid relative" style={{ width: isMobile ? '100%' : '21.35rem', height: isMobile ? 'auto' : '20.3rem' }}>
+                  <div className="auth-usecase-grid relative" style={{ width: (isMobile || isTablet) ? '100%' : '21.35rem', height: (isMobile || isTablet) ? 'auto' : '20.3rem' }}>
                     {(() => {
                       const useCaseCards = [
                         {
@@ -2244,8 +2264,8 @@ const Auth = () => {
                         }
                       ];
 
-                      if (isMobile) {
-                        // Mobile layout: Simple list of use cases
+                      if (isMobile || isTablet) {
+                        // Mobile/Tablet layout: Simple list of use cases
                         return (
                           <div className="auth-usecase-mobile-list" style={{
                             display: 'flex',
@@ -2660,7 +2680,7 @@ const Auth = () => {
             {/* Black Header Section */}
             <div className="bg-black px-8 relative auth-course-modal-header" style={{ paddingTop: '1.4rem', paddingBottom: '2.5rem' }}>
               {/* Breadcrumb Navigation */}
-              <nav className="flex items-center gap-2 text-sm mb-6" style={{ color: '#F0F0F2' }}>
+              <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: '#F0F0F2' }}>
                 <Home className="w-4 h-4" />
                 <ChevronRight className="w-4 h-4" />
                 <span>Courses</span>
@@ -2669,7 +2689,7 @@ const Auth = () => {
               </nav>
 
               {/* Course Title */}
-              <h2 className="font-semibold text-white mb-6 auth-course-modal-title" style={{ fontSize: '2rem' }}>
+              <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2rem' }}>
                 {selectedCourse.title}
               </h2>
 
