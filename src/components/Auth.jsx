@@ -145,6 +145,7 @@ const Auth = () => {
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
   const [activeUseCaseIndex, setActiveUseCaseIndex] = useState(0);
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
+  const [testimonialMouseStart, setTestimonialMouseStart] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const linkedInFAQSectionRef = useRef(null);
@@ -1546,7 +1547,7 @@ const Auth = () => {
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
           style={{
             background: 'black',
-            scrollSnapAlign: 'none'
+            scrollSnapAlign: isMobile ? 'none' : 'start'
           }}
         >
           <div className="max-w-4xl w-full text-white">
@@ -1989,8 +1990,29 @@ const Auth = () => {
               <div className="grid grid-cols-2 gap-4 items-start">
                 {/* Left Column - Testimonials Slider */}
                 <div className="auth-testimonial-container flex flex-col justify-center"
+                  style={{ cursor: 'grab' }}
                   onMouseEnter={() => setIsTestimonialHovered(true)}
-                  onMouseLeave={() => setIsTestimonialHovered(false)}
+                  onMouseLeave={() => {
+                    setIsTestimonialHovered(false);
+                    setTestimonialMouseStart(null);
+                  }}
+                  onMouseDown={(e) => {
+                    e.preventDefault();
+                    setTestimonialMouseStart(e.clientX);
+                  }}
+                  onMouseUp={(e) => {
+                    if (testimonialMouseStart === null) return;
+                    const diff = testimonialMouseStart - e.clientX;
+                    const minSwipeDistance = 50;
+                    if (Math.abs(diff) > minSwipeDistance) {
+                      if (diff > 0) {
+                        setCurrentTestimonialIndex((prev) => (prev + 1) % 5);
+                      } else {
+                        setCurrentTestimonialIndex((prev) => (prev - 1 + 5) % 5);
+                      }
+                    }
+                    setTestimonialMouseStart(null);
+                  }}
                   onTouchStart={(e) => setTestimonialTouchStart(e.touches[0].clientX)}
                   onTouchEnd={(e) => {
                     if (testimonialTouchStart === null) return;
