@@ -199,7 +199,7 @@ const Auth = () => {
     learningFullText,
     {
       charDelay: 75,
-      startDelay: 500,
+      startDelay: 0,
       pausePoints: [{ after: 19, duration: 700 }], // After "Building a smarter,"
       enabled: learningTaglineTypingEnabled
     }
@@ -1201,7 +1201,7 @@ const Auth = () => {
       }
     }
 
-    if (!isLearningTaglineTypingComplete) {
+    if (!isLearningTaglineTypingComplete && isMobile) {
       result.push(
         <span key="cursor" className="text-white animate-blink font-thin">|</span>
       );
@@ -2195,7 +2195,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-center gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem' }}>
+                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: '9.6875rem' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
@@ -2378,7 +2378,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-8 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
+            <div className="grid grid-cols-2 gap-0 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
               {/* Left Column - FAQs */}
               <div className="auth-section-6-faq-column">
                 <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%' }}>
@@ -2467,7 +2467,7 @@ const Auth = () => {
             </div>
 
             {/* Get Started Button */}
-            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '2rem' }}>
+            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '0.5rem' }}>
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
@@ -2485,7 +2485,7 @@ const Auth = () => {
             </div>
 
             {/* Footer Links */}
-            <div className="flex justify-center gap-8 px-4 pb-12">
+            <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '1.5rem' }}>
               <a
                 href="mailto:hello@ignite.education"
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
@@ -2513,6 +2513,8 @@ const Auth = () => {
               </a>
               <a
                 href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
@@ -2520,6 +2522,8 @@ const Auth = () => {
               </a>
               <a
                 href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
