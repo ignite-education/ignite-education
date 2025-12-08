@@ -769,14 +769,14 @@ const Auth = () => {
       if (currentIndex < title.length) {
         currentIndex++;
         setTypedModalTitle(title.substring(0, currentIndex));
-        setTimeout(typeNextChar, 50);
+        setTimeout(typeNextChar, 70);
       } else {
         setModalTitleTypingComplete(true);
       }
     };
 
     // Start typing after a brief delay for the modal to animate in
-    const startTimeout = setTimeout(typeNextChar, 150);
+    const startTimeout = setTimeout(typeNextChar, 400);
 
     return () => clearTimeout(startTimeout);
   }, [selectedCourseModal, courses]);
