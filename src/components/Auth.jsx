@@ -2422,8 +2422,8 @@ const Auth = () => {
           <div className="max-w-7xl w-full text-white">
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-0 px-4 max-w-7xl mx-auto" style={{ marginBottom: '2rem' }}>
-              {/* Left Column - FAQs */}
-              <div className="auth-section-6-faq-column">
+              {/* Left Column - FAQs (Right on desktop) */}
+              <div className="auth-section-6-faq-column" style={{ order: isMobile ? 1 : 2 }}>
                 <div className="flex justify-start auth-section-6-faq-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%' }}>
                   <h3 className="font-bold text-white mb-2 text-left auth-section-6-faq-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0' }}>{typedFAQHeading}</h3>
                 </div>
@@ -2497,8 +2497,8 @@ const Auth = () => {
                 </div>
               </div>
 
-              {/* Right Column - Blog Posts */}
-              <div className="flex flex-col items-end justify-center auth-section-6-blog-column">
+              {/* Right Column - Blog Posts (Left on desktop) */}
+              <div className="flex flex-col items-end justify-center auth-section-6-blog-column" style={{ order: isMobile ? 2 : 1 }}>
                 <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', width: '85%', margin: '0 auto' }}>
                   <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
