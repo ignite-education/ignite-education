@@ -150,7 +150,6 @@ const Auth = () => {
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const [typedModalTitle, setTypedModalTitle] = useState('');
-  const [modalTitleTypingComplete, setModalTitleTypingComplete] = useState(false);
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
@@ -753,7 +752,6 @@ const Auth = () => {
   useEffect(() => {
     if (!selectedCourseModal) {
       setTypedModalTitle('');
-      setModalTitleTypingComplete(false);
       return;
     }
 
@@ -763,15 +761,12 @@ const Auth = () => {
     const title = selectedCourse.title;
     let currentIndex = 0;
     setTypedModalTitle('');
-    setModalTitleTypingComplete(false);
 
     const typeNextChar = () => {
       if (currentIndex < title.length) {
         currentIndex++;
         setTypedModalTitle(title.substring(0, currentIndex));
         setTimeout(typeNextChar, 75);
-      } else {
-        setModalTitleTypingComplete(true);
       }
     };
 
@@ -2719,7 +2714,6 @@ const Auth = () => {
               {/* Course Title */}
               <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2.3rem' }}>
                 {typedModalTitle}
-                {!modalTitleTypingComplete && <span className="animate-pulse">|</span>}
               </h2>
 
               {/* Description excerpt - pink */}
