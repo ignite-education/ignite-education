@@ -149,6 +149,8 @@ const Auth = () => {
   const [hasSection2Snapped, setHasSection2Snapped] = useState(false);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
+  const [typedModalTitle, setTypedModalTitle] = useState('');
+  const [modalTitleTypingComplete, setModalTitleTypingComplete] = useState(false);
   const linkedInFAQSectionRef = useRef(null);
   const [courseCoaches, setCourseCoaches] = useState({});
   const authScrollContainerRef = useRef(null);
@@ -746,6 +748,38 @@ const Auth = () => {
       console.log('⏭️ [Auth] Skipping - courseParam:', courseParam, 'courses.length:', courses.length);
     }
   }, [location.search, courses]);
+
+  // Typing animation for course modal title
+  useEffect(() => {
+    if (!selectedCourseModal) {
+      setTypedModalTitle('');
+      setModalTitleTypingComplete(false);
+      return;
+    }
+
+    const selectedCourse = courses.find(c => c.name === selectedCourseModal);
+    if (!selectedCourse) return;
+
+    const title = selectedCourse.title;
+    let currentIndex = 0;
+    setTypedModalTitle('');
+    setModalTitleTypingComplete(false);
+
+    const typeNextChar = () => {
+      if (currentIndex < title.length) {
+        currentIndex++;
+        setTypedModalTitle(title.substring(0, currentIndex));
+        setTimeout(typeNextChar, 50);
+      } else {
+        setModalTitleTypingComplete(true);
+      }
+    };
+
+    // Start typing after a brief delay for the modal to animate in
+    const startTimeout = setTimeout(typeNextChar, 150);
+
+    return () => clearTimeout(startTimeout);
+  }, [selectedCourseModal, courses]);
 
   // Detect card visibility for blur effect on course grid
   useEffect(() => {
@@ -2684,7 +2718,8 @@ const Auth = () => {
 
               {/* Course Title */}
               <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2.3rem' }}>
-                {selectedCourse.title}
+                {typedModalTitle}
+                {!modalTitleTypingComplete && <span className="animate-pulse">|</span>}
               </h2>
 
               {/* Description excerpt - pink */}
