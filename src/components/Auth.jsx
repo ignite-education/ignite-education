@@ -2510,7 +2510,7 @@ const Auth = () => {
             </div>
 
             {/* Get Started Button */}
-            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '0.5rem' }}>
+            <div className="flex justify-center px-4 pb-8 auth-section-6-get-started" style={{ paddingTop: '0' }}>
               <button
                 onClick={() => {
                   if (authScrollContainerRef.current) {
