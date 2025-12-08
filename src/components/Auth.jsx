@@ -1203,7 +1203,7 @@ const Auth = () => {
       }
     }
 
-    if (!isLearningTaglineTypingComplete && isMobile) {
+    if (!isLearningTaglineTypingComplete) {
       result.push(
         <span key="cursor" className="text-white animate-blink font-thin">|</span>
       );
@@ -1899,7 +1899,11 @@ const Auth = () => {
                     <br />
                     <span style={{ color: '#EF0B72' }}>era of education.</span>
                   </>
-                ) : renderTypedLearningTagline()}
+                ) : (
+                  typedLearningTagline.length === 0 && !learningTaglineTypingEnabled
+                    ? <span className="text-white animate-blink font-thin">|</span>
+                    : renderTypedLearningTagline()
+                )}
               </h3>
 
               {/* Features List */}
