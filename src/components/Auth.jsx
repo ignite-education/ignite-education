@@ -2712,8 +2712,9 @@ const Auth = () => {
               </nav>
 
               {/* Course Title */}
-              <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2.3rem' }}>
-                {typedModalTitle}
+              <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2.3rem', position: 'relative' }}>
+                <span style={{ visibility: 'hidden' }}>{selectedCourse.title}</span>
+                <span style={{ position: 'absolute', left: 0, top: 0 }}>{typedModalTitle}</span>
               </h2>
 
               {/* Description excerpt - pink */}
