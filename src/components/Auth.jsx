@@ -196,7 +196,7 @@ const Auth = () => {
   const learningTaglineDesktop = 'Building a smarter, \nmore personalised era of education.';
   const learningTaglineMobile = 'Building a smarter,\nmore personalised\nera of education.';
   const learningFullText = isMobile ? learningTaglineMobile : learningTaglineDesktop;
-  const { displayText: typedLearningTagline, isComplete: isLearningTaglineTypingComplete } = useTypingAnimation(
+  const { displayText: typedLearningTagline } = useTypingAnimation(
     learningFullText,
     {
       charDelay: 75,
@@ -1203,12 +1203,6 @@ const Auth = () => {
       }
     }
 
-    if (!isLearningTaglineTypingComplete) {
-      result.push(
-        <span key="cursor" className="text-white animate-blink font-thin">|</span>
-      );
-    }
-
     return result;
   };
 
@@ -1391,177 +1385,424 @@ const Auth = () => {
           backgroundColor: '#000'
         }}
       >
-      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
-        {/* Logo */}
-        <img
-          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
-          alt="Ignite Education"
-          className="auth-logo object-contain"
-          style={{
-            width: '120px',
-            height: '40px',
-            marginBottom: '0.5rem'
-          }}
-        />
+      {/* Desktop/Tablet: Two-column layout */}
+      {!isMobile ? (
+        <div className="w-full flex" style={{ maxWidth: '1000px' }}>
+          {/* Left Column - Logo & Tagline */}
+          <div className="w-1/2 flex items-center justify-center">
+            <div>
+              {/* Logo */}
+              <img
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+                alt="Ignite Education"
+                className="auth-logo object-contain"
+                style={{
+                  width: '120px',
+                  height: '40px',
+                  marginBottom: '0.5rem'
+                }}
+              />
 
-        {/* Tagline - on both sign in and create account pages */}
-        <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
-          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
-            {renderTypedTagline()}
-          </h1>
+              {/* Tagline */}
+              <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem' }}>
+                <h1 className="text-xl font-semibold text-white" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'left' }}>
+                  {renderTypedTagline()}
+                </h1>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Auth Form */}
+          <div className="w-1/2 flex items-center justify-center">
+            <div className="w-full" style={{ maxWidth: '400px' }}>
+              {/* Title above the box */}
+              <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
+                {isLogin ? 'Welcome Back' : 'Create Account'}
+              </h2>
+
+              {/* Form Card */}
+              <div
+                className="bg-white text-black px-5 py-4 rounded-md auth-form-card"
+                style={{
+                  animation: 'scaleUp 0.2s ease-out'
+                }}
+              >
+
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                    {error}
+                  </div>
+                )}
+
+                {/* OAuth Buttons */}
+                <div className="space-y-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => handleOAuthSignIn('google')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-black rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    <span className="truncate">Continue with Google</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleOAuthSignIn('linkedin_oidc')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-lg px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    <span className="truncate">Continue with LinkedIn</span>
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className="relative" style={{ marginBottom: '0.625rem' }}>
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">Or</span>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                  <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+                    <div>
+                      <label className="block text-sm font-medium mb-0.5">First Name</label>
+                      <input
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required={!isLogin}
+                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
+                        placeholder="John"
+                        disabled={isLogin}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-0.5">Last Name</label>
+                      <input
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required={!isLogin}
+                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
+                        placeholder="Doe"
+                        disabled={isLogin}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
+                    <div>
+                      <label className="block text-sm font-medium mb-0.5">Email</label>
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
+                        placeholder="you@example.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-0.5">Password</label>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLogin ? 'Sign In' : 'Sign Up'}
+                  </button>
+                </form>
+
+                {/* Temporary Google AdSense Verification Button */}
+                {!isLogin && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        setError("");
+                        // Using dedicated test account for AdSense verification
+                        await signIn("adsense-verify@igniteeducation.org", "IgniteVerify2024!");
+                        navigate("/progress");
+                      } catch (err) {
+                        setError("Verification failed. Please contact support.");
+                        setLoading(false);
+                      }
+                    }}
+                    disabled={loading}
+                    className="w-full bg-yellow-500 text-black rounded-lg px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+                  >
+                    🔍 Google AdSense Verification - Click Here
+                  </button>
+                )}
+
+                <div className="text-center" style={{ marginTop: '0.5rem' }}>
+                  {isLogin ? (
+                    <div className="flex items-center justify-center gap-4 auth-links">
+                      <button
+                        onClick={() => {
+                          setIsLogin(!isLogin);
+                          setError('');
+                        }}
+                        className="text-black hover:text-[#EF0B72] transition"
+                        style={{ fontSize: '0.85em' }}
+                      >
+                        Don't have an account?
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowResetPassword(true);
+                          setResetEmail(email);
+                          setResetSuccess(false);
+                          setError('');
+                        }}
+                        className="text-black hover:text-[#EF0B72] transition"
+                        style={{ fontSize: '0.85em' }}
+                      >
+                        Reset password
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setIsLogin(!isLogin);
+                        setError('');
+                      }}
+                      className="text-black hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '0.85em' }}
+                    >
+                      Already have an account?
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      ) : (
+        /* Mobile: Single-column layout (unchanged) */
+        <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
+          {/* Logo */}
+          <img
+            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
+            alt="Ignite Education"
+            className="auth-logo object-contain"
+            style={{
+              width: '120px',
+              height: '40px',
+              marginBottom: '0.5rem'
+            }}
+          />
 
-        <div className="w-full">
-
-        {/* Title above the box */}
-        <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
-        </h2>
-
-        {/* Form Card */}
-        <div
-          className="bg-white text-black px-5 py-4 rounded-md auth-form-card"
-          style={{
-            animation: 'scaleUp 0.2s ease-out'
-          }}
-        >
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          {/* OAuth Buttons */}
-          <div className="space-y-2 mb-3">
-            <button
-              type="button"
-              onClick={() => handleOAuthSignIn('google')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-black rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <span className="truncate">Continue with Google</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleOAuthSignIn('linkedin_oidc')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-lg px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-              <span className="truncate">Continue with LinkedIn</span>
-            </button>
+          {/* Tagline - on both sign in and create account pages */}
+          <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
+            <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
+              {renderTypedTagline()}
+            </h1>
           </div>
 
-          {/* Divider */}
-          <div className="relative" style={{ marginBottom: '0.625rem' }}>
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or</span>
-            </div>
-          </div>
+          <div className="w-full">
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">First Name</label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="John"
-                  disabled={isLogin}
-                />
+          {/* Title above the box */}
+          <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
+            {isLogin ? 'Welcome Back' : 'Create Account'}
+          </h2>
+
+          {/* Form Card */}
+          <div
+            className="bg-white text-black px-5 py-4 rounded-md auth-form-card"
+            style={{
+              animation: 'scaleUp 0.2s ease-out'
+            }}
+          >
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
               </div>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Last Name</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="Doe"
-                  disabled={isLogin}
-                />
-              </div>
+            )}
+
+            {/* OAuth Buttons */}
+            <div className="space-y-2 mb-3">
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn('google')}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-black rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span className="truncate">Continue with Google</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleOAuthSignIn('linkedin_oidc')}
+                disabled={loading}
+                className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-lg px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
+              >
+                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+                <span className="truncate">Continue with LinkedIn</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
-                  placeholder="you@example.com"
-                />
+            {/* Divider */}
+            <div className="relative" style={{ marginBottom: '0.625rem' }}>
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
-                  placeholder="••••••••"
-                />
+              <div className="relative flex justify-center text-sm">
+                <span className="px-2 bg-white text-gray-500">Or</span>
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLogin ? 'Sign In' : 'Sign Up'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+              <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+                <div>
+                  <label className="block text-sm font-medium mb-0.5">First Name</label>
+                  <input
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required={!isLogin}
+                    className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
+                    placeholder="John"
+                    disabled={isLogin}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-0.5">Last Name</label>
+                  <input
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required={!isLogin}
+                    className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
+                    placeholder="Doe"
+                    disabled={isLogin}
+                  />
+                </div>
+              </div>
 
-          {/* Temporary Google AdSense Verification Button */}
-          {!isLogin && (
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  setError("");
-                  // Using dedicated test account for AdSense verification
-                  await signIn("adsense-verify@igniteeducation.org", "IgniteVerify2024!");
-                  navigate("/progress");
-                } catch (err) {
-                  setError("Verification failed. Please contact support.");
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-              className="w-full bg-yellow-500 text-black rounded-lg px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-            >
-              🔍 Google AdSense Verification - Click Here
-            </button>
-          )}
+              <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
+                <div>
+                  <label className="block text-sm font-medium mb-0.5">Email</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
+                    placeholder="you@example.com"
+                  />
+                </div>
 
-          <div className="text-center" style={{ marginTop: '0.5rem' }}>
-            {isLogin ? (
-              <div className="flex items-center justify-center gap-4 auth-links">
+                <div>
+                  <label className="block text-sm font-medium mb-0.5">Password</label>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-md"
+                    placeholder="••••••••"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLogin ? 'Sign In' : 'Sign Up'}
+              </button>
+            </form>
+
+            {/* Temporary Google AdSense Verification Button */}
+            {!isLogin && (
+              <button
+                type="button"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    setError("");
+                    // Using dedicated test account for AdSense verification
+                    await signIn("adsense-verify@igniteeducation.org", "IgniteVerify2024!");
+                    navigate("/progress");
+                  } catch (err) {
+                    setError("Verification failed. Please contact support.");
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+                className="w-full bg-yellow-500 text-black rounded-lg px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
+              >
+                🔍 Google AdSense Verification - Click Here
+              </button>
+            )}
+
+            <div className="text-center" style={{ marginTop: '0.5rem' }}>
+              {isLogin ? (
+                <div className="flex items-center justify-center gap-4 auth-links">
+                  <button
+                    onClick={() => {
+                      setIsLogin(!isLogin);
+                      setError('');
+                    }}
+                    className="text-black hover:text-[#EF0B72] transition"
+                    style={{ fontSize: '0.85em' }}
+                  >
+                    Don't have an account?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResetPassword(true);
+                      setResetEmail(email);
+                      setResetSuccess(false);
+                      setError('');
+                    }}
+                    className="text-black hover:text-[#EF0B72] transition"
+                    style={{ fontSize: '0.85em' }}
+                  >
+                    Reset password
+                  </button>
+                </div>
+              ) : (
                 <button
                   onClick={() => {
                     setIsLogin(!isLogin);
@@ -1570,53 +1811,29 @@ const Auth = () => {
                   className="text-black hover:text-[#EF0B72] transition"
                   style={{ fontSize: '0.85em' }}
                 >
-                  Don't have an account?
+                  Already have an account?
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowResetPassword(true);
-                    setResetEmail(email);
-                    setResetSuccess(false);
-                    setError('');
-                  }}
-                  className="text-black hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Reset password
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                }}
-                className="text-black hover:text-[#EF0B72] transition"
-                style={{ fontSize: '0.85em' }}
-              >
-                Already have an account?
-              </button>
-            )}
+              )}
+            </div>
+          </div>
+          </div>
+
+          {/* Scroll Down Arrow */}
+          <div className="mt-8">
+            <button
+              onClick={scrollToMarketing}
+              className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+              style={{
+                animation: 'subtleBounce 2s infinite',
+                padding: '11px'
+              }}
+              aria-label="Scroll to learn more"
+            >
+              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
+            </button>
           </div>
         </div>
-        </div>
-
-        {/* Scroll Down Arrow */}
-        <div className="mt-8">
-          <button
-            onClick={scrollToMarketing}
-            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
-            style={{
-              animation: 'subtleBounce 2s infinite',
-              padding: '11px'
-            }}
-            aria-label="Scroll to learn more"
-          >
-            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-          </button>
-        </div>
-      </div>
+      )}
       </div>
 
       {/* Wrapper for sections 2-6 on mobile - single snap target */}
@@ -1899,11 +2116,7 @@ const Auth = () => {
                     <br />
                     <span style={{ color: '#EF0B72' }}>era of education.</span>
                   </>
-                ) : (
-                  typedLearningTagline.length === 0 && !learningTaglineTypingEnabled
-                    ? <span className="text-white animate-blink font-thin">|</span>
-                    : renderTypedLearningTagline()
-                )}
+                ) : renderTypedLearningTagline()}
               </h3>
 
               {/* Features List */}
