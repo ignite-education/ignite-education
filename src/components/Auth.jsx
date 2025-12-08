@@ -2672,9 +2672,9 @@ const Auth = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Black Header Section */}
-            <div className="bg-black px-8 relative auth-course-modal-header" style={{ paddingTop: '1.4rem', paddingBottom: '2.5rem' }}>
+            <div className="bg-black relative auth-course-modal-header" style={{ paddingTop: '4rem', paddingBottom: '2.5rem', paddingLeft: '4rem', paddingRight: '4rem' }}>
               {/* Breadcrumb Navigation */}
-              <nav className="flex items-center gap-2 text-sm mb-4" style={{ color: '#F0F0F2' }}>
+              <nav className="flex items-center gap-2 mb-4" style={{ color: '#F0F0F2', fontSize: '0.79rem' }}>
                 <Home className="w-4 h-4" />
                 <ChevronRight className="w-4 h-4" />
                 <span>Courses</span>
