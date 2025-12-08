@@ -853,7 +853,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: isMobile ? 0.05 : 0.3, rootMargin: isMobile ? '0px' : '-100px 0px -100px 0px' }
+      { threshold: 0.3 }
     );
 
     observer.observe(learningModelSectionRef.current);
@@ -863,7 +863,7 @@ const Auth = () => {
         observer.unobserve(learningModelSectionRef.current);
       }
     };
-  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal, isMobile]);
+  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal]);
 
   // Intersection observer for testimonials section animation
   useEffect(() => {
