@@ -14,7 +14,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
         className="rounded-md overflow-hidden cursor-pointer group"
       >
         {featured_image && (
-          <div className="w-full" style={{ height: '380px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="w-full" style={{ height: '385px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <img
               src={featured_image}
               alt={title}
