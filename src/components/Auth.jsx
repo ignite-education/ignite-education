@@ -2672,7 +2672,7 @@ const Auth = () => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Black Header Section */}
-            <div className="bg-black relative auth-course-modal-header" style={{ paddingTop: '4rem', paddingBottom: '2.5rem', paddingLeft: '4rem', paddingRight: '4rem' }}>
+            <div className="bg-black relative auth-course-modal-header" style={{ paddingTop: '3rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
               {/* Breadcrumb Navigation */}
               <nav className="flex items-center gap-2 mb-4" style={{ color: '#F0F0F2', fontSize: '0.79rem' }}>
                 <Home className="w-4 h-4" />
@@ -2683,7 +2683,7 @@ const Auth = () => {
               </nav>
 
               {/* Course Title */}
-              <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2rem' }}>
+              <h2 className="font-semibold text-white mb-4 auth-course-modal-title" style={{ fontSize: '2.3rem' }}>
                 {selectedCourse.title}
               </h2>
 
