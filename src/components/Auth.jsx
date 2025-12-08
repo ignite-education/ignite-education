@@ -1385,7 +1385,7 @@ const Auth = () => {
           backgroundColor: '#000'
         }}
       >
-      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
+      <div className="relative w-full flex flex-col" style={{ maxWidth: '533px' }}>
         {/* Logo */}
         <img
           src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
@@ -1400,7 +1400,7 @@ const Auth = () => {
 
         {/* Tagline - on both sign in and create account pages */}
         <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
-          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
+          <h1 className="text-xl font-semibold text-white" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'left' }}>
             {renderTypedTagline()}
           </h1>
         </div>
