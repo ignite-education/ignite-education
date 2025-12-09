@@ -2521,10 +2521,10 @@ const Auth = () => {
               </p>
             </div>
 
-            {/* Images Container - matches Section 5 grid positioning */}
-            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="auth-section-merch-grid mx-auto">
+            {/* Images Container - full width, evenly distributed */}
+            <div style={{ width: '100%', paddingLeft: '2rem', paddingRight: '2rem' }} className="auth-section-merch-grid">
               <div
-                className={isMobile ? "grid grid-cols-2 gap-4" : "flex justify-start items-center gap-6"}
+                className={isMobile ? "grid grid-cols-2 gap-4" : "flex justify-between items-center"}
                 style={{ width: '100%' }}
               >
                 <img
