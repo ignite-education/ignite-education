@@ -2493,10 +2493,12 @@ const Auth = () => {
       {/* Sixth Section - Merchandise */}
         <div
           ref={merchSectionRef}
-          className="auth-section-merch min-h-screen flex items-center justify-center px-8"
+          className="auth-section-merch flex items-start justify-center px-8"
           style={{
             background: isMobile ? 'black' : 'white',
-            scrollSnapAlign: 'none'
+            scrollSnapAlign: 'none',
+            paddingTop: '5rem',
+            paddingBottom: '5rem'
           }}
         >
           <div className="auth-section-merch-content w-full text-left">
@@ -2530,28 +2532,28 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                   alt="Tote bag"
-                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
                   onClick={handleOpenToteBag}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                   alt="Black Mug"
-                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
                   onClick={handleOpenMug}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                   alt="Notebook"
-                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
                   onClick={handleOpenNotebook}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                   alt="Sweatshirt"
-                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
                   onClick={handleOpenSweatshirt}
                 />
