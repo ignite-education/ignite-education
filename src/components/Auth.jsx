@@ -2483,8 +2483,8 @@ const Auth = () => {
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="auth-section-merch-content max-w-4xl mx-auto text-center">
-            <h3 className="font-bold"
+          <div className="auth-section-merch-content max-w-4xl mx-auto text-left">
+            <h3 className="font-bold text-left"
               style={{
                 fontSize: '2.5rem',
                 lineHeight: '1.2',
@@ -2497,38 +2497,38 @@ const Auth = () => {
             </h3>
             <p style={{
               fontSize: '1.125rem',
-              color: isMobile ? 'rgba(255,255,255,0.8)' : '#666',
+              color: 'black',
               marginBottom: '2.5rem'
             }}>
               All profit supports education projects across the UK.
             </p>
-            <div className="flex justify-center items-center gap-6" style={{ flexWrap: 'wrap' }}>
+            <div className="flex justify-start items-center gap-6" style={{ flexWrap: 'wrap' }}>
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                 alt="Tote bag"
                 className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: '180px' }}
+                style={{ height: '306px' }}
                 onClick={handleOpenToteBag}
               />
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                 alt="Black Mug"
                 className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: '180px' }}
+                style={{ height: '306px' }}
                 onClick={handleOpenMug}
               />
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                 alt="Notebook"
                 className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: '180px' }}
+                style={{ height: '306px' }}
                 onClick={handleOpenNotebook}
               />
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                 alt="Sweatshirt"
                 className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: '180px' }}
+                style={{ height: '306px' }}
                 onClick={handleOpenSweatshirt}
               />
             </div>
