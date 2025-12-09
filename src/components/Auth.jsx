@@ -225,7 +225,7 @@ const Auth = () => {
     }
   );
 
-  const merchHeadingText = 'Big dreams.\nUniversal fit.';
+  const merchHeadingText = 'Big dreams. Universal fit.';
   const { displayText: typedMerchHeading } = useTypingAnimation(
     merchHeadingText,
     {
@@ -238,18 +238,16 @@ const Auth = () => {
     }
   );
 
-  // Helper to render merch heading with pink second line
+  // Helper to render merch heading with pink "Universal fit."
   const renderTypedMerchHeading = () => {
-    const lines = typedMerchHeading.split('\n');
+    const text = typedMerchHeading;
+    const splitIndex = 12; // After "Big dreams. "
+    const firstPart = text.slice(0, splitIndex);
+    const secondPart = text.slice(splitIndex);
     return (
       <>
-        <span className="text-black">{lines[0]}</span>
-        {lines[1] !== undefined && (
-          <>
-            <br />
-            <span style={{ color: '#EF0B72' }}>{lines[1]}</span>
-          </>
-        )}
+        <span className="text-black">{firstPart}</span>
+        <span style={{ color: '#EF0B72' }}>{secondPart}</span>
       </>
     );
   };
@@ -2514,7 +2512,7 @@ const Auth = () => {
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
                   marginBottom: '1rem',
-                  minHeight: '6rem'
+                  minHeight: '3rem'
                 }}
               >
                 {renderTypedMerchHeading()}
