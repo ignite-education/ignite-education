@@ -398,8 +398,8 @@ body {
   }
 }
 
-/* Section 6 single-column breakpoint at 850px */
-@media (max-width: 849px) {
+/* Section 6 single-column breakpoint at 870px */
+@media (max-width: 869px) {
   .auth-section-6 .grid-cols-2 {
     display: flex !important;
     flex-direction: column-reverse !important;

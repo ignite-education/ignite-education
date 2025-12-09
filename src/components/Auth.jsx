@@ -155,7 +155,7 @@ const Auth = () => {
   const authScrollContainerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
-  const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 850);
+  const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -537,7 +537,7 @@ const Auth = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
-      setIsSection6SingleColumn(window.innerWidth < 850);
+      setIsSection6SingleColumn(window.innerWidth < 870);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
