@@ -2505,7 +2505,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Blog Posts (Left on desktop) */}
-              <div className="flex flex-col items-end justify-center auth-section-6-blog-column" style={{ order: isMobile ? 2 : 1 }}>
+              <div className="flex flex-col items-end justify-center auth-section-6-blog-column" style={{ order: isMobile ? 2 : 1, paddingLeft: isMobile ? 0 : '2rem' }}>
                 <div className="flex justify-start w-full auth-section-6-blog-title-container" style={{ minHeight: isMobile ? 'calc(2.4rem + 60px + 0.5rem)' : 'auto', maxWidth: isMobile ? 'none' : '30.8rem', width: '85%', margin: '0 auto' }}>
                   <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
