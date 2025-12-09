@@ -155,6 +155,7 @@ const Auth = () => {
   const authScrollContainerRef = useRef(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
+  const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 850);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -225,8 +226,8 @@ const Auth = () => {
   const faqHeadingText = 'FAQs';
   const blogHeadingText = 'Latest from Ignite';
 
-  // On mobile: FAQs types first, then Blog
-  // On desktop: Blog types first, then FAQs
+  // On single column (< 850px): FAQs types first, then Blog
+  // On two columns (>= 850px): Blog types first, then FAQs
   // Calculate delays based on the other heading's typing duration
   const faqTypingDuration = faqHeadingText.length * 75; // ~300ms for "FAQs"
   const blogTypingDuration = blogHeadingText.length * 75; // ~1350ms for "Latest from Ignite"
@@ -235,7 +236,7 @@ const Auth = () => {
     faqHeadingText,
     {
       charDelay: 75,
-      startDelay: isMobile ? 0 : (blogTypingDuration + 500),
+      startDelay: isSection6SingleColumn ? 0 : (blogTypingDuration + 500),
       enabled: blogFaqTypingEnabled
     }
   );
@@ -244,7 +245,7 @@ const Auth = () => {
     blogHeadingText,
     {
       charDelay: 75,
-      startDelay: isMobile ? (faqTypingDuration + 500) : 0,
+      startDelay: isSection6SingleColumn ? (faqTypingDuration + 500) : 0,
       enabled: blogFaqTypingEnabled
     }
   );
@@ -536,6 +537,7 @@ const Auth = () => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
       setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
+      setIsSection6SingleColumn(window.innerWidth < 850);
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);

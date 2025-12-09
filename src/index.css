@@ -398,6 +398,44 @@ body {
   }
 }
 
+/* Section 6 single-column breakpoint at 850px */
+@media (max-width: 849px) {
+  .auth-section-6 .grid-cols-2 {
+    display: flex !important;
+    flex-direction: column-reverse !important;
+    gap: 3rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .auth-section-6-faq-column {
+    width: 100% !important;
+    order: 2 !important;
+    padding-left: 0 !important;
+  }
+
+  .auth-section-6-faq-column .space-y-3 {
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+  }
+
+  .auth-section-6-blog-column {
+    width: 100% !important;
+    margin-left: 0 !important;
+    order: 1 !important;
+    padding-left: 0 !important;
+  }
+
+  .auth-section-6-blog-title-container {
+    max-width: none !important;
+  }
+
+  .auth-section-6-faq-title-container {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+}
+
 /* Auth page mobile overrides */
 @media (max-width: 767px) {
   /* Hide ProgressHub background on mobile, show plain black */
