@@ -2152,10 +2152,12 @@ const Auth = () => {
       {/* Fifth Section - Merged Testimonials & Use Cases */}
         <div
           ref={testimonialsSectionRef}
-          className="auth-section-5 min-h-screen flex items-center justify-center px-8"
+          className="auth-section-5 flex items-start justify-center px-8"
           style={{
             background: isMobile ? 'black' : 'white',
-            scrollSnapAlign: 'none'
+            scrollSnapAlign: 'none',
+            paddingTop: '5rem',
+            paddingBottom: '0'
           }}
         >
           <div className="auth-section-5-content w-full text-white text-left">
