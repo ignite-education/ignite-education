@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
@@ -155,8 +155,8 @@ const ProgressHub = () => {
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
 
-  // Clean up hash fragments from OAuth redirect
-  useEffect(() => {
+  // Clean up hash fragments before paint to prevent flicker
+  useLayoutEffect(() => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
     }
