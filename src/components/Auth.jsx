@@ -291,6 +291,9 @@ const Auth = () => {
   const handleOpenNotebook = () => {
     window.open('https://shop.ignite.education/products/notebook?variant=53241113084235', '_blank', 'noopener,noreferrer');
   };
+  const handleOpenQuoteTote = () => {
+    window.open('https://shop.ignite.education/products/copy-of-empowering-quote-organic-cotton-tote-bag-eco-friendly-shopper-sustainable-gift-motivational-bag-reusable-grocery-tote-1?variant=53677328367947', '_blank', 'noopener,noreferrer');
+  };
   const handleOpenSweatshirt = () => {
     window.open('https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987', '_blank', 'noopener,noreferrer');
   };
@@ -2552,6 +2555,13 @@ const Auth = () => {
                   className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
                   onClick={handleOpenNotebook}
+                />
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
+                  alt="Quote Tote"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
+                  style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
+                  onClick={handleOpenQuoteTote}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
