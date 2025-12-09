@@ -2510,7 +2510,7 @@ const Auth = () => {
                 style={{
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
-                  marginBottom: '0.5rem',
+                  marginBottom: '1rem',
                   minHeight: '6rem'
                 }}
               >
@@ -2521,7 +2521,7 @@ const Auth = () => {
                 color: 'black',
                 marginBottom: '1.5rem'
               }}>
-                All profit supports education projects across the UK.
+                Discover official Ignite merchandise. All profit supports education and social mobility projects across the UK.
               </p>
             </div>
 
