@@ -2535,7 +2535,7 @@ const Auth = () => {
             </div>
 
             {/* Footer Links */}
-            <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '1.5rem' }}>
+            <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
               <a
                 href="mailto:hello@ignite.education"
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
