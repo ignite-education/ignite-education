@@ -212,7 +212,7 @@ const Auth = () => {
     testimonialsHeadingText,
     {
       charDelay: 75,
-      startDelay: 1000,
+      startDelay: 500,
       pausePoints: [
         { after: 23, duration: 700 },  // After "Ignite is for everyone."
         { after: 37, duration: 500 },  // After "The curious,"
@@ -223,22 +223,29 @@ const Auth = () => {
   );
 
   const faqHeadingText = 'FAQs';
-  const { displayText: typedFAQHeading, isComplete: isFAQHeadingComplete } = useTypingAnimation(
+  const blogHeadingText = 'Latest from Ignite';
+
+  // On mobile: FAQs types first, then Blog
+  // On desktop: Blog types first, then FAQs
+  // Calculate delays based on the other heading's typing duration
+  const faqTypingDuration = faqHeadingText.length * 75; // ~300ms for "FAQs"
+  const blogTypingDuration = blogHeadingText.length * 75; // ~1350ms for "Latest from Ignite"
+
+  const { displayText: typedFAQHeading } = useTypingAnimation(
     faqHeadingText,
     {
       charDelay: 75,
-      startDelay: 0,
+      startDelay: isMobile ? 0 : (blogTypingDuration + 500),
       enabled: blogFaqTypingEnabled
     }
   );
 
-  const blogHeadingText = 'Latest from Ignite';
   const { displayText: typedBlogHeading } = useTypingAnimation(
     blogHeadingText,
     {
       charDelay: 75,
-      startDelay: 500, // Start after FAQ heading finishes
-      enabled: blogFaqTypingEnabled && isFAQHeadingComplete
+      startDelay: isMobile ? (faqTypingDuration + 500) : 0,
+      enabled: blogFaqTypingEnabled
     }
   );
 
