@@ -133,6 +133,7 @@ const Auth = () => {
   const courseCardsScrollRef = useRef(null);
   const learningModelSectionRef = useRef(null);
   const testimonialsSectionRef = useRef(null);
+  const merchSectionRef = useRef(null);
   const [coursePageIndex, setCoursePageIndex] = useState(0);
   const [courses, setCourses] = useState([]);
   const [blurredCards, setBlurredCards] = useState([]);
@@ -162,6 +163,7 @@ const Auth = () => {
   const [courseTitleTypingEnabled, setCourseTitleTypingEnabled] = useState(false);
   const [learningTaglineTypingEnabled, setLearningTaglineTypingEnabled] = useState(false);
   const [testimonialsTypingEnabled, setTestimonialsTypingEnabled] = useState(false);
+  const [merchTypingEnabled, setMerchTypingEnabled] = useState(false);
   const [blogFaqTypingEnabled, setBlogFaqTypingEnabled] = useState(false);
 
   // Typing animations using requestAnimationFrame hook
@@ -223,6 +225,19 @@ const Auth = () => {
     }
   );
 
+  const merchHeadingText = 'Big dreams. Universal fit.';
+  const { displayText: typedMerchHeading } = useTypingAnimation(
+    merchHeadingText,
+    {
+      charDelay: 75,
+      startDelay: 500,
+      pausePoints: [
+        { after: 11, duration: 700 }  // After "Big dreams."
+      ],
+      enabled: merchTypingEnabled
+    }
+  );
+
   const faqHeadingText = 'FAQs';
   const blogHeadingText = 'Latest from Ignite';
 
@@ -249,6 +264,20 @@ const Auth = () => {
       enabled: blogFaqTypingEnabled
     }
   );
+
+  // Merch click handlers
+  const handleOpenToteBag = () => {
+    window.open('https://shop.ignite.education/products/tote-bag-1?variant=53677278495051', '_blank', 'noopener,noreferrer');
+  };
+  const handleOpenMug = () => {
+    window.open('https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611', '_blank', 'noopener,noreferrer');
+  };
+  const handleOpenNotebook = () => {
+    window.open('https://shop.ignite.education/products/notebook?variant=53241113084235', '_blank', 'noopener,noreferrer');
+  };
+  const handleOpenSweatshirt = () => {
+    window.open('https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987', '_blank', 'noopener,noreferrer');
+  };
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
 
@@ -933,6 +962,32 @@ const Auth = () => {
       }
     };
   }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal]);
+
+  // Intersection observer for merch section typing animation
+  useEffect(() => {
+    if (!merchSectionRef.current || isLogin || selectedCourseModal) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !merchTypingEnabled) {
+            debounce('merchAnimation', () => {
+              setMerchTypingEnabled(true);
+            }, 50);
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: '-100px 0px -100px 0px' }
+    );
+
+    observer.observe(merchSectionRef.current);
+
+    return () => {
+      if (merchSectionRef.current) {
+        observer.unobserve(merchSectionRef.current);
+      }
+    };
+  }, [isLogin, merchTypingEnabled, selectedCourseModal]);
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
@@ -2419,7 +2474,68 @@ const Auth = () => {
                         </div>
           </div>
 
-      {/* Sixth Section - LinkedIn & FAQs */}
+      {/* Sixth Section - Merchandise */}
+        <div
+          ref={merchSectionRef}
+          className="auth-section-merch min-h-screen flex items-center justify-center px-8"
+          style={{
+            background: isMobile ? 'black' : 'white',
+            scrollSnapAlign: 'none'
+          }}
+        >
+          <div className="auth-section-merch-content max-w-4xl mx-auto text-center">
+            <h3 className="font-bold"
+              style={{
+                fontSize: '2.5rem',
+                lineHeight: '1.2',
+                color: isMobile ? 'white' : 'black',
+                marginBottom: '1rem',
+                minHeight: '3rem'
+              }}
+            >
+              {typedMerchHeading}
+            </h3>
+            <p style={{
+              fontSize: '1.125rem',
+              color: isMobile ? 'rgba(255,255,255,0.8)' : '#666',
+              marginBottom: '2.5rem'
+            }}>
+              All profit supports education projects across the UK.
+            </p>
+            <div className="flex justify-center items-center gap-6" style={{ flexWrap: 'wrap' }}>
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
+                alt="Tote bag"
+                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                style={{ height: '180px' }}
+                onClick={handleOpenToteBag}
+              />
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
+                alt="Black Mug"
+                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                style={{ height: '180px' }}
+                onClick={handleOpenMug}
+              />
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
+                alt="Notebook"
+                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                style={{ height: '180px' }}
+                onClick={handleOpenNotebook}
+              />
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
+                alt="Sweatshirt"
+                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                style={{ height: '180px' }}
+                onClick={handleOpenSweatshirt}
+              />
+            </div>
+          </div>
+        </div>
+
+      {/* Seventh Section - LinkedIn & FAQs */}
         <div
           ref={linkedInFAQSectionRef}
           className="min-h-screen flex items-center justify-center px-8 auth-section-6"
