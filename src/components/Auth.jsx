@@ -225,7 +225,7 @@ const Auth = () => {
     }
   );
 
-  const merchHeadingText = 'Big dreams. Universal fit.';
+  const merchHeadingText = 'Big dreams.\nUniversal fit.';
   const { displayText: typedMerchHeading } = useTypingAnimation(
     merchHeadingText,
     {
@@ -237,6 +237,22 @@ const Auth = () => {
       enabled: merchTypingEnabled
     }
   );
+
+  // Helper to render merch heading with pink second line
+  const renderTypedMerchHeading = () => {
+    const lines = typedMerchHeading.split('\n');
+    return (
+      <>
+        <span className="text-black">{lines[0]}</span>
+        {lines[1] !== undefined && (
+          <>
+            <br />
+            <span style={{ color: '#EF0B72' }}>{lines[1]}</span>
+          </>
+        )}
+      </>
+    );
+  };
 
   const faqHeadingText = 'FAQs';
   const blogHeadingText = 'Latest from Ignite';
@@ -2483,57 +2499,63 @@ const Auth = () => {
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="auth-section-merch-content w-full text-left" style={{ maxWidth: isMobile ? '56rem' : 'none', margin: '0 auto', paddingLeft: isMobile ? '1rem' : '4rem', paddingRight: isMobile ? '1rem' : '4rem' }}>
-            <h3 className="font-bold text-left"
-              style={{
-                fontSize: '2.5rem',
-                lineHeight: '1.2',
-                color: isMobile ? 'white' : 'black',
-                marginBottom: '1rem',
-                minHeight: '3rem'
-              }}
-            >
-              {typedMerchHeading}
-            </h3>
-            <p style={{
-              fontSize: '1.125rem',
-              color: 'black',
-              marginBottom: '2.5rem'
-            }}>
-              All profit supports education projects across the UK.
-            </p>
-            <div
-              className={isMobile ? "grid grid-cols-2 gap-4" : "flex justify-start items-center gap-6"}
-              style={{ width: '100%' }}
-            >
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
-                alt="Tote bag"
-                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
-                onClick={handleOpenToteBag}
-              />
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
-                alt="Black Mug"
-                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
-                onClick={handleOpenMug}
-              />
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
-                alt="Notebook"
-                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
-                onClick={handleOpenNotebook}
-              />
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
-                alt="Sweatshirt"
-                className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
-                style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
-                onClick={handleOpenSweatshirt}
-              />
+          <div className="auth-section-merch-content w-full text-left">
+            {/* Title Container - matches Section 5 positioning */}
+            <div className="auth-section-merch-title-container max-w-4xl mx-auto px-4">
+              <h3 className="font-bold text-left"
+                style={{
+                  fontSize: '2.5rem',
+                  lineHeight: '1.2',
+                  marginBottom: '0.5rem',
+                  minHeight: '6rem'
+                }}
+              >
+                {renderTypedMerchHeading()}
+              </h3>
+              <p style={{
+                fontSize: '1.125rem',
+                color: 'black',
+                marginBottom: '1.5rem'
+              }}>
+                All profit supports education projects across the UK.
+              </p>
+            </div>
+
+            {/* Images Container - matches Section 5 grid positioning */}
+            <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="auth-section-merch-grid mx-auto">
+              <div
+                className={isMobile ? "grid grid-cols-2 gap-4" : "flex justify-start items-center gap-6"}
+                style={{ width: '100%' }}
+              >
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
+                  alt="Tote bag"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
+                  onClick={handleOpenToteBag}
+                />
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
+                  alt="Black Mug"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
+                  onClick={handleOpenMug}
+                />
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
+                  alt="Notebook"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
+                  onClick={handleOpenNotebook}
+                />
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
+                  alt="Sweatshirt"
+                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-105 cursor-pointer"
+                  style={{ height: isMobile ? '200px' : '306px', width: isMobile ? '100%' : 'auto' }}
+                  onClick={handleOpenSweatshirt}
+                />
+              </div>
             </div>
           </div>
         </div>
