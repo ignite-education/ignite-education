@@ -2499,7 +2499,7 @@ const Auth = () => {
           style={{
             background: isMobile ? 'black' : 'white',
             scrollSnapAlign: 'none',
-            paddingTop: '5rem',
+            paddingTop: '7rem',
             paddingBottom: '5rem'
           }}
         >
@@ -2521,7 +2521,8 @@ const Auth = () => {
                 color: 'black',
                 marginBottom: '1.5rem'
               }}>
-                Discover official Ignite merchandise. All profit supports education and social mobility projects across the UK.
+                Discover official Ignite merchandise. All profit supports<br />
+                education and social mobility projects across the UK.
               </p>
             </div>
 
