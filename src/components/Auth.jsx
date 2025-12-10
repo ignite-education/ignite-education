@@ -2511,6 +2511,7 @@ const Auth = () => {
                 style={{
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
+                  marginTop: '1rem',
                   marginBottom: '1rem',
                   minHeight: '3rem'
                 }}
