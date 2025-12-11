@@ -6,7 +6,7 @@ import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion } from '../lib/api';
-import GoogleAd from './GoogleAd';
+import EzoicAd from './EzoicAd';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
@@ -3835,10 +3835,8 @@ ${currentLessonSections.map((section) => {
                 </button>
               )}
 
-              <GoogleAd
-                adClient="ca-pub-8629703639546275"
-                adSlot="3322377575"
-                adFormat="auto"
+              <EzoicAd
+                placeholderId="101"
                 style={{ minHeight: '60px' }}
                 isAdFree={isAdFree}
               />
