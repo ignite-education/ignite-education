@@ -1640,29 +1640,6 @@ const Auth = () => {
             </button>
           </form>
 
-          {/* Temporary Google AdSense Verification Button */}
-          {!isLogin && (
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  setLoading(true);
-                  setError("");
-                  // Using dedicated test account for AdSense verification
-                  await signIn("adsense-verify@igniteeducation.org", "IgniteVerify2024!");
-                  navigate("/progress");
-                } catch (err) {
-                  setError("Verification failed. Please contact support.");
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-              className="w-full bg-yellow-500 text-black rounded-lg px-4 py-2 text-sm font-semibold hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed mt-3"
-            >
-              🔍 Google AdSense Verification - Click Here
-            </button>
-          )}
-
           <div className="text-center" style={{ marginTop: '0.5rem' }}>
             {isLogin ? (
               <div className="flex items-center justify-center gap-4 auth-links">
