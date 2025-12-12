@@ -6,7 +6,6 @@ import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion } from '../lib/api';
-import EzoicAd from './EzoicAd';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
@@ -3823,24 +3822,6 @@ ${currentLessonSections.map((section) => {
               )}
             </div>
 
-            {/* Google Display Ad */}
-            <div className={`flex-shrink-0 ${isAdFree ? 'mt-2' : 'mt-8'} w-full relative`}>
-              {/* Ad-Free Upgrade Banner (only show if not ad-free) */}
-              {!isAdFree && (
-                <button
-                  onClick={handleOpenUpgradeModal}
-                  className="absolute -top-5 left-0 text-white hover:text-pink-500 transition text-sm cursor-pointer"
-                >
-                  Go ad-free for 99p
-                </button>
-              )}
-
-              <EzoicAd
-                placeholderId="101"
-                style={{ minHeight: '60px' }}
-                isAdFree={isAdFree}
-              />
-            </div>
           </div>
         </div>
       </div>
