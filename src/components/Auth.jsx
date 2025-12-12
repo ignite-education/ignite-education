@@ -2000,22 +2000,18 @@ const Auth = () => {
                       Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.
                     </p>
                   </div>
-                  <div
-                    className="auth-section-4-lottie-placeholder"
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Group%206.png"
+                    alt="Levelling up learning with smart AI integration"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? '63.75vw' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
-                      backgroundColor: '#1a1a1a',
                       borderRadius: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      objectFit: 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
-                  >
-                    {/* Lottie animation placeholder */}
-                  </div>
+                  />
                 </div>
 
                 {/* Feature 2 - Personalised support */}
@@ -2068,22 +2064,18 @@ const Auth = () => {
                       Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.
                     </p>
                   </div>
-                  <div
-                    className="auth-section-4-lottie-placeholder"
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Group%207.png"
+                    alt="Connect with the global community"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? '63.75vw' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
-                      backgroundColor: '#1a1a1a',
                       borderRadius: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      objectFit: 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
-                  >
-                    {/* Lottie animation placeholder */}
-                  </div>
+                  />
                 </div>
 
                 {/* Feature 4 - Get certified */}
