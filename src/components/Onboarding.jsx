@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ChevronRight, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 
@@ -17,7 +16,6 @@ const Onboarding = ({ firstName, userId }) => {
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [courses, setCourses] = useState([]);
   const dropdownRef = useRef(null);
-  const navigate = useNavigate();
 
   // Helper function to clear onboarding cache
   const clearOnboardingCache = () => {
@@ -181,8 +179,8 @@ const Onboarding = ({ firstName, userId }) => {
         // Clear the onboarding cache before navigating
         clearOnboardingCache();
 
-        // Use React Router navigation instead of full page reload to avoid race condition
-        navigate('/', { replace: true });
+        // Use full page reload to ensure ProtectedRoute re-checks onboarding status from database
+        window.location.href = '/progress';
       } catch (error) {
         console.error('Error updating user:', error);
         alert(`There was an error saving your preferences: ${error.message}`);
