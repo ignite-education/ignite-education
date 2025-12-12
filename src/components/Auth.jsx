@@ -2031,7 +2031,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v2.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v3.png"
                     alt="Personalised support from industry professionals"
                     style={{
                       width: isMobile ? '75vw' : '100%',
@@ -2061,7 +2061,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v2.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20Forum%20v3.png"
                     alt="Connect with the global community"
                     style={{
                       width: isMobile ? '75vw' : '100%',
