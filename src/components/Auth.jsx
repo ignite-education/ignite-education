@@ -2001,7 +2001,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Group%206.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/AI%20-%20v2.png"
                     alt="Levelling up learning with smart AI integration"
                     style={{
                       width: isMobile ? '75vw' : '100%',
@@ -2030,22 +2030,18 @@ const Auth = () => {
                       Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.
                     </p>
                   </div>
-                  <div
-                    className="auth-section-4-lottie-placeholder"
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v2.png"
+                    alt="Personalised support from industry professionals"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? '63.75vw' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
-                      backgroundColor: '#1a1a1a',
                       borderRadius: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      objectFit: 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
-                  >
-                    {/* Lottie animation placeholder */}
-                  </div>
+                  />
                 </div>
 
                 {/* Feature 3 - Community */}
@@ -2065,7 +2061,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Group%207.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v2.png"
                     alt="Connect with the global community"
                     style={{
                       width: isMobile ? '75vw' : '100%',
@@ -2094,22 +2090,18 @@ const Auth = () => {
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
                     </p>
                   </div>
-                  <div
-                    className="auth-section-4-lottie-placeholder"
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate%20v2.png"
+                    alt="Get certified to take on your next role"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? '63.75vw' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
-                      backgroundColor: '#1a1a1a',
                       borderRadius: '0.5rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      objectFit: 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
-                  >
-                    {/* Lottie animation placeholder */}
-                  </div>
+                  />
                 </div>
               </div>
 
