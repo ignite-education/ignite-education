@@ -2061,7 +2061,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v7.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v8.png"
                     alt="Connect with the global community"
                     style={{
                       width: isMobile ? '75vw' : '100%',
