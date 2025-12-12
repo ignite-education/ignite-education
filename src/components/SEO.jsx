@@ -74,8 +74,9 @@ const SEO = ({
 
     // Add structured data if provided (supports single object or array of objects)
     if (structuredData) {
-      // Remove any existing SEO structured data scripts
-      const existingScripts = document.querySelectorAll('script[data-seo="structured"]');
+      // Remove ALL existing JSON-LD scripts except those marked with data-seo="keep-static"
+      // This prevents duplicate schemas (e.g., multiple FAQPage) from conflicting
+      const existingScripts = document.querySelectorAll('script[type="application/ld+json"]:not([data-seo="keep-static"])');
       existingScripts.forEach(script => script.remove());
 
       // Handle array of structured data objects (multiple schemas per page)
