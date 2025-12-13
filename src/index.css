@@ -450,12 +450,12 @@ body {
     background: #000 !important;
     top: 0 !important;
     padding-top: 0 !important;
-    scroll-snap-type: y mandatory !important;
+    scroll-snap-type: none !important;
   }
 
-  /* Wrapper for sections 2-6 - single snap target containing all remaining content */
+  /* Wrapper for sections 2-6 - no snap on mobile */
   .auth-sections-2-6-wrapper {
-    scroll-snap-align: start !important;
+    scroll-snap-align: none !important;
   }
 
   /* Vertically center content on mobile */
@@ -472,8 +472,8 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    scroll-snap-align: start !important;
-    scroll-snap-stop: always !important;
+    scroll-snap-align: none !important;
+    scroll-snap-stop: normal !important;
   }
 
   /* Logo on mobile - 15% bigger than 103px = ~118px */
@@ -527,9 +527,9 @@ body {
     justify-content: center !important;
   }
 
-  /* Hide LinkedIn button on mobile */
+  /* Show LinkedIn button on mobile (same as desktop) */
   .auth-linkedin-btn {
-    display: none !important;
+    display: flex !important;
   }
 
   /* Section 2 - Education Philosophy */
@@ -641,12 +641,12 @@ body {
     color: #000000 !important;
   }
 
-  /* Make section 3 title text and cursor black on mobile, keep pink text pink */
+  /* Make section 3 title text black on mobile, keep only pink text pink */
   .auth-section-3-title span {
     color: #000000 !important;
   }
 
-  .auth-section-3-title span[style*="color"] {
+  .auth-section-3-title span[style*="#EF0B72"] {
     color: #EF0B72 !important;
   }
 
