@@ -1206,7 +1206,7 @@ const Auth = () => {
         const pinkChunk = text.substring(i, nextBreakOrEnd);
         if (pinkChunk) {
           result.push(
-            <span key={`pink-${i}`} style={{ color: '#EF0B72' }}>
+            <span key={`pink-${i}`} className="auth-course-title-pink" style={{ color: '#EF0B72' }}>
               {pinkChunk}
             </span>
           );
@@ -1214,7 +1214,7 @@ const Auth = () => {
           lastIndex = nextBreakOrEnd;
         }
       } else {
-        // First line - white text
+        // First line - black text
         let nextBreakOrEnd = text.length;
         for (let j = i; j < text.length; j++) {
           if (text[j] === '\n') {
@@ -1226,7 +1226,7 @@ const Auth = () => {
         const chunk = text.substring(i, nextBreakOrEnd);
         if (chunk) {
           result.push(
-            <span key={`white-${i}`} style={{ color: 'black' }}>
+            <span key={`black-${i}`} className="auth-course-title-black" style={{ color: 'black' }}>
               {chunk}
             </span>
           );

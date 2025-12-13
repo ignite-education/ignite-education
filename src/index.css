@@ -641,12 +641,12 @@ body {
     color: #000000 !important;
   }
 
-  /* Make section 3 title text black on mobile, keep only pink text pink */
-  .auth-section-3-title span {
+  /* Make section 3 title: "The best courses." black, "For the best students." pink on mobile */
+  .auth-section-3-title .auth-course-title-black {
     color: #000000 !important;
   }
 
-  .auth-section-3-title span[style*="#EF0B72"] {
+  .auth-section-3-title .auth-course-title-pink {
     color: #EF0B72 !important;
   }
 
