@@ -801,6 +801,8 @@ body {
 
   .auth-course-modal-title {
     font-size: 1.5rem !important;
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
   }
 
   .auth-course-modal {
@@ -809,7 +811,7 @@ body {
     height: 32rem !important;
     border-radius: 0.5rem !important;
     overflow-x: hidden !important;
-    overscroll-behavior: contain !important;
+    overscroll-behavior: none !important;
   }
 
   .auth-course-modal-header {
