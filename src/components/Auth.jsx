@@ -1994,10 +1994,10 @@ const Auth = () => {
                     alt="Levelling up learning with smart AI integration"
                     style={{
                       width: isMobile ? '75vw' : '100%',
-                      height: isMobile ? '63.75vw' : undefined,
+                      height: isMobile ? 'auto' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
                       borderRadius: '0.5rem',
-                      objectFit: 'cover',
+                      objectFit: isMobile ? 'contain' : 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
@@ -2024,10 +2024,10 @@ const Auth = () => {
                     alt="Personalised support from industry professionals"
                     style={{
                       width: isMobile ? '75vw' : '100%',
-                      height: isMobile ? '63.75vw' : undefined,
+                      height: isMobile ? 'auto' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
                       borderRadius: '0.5rem',
-                      objectFit: 'cover',
+                      objectFit: isMobile ? 'contain' : 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
@@ -2054,10 +2054,10 @@ const Auth = () => {
                     alt="Connect with the global community"
                     style={{
                       width: isMobile ? '75vw' : '100%',
-                      height: isMobile ? '63.75vw' : undefined,
+                      height: isMobile ? 'auto' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
                       borderRadius: '0.5rem',
-                      objectFit: 'cover',
+                      objectFit: isMobile ? 'contain' : 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
@@ -2084,10 +2084,10 @@ const Auth = () => {
                     alt="Get certified to take on your next role"
                     style={{
                       width: isMobile ? '75vw' : '100%',
-                      height: isMobile ? '63.75vw' : undefined,
+                      height: isMobile ? 'auto' : undefined,
                       aspectRatio: isMobile ? undefined : '4/3',
                       borderRadius: '0.5rem',
-                      objectFit: 'cover',
+                      objectFit: isMobile ? 'contain' : 'cover',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
