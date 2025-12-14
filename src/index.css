@@ -396,6 +396,14 @@ body {
   .auth-usecase-card-small h4 {
     font-size: 0.6rem !important;
   }
+
+  .auth-section-5 {
+    padding-bottom: 2.5rem !important;
+  }
+
+  .auth-section-6 {
+    padding-top: 2.5rem !important;
+  }
 }
 
 /* Section 6 single-column breakpoint at 870px */
