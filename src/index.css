@@ -327,7 +327,7 @@ body {
 
   .auth-section-5-grid > div {
     grid-template-columns: 1fr !important;
-    gap: 2rem !important;
+    gap: 4rem !important;
   }
 
   .auth-testimonial-container {
