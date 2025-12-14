@@ -926,7 +926,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.3 }
+      { threshold: isMobile ? 0.1 : 0.3 }
     );
 
     observer.observe(learningModelSectionRef.current);
