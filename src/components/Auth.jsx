@@ -2479,44 +2479,46 @@ const Auth = () => {
             </div>
 
             {/* Images Container - full width, evenly distributed */}
-            <div style={{ width: '100%', paddingLeft: '2rem', paddingRight: '2rem' }} className="auth-section-merch-grid">
+            <div style={{ width: '100%', paddingLeft: isTablet ? '1rem' : '2rem', paddingRight: isTablet ? '1rem' : '2rem' }} className="auth-section-merch-grid">
               <div
-                className={isMobile ? "grid grid-cols-2 gap-4" : "flex justify-between items-center"}
-                style={{ width: '100%' }}
+                className={(isMobile || isTablet) ? "grid grid-cols-2 gap-4" : "flex justify-between items-center"}
+                style={{ width: '100%', maxWidth: isTablet ? '36rem' : 'none', margin: isTablet ? '0 auto' : undefined }}
               >
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                   alt="Tote bag"
                   className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                  style={{ height: (isMobile || isTablet) ? '200px' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenToteBag}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                   alt="Black Mug"
                   className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                  style={{ height: (isMobile || isTablet) ? '200px' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenMug}
                 />
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                   alt="Notebook"
                   className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                  style={{ height: (isMobile || isTablet) ? '200px' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenNotebook}
                 />
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
-                  alt="Quote Tote"
-                  className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
-                  onClick={handleOpenQuoteTote}
-                />
+                {!isTablet && (
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
+                    alt="Quote Tote"
+                    className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
+                    style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                    onClick={handleOpenQuoteTote}
+                  />
+                )}
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                   alt="Sweatshirt"
                   className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                  style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                  style={{ height: (isMobile || isTablet) ? '200px' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenSweatshirt}
                 />
               </div>
