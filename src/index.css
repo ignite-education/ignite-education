@@ -671,6 +671,7 @@ body {
   .auth-section-3-image-mobile {
     display: block !important;
     width: 90% !important;
+    max-height: 350px !important;
     margin-top: -6rem !important;
     margin-left: -1rem !important;
     margin-bottom: 0 !important;
