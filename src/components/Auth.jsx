@@ -1961,15 +1961,7 @@ const Auth = () => {
             {/* Learning Model Section */}
             <div className="px-4 auth-section-4-content">
               <h3 className="font-bold text-white text-left auth-section-4-title" style={{ fontSize: isMobile ? '2.5rem' : '3rem', lineHeight: '1.2', minHeight: '120px', marginBottom: isMobile ? '0.5rem' : '1.5rem', marginTop: '2rem' }}>
-                {isMobile ? (
-                  <>
-                    <span className="text-white">Building a smarter,</span>
-                    <br />
-                    <span style={{ color: '#EF0B72' }}>more personalised</span>
-                    <br />
-                    <span style={{ color: '#EF0B72' }}>era of education.</span>
-                  </>
-                ) : renderTypedLearningTagline()}
+                {renderTypedLearningTagline()}
               </h3>
 
               {/* Features List */}
