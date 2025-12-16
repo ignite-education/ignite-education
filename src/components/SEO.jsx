@@ -15,7 +15,7 @@ const SEO = ({
   structuredData
 }) => {
   const location = useLocation();
-  const baseUrl = 'https://www.ignite.education';
+  const baseUrl = 'https://ignite.education';
   const fullUrl = url || `${baseUrl}${location.pathname}`;
   const ogImage = image || `${baseUrl}/og-image.png`;
 
@@ -110,7 +110,7 @@ export default SEO;
  * @returns {Object} Schema.org BlogPosting structured data
  */
 export const generateBlogPostStructuredData = (post, url) => {
-  const baseUrl = 'https://www.ignite.education';
+  const baseUrl = 'https://ignite.education';
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
 
   return {

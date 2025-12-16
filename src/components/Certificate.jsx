@@ -153,7 +153,7 @@ export default function Certificate() {
         title={`${certificate.user_name} - ${certificate.course_name} Certificate`}
         description={`${certificate.user_name} has successfully completed the ${certificate.course_name} course at Ignite Education. Verify this certificate and explore our courses in Product Management, Cyber Security, Data Analysis, and UX Design.`}
         keywords={`${certificate.course_name} certificate, online course completion, Ignite Education, professional certification, ${certificate.user_name}`}
-        url={`https://www.ignite.education/certificate/${certificateId}`}
+        url={`https://ignite.education/certificate/${certificateId}`}
         type="article"
       />
       {/* Black Header Bar */}

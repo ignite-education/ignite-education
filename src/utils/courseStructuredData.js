@@ -11,7 +11,7 @@ export const generateCourseStructuredData = (course) => {
     "provider": {
       "@type": "EducationalOrganization",
       "name": "Ignite Education",
-      "url": "https://www.ignite.education"
+      "url": "https://ignite.education"
     },
     "educationalLevel": "Beginner to Advanced",
     "teaches": [
@@ -74,7 +74,7 @@ export const generateBreadcrumbStructuredData = (items) => {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://www.ignite.education${item.path}`
+      "item": `https://ignite.education${item.path}`
     }))
   };
 };

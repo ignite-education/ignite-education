@@ -10,7 +10,7 @@ const Privacy = () => {
         title="Privacy Policy"
         description="Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws."
         keywords="privacy policy, data protection, GDPR, UK data privacy, personal information, Ignite Education privacy"
-        url="https://www.ignite.education/privacy"
+        url="https://ignite.education/privacy"
       />
 
       {/* Sticky Header */}

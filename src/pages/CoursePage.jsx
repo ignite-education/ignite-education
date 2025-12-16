@@ -432,7 +432,7 @@ const CoursePage = () => {
 
   // Generate Course structured data for SEO - enhanced with instructors
   const generateCourseStructuredData = (courseData, courseCoaches) => {
-    const baseUrl = 'https://www.ignite.education';
+    const baseUrl = 'https://ignite.education';
 
     // Extract skills from curriculum (module names + lesson names)
     const teaches = courseData.module_structure?.flatMap(m => [
@@ -493,9 +493,9 @@ const CoursePage = () => {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.ignite.education" },
-      { "@type": "ListItem", "position": 2, "name": "Courses", "item": "https://www.ignite.education/welcome" },
-      { "@type": "ListItem", "position": 3, "name": courseTitle, "item": `https://www.ignite.education/courses/${courseSlug}` }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://ignite.education" },
+      { "@type": "ListItem", "position": 2, "name": "Courses", "item": "https://ignite.education/welcome" },
+      { "@type": "ListItem", "position": 3, "name": courseTitle, "item": `https://ignite.education/courses/${courseSlug}` }
     ]
   });
 
@@ -575,7 +575,7 @@ const CoursePage = () => {
         title={`Ignite | ${course.title}`}
         description={course.description}
         keywords={generateKeywords(course)}
-        url={`https://www.ignite.education/courses/${courseSlug}`}
+        url={`https://ignite.education/courses/${courseSlug}`}
         type="course"
         structuredData={getCombinedStructuredData(course, coaches)}
       />

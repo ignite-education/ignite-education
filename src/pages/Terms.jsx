@@ -10,7 +10,7 @@ const Terms = () => {
         title="Terms of Service"
         description="Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines for our online learning platform."
         keywords="terms of service, terms and conditions, user agreement, course enrollment, refund policy, Ignite Education terms"
-        url="https://www.ignite.education/terms"
+        url="https://ignite.education/terms"
       />
 
       {/* Sticky Header */}

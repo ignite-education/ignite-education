@@ -28,7 +28,7 @@ const NotFound = () => {
       <SEO
         title="Page Not Found - 404"
         description="The page you're looking for doesn't exist. Explore Ignite Education's courses in Product Management, Cyber Security, Data Analysis, and UX Design."
-        url="https://www.ignite.education/404"
+        url="https://ignite.education/404"
       />
 
       {/* Header */}

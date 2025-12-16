@@ -24,7 +24,7 @@ const supabase = createClient(
 );
 
 async function generateSitemap() {
-  const baseUrl = 'https://www.ignite.education';
+  const baseUrl = 'https://ignite.education';
   const today = new Date().toISOString().split('T')[0];
 
   console.log('Generating sitemap...');

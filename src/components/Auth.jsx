@@ -1453,7 +1453,7 @@ const Auth = () => {
         title="Ignite | Welcome"
         description="Transform your career with Ignite's interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback."
         keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
-        url="https://www.ignite.education/welcome"
+        url="https://ignite.education/welcome"
       />
       {/* Auth Scrollable Container */}
       <div

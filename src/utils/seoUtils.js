@@ -16,7 +16,7 @@ export const injectCourseSchema = (courseData) => {
     "provider": {
       "@type": "EducationalOrganization",
       "name": "Ignite Education",
-      "url": "https://www.ignite.education"
+      "url": "https://ignite.education"
     },
     "educationalLevel": courseData.level || "Beginner to Advanced",
     "courseMode": "online",
@@ -37,7 +37,7 @@ export const injectCourseSchema = (courseData) => {
       "price": courseData.price,
       "priceCurrency": "GBP",
       "availability": "https://schema.org/InStock",
-      "url": `https://www.ignite.education${courseData.path || ''}`
+      "url": `https://ignite.education${courseData.path || ''}`
     } : undefined,
     "aggregateRating": courseData.rating ? {
       "@type": "AggregateRating",
@@ -76,7 +76,7 @@ export const injectBreadcrumbSchema = (items) => {
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://www.ignite.education${item.path}`
+      "item": `https://ignite.education${item.path}`
     }))
   };
 
@@ -101,7 +101,7 @@ export const injectArticleSchema = (articleData) => {
     "@type": "Article",
     "headline": articleData.title,
     "description": articleData.description,
-    "image": articleData.image || "https://www.ignite.education/og-image.png",
+    "image": articleData.image || "https://ignite.education/og-image.png",
     "datePublished": articleData.publishedDate,
     "dateModified": articleData.modifiedDate || articleData.publishedDate,
     "author": {
@@ -118,7 +118,7 @@ export const injectArticleSchema = (articleData) => {
     },
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "@id": `https://www.ignite.education${articleData.path}`
+      "@id": `https://ignite.education${articleData.path}`
     }
   };
 
