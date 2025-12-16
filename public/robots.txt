@@ -1,5 +1,5 @@
 # robots.txt for Ignite Education
-# https://www.ignite.education
+# https://ignite.education
 # Allow all search engines and AI crawlers for maximum discoverability
 
 # Google
@@ -61,4 +61,4 @@ Disallow: /auth/reddit/callback
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://www.ignite.education/sitemap.xml
+Sitemap: https://ignite.education/sitemap.xml
