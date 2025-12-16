@@ -7,6 +7,9 @@ import { Home, ChevronRight, Volume2, Pause, Link2, Check } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../contexts/AnimationContext';
 
+// API URL for backend calls
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
 const BlogPostPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -291,7 +294,7 @@ const BlogPostPage = () => {
         // Fall back to live TTS API
         const plainText = extractTextFromHtml(post.content);
 
-        const response = await fetch('https://ignite-education-api.onrender.com/api/text-to-speech-timestamps', {
+        const response = await fetch('${API_URL}/api/text-to-speech-timestamps', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: plainText, voiceGender: 'male' })

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, Check } from 'lucide-react';
 import { logKnowledgeCheck } from '../lib/api';
 
+// API URL for backend calls
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
 const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
@@ -225,7 +228,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       // Determine if this question should be about prior lessons or current lesson
       const isAboutPriorLessons = questionNum <= NUM_PRIOR_QUESTIONS;
 
-      const response = await fetch('https://ignite-education-api.onrender.com/api/knowledge-check/question', {
+      const response = await fetch('${API_URL}/api/knowledge-check/question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -276,7 +279,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     setIsEvaluating(true);
 
     try {
-      const response = await fetch('https://ignite-education-api.onrender.com/api/knowledge-check/evaluate', {
+      const response = await fetch('${API_URL}/api/knowledge-check/evaluate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

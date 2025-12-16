@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List } from 'lucide-react';
 
+// API URL for backend calls
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
 const generateSlug = (title) => {
   return title
     .toLowerCase()
@@ -244,7 +247,7 @@ const BlogManagement = () => {
 
     setIsGeneratingAudio(true);
     try {
-      const response = await fetch('https://ignite-education-api.onrender.com/api/admin/generate-blog-audio', {
+      const response = await fetch('${API_URL}/api/admin/generate-blog-audio', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blogPostId: selectedPost.id })

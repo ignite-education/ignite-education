@@ -5,6 +5,9 @@ import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Yo
 import CourseManagement from '../components/CourseManagement';
 import { getAllCoaches, createCoach, updateCoach, deleteCoach } from '../lib/api';
 
+// API URL for backend calls
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
 const CurriculumUploadNew = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('courses'); // 'courses', 'modules', 'lessons', 'content'
@@ -720,7 +723,7 @@ const CurriculumUploadNew = () => {
 
     // Call API to generate question
     try {
-      const response = await fetch('https://ignite-education-api.onrender.com/api/generate-suggested-question', {
+      const response = await fetch(`${API_URL}/api/generate-suggested-question`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sectionContent })
@@ -776,7 +779,7 @@ const CurriculumUploadNew = () => {
 
     try {
       const response = await fetch(
-        `https://ignite-education-api.onrender.com/api/admin/lesson-audio-status/${selectedCourseId}/${selectedModuleNumber}/${selectedLessonNumber}`
+        `${API_URL}/api/admin/lesson-audio-status/${selectedCourseId}/${selectedModuleNumber}/${selectedLessonNumber}`
       );
 
       if (response.ok) {
@@ -801,7 +804,7 @@ const CurriculumUploadNew = () => {
 
     setIsGeneratingAudio(true);
     try {
-      const response = await fetch('https://ignite-education-api.onrender.com/api/admin/generate-lesson-audio', {
+      const response = await fetch(`${API_URL}/api/admin/generate-lesson-audio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -919,7 +922,7 @@ ${contentBlocks.map((block, index) => {
       `.trim();
 
       // Call API to generate flashcards
-      const response = await fetch('https://ignite-education-api.onrender.com/api/generate-flashcards', {
+      const response = await fetch(`${API_URL}/api/generate-flashcards`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

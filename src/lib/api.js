@@ -1,5 +1,8 @@
 import { supabase } from './supabase';
 
+// API URL - uses environment variable for staging/production flexibility
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
 /**
  * Get all lessons for a specific course
  * @param {string} courseId - The course ID to fetch lessons for
@@ -387,7 +390,7 @@ export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit
   try {
     // Use new cached endpoint - posts are fetched daily by server and stored in database
     // This drastically reduces Reddit API calls from every user to once per day
-    const url = `https://ignite-education-api.onrender.com/api/reddit-posts-cached?limit=${limit}&subreddit=${subreddit}`;
+    const url = `${API_URL}/api/reddit-posts-cached?limit=${limit}&subreddit=${subreddit}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -411,7 +414,7 @@ export async function getRedditPosts(limit = 10, forceRefresh = false, subreddit
 export async function getRedditComments(subreddit, postId) {
   try {
     // Use new cached endpoint - comments are fetched daily by server and stored in database
-    const url = `https://ignite-education-api.onrender.com/api/reddit-comments-cached?postId=${postId}`;
+    const url = `${API_URL}/api/reddit-comments-cached?postId=${postId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -1251,7 +1254,7 @@ export async function deleteUser(userId) {
     }
 
     // Call backend API to delete user
-    const response = await fetch(`https://ignite-education-api.onrender.com/api/users/${userId}`, {
+    const response = await fetch(`${API_URL}/api/users/${userId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${session.access_token}`,
@@ -1475,8 +1478,6 @@ export async function deleteCoach(coachId) {
  * @returns {Promise<Object>} Certificate data
  */
 export async function generateCertificate(userId, courseId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
-
   try {
     const response = await fetch(`${API_URL}/api/certificate/generate`, {
       method: 'POST',
@@ -1505,8 +1506,6 @@ export async function generateCertificate(userId, courseId) {
  * @returns {Promise<Object>} Certificate data
  */
 export async function getCertificate(certificateId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
-
   try {
     const response = await fetch(`${API_URL}/api/certificate/${certificateId}`);
     const data = await response.json();
@@ -1528,8 +1527,6 @@ export async function getCertificate(certificateId) {
  * @returns {Promise<Array>} Array of certificate objects
  */
 export async function getUserCertificates(userId) {
-  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
-
   try {
     const response = await fetch(`${API_URL}/api/certificate/user/${userId}`);
     const data = await response.json();
@@ -1551,8 +1548,6 @@ export async function getUserCertificates(userId) {
  * @returns {Promise<Object>} Certificate data
  */
 export async function verifyCertificate(certificateNumber) {
-  const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
-
   try {
     const response = await fetch(`${API_URL}/api/certificate/verify/${certificateNumber}`);
     const data = await response.json();
