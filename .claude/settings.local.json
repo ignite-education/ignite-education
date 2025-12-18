@@ -61,7 +61,9 @@
       "Bash(git show:*)",
       "Bash(tree:*)",
       "Bash(git -C /Users/maxshillam/Projects/ignite-education branch:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" status)",
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" log --oneline -3)"
     ],
     "deny": [],
     "ask": []

@@ -1135,8 +1135,8 @@ const Auth = () => {
 
     return (
       <>
-        {/* First line (orange) */}
-        <span style={{ display: 'block', color: '#F37021' }}>
+        {/* First line (white) */}
+        <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
           {showCursorOnFirstLine ? (
             <span className="animate-blink font-thin">|</span>
