@@ -181,11 +181,11 @@ CREATE TABLE IF NOT EXISTS course_completions (
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   course_id TEXT NOT NULL,
   completed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  CONSTRAINT unique_user_course_day UNIQUE (user_id, course_id, (DATE(completed_at)))
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_course_completions_user_date ON course_completions(user_id, (DATE(completed_at)));
+CREATE INDEX IF NOT EXISTS idx_course_completions_user_date ON course_completions(user_id, completed_at);
+CREATE INDEX IF NOT EXISTS idx_course_completions_user_course ON course_completions(user_id, course_id);
 
 -- ============================================================================
 -- 7. CERTIFICATES TABLE

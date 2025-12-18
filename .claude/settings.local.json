@@ -58,7 +58,10 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(git add:*)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(tree:*)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education branch:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
