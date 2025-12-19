@@ -2440,7 +2440,7 @@ const Auth = () => {
           ref={merchSectionRef}
           className="auth-section-merch flex items-start justify-center px-8"
           style={{
-            background: isMobile ? 'black' : 'white',
+            background: 'white',
             scrollSnapAlign: 'none',
             paddingTop: '7rem',
             paddingBottom: '5rem'
