@@ -1150,6 +1150,12 @@ body {
     font-size: 0.6rem !important;
   }
 
+  /* Section Merch - Big dreams. Universal fit. */
+  .auth-section-merch {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+
   /* Section 6 - LinkedIn & FAQs */
   .auth-section-6 {
     min-height: auto !important;
