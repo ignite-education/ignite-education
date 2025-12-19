@@ -228,7 +228,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       // Determine if this question should be about prior lessons or current lesson
       const isAboutPriorLessons = questionNum <= NUM_PRIOR_QUESTIONS;
 
-      const response = await fetch('${API_URL}/api/knowledge-check/question', {
+      const response = await fetch(`${API_URL}/api/knowledge-check/question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -279,7 +279,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     setIsEvaluating(true);
 
     try {
-      const response = await fetch('${API_URL}/api/knowledge-check/evaluate', {
+      const response = await fetch(`${API_URL}/api/knowledge-check/evaluate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1269,7 +1269,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       `.trim() : '';
 
       // Call backend API
-      const response = await fetch('${API_URL}/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1437,7 +1437,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         .replace(/\*(.+?)\*/g, '$1')     // Remove italic *text*
         .trim();
 
-      const response = await fetch('${API_URL}/api/text-to-speech', {
+      const response = await fetch(`${API_URL}/api/text-to-speech`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1586,7 +1586,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setUpgradingToAdFree(true);
 
     try {
-      const response = await fetch('${API_URL}/api/create-checkout-session', {
+      const response = await fetch(`${API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2175,7 +2175,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         narrateAbortController.current = new AbortController();
         const controller = narrateAbortController.current;
 
-        const response = await fetch('${API_URL}/api/text-to-speech-timestamps', {
+        const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2361,7 +2361,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           // Store the prefetch promise so we can wait for it if needed
           prefetchPromiseRef.current = (async () => {
             try {
-              const prefetchResponse = await fetch('${API_URL}/api/text-to-speech', {
+              const prefetchResponse = await fetch(`${API_URL}/api/text-to-speech`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -2460,7 +2460,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.log('🌐 [FETCH] Starting API call to /api/text-to-speech-timestamps...');
       console.log('📤 [FETCH] Request body:', { text: lessonName, voiceGender });
 
-      const response = await fetch('${API_URL}/api/text-to-speech-timestamps', {
+      const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2631,7 +2631,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             // Only create promise if one doesn't exist yet
             if (!prefetchPromises.current[sectionIndex]) {
               prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-                fetch('${API_URL}/api/text-to-speech-timestamps', {
+                fetch(`${API_URL}/api/text-to-speech-timestamps`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ text: sectionText, voiceGender })
@@ -2727,7 +2727,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         // Store the promise so we can await it if needed
         prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-          fetch('${API_URL}/api/text-to-speech-timestamps', {
+          fetch(`${API_URL}/api/text-to-speech-timestamps`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: sectionText, voiceGender })
@@ -3766,7 +3766,7 @@ ${currentLessonSections.map((section) => {
 }).filter(Boolean).join('\n\n')}
 ` : '';
 
-                      const response = await fetch('${API_URL}/api/chat', {
+                      const response = await fetch(`${API_URL}/api/chat`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({

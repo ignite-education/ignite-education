@@ -294,7 +294,7 @@ const BlogPostPage = () => {
         // Fall back to live TTS API
         const plainText = extractTextFromHtml(post.content);
 
-        const response = await fetch('${API_URL}/api/text-to-speech-timestamps', {
+        const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: plainText, voiceGender: 'male' })

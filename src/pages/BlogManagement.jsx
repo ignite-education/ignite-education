@@ -247,7 +247,7 @@ const BlogManagement = () => {
 
     setIsGeneratingAudio(true);
     try {
-      const response = await fetch('${API_URL}/api/admin/generate-blog-audio', {
+      const response = await fetch(`${API_URL}/api/admin/generate-blog-audio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ blogPostId: selectedPost.id })

@@ -1300,7 +1300,7 @@ const ProgressHub = () => {
     try {
       console.log('🎫 Opening billing portal...');
       
-      const response = await fetch('${API_URL}/api/create-billing-portal-session', {
+      const response = await fetch(`${API_URL}/api/create-billing-portal-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1346,7 +1346,7 @@ const ProgressHub = () => {
     setUpgradingToAdFree(true);
 
     try {
-      const response = await fetch('${API_URL}/api/create-checkout-session', {
+      const response = await fetch(`${API_URL}/api/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1503,7 +1503,7 @@ const ProgressHub = () => {
 
     try {
       // Call API to delete user account
-      const response = await fetch('${API_URL}/api/delete-account', {
+      const response = await fetch(`${API_URL}/api/delete-account`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
