@@ -1083,10 +1083,11 @@ body {
   }
 
   .auth-testimonial-indicators {
-    width: 20rem !important;
-    max-width: 20rem !important;
+    width: calc(100% - 7rem) !important;
+    max-width: calc(100% - 7rem) !important;
     margin-top: 0.75rem !important;
-    margin-left: 7rem !important;
+    margin-left: 0 !important;
+    padding-left: 7rem !important;
     margin-bottom: 2rem !important;
     justify-content: flex-start !important;
   }
