@@ -572,8 +572,8 @@ const CoursePage = () => {
   return (
     <>
       <SEO
-        title={`Ignite | ${course.title}`}
-        description={course.description}
+        title={`Become a ${course.title} | Ignite`}
+        description={`Become a ${course.title} with Ignite's free, expert-led course. ${course.description}`}
         keywords={generateKeywords(course)}
         url={`https://ignite.education/courses/${courseSlug}`}
         type="course"
