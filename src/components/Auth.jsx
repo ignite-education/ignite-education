@@ -2449,7 +2449,7 @@ const Auth = () => {
           <div className="auth-section-merch-content w-full text-left">
             {/* Title Container - matches Section 5 positioning */}
             <div className="auth-section-merch-title-container max-w-4xl mx-auto px-4">
-              <h3 className="font-bold text-left"
+              <h3 className="auth-section-merch-title font-bold text-left"
                 style={{
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
