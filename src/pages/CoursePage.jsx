@@ -488,9 +488,26 @@ const CoursePage = () => {
   // Get testimonial for this course
   const testimonial = getTestimonialForCourse(courseSlug);
 
-  // Loading state - return null to keep showing Suspense fallback (LoadingScreen)
+  // Loading state - show skeleton to prevent CLS
   if (loading) {
-    return null;
+    return (
+      <div className="min-h-screen bg-black">
+        <div className="sticky top-0 z-50 bg-black">
+          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="w-32 h-10 bg-gray-800 rounded animate-pulse" />
+            <div className="w-24 h-9 bg-gray-800 rounded animate-pulse" />
+          </div>
+          <div className="h-1" />
+        </div>
+        <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
+          <div className="w-full" style={{ maxWidth: '762px' }}>
+            <div className="h-4 w-48 bg-gray-800 rounded animate-pulse mb-7" />
+            <div className="h-14 w-3/4 bg-gray-800 rounded animate-pulse mb-3.5" />
+            <div className="h-6 w-full bg-gray-800 rounded animate-pulse" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Error/404 state
@@ -576,13 +593,11 @@ const CoursePage = () => {
               {course?.status === 'coming_soon' ? 'Register Interest' : 'Get Started'}
             </Link>
           </div>
-          {/* Progress Bar - pink line when scrolling */}
-          {scrollProgress > 0 && (
-            <div
-              className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
-              style={{ width: `${scrollProgress}%` }}
-            />
-          )}
+          {/* Progress Bar - always render with fixed height to prevent CLS */}
+          <div
+            className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
+            style={{ width: `${scrollProgress}%`, opacity: scrollProgress > 0 ? 1 : 0 }}
+          />
         </div>
 
         {/* Hero Section with Black Background */}
@@ -601,7 +616,7 @@ const CoursePage = () => {
               </nav>
 
               {/* Title with typing animation */}
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left" style={{ minHeight: '3.5rem' }}>
+              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left" style={{ minHeight: '4rem' }}>
                 {typedTitle}
                 {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
               </h1>
