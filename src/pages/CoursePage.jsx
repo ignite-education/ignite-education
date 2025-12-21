@@ -5,6 +5,7 @@ import { getCoachesForCourse } from '../lib/api';
 import SEO from '../components/SEO';
 import { Home, ChevronRight, Link2, Check, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
+import { generateCourseKeywords } from '../constants/courseKeywords';
 
 /**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
@@ -406,30 +407,6 @@ const CoursePage = () => {
     }
   ];
 
-  // Generate SEO keywords from course data - enhanced with curriculum skills
-  const generateKeywords = (courseData) => {
-    // Extract lesson names as skill keywords
-    const skills = courseData.module_structure?.flatMap(m =>
-      m.lessons?.map(l => l.name.toLowerCase()) || []
-    ).slice(0, 8) || [];
-
-    const baseKeywords = [
-      courseData.title,
-      `${courseData.title} course`,
-      `learn ${courseData.title.toLowerCase()}`,
-      `${courseData.title.toLowerCase()} training`,
-      `${courseData.title.toLowerCase()} certification`,
-      `free ${courseData.title.toLowerCase()} course`,
-      'online course',
-      'professional development',
-      'career training',
-      'Ignite Education',
-      ...skills
-    ];
-
-    return [...new Set(baseKeywords)].join(', ');
-  };
-
   // Generate Course structured data for SEO - enhanced with instructors
   const generateCourseStructuredData = (courseData, courseCoaches) => {
     const baseUrl = 'https://ignite.education';
@@ -574,7 +551,7 @@ const CoursePage = () => {
       <SEO
         title={`Become a ${course.title} | Ignite`}
         description={`Become a ${course.title} with Ignite's free, expert-led course. ${course.description}`}
-        keywords={generateKeywords(course)}
+        keywords={generateCourseKeywords(course.title)}
         url={`https://ignite.education/courses/${courseSlug}`}
         type="course"
         structuredData={getCombinedStructuredData(course, coaches)}
