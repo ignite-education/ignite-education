@@ -601,7 +601,7 @@ const CoursePage = () => {
               </nav>
 
               {/* Title with typing animation */}
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
+              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left" style={{ minHeight: '3.5rem' }}>
                 {typedTitle}
                 {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
               </h1>
@@ -701,6 +701,9 @@ const CoursePage = () => {
                           alt="Course curriculum illustration"
                           className="w-full rounded-lg object-cover"
                           style={{ maxHeight: '500px' }}
+                          width="315"
+                          height="500"
+                          loading="lazy"
                         />
                       </div>
                     </div>
