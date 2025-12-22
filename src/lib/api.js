@@ -6,12 +6,12 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.on
 
 // Map course IDs to Resend audience IDs
 const COURSE_TO_AUDIENCE = {
-  'product-management': RESEND_AUDIENCES.COURSE_PM,
+  'product-manager': RESEND_AUDIENCES.COURSE_PM,
   'cybersecurity': RESEND_AUDIENCES.COURSE_CYBER,
 };
 
 const COURSE_COMPLETED_TO_AUDIENCE = {
-  'product-management': RESEND_AUDIENCES.COMPLETED_PM,
+  'product-manager': RESEND_AUDIENCES.COMPLETED_PM,
   'cybersecurity': RESEND_AUDIENCES.COMPLETED_CYBER,
 };
 

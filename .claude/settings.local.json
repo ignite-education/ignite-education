@@ -64,7 +64,9 @@
       "Bash(git checkout:*)",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" status)",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" log --oneline -3)",
-      "Bash(sort:*)"
+      "Bash(sort:*)",
+      "Bash(npx email export:*)",
+      "Bash(npx react-email:*)"
     ],
     "deny": [],
     "ask": []
