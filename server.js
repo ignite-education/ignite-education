@@ -2362,6 +2362,203 @@ app.post('/api/send-email', async (req, res) => {
 });
 
 // ============================================================================
+// RESEND AUDIENCE MANAGEMENT ENDPOINTS
+// ============================================================================
+
+// Add a contact to a single Resend audience
+app.post('/api/resend/add-contact', async (req, res) => {
+  try {
+    const { email, firstName, lastName, audienceId } = req.body;
+
+    if (!email || !audienceId) {
+      return res.status(400).json({ error: 'Missing required fields: email and audienceId' });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ Resend not configured - skipping contact add');
+      return res.json({ success: true, message: 'Resend not configured', contactId: null });
+    }
+
+    // Dynamically import Resend only when needed
+    if (!resend) {
+      const { Resend } = await import('resend');
+      resend = new Resend(process.env.RESEND_API_KEY);
+    }
+
+    const { data, error } = await resend.contacts.create({
+      email,
+      firstName: firstName || '',
+      lastName: lastName || '',
+      unsubscribed: false,
+      audienceId
+    });
+
+    if (error) {
+      // Check if it's a duplicate contact error (contact already exists)
+      if (error.message?.includes('already exists')) {
+        console.log(`📋 Contact ${email} already exists in audience`);
+        return res.json({ success: true, message: 'Contact already exists', contactId: null });
+      }
+      throw new Error(error.message);
+    }
+
+    console.log(`✅ Added contact ${email} to audience ${audienceId}`);
+    res.json({ success: true, contactId: data?.id });
+
+  } catch (error) {
+    console.error('❌ Error adding contact to audience:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Sync a contact to multiple audiences at once
+app.post('/api/resend/sync-contact', async (req, res) => {
+  try {
+    const { email, firstName, lastName, audienceIds } = req.body;
+
+    if (!email || !audienceIds || !Array.isArray(audienceIds)) {
+      return res.status(400).json({ error: 'Missing required fields: email and audienceIds (array)' });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ Resend not configured - skipping contact sync');
+      return res.json({ success: true, message: 'Resend not configured', results: [] });
+    }
+
+    // Dynamically import Resend only when needed
+    if (!resend) {
+      const { Resend } = await import('resend');
+      resend = new Resend(process.env.RESEND_API_KEY);
+    }
+
+    const results = [];
+    for (const audienceId of audienceIds) {
+      if (!audienceId) continue; // Skip empty audience IDs
+
+      try {
+        const { data, error } = await resend.contacts.create({
+          email,
+          firstName: firstName || '',
+          lastName: lastName || '',
+          unsubscribed: false,
+          audienceId
+        });
+
+        if (error) {
+          if (error.message?.includes('already exists')) {
+            results.push({ audienceId, status: 'exists' });
+          } else {
+            results.push({ audienceId, status: 'error', error: error.message });
+          }
+        } else {
+          results.push({ audienceId, status: 'added', contactId: data?.id });
+        }
+      } catch (err) {
+        results.push({ audienceId, status: 'error', error: err.message });
+      }
+    }
+
+    console.log(`✅ Synced contact ${email} to ${audienceIds.length} audiences`);
+    res.json({ success: true, results });
+
+  } catch (error) {
+    console.error('❌ Error syncing contact to audiences:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Update contact properties in an audience
+app.patch('/api/resend/update-contact', async (req, res) => {
+  try {
+    const { audienceId, contactId, email, properties } = req.body;
+
+    if (!audienceId || (!contactId && !email)) {
+      return res.status(400).json({ error: 'Missing required fields: audienceId and (contactId or email)' });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ Resend not configured - skipping contact update');
+      return res.json({ success: true, message: 'Resend not configured' });
+    }
+
+    // Dynamically import Resend only when needed
+    if (!resend) {
+      const { Resend } = await import('resend');
+      resend = new Resend(process.env.RESEND_API_KEY);
+    }
+
+    // If we have email but not contactId, we need to find the contact first
+    let targetContactId = contactId;
+    if (!targetContactId && email) {
+      // List contacts and find by email
+      const { data: contacts, error: listError } = await resend.contacts.list({ audienceId });
+      if (listError) throw new Error(listError.message);
+
+      const contact = contacts?.data?.find(c => c.email === email);
+      if (!contact) {
+        return res.status(404).json({ error: 'Contact not found in audience' });
+      }
+      targetContactId = contact.id;
+    }
+
+    const { error } = await resend.contacts.update({
+      audienceId,
+      id: targetContactId,
+      ...properties
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    console.log(`✅ Updated contact ${targetContactId} in audience ${audienceId}`);
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('❌ Error updating contact:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Remove a contact from an audience
+app.delete('/api/resend/remove-contact', async (req, res) => {
+  try {
+    const { audienceId, email } = req.body;
+
+    if (!audienceId || !email) {
+      return res.status(400).json({ error: 'Missing required fields: audienceId and email' });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('⚠️ Resend not configured - skipping contact removal');
+      return res.json({ success: true, message: 'Resend not configured' });
+    }
+
+    // Dynamically import Resend only when needed
+    if (!resend) {
+      const { Resend } = await import('resend');
+      resend = new Resend(process.env.RESEND_API_KEY);
+    }
+
+    const { error } = await resend.contacts.remove({
+      audienceId,
+      email
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    console.log(`✅ Removed contact ${email} from audience ${audienceId}`);
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('❌ Error removing contact:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================================================
 // REDDIT CACHE SYSTEM - Database-backed daily caching
 // ============================================================================
 

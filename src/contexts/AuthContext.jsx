@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { sendWelcomeEmail } from '../lib/email';
+import { sendWelcomeEmail, addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
 
 const AuthContext = createContext({});
 
@@ -132,6 +132,19 @@ export const AuthProvider = ({ children }) => {
       } catch (emailErr) {
         console.error('Failed to send welcome email:', emailErr);
         // Don't throw - email failure shouldn't block signup
+      }
+
+      // Add user to Resend "all-users" audience for broadcasts (don't block signup)
+      if (RESEND_AUDIENCES.ALL_USERS) {
+        try {
+          await addContactToAudience(
+            { email, firstName, lastName },
+            RESEND_AUDIENCES.ALL_USERS
+          );
+        } catch (audienceErr) {
+          console.error('Failed to add user to Resend audience:', audienceErr);
+          // Don't throw - audience sync failure shouldn't block signup
+        }
       }
     }
 

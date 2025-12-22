@@ -1,7 +1,19 @@
 import { supabase } from './supabase';
+import { addContactToAudience, RESEND_AUDIENCES } from './email';
 
 // API URL - uses environment variable for staging/production flexibility
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
+// Map course IDs to Resend audience IDs
+const COURSE_TO_AUDIENCE = {
+  'product-management': RESEND_AUDIENCES.COURSE_PM,
+  'cybersecurity': RESEND_AUDIENCES.COURSE_CYBER,
+};
+
+const COURSE_COMPLETED_TO_AUDIENCE = {
+  'product-management': RESEND_AUDIENCES.COMPLETED_PM,
+  'cybersecurity': RESEND_AUDIENCES.COMPLETED_CYBER,
+};
 
 /**
  * Get all lessons for a specific course
@@ -1281,8 +1293,9 @@ export async function deleteUser(userId) {
  * Update user's enrolled course
  * @param {string} userId - The user's ID
  * @param {string} courseId - The course ID to enroll the user in
+ * @param {object} userInfo - Optional user info for audience sync (email, firstName, lastName)
  */
-export async function updateUserCourse(userId, courseId) {
+export async function updateUserCourse(userId, courseId, userInfo = null) {
   const { data, error } = await supabase
     .from('users')
     .update({ enrolled_course: courseId })
@@ -1295,7 +1308,55 @@ export async function updateUserCourse(userId, courseId) {
     throw error;
   }
 
+  // Sync to course-specific Resend audience (don't block enrollment)
+  const audienceId = COURSE_TO_AUDIENCE[courseId];
+  if (audienceId && userInfo?.email) {
+    try {
+      await addContactToAudience(
+        {
+          email: userInfo.email,
+          firstName: userInfo.firstName || '',
+          lastName: userInfo.lastName || ''
+        },
+        audienceId
+      );
+      console.log(`📋 User ${userInfo.email} added to course audience for ${courseId}`);
+    } catch (audienceErr) {
+      console.error('Failed to sync user to course audience:', audienceErr);
+      // Don't throw - audience sync failure shouldn't block enrollment
+    }
+  }
+
   return data;
+}
+
+/**
+ * Sync user to course completion audience
+ * Called when a user completes a course
+ * @param {string} courseId - The completed course ID
+ * @param {object} userInfo - User info (email, firstName, lastName)
+ */
+export async function syncUserToCourseCompletedAudience(courseId, userInfo) {
+  const audienceId = COURSE_COMPLETED_TO_AUDIENCE[courseId];
+  if (!audienceId || !userInfo?.email) {
+    console.log('📋 No audience ID or user info for course completion sync');
+    return;
+  }
+
+  try {
+    await addContactToAudience(
+      {
+        email: userInfo.email,
+        firstName: userInfo.firstName || '',
+        lastName: userInfo.lastName || ''
+      },
+      audienceId
+    );
+    console.log(`📋 User ${userInfo.email} added to completed audience for ${courseId}`);
+  } catch (audienceErr) {
+    console.error('Failed to sync user to completed audience:', audienceErr);
+    // Don't throw - audience sync failure shouldn't block completion
+  }
 }
 
 /**

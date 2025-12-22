@@ -69,3 +69,136 @@ export function sendModuleCompleteEmail(userId, moduleName, courseName) {
 export function sendCourseCompleteEmail(userId, courseName) {
   return sendMilestoneEmail('course_complete', userId, { courseName });
 }
+
+// ============================================
+// RESEND AUDIENCE MANAGEMENT
+// ============================================
+
+/**
+ * Add a contact to a Resend audience
+ * @param {object} contact - Contact details
+ * @param {string} contact.email - Contact email
+ * @param {string} contact.firstName - First name
+ * @param {string} contact.lastName - Last name
+ * @param {string} audienceId - Resend audience ID
+ * @returns {Promise<{success: boolean, contactId?: string, error?: string}>}
+ */
+export async function addContactToAudience(contact, audienceId) {
+  try {
+    console.log(`📋 Adding contact ${contact.email} to audience ${audienceId}`);
+
+    const response = await fetch(`${API_URL}/api/resend/add-contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: contact.email,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        audienceId
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to add contact to audience');
+    }
+
+    console.log(`✅ Contact added to audience:`, result.contactId);
+    return { success: true, contactId: result.contactId };
+
+  } catch (error) {
+    console.error(`❌ Error adding contact to audience:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Sync a user to multiple audiences at once
+ * @param {object} contact - Contact details
+ * @param {string} contact.email - Contact email
+ * @param {string} contact.firstName - First name
+ * @param {string} contact.lastName - Last name
+ * @param {string[]} audienceIds - Array of Resend audience IDs
+ * @returns {Promise<{success: boolean, results?: object[], error?: string}>}
+ */
+export async function syncContactToAudiences(contact, audienceIds) {
+  try {
+    console.log(`📋 Syncing contact ${contact.email} to ${audienceIds.length} audiences`);
+
+    const response = await fetch(`${API_URL}/api/resend/sync-contact`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: contact.email,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        audienceIds
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to sync contact to audiences');
+    }
+
+    console.log(`✅ Contact synced to audiences`);
+    return { success: true, results: result.results };
+
+  } catch (error) {
+    console.error(`❌ Error syncing contact to audiences:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Update contact properties in Resend
+ * @param {string} audienceId - Resend audience ID
+ * @param {string} contactId - Resend contact ID
+ * @param {object} properties - Properties to update
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function updateContactProperties(audienceId, contactId, properties) {
+  try {
+    console.log(`📝 Updating contact ${contactId} properties`);
+
+    const response = await fetch(`${API_URL}/api/resend/update-contact`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        audienceId,
+        contactId,
+        properties
+      })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Failed to update contact properties');
+    }
+
+    console.log(`✅ Contact properties updated`);
+    return { success: true };
+
+  } catch (error) {
+    console.error(`❌ Error updating contact properties:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Audience ID constants - set these after creating audiences in Resend dashboard
+export const RESEND_AUDIENCES = {
+  ALL_USERS: import.meta.env.VITE_RESEND_AUDIENCE_ALL_USERS || '',
+  COURSE_PM: import.meta.env.VITE_RESEND_AUDIENCE_COURSE_PM || '',
+  COURSE_CYBER: import.meta.env.VITE_RESEND_AUDIENCE_COURSE_CYBER || '',
+  COMPLETED_PM: import.meta.env.VITE_RESEND_AUDIENCE_COMPLETED_PM || '',
+  COMPLETED_CYBER: import.meta.env.VITE_RESEND_AUDIENCE_COMPLETED_CYBER || '',
+};

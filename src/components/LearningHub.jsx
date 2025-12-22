@@ -5,7 +5,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion, syncUserToCourseCompletedAudience } from '../lib/api';
+import { sendModuleCompleteEmail, sendCourseCompleteEmail } from '../lib/email';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
@@ -100,7 +101,7 @@ const HIGHLIGHT_LAG_OFFSET = 0;
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { firstName, user, isAdFree, userRole } = useAuth();
+  const { firstName, lastName, user, isAdFree, userRole } = useAuth();
   const { lottieData } = useAnimation();
 
   // Helper function to get user's enrolled course
@@ -1187,6 +1188,45 @@ const LearningHub = () => {
           setTodaysCompletedCourseIds(updatedCourseIds);
 
           console.log('✅ Course completion recorded. Total courses completed today:', updatedCount);
+
+          // Send course completion email (don't block UI)
+          const courseName = courseId === 'product-management' ? 'Product Management' : 'Cybersecurity';
+          sendCourseCompleteEmail(userId, courseName).catch(err =>
+            console.error('Failed to send course completion email:', err)
+          );
+
+          // Sync user to course completed audience (don't block UI)
+          if (user?.email) {
+            syncUserToCourseCompletedAudience(courseId, {
+              email: user.email,
+              firstName: firstName || '',
+              lastName: lastName || ''
+            }).catch(err =>
+              console.error('Failed to sync to completed audience:', err)
+            );
+          }
+        } else {
+          // Check if this lesson completes a module (last lesson of the module)
+          const moduleLessons = lessonsMetadata.filter(l => l.module_number === currentModule);
+          const maxLessonInModule = Math.max(...moduleLessons.map(l => l.lesson_number));
+
+          if (currentLesson === maxLessonInModule) {
+            // This was the last lesson of the module - check if all module lessons are complete
+            const moduleLessonsCompleted = completedLessonsData.filter(
+              c => c.module_number === currentModule
+            ).length;
+
+            if (moduleLessonsCompleted === moduleLessons.length) {
+              console.log(`🎉 Module ${currentModule} completed! Sending module completion email...`);
+              const courseName = courseId === 'product-management' ? 'Product Management' : 'Cybersecurity';
+              const moduleName = `Module ${currentModule}`;
+
+              // Send module completion email (don't block UI)
+              sendModuleCompleteEmail(userId, moduleName, courseName).catch(err =>
+                console.error('Failed to send module completion email:', err)
+              );
+            }
+          }
         }
       } catch (error) {
         console.error('❌ Error refreshing completed lessons:', error);
