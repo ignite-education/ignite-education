@@ -431,12 +431,23 @@ const CoursePage = () => {
           "https://www.linkedin.com/company/igniteeducation"
         ]
       },
-      "educationalLevel": "Beginner to Advanced",
+      "educationalLevel": "Beginner",
       "courseMode": "online",
       "isAccessibleForFree": true,
-      "availableLanguage": "en",
+      "inLanguage": "en-GB",
       "teaches": teaches,
-      "numberOfCredits": courseData.module_structure?.length || 0,
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student",
+        "audienceType": "Career changers, graduates, aspiring professionals"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "GBP",
+        "availability": "https://schema.org/InStock",
+        "url": `${baseUrl}/courses/${courseSlug}`
+      },
       "hasCourseInstance": {
         "@type": "CourseInstance",
         "courseMode": "online",
