@@ -764,9 +764,12 @@ const CurriculumUploadNew = () => {
 
       console.log('📤 Uploading image:', { fileName, contentType: file.type, size: file.size });
 
+      // Convert file to arrayBuffer for reliable upload (same pattern as BlogManagement)
+      const arrayBuffer = await file.arrayBuffer();
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, file, {
+        .upload(filePath, arrayBuffer, {
           contentType: file.type,
           upsert: false
         });
@@ -1378,9 +1381,12 @@ ${contentBlocks.map((block, index) => {
       const fileName = `coach_${Date.now()}.${fileExt}`;
       const filePath = `coaches/${fileName}`;
 
+      // Convert file to arrayBuffer for reliable upload
+      const arrayBuffer = await file.arrayBuffer();
+
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, file, {
+        .upload(filePath, arrayBuffer, {
           contentType: file.type,
           upsert: false
         });
