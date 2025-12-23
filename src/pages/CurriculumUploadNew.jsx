@@ -351,6 +351,9 @@ const CurriculumUploadNew = () => {
       }
 
       if (content && content.length > 0) {
+        // Debug: Log raw data from database
+        console.log('📥 DEBUG loadLessonContent - raw content from DB:', JSON.stringify(content.map(s => ({ type: s.content_type, content: s.content, content_text: s.content_text }))));
+
         // Convert database content to content blocks
         const blocks = content.map((section, index) => {
           let blockContent;
@@ -373,6 +376,10 @@ const CurriculumUploadNew = () => {
             suggestedQuestion: section.suggested_question || '' // Load suggested question from database
           };
         });
+
+        // Debug: Log transformed blocks
+        console.log('📥 DEBUG loadLessonContent - transformed blocks:', JSON.stringify(blocks.map(b => ({ id: b.id, type: b.type, content: b.content }))));
+
         setContentBlocks(blocks);
       } else {
         // No existing content, reset to default
@@ -777,12 +784,20 @@ const CurriculumUploadNew = () => {
         .from('assets')
         .getPublicUrl(filePath);
 
+      console.log('🖼️ DEBUG uploadImage - URL obtained:', data.publicUrl);
+      console.log('🖼️ DEBUG uploadImage - blockId:', blockId);
+
       // Use functional update to merge with existing content (preserving width, etc.)
-      setContentBlocks(prevBlocks => prevBlocks.map(block =>
-        block.id === blockId
-          ? { ...block, content: { ...block.content, url: data.publicUrl } }
-          : block
-      ));
+      setContentBlocks(prevBlocks => {
+        console.log('🖼️ DEBUG uploadImage - prevBlocks before update:', JSON.stringify(prevBlocks.map(b => ({ id: b.id, type: b.type, content: b.content }))));
+        const newBlocks = prevBlocks.map(block =>
+          block.id === blockId
+            ? { ...block, content: { ...block.content, url: data.publicUrl } }
+            : block
+        );
+        console.log('🖼️ DEBUG uploadImage - newBlocks after update:', JSON.stringify(newBlocks.map(b => ({ id: b.id, type: b.type, content: b.content }))));
+        return newBlocks;
+      });
       alert('Image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -891,6 +906,9 @@ const CurriculumUploadNew = () => {
 
       if (deleteError) console.error('Error deleting old content:', deleteError);
 
+      // Debug: Log contentBlocks at save time
+      console.log('💾 DEBUG saveContent - contentBlocks at save time:', JSON.stringify(contentBlocks.map(b => ({ id: b.id, type: b.type, content: b.content }))));
+
       // Insert new content blocks
       const blocksToInsert = contentBlocks.map((block, index) => ({
         course_id: selectedCourseId,
@@ -909,10 +927,16 @@ const CurriculumUploadNew = () => {
         suggested_question: block.suggestedQuestion || null // Save suggested question
       }));
 
+      // Debug: Log what we're about to insert
+      console.log('💾 DEBUG saveContent - blocksToInsert:', JSON.stringify(blocksToInsert.map(b => ({ type: b.content_type, content: b.content }))));
+
       const { data, error } = await supabase
         .from('lessons')
         .insert(blocksToInsert)
         .select();
+
+      // Debug: Log what was returned from the insert
+      console.log('💾 DEBUG saveContent - inserted data:', JSON.stringify(data?.map(b => ({ type: b.content_type, content: b.content }))));
 
       if (error) throw error;
 
