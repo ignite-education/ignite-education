@@ -689,7 +689,7 @@ const CurriculumUploadNew = () => {
   };
 
   const updateBlock = (id, content) => {
-    setContentBlocks(contentBlocks.map(block =>
+    setContentBlocks(prevBlocks => prevBlocks.map(block =>
       block.id === id ? { ...block, content } : block
     ));
   };
