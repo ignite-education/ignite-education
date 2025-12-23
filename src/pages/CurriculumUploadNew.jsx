@@ -938,7 +938,7 @@ const CurriculumUploadNew = () => {
       if (error) throw error;
 
       alert(`Successfully saved ${data.length} content blocks!`);
-      setContentBlocks([{ id: Date.now(), type: 'heading', content: { text: '', level: 2 } }]);
+      await loadLessonContent(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
     } catch (error) {
       console.error('Error saving content:', error);
       alert(`Failed to save content: ${error.message}`);
