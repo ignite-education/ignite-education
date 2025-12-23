@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2 } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
-import { getAllCoaches, createCoach, updateCoach, deleteCoach } from '../lib/api';
+import { getAllCoaches, createCoach, updateCoach, deleteCoach, createLessonBackup, getLessonBackups, restoreLessonFromBackup } from '../lib/api';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -56,6 +56,12 @@ const CurriculumUploadNew = () => {
   // Audio generation state
   const [audioStatus, setAudioStatus] = useState(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+
+  // Version history state
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [versionHistory, setVersionHistory] = useState([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [isRestoringVersion, setIsRestoringVersion] = useState(false);
 
   // Coaches state
   const [coaches, setCoaches] = useState([]);
@@ -839,6 +845,31 @@ const CurriculumUploadNew = () => {
 
     setIsUploading(true);
     try {
+      // First, create a backup of existing content before deleting
+      const { data: existingContent } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('course_id', selectedCourseId)
+        .eq('module_number', selectedModuleNumber)
+        .eq('lesson_number', selectedLessonNumber)
+        .order('section_number');
+
+      if (existingContent && existingContent.length > 0) {
+        try {
+          await createLessonBackup(
+            selectedCourseId,
+            selectedModuleNumber,
+            selectedLessonNumber,
+            existingContent[0]?.lesson_name || lessonName,
+            'auto_before_save',
+            existingContent
+          );
+          console.log('Backup created before save');
+        } catch (backupError) {
+          console.error('Backup failed (continuing with save):', backupError);
+        }
+      }
+
       // Delete existing content for this lesson
       const { error: deleteError } = await supabase
         .from('lessons')
@@ -994,6 +1025,90 @@ ${contentBlocks.map((block, index) => {
   const renderTextWithHighlight = (text) => {
     if (!text) return null;
     return text;
+  };
+
+  // Version History Functions
+  const loadVersionHistory = async () => {
+    if (!selectedCourseId) return;
+
+    setIsLoadingVersions(true);
+    try {
+      const backups = await getLessonBackups(
+        selectedCourseId,
+        selectedModuleNumber,
+        selectedLessonNumber
+      );
+      setVersionHistory(backups || []);
+    } catch (error) {
+      console.error('Error loading version history:', error);
+      setVersionHistory([]);
+    } finally {
+      setIsLoadingVersions(false);
+    }
+  };
+
+  const handleShowVersionHistory = async () => {
+    setShowVersionHistory(true);
+    await loadVersionHistory();
+  };
+
+  const handleRestoreVersion = async (backup) => {
+    if (!confirm(`Restore to version ${backup.version_number} from ${new Date(backup.created_at).toLocaleString()}?\n\nThis will replace the current content. A backup of the current state will be created first.`)) {
+      return;
+    }
+
+    setIsRestoringVersion(true);
+    try {
+      // First, create a backup of current state
+      if (contentBlocks.length > 0) {
+        const currentContent = contentBlocks.map((block, index) => ({
+          course_id: selectedCourseId,
+          module_number: selectedModuleNumber,
+          lesson_number: selectedLessonNumber,
+          section_number: index + 1,
+          lesson_name: lessonName,
+          content_type: block.type,
+          content: typeof block.content === 'object' ? block.content : { text: block.content },
+          order_index: index
+        }));
+
+        await createLessonBackup(
+          selectedCourseId,
+          selectedModuleNumber,
+          selectedLessonNumber,
+          lessonName,
+          'auto_before_restore',
+          currentContent
+        );
+      }
+
+      // Now restore from the selected backup
+      await restoreLessonFromBackup(backup.id);
+
+      // Reload the lesson content
+      await loadLessonContent(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+
+      // Refresh version history
+      await loadVersionHistory();
+
+      alert('Content restored successfully!');
+    } catch (error) {
+      console.error('Error restoring version:', error);
+      alert(`Failed to restore version: ${error.message}`);
+    } finally {
+      setIsRestoringVersion(false);
+    }
+  };
+
+  const formatBackupReason = (reason) => {
+    const reasons = {
+      'manual': 'Manual backup',
+      'auto_before_save': 'Auto (before save)',
+      'auto_before_restore': 'Auto (before restore)',
+      'auto_before_audio': 'Auto (before audio)',
+      'initial_backup': 'Initial backup'
+    };
+    return reasons[reason] || reason || 'Unknown';
   };
 
   // Preview modal rendering function (matches LearningHub rendering)
@@ -1830,8 +1945,8 @@ ${contentBlocks.map((block, index) => {
 
                 {/* Lesson Selection */}
                 <div className="bg-gray-800 border border-gray-700 p-4 rounded-lg space-y-3">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
+                  <div className="flex gap-4 items-end">
+                    <div className="flex-1">
                       <label className="block text-sm font-medium mb-1 text-gray-300">Course</label>
                       <select
                         value={selectedCourseId}
@@ -1845,7 +1960,7 @@ ${contentBlocks.map((block, index) => {
                         ))}
                       </select>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <label className="block text-sm font-medium mb-1 text-gray-300">Module</label>
                       <select
                         value={selectedModuleIndex}
@@ -1868,7 +1983,7 @@ ${contentBlocks.map((block, index) => {
                         ))}
                       </select>
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <label className="block text-sm font-medium mb-1 text-gray-300">Lesson</label>
                       <select
                         value={selectedLessonIndex}
@@ -1886,6 +2001,18 @@ ${contentBlocks.map((block, index) => {
                           </option>
                         ))}
                       </select>
+                    </div>
+                    <div className="flex-shrink-0">
+                      <label className="block text-sm font-medium mb-1 text-gray-300">&nbsp;</label>
+                      <button
+                        onClick={handleShowVersionHistory}
+                        disabled={!selectedCourseId}
+                        className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-500 text-white rounded-lg flex items-center gap-2 transition-colors"
+                        title="View version history"
+                      >
+                        <History className="w-4 h-4" />
+                        History
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -2543,6 +2670,100 @@ ${contentBlocks.map((block, index) => {
                   Save Lesson
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Version History Modal */}
+      {showVersionHistory && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
+              <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Version History
+              </h2>
+              <button
+                onClick={() => setShowVersionHistory(false)}
+                className="text-gray-400 hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 border-b border-gray-700 bg-gray-800/50">
+              <p className="text-gray-300 text-sm">
+                <span className="font-medium">{selectedCourseId}</span> → Module {selectedModuleNumber} → Lesson {selectedLessonNumber}
+              </p>
+              <p className="text-gray-500 text-xs mt-1">
+                Backups are created automatically before saves and restores
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {isLoadingVersions ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+                  <span className="ml-3 text-gray-400">Loading versions...</span>
+                </div>
+              ) : versionHistory.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No backups found for this lesson</p>
+                  <p className="text-sm mt-1">Backups will be created when you save content</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {versionHistory.map((backup) => (
+                    <div
+                      key={backup.id}
+                      className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:border-gray-600 transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-white font-medium">
+                              Version {backup.version_number}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 rounded bg-gray-700 text-gray-300">
+                              {formatBackupReason(backup.backup_reason)}
+                            </span>
+                          </div>
+                          <p className="text-gray-400 text-sm">
+                            {new Date(backup.created_at).toLocaleString()}
+                          </p>
+                          {backup.lesson_name && (
+                            <p className="text-gray-500 text-xs mt-1">
+                              "{backup.lesson_name}"
+                            </p>
+                          )}
+                          <p className="text-gray-600 text-xs mt-1">
+                            {backup.content_blocks?.length || 0} content blocks
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleRestoreVersion(backup)}
+                          disabled={isRestoringVersion}
+                          className="px-3 py-1.5 bg-pink-600 hover:bg-pink-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded flex items-center gap-1.5 transition-colors"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          Restore
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 border-t border-gray-700 bg-gray-800/50">
+              <button
+                onClick={() => setShowVersionHistory(false)}
+                className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
