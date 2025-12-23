@@ -762,6 +762,8 @@ const CurriculumUploadNew = () => {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `curriculum/${fileName}`;
 
+      console.log('📤 Uploading image:', { fileName, contentType: file.type, size: file.size });
+
       const { error: uploadError } = await supabase.storage
         .from('assets')
         .upload(filePath, file, {
