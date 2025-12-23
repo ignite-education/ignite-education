@@ -21,7 +21,7 @@
           "value": ".*(googlebot|bingbot|yandex|baiduspider|facebookexternalhit|twitterbot|rogerbot|linkedinbot|embedly|quora link preview|showyoubot|outbrain|pinterest|slackbot|vkShare|W3C_Validator|redditbot|Applebot|WhatsApp|flipboard|tumblr|bitlybot|SkypeUriPreview|nuzzel|Discordbot|Google Page Speed|Qwantify|pinterestbot|bitrix link preview|XING-contenttabreceiver|Chrome-Lighthouse|TelegramBot).*"
         }
       ],
-      "destination": "https://service.prerender.io/https://ignite.education/$1"
+      "destination": "https://service.prerender.io/qis5y4xYLVKRwApy1Foc/https://ignite.education/$1"
     },
     {
       "source": "/(.*)",
