@@ -764,12 +764,14 @@ const CurriculumUploadNew = () => {
 
       console.log('📤 Uploading image:', { fileName, contentType: file.type, size: file.size });
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('assets')
         .upload(filePath, file, {
           contentType: file.type,
           upsert: false
         });
+
+      console.log('📤 Upload result:', { uploadData, uploadError });
 
       if (uploadError) {
         // Provide specific error message for RLS policy violations
@@ -783,13 +785,23 @@ const CurriculumUploadNew = () => {
         .from('assets')
         .getPublicUrl(filePath);
 
+      console.log('📤 Public URL:', data.publicUrl);
+
+      // Test if the URL is accessible
+      try {
+        const testResponse = await fetch(data.publicUrl, { method: 'HEAD' });
+        console.log('📤 URL test response:', { status: testResponse.status, contentType: testResponse.headers.get('content-type') });
+      } catch (testErr) {
+        console.error('📤 URL test failed:', testErr);
+      }
+
       // Use functional update to merge with existing content (preserving width, etc.)
       setContentBlocks(prevBlocks => prevBlocks.map(block =>
         block.id === blockId
           ? { ...block, content: { ...block.content, url: data.publicUrl } }
           : block
       ));
-      alert('Image uploaded successfully!');
+      alert('Image uploaded successfully! Check console for URL details.');
     } catch (error) {
       console.error('Error uploading image:', error);
       alert(`Failed to upload image: ${error.message}`);
