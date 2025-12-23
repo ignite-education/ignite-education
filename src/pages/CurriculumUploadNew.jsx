@@ -764,7 +764,10 @@ const CurriculumUploadNew = () => {
 
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          contentType: file.type,
+          upsert: false
+        });
 
       if (uploadError) {
         // Provide specific error message for RLS policy violations
@@ -1363,7 +1366,10 @@ ${contentBlocks.map((block, index) => {
 
       const { error: uploadError } = await supabase.storage
         .from('assets')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          contentType: file.type,
+          upsert: false
+        });
 
       if (uploadError) {
         if (uploadError.message.includes('row-level security') || uploadError.message.includes('policy')) {
@@ -1833,9 +1839,6 @@ ${contentBlocks.map((block, index) => {
                     <option value="full">Full Width (max-w-full)</option>
                   </select>
                 </div>
-                <div className="my-2 p-2 bg-gray-900 rounded text-xs text-gray-400 break-all">
-                  URL: {block.content.url}
-                </div>
                 <img
                   src={block.content.url}
                   alt={block.content.alt || 'Uploaded image'}
@@ -1850,10 +1853,6 @@ ${contentBlocks.map((block, index) => {
                   }`}
                   style={{ aspectRatio: 'auto', maxWidth: '100%', height: 'auto' }}
                   loading="lazy"
-                  onError={(e) => {
-                    console.error('Image failed to load:', block.content.url);
-                    e.target.style.border = '2px solid red';
-                  }}
                 />
                 <input
                   type="text"
