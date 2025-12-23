@@ -15,7 +15,7 @@ export const injectCourseSchema = (courseData) => {
     "description": courseData.description,
     "provider": {
       "@type": "EducationalOrganization",
-      "name": "Ignite Education",
+      "name": "Ignite",
       "url": "https://ignite.education"
     },
     "educationalLevel": courseData.level || "Beginner to Advanced",
@@ -106,11 +106,11 @@ export const injectArticleSchema = (articleData) => {
     "dateModified": articleData.modifiedDate || articleData.publishedDate,
     "author": {
       "@type": "Organization",
-      "name": "Ignite Education"
+      "name": "Ignite"
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Ignite Education",
+      "name": "Ignite",
       "logo": {
         "@type": "ImageObject",
         "url": "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"

@@ -10,7 +10,7 @@ export const generateCourseStructuredData = (course) => {
     "description": course.description || "Comprehensive product management training with interactive lessons and AI support",
     "provider": {
       "@type": "EducationalOrganization",
-      "name": "Ignite Education",
+      "name": "Ignite",
       "url": "https://ignite.education"
     },
     "educationalLevel": "Beginner to Advanced",
@@ -55,7 +55,7 @@ export const generateLessonStructuredData = (lesson, moduleNumber, lessonNumber)
       "name": "Product Management Course",
       "provider": {
         "@type": "Organization",
-        "name": "Ignite Education"
+        "name": "Ignite"
       }
     },
     "interactivityType": "mixed",

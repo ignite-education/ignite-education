@@ -425,7 +425,7 @@ const CoursePage = () => {
       "url": `${baseUrl}/courses/${courseSlug}`,
       "provider": {
         "@type": "EducationalOrganization",
-        "name": "Ignite Education",
+        "name": "Ignite",
         "url": baseUrl,
         "sameAs": [
           "https://www.linkedin.com/company/igniteeducation"
