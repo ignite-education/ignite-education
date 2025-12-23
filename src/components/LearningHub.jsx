@@ -4128,14 +4128,18 @@ ${currentLessonSections.map((section) => {
                     'max-w-lg'; // default to large if not specified
                   return (
                     <div className="my-8 flex flex-col items-center">
-                      <img
-                        src={imageData.url}
-                        alt={imageData.alt || section.title}
-                        className={`${widthClass} rounded-lg shadow-lg`}
-                      />
-                      {imageData.caption && (
-                        <p className="text-sm text-gray-600 mt-2 italic">{imageData.caption}</p>
-                      )}
+                      {imageData.url ? (
+                        <>
+                          <img
+                            src={imageData.url}
+                            alt={imageData.alt || section.title}
+                            className={`${widthClass} rounded-lg shadow-lg`}
+                          />
+                          {imageData.caption && (
+                            <p className="text-sm text-gray-600 mt-2 italic">{imageData.caption}</p>
+                          )}
+                        </>
+                      ) : null}
                     </div>
                   );
                 }
