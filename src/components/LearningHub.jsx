@@ -3995,7 +3995,7 @@ ${currentLessonSections.map((section) => {
                   const renderTextWithBold = (text, wordOffset = 0) => {
                     // Split by bold (**), underline (__), italic (*), and link [text](url) markers
                     // Match ** before * to avoid conflicts
-                    const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)([^*]+)\*(?!\*))/g);
+                    const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*))/g);
                     let currentOffset = wordOffset;
 
                     return parts.map((part, i) => {
