@@ -72,7 +72,10 @@
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" status --short)",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff --name-only)",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" add src/pages/CoursePage.jsx src/utils/courseStructuredData.js src/utils/seoUtils.js)",
-      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate organization name to ''Ignite'' in structured data\n\nChanged provider/publisher name from \"Ignite Education\" to \"Ignite\"\nacross all Schema.org structured data for consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate organization name to ''Ignite'' in structured data\n\nChanged provider/publisher name from \"Ignite Education\" to \"Ignite\"\nacross all Schema.org structured data for consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff --name-only HEAD~5)",
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" log --oneline -20)",
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff HEAD -- src/components/LearningHub.jsx)"
     ],
     "deny": [],
     "ask": []

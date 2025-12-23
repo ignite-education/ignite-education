@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, Eye, ArrowLeft, Image as ImageIcon, Youtube, PlusCircle } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, Eye, ArrowLeft, Image as ImageIcon, Youtube, PlusCircle, History, RotateCcw, Clock, X } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
+import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, deleteLessonBackup } from '../lib/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const CurriculumUpload = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('courses');
   const [courseId, setCourseId] = useState('product-management');
   const [moduleNumber, setModuleNumber] = useState(1);
@@ -30,6 +33,13 @@ const CurriculumUpload = () => {
   const [newCourseId, setNewCourseId] = useState('');
   const [newModuleNum, setNewModuleNum] = useState('');
   const [newLessonNum, setNewLessonNum] = useState('');
+
+  // Version history states
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [lessonBackups, setLessonBackups] = useState([]);
+  const [loadingBackups, setLoadingBackups] = useState(false);
+  const [restoringBackup, setRestoringBackup] = useState(null);
+  const [selectedBackupPreview, setSelectedBackupPreview] = useState(null);
 
   // Load existing data on mount
   useEffect(() => {
@@ -254,6 +264,105 @@ const CurriculumUpload = () => {
     }
   };
 
+  // Load version history for current lesson
+  const loadVersionHistory = async () => {
+    setLoadingBackups(true);
+    try {
+      const backups = await getLessonBackups(courseId, moduleNumber, lessonNumber);
+      setLessonBackups(backups);
+    } catch (error) {
+      console.error('Error loading version history:', error);
+    } finally {
+      setLoadingBackups(false);
+    }
+  };
+
+  // Handle opening version history modal
+  const handleOpenVersionHistory = async () => {
+    setShowVersionHistory(true);
+    await loadVersionHistory();
+  };
+
+  // Handle restoring from a backup
+  const handleRestoreBackup = async (backupId, versionNumber) => {
+    if (!confirm(`Are you sure you want to restore to version ${versionNumber}?\n\nThe current content will be backed up before restoring.`)) {
+      return;
+    }
+
+    setRestoringBackup(backupId);
+    try {
+      const result = await restoreLessonFromBackup(backupId, user?.id);
+      alert(`Successfully restored to version ${versionNumber}!\n\n${result.blockCount} content blocks restored.`);
+      setShowVersionHistory(false);
+      setSelectedBackupPreview(null);
+      // Refresh the version history
+      await loadVersionHistory();
+    } catch (error) {
+      console.error('Error restoring backup:', error);
+      alert(`Failed to restore backup: ${error.message}`);
+    } finally {
+      setRestoringBackup(null);
+    }
+  };
+
+  // Handle deleting a backup
+  const handleDeleteBackup = async (backupId, versionNumber) => {
+    if (!confirm(`Are you sure you want to delete version ${versionNumber}?\n\nThis cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await deleteLessonBackup(backupId);
+      setLessonBackups(lessonBackups.filter(b => b.id !== backupId));
+      if (selectedBackupPreview?.id === backupId) {
+        setSelectedBackupPreview(null);
+      }
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      alert(`Failed to delete backup: ${error.message}`);
+    }
+  };
+
+  // Create a manual backup
+  const handleCreateManualBackup = async () => {
+    try {
+      const backup = await createLessonBackup(courseId, moduleNumber, lessonNumber, 'manual', user?.id);
+      if (backup) {
+        alert(`Manual backup created (Version ${backup.version_number})`);
+        await loadVersionHistory();
+      } else {
+        alert('No existing content to backup for this lesson.');
+      }
+    } catch (error) {
+      console.error('Error creating manual backup:', error);
+      alert(`Failed to create backup: ${error.message}`);
+    }
+  };
+
+  // Format backup reason for display
+  const formatBackupReason = (reason) => {
+    switch (reason) {
+      case 'manual': return 'Manual backup';
+      case 'auto_before_save': return 'Auto (before save)';
+      case 'auto_before_audio': return 'Auto (before audio gen)';
+      case 'auto_before_restore': return 'Auto (before restore)';
+      default: return reason || 'Unknown';
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
   // Save curriculum to database
   const saveCurriculum = async () => {
     if (!lessonName.trim()) {
@@ -263,6 +372,17 @@ const CurriculumUpload = () => {
 
     setIsUploading(true);
     try {
+      // Step 0: Create automatic backup before saving
+      try {
+        const backup = await createLessonBackup(courseId, moduleNumber, lessonNumber, 'auto_before_save', user?.id);
+        if (backup) {
+          console.log('📦 Auto-backup created:', backup.version_number);
+        }
+      } catch (backupError) {
+        console.error('Backup creation failed (continuing with save):', backupError);
+        // Don't block save if backup fails
+      }
+
       // Step 1: Delete all existing content for this lesson
       const { error: deleteError } = await supabase
         .from('lessons')
@@ -299,7 +419,7 @@ const CurriculumUpload = () => {
 
       if (error) throw error;
 
-      alert(`Successfully saved ${data.length} content blocks for ${lessonName}!\n\nNote: Any previous content for this lesson was automatically replaced.`);
+      alert(`Successfully saved ${data.length} content blocks for ${lessonName}!\n\nA backup of the previous version was automatically created.`);
 
       // Reset form
       setLessonName('');
@@ -442,6 +562,14 @@ const CurriculumUpload = () => {
           </div>
           {activeTab === 'lessons' && (
             <div className="flex gap-2">
+              <button
+                onClick={handleOpenVersionHistory}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                title="View version history"
+              >
+                <History size={20} />
+                History
+              </button>
               <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
@@ -736,6 +864,188 @@ const CurriculumUpload = () => {
           </div>
         </div>
           </>
+        )}
+
+        {/* Version History Modal */}
+        {showVersionHistory && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg max-w-4xl w-full mx-4 max-h-[90vh] flex flex-col">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b">
+                <div>
+                  <h3 className="text-xl font-semibold">Version History</h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {courseId} / Module {moduleNumber} / Lesson {lessonNumber}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleCreateManualBackup}
+                    className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm"
+                  >
+                    <Save size={16} />
+                    Create Backup
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowVersionHistory(false);
+                      setSelectedBackupPreview(null);
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-hidden flex">
+                {/* Backup List */}
+                <div className="w-1/2 border-r overflow-y-auto p-4">
+                  {loadingBackups ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                    </div>
+                  ) : lessonBackups.length === 0 ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <History size={48} className="mx-auto mb-4 opacity-30" />
+                      <p className="font-medium">No backups yet</p>
+                      <p className="text-sm mt-1">Backups are created automatically when you save changes.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {lessonBackups.map((backup) => (
+                        <div
+                          key={backup.id}
+                          className={`border rounded-lg p-4 cursor-pointer transition ${
+                            selectedBackupPreview?.id === backup.id
+                              ? 'border-purple-500 bg-purple-50'
+                              : 'hover:border-gray-300 hover:bg-gray-50'
+                          }`}
+                          onClick={() => setSelectedBackupPreview(backup)}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium">Version {backup.version_number}</span>
+                                <span className="text-xs px-2 py-0.5 bg-gray-100 rounded-full text-gray-600">
+                                  {formatBackupReason(backup.backup_reason)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+                                <Clock size={14} />
+                                {formatDate(backup.created_at)}
+                              </div>
+                              {backup.lesson_name && (
+                                <p className="text-sm text-gray-600 mt-1">"{backup.lesson_name}"</p>
+                              )}
+                              <p className="text-xs text-gray-400 mt-1">
+                                {backup.content_blocks?.length || 0} content blocks
+                              </p>
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRestoreBackup(backup.id, backup.version_number);
+                                }}
+                                disabled={restoringBackup === backup.id}
+                                className="p-2 text-purple-600 hover:bg-purple-100 rounded-lg disabled:opacity-50"
+                                title="Restore this version"
+                              >
+                                {restoringBackup === backup.id ? (
+                                  <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                                ) : (
+                                  <RotateCcw size={16} />
+                                )}
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteBackup(backup.id, backup.version_number);
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
+                                title="Delete this backup"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Preview Panel */}
+                <div className="w-1/2 overflow-y-auto p-4 bg-gray-50">
+                  {selectedBackupPreview ? (
+                    <div>
+                      <h4 className="font-medium mb-4">Preview - Version {selectedBackupPreview.version_number}</h4>
+                      <div className="space-y-3">
+                        {selectedBackupPreview.content_blocks?.map((block, index) => (
+                          <div key={index} className="bg-white border rounded-lg p-3">
+                            <div className="text-xs text-gray-400 mb-1 uppercase">{block.content_type}</div>
+                            {block.content_type === 'heading' && (
+                              <div className={`font-semibold ${
+                                block.content?.level === 1 ? 'text-xl' :
+                                block.content?.level === 2 ? 'text-lg' : 'text-base'
+                              }`}>
+                                {block.content?.text || block.title || '(Empty heading)'}
+                              </div>
+                            )}
+                            {block.content_type === 'paragraph' && (
+                              <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                                {block.content?.text || block.content_text || '(Empty paragraph)'}
+                              </div>
+                            )}
+                            {block.content_type === 'image' && (
+                              <div className="text-sm text-gray-500">
+                                <ImageIcon size={16} className="inline mr-1" />
+                                Image: {block.content?.alt || block.content?.url || '(No description)'}
+                              </div>
+                            )}
+                            {block.content_type === 'youtube' && (
+                              <div className="text-sm text-gray-500">
+                                <Youtube size={16} className="inline mr-1" />
+                                Video: {block.content?.title || block.content?.videoId || '(No title)'}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t">
+                        <button
+                          onClick={() => handleRestoreBackup(selectedBackupPreview.id, selectedBackupPreview.version_number)}
+                          disabled={restoringBackup === selectedBackupPreview.id}
+                          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                        >
+                          {restoringBackup === selectedBackupPreview.id ? (
+                            <>
+                              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div>
+                              Restoring...
+                            </>
+                          ) : (
+                            <>
+                              <RotateCcw size={18} />
+                              Restore This Version
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-gray-400">
+                      <div className="text-center">
+                        <Eye size={48} className="mx-auto mb-3 opacity-30" />
+                        <p>Select a version to preview</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

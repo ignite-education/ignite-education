@@ -1956,3 +1956,266 @@ export async function resetUserProgress(userId, courseId) {
   console.log('🔄 Resetting user progress to start:', { userId, courseId });
   return setUserProgress(userId, courseId, 1, 1);
 }
+
+// ============================================================================
+// LESSON BACKUP / VERSION HISTORY FUNCTIONS
+// ============================================================================
+
+/**
+ * Create a backup of a lesson before making changes
+ * @param {string} courseId - The course ID
+ * @param {number} moduleNumber - Module number
+ * @param {number} lessonNumber - Lesson number
+ * @param {string} reason - Reason for backup ('manual', 'auto_before_save', 'auto_before_audio')
+ * @param {string} userId - The user creating the backup
+ * @returns {Promise<Object|null>} Created backup object or null if no existing content
+ */
+export async function createLessonBackup(courseId, moduleNumber, lessonNumber, reason = 'auto_before_save', userId = null) {
+  try {
+    console.log('📦 Creating backup for lesson:', { courseId, moduleNumber, lessonNumber, reason });
+
+    // First, fetch the current lesson content
+    const { data: currentContent, error: fetchError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (fetchError) {
+      console.error('Error fetching current lesson content:', fetchError);
+      throw fetchError;
+    }
+
+    // If no existing content, nothing to backup
+    if (!currentContent || currentContent.length === 0) {
+      console.log('ℹ️ No existing content to backup');
+      return null;
+    }
+
+    // Get the next version number
+    const { data: versionData, error: versionError } = await supabase
+      .rpc('get_next_lesson_version', {
+        p_course_id: courseId,
+        p_module_number: moduleNumber,
+        p_lesson_number: lessonNumber
+      });
+
+    let nextVersion = 1;
+    if (!versionError && versionData) {
+      nextVersion = versionData;
+    } else {
+      // Fallback: manually calculate version
+      const { data: existingBackups } = await supabase
+        .from('lesson_backups')
+        .select('version_number')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .order('version_number', { ascending: false })
+        .limit(1);
+
+      if (existingBackups && existingBackups.length > 0) {
+        nextVersion = existingBackups[0].version_number + 1;
+      }
+    }
+
+    // Create the backup
+    const { data: backup, error: backupError } = await supabase
+      .from('lesson_backups')
+      .insert({
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        lesson_name: currentContent[0]?.lesson_name || '',
+        version_number: nextVersion,
+        backup_reason: reason,
+        created_by: userId,
+        content_blocks: currentContent
+      })
+      .select()
+      .single();
+
+    if (backupError) {
+      console.error('Error creating backup:', backupError);
+      throw backupError;
+    }
+
+    console.log('✅ Backup created successfully:', { version: nextVersion, id: backup.id });
+    return backup;
+  } catch (error) {
+    console.error('Error in createLessonBackup:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all backups for a specific lesson
+ * @param {string} courseId - The course ID
+ * @param {number} moduleNumber - Module number
+ * @param {number} lessonNumber - Lesson number
+ * @returns {Promise<Array>} Array of backup objects, newest first
+ */
+export async function getLessonBackups(courseId, moduleNumber, lessonNumber) {
+  try {
+    const { data, error } = await supabase
+      .from('lesson_backups')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('version_number', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching lesson backups:', error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Error in getLessonBackups:', error);
+    return [];
+  }
+}
+
+/**
+ * Restore a lesson from a backup
+ * @param {string} backupId - The backup ID to restore from
+ * @param {string} userId - The user performing the restore
+ * @returns {Promise<Object>} Object with restored lesson data
+ */
+export async function restoreLessonFromBackup(backupId, userId = null) {
+  try {
+    console.log('🔄 Restoring lesson from backup:', backupId);
+
+    // Fetch the backup
+    const { data: backup, error: backupError } = await supabase
+      .from('lesson_backups')
+      .select('*')
+      .eq('id', backupId)
+      .single();
+
+    if (backupError || !backup) {
+      console.error('Error fetching backup:', backupError);
+      throw new Error('Backup not found');
+    }
+
+    const { course_id, module_number, lesson_number, content_blocks } = backup;
+
+    // Create a backup of current content before restoring (so user can undo if needed)
+    await createLessonBackup(course_id, module_number, lesson_number, 'auto_before_restore', userId);
+
+    // Delete current lesson content
+    const { error: deleteError } = await supabase
+      .from('lessons')
+      .delete()
+      .eq('course_id', course_id)
+      .eq('module_number', module_number)
+      .eq('lesson_number', lesson_number);
+
+    if (deleteError) {
+      console.error('Error deleting current content:', deleteError);
+      throw deleteError;
+    }
+
+    // Prepare content blocks for insertion (remove id fields, they'll be regenerated)
+    const blocksToInsert = content_blocks.map((block, index) => {
+      const { id, created_at, updated_at, ...rest } = block;
+      return {
+        ...rest,
+        order_index: index
+      };
+    });
+
+    // Insert the backup content
+    const { data: restoredData, error: insertError } = await supabase
+      .from('lessons')
+      .insert(blocksToInsert)
+      .select();
+
+    if (insertError) {
+      console.error('Error inserting restored content:', insertError);
+      throw insertError;
+    }
+
+    console.log('✅ Lesson restored successfully from version', backup.version_number);
+    return {
+      success: true,
+      restoredVersion: backup.version_number,
+      blockCount: restoredData.length
+    };
+  } catch (error) {
+    console.error('Error in restoreLessonFromBackup:', error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a specific backup
+ * @param {string} backupId - The backup ID to delete
+ * @returns {Promise<void>}
+ */
+export async function deleteLessonBackup(backupId) {
+  const { error } = await supabase
+    .from('lesson_backups')
+    .delete()
+    .eq('id', backupId);
+
+  if (error) {
+    console.error('Error deleting backup:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get a summary of backups for all lessons (for admin overview)
+ * @param {string} courseId - Optional course ID filter
+ * @returns {Promise<Array>} Array of backup summaries grouped by lesson
+ */
+export async function getBackupsSummary(courseId = null) {
+  try {
+    let query = supabase
+      .from('lesson_backups')
+      .select('course_id, module_number, lesson_number, lesson_name, version_number, created_at')
+      .order('created_at', { ascending: false });
+
+    if (courseId) {
+      query = query.eq('course_id', courseId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching backups summary:', error);
+      throw error;
+    }
+
+    // Group by lesson
+    const grouped = {};
+    (data || []).forEach(backup => {
+      const key = `${backup.course_id}-${backup.module_number}-${backup.lesson_number}`;
+      if (!grouped[key]) {
+        grouped[key] = {
+          courseId: backup.course_id,
+          moduleNumber: backup.module_number,
+          lessonNumber: backup.lesson_number,
+          lessonName: backup.lesson_name,
+          backupCount: 0,
+          latestVersion: 0,
+          latestBackup: null
+        };
+      }
+      grouped[key].backupCount++;
+      if (backup.version_number > grouped[key].latestVersion) {
+        grouped[key].latestVersion = backup.version_number;
+        grouped[key].latestBackup = backup.created_at;
+      }
+    });
+
+    return Object.values(grouped);
+  } catch (error) {
+    console.error('Error in getBackupsSummary:', error);
+    return [];
+  }
+}
