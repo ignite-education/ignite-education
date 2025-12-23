@@ -649,9 +649,9 @@ const CurriculumUploadNew = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } : '',
-      suggestedQuestion: '' // Add suggested question field
+      suggestedQuestion: ''
     };
-    setContentBlocks([...contentBlocks, newBlock]);
+    setContentBlocks(prevBlocks => [...prevBlocks, newBlock]);
   };
 
   const addBlockAt = (type, index) => {
@@ -665,27 +665,33 @@ const CurriculumUploadNew = () => {
               type === 'list' ? { type: 'unordered', items: [''] } : '',
       suggestedQuestion: ''
     };
-    const newBlocks = [...contentBlocks];
-    newBlocks.splice(index, 0, newBlock);
-    setContentBlocks(newBlocks);
+    setContentBlocks(prevBlocks => {
+      const newBlocks = [...prevBlocks];
+      newBlocks.splice(index, 0, newBlock);
+      return newBlocks;
+    });
   };
 
   const removeBlock = (id) => {
-    setContentBlocks(contentBlocks.filter(block => block.id !== id));
+    setContentBlocks(prevBlocks => prevBlocks.filter(block => block.id !== id));
   };
 
   const moveBlockUp = (index) => {
-    if (index === 0) return;
-    const newBlocks = [...contentBlocks];
-    [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
-    setContentBlocks(newBlocks);
+    setContentBlocks(prevBlocks => {
+      if (index === 0) return prevBlocks;
+      const newBlocks = [...prevBlocks];
+      [newBlocks[index - 1], newBlocks[index]] = [newBlocks[index], newBlocks[index - 1]];
+      return newBlocks;
+    });
   };
 
   const moveBlockDown = (index) => {
-    if (index === contentBlocks.length - 1) return;
-    const newBlocks = [...contentBlocks];
-    [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
-    setContentBlocks(newBlocks);
+    setContentBlocks(prevBlocks => {
+      if (index === prevBlocks.length - 1) return prevBlocks;
+      const newBlocks = [...prevBlocks];
+      [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+      return newBlocks;
+    });
   };
 
   const updateBlock = (id, content) => {
@@ -771,7 +777,12 @@ const CurriculumUploadNew = () => {
         .from('assets')
         .getPublicUrl(filePath);
 
-      updateBlock(blockId, { url: data.publicUrl, alt: '', caption: '' });
+      // Use functional update to merge with existing content (preserving width, etc.)
+      setContentBlocks(prevBlocks => prevBlocks.map(block =>
+        block.id === blockId
+          ? { ...block, content: { ...block.content, url: data.publicUrl } }
+          : block
+      ));
       alert('Image uploaded successfully!');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -2210,10 +2221,9 @@ ${contentBlocks.map((block, index) => {
                               onClick={async () => {
                                 // Auto-generate question based on content between this H2 and the next
                                 const questionText = await generateQuestionForH2(index);
-                                const newBlocks = contentBlocks.map(b =>
+                                setContentBlocks(prevBlocks => prevBlocks.map(b =>
                                   b.id === block.id ? { ...b, suggestedQuestion: questionText } : b
-                                );
-                                setContentBlocks(newBlocks);
+                                ));
                               }}
                               className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition"
                             >
@@ -2225,10 +2235,10 @@ ${contentBlocks.map((block, index) => {
                             value={block.suggestedQuestion || ''}
                             maxLength={55}
                             onChange={(e) => {
-                              const newBlocks = contentBlocks.map(b =>
-                                b.id === block.id ? { ...b, suggestedQuestion: e.target.value } : b
-                              );
-                              setContentBlocks(newBlocks);
+                              const value = e.target.value;
+                              setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                                b.id === block.id ? { ...b, suggestedQuestion: value } : b
+                              ));
                             }}
                             placeholder="e.g., What are the key concepts in this section?"
                             className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
