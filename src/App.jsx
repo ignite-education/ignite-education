@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
@@ -43,6 +43,11 @@ function AuthRoute({ children }) {
 }
 
 function App() {
+  // Signal to prerenderer that the page is ready
+  useEffect(() => {
+    document.dispatchEvent(new Event('render-complete'));
+  }, []);
+
   return (
     <BrowserRouter>
       <AnimationProvider>
