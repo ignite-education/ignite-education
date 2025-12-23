@@ -563,14 +563,6 @@ const CurriculumUpload = () => {
           {activeTab === 'lessons' && (
             <div className="flex gap-2">
               <button
-                onClick={handleOpenVersionHistory}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                title="View version history"
-              >
-                <History size={20} />
-                History
-              </button>
-              <button
                 onClick={() => setPreviewMode(!previewMode)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
               >
@@ -699,6 +691,13 @@ const CurriculumUpload = () => {
                   title="Create new lesson"
                 >
                   <PlusCircle size={20} />
+                </button>
+                <button
+                  onClick={handleOpenVersionHistory}
+                  className="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  title="View version history"
+                >
+                  <History size={20} />
                 </button>
               </div>
             </div>
