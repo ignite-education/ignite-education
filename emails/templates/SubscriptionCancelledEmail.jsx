@@ -12,10 +12,10 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }) => (
+export const SubscriptionCancelledEmail = ({ firstName = 'there' }) => (
   <Html>
     <Head />
-    <Preview>Welcome to {courseName} - Let's get you started!</Preview>
+    <Preview>Your Ignite subscription has been cancelled</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -25,26 +25,28 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
           alt="Ignite"
           style={logo}
         />
-        <Heading style={h1}>Welcome to {courseName}, {firstName}!</Heading>
+        <Heading style={h1}>We're sorry to see you go, {firstName}</Heading>
         <Text style={text}>
-          You've taken the first step towards mastering new skills. We're excited to have you on this journey.
+          Your subscription has been cancelled. You'll continue to have access to premium features until the end of your current billing period.
         </Text>
         <Text style={text}>
-          Here's what you can expect:
+          After that, you can still access all course content - you'll just see ads while learning.
         </Text>
-        <ul style={list}>
-          <li style={listItem}>Interactive lessons with AI-powered learning</li>
-          <li style={listItem}>Knowledge checks to reinforce your understanding</li>
-          <li style={listItem}>Track your progress as you complete each module</li>
-          <li style={listItem}>Earn a certificate when you finish the course</li>
-        </ul>
+        <Section style={infoBox}>
+          <Text style={infoText}>
+            Changed your mind? You can resubscribe anytime from your account settings.
+          </Text>
+        </Section>
+        <Text style={text}>
+          We'd love to know how we can improve. Feel free to share your feedback with us.
+        </Text>
         <Section style={buttonContainer}>
           <Button style={button} href="https://ignite.education/progress">
-            Start Your First Lesson
+            Continue Learning
           </Button>
         </Section>
         <Text style={footer}>
-          Need help? Reply to this email or reach out to us at{' '}
+          Questions? Email us at{' '}
           <a href="mailto:hello@ignite.education" style={link}>
             hello@ignite.education
           </a>
@@ -54,7 +56,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
   </Html>
 );
 
-export default WelcomeEmail;
+export default SubscriptionCancelledEmail;
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -91,16 +93,19 @@ const text = {
   margin: '16px 32px',
 };
 
-const list = {
-  color: '#525252',
-  fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+const infoBox = {
+  backgroundColor: '#fef3c7',
+  borderRadius: '8px',
+  margin: '24px 32px',
+  padding: '16px 24px',
 };
 
-const listItem = {
-  marginBottom: '8px',
+const infoText = {
+  color: '#92400e',
+  fontSize: '15px',
+  lineHeight: '22px',
+  margin: '0',
+  textAlign: 'center',
 };
 
 const buttonContainer = {

@@ -129,6 +129,22 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       console.log('✅ Updated data:', JSON.stringify(data, null, 2));
       console.log('✅ User is now ad-free!\n');
 
+      // Send subscription confirmation email
+      try {
+        const response = await fetch(`http://localhost:${PORT}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'subscription_confirm', userId })
+        });
+        if (response.ok) {
+          console.log('📧 Subscription confirmation email sent');
+        } else {
+          console.error('❌ Failed to send subscription confirmation email');
+        }
+      } catch (emailErr) {
+        console.error('❌ Error sending subscription confirmation email:', emailErr.message);
+      }
+
       // Sync to Resend - move from PM Free to PM Paid
       try {
         const { data: userData } = await supabase.auth.admin.getUserById(userId);
@@ -222,6 +238,22 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       console.log('✅ ============ SUBSCRIPTION CANCELED SUCCESSFULLY ============');
       console.log('✅ User ID:', user.id);
       console.log('✅ User is now on free plan\n');
+
+      // Send subscription cancelled email
+      try {
+        const response = await fetch(`http://localhost:${PORT}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'subscription_cancelled', userId: user.id })
+        });
+        if (response.ok) {
+          console.log('📧 Subscription cancelled email sent');
+        } else {
+          console.error('❌ Failed to send subscription cancelled email');
+        }
+      } catch (emailErr) {
+        console.error('❌ Error sending subscription cancelled email:', emailErr.message);
+      }
 
       // Sync to Resend - move from PM Paid back to PM Free
       try {
@@ -2414,14 +2446,25 @@ app.post('/api/send-email', async (req, res) => {
 
     switch (type) {
       case 'welcome':
-        subject = `Welcome to Ignite, ${firstName}!`;
-        // We'll render the React component to HTML
+        // Course welcome email (sent when user enrolls in a course)
+        const courseName = data.courseName || 'your course';
+        subject = `Welcome to ${courseName}, ${firstName}!`;
         const WelcomeEmail = (await import('./emails/templates/WelcomeEmail.jsx')).default;
-        htmlContent = render(React.createElement(WelcomeEmail, { firstName }));
+        htmlContent = render(React.createElement(WelcomeEmail, { firstName, courseName }));
+        break;
+
+      case 'first_lesson':
+        subject = `Great start, ${firstName}! You completed your first lesson`;
+        const FirstLessonEmail = (await import('./emails/templates/FirstLessonEmail.jsx')).default;
+        htmlContent = render(React.createElement(FirstLessonEmail, {
+          firstName,
+          lessonName: data.lessonName,
+          courseName: data.courseName
+        }));
         break;
 
       case 'module_complete':
-        subject = `🎉 You completed ${data.moduleName}!`;
+        subject = `You completed ${data.moduleName}!`;
         const ModuleCompleteEmail = (await import('./emails/templates/ModuleCompleteEmail.jsx')).default;
         htmlContent = render(React.createElement(ModuleCompleteEmail, {
           firstName,
@@ -2431,11 +2474,33 @@ app.post('/api/send-email', async (req, res) => {
         break;
 
       case 'course_complete':
-        subject = `🎓 Congratulations on completing ${data.courseName}!`;
+        subject = `Congratulations on completing ${data.courseName}!`;
         const CourseCompleteEmail = (await import('./emails/templates/CourseCompleteEmail.jsx')).default;
         htmlContent = render(React.createElement(CourseCompleteEmail, {
           firstName,
           courseName: data.courseName
+        }));
+        break;
+
+      case 'subscription_confirm':
+        subject = `Welcome to Ignite Premium, ${firstName}!`;
+        const SubscriptionConfirmEmail = (await import('./emails/templates/SubscriptionConfirmEmail.jsx')).default;
+        htmlContent = render(React.createElement(SubscriptionConfirmEmail, { firstName }));
+        break;
+
+      case 'subscription_cancelled':
+        subject = `Your Ignite subscription has been cancelled`;
+        const SubscriptionCancelledEmail = (await import('./emails/templates/SubscriptionCancelledEmail.jsx')).default;
+        htmlContent = render(React.createElement(SubscriptionCancelledEmail, { firstName }));
+        break;
+
+      case 'inactivity_reminder':
+        subject = `We miss you, ${firstName}! Your course is waiting`;
+        const InactivityReminderEmail = (await import('./emails/templates/InactivityReminderEmail.jsx')).default;
+        htmlContent = render(React.createElement(InactivityReminderEmail, {
+          firstName,
+          daysSinceLogin: data.daysSinceLogin || 14,
+          courseName: data.courseName || 'your course'
         }));
         break;
 
@@ -3443,6 +3508,109 @@ cron.schedule('0 3 * * *', async () => {
 
 // Log that the cron job is scheduled
 console.log('⏰ LinkedIn posts cron job scheduled: Daily at 3 AM');
+
+/**
+ * Inactivity reminder email cron job
+ * Runs at 10 AM every day to check for users inactive for 14+ days
+ * Sends a reminder email to encourage them to return
+ */
+cron.schedule('0 10 * * *', async () => {
+  console.log('⏰ Running inactivity reminder check (10 AM daily)');
+
+  try {
+    // Calculate the date 14 days ago
+    const fourteenDaysAgo = new Date();
+    fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+    const cutoffDate = fourteenDaysAgo.toISOString();
+
+    // Find users who:
+    // 1. Have completed onboarding (enrolled in a course)
+    // 2. Last active 14+ days ago
+    // 3. Haven't received an inactivity email in the last 30 days (to avoid spam)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const emailCutoff = thirtyDaysAgo.toISOString();
+
+    const { data: inactiveUsers, error } = await supabase
+      .from('users')
+      .select('id, first_name, enrolled_course, last_active_at, inactivity_email_sent_at')
+      .eq('onboarding_completed', true)
+      .not('enrolled_course', 'is', null)
+      .lt('last_active_at', cutoffDate);
+
+    if (error) {
+      console.error('❌ Error fetching inactive users:', error);
+      return;
+    }
+
+    if (!inactiveUsers || inactiveUsers.length === 0) {
+      console.log('✅ No inactive users found');
+      return;
+    }
+
+    console.log(`📋 Found ${inactiveUsers.length} potentially inactive users`);
+
+    let emailsSent = 0;
+
+    for (const user of inactiveUsers) {
+      // Skip if we sent them an inactivity email in the last 30 days
+      if (user.inactivity_email_sent_at && user.inactivity_email_sent_at > emailCutoff) {
+        console.log(`⏭️ Skipping user ${user.id} - already emailed recently`);
+        continue;
+      }
+
+      // Calculate days since last activity
+      const lastActive = new Date(user.last_active_at);
+      const daysSinceLogin = Math.floor((Date.now() - lastActive.getTime()) / (1000 * 60 * 60 * 24));
+
+      // Get course display name
+      const courseName = user.enrolled_course === 'product-manager'
+        ? 'Product Manager'
+        : user.enrolled_course === 'cybersecurity'
+          ? 'Cybersecurity'
+          : user.enrolled_course;
+
+      try {
+        // Send inactivity reminder email
+        const response = await fetch(`http://localhost:${PORT}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'inactivity_reminder',
+            userId: user.id,
+            data: { daysSinceLogin, courseName }
+          })
+        });
+
+        if (response.ok) {
+          // Update the user record to track when we sent the email
+          await supabase
+            .from('users')
+            .update({ inactivity_email_sent_at: new Date().toISOString() })
+            .eq('id', user.id);
+
+          emailsSent++;
+          console.log(`📧 Sent inactivity reminder to user ${user.id} (${daysSinceLogin} days inactive)`);
+        } else {
+          console.error(`❌ Failed to send inactivity email to user ${user.id}`);
+        }
+      } catch (emailErr) {
+        console.error(`❌ Error sending inactivity email to user ${user.id}:`, emailErr.message);
+      }
+
+      // Small delay between emails to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    console.log(`✅ Inactivity reminder check completed. Sent ${emailsSent} emails.`);
+  } catch (error) {
+    console.error('❌ Error in inactivity reminder cron:', error);
+  }
+}, {
+  timezone: "America/New_York"
+});
+
+console.log('⏰ Inactivity reminder cron job scheduled: Daily at 10 AM');
 
 // ============================================================================
 // END LINKEDIN ENDPOINTS

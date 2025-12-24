@@ -603,6 +603,16 @@ export async function markLessonComplete(userId, courseId, moduleNumber, lessonN
     throw error;
   }
 
+  // Update last_active_at for inactivity tracking
+  try {
+    await supabase
+      .from('users')
+      .update({ last_active_at: new Date().toISOString() })
+      .eq('id', userId);
+  } catch (activityErr) {
+    console.warn('Failed to update last_active_at:', activityErr);
+  }
+
   console.log('✅ Successfully wrote to database:', data);
   return data;
 }

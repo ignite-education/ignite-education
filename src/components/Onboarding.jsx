@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { moveContactBetweenAudiences, RESEND_AUDIENCES } from '../lib/email';
+import { moveContactBetweenAudiences, RESEND_AUDIENCES, sendCourseWelcomeEmail } from '../lib/email';
 
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
@@ -177,6 +177,17 @@ const Onboarding = ({ firstName, userId }) => {
         if (error) throw error;
 
         console.log('Update successful, data:', data);
+
+        // Send course welcome email
+        try {
+          // Get the display name for the course
+          const displayCourseName = courseData?.title || selectedCourse;
+          await sendCourseWelcomeEmail(userId, displayCourseName);
+          console.log('📧 Course welcome email sent');
+        } catch (emailErr) {
+          console.error('Failed to send course welcome email:', emailErr);
+          // Don't block enrollment if email fails
+        }
 
         // Sync to Resend audience - move from General to PM Free (if PM course)
         if (courseIdentifier === 'product-manager' && user?.email) {

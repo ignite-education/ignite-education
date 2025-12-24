@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
-import { sendWelcomeEmail, addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
+import { addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
 
 const AuthContext = createContext({});
 
@@ -43,13 +43,25 @@ export const AuthProvider = ({ children }) => {
       });
 
     // Listen for changes on auth state (login, logout, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
 
       // Clean up OAuth hash fragments from URL after sign-in
       if (event === 'SIGNED_IN' && window.location.hash) {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      }
+
+      // Update last_active_at on sign in
+      if (event === 'SIGNED_IN' && session?.user?.id) {
+        try {
+          await supabase
+            .from('users')
+            .update({ last_active_at: new Date().toISOString() })
+            .eq('id', session.user.id);
+        } catch (err) {
+          console.error('Failed to update last_active_at:', err);
+        }
       }
     });
 
@@ -126,13 +138,8 @@ export const AuthProvider = ({ children }) => {
         console.error('Exception creating user record:', err);
       }
 
-      // Send welcome email (don't block signup if it fails)
-      try {
-        await sendWelcomeEmail(data.user.id);
-      } catch (emailErr) {
-        console.error('Failed to send welcome email:', emailErr);
-        // Don't throw - email failure shouldn't block signup
-      }
+      // Note: Welcome email is now sent when user enrolls in a course (Onboarding.jsx)
+      // This ensures they only get an email after selecting a course
 
       // Add user to Resend "General" audience (new users have no course yet)
       if (RESEND_AUDIENCES.GENERAL) {

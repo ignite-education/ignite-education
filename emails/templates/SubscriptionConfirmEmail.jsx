@@ -12,10 +12,10 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }) => (
+export const SubscriptionConfirmEmail = ({ firstName = 'there' }) => (
   <Html>
     <Head />
-    <Preview>Welcome to {courseName} - Let's get you started!</Preview>
+    <Preview>Welcome to Ignite Premium - your subscription is confirmed</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -25,26 +25,30 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
           alt="Ignite"
           style={logo}
         />
-        <Heading style={h1}>Welcome to {courseName}, {firstName}!</Heading>
+        <Heading style={h1}>You're now an Ignite subscriber, {firstName}!</Heading>
         <Text style={text}>
-          You've taken the first step towards mastering new skills. We're excited to have you on this journey.
+          Thank you for subscribing. Your payment has been confirmed and you now have access to all premium features.
         </Text>
+        <Section style={benefitsBox}>
+          <Text style={benefitsTitle}>What's included:</Text>
+          <ul style={list}>
+            <li style={listItem}>Ad-free learning experience</li>
+            <li style={listItem}>Office Hours with course leaders</li>
+            <li style={listItem}>Priority support</li>
+          </ul>
+        </Section>
         <Text style={text}>
-          Here's what you can expect:
+          Continue your learning journey and make the most of your subscription.
         </Text>
-        <ul style={list}>
-          <li style={listItem}>Interactive lessons with AI-powered learning</li>
-          <li style={listItem}>Knowledge checks to reinforce your understanding</li>
-          <li style={listItem}>Track your progress as you complete each module</li>
-          <li style={listItem}>Earn a certificate when you finish the course</li>
-        </ul>
         <Section style={buttonContainer}>
           <Button style={button} href="https://ignite.education/progress">
-            Start Your First Lesson
+            Continue Learning
           </Button>
         </Section>
         <Text style={footer}>
-          Need help? Reply to this email or reach out to us at{' '}
+          Manage your subscription anytime from your account settings.
+          <br />
+          Questions? Email us at{' '}
           <a href="mailto:hello@ignite.education" style={link}>
             hello@ignite.education
           </a>
@@ -54,7 +58,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
   </Html>
 );
 
-export default WelcomeEmail;
+export default SubscriptionConfirmEmail;
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -91,16 +95,30 @@ const text = {
   margin: '16px 32px',
 };
 
-const list = {
-  color: '#525252',
+const benefitsBox = {
+  backgroundColor: '#f0fdf4',
+  borderRadius: '8px',
+  margin: '24px 32px',
+  padding: '16px 24px',
+};
+
+const benefitsTitle = {
+  color: '#166534',
   fontSize: '16px',
+  fontWeight: 'bold',
+  margin: '0 0 12px 0',
+};
+
+const list = {
+  color: '#166534',
+  fontSize: '15px',
   lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+  margin: '0',
+  paddingLeft: '20px',
 };
 
 const listItem = {
-  marginBottom: '8px',
+  marginBottom: '4px',
 };
 
 const buttonContainer = {

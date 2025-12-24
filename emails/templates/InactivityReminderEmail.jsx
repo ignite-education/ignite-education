@@ -12,10 +12,10 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }) => (
+export const InactivityReminderEmail = ({ firstName = 'there', daysSinceLogin = 14, courseName = 'your course' }) => (
   <Html>
     <Head />
-    <Preview>Welcome to {courseName} - Let's get you started!</Preview>
+    <Preview>We miss you - your {courseName} progress is waiting</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -25,26 +25,27 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
           alt="Ignite"
           style={logo}
         />
-        <Heading style={h1}>Welcome to {courseName}, {firstName}!</Heading>
+        <Heading style={h1}>We miss you, {firstName}!</Heading>
         <Text style={text}>
-          You've taken the first step towards mastering new skills. We're excited to have you on this journey.
+          It's been {daysSinceLogin} days since you last logged in. Your progress in <strong>{courseName}</strong> is waiting for you.
         </Text>
+        <Section style={motivationBox}>
+          <Text style={motivationText}>
+            Even 10 minutes of learning today can help you build momentum and stay on track with your goals.
+          </Text>
+        </Section>
         <Text style={text}>
-          Here's what you can expect:
+          Pick up where you left off - your course is ready when you are.
         </Text>
-        <ul style={list}>
-          <li style={listItem}>Interactive lessons with AI-powered learning</li>
-          <li style={listItem}>Knowledge checks to reinforce your understanding</li>
-          <li style={listItem}>Track your progress as you complete each module</li>
-          <li style={listItem}>Earn a certificate when you finish the course</li>
-        </ul>
         <Section style={buttonContainer}>
           <Button style={button} href="https://ignite.education/progress">
-            Start Your First Lesson
+            Resume Learning
           </Button>
         </Section>
         <Text style={footer}>
-          Need help? Reply to this email or reach out to us at{' '}
+          If you're no longer interested in receiving these reminders, you can update your preferences in your account settings.
+          <br /><br />
+          Questions? Email us at{' '}
           <a href="mailto:hello@ignite.education" style={link}>
             hello@ignite.education
           </a>
@@ -54,7 +55,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
   </Html>
 );
 
-export default WelcomeEmail;
+export default InactivityReminderEmail;
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -91,16 +92,19 @@ const text = {
   margin: '16px 32px',
 };
 
-const list = {
-  color: '#525252',
-  fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+const motivationBox = {
+  backgroundColor: '#eff6ff',
+  borderRadius: '8px',
+  margin: '24px 32px',
+  padding: '16px 24px',
 };
 
-const listItem = {
-  marginBottom: '8px',
+const motivationText = {
+  color: '#1e40af',
+  fontSize: '15px',
+  lineHeight: '22px',
+  margin: '0',
+  textAlign: 'center',
 };
 
 const buttonContainer = {

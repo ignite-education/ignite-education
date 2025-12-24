@@ -6,7 +6,7 @@ import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
 import { getLessonsByModule, getLessonsMetadata, markLessonComplete, getCompletedLessons, saveExplainedSection, getExplainedSections, deleteExplainedSection, updateExplainedSection, getFlashcards, submitLessonRating, getLessonRating, getCourseCompletionsToday, getCoursesCompletedToday, markCourseComplete, getNextAvailableDate, checkCourseCompletion, syncUserToCourseCompletedAudience } from '../lib/api';
-import { sendModuleCompleteEmail, sendCourseCompleteEmail } from '../lib/email';
+import { sendModuleCompleteEmail, sendCourseCompleteEmail, sendFirstLessonEmail } from '../lib/email';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
@@ -1235,10 +1235,18 @@ const LearningHub = () => {
       // Close knowledge check
       setShowKnowledgeCheck(false);
 
-      // If this is the first lesson, show LinkedIn modal
+      // If this is the first lesson, show LinkedIn modal and send first lesson email
       if (isFirstLesson) {
         console.log('🎉 First lesson complete! Showing LinkedIn modal');
         setShowLinkedInModal(true);
+
+        // Send first lesson completion email (don't block UI)
+        const courseId = await getUserCourseId();
+        const courseName = courseId === 'product-manager' ? 'Product Manager' : 'Cybersecurity';
+        const lessonName = lessons[currentLesson - 1]?.name || `Lesson ${currentLesson}`;
+        sendFirstLessonEmail(userId, lessonName, courseName).catch(err =>
+          console.error('Failed to send first lesson email:', err)
+        );
       } else {
         // Otherwise navigate back to Progress Hub
         console.log('➡️ Navigating to Progress Hub');

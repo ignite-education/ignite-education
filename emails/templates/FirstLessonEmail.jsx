@@ -12,10 +12,10 @@ import {
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }) => (
+export const FirstLessonEmail = ({ firstName = 'there', lessonName = 'your first lesson', courseName = 'your course' }) => (
   <Html>
     <Head />
-    <Preview>Welcome to {courseName} - Let's get you started!</Preview>
+    <Preview>You completed your first lesson - keep the momentum going!</Preview>
     <Body style={main}>
       <Container style={container}>
         <Img
@@ -25,22 +25,21 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
           alt="Ignite"
           style={logo}
         />
-        <Heading style={h1}>Welcome to {courseName}, {firstName}!</Heading>
+        <Heading style={h1}>Great start, {firstName}!</Heading>
         <Text style={text}>
-          You've taken the first step towards mastering new skills. We're excited to have you on this journey.
+          You've just completed <strong>{lessonName}</strong> in {courseName}. That's the hardest part done - getting started.
         </Text>
+        <Section style={statsBox}>
+          <Text style={statsText}>
+            Research shows that completing your first lesson makes you <strong>3x more likely</strong> to finish the entire course.
+          </Text>
+        </Section>
         <Text style={text}>
-          Here's what you can expect:
+          Keep the momentum going. Your next lesson is waiting for you.
         </Text>
-        <ul style={list}>
-          <li style={listItem}>Interactive lessons with AI-powered learning</li>
-          <li style={listItem}>Knowledge checks to reinforce your understanding</li>
-          <li style={listItem}>Track your progress as you complete each module</li>
-          <li style={listItem}>Earn a certificate when you finish the course</li>
-        </ul>
         <Section style={buttonContainer}>
           <Button style={button} href="https://ignite.education/progress">
-            Start Your First Lesson
+            Continue Learning
           </Button>
         </Section>
         <Text style={footer}>
@@ -54,7 +53,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
   </Html>
 );
 
-export default WelcomeEmail;
+export default FirstLessonEmail;
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -91,16 +90,19 @@ const text = {
   margin: '16px 32px',
 };
 
-const list = {
-  color: '#525252',
-  fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+const statsBox = {
+  backgroundColor: '#fdf2f8',
+  borderRadius: '8px',
+  margin: '24px 32px',
+  padding: '16px 24px',
 };
 
-const listItem = {
-  marginBottom: '8px',
+const statsText = {
+  color: '#831843',
+  fontSize: '15px',
+  lineHeight: '22px',
+  margin: '0',
+  textAlign: 'center',
 };
 
 const buttonContainer = {

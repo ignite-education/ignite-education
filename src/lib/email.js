@@ -44,9 +44,51 @@ export async function sendMilestoneEmail(type, userId, data = {}) {
 }
 
 /**
- * Send welcome email to new user
+ * Send course welcome email when user enrolls in a course
+ * @param {string} userId - User ID
+ * @param {string} courseName - Name of the course they enrolled in
+ */
+export function sendCourseWelcomeEmail(userId, courseName) {
+  return sendMilestoneEmail('welcome', userId, { courseName });
+}
+
+/**
+ * Send first lesson completion email
+ * @param {string} userId - User ID
+ * @param {string} lessonName - Name of the completed lesson
+ * @param {string} courseName - Name of the course
+ */
+export function sendFirstLessonEmail(userId, lessonName, courseName) {
+  return sendMilestoneEmail('first_lesson', userId, { lessonName, courseName });
+}
+
+/**
+ * Send subscription confirmation email
  * @param {string} userId - User ID
  */
+export function sendSubscriptionConfirmEmail(userId) {
+  return sendMilestoneEmail('subscription_confirm', userId);
+}
+
+/**
+ * Send subscription cancelled email
+ * @param {string} userId - User ID
+ */
+export function sendSubscriptionCancelledEmail(userId) {
+  return sendMilestoneEmail('subscription_cancelled', userId);
+}
+
+/**
+ * Send inactivity reminder email
+ * @param {string} userId - User ID
+ * @param {number} daysSinceLogin - Number of days since last login
+ * @param {string} courseName - Name of their enrolled course
+ */
+export function sendInactivityReminderEmail(userId, daysSinceLogin, courseName) {
+  return sendMilestoneEmail('inactivity_reminder', userId, { daysSinceLogin, courseName });
+}
+
+// Legacy alias for backwards compatibility
 export function sendWelcomeEmail(userId) {
   return sendMilestoneEmail('welcome', userId);
 }
