@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { moveContactBetweenAudiences, RESEND_AUDIENCES } from '../lib/email';
 
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
 const Onboarding = ({ firstName, userId }) => {
+  const { user } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState('');
   const [courseStatus, setCourseStatus] = useState(''); // 'live', 'coming_soon', 'requested', or 'unrecognized'
   const [displayedName, setDisplayedName] = useState('');
@@ -174,6 +177,25 @@ const Onboarding = ({ firstName, userId }) => {
         if (error) throw error;
 
         console.log('Update successful, data:', data);
+
+        // Sync to Resend audience - move from General to PM Free (if PM course)
+        if (courseIdentifier === 'product-manager' && user?.email) {
+          try {
+            await moveContactBetweenAudiences(
+              {
+                email: user.email,
+                firstName: firstName || user?.user_metadata?.first_name || '',
+                lastName: user?.user_metadata?.last_name || ''
+              },
+              RESEND_AUDIENCES.GENERAL,  // Remove from General
+              RESEND_AUDIENCES.PM_FREE   // Add to PM Free
+            );
+            console.log('📋 User moved from General to PM Free audience');
+          } catch (audienceErr) {
+            console.error('Failed to sync audience on enrollment:', audienceErr);
+            // Don't block enrollment if audience sync fails
+          }
+        }
 
         console.log('Redirecting to progress hub');
         // Clear the onboarding cache before navigating

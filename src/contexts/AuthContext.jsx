@@ -134,15 +134,16 @@ export const AuthProvider = ({ children }) => {
         // Don't throw - email failure shouldn't block signup
       }
 
-      // Add user to Resend "all-users" audience for broadcasts (don't block signup)
-      if (RESEND_AUDIENCES.ALL_USERS) {
+      // Add user to Resend "General" audience (new users have no course yet)
+      if (RESEND_AUDIENCES.GENERAL) {
         try {
           await addContactToAudience(
             { email, firstName, lastName },
-            RESEND_AUDIENCES.ALL_USERS
+            RESEND_AUDIENCES.GENERAL
           );
+          console.log('📋 New user added to General audience');
         } catch (audienceErr) {
-          console.error('Failed to add user to Resend audience:', audienceErr);
+          console.error('Failed to add user to Resend General audience:', audienceErr);
           // Don't throw - audience sync failure shouldn't block signup
         }
       }

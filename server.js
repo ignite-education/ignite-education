@@ -129,6 +129,43 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       console.log('✅ Updated data:', JSON.stringify(data, null, 2));
       console.log('✅ User is now ad-free!\n');
 
+      // Sync to Resend - move from PM Free to PM Paid
+      try {
+        const { data: userData } = await supabase.auth.admin.getUserById(userId);
+        const userEmail = userData?.user?.email;
+
+        if (userEmail && process.env.RESEND_AUDIENCE_PM_FREE && process.env.RESEND_AUDIENCE_PM_PAID) {
+          if (!resend) {
+            const { Resend } = await import('resend');
+            resend = new Resend(process.env.RESEND_API_KEY);
+          }
+
+          // Remove from PM Free
+          try {
+            await resend.contacts.remove({
+              audienceId: process.env.RESEND_AUDIENCE_PM_FREE,
+              email: userEmail
+            });
+            console.log(`📋 Removed ${userEmail} from PM Free audience`);
+          } catch (removeErr) {
+            console.log(`📋 Note: ${userEmail} may not have been in PM Free audience`);
+          }
+
+          // Add to PM Paid
+          await resend.contacts.create({
+            email: userEmail,
+            firstName: userData?.user?.user_metadata?.first_name || '',
+            lastName: userData?.user?.user_metadata?.last_name || '',
+            unsubscribed: false,
+            audienceId: process.env.RESEND_AUDIENCE_PM_PAID
+          });
+          console.log(`📋 Added ${userEmail} to PM Paid audience`);
+        }
+      } catch (audienceErr) {
+        console.error('❌ Error syncing Resend audience on subscription start:', audienceErr.message);
+        // Don't fail the webhook - audience sync is non-critical
+      }
+
     } catch (error) {
       console.error('❌ Exception during Supabase update');
       console.error('❌ Error:', error.message);
@@ -186,6 +223,41 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       console.log('✅ User ID:', user.id);
       console.log('✅ User is now on free plan\n');
 
+      // Sync to Resend - move from PM Paid back to PM Free
+      try {
+        const userEmail = user.email;
+
+        if (userEmail && process.env.RESEND_AUDIENCE_PM_FREE && process.env.RESEND_AUDIENCE_PM_PAID) {
+          if (!resend) {
+            const { Resend } = await import('resend');
+            resend = new Resend(process.env.RESEND_API_KEY);
+          }
+
+          // Remove from PM Paid
+          try {
+            await resend.contacts.remove({
+              audienceId: process.env.RESEND_AUDIENCE_PM_PAID,
+              email: userEmail
+            });
+            console.log(`📋 Removed ${userEmail} from PM Paid audience`);
+          } catch (removeErr) {
+            console.log(`📋 Note: ${userEmail} may not have been in PM Paid audience`);
+          }
+
+          // Add to PM Free
+          await resend.contacts.create({
+            email: userEmail,
+            firstName: user.user_metadata?.first_name || '',
+            lastName: user.user_metadata?.last_name || '',
+            unsubscribed: false,
+            audienceId: process.env.RESEND_AUDIENCE_PM_FREE
+          });
+          console.log(`📋 Added ${userEmail} to PM Free audience`);
+        }
+      } catch (audienceErr) {
+        console.error('❌ Error syncing Resend audience on subscription cancel:', audienceErr.message);
+      }
+
     } catch (error) {
       console.error('❌ Exception during subscription cancellation');
       console.error('❌ Error:', error.message);
@@ -242,6 +314,56 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
       console.log('✅ ============ SUBSCRIPTION UPDATED SUCCESSFULLY ============');
       console.log('✅ User ID:', user.id);
       console.log('✅ New status:', status, '\n');
+
+      // Sync to Resend based on subscription status change
+      try {
+        const userEmail = user.email;
+
+        if (userEmail && process.env.RESEND_AUDIENCE_PM_FREE && process.env.RESEND_AUDIENCE_PM_PAID) {
+          if (!resend) {
+            const { Resend } = await import('resend');
+            resend = new Resend(process.env.RESEND_API_KEY);
+          }
+
+          if (isAdFree) {
+            // Subscription became active - move to PM Paid
+            try {
+              await resend.contacts.remove({
+                audienceId: process.env.RESEND_AUDIENCE_PM_FREE,
+                email: userEmail
+              });
+            } catch (e) { /* Ignore */ }
+
+            await resend.contacts.create({
+              email: userEmail,
+              firstName: user.user_metadata?.first_name || '',
+              lastName: user.user_metadata?.last_name || '',
+              unsubscribed: false,
+              audienceId: process.env.RESEND_AUDIENCE_PM_PAID
+            });
+            console.log(`📋 Moved ${userEmail} to PM Paid audience`);
+          } else {
+            // Subscription became inactive - move to PM Free
+            try {
+              await resend.contacts.remove({
+                audienceId: process.env.RESEND_AUDIENCE_PM_PAID,
+                email: userEmail
+              });
+            } catch (e) { /* Ignore */ }
+
+            await resend.contacts.create({
+              email: userEmail,
+              firstName: user.user_metadata?.first_name || '',
+              lastName: user.user_metadata?.last_name || '',
+              unsubscribed: false,
+              audienceId: process.env.RESEND_AUDIENCE_PM_FREE
+            });
+            console.log(`📋 Moved ${userEmail} to PM Free audience`);
+          }
+        }
+      } catch (audienceErr) {
+        console.error('❌ Error syncing Resend audience on subscription update:', audienceErr.message);
+      }
 
     } catch (error) {
       console.error('❌ Exception during subscription update');

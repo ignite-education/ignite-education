@@ -194,11 +194,79 @@ export async function updateContactProperties(audienceId, contactId, properties)
   }
 }
 
-// Audience ID constants - set these after creating audiences in Resend dashboard
+// Audience ID constants - Mutually exclusive segmented audiences
 export const RESEND_AUDIENCES = {
-  ALL_USERS: import.meta.env.VITE_RESEND_AUDIENCE_ALL_USERS || '',
-  COURSE_PM: import.meta.env.VITE_RESEND_AUDIENCE_COURSE_PM || '',
-  COURSE_CYBER: import.meta.env.VITE_RESEND_AUDIENCE_COURSE_CYBER || '',
-  COMPLETED_PM: import.meta.env.VITE_RESEND_AUDIENCE_COMPLETED_PM || '',
-  COMPLETED_CYBER: import.meta.env.VITE_RESEND_AUDIENCE_COMPLETED_CYBER || '',
+  GENERAL: import.meta.env.VITE_RESEND_AUDIENCE_GENERAL || '',
+  PM_FREE: import.meta.env.VITE_RESEND_AUDIENCE_PM_FREE || '',
+  PM_PAID: import.meta.env.VITE_RESEND_AUDIENCE_PM_PAID || '',
 };
+
+/**
+ * Remove a contact from a Resend audience
+ * @param {string} email - Contact email
+ * @param {string} audienceId - Resend audience ID
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function removeContactFromAudience(email, audienceId) {
+  try {
+    if (!audienceId) {
+      console.log('📋 No audience ID provided, skipping removal');
+      return { success: true };
+    }
+
+    console.log(`📋 Removing contact ${email} from audience ${audienceId}`);
+
+    const response = await fetch(`${API_URL}/api/resend/remove-contact`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, audienceId })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Don't throw on "not found" - contact may not be in audience
+      if (result.error?.includes('not found') || result.error?.includes('does not exist')) {
+        console.log(`📋 Contact ${email} not in audience (already removed or never added)`);
+        return { success: true };
+      }
+      throw new Error(result.error || 'Failed to remove contact from audience');
+    }
+
+    console.log(`✅ Contact removed from audience`);
+    return { success: true };
+
+  } catch (error) {
+    console.error(`❌ Error removing contact from audience:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Move a contact from one audience to another (atomic operation)
+ * @param {object} contact - Contact details (email, firstName, lastName)
+ * @param {string|null} fromAudienceId - Audience to remove from (null to skip removal)
+ * @param {string} toAudienceId - Audience to add to
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function moveContactBetweenAudiences(contact, fromAudienceId, toAudienceId) {
+  try {
+    console.log(`📋 Moving ${contact.email} from audience ${fromAudienceId || 'none'} to ${toAudienceId}`);
+
+    // Remove from old audience first (if specified)
+    if (fromAudienceId) {
+      await removeContactFromAudience(contact.email, fromAudienceId);
+    }
+
+    // Add to new audience
+    const result = await addContactToAudience(contact, toAudienceId);
+
+    console.log(`✅ Contact moved successfully`);
+    return result;
+  } catch (error) {
+    console.error('❌ Error moving contact between audiences:', error);
+    return { success: false, error: error.message };
+  }
+}
