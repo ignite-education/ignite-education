@@ -14,21 +14,21 @@ import * as React from 'react';
 
 // Styles
 const main = {
-  backgroundColor: '#f0f1f5',
+  backgroundColor: '#ffffff',
   fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '10px 0',
+  padding: '0',
   maxWidth: '600px',
 };
 
 const logoSection = {
   backgroundColor: '#f0f0f0',
-  padding: '8px',
-  margin: '10px 20px',
+  padding: '8px 20px',
+  margin: '0',
 };
 
 const logo = {
@@ -126,8 +126,8 @@ const signatureText = {
 
 const footerSection = {
   backgroundColor: '#f0f0f0',
-  padding: '12px',
-  margin: '0 20px',
+  padding: '12px 20px',
+  margin: '0',
 };
 
 const footerLogo = {
@@ -163,7 +163,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.jpg',
+              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
               width: '107',
               alt: 'Ignite',
               style: logo
@@ -223,7 +223,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         e(Section, { style: footerSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.jpg',
+              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
               width: '72',
               alt: 'Ignite',
               style: footerLogo
