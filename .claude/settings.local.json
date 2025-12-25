@@ -75,7 +75,11 @@
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" commit -m \"$(cat <<''EOF''\nUpdate organization name to ''Ignite'' in structured data\n\nChanged provider/publisher name from \"Ignite Education\" to \"Ignite\"\nacross all Schema.org structured data for consistency.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff --name-only HEAD~5)",
       "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" log --oneline -20)",
-      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff HEAD -- src/components/LearningHub.jsx)"
+      "Bash(git -C \"/Users/maxshillam/Projects/ignite-education\" diff HEAD -- src/components/LearningHub.jsx)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education status --short)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education log --oneline -3)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education add:*)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nFix JSX import error in email templates\n\nConverted email templates from JSX to React.createElement syntax\nand renamed from .jsx to .js. Node.js on Render cannot natively\nimport .jsx files, so this fix uses CommonJS modules that work\nwithout JSX transformation.\n\nTemplates updated:\n- WelcomeEmail.js\n- InactivityReminderEmail.js\n- SubscriptionCancelledEmail.js\n- SubscriptionConfirmEmail.js\n- FirstLessonEmail.js\n- ModuleCompleteEmail.js\n- CourseCompleteEmail.js\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
