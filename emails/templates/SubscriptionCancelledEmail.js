@@ -1,4 +1,4 @@
-const {
+import {
   Body,
   Button,
   Container,
@@ -9,8 +9,8 @@ const {
   Preview,
   Section,
   Text,
-} = require('@react-email/components');
-const React = require('react');
+} from '@react-email/components';
+import * as React from 'react';
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -126,5 +126,5 @@ const SubscriptionCancelledEmail = ({ firstName = 'there' }) => {
   );
 };
 
-module.exports = { SubscriptionCancelledEmail };
-module.exports.default = SubscriptionCancelledEmail;
+export { SubscriptionCancelledEmail };
+export default SubscriptionCancelledEmail;

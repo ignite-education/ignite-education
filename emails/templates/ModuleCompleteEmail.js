@@ -1,4 +1,4 @@
-const {
+import {
   Body,
   Button,
   Container,
@@ -9,8 +9,8 @@ const {
   Preview,
   Section,
   Text,
-} = require('@react-email/components');
-const React = require('react');
+} from '@react-email/components';
+import * as React from 'react';
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -141,5 +141,5 @@ const ModuleCompleteEmail = ({ firstName = 'there', moduleName = 'Module', cours
   );
 };
 
-module.exports = { ModuleCompleteEmail };
-module.exports.default = ModuleCompleteEmail;
+export { ModuleCompleteEmail };
+export default ModuleCompleteEmail;

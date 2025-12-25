@@ -1,4 +1,4 @@
-const {
+import {
   Body,
   Button,
   Container,
@@ -9,8 +9,8 @@ const {
   Preview,
   Section,
   Text,
-} = require('@react-email/components');
-const React = require('react');
+} from '@react-email/components';
+import * as React from 'react';
 
 const main = {
   backgroundColor: '#f6f9fc',
@@ -132,5 +132,5 @@ const InactivityReminderEmail = ({ firstName = 'there', daysSinceLogin = 14, cou
   );
 };
 
-module.exports = { InactivityReminderEmail };
-module.exports.default = InactivityReminderEmail;
+export { InactivityReminderEmail };
+export default InactivityReminderEmail;

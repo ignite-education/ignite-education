@@ -1,4 +1,4 @@
-const {
+import {
   Body,
   Container,
   Head,
@@ -10,8 +10,8 @@ const {
   Section,
   Text,
   Hr,
-} = require('@react-email/components');
-const React = require('react');
+} from '@react-email/components';
+import * as React from 'react';
 
 // Styles
 const main = {
@@ -296,5 +296,5 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
   );
 };
 
-module.exports = { WelcomeEmail };
-module.exports.default = WelcomeEmail;
+export { WelcomeEmail };
+export default WelcomeEmail;
