@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, RefreshCw } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { moveContactBetweenAudiences, RESEND_AUDIENCES, sendCourseWelcomeEmail } from '../lib/email';
 
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
+const COURSE_FETCH_TIMEOUT = 10000; // 10 seconds
+const MAX_COURSE_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
+
 const Onboarding = ({ firstName, userId }) => {
   const { user } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState('');
@@ -18,6 +21,8 @@ const Onboarding = ({ firstName, userId }) => {
   const [showNotification, setShowNotification] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [courses, setCourses] = useState([]);
+  const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+  const [courseError, setCourseError] = useState(null);
   const dropdownRef = useRef(null);
 
   // Helper function to clear onboarding cache
@@ -28,6 +33,57 @@ const Onboarding = ({ firstName, userId }) => {
     } catch (error) {
       console.warn('[Onboarding] Failed to clear cache:', error);
     }
+  };
+
+  // Manual retry function for course loading
+  const handleRetryCourses = async () => {
+    setIsLoadingCourses(true);
+    setCourseError(null);
+
+    for (let attempt = 0; attempt <= MAX_COURSE_RETRIES; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`[Onboarding] Manual retry - attempt ${attempt} of ${MAX_COURSE_RETRIES}`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Course fetch timed out')), COURSE_FETCH_TIMEOUT);
+        });
+
+        const fetchPromise = supabase
+          .from('courses')
+          .select('*')
+          .order('display_order', { ascending: true });
+
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+        if (error) {
+          console.error(`[Onboarding] Manual retry - database error on attempt ${attempt + 1}:`, error);
+          if (attempt < MAX_COURSE_RETRIES) continue;
+          setCourseError('Unable to load courses. Please check your connection and try again.');
+          setCourses([]);
+          break;
+        }
+
+        console.log('[Onboarding] Manual retry - courses loaded successfully:', data);
+        setCourses(data || []);
+        setCourseError(null);
+        break;
+
+      } catch (err) {
+        console.error(`[Onboarding] Manual retry - exception on attempt ${attempt + 1}:`, err);
+        if (attempt < MAX_COURSE_RETRIES) continue;
+
+        const errorMessage = err.message === 'Course fetch timed out'
+          ? 'Loading courses is taking too long. Please check your connection and try again.'
+          : 'Unable to load courses. Please try again.';
+        setCourseError(errorMessage);
+        setCourses([]);
+      }
+    }
+
+    setIsLoadingCourses(false);
   };
 
   // Typing animation effect for the name
@@ -62,24 +118,64 @@ const Onboarding = ({ firstName, userId }) => {
     }
   }, [firstName]);
 
-  // Fetch courses from database
+  // Fetch courses from database with timeout and retry logic
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('courses')
-          .select('*')
-          .order('display_order', { ascending: true });
+    const fetchCoursesWithRetry = async () => {
+      setIsLoadingCourses(true);
+      setCourseError(null);
 
-        if (error) throw error;
-        console.log('Fetched courses for onboarding:', data);
-        setCourses(data || []);
-      } catch (error) {
-        console.error('Error fetching courses:', error);
+      for (let attempt = 0; attempt <= MAX_COURSE_RETRIES; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`[Onboarding] Retry attempt ${attempt} of ${MAX_COURSE_RETRIES} for courses`);
+            // Wait before retry (exponential backoff)
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          }
+
+          // Create a timeout promise
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Course fetch timed out')), COURSE_FETCH_TIMEOUT);
+          });
+
+          // Create the fetch promise
+          const fetchPromise = supabase
+            .from('courses')
+            .select('*')
+            .order('display_order', { ascending: true });
+
+          // Race between fetch and timeout
+          const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+
+          if (error) {
+            console.error(`[Onboarding] Database error on attempt ${attempt + 1}:`, error);
+            if (attempt < MAX_COURSE_RETRIES) continue;
+            setCourseError('Unable to load courses. Please check your connection and try again.');
+            setCourses([]);
+            break;
+          }
+
+          // Success!
+          console.log('[Onboarding] Fetched courses successfully:', data);
+          setCourses(data || []);
+          setCourseError(null);
+          break;
+
+        } catch (err) {
+          console.error(`[Onboarding] Exception on attempt ${attempt + 1}:`, err);
+          if (attempt < MAX_COURSE_RETRIES) continue;
+
+          const errorMessage = err.message === 'Course fetch timed out'
+            ? 'Loading courses is taking too long. Please check your connection and try again.'
+            : 'Unable to load courses. Please try again.';
+          setCourseError(errorMessage);
+          setCourses([]);
+        }
       }
+
+      setIsLoadingCourses(false);
     };
 
-    fetchCourses();
+    fetchCoursesWithRetry();
   }, []);
 
   // Organize courses by status
@@ -300,8 +396,8 @@ const Onboarding = ({ firstName, userId }) => {
             </h1>
           </div>
 
-          {/* Course selection appears after typing - absolutely positioned below Welcome */}
-          {showCourseSelection && (
+          {/* Course selection appears after typing AND courses are loaded */}
+          {showCourseSelection && !isLoadingCourses && (
             <div style={{
               position: 'absolute',
               top: '-30px',
@@ -314,7 +410,19 @@ const Onboarding = ({ firstName, userId }) => {
                 See yourself as a
               </h2>
 
-              {!showNotification ? (
+              {/* Show error state with retry button if courses failed to load */}
+              {courseError ? (
+                <div className="mb-12 flex flex-col items-center py-4">
+                  <p className="text-red-400 text-center mb-4">{courseError}</p>
+                  <button
+                    onClick={handleRetryCourses}
+                    className="px-6 py-2 bg-white text-gray-800 rounded-xl hover:bg-gray-100 transition flex items-center gap-2"
+                  >
+                    <RefreshCw size={20} />
+                    Retry
+                  </button>
+                </div>
+              ) : !showNotification ? (
                 <div className="mb-12 flex items-start gap-4">
                   <div className="flex-1 relative" ref={dropdownRef}>
                     <div className="relative">
@@ -398,7 +506,7 @@ const Onboarding = ({ firstName, userId }) => {
 
                           return (
                             <>
-                              {allCourses.length > 0 && (
+                              {allCourses.length > 0 ? (
                                 allCourses.map((course, index) => (
                                   <div
                                     key={course.name}
@@ -413,6 +521,10 @@ const Onboarding = ({ firstName, userId }) => {
                                     </span>
                                   </div>
                                 ))
+                              ) : (
+                                <div className="px-6 py-3 text-gray-500 text-center">
+                                  No courses found. Type to add a custom course.
+                                </div>
                               )}
                             </>
                           );
