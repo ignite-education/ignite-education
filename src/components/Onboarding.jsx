@@ -6,8 +6,8 @@ import { moveContactBetweenAudiences, RESEND_AUDIENCES, sendCourseWelcomeEmail }
 
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
-const COURSE_FETCH_TIMEOUT = 10000; // 10 seconds
-const MAX_COURSE_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
+const COURSE_FETCH_TIMEOUT = 10000;
+const MAX_COURSE_RETRIES = 2;
 
 const Onboarding = ({ firstName, userId }) => {
   console.log('[Onboarding] 🚀 Component rendering with props:', { firstName, userId });
