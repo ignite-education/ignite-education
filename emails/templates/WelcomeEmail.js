@@ -207,7 +207,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         }
       `)
     ),
-    e(Preview, null, `${firstName}, let's get you started`),
+    e(Preview, null, `${firstName}, let's get you started!`),
     e(Body, { style: main, className: 'body' },
       e(Container, { style: container, className: 'container' },
         // Logo
