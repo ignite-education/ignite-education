@@ -10,6 +10,8 @@ const COURSE_FETCH_TIMEOUT = 10000; // 10 seconds
 const MAX_COURSE_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
 
 const Onboarding = ({ firstName, userId }) => {
+  console.log('[Onboarding] 🚀 Component rendering with props:', { firstName, userId });
+
   const { user } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState('');
   const [courseStatus, setCourseStatus] = useState(''); // 'live', 'coming_soon', 'requested', or 'unrecognized'
@@ -24,6 +26,15 @@ const Onboarding = ({ firstName, userId }) => {
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [courseError, setCourseError] = useState(null);
   const dropdownRef = useRef(null);
+
+  // Debug: Log state changes
+  console.log('[Onboarding] 📊 Current state:', {
+    isLoadingCourses,
+    courseError,
+    coursesCount: courses.length,
+    showCourseSelection,
+    showNotification
+  });
 
   // Helper function to clear onboarding cache
   const clearOnboardingCache = () => {
@@ -88,23 +99,29 @@ const Onboarding = ({ firstName, userId }) => {
 
   // Typing animation effect for the name
   useEffect(() => {
+    console.log('[Onboarding] ✍️ Typing animation useEffect triggered, firstName:', firstName);
+
     if (firstName) {
       let currentIndex = 0;
       const typingSpeed = 120; // milliseconds per character
 
       // Start typing after a short delay
       const startDelay = setTimeout(() => {
+        console.log('[Onboarding] ✍️ Starting typing animation...');
         const typingInterval = setInterval(() => {
           if (currentIndex <= firstName.length) {
             setDisplayedName(firstName.slice(0, currentIndex));
             currentIndex++;
           } else {
             clearInterval(typingInterval);
+            console.log('[Onboarding] ✍️ Typing complete, waiting 500ms before hiding cursor...');
             // Stop cursor blinking after typing is done
             setTimeout(() => {
               setShowCursor(false);
+              console.log('[Onboarding] ✍️ Cursor hidden, waiting 2000ms before showing course selection...');
               // After 2 seconds, show course selection
               setTimeout(() => {
+                console.log('[Onboarding] ✍️ Setting showCourseSelection to TRUE');
                 setShowCourseSelection(true);
               }, 2000);
             }, 500);
@@ -115,55 +132,90 @@ const Onboarding = ({ firstName, userId }) => {
       }, 800); // Wait 800ms before starting to type
 
       return () => clearTimeout(startDelay);
+    } else {
+      console.log('[Onboarding] ✍️ No firstName provided, skipping animation');
     }
   }, [firstName]);
 
   // Fetch courses from database with timeout and retry logic
   useEffect(() => {
+    console.log('[Onboarding] 🔄 Course fetch useEffect triggered');
+
     const fetchCoursesWithRetry = async () => {
+      console.log('[Onboarding] 📡 Starting fetchCoursesWithRetry...');
       setIsLoadingCourses(true);
       setCourseError(null);
 
       for (let attempt = 0; attempt <= MAX_COURSE_RETRIES; attempt++) {
+        console.log(`[Onboarding] 🔁 Attempt ${attempt + 1} of ${MAX_COURSE_RETRIES + 1}`);
+
         try {
           if (attempt > 0) {
-            console.log(`[Onboarding] Retry attempt ${attempt} of ${MAX_COURSE_RETRIES} for courses`);
-            // Wait before retry (exponential backoff)
+            console.log(`[Onboarding] ⏳ Waiting ${1000 * attempt}ms before retry...`);
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
 
           // Create a timeout promise
+          console.log(`[Onboarding] ⏱️ Setting up ${COURSE_FETCH_TIMEOUT}ms timeout...`);
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Course fetch timed out')), COURSE_FETCH_TIMEOUT);
+            setTimeout(() => {
+              console.log('[Onboarding] ⏱️ Timeout triggered!');
+              reject(new Error('Course fetch timed out'));
+            }, COURSE_FETCH_TIMEOUT);
           });
 
           // Create the fetch promise
+          console.log('[Onboarding] 🌐 Creating Supabase fetch promise...');
           const fetchPromise = supabase
             .from('courses')
             .select('*')
             .order('display_order', { ascending: true });
 
           // Race between fetch and timeout
-          const { data, error } = await Promise.race([fetchPromise, timeoutPromise]);
+          console.log('[Onboarding] 🏁 Racing fetch vs timeout...');
+          const startTime = Date.now();
+          const result = await Promise.race([fetchPromise, timeoutPromise]);
+          const duration = Date.now() - startTime;
+          console.log(`[Onboarding] 🏁 Race completed in ${duration}ms, result:`, result);
+
+          const { data, error } = result;
 
           if (error) {
-            console.error(`[Onboarding] Database error on attempt ${attempt + 1}:`, error);
-            if (attempt < MAX_COURSE_RETRIES) continue;
+            console.error(`[Onboarding] ❌ Database error on attempt ${attempt + 1}:`, error);
+            if (attempt < MAX_COURSE_RETRIES) {
+              console.log('[Onboarding] 🔄 Will retry...');
+              continue;
+            }
+            console.log('[Onboarding] ❌ All retries exhausted, setting error state');
             setCourseError('Unable to load courses. Please check your connection and try again.');
             setCourses([]);
             break;
           }
 
           // Success!
-          console.log('[Onboarding] Fetched courses successfully:', data);
+          console.log('[Onboarding] ✅ Fetched courses successfully!');
+          console.log('[Onboarding] 📦 Raw data:', JSON.stringify(data, null, 2));
+          console.log('[Onboarding] 📦 Data length:', data?.length);
+          console.log('[Onboarding] 📦 Data type:', typeof data);
+          console.log('[Onboarding] 📦 Is array:', Array.isArray(data));
+
           setCourses(data || []);
           setCourseError(null);
+          console.log('[Onboarding] ✅ State updated, breaking out of retry loop');
           break;
 
         } catch (err) {
-          console.error(`[Onboarding] Exception on attempt ${attempt + 1}:`, err);
-          if (attempt < MAX_COURSE_RETRIES) continue;
+          console.error(`[Onboarding] 💥 Exception on attempt ${attempt + 1}:`, err);
+          console.error('[Onboarding] 💥 Error name:', err.name);
+          console.error('[Onboarding] 💥 Error message:', err.message);
+          console.error('[Onboarding] 💥 Error stack:', err.stack);
 
+          if (attempt < MAX_COURSE_RETRIES) {
+            console.log('[Onboarding] 🔄 Will retry after exception...');
+            continue;
+          }
+
+          console.log('[Onboarding] ❌ All retries exhausted after exception');
           const errorMessage = err.message === 'Course fetch timed out'
             ? 'Loading courses is taking too long. Please check your connection and try again.'
             : 'Unable to load courses. Please try again.';
@@ -172,6 +224,7 @@ const Onboarding = ({ firstName, userId }) => {
         }
       }
 
+      console.log('[Onboarding] 🏁 fetchCoursesWithRetry complete, setting isLoadingCourses to false');
       setIsLoadingCourses(false);
     };
 
@@ -185,6 +238,14 @@ const Onboarding = ({ firstName, userId }) => {
     coming_soon: courses.filter(c => c.status === 'coming_soon').map(c => c.title || c.name),
     requested: courses.filter(c => c.status === 'requested').map(c => c.title || c.name)
   };
+
+  // Debug: Log courseCategories whenever courses change
+  console.log('[Onboarding] 📚 courseCategories computed:', {
+    live: courseCategories.live,
+    coming_soon: courseCategories.coming_soon,
+    requested: courseCategories.requested,
+    totalCourses: courseCategories.live.length + courseCategories.coming_soon.length + courseCategories.requested.length
+  });
 
   // Click outside handler for dropdown
   useEffect(() => {
@@ -397,6 +458,12 @@ const Onboarding = ({ firstName, userId }) => {
           </div>
 
           {/* Course selection appears after typing AND courses are loaded */}
+          {console.log('[Onboarding] 🎯 UI render check:', {
+            showCourseSelection,
+            isLoadingCourses,
+            courseError,
+            shouldShowCourseUI: showCourseSelection && !isLoadingCourses
+          })}
           {showCourseSelection && !isLoadingCourses && (
             <div style={{
               position: 'absolute',
