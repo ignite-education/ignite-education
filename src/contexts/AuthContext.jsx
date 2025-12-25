@@ -21,10 +21,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Add timeout to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
-      console.warn('Auth session check timed out after 10 seconds');
+      console.warn('Auth session check timed out after 30 seconds');
       setLoading(false);
       setIsInitialized(true);
-    }, 10000); // 10 second timeout
+    }, 30000); // 30 second timeout to handle Supabase cold starts
 
     // Check active sessions and sets the user
     supabase.auth.getSession()

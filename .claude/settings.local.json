@@ -17,7 +17,11 @@
       "Bash(grep:*)",
       "Bash(wc:*)",
       "Bash(npm run build:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git add:*)",
+      "Bash(curl:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nForce rebuild - remove comments\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nIncrease Supabase timeouts to 30s for cold starts\n\nThe Supabase free tier can take longer than 10 seconds to respond\nafter periods of inactivity \\(cold starts\\). Increased timeouts in:\n- AuthContext.jsx: Auth session check\n- ProtectedRoute.jsx: Onboarding status check\n- Onboarding.jsx: Course fetch\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
     "ask": []
