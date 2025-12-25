@@ -2449,13 +2449,13 @@ app.post('/api/send-email', async (req, res) => {
         // Course welcome email (sent when user enrolls in a course)
         const courseName = data.courseName || 'your course';
         subject = `Welcome to ${courseName}, ${firstName}!`;
-        const WelcomeEmail = (await import('./emails/templates/WelcomeEmail.jsx')).default;
+        const WelcomeEmail = (await import('./emails/templates/WelcomeEmail.js')).default;
         htmlContent = render(React.createElement(WelcomeEmail, { firstName, courseName }));
         break;
 
       case 'first_lesson':
         subject = `Great start, ${firstName}! You completed your first lesson`;
-        const FirstLessonEmail = (await import('./emails/templates/FirstLessonEmail.jsx')).default;
+        const FirstLessonEmail = (await import('./emails/templates/FirstLessonEmail.js')).default;
         htmlContent = render(React.createElement(FirstLessonEmail, {
           firstName,
           lessonName: data.lessonName,
@@ -2465,7 +2465,7 @@ app.post('/api/send-email', async (req, res) => {
 
       case 'module_complete':
         subject = `You completed ${data.moduleName}!`;
-        const ModuleCompleteEmail = (await import('./emails/templates/ModuleCompleteEmail.jsx')).default;
+        const ModuleCompleteEmail = (await import('./emails/templates/ModuleCompleteEmail.js')).default;
         htmlContent = render(React.createElement(ModuleCompleteEmail, {
           firstName,
           moduleName: data.moduleName,
@@ -2475,7 +2475,7 @@ app.post('/api/send-email', async (req, res) => {
 
       case 'course_complete':
         subject = `Congratulations on completing ${data.courseName}!`;
-        const CourseCompleteEmail = (await import('./emails/templates/CourseCompleteEmail.jsx')).default;
+        const CourseCompleteEmail = (await import('./emails/templates/CourseCompleteEmail.js')).default;
         htmlContent = render(React.createElement(CourseCompleteEmail, {
           firstName,
           courseName: data.courseName
@@ -2484,19 +2484,19 @@ app.post('/api/send-email', async (req, res) => {
 
       case 'subscription_confirm':
         subject = `Welcome to Ignite Premium, ${firstName}!`;
-        const SubscriptionConfirmEmail = (await import('./emails/templates/SubscriptionConfirmEmail.jsx')).default;
+        const SubscriptionConfirmEmail = (await import('./emails/templates/SubscriptionConfirmEmail.js')).default;
         htmlContent = render(React.createElement(SubscriptionConfirmEmail, { firstName }));
         break;
 
       case 'subscription_cancelled':
         subject = `Your Ignite subscription has been cancelled`;
-        const SubscriptionCancelledEmail = (await import('./emails/templates/SubscriptionCancelledEmail.jsx')).default;
+        const SubscriptionCancelledEmail = (await import('./emails/templates/SubscriptionCancelledEmail.js')).default;
         htmlContent = render(React.createElement(SubscriptionCancelledEmail, { firstName }));
         break;
 
       case 'inactivity_reminder':
         subject = `We miss you, ${firstName}! Your course is waiting`;
-        const InactivityReminderEmail = (await import('./emails/templates/InactivityReminderEmail.jsx')).default;
+        const InactivityReminderEmail = (await import('./emails/templates/InactivityReminderEmail.js')).default;
         htmlContent = render(React.createElement(InactivityReminderEmail, {
           firstName,
           daysSinceLogin: data.daysSinceLogin || 14,
