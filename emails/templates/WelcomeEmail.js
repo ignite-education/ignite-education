@@ -214,7 +214,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.svg',
+              src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
               width: '126',
               alt: 'Ignite',
               style: logo
@@ -302,7 +302,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         e(Section, { style: footerSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.svg',
+              src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
               width: '100',
               alt: 'Ignite',
               style: footerLogo
