@@ -194,10 +194,22 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
   const e = React.createElement;
 
   return e(Html, null,
-    e(Head, null),
+    e(Head, null,
+      e('meta', { name: 'color-scheme', content: 'light dark' }),
+      e('meta', { name: 'supported-color-schemes', content: 'light dark' }),
+      e('style', null, `
+        :root {
+          color-scheme: light dark;
+        }
+        @media (prefers-color-scheme: dark) {
+          .body { background-color: #000000 !important; }
+          .container { background-color: #000000 !important; }
+        }
+      `)
+    ),
     e(Preview, null, `Welcome to the ${courseName} Course - Let's get you started!`),
-    e(Body, { style: main },
-      e(Container, { style: container },
+    e(Body, { style: main, className: 'body' },
+      e(Container, { style: container, className: 'container' },
         // Logo
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
