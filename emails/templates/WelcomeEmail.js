@@ -44,8 +44,9 @@ const h1 = {
 };
 
 const introSection = {
-  padding: '0 40px',
+  padding: '0 40px 0 40px',
   textAlign: 'center',
+  marginBottom: '0',
 };
 
 const certificateIcon = {
@@ -53,9 +54,9 @@ const certificateIcon = {
 };
 
 const divider = {
-  borderColor: '#000000',
+  borderColor: '#333333',
   borderWidth: '1px',
-  margin: '16px auto',
+  margin: '8px auto',
   width: '239px',
 };
 
@@ -64,19 +65,20 @@ const introTitle = {
   fontSize: '16px',
   fontWeight: '700',
   lineHeight: '1.4',
-  margin: '16px 0',
+  margin: '8px 0',
 };
 
 const introText = {
   color: '#ffffff',
   fontSize: '16px',
   lineHeight: '1.28',
-  margin: '16px 0',
+  margin: '8px 0 8px 0',
 };
 
 const tipContainer = {
   padding: '0 20px',
-  marginBottom: '16px',
+  marginBottom: '12px',
+  marginTop: '0',
 };
 
 const tipTable = {
