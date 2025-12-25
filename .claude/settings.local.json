@@ -1,8 +1,19 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nReduce spacing in WelcomeEmail for mobile\n\n- Reduced margins on dividers from 16px to 8px\n- Reduced margins on intro title/text\n- Added marginBottom: 0 to intro section\n- Made divider visible (changed from black to #333)\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nFix async render() calls for email templates\n\nThe @react-email/render package returns a Promise, so render() calls\nneed to be awaited. Added await to all render() calls in the email\nsending endpoint.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nUpdate welcome email subject and styling\n\n- Changed subject from ''Welcome to {course}, {name}!'' to ''Welcome to Ignite''\n- Made divider lines black (invisible on black background)\n- Made entire unsubscribe text clickable\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Change email outer background to black\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education push)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Make Ignite logos clickable to ignite.education\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nAlign intro and closing text with tip boxes\n\n- Left-aligned intro title/text and closing section text\n- Set maxWidth to 451px to match tip boxes width\n- Increased top logo padding from 21px to 24px (15% increase)\n- Updated padding to match tip container layout\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nAdd dark mode support to prevent color inversion\n\nAdded meta tags and CSS to prevent email clients from auto-inverting\ncolors in dark mode:\n- color-scheme meta tag\n- supported-color-schemes meta tag  \n- @media (prefers-color-scheme: dark) CSS rules\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$(cat <<''EOF''\nAdjust WelcomeEmail spacing and preview text\n\n- Increased logo top padding by 25% (24px → 30px)\n- Reduced logo bottom padding by 25% (21px → 16px)\n- Increased intro text bottom margin to match closing section (8px → 16px)\n- Updated preview text to \"{firstName}, let 's get you started\"\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Add exclamation mark to welcome email preview text\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education add emails/templates/WelcomeEmail.js)",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$\\(cat <<''EOF''\nUpdate welcome email styling\n\n- Changed preview text to \"{firstName}, let 's get started!\"\n- Reduced top logo size by 10% \\(140px → 126px\\)\n- Center-aligned intro and closing text sections\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Update Ignite logos to new SVG version\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Revert to PNG logo - SVG not supported in email clients\")",
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Update Ignite logos to new JPG version\")"
     ],
     "deny": [],
     "ask": []
