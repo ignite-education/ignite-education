@@ -9,36 +9,36 @@ import {
   Preview,
   Section,
   Text,
-  Hr,
 } from '@react-email/components';
 import * as React from 'react';
 
 // Styles
 const main = {
-  backgroundColor: '#000000',
+  backgroundColor: '#f0f1f5',
   fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
 const container = {
-  backgroundColor: '#000000',
+  backgroundColor: '#ffffff',
   margin: '0 auto',
   padding: '10px 0',
   maxWidth: '600px',
 };
 
 const logoSection = {
-  textAlign: 'center',
-  padding: '30px 0 16px 0',
+  backgroundColor: '#f0f0f0',
+  padding: '8px',
+  margin: '10px 20px',
 };
 
 const logo = {
-  margin: '0 auto',
+  display: 'block',
 };
 
 const h1 = {
-  fontSize: '31px',
+  fontSize: '24px',
   fontWeight: '700',
-  textAlign: 'center',
+  textAlign: 'left',
   margin: '16px 20px',
   padding: '0',
 };
@@ -46,148 +46,106 @@ const h1 = {
 const introSection = {
   padding: '0 20px',
   textAlign: 'center',
-  marginBottom: '0',
+  marginBottom: '16px',
 };
 
 const certificateIcon = {
   margin: '0 auto 16px',
 };
 
-const divider = {
-  borderColor: '#000000',
-  borderWidth: '1px',
-  margin: '8px auto',
-  width: '239px',
-};
-
 const introTitle = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '16px',
   fontWeight: '700',
-  lineHeight: '1.4',
-  margin: '8px auto',
-  maxWidth: '451px',
-  textAlign: 'center',
+  lineHeight: '1.28',
+  margin: '0 0 16px 0',
+  textAlign: 'left',
 };
 
 const introText = {
-  color: '#ffffff',
-  fontSize: '16px',
+  color: '#000000',
+  fontSize: '14.67px',
   lineHeight: '1.28',
-  margin: '8px auto 16px auto',
-  maxWidth: '451px',
-  textAlign: 'center',
-};
-
-const tipContainer = {
-  padding: '0 20px',
-  marginBottom: '12px',
-  marginTop: '0',
-};
-
-const tipTable = {
-  width: '100%',
-  maxWidth: '451px',
-  margin: '0 auto',
-  backgroundColor: '#ef0b72',
-  borderRadius: '10px',
-};
-
-const tipNumberCell = {
-  width: '45px',
-  verticalAlign: 'middle',
-  textAlign: 'center',
-  backgroundColor: '#ef0b72',
-  borderTopLeftRadius: '10px',
-  borderBottomLeftRadius: '10px',
-  padding: '5px',
-};
-
-const tipNumber = {
-  color: '#ffffff',
-  fontSize: '28px',
-  fontWeight: '700',
   margin: '0',
+  textAlign: 'left',
 };
 
-const tipContentCell = {
-  backgroundColor: '#ffffff',
-  borderTopRightRadius: '11px',
-  borderBottomRightRadius: '11px',
-  padding: '15px',
-  verticalAlign: 'top',
+const contentSection = {
+  padding: '0 20px',
+  marginBottom: '16px',
+};
+
+const tipBox = {
+  backgroundColor: '#f0f0f0',
+  borderRadius: '2px',
+  padding: '12px',
+  marginBottom: '16px',
 };
 
 const tipTitle = {
-  color: '#000000',
-  fontSize: '16px',
+  color: '#ef0b72',
+  fontSize: '14.67px',
   fontWeight: '700',
-  margin: '0 0 4px 0',
-  lineHeight: '1.15',
+  lineHeight: '1.28',
+  margin: '0 0 8px 0',
 };
 
-const tipDescription = {
+const tipText = {
   color: '#000000',
-  fontSize: '13px',
+  fontSize: '14.67px',
+  lineHeight: '1.28',
   margin: '0',
-  lineHeight: '1.4',
 };
 
 const tipLink = {
-  color: '#ef0b72',
-  fontWeight: '700',
+  color: '#000000',
   textDecoration: 'underline',
 };
 
 const closingSection = {
   padding: '0 20px',
-  textAlign: 'center',
+  marginBottom: '16px',
 };
 
 const closingText = {
-  color: '#ffffff',
-  fontSize: '16px',
-  lineHeight: '1.4',
-  margin: '16px auto',
-  maxWidth: '451px',
-  textAlign: 'center',
+  color: '#000000',
+  fontSize: '14.67px',
+  lineHeight: '1.28',
+  margin: '0 0 16px 0',
+  textAlign: 'left',
 };
 
 const signatureText = {
-  color: '#ffffff',
-  fontSize: '16px',
+  color: '#000000',
+  fontSize: '14.67px',
   fontWeight: '700',
-  margin: '16px auto',
-  maxWidth: '451px',
-  textAlign: 'center',
+  lineHeight: '1.28',
+  margin: '0',
+  textAlign: 'left',
 };
 
 const footerSection = {
-  backgroundColor: '#000000',
-  textAlign: 'center',
-  padding: '20px',
+  backgroundColor: '#f0f0f0',
+  padding: '12px',
+  margin: '0 20px',
 };
 
 const footerLogo = {
-  margin: '0 auto 16px',
+  display: 'block',
+  marginBottom: '16px',
 };
 
 const footerText = {
-  color: '#ffffff',
-  fontSize: '12px',
-  margin: '0 0 16px 0',
+  color: '#000000',
+  fontSize: '10.67px',
+  letterSpacing: '-0.0025em',
   lineHeight: '1.4',
+  margin: '0',
 };
 
 const footerLink = {
-  color: '#ffffff',
+  color: '#000000',
   textDecoration: 'underline',
-};
-
-const copyrightText = {
-  color: '#ffffff',
-  fontSize: '11px',
-  margin: '0',
 };
 
 const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) => {
@@ -195,27 +153,18 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
 
   return e(Html, null,
     e(Head, null,
-      e('meta', { name: 'color-scheme', content: 'light dark' }),
-      e('meta', { name: 'supported-color-schemes', content: 'light dark' }),
-      e('style', null, `
-        :root {
-          color-scheme: light dark;
-        }
-        @media (prefers-color-scheme: dark) {
-          .body { background-color: #000000 !important; }
-          .container { background-color: #000000 !important; }
-        }
-      `)
+      e('meta', { name: 'color-scheme', content: 'light' }),
+      e('meta', { name: 'supported-color-schemes', content: 'light' })
     ),
     e(Preview, null, `${firstName}, let's get started!`),
-    e(Body, { style: main, className: 'body' },
-      e(Container, { style: container, className: 'container' },
-        // Logo
+    e(Body, { style: main },
+      e(Container, { style: container },
+        // Logo Section
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
               src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.jpg',
-              width: '126',
+              width: '107',
               alt: 'Ignite',
               style: logo
             })
@@ -223,95 +172,68 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         ),
         // Welcome Header
         e(Heading, { style: h1 },
-          e('span', { style: { color: '#f0f0f0' } }, 'Welcome, '),
-          e('span', { style: { color: '#ef0b72' } }, firstName)
+          e('span', { style: { color: '#000000' } }, 'Welcome, '),
+          e('span', { style: { color: '#ed1574' } }, firstName)
         ),
-        // Intro Section
+        // Certificate Image
         e(Section, { style: introSection },
           e(Img, {
             src: 'https://auth.ignite.education/storage/v1/object/public/assets/db6d49f3f5a82b1540bf96c8d4a06334.png',
-            width: '171',
-            height: '173',
+            width: '148',
+            height: '150',
             alt: 'Certificate',
             style: certificateIcon
-          }),
-          e(Hr, { style: divider }),
+          })
+        ),
+        // Intro Text
+        e(Section, { style: contentSection },
           e(Text, { style: introTitle }, `${firstName}, welcome to the ${courseName} Course.`),
-          e(Text, { style: introText }, "We're building a smarter, more personalised era of education for everyone, and we're glad you've joined us. Below are some top tips to help you start strong."),
-          e(Hr, { style: divider })
+          e(Text, { style: introText }, "We're building a smarter, more personalised era of education for everyone, and we're glad you've joined us. Below are three top tips to help you start strong.")
         ),
         // Tip 1
-        e(Section, { style: tipContainer },
-          e('table', { cellPadding: '0', cellSpacing: '0', border: '0', style: tipTable },
-            e('tbody', null,
-              e('tr', null,
-                e('td', { style: tipNumberCell },
-                  e(Text, { style: tipNumber }, '1')
-                ),
-                e('td', { style: tipContentCell },
-                  e(Text, { style: tipTitle }, 'Add Ignite to your LinkedIn'),
-                  e(Text, { style: tipDescription },
-                    'LinkedIn profiles with certifications get 6x more profile views than those without. ',
-                    e(Link, { href: 'https://www.linkedin.com/profile/add?startTask=CERTIFICATION&name=Product%20Manager&organizationName=Ignite&issueYear=2025&certUrl=https://ignite.education', style: tipLink }, 'Add now >')
-                  )
-                )
-              )
+        e(Section, { style: contentSection },
+          e('div', { style: tipBox },
+            e(Text, { style: tipTitle }, 'Tip 1 - Add Ignite to your LinkedIn'),
+            e(Text, { style: tipText },
+              'LinkedIn profiles with certifications get 6x more profile views than those without. ',
+              e(Link, { href: `https://www.linkedin.com/profile/add?startTask=CERTIFICATION&name=${encodeURIComponent(courseName)}&organizationName=Ignite&issueYear=2025&certUrl=https://ignite.education`, style: tipLink }, 'Add now >')
             )
           )
         ),
         // Tip 2
-        e(Section, { style: tipContainer },
-          e('table', { cellPadding: '0', cellSpacing: '0', border: '0', style: tipTable },
-            e('tbody', null,
-              e('tr', null,
-                e('td', { style: tipNumberCell },
-                  e(Text, { style: tipNumber }, '2')
-                ),
-                e('td', { style: tipContentCell },
-                  e(Text, { style: tipTitle }, 'Discover the Community Forum'),
-                  e(Text, { style: tipDescription }, 'Hear and contribute to the latest industry trends, conversation and advice in the Community Forum.')
-                )
-              )
-            )
+        e(Section, { style: contentSection },
+          e('div', { style: tipBox },
+            e(Text, { style: tipTitle }, 'Tip 2 - Discover the Community Forum'),
+            e(Text, { style: tipText }, 'Hear and contribute to the latest industry trends, conversation and advice in the Community Forum.')
           )
         ),
         // Tip 3
-        e(Section, { style: tipContainer },
-          e('table', { cellPadding: '0', cellSpacing: '0', border: '0', style: tipTable },
-            e('tbody', null,
-              e('tr', null,
-                e('td', { style: tipNumberCell },
-                  e(Text, { style: tipNumber }, '3')
-                ),
-                e('td', { style: tipContentCell },
-                  e(Text, { style: tipTitle }, 'Commit to Yourself'),
-                  e(Text, { style: tipDescription }, 'Most people complete the course within six weeks. Set yourself a goal, write it down and stay committed.')
-                )
-              )
-            )
+        e(Section, { style: contentSection },
+          e('div', { style: tipBox },
+            e(Text, { style: tipTitle }, 'Tip 3 - Set yourself a goal'),
+            e(Text, { style: tipText }, 'Most people complete the course within six weeks. Set yourself a goal and stay committed.')
           )
         ),
         // Closing Section
         e(Section, { style: closingSection },
-          e(Hr, { style: divider }),
           e(Text, { style: closingText }, "We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Learning Hub Dashboard."),
-          e(Text, { style: signatureText }, 'Ignite Team'),
-          e(Hr, { style: divider })
+          e(Text, { style: signatureText }, 'Team Ignite')
         ),
         // Footer
         e(Section, { style: footerSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
               src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_4.jpg',
-              width: '100',
+              width: '72',
               alt: 'Ignite',
               style: footerLogo
             })
           ),
-          e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink },
-            e(Text, { style: footerText }, 'Unsubscribe from emails here.')
-          ),
-          e(Text, { style: copyrightText }, '© Ignite Education AI Ltd')
+          e(Text, { style: footerText },
+            'Ignite Education AI Ltd. Unsubscribe from emails ',
+            e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink }, 'here'),
+            '.'
+          )
         )
       )
     )

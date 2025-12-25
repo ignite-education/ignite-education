@@ -13,7 +13,9 @@
       "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"$\\(cat <<''EOF''\nUpdate welcome email styling\n\n- Changed preview text to \"{firstName}, let 's get started!\"\n- Reduced top logo size by 10% \\(140px → 126px\\)\n- Center-aligned intro and closing text sections\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Update Ignite logos to new SVG version\")",
       "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Revert to PNG logo - SVG not supported in email clients\")",
-      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Update Ignite logos to new JPG version\")"
+      "Bash(git -C /Users/maxshillam/Projects/ignite-education commit -m \"Update Ignite logos to new JPG version\")",
+      "Bash(grep:*)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []
