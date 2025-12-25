@@ -192,7 +192,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
       e(Container, { style: container },
         // Logo
         e(Section, { style: logoSection },
-          e(Link, { href: 'https://www.linkedin.com/school/ignite-courses' },
+          e(Link, { href: 'https://ignite.education' },
             e(Img, {
               src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
               width: '140',
@@ -280,12 +280,14 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         ),
         // Footer
         e(Section, { style: footerSection },
-          e(Img, {
-            src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
-            width: '100',
-            alt: 'Ignite',
-            style: footerLogo
-          }),
+          e(Link, { href: 'https://ignite.education' },
+            e(Img, {
+              src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
+              width: '100',
+              alt: 'Ignite',
+              style: footerLogo
+            })
+          ),
           e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink },
             e(Text, { style: footerText }, 'Unsubscribe from emails here.')
           ),
