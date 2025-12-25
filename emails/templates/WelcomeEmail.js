@@ -28,7 +28,7 @@ const container = {
 
 const logoSection = {
   textAlign: 'center',
-  padding: '21px 0',
+  padding: '24px 0 21px 0',
 };
 
 const logo = {
@@ -44,8 +44,8 @@ const h1 = {
 };
 
 const introSection = {
-  padding: '0 40px 0 40px',
-  textAlign: 'center',
+  padding: '0 20px',
+  textAlign: 'left',
   marginBottom: '0',
 };
 
@@ -65,14 +65,18 @@ const introTitle = {
   fontSize: '16px',
   fontWeight: '700',
   lineHeight: '1.4',
-  margin: '8px 0',
+  margin: '8px auto',
+  maxWidth: '451px',
+  textAlign: 'left',
 };
 
 const introText = {
   color: '#ffffff',
   fontSize: '16px',
   lineHeight: '1.28',
-  margin: '8px 0 8px 0',
+  margin: '8px auto 8px auto',
+  maxWidth: '451px',
+  textAlign: 'left',
 };
 
 const tipContainer = {
@@ -136,7 +140,7 @@ const tipLink = {
 };
 
 const closingSection = {
-  padding: '0 40px',
+  padding: '0 20px',
   textAlign: 'left',
 };
 
@@ -144,14 +148,18 @@ const closingText = {
   color: '#ffffff',
   fontSize: '16px',
   lineHeight: '1.4',
-  margin: '16px 0',
+  margin: '16px auto',
+  maxWidth: '451px',
+  textAlign: 'left',
 };
 
 const signatureText = {
   color: '#ffffff',
   fontSize: '16px',
   fontWeight: '700',
-  margin: '16px 0',
+  margin: '16px auto',
+  maxWidth: '451px',
+  textAlign: 'left',
 };
 
 const footerSection = {
