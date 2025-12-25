@@ -28,7 +28,7 @@ const container = {
 
 const logoSection = {
   textAlign: 'center',
-  padding: '24px 0 21px 0',
+  padding: '30px 0 16px 0',
 };
 
 const logo = {
@@ -74,7 +74,7 @@ const introText = {
   color: '#ffffff',
   fontSize: '16px',
   lineHeight: '1.28',
-  margin: '8px auto 8px auto',
+  margin: '8px auto 16px auto',
   maxWidth: '451px',
   textAlign: 'left',
 };
@@ -207,7 +207,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         }
       `)
     ),
-    e(Preview, null, `Welcome to the ${courseName} Course - Let's get you started!`),
+    e(Preview, null, `${firstName}, let's get you started`),
     e(Body, { style: main, className: 'body' },
       e(Container, { style: container, className: 'container' },
         // Logo
