@@ -1,54 +1,144 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
   Html,
   Img,
+  Link,
   Preview,
   Section,
   Text,
+  Hr,
 } from '@react-email/components';
 import * as React from 'react';
 
-export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }) => (
+export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) => (
   <Html>
     <Head />
-    <Preview>Welcome to {courseName} - Let's get you started!</Preview>
+    <Preview>Welcome to the {courseName} Course - Let's get you started!</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img
-          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
-          width="140"
-          height="45"
-          alt="Ignite"
-          style={logo}
-        />
-        <Heading style={h1}>Welcome to {courseName}, {firstName}!</Heading>
-        <Text style={text}>
-          You've taken the first step towards mastering new skills. We're excited to have you on this journey.
-        </Text>
-        <Text style={text}>
-          Here's what you can expect:
-        </Text>
-        <ul style={list}>
-          <li style={listItem}>Interactive lessons with AI-powered learning</li>
-          <li style={listItem}>Knowledge checks to reinforce your understanding</li>
-          <li style={listItem}>Track your progress as you complete each module</li>
-          <li style={listItem}>Earn a certificate when you finish the course</li>
-        </ul>
-        <Section style={buttonContainer}>
-          <Button style={button} href="https://ignite.education/progress">
-            Start Your First Lesson
-          </Button>
+        {/* Logo */}
+        <Section style={logoSection}>
+          <Link href="https://www.linkedin.com/school/ignite-courses">
+            <Img
+              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
+              width="140"
+              alt="Ignite"
+              style={logo}
+            />
+          </Link>
         </Section>
-        <Text style={footer}>
-          Need help? Reply to this email or reach out to us at{' '}
-          <a href="mailto:hello@ignite.education" style={link}>
-            hello@ignite.education
-          </a>
-        </Text>
+
+        {/* Welcome Header */}
+        <Heading style={h1}>
+          <span style={{ color: '#f0f0f0' }}>Welcome, </span>
+          <span style={{ color: '#ef0b72' }}>{firstName}</span>
+        </Heading>
+
+        {/* Intro Section */}
+        <Section style={introSection}>
+          <Img
+            src="https://auth.ignite.education/storage/v1/object/public/assets/db6d49f3f5a82b1540bf96c8d4a06334.png"
+            width="171"
+            height="173"
+            alt="Certificate"
+            style={certificateIcon}
+          />
+          <Hr style={divider} />
+          <Text style={introTitle}>
+            {firstName}, welcome to the {courseName} Course.
+          </Text>
+          <Text style={introText}>
+            We're building a smarter, more personalised era of education for everyone, and we're glad you've joined us. Below are some top tips to help you start strong.
+          </Text>
+          <Hr style={divider} />
+        </Section>
+
+        {/* Tip 1 */}
+        <Section style={tipContainer}>
+          <table cellPadding="0" cellSpacing="0" border="0" style={tipTable}>
+            <tbody>
+              <tr>
+                <td style={tipNumberCell}>
+                  <Text style={tipNumber}>1</Text>
+                </td>
+                <td style={tipContentCell}>
+                  <Text style={tipTitle}>Add Ignite to your LinkedIn</Text>
+                  <Text style={tipDescription}>
+                    LinkedIn profiles with certifications get 6x more profile views than those without.{' '}
+                    <Link href="https://www.linkedin.com/profile/add?startTask=CERTIFICATION&name=Product%20Manager&organizationName=Ignite&issueYear=2025&certUrl=https://ignite.education" style={tipLink}>
+                      Add now &gt;
+                    </Link>
+                  </Text>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Section>
+
+        {/* Tip 2 */}
+        <Section style={tipContainer}>
+          <table cellPadding="0" cellSpacing="0" border="0" style={tipTable}>
+            <tbody>
+              <tr>
+                <td style={tipNumberCell}>
+                  <Text style={tipNumber}>2</Text>
+                </td>
+                <td style={tipContentCell}>
+                  <Text style={tipTitle}>Discover the Community Forum</Text>
+                  <Text style={tipDescription}>
+                    Hear and contribute to the latest industry trends, conversation and advice in the Community Forum.
+                  </Text>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Section>
+
+        {/* Tip 3 */}
+        <Section style={tipContainer}>
+          <table cellPadding="0" cellSpacing="0" border="0" style={tipTable}>
+            <tbody>
+              <tr>
+                <td style={tipNumberCell}>
+                  <Text style={tipNumber}>3</Text>
+                </td>
+                <td style={tipContentCell}>
+                  <Text style={tipTitle}>Commit to Yourself</Text>
+                  <Text style={tipDescription}>
+                    Most people complete the course within six weeks. Set yourself a goal, write it down and stay committed.
+                  </Text>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </Section>
+
+        {/* Closing Section */}
+        <Section style={closingSection}>
+          <Hr style={divider} />
+          <Text style={closingText}>
+            We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Learning Hub Dashboard.
+          </Text>
+          <Text style={signatureText}>Ignite Team</Text>
+          <Hr style={divider} />
+        </Section>
+
+        {/* Footer */}
+        <Section style={footerSection}>
+          <Img
+            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
+            width="100"
+            alt="Ignite"
+            style={footerLogo}
+          />
+          <Text style={footerText}>
+            Unsubscribe from emails <Link href="https://ignite.education/unsubscribe" style={footerLink}>here</Link>.
+          </Text>
+          <Text style={copyrightText}>© Ignite Education AI Ltd</Text>
+        </Section>
       </Container>
     </Body>
   </Html>
@@ -56,79 +146,169 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'your course' }
 
 export default WelcomeEmail;
 
+// Styles
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  backgroundColor: '#f0f1f5',
+  fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#000000',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
+  padding: '10px 0',
+  maxWidth: '600px',
+};
+
+const logoSection = {
+  textAlign: 'center',
+  padding: '21px 0',
 };
 
 const logo = {
   margin: '0 auto',
-  display: 'block',
-  marginBottom: '32px',
 };
 
 const h1 = {
-  color: '#1a1a1a',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '40px 0',
+  fontSize: '31px',
+  fontWeight: '700',
+  textAlign: 'center',
+  margin: '16px 20px',
   padding: '0',
+};
+
+const introSection = {
+  padding: '0 40px',
   textAlign: 'center',
 };
 
-const text = {
-  color: '#525252',
+const certificateIcon = {
+  margin: '0 auto 16px',
+};
+
+const divider = {
+  borderColor: '#000000',
+  borderWidth: '1px',
+  margin: '16px auto',
+  width: '239px',
+};
+
+const introTitle = {
+  color: '#ffffff',
   fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+  fontWeight: '700',
+  lineHeight: '1.4',
+  margin: '16px 0',
 };
 
-const list = {
-  color: '#525252',
+const introText = {
+  color: '#ffffff',
   fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
+  lineHeight: '1.28',
+  margin: '16px 0',
 };
 
-const listItem = {
-  marginBottom: '8px',
+const tipContainer = {
+  padding: '0 20px',
+  marginBottom: '16px',
 };
 
-const buttonContainer = {
+const tipTable = {
+  width: '100%',
+  maxWidth: '451px',
+  margin: '0 auto',
+  backgroundColor: '#ef0b72',
+  borderRadius: '10px',
+};
+
+const tipNumberCell = {
+  width: '45px',
+  verticalAlign: 'middle',
   textAlign: 'center',
-  margin: '32px 0',
+  backgroundColor: '#ef0b72',
+  borderTopLeftRadius: '10px',
+  borderBottomLeftRadius: '10px',
+  padding: '5px',
 };
 
-const button = {
-  backgroundColor: '#ec4899',
-  borderRadius: '8px',
-  color: '#fff',
+const tipNumber = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0',
+};
+
+const tipContentCell = {
+  backgroundColor: '#ffffff',
+  borderTopRightRadius: '11px',
+  borderBottomRightRadius: '11px',
+  padding: '15px',
+  verticalAlign: 'top',
+};
+
+const tipTitle = {
+  color: '#000000',
   fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center',
-  display: 'inline-block',
-  padding: '12px 32px',
+  fontWeight: '700',
+  margin: '0 0 4px 0',
+  lineHeight: '1.15',
 };
 
-const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '24px',
-  textAlign: 'center',
-  margin: '32px 32px 0',
+const tipDescription = {
+  color: '#000000',
+  fontSize: '13px',
+  margin: '0',
+  lineHeight: '1.4',
 };
 
-const link = {
-  color: '#ec4899',
+const tipLink = {
+  color: '#ef0b72',
+  fontWeight: '700',
   textDecoration: 'underline',
+};
+
+const closingSection = {
+  padding: '0 40px',
+  textAlign: 'left',
+};
+
+const closingText = {
+  color: '#ffffff',
+  fontSize: '16px',
+  lineHeight: '1.4',
+  margin: '16px 0',
+};
+
+const signatureText = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '700',
+  margin: '16px 0',
+};
+
+const footerSection = {
+  backgroundColor: '#000000',
+  textAlign: 'center',
+  padding: '20px',
+};
+
+const footerLogo = {
+  margin: '0 auto 16px',
+};
+
+const footerText = {
+  color: '#ffffff',
+  fontSize: '12px',
+  margin: '0 0 16px 0',
+  lineHeight: '1.4',
+};
+
+const footerLink = {
+  color: '#ffffff',
+  textDecoration: 'underline',
+};
+
+const copyrightText = {
+  color: '#ffffff',
+  fontSize: '11px',
+  margin: '0',
 };
