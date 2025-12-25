@@ -45,7 +45,7 @@ const h1 = {
 
 const introSection = {
   padding: '0 20px',
-  textAlign: 'left',
+  textAlign: 'center',
   marginBottom: '0',
 };
 
@@ -67,7 +67,7 @@ const introTitle = {
   lineHeight: '1.4',
   margin: '8px auto',
   maxWidth: '451px',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 const introText = {
@@ -76,7 +76,7 @@ const introText = {
   lineHeight: '1.28',
   margin: '8px auto 16px auto',
   maxWidth: '451px',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 const tipContainer = {
@@ -141,7 +141,7 @@ const tipLink = {
 
 const closingSection = {
   padding: '0 20px',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 const closingText = {
@@ -150,7 +150,7 @@ const closingText = {
   lineHeight: '1.4',
   margin: '16px auto',
   maxWidth: '451px',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 const signatureText = {
@@ -159,7 +159,7 @@ const signatureText = {
   fontWeight: '700',
   margin: '16px auto',
   maxWidth: '451px',
-  textAlign: 'left',
+  textAlign: 'center',
 };
 
 const footerSection = {
@@ -207,7 +207,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         }
       `)
     ),
-    e(Preview, null, `${firstName}, let's get you started!`),
+    e(Preview, null, `${firstName}, let's get started!`),
     e(Body, { style: main, className: 'body' },
       e(Container, { style: container, className: 'container' },
         // Logo
@@ -215,7 +215,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
               src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
-              width: '140',
+              width: '126',
               alt: 'Ignite',
               style: logo
             })
