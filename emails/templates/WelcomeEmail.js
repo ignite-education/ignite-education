@@ -54,7 +54,7 @@ const certificateIcon = {
 };
 
 const divider = {
-  borderColor: '#333333',
+  borderColor: '#000000',
   borderWidth: '1px',
   margin: '8px auto',
   width: '239px',
@@ -286,10 +286,8 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
             alt: 'Ignite',
             style: footerLogo
           }),
-          e(Text, { style: footerText },
-            'Unsubscribe from emails ',
-            e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink }, 'here'),
-            '.'
+          e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink },
+            e(Text, { style: footerText }, 'Unsubscribe from emails here.')
           ),
           e(Text, { style: copyrightText }, '© Ignite Education AI Ltd')
         )

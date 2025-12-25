@@ -2448,7 +2448,7 @@ app.post('/api/send-email', async (req, res) => {
       case 'welcome':
         // Course welcome email (sent when user enrolls in a course)
         const courseName = data.courseName || 'your course';
-        subject = `Welcome to ${courseName}, ${firstName}!`;
+        subject = `Welcome to Ignite`;
         const WelcomeEmail = (await import('./emails/templates/WelcomeEmail.js')).default;
         htmlContent = await render(React.createElement(WelcomeEmail, { firstName, courseName }));
         break;
