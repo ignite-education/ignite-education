@@ -15,7 +15,7 @@ import * as React from 'react';
 
 // Styles
 const main = {
-  backgroundColor: '#f0f1f5',
+  backgroundColor: '#000000',
   fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
