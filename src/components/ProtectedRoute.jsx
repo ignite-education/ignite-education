@@ -87,8 +87,9 @@ const ProtectedRoute = ({ children }) => {
               continue;
             }
             // On last attempt with error, assume they need onboarding (safe fallback)
+            // But DON'T cache this - we're just guessing and don't want to persist incorrect state
+            console.warn('[ProtectedRoute] Database failed, defaulting to onboarding (not cached)');
             setNeedsOnboarding(true);
-            cacheOnboardingStatus(user.id, true);
           } else if (data) {
             // User record exists - check if onboarding is completed
             const completed = data.onboarding_completed === true;
@@ -149,9 +150,9 @@ const ProtectedRoute = ({ children }) => {
           }
 
           // On last attempt with exception, default to showing onboarding (safe fallback)
-          console.error('[ProtectedRoute] All retry attempts failed, defaulting to show onboarding');
+          // But DON'T cache this - we're just guessing and don't want to persist incorrect state
+          console.error('[ProtectedRoute] All retry attempts failed, defaulting to show onboarding (not cached)');
           setNeedsOnboarding(true);
-          cacheOnboardingStatus(user.id, true);
         }
       }
 
@@ -179,7 +180,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Wait for auth to be initialized first
   if (!isInitialized || onboardingLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
   }
 
   if (!user) {

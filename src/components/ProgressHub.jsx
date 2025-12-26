@@ -2360,7 +2360,7 @@ const ProgressHub = () => {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
   }
 
   return (
