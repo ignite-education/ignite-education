@@ -6,34 +6,9 @@ import Onboarding from './Onboarding';
 import LoadingScreen from './LoadingScreen';
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
-const ONBOARDING_PERSISTENT_KEY = 'onboarding_completed'; // localStorage key for persistent cache
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const DB_TIMEOUT = 10000; // 10 seconds - reduced from 30s
-const MAX_RETRIES = 1; // Reduced retries since we have fallback cache
-
-// Background validation - doesn't block UI
-const validateOnboardingInBackground = async (userId) => {
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('onboarding_completed, enrolled_course')
-      .eq('id', userId)
-      .maybeSingle();
-
-    if (!error && data) {
-      const completed = data.onboarding_completed === true || Boolean(data.enrolled_course);
-      // Update persistent cache with fresh data
-      localStorage.setItem(ONBOARDING_PERSISTENT_KEY, JSON.stringify({
-        userId,
-        completed,
-        timestamp: Date.now()
-      }));
-      console.log('[ProtectedRoute] Background validation complete:', { completed });
-    }
-  } catch (err) {
-    console.warn('[ProtectedRoute] Background validation failed:', err);
-  }
-};
+const MAX_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
 
 const ProtectedRoute = ({ children }) => {
   const { user, firstName, isInitialized } = useAuth();
@@ -50,7 +25,7 @@ const ProtectedRoute = ({ children }) => {
 
       setOnboardingLoading(true);
 
-      // Check session storage cache first (fast path)
+      // Check session storage cache first
       try {
         const cached = sessionStorage.getItem(ONBOARDING_CACHE_KEY);
         if (cached) {
@@ -71,24 +46,6 @@ const ProtectedRoute = ({ children }) => {
       } catch (cacheError) {
         console.warn('[ProtectedRoute] Error reading cache:', cacheError);
         // Continue to database check
-      }
-
-      // Also check persistent localStorage cache (for when database is unreachable)
-      try {
-        const persistentCache = localStorage.getItem(ONBOARDING_PERSISTENT_KEY);
-        if (persistentCache) {
-          const { userId, completed } = JSON.parse(persistentCache);
-          if (userId === user.id && completed) {
-            console.log('[ProtectedRoute] Using persistent localStorage cache - user completed onboarding');
-            setNeedsOnboarding(false);
-            setOnboardingLoading(false);
-            // Still try to validate with database in background, but don't block
-            validateOnboardingInBackground(user.id);
-            return;
-          }
-        }
-      } catch (e) {
-        console.warn('[ProtectedRoute] Error reading persistent cache:', e);
       }
 
       // Retry logic wrapper
@@ -152,15 +109,6 @@ const ProtectedRoute = ({ children }) => {
             const needsOnboardingValue = !completed && !hasEnrolledCourse;
             setNeedsOnboarding(needsOnboardingValue);
             cacheOnboardingStatus(user.id, needsOnboardingValue);
-
-            // Also save to persistent localStorage if user completed onboarding
-            if (!needsOnboardingValue) {
-              localStorage.setItem(ONBOARDING_PERSISTENT_KEY, JSON.stringify({
-                userId: user.id,
-                completed: true,
-                timestamp: Date.now()
-              }));
-            }
           } else {
             // No user record found - this is a new user who needs onboarding
             console.log('[ProtectedRoute] No user record found, creating one and showing onboarding');
@@ -201,27 +149,9 @@ const ProtectedRoute = ({ children }) => {
             continue;
           }
 
-          // On last attempt with exception, check localStorage for persistent cache
-          // This handles the case where Supabase is unreachable but user has logged in before
-          console.error('[ProtectedRoute] All retry attempts failed, checking persistent cache');
-
-          const persistentCache = localStorage.getItem(ONBOARDING_PERSISTENT_KEY);
-          if (persistentCache) {
-            try {
-              const { userId, completed } = JSON.parse(persistentCache);
-              if (userId === user.id && completed) {
-                console.log('[ProtectedRoute] Using persistent cache - user completed onboarding');
-                setNeedsOnboarding(false);
-                setOnboardingLoading(false);
-                return;
-              }
-            } catch (e) {
-              console.warn('[ProtectedRoute] Failed to parse persistent cache');
-            }
-          }
-
-          // Only show onboarding if we have no evidence user completed it
-          console.warn('[ProtectedRoute] No persistent cache found, defaulting to show onboarding');
+          // On last attempt with exception, default to showing onboarding (safe fallback)
+          // But DON'T cache this - we're just guessing and don't want to persist incorrect state
+          console.error('[ProtectedRoute] All retry attempts failed, defaulting to show onboarding (not cached)');
           setNeedsOnboarding(true);
         }
       }

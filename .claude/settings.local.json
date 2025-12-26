@@ -17,7 +17,9 @@
       "Bash(grep:*)",
       "Bash(wc:*)",
       "Bash(npm run build:*)",
-      "Bash(git push)"
+      "Bash(git push)",
+      "Bash(git revert:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
