@@ -1575,7 +1575,7 @@ const Auth = () => {
                   onChange={(e) => setFirstName(e.target.value)}
                   required={!isLogin}
                   className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="John"
+                  placeholder="Alan"
                   disabled={isLogin}
                 />
               </div>
@@ -1587,7 +1587,7 @@ const Auth = () => {
                   onChange={(e) => setLastName(e.target.value)}
                   required={!isLogin}
                   className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="Doe"
+                  placeholder="Turing"
                   disabled={isLogin}
                 />
               </div>

@@ -320,6 +320,10 @@ body {
 
 /* Section 5 tablet/small desktop - stack vertically to prevent overlap */
 @media (min-width: 768px) and (max-width: 1200px) {
+  .auth-section-1 {
+    height: 100dvh;
+  }
+
   .auth-section-5-grid {
     padding-left: 2rem !important;
     padding-right: 2rem !important;
