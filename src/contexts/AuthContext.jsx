@@ -31,10 +31,12 @@ export const AuthProvider = ({ children }) => {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const projectRef = new URL(supabaseUrl).hostname.split('.')[0];
       const storageKey = `sb-${projectRef}-auth-token`;
+      console.log('[AuthContext] Looking for session in localStorage key:', storageKey);
       const storedSession = localStorage.getItem(storageKey);
 
       if (storedSession) {
         const parsed = JSON.parse(storedSession);
+        console.log('[AuthContext] Parsed stored session:', parsed ? 'found' : 'empty', 'user:', parsed?.user?.id ?? 'none');
         if (parsed?.user) {
           console.log('[AuthContext] Found stored session, using immediately:', parsed.user.id);
           setUser(parsed.user);
@@ -43,6 +45,8 @@ export const AuthProvider = ({ children }) => {
           hasInitialized = true;
           // Continue to validate in background via getSession/onAuthStateChange
         }
+      } else {
+        console.log('[AuthContext] No stored session found in localStorage');
       }
     } catch (e) {
       console.warn('[AuthContext] Failed to read stored session:', e);
