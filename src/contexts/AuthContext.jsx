@@ -25,6 +25,30 @@ export const AuthProvider = ({ children }) => {
 
     console.log('[AuthContext] Starting auth initialization...');
 
+    // IMMEDIATE: Check localStorage for existing session (no network call)
+    // This allows instant UI rendering for returning users
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const projectRef = new URL(supabaseUrl).hostname.split('.')[0];
+      const storageKey = `sb-${projectRef}-auth-token`;
+      const storedSession = localStorage.getItem(storageKey);
+
+      if (storedSession) {
+        const parsed = JSON.parse(storedSession);
+        if (parsed?.user) {
+          console.log('[AuthContext] Found stored session, using immediately:', parsed.user.id);
+          setUser(parsed.user);
+          setLoading(false);
+          setIsInitialized(true);
+          hasInitialized = true;
+          // Continue to validate in background via getSession/onAuthStateChange
+        }
+      }
+    } catch (e) {
+      console.warn('[AuthContext] Failed to read stored session:', e);
+      // Continue with normal flow
+    }
+
     // Helper to safely initialize (prevents double initialization)
     const safeInitialize = (session, source) => {
       if (!isSubscribed || hasInitialized) return;
@@ -82,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         safeInitialize(null, 'timeout-no-session');
       }
-    }, 30000);
+    }, 5000); // 5 seconds - reduced from 30s since we use localStorage first
 
     // Try getSession as backup (may hang on some browsers/conditions)
     console.log('[AuthContext] Calling getSession...');
