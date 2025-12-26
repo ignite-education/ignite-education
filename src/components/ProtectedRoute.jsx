@@ -7,7 +7,7 @@ import LoadingScreen from './LoadingScreen';
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const DB_TIMEOUT = 10000; // 10 seconds (increased from 5s)
+const DB_TIMEOUT = 30000; // 30 seconds to handle Supabase cold starts
 const MAX_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
 
 const ProtectedRoute = ({ children }) => {

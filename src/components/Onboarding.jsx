@@ -6,7 +6,7 @@ import { moveContactBetweenAudiences, RESEND_AUDIENCES, sendCourseWelcomeEmail }
 
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
-const COURSE_FETCH_TIMEOUT = 10000;
+const COURSE_FETCH_TIMEOUT = 30000; // 30 seconds to handle Supabase cold starts
 const MAX_COURSE_RETRIES = 2;
 
 const Onboarding = ({ firstName, userId }) => {
