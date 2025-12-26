@@ -18,7 +18,7 @@ CREATE POLICY "Public can view published releases" ON release_notes
 
 -- Policy: Authenticated users can manage all releases
 CREATE POLICY "Authenticated users can manage releases" ON release_notes
-  FOR ALL USING (auth.role() = 'authenticated');
+  FOR ALL USING (auth.uid() IS NOT NULL);
 
 -- Index for performance on common queries
 CREATE INDEX idx_release_notes_status_date ON release_notes(status, release_date DESC);
