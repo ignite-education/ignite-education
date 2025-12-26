@@ -1244,7 +1244,23 @@ const ProgressHub = () => {
 
   // Settings Modal Handlers
   const handleOpenSettings = async () => {
-    // Fetch available courses from database (only live courses)
+    // Show modal immediately for responsive feel
+    setShowSettingsModal(true);
+    setSettingsTab('account');
+
+    // Set initial form with current user data (synchronous)
+    setSettingsForm({
+      firstName: authUser?.user_metadata?.first_name || '',
+      lastName: authUser?.user_metadata?.last_name || '',
+      email: authUser?.email || '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      selectedCourse: 'product-manager',
+      marketingEmails: authUser?.user_metadata?.marketing_emails !== false
+    });
+
+    // Then fetch additional data in background
     try {
       const { data: coursesData, error } = await supabase
         .from('courses')
@@ -1260,32 +1276,24 @@ const ProgressHub = () => {
     }
 
     // Fetch user's current enrolled course
-    let userEnrolledCourse = 'product-manager';
     if (authUser?.id) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('enrolled_course')
-        .eq('id', authUser.id)
-        .single();
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', authUser.id)
+          .single();
 
-      if (userData?.enrolled_course) {
-        userEnrolledCourse = userData.enrolled_course;
+        if (userData?.enrolled_course) {
+          setSettingsForm(prev => ({
+            ...prev,
+            selectedCourse: userData.enrolled_course
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching enrolled course:', error);
       }
     }
-
-    // Populate form with current user data
-    setSettingsForm({
-      firstName: authUser?.user_metadata?.first_name || '',
-      lastName: authUser?.user_metadata?.last_name || '',
-      email: authUser?.email || '',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-      selectedCourse: userEnrolledCourse,
-      marketingEmails: authUser?.user_metadata?.marketing_emails !== false
-    });
-    setShowSettingsModal(true);
-    setSettingsTab('account');
   };
 
   const handleCloseSettings = () => {
