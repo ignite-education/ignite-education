@@ -36,6 +36,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    storage: window.sessionStorage, // Use sessionStorage to isolate tabs and prevent cross-tab conflicts
   },
   global: {
     headers: {
