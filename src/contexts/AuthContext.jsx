@@ -19,31 +19,36 @@ export const AuthProvider = ({ children }) => {
   const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
-    // Add timeout to prevent infinite loading
-    const loadingTimeout = setTimeout(() => {
-      console.warn('Auth session check timed out after 30 seconds');
+    let isSubscribed = true;
+    let sessionFromListener = null;
+    let hasInitialized = false;
+
+    console.log('[AuthContext] Starting auth initialization...');
+
+    // Helper to safely initialize (prevents double initialization)
+    const safeInitialize = (session, source) => {
+      if (!isSubscribed || hasInitialized) return;
+      hasInitialized = true;
+      console.log(`[AuthContext] Initializing from ${source}:`, session?.user?.id ?? 'no user');
+      setUser(session?.user ?? null);
       setLoading(false);
       setIsInitialized(true);
-    }, 30000); // 30 second timeout to handle Supabase cold starts
+    };
 
-    // Check active sessions and sets the user
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        clearTimeout(loadingTimeout);
-        setUser(session?.user ?? null);
-        setLoading(false);
-        setIsInitialized(true);
-      })
-      .catch((error) => {
-        clearTimeout(loadingTimeout);
-        console.error('Error getting session:', error);
-        setUser(null);
-        setLoading(false);
-        setIsInitialized(true);
-      });
-
-    // Listen for changes on auth state (login, logout, etc.)
+    // Set up auth state listener FIRST (before getSession)
+    // This ensures we catch OAuth callbacks that may fire before getSession resolves
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!isSubscribed) return;
+
+      console.log('[AuthContext] onAuthStateChange:', event, session?.user?.id ?? 'no user');
+      sessionFromListener = session;
+
+      // If we get a session from the listener, use it immediately
+      if (session?.user) {
+        safeInitialize(session, 'onAuthStateChange');
+      }
+
+      // Always update user state on auth changes (for logout, token refresh, etc.)
       setUser(session?.user ?? null);
       setLoading(false);
 
@@ -65,7 +70,51 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
+    // Timeout handler - use session from listener if available
+    const loadingTimeout = setTimeout(() => {
+      if (!isSubscribed) return;
+      console.warn('[AuthContext] Auth session check timed out after 30 seconds');
+      console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
+
+      // Check if onAuthStateChange already gave us a session
+      if (sessionFromListener?.user) {
+        safeInitialize(sessionFromListener, 'timeout-with-listener-session');
+      } else {
+        safeInitialize(null, 'timeout-no-session');
+      }
+    }, 30000);
+
+    // Try getSession as backup (may hang on some browsers/conditions)
+    console.log('[AuthContext] Calling getSession...');
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!isSubscribed) return;
+        console.log('[AuthContext] getSession resolved:', session?.user?.id ?? 'no user');
+        clearTimeout(loadingTimeout);
+
+        // Only use getSession result if listener hasn't already initialized
+        if (!sessionFromListener?.user) {
+          safeInitialize(session, 'getSession');
+        } else {
+          // Listener already handled it, just mark as initialized
+          safeInitialize(sessionFromListener, 'getSession-with-listener-session');
+        }
+      })
+      .catch((error) => {
+        if (!isSubscribed) return;
+        clearTimeout(loadingTimeout);
+        console.error('[AuthContext] Error getting session:', error);
+
+        // Use listener session if available, otherwise no user
+        if (sessionFromListener?.user) {
+          safeInitialize(sessionFromListener, 'getSession-error-with-listener-session');
+        } else {
+          safeInitialize(null, 'getSession-error');
+        }
+      });
+
     return () => {
+      isSubscribed = false;
       clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
