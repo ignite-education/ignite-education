@@ -25,6 +25,7 @@ const Onboarding = ({ firstName, userId }) => {
   const [courses, setCourses] = useState([]);
   const [isLoadingCourses, setIsLoadingCourses] = useState(true);
   const [courseError, setCourseError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const dropdownRef = useRef(null);
 
   // Debug: Log state changes
@@ -281,7 +282,10 @@ const Onboarding = ({ firstName, userId }) => {
   };
 
   const handleComplete = async () => {
-    if (!selectedCourse) return;
+    if (!selectedCourse || isSubmitting) return;
+
+    // Show loading immediately
+    setIsSubmitting(true);
 
     console.log('handleComplete called', { selectedCourse, courseStatus });
 
@@ -289,6 +293,7 @@ const Onboarding = ({ firstName, userId }) => {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) {
+      setIsSubmitting(false);
       alert('Your session has expired. Please sign in again.');
       window.location.href = '/auth';
       return;
@@ -373,6 +378,7 @@ const Onboarding = ({ firstName, userId }) => {
         window.location.href = '/progress';
       } catch (error) {
         console.error('Error updating user:', error);
+        setIsSubmitting(false);
         alert(`There was an error saving your preferences: ${error.message}`);
       }
     } else {
@@ -399,6 +405,7 @@ const Onboarding = ({ firstName, userId }) => {
         console.error('Exception saving course request:', err);
       }
 
+      setIsSubmitting(false);
       setCourseStatus(status);
       setShowNotification(true);
     }
@@ -602,11 +609,15 @@ const Onboarding = ({ firstName, userId }) => {
 
                   <button
                     onClick={handleComplete}
-                    disabled={!selectedCourse}
+                    disabled={!selectedCourse || isSubmitting}
                     className="bg-white hover:bg-white rounded-xl transition disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
-                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px' }}
+                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px', minWidth: '56px' }}
                   >
-                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
+                    {isSubmitting ? (
+                      <div className="w-6 h-6 border-2 border-gray-300 border-t-pink-500 rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
+                    )}
                   </button>
                 </div>
               ) : (
