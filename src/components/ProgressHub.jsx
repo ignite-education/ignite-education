@@ -2908,7 +2908,7 @@ const ProgressHub = () => {
                 </button>
                 <button
                   className="hover:text-[#EF0B72] transition"
-                  onClick={() => window.location.href = `mailto:feedback@ignite.education?subject=Feedback: ${user.firstName} ${user.lastName}`}
+                  onClick={() => window.open('https://forms.gle/NCMHA7Qd1Cqi1pUC6', '_blank')}
                 >
                   Feedback
                 </button>
