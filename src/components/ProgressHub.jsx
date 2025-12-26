@@ -3943,7 +3943,7 @@ const ProgressHub = () => {
                       disabled={isLoggingOut}
                       className="px-5 py-1.5 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isLoggingOut ? 'Logging out...' : 'Log Out'}
+                      Log Out
                     </button>
                   </div>
 

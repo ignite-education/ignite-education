@@ -165,9 +165,7 @@ const LearningHub = () => {
   const [isEditingExplanation, setIsEditingExplanation] = useState(false);
   const [editedExplanation, setEditedExplanation] = useState('');
   const [popupLocked, setPopupLocked] = useState(false);
-  const [isReadingNote, setIsReadingNote] = useState(false);
-  const noteAudioRef = React.useRef(null);
-  const closeTimeoutRef = React.useRef(null);
+    const closeTimeoutRef = React.useRef(null);
   const highlightRef = React.useRef(null);
   const editableRef = React.useRef(null);
   const scrollContainerRef = React.useRef(null);
@@ -1465,66 +1463,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const handleCancelEdit = () => {
     setIsEditingExplanation(false);
     setEditedExplanation('');
-  };
-
-  const handleReadNoteAloud = async (explanation) => {
-    // If already reading, stop the audio
-    if (isReadingNote && noteAudioRef.current) {
-      noteAudioRef.current.pause();
-      noteAudioRef.current = null;
-      setIsReadingNote(false);
-      return;
-    }
-
-    try {
-      setIsReadingNote(true);
-
-      // Strip markdown formatting from the text
-      const cleanText = explanation
-        .replace(/\*\*(.+?)\*\*/g, '$1') // Remove bold **text**
-        .replace(/\*(.+?)\*/g, '$1')     // Remove italic *text*
-        .trim();
-
-      const response = await fetch(`${API_URL}/api/text-to-speech`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: cleanText, voiceGender }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate speech');
-      }
-
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Create and play audio
-      const audio = new Audio(audioUrl);
-      noteAudioRef.current = audio;
-
-      audio.onended = () => {
-        setIsReadingNote(false);
-        noteAudioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      audio.onerror = () => {
-        setIsReadingNote(false);
-        noteAudioRef.current = null;
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      // Set playback speed for note
-      audio.playbackRate = playbackSpeed;
-
-      await audio.play();
-    } catch (error) {
-      console.error('Error reading note aloud:', error);
-      setIsReadingNote(false);
-      noteAudioRef.current = null;
-    }
   };
 
   // Scroll handlers for upcoming lessons
@@ -3247,10 +3185,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioRef.current.pause();
         audioRef.current = null;
       }
-      if (noteAudioRef.current) {
-        noteAudioRef.current.pause();
-        noteAudioRef.current = null;
-      }
       if (prefetchedAudioRef.current) {
         URL.revokeObjectURL(prefetchedAudioRef.current.url);
         prefetchedAudioRef.current = null;
@@ -3269,15 +3203,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       }
     };
   }, []);
-
-  // Cleanup note audio when popup closes
-  useEffect(() => {
-    if (!hoveredExplanation && noteAudioRef.current) {
-      noteAudioRef.current.pause();
-      noteAudioRef.current = null;
-      setIsReadingNote(false);
-    }
-  }, [hoveredExplanation]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -4914,16 +4839,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               <div className="flex gap-1">
                 {!isEditingExplanation ? (
                   <>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleReadNoteAloud(explanation);
-                      }}
-                      className={`p-1 hover:bg-pink-200 rounded transition-colors ${isReadingNote ? 'text-pink-600' : 'text-gray-700'}`}
-                      title={isReadingNote ? "Stop reading" : "Read aloud"}
-                    >
-                      <Volume2 size={16} />
-                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
