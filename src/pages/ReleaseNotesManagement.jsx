@@ -40,6 +40,10 @@ const ReleaseNotesManagement = () => {
   };
 
   const handleSaveRelease = async () => {
+    console.log('handleSaveRelease called');
+    console.log('formData:', formData);
+    console.log('notes:', notes);
+
     if (!formData.version.trim()) {
       alert('Please enter a version number');
       return;
@@ -50,6 +54,8 @@ const ReleaseNotesManagement = () => {
     }
 
     const filteredNotes = notes.filter(note => note.trim() !== '');
+    console.log('filteredNotes:', filteredNotes);
+
     if (filteredNotes.length === 0) {
       alert('Please add at least one release note');
       return;
@@ -57,6 +63,7 @@ const ReleaseNotesManagement = () => {
 
     try {
       setIsSaving(true);
+      console.log('Starting save...');
 
       const releaseData = {
         version: formData.version.trim(),
@@ -64,18 +71,25 @@ const ReleaseNotesManagement = () => {
         notes: filteredNotes,
         status: formData.status
       };
+      console.log('releaseData:', releaseData);
 
       if (selectedRelease) {
-        const { error } = await supabase
+        console.log('Updating existing release:', selectedRelease.id);
+        const { data, error } = await supabase
           .from('release_notes')
           .update(releaseData)
-          .eq('id', selectedRelease.id);
+          .eq('id', selectedRelease.id)
+          .select();
+        console.log('Update result - data:', data, 'error:', error);
         if (error) throw error;
         alert('Release updated!');
       } else {
-        const { error } = await supabase
+        console.log('Creating new release');
+        const { data, error } = await supabase
           .from('release_notes')
-          .insert([releaseData]);
+          .insert([releaseData])
+          .select();
+        console.log('Insert result - data:', data, 'error:', error);
         if (error) throw error;
         alert('Release created!');
       }
