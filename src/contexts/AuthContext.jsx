@@ -72,8 +72,16 @@ export const AuthProvider = ({ children }) => {
         safeInitialize(session, 'onAuthStateChange');
       }
 
-      // Always update user state on auth changes (for logout, token refresh, etc.)
-      setUser(session?.user ?? null);
+      // Only update user state if user actually changed (prevents unnecessary re-renders)
+      // Compare by ID to avoid object reference changes triggering updates
+      setUser(currentUser => {
+        const newUserId = session?.user?.id ?? null;
+        const currentUserId = currentUser?.id ?? null;
+        if (newUserId !== currentUserId) {
+          return session?.user ?? null;
+        }
+        return currentUser;
+      });
       setLoading(false);
 
       // Clean up OAuth hash fragments from URL after sign-in

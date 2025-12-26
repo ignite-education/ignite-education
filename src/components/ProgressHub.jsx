@@ -288,7 +288,7 @@ const ProgressHub = () => {
     };
 
     fetchUserRole();
-  }, [authUser]);
+  }, [authUser?.id]);
 
   // Check Reddit authentication status
   useEffect(() => {
