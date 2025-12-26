@@ -3369,9 +3369,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           }
         }
       `}</style>
-      <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <div className="bg-black text-white flex" style={{ height: '100dvh', fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
         {/* Left Sidebar - Course Navigation */}
-      <div className="bg-black border-r border-gray-800 flex flex-col h-screen overflow-hidden" style={{ width: '507.1px', minWidth: '507.1px' }}>
+      <div className="bg-black border-r border-gray-800 flex flex-col overflow-hidden" style={{ height: '100dvh', width: '507.1px', minWidth: '507.1px' }}>
         {/* Header */}
         <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
           <div className="flex items-center justify-between">
