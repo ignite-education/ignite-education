@@ -97,7 +97,7 @@ export const AuthProvider = ({ children }) => {
     // Timeout handler - use session from listener if available
     const loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
-      console.warn('[AuthContext] Auth session check timed out after 30 seconds');
+      console.warn('[AuthContext] Auth session check timed out after 5 seconds');
       console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
 
       // Check if onAuthStateChange already gave us a session
