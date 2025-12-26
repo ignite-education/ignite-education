@@ -115,6 +115,7 @@ const ProgressHub = () => {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const postsScrollRef = useRef(null);
   const [settingsTab, setSettingsTab] = useState('account'); // 'account', 'preferences', 'danger'
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
     firstName: '',
     lastName: '',
@@ -1492,11 +1493,14 @@ const ProgressHub = () => {
   };
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
       await signOut();
       navigate('/auth');
     } catch (error) {
       console.error('Error logging out:', error);
+      setIsLoggingOut(false);
       alert('Failed to log out');
     }
   };
@@ -3936,9 +3940,10 @@ const ProgressHub = () => {
                     <p className="text-sm text-gray-700 mb-3">Sign out of your account on this device.</p>
                     <button
                       onClick={handleLogout}
-                      className="px-5 py-1.5 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition"
+                      disabled={isLoggingOut}
+                      className="px-5 py-1.5 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Log Out
+                      {isLoggingOut ? 'Logging out...' : 'Log Out'}
                     </button>
                   </div>
 
