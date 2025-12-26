@@ -2687,7 +2687,7 @@ const Auth = () => {
                 className="text-white hover:text-[#EF0B72] transition font-semibold"
                 style={{ fontSize: '14px' }}
               >
-                Release Notes
+                Release
               </a>
             </div>
           </div>

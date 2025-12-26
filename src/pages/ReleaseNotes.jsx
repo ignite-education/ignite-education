@@ -26,7 +26,7 @@ const ReleaseNotes = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-white">
       <SEO
         title="Release Notes"
         description="View the latest updates, features, and improvements to Ignite Education. Stay informed about new releases and enhancements to our learning platform."
