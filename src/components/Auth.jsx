@@ -2680,6 +2680,15 @@ const Auth = () => {
               >
                 Terms
               </a>
+              <a
+                href="/release-notes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-[#EF0B72] transition font-semibold"
+                style={{ fontSize: '14px' }}
+              >
+                Release Notes
+              </a>
             </div>
           </div>
         </div>

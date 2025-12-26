@@ -22,6 +22,8 @@ const Certificate = lazy(() => import('./components/Certificate'))
 const CoursePage = lazy(() => import('./pages/CoursePage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const BlogManagement = lazy(() => import('./pages/BlogManagement'))
+const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'))
+const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
 
 // Component to redirect authenticated users away from auth pages
@@ -67,6 +69,7 @@ function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/release-notes" element={<ReleaseNotes />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <ProgressHub />
@@ -105,6 +108,11 @@ function App() {
             <Route path="/admin/blog" element={
               <ProtectedRoute>
                 <BlogManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/release-notes" element={
+              <ProtectedRoute>
+                <ReleaseNotesManagement />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />
