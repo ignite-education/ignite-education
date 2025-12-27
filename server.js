@@ -1814,6 +1814,7 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     console.log(`✅ Uploaded to ${audioUrl}`);
 
     // 7. Convert character timestamps to word timestamps for highlighting
+    // This must match how the frontend splits text into words (using /\s+/ regex)
     const wordTimestamps = [];
     if (response.alignment) {
       const chars = response.alignment.characters;
@@ -1821,34 +1822,40 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
       const endTimesArr = response.alignment.characterEndTimesSeconds;
 
       let currentWord = '';
-      let wordStart = 0;
-      let wordEnd = 0;
+      let wordStart = null;
+      let wordEnd = null;
 
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
-        if (char === ' ' || char === '\n') {
-          if (currentWord.trim()) {
+        // Use same whitespace detection as LearningHub - regex test for any whitespace
+        const isWhitespace = /\s/.test(char);
+
+        if (isWhitespace) {
+          // End of a word - save it if we have one
+          if (currentWord.length > 0 && wordStart !== null) {
             wordTimestamps.push({
-              word: currentWord.trim(),
+              word: currentWord,
               start: wordStart,
               end: wordEnd
             });
+            currentWord = '';
+            wordStart = null;
+            wordEnd = null;
           }
-          currentWord = '';
-          wordStart = endTimesArr[i];
         } else {
-          if (!currentWord) {
+          // Part of a word
+          if (wordStart === null) {
             wordStart = startTimes[i];
           }
-          currentWord += char;
           wordEnd = endTimesArr[i];
+          currentWord += char;
         }
       }
 
-      // Don't forget the last word
-      if (currentWord.trim()) {
+      // Don't forget the last word if text doesn't end with whitespace
+      if (currentWord.length > 0 && wordStart !== null) {
         wordTimestamps.push({
-          word: currentWord.trim(),
+          word: currentWord,
           start: wordStart,
           end: wordEnd
         });
