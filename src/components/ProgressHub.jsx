@@ -4338,14 +4338,14 @@ const ProgressHub = () => {
                 </button>
               )}
 
-              {/* Design Test Link - Only for Admins */}
+              {/* Blog Management - Only for Admins */}
               {userRole === 'admin' && (
                 <button
-                  onClick={() => navigate('/auth-design')}
+                  onClick={() => navigate('/admin/blog')}
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
                 >
                   <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
-                  <span className="text-sm font-medium">Auth Design Test</span>
+                  <span className="text-sm font-medium">Blog Management</span>
                 </button>
               )}
 
