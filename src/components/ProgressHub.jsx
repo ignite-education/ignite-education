@@ -48,26 +48,27 @@ const CalendlyLoadingSpinner = () => {
 
 // Mobile Block Screen Component
 const MobileBlockScreen = () => {
-  const { lottieData } = useAnimation();
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-8">
-      <div style={{ opacity: lottieData ? 1 : 0, transition: 'opacity 0.3s ease-out' }}>
-        {lottieData && Object.keys(lottieData).length > 0 && (
-          <Lottie
-            animationData={lottieData}
-            loop={true}
-            autoplay={true}
-            style={{ width: 150, height: 150 }}
-          />
-        )}
-      </div>
+    <div className="min-h-screen flex flex-col justify-center bg-black text-white px-8">
       <p
-        className="text-center text-lg mt-6"
-        style={{ maxWidth: '280px', lineHeight: '1.5' }}
+        className="font-medium"
+        style={{ fontSize: '2rem', lineHeight: '1.4' }}
       >
-        Learning looks better on a laptop. Please revisit us on a tablet or computer.
+        Learning looks better on a laptop.
       </p>
+      <p
+        className="mt-4"
+        style={{ fontSize: '1.5rem', lineHeight: '1.5' }}
+      >
+        Please revisit us on a tablet or computer.
+      </p>
+      <a
+        href="https://ignite.education"
+        className="mt-6 inline-block px-6 py-3 bg-white text-black font-medium rounded-lg text-center"
+        style={{ width: 'fit-content' }}
+      >
+        Go back
+      </a>
     </div>
   );
 };
