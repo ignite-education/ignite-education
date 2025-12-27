@@ -67,7 +67,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
       />
       <p
         className="font-semibold"
-        style={{ fontSize: '2rem', lineHeight: '1.4', color: '#EF0B72' }}
+        style={{ fontSize: '3rem', lineHeight: '1.4', color: '#EF0B72' }}
       >
         Learning looks<br />better on a laptop.
       </p>
@@ -79,7 +79,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
       </p>
       <button
         onClick={handleGoBack}
-        className="mt-6 px-6 py-3 bg-white text-black font-medium rounded-lg text-center"
+        className="mt-6 px-6 py-3 bg-white text-black font-semibold rounded-lg text-center"
         style={{ width: 'fit-content' }}
       >
         Go back
