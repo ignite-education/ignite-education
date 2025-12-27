@@ -42,6 +42,8 @@ const BlogPostPage = () => {
   const articleRef = useRef(null);
   const headerWordIndicesRef = useRef([]); // Tracks word indices where headers start
   const lastScrolledHeaderRef = useRef(-1); // Tracks which header we last scrolled to
+  const contentContainerRef = useRef(null); // For direct DOM highlight manipulation
+  const currentHighlightRef = useRef(null); // Track currently highlighted element
 
   useEffect(() => {
     fetchPost();
@@ -396,33 +398,65 @@ const BlogPostPage = () => {
             }
           }
 
-          // Only update state if the word has changed
+          // Only update if the word has changed
           if (wordToHighlight !== lastHighlightedWord) {
-            // Debug: Log ALL word transitions and flag anomalies
+            // Debug: Log word transitions (reduced logging for performance)
             if (DEBUG_NARRATION) {
               const ts = wordTimestampsRef.current[wordToHighlight];
-              const frontendWord = contentWords[wordToHighlight] || '(none)';
               const jump = wordToHighlight - lastHighlightedWord;
 
               // Always log if there's an anomaly (skip or backwards jump)
               if (jump !== 1 && lastHighlightedWord !== 0) {
                 console.warn(`⚠️ JUMP DETECTED: ${lastHighlightedWord} → ${wordToHighlight} (jump of ${jump}) at audio=${currentTime.toFixed(3)}s`);
-                console.warn(`   Expected word ${lastHighlightedWord + 1}: "${contentWords[lastHighlightedWord + 1]}" | timestamp=${wordTimestampsRef.current[lastHighlightedWord + 1]?.start.toFixed(3)}-${wordTimestampsRef.current[lastHighlightedWord + 1]?.end.toFixed(3)}s`);
-                console.warn(`   Got word ${wordToHighlight}: "${ts?.word}" | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s`);
               }
 
-              // Log every word transition
-              console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | "${ts?.word}"`);
+              // Log every 50th word to reduce console spam
+              if (wordToHighlight % 50 === 0) {
+                console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | "${ts?.word}"`);
+              }
             }
 
             lastHighlightedWord = wordToHighlight;
-            setCurrentWordIndex(wordToHighlight);
+
+            // DIRECT DOM MANIPULATION - bypass React state for faster updates
+            // Clear previous highlight
+            if (currentHighlightRef.current) {
+              currentHighlightRef.current.style.backgroundColor = '';
+              currentHighlightRef.current.style.padding = '';
+              currentHighlightRef.current.style.margin = '';
+              currentHighlightRef.current.style.borderRadius = '';
+            }
+
+            // Find and highlight new word directly in DOM
+            if (contentContainerRef.current) {
+              const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
+              if (wordSpan) {
+                wordSpan.style.backgroundColor = '#fde7f4';
+                wordSpan.style.padding = '2px';
+                wordSpan.style.margin = '-2px';
+                wordSpan.style.borderRadius = '2px';
+                currentHighlightRef.current = wordSpan;
+              }
+            }
+
+            // Still update React state for scroll-to-header functionality (but less frequently)
+            if (wordToHighlight % 10 === 0 || wordToHighlight < 10) {
+              setCurrentWordIndex(wordToHighlight);
+            }
             // Check if we've reached a header and should scroll
             checkAndScrollToHeader(wordToHighlight);
           }
 
           // If we're past all words, clear highlighting
           if (currentTime >= wordTimestampsRef.current[wordTimestampsRef.current.length - 1].end) {
+            // Clear DOM highlight
+            if (currentHighlightRef.current) {
+              currentHighlightRef.current.style.backgroundColor = '';
+              currentHighlightRef.current.style.padding = '';
+              currentHighlightRef.current.style.margin = '';
+              currentHighlightRef.current.style.borderRadius = '';
+              currentHighlightRef.current = null;
+            }
             setCurrentWordIndex(-1);
             wordTimerRef.current = null;
             return;
@@ -447,21 +481,20 @@ const BlogPostPage = () => {
     }
   };
 
-  // Render content with word highlighting
+  // Render content with word spans for direct DOM highlighting
   // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
   // which uses normalized text (collapsed whitespace, split on single space)
   const renderContentWithHighlighting = (html) => {
-    if (!isReading || currentWordIndex < 0) {
+    // When not reading, just render raw HTML
+    if (!isReading) {
       return <div dangerouslySetInnerHTML={{ __html: html }} />;
     }
 
-    // Parse the HTML and wrap words with highlighting
+    // Parse the HTML and wrap each word in a span with data-word-index
     const div = document.createElement('div');
     div.innerHTML = html;
 
     let wordCounter = 0;
-    const renderDebugLog = [];
-    let hasLoggedFullComparison = false;
 
     const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -475,27 +508,9 @@ const BlogPostPage = () => {
           if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
-
-            // Debug: track ALL render words
-            const expected = contentWords[wordCounter];
-            const match = word === expected;
-            renderDebugLog.push({ index: wordCounter, word, expected, match });
-
-            // Don't highlight words inside h2 headings
-            if (wordCounter === currentWordIndex && !insideH2) {
-              wordSpan.style.backgroundColor = '#fde7f4';
-              wordSpan.style.padding = '2px';
-              wordSpan.style.margin = '-2px';
-              wordSpan.style.borderRadius = '2px';
-              wordSpan.style.transition = 'background-color 100ms';
-
-              // Debug: log when we highlight
-              if (DEBUG_NARRATION) {
-                const timestamp = wordTimestampsRef.current[currentWordIndex];
-                if (word !== expected) {
-                  console.warn(`⚠️ RENDER MISMATCH at index ${currentWordIndex}: rendering "${word}" but expected "${expected}" (timestamp for "${timestamp?.word}")`);
-                }
-              }
+            // Add data attribute for direct DOM manipulation (skip h2 headings)
+            if (!insideH2) {
+              wordSpan.setAttribute('data-word-index', wordCounter.toString());
             }
             span.appendChild(wordSpan);
             wordCounter++;
@@ -528,43 +543,23 @@ const BlogPostPage = () => {
       processedDiv.appendChild(processNode(child));
     });
 
-    // Log full render comparison once per playback session
-    if (DEBUG_NARRATION && currentWordIndex === 0 && !window._renderDebugLogged) {
+    // Log word count comparison once per playback session
+    if (DEBUG_NARRATION && !window._renderDebugLogged) {
       window._renderDebugLogged = true;
       console.log('═══════════════════════════════════════════════════');
-      console.log('🎨 RENDER DEBUG - Full Word Comparison During Render');
+      console.log('🎨 RENDER: Content prepared with', wordCounter, 'word spans');
+      console.log('   Expected:', contentWords.length, 'words');
+      console.log('   Timestamps:', wordTimestampsRef.current.length, 'words');
+      console.log('   Using DIRECT DOM MANIPULATION for highlighting');
       console.log('═══════════════════════════════════════════════════');
-      console.log('Render word count:', wordCounter);
-      console.log('Expected word count:', contentWords.length);
-      console.log('Timestamp word count:', wordTimestampsRef.current.length);
-
-      const mismatches = renderDebugLog.filter(entry => !entry.match);
-      console.log(`\n📝 Render word-by-word (${renderDebugLog.length} words, ${mismatches.length} mismatches):`);
-
-      renderDebugLog.forEach(entry => {
-        const status = entry.match ? '✓' : '✗ MISMATCH';
-        if (!entry.match) {
-          console.log(`  [${entry.index}] rendered="${entry.word}" | expected="${entry.expected}" ${status}`);
-        } else {
-          console.log(`  [${entry.index}] "${entry.word}" ${status}`);
-        }
-      });
-
-      if (mismatches.length > 0) {
-        console.log('\n🔍 First mismatch context:');
-        const firstMismatch = mismatches[0];
-        const start = Math.max(0, firstMismatch.index - 3);
-        const end = Math.min(renderDebugLog.length, firstMismatch.index + 4);
-        for (let i = start; i < end; i++) {
-          const entry = renderDebugLog[i];
-          const marker = i === firstMismatch.index ? ' <<< FIRST MISMATCH' : '';
-          console.log(`  [${entry.index}] rendered="${entry.word}" | expected="${entry.expected}" ${entry.match ? '✓' : '✗'}${marker}`);
-        }
-      }
-      console.log('═══════════════════════════════════════════════════\n');
     }
 
-    return <div dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }} />;
+    return (
+      <div
+        ref={contentContainerRef}
+        dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }}
+      />
+    );
   };
 
   if (loading) {
