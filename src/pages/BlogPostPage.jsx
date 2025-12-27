@@ -708,6 +708,11 @@ const BlogPostPage = () => {
                     font-style: italic;
                     color: #000000;
                   }
+                  .prose br {
+                    content: '';
+                    display: block;
+                    margin-top: 0.5em;
+                  }
                 `}</style>
                 {renderContentWithHighlighting(post.content)}
               </div>
