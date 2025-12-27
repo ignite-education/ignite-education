@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO from '../components/SEO';
+import LoadingScreen from '../components/LoadingScreen';
 import { Home, ChevronRight, Link2, Check, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
@@ -564,26 +565,9 @@ const CoursePage = () => {
   // Get testimonial for this course
   const testimonial = getTestimonialForCourse(courseSlug);
 
-  // Loading state - show skeleton to prevent CLS
+  // Loading state - show Ignite loading animation
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black">
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="w-32 h-10 bg-gray-800 rounded animate-pulse" />
-            <div className="w-24 h-9 bg-gray-800 rounded animate-pulse" />
-          </div>
-          <div className="h-1" />
-        </div>
-        <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
-          <div className="w-full" style={{ maxWidth: '762px' }}>
-            <div className="h-4 w-48 bg-gray-800 rounded animate-pulse mb-7" />
-            <div className="h-14 w-3/4 bg-gray-800 rounded animate-pulse mb-3.5" />
-            <div className="h-6 w-full bg-gray-800 rounded animate-pulse" />
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Error/404 state
