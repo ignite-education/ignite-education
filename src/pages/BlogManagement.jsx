@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List, Link2, X, Youtube } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List, Link2, X, Youtube, Bold, Italic, ListOrdered } from 'lucide-react';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -89,6 +89,12 @@ const BlogManagement = () => {
   const htmlToBlocks = (html) => {
     if (!html) return [{ id: Date.now(), type: 'paragraph', content: '' }];
 
+    // Helper to convert <br> tags back to newlines for editing
+    const restoreLineBreaks = (htmlContent) => {
+      if (!htmlContent) return '';
+      return htmlContent.replace(/<br\s*\/?>/gi, '\n');
+    };
+
     const div = document.createElement('div');
     div.innerHTML = html;
     const blocks = [];
@@ -98,23 +104,23 @@ const BlogManagement = () => {
         const tagName = node.tagName.toLowerCase();
 
         if (tagName === 'h2') {
-          blocks.push({ id: Date.now() + blocks.length, type: 'h2', content: node.innerHTML });
+          blocks.push({ id: Date.now() + blocks.length, type: 'h2', content: restoreLineBreaks(node.innerHTML) });
         } else if (tagName === 'h3') {
-          blocks.push({ id: Date.now() + blocks.length, type: 'h3', content: node.innerHTML });
+          blocks.push({ id: Date.now() + blocks.length, type: 'h3', content: restoreLineBreaks(node.innerHTML) });
         } else if (tagName === 'p') {
-          blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: node.innerHTML });
+          blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: restoreLineBreaks(node.innerHTML) });
         } else if (tagName === 'ul') {
-          const items = Array.from(node.querySelectorAll('li')).map(li => li.innerHTML);
+          const items = Array.from(node.querySelectorAll('li')).map(li => restoreLineBreaks(li.innerHTML));
           blocks.push({ id: Date.now() + blocks.length, type: 'bulletlist', content: { items } });
         } else if (tagName === 'ol') {
-          const items = Array.from(node.querySelectorAll('li')).map(li => li.innerHTML);
+          const items = Array.from(node.querySelectorAll('li')).map(li => restoreLineBreaks(li.innerHTML));
           blocks.push({ id: Date.now() + blocks.length, type: 'numberedlist', content: { items } });
         } else if (tagName === 'blockquote') {
-          blocks.push({ id: Date.now() + blocks.length, type: 'quote', content: node.innerHTML });
+          blocks.push({ id: Date.now() + blocks.length, type: 'quote', content: restoreLineBreaks(node.innerHTML) });
         } else {
           // For other elements, treat as paragraph
           if (node.textContent.trim()) {
-            blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: node.innerHTML });
+            blocks.push({ id: Date.now() + blocks.length, type: 'paragraph', content: restoreLineBreaks(node.innerHTML) });
           }
         }
       } else if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
@@ -129,22 +135,28 @@ const BlogManagement = () => {
 
   // Convert blocks to HTML content
   const blocksToHtml = () => {
+    // Helper to convert newlines to <br> tags
+    const preserveLineBreaks = (text) => {
+      if (!text) return '';
+      return text.replace(/\n/g, '<br>');
+    };
+
     return contentBlocks.map(block => {
       switch (block.type) {
         case 'h2':
-          return `<h2>${block.content}</h2>`;
+          return `<h2>${preserveLineBreaks(block.content)}</h2>`;
         case 'h3':
-          return `<h3>${block.content}</h3>`;
+          return `<h3>${preserveLineBreaks(block.content)}</h3>`;
         case 'paragraph':
-          return `<p>${block.content}</p>`;
+          return `<p>${preserveLineBreaks(block.content)}</p>`;
         case 'bulletlist':
-          return `<ul>${(block.content?.items || []).map(item => `<li>${item}</li>`).join('')}</ul>`;
+          return `<ul>${(block.content?.items || []).map(item => `<li>${preserveLineBreaks(item)}</li>`).join('')}</ul>`;
         case 'numberedlist':
-          return `<ol>${(block.content?.items || []).map(item => `<li>${item}</li>`).join('')}</ol>`;
+          return `<ol>${(block.content?.items || []).map(item => `<li>${preserveLineBreaks(item)}</li>`).join('')}</ol>`;
         case 'quote':
-          return `<blockquote>${block.content}</blockquote>`;
+          return `<blockquote>${preserveLineBreaks(block.content)}</blockquote>`;
         default:
-          return `<p>${block.content}</p>`;
+          return `<p>${preserveLineBreaks(block.content)}</p>`;
       }
     }).join('\n');
   };
@@ -408,6 +420,66 @@ const BlogManagement = () => {
     setLinkData({ url: '', text: '', blockId: null, selectionStart: 0, selectionEnd: 0 });
   };
 
+  // Inline formatting functions
+  const wrapSelection = (blockId, openTag, closeTag) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const content = textarea.value;
+    const selectedText = content.substring(start, end);
+
+    // If no selection, just insert empty tags
+    const wrappedText = selectedText ? `${openTag}${selectedText}${closeTag}` : `${openTag}${closeTag}`;
+    const newContent = content.substring(0, start) + wrappedText + content.substring(end);
+
+    updateBlock(blockId, newContent);
+
+    // Restore focus and set cursor position
+    setTimeout(() => {
+      textarea.focus();
+      const newCursorPos = selectedText ? start + wrappedText.length : start + openTag.length;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const toggleBold = (blockId) => {
+    wrapSelection(blockId, '<strong>', '</strong>');
+  };
+
+  const toggleItalic = (blockId) => {
+    wrapSelection(blockId, '<em>', '</em>');
+  };
+
+  const insertInlineBulletList = (blockId) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const content = textarea.value;
+
+    // Insert a bullet list template
+    const bulletTemplate = '\n<ul>\n<li>Item 1</li>\n<li>Item 2</li>\n</ul>\n';
+    const newContent = content.substring(0, start) + bulletTemplate + content.substring(start);
+
+    updateBlock(blockId, newContent);
+  };
+
+  const insertInlineNumberedList = (blockId) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const content = textarea.value;
+
+    // Insert a numbered list template
+    const numberedTemplate = '\n<ol>\n<li>Item 1</li>\n<li>Item 2</li>\n</ol>\n';
+    const newContent = content.substring(0, start) + numberedTemplate + content.substring(start);
+
+    updateBlock(blockId, newContent);
+  };
+
   const resizeImage = (file, maxSizeKB = 5000) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -588,7 +660,23 @@ const BlogManagement = () => {
     return (
       <div className="space-y-2">
         {/* Mini toolbar for text formatting */}
-        <div className="flex gap-1">
+        <div className="flex gap-1 flex-wrap">
+          <button
+            type="button"
+            onClick={() => toggleBold(block.id)}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600/50 hover:bg-gray-600 rounded transition"
+            title="Bold (select text first)"
+          >
+            <Bold size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleItalic(block.id)}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-600/50 hover:bg-gray-600 rounded transition"
+            title="Italic (select text first)"
+          >
+            <Italic size={12} />
+          </button>
           <button
             type="button"
             onClick={() => openLinkModal(block.id)}
@@ -596,7 +684,23 @@ const BlogManagement = () => {
             title="Insert link (select text first)"
           >
             <Link2 size={12} />
-            Link
+          </button>
+          <div className="w-px h-4 bg-white/20 mx-1 self-center" />
+          <button
+            type="button"
+            onClick={() => insertInlineBulletList(block.id)}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-green-600/50 hover:bg-green-600 rounded transition"
+            title="Insert bullet list"
+          >
+            <List size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={() => insertInlineNumberedList(block.id)}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-teal-600/50 hover:bg-teal-600 rounded transition"
+            title="Insert numbered list"
+          >
+            <ListOrdered size={12} />
           </button>
         </div>
         <textarea

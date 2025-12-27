@@ -569,7 +569,6 @@ const BlogPostPage = () => {
               {/* Title with typing animation - Left aligned */}
               <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
                 {typedTitle}
-                {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
               </h1>
 
               {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
@@ -643,7 +642,7 @@ const BlogPostPage = () => {
                   color: '#000000',
                   fontSize: '18px',
                   lineHeight: '1.8',
-                  textAlign: 'justify'
+                  textAlign: 'left'
                 }}
               >
                 <style>{`
@@ -656,8 +655,8 @@ const BlogPostPage = () => {
                     border-radius: 0.2rem;
                     max-width: 750px;
                     width: fit-content;
-                    margin-top: 3rem;
-                    margin-bottom: 0.5rem;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
                     text-align: left;
                   }
                   .prose h3 {
@@ -665,17 +664,18 @@ const BlogPostPage = () => {
                     font-size: 1.25rem;
                     font-weight: 700;
                     margin-top: 2rem;
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 1rem;
                     text-align: left;
                   }
                   .prose p {
                     color: #000000;
-                    margin-bottom: 1.5rem;
-                    text-align: justify;
+                    margin-top: 0;
+                    margin-bottom: 1rem;
+                    text-align: left;
                   }
                   .prose ul, .prose ol {
-                    margin-top: 1.5rem;
-                    margin-bottom: 1.5rem;
+                    margin-top: 1rem;
+                    margin-bottom: 1rem;
                     padding-left: 1.5rem;
                   }
                   .prose li {
@@ -687,14 +687,12 @@ const BlogPostPage = () => {
                     font-weight: 600;
                   }
                   .prose a {
-                    color: #EF0B72;
-                    text-decoration: none;
-                    border-bottom: 1px solid #EF0B72;
+                    color: #000000;
+                    text-decoration: underline;
                     transition: all 0.2s;
                   }
                   .prose a:hover {
-                    color: #D10A64;
-                    border-bottom-color: #D10A64;
+                    color: #EF0B72;
                   }
                   .prose blockquote {
                     border-left: 4px solid #EF0B72;
