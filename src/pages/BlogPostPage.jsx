@@ -10,6 +10,10 @@ import { useAnimation } from '../contexts/AnimationContext';
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
+// Small offset to account for audio buffering delay
+// Negative = highlight later, Positive = highlight earlier
+const HIGHLIGHT_LAG_OFFSET = 0;
+
 const BlogPostPage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -319,24 +323,35 @@ const BlogPostPage = () => {
 
           for (let i = 0; i < wordTimestampsRef.current.length; i++) {
             const timestamp = wordTimestampsRef.current[i];
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            // Highlight if current time is within this word's time range
+            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
               wordToHighlight = i;
               break;
             }
-            if (currentTime >= timestamp.end && i < wordTimestampsRef.current.length - 1) {
+            // If we're past this word but before the next word starts, keep highlighting this word
+            // This prevents flickering in gaps between words
+            if (i < wordTimestampsRef.current.length - 1) {
               const nextTimestamp = wordTimestampsRef.current[i + 1];
-              if (currentTime < nextTimestamp.start) {
+              if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
                 wordToHighlight = i;
                 break;
               }
             }
           }
 
+          // Only update state if the word has changed
           if (wordToHighlight !== lastHighlightedWord) {
             lastHighlightedWord = wordToHighlight;
             setCurrentWordIndex(wordToHighlight);
             // Check if we've reached a header and should scroll
             checkAndScrollToHeader(wordToHighlight);
+          }
+
+          // If we're past all words, clear highlighting
+          if (currentTime >= wordTimestampsRef.current[wordTimestampsRef.current.length - 1].end) {
+            setCurrentWordIndex(-1);
+            wordTimerRef.current = null;
+            return;
           }
 
           wordTimerRef.current = requestAnimationFrame(updateHighlight);
