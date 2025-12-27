@@ -129,6 +129,7 @@ const LearningHub = () => {
   const useSingleFileAudioRef = React.useRef(false); // Flag: true when using new single-file audio format
   const lastProcessedH2Ref = React.useRef(null); // Track last processed H2 to prevent duplicate state updates
   const hasInitializedScrollRef = React.useRef(false); // Track if scroll has been initialized (prevents infinite loop)
+  const hasInitializedContainerWidthRef = React.useRef(false); // Track if container width has been initialized (prevents infinite loop)
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -693,7 +694,7 @@ const LearningHub = () => {
     return () => {
       observer.disconnect();
     };
-  }, [groupedLessons, currentModule, currentLesson, isCarouselReady]);
+  }, [groupedLessons, currentModule, currentLesson]); // Removed isCarouselReady to prevent circular dependency (check is inside callback)
 
   const fetchLessonData = async () => {
     try {
@@ -1732,7 +1733,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Track container width for dynamic padding
   useEffect(() => {
+    // Only run once on initial load to prevent infinite loop
+    if (hasInitializedContainerWidthRef.current) return;
     if (!scrollContainerRef.current || !isCarouselReady) return;
+
+    hasInitializedContainerWidthRef.current = true;
 
     const updateContainerWidth = () => {
       if (scrollContainerRef.current) {
@@ -1749,7 +1754,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return () => {
       window.removeEventListener('resize', updateContainerWidth);
     };
-  }, [upcomingLessonsToShow.length, isCarouselReady]);
+  }, [isCarouselReady]); // Reduced dependencies to prevent re-running
 
   // Extract text content from sections for read-aloud
   const extractTextFromSection = (section) => {
