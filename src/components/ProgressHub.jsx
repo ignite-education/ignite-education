@@ -73,7 +73,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
       </p>
       <p
         className="mt-4"
-        style={{ fontSize: '1.3rem', lineHeight: '1.5' }}
+        style={{ fontSize: '1.2rem', lineHeight: '1.5' }}
       >
         We're busy building the mobile version of Ignite. In the meantime, please re-visit us on a tablet or computer.
       </p>
