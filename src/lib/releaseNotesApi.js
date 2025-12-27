@@ -99,9 +99,9 @@ export const deleteRelease = async (id) => {
  */
 export const formatReleaseDate = (dateString) => {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    month: 'long',
+  return date.toLocaleDateString('en-GB', {
     day: 'numeric',
+    month: 'long',
     year: 'numeric'
   });
 };

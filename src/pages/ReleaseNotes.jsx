@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, ChevronRight } from 'lucide-react';
+import { Home, ChevronRight, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getPublishedReleases, formatReleaseDate } from '../lib/releaseNotesApi';
+
+// Parse **text** markdown syntax for bold
+const formatNoteText = (text) => {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={index}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
+  });
+};
 
 const ReleaseNotes = () => {
   const [releases, setReleases] = useState([]);
@@ -88,6 +99,16 @@ const ReleaseNotes = () => {
                     <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-[#EF0B72] text-white">
                       {release.version}
                     </span>
+                    {release.blog_url && (
+                      <a
+                        href={release.blog_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-sm text-[#EF0B72] hover:text-[#D10A64] transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
                     <span className="text-gray-500 text-sm">
                       {formatReleaseDate(release.release_date)}
                     </span>
@@ -97,7 +118,7 @@ const ReleaseNotes = () => {
                   <ul className="list-disc list-inside space-y-2 text-gray-900 ml-1">
                     {(release.notes || []).map((note, index) => (
                       <li key={index} className="leading-relaxed">
-                        {note}
+                        {formatNoteText(note)}
                       </li>
                     ))}
                   </ul>

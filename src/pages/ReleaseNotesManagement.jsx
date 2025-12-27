@@ -12,7 +12,8 @@ const ReleaseNotesManagement = () => {
   const [formData, setFormData] = useState({
     version: '',
     release_date: '',
-    status: 'draft'
+    status: 'draft',
+    blog_url: ''
   });
 
   const [notes, setNotes] = useState(['']);
@@ -62,7 +63,8 @@ const ReleaseNotesManagement = () => {
         version: formData.version.trim(),
         release_date: formData.release_date,
         notes: filteredNotes,
-        status: formData.status
+        status: formData.status,
+        blog_url: formData.blog_url.trim() || null
       };
 
       if (selectedRelease) {
@@ -95,7 +97,8 @@ const ReleaseNotesManagement = () => {
     setFormData({
       version: release.version || '',
       release_date: release.release_date || '',
-      status: release.status || 'draft'
+      status: release.status || 'draft',
+      blog_url: release.blog_url || ''
     });
     setNotes(release.notes && release.notes.length > 0 ? release.notes : ['']);
   };
@@ -105,7 +108,8 @@ const ReleaseNotesManagement = () => {
     setFormData({
       version: '',
       release_date: '',
-      status: 'draft'
+      status: 'draft',
+      blog_url: ''
     });
     setNotes(['']);
   };
@@ -156,9 +160,9 @@ const ReleaseNotesManagement = () => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
+    return date.toLocaleDateString('en-GB', {
       day: 'numeric',
+      month: 'short',
       year: 'numeric'
     });
   };
@@ -250,6 +254,18 @@ const ReleaseNotesManagement = () => {
                 <option value="draft" className="bg-gray-900">Draft</option>
                 <option value="published" className="bg-gray-900">Published</option>
               </select>
+            </div>
+
+            {/* Blog URL */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Blog Post URL (optional)</label>
+              <input
+                type="url"
+                value={formData.blog_url}
+                onChange={(e) => handleInputChange('blog_url', e.target.value)}
+                placeholder="https://example.com/blog/release-announcement"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+              />
             </div>
 
             {/* Release Notes */}
