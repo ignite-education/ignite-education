@@ -747,9 +747,9 @@ const CoursePage = () => {
 
                             {/* Module Description and Lessons */}
                             <div>
-                              {/* AI-Generated Module Intro */}
+                              {/* Module Intro - uses stored description or falls back to generated */}
                               <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
-                                {generateModuleIntro(module)}
+                                {module.description || generateModuleIntro(module)}
                               </p>
 
                               {/* Lesson List */}
@@ -785,15 +785,17 @@ const CoursePage = () => {
                 </div>
               )}
 
-              {/* Feedback Section */}
-              <div className="mt-9 mb-8">
-                <h2 className="font-semibold text-gray-900 text-2xl mb-4">Feedback</h2>
-                <div className="bg-[#F0F0F2] p-6 rounded-lg">
-                  <p className="text-black text-lg font-medium">
-                    "The {course.title} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community"
-                  </p>
+              {/* Feedback Section - only show for live courses */}
+              {course.status !== 'coming_soon' && (
+                <div className="mt-9 mb-8">
+                  <h2 className="font-semibold text-gray-900 text-2xl mb-4">Feedback</h2>
+                  <div className="bg-[#F0F0F2] p-6 rounded-lg">
+                    <p className="text-black text-lg font-medium">
+                      "The {course.title} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community"
+                    </p>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Course Coaches Section */}
               {coaches.length > 0 && (
