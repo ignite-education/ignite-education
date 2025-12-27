@@ -11,10 +11,11 @@ import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization'
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-// Small offset to account for audio buffering/processing delay
-// Negative = highlight later, Positive = highlight earlier
-// -0.15 seconds delays the highlight to better sync with audio playback
-const HIGHLIGHT_LAG_OFFSET = -0.15;
+// ElevenLabs timestamps are accurate - no offset needed
+const HIGHLIGHT_LAG_OFFSET = 0;
+
+// Debug mode - set to true to see detailed logging
+const DEBUG_NARRATION = true;
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -288,10 +289,31 @@ const BlogPostPage = () => {
       // Use pre-generated word timestamps if available
       if (preGeneratedAudio.word_timestamps) {
         wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
-        console.log('📊 Backend word count:', preGeneratedAudio.word_timestamps.length);
-        console.log('📊 Frontend word count:', contentWords.length);
-        console.log('📊 First 10 backend words:', preGeneratedAudio.word_timestamps.slice(0, 10).map(w => w.word));
-        console.log('📊 First 10 frontend words:', contentWords.slice(0, 10));
+
+        if (DEBUG_NARRATION) {
+          console.log('═══════════════════════════════════════════════════');
+          console.log('📊 NARRATION DEBUG - Word Comparison');
+          console.log('═══════════════════════════════════════════════════');
+          console.log('Backend word count:', preGeneratedAudio.word_timestamps.length);
+          console.log('Frontend word count:', contentWords.length);
+
+          // Compare first 30 words to find divergence
+          console.log('\n📝 Word-by-word comparison (first 30):');
+          const maxCompare = Math.min(30, preGeneratedAudio.word_timestamps.length, contentWords.length);
+          for (let i = 0; i < maxCompare; i++) {
+            const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
+            const frontendWord = contentWords[i] || '(none)';
+            const match = backendWord === frontendWord ? '✓' : '✗ MISMATCH';
+            console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ${match}`);
+          }
+
+          // Show timestamp info for first 10 words
+          console.log('\n⏱️ Timestamp info (first 10 words):');
+          preGeneratedAudio.word_timestamps.slice(0, 10).forEach((ts, i) => {
+            console.log(`  [${i}] "${ts.word}" starts at ${ts.start.toFixed(3)}s, ends at ${ts.end.toFixed(3)}s`);
+          });
+          console.log('═══════════════════════════════════════════════════\n');
+        }
       }
 
       // Create and play audio
@@ -316,6 +338,7 @@ const BlogPostPage = () => {
       const startWordHighlighting = () => {
         setCurrentWordIndex(0);
         let lastHighlightedWord = 0;
+        let debugLogCount = 0;
 
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
@@ -345,6 +368,14 @@ const BlogPostPage = () => {
 
           // Only update state if the word has changed
           if (wordToHighlight !== lastHighlightedWord) {
+            // Debug: Log every word transition for first 20 words
+            if (DEBUG_NARRATION && debugLogCount < 20) {
+              const ts = wordTimestampsRef.current[wordToHighlight];
+              const frontendWord = contentWords[wordToHighlight] || '(none)';
+              console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | backend="${ts?.word}" | frontend="${frontendWord}"`);
+              debugLogCount++;
+            }
+
             lastHighlightedWord = wordToHighlight;
             setCurrentWordIndex(wordToHighlight);
             // Check if we've reached a header and should scroll
