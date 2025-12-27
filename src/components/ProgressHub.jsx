@@ -47,28 +47,43 @@ const CalendlyLoadingSpinner = () => {
 };
 
 // Mobile Block Screen Component
-const MobileBlockScreen = () => {
+const MobileBlockScreen = ({ onSignOut }) => {
+  const handleGoBack = async () => {
+    await onSignOut();
+    window.location.href = 'https://ignite.education';
+  };
+
   return (
-    <div className="min-h-screen flex flex-col justify-center bg-black text-white px-8">
+    <div className="min-h-screen flex flex-col justify-center bg-black text-white px-8 relative">
+      <div
+        className="absolute top-6 left-8"
+        style={{
+          backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          width: '120px',
+          height: '40px'
+        }}
+      />
       <p
-        className="font-medium"
-        style={{ fontSize: '2rem', lineHeight: '1.4' }}
+        className="font-semibold"
+        style={{ fontSize: '2rem', lineHeight: '1.4', color: '#EF0B72' }}
       >
-        Learning looks better on a laptop.
+        Learning looks<br />better on a laptop.
       </p>
       <p
         className="mt-4"
         style={{ fontSize: '1.5rem', lineHeight: '1.5' }}
       >
-        Please revisit us on a tablet or computer.
+        Please re-visit us on<br />a tablet or computer.
       </p>
-      <a
-        href="https://ignite.education"
-        className="mt-6 inline-block px-6 py-3 bg-white text-black font-medium rounded-lg text-center"
+      <button
+        onClick={handleGoBack}
+        className="mt-6 px-6 py-3 bg-white text-black font-medium rounded-lg text-center"
         style={{ width: 'fit-content' }}
       >
         Go back
-      </a>
+      </button>
     </div>
   );
 };
@@ -2413,7 +2428,7 @@ const ProgressHub = () => {
   }
 
   if (isMobile) {
-    return <MobileBlockScreen />;
+    return <MobileBlockScreen onSignOut={signOut} />;
   }
 
   return (
