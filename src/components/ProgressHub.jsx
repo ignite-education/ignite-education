@@ -67,7 +67,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
       />
       <p
         className="font-semibold"
-        style={{ fontSize: '3rem', lineHeight: '1.4', color: '#EF0B72' }}
+        style={{ fontSize: '2.5rem', lineHeight: '1.2', color: '#EF0B72' }}
       >
         Learning looks<br />better on a laptop.
       </p>
