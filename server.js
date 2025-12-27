@@ -1713,25 +1713,27 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     }
 
     // 2. Extract plain text from HTML content
+    // IMPORTANT: This must match the frontend's extractTextFromHtml in BlogPostPage.jsx
+    // which uses div.textContent to extract text. We need to replicate that behavior
+    // so word timestamps align correctly with the frontend rendering.
     const extractTextFromHtml = (html) => {
       if (!html) return '';
-      // Remove HTML tags but keep text
+      // Use jsdom-like approach to match browser's textContent behavior
+      // Remove script and style tags first
       let text = html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove scripts
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove styles
-        .replace(/<br\s*\/?>/gi, ' ') // Replace br with space
-        .replace(/<\/p>/gi, '\n\n') // Add newlines after paragraphs
-        .replace(/<\/h[1-6]>/gi, '\n\n') // Add newlines after headings
-        .replace(/<li>/gi, '\n• ') // Add bullet for list items
-        .replace(/<[^>]+>/g, '') // Remove remaining HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace nbsp
-        .replace(/&amp;/g, '&') // Replace amp
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        // Remove the blog-line-break spans (they don't add text content)
+        .replace(/<span class="blog-line-break"><\/span>/gi, '')
+        // Remove all HTML tags, keeping only text content
+        .replace(/<[^>]+>/g, '')
+        // Decode HTML entities
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .trim();
+        .replace(/&#39;/g, "'");
       return text;
     };
 
