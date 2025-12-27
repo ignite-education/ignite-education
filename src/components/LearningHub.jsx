@@ -128,6 +128,7 @@ const LearningHub = () => {
   const globalWordCounterRef = React.useRef(0); // Global word counter for single-file audio mode
   const useSingleFileAudioRef = React.useRef(false); // Flag: true when using new single-file audio format
   const lastProcessedH2Ref = React.useRef(null); // Track last processed H2 to prevent duplicate state updates
+  const hasInitializedScrollRef = React.useRef(false); // Track if scroll has been initialized (prevents infinite loop)
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -1641,32 +1642,36 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   const progressPercentage = Object.keys(groupedLessons).length > 0 ? calculateProgressPercentage() : 0;
 
-  // Helper function to check if a lesson is completed
-  const isLessonCompleted = (moduleNum, lessonNum) => {
+  // Helper function to check if a lesson is completed (memoized to prevent infinite re-renders)
+  const isLessonCompleted = useCallback((moduleNum, lessonNum) => {
     return completedLessons.some(
       (completion) => completion.module_number === moduleNum && completion.lesson_number === lessonNum
     );
-  };
+  }, [completedLessons]);
 
-  // Helper function to get current lesson, completed lessons, and upcoming lessons
-  const getAllLessons = () => {
-    if (lessonsMetadata.length === 0) return [];
-
-    // Return all lessons sorted by module and lesson number
-    return lessonsMetadata.sort((a, b) => {
+  // Memoized list of all lessons sorted by module/lesson number (prevents infinite re-renders)
+  const upcomingLessonsToShow = useMemo(() => {
+    if (lessonsMetadata.length === 0 || Object.keys(groupedLessons).length === 0) {
+      return [];
+    }
+    // Use spread to avoid mutating original array
+    return [...lessonsMetadata].sort((a, b) => {
       if (a.module_number !== b.module_number) {
         return a.module_number - b.module_number;
       }
       return a.lesson_number - b.lesson_number;
     });
-  };
-
-  const upcomingLessonsToShow = Object.keys(groupedLessons).length > 0 ? getAllLessons() : [];
+  }, [lessonsMetadata, groupedLessons]);
 
   // Scroll to current lesson on initial load
   useEffect(() => {
+    // Only run once on initial load (prevents infinite loop from state updates)
+    if (hasInitializedScrollRef.current) return;
     // Only run if we have lessons and the scroll container exists
     if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0 || loading) return;
+
+    // Mark as initialized to prevent re-running
+    hasInitializedScrollRef.current = true;
 
     // Find the index of the lesson specified in URL params (currentModule/currentLesson)
     let currentLessonIndex = upcomingLessonsToShow.findIndex(
@@ -1723,7 +1728,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // No current lesson found, just show the carousel
       setIsCarouselReady(true);
     }
-  }, [upcomingLessonsToShow, loading, currentModule, currentLesson, completedLessons]);
+  }, [upcomingLessonsToShow, loading, currentModule, currentLesson, isLessonCompleted]);
 
   // Track container width for dynamic padding
   useEffect(() => {
