@@ -1503,6 +1503,14 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       }
     });
 
+    // Debug: Log response structure to verify SDK format
+    console.log('📊 ElevenLabs response keys:', Object.keys(response || {}));
+
+    if (!response || !response.audioBase64) {
+      console.error('❌ ElevenLabs response missing audioBase64:', response);
+      return res.status(500).json({ error: 'ElevenLabs returned empty audio response' });
+    }
+
     const endTimes = response.alignment?.characterEndTimesSeconds || [];
     const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
 
@@ -1651,8 +1659,13 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error generating lesson audio:', error);
-    res.status(500).json({ error: 'Failed to generate lesson audio', message: error.message });
+    console.error('❌ Error generating lesson audio:', error);
+    console.error('  Stack:', error.stack);
+    res.status(500).json({
+      error: 'Failed to generate lesson audio',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

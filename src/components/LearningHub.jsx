@@ -1878,6 +1878,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
     if (!text) return null;
 
+    // DEBUG: Log when this is called
+    if (sectionIndexForHighlight === 'title') {
+      console.log(`🔧 renderTextWithHighlight called for TITLE`);
+      console.log(`   useSingleFileAudioRef.current: ${useSingleFileAudioRef.current}`);
+      console.log(`   isReading: ${isReading}`);
+      console.log(`   globalWordCounterRef.current: ${globalWordCounterRef.current}`);
+    }
+
     // Normalize text and split into words - matching backend's splitIntoWords()
     const normalizedText = text.replace(/\s+/g, ' ').trim();
     const words = normalizedText.split(' ').filter(w => w.length > 0);
@@ -2019,6 +2027,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         globalWordCounterRef.current++;
       }
     });
+
+    // Debug: Log when we're rendering with data attributes
+    if (useSingleFileAudioRef.current && sectionIndexForHighlight === 'title') {
+      console.log(`✅ Rendered TITLE with ${words.length} words (globalCounter now: ${globalWordCounterRef.current})`);
+    }
 
     return elements;
   };
@@ -2767,8 +2780,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const playPreGeneratedAudio = async () => {
     if (!lessonAudio) return;
 
-    // Show loading state immediately
-    setIsReading(true);
     isPausedRef.current = false;
 
     try {
@@ -2799,9 +2810,22 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // NEW FORMAT: Single audio file with word timestamps (like BlogPostPage)
       if (audioData.audio_url && audioData.word_timestamps) {
         console.log('🎬 Using single-file audio format (BlogPostPage pattern)');
+
+        // CRITICAL: Set the single-file audio flag BEFORE setIsReading(true)
+        // This ensures the re-render includes data-word-index attributes
+        useSingleFileAudioRef.current = true;
+        globalWordCounterRef.current = 0;
+        console.log('🔧 Set useSingleFileAudioRef=true BEFORE isReading state change');
+
+        // Now trigger the re-render with isReading=true
+        setIsReading(true);
+
         await playSingleFileAudio(audioData);
         return;
       }
+
+      // LEGACY: Show loading state for per-section audio
+      setIsReading(true);
 
       // LEGACY: Per-section audio format
       if (!audioData.section_audio) {
@@ -2839,12 +2863,17 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   const playSingleFileAudio = async (audioData) => {
     const { audio_url, word_timestamps, title_word_count } = audioData;
 
-    console.log(`🎵 Playing single audio file with ${word_timestamps.length} words`);
-    console.log(`📍 Title word count: ${title_word_count} (indices 0-${title_word_count - 1} skip highlight)`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`🎵 playSingleFileAudio called`);
+    console.log(`   audio_url: ${audio_url.substring(0, 50)}...`);
+    console.log(`   word_timestamps: ${word_timestamps.length} words`);
+    console.log(`   title_word_count: ${title_word_count} (indices 0-${title_word_count - 1} skip highlight)`);
+    console.log(`   isReading: ${isReading}`);
+    console.log(`   useSingleFileAudioRef: ${useSingleFileAudioRef.current}`);
+    console.log('═══════════════════════════════════════════════════');
 
-    // Enable single-file audio mode
-    useSingleFileAudioRef.current = true;
-    globalWordCounterRef.current = 0; // Reset for fresh render
+    // Note: useSingleFileAudioRef and globalWordCounterRef are already set
+    // by playPreGeneratedAudio BEFORE setIsReading(true) was called
 
     // Store word timestamps
     wordTimestampsRef.current = word_timestamps;
@@ -2892,11 +2921,51 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     console.log('▶️ Audio playback started');
 
     // Wait for DOM to be ready with word spans, then start highlighting
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        startDOMWordHighlighting(audio);
+    // Use polling to ensure word spans are actually in the DOM
+    const waitForWordSpans = (maxWaitMs = 2000) => {
+      return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        let attempts = 0;
+
+        const checkForSpans = () => {
+          attempts++;
+          if (contentContainerRef.current) {
+            const spans = contentContainerRef.current.querySelectorAll('[data-word-index]');
+            if (spans.length > 0) {
+              console.log(`✅ Found ${spans.length} word spans in DOM after ${attempts} attempts (${Date.now() - startTime}ms)`);
+              resolve();
+              return;
+            }
+          }
+
+          // Timeout check
+          if (Date.now() - startTime > maxWaitMs) {
+            console.error(`❌ Timeout waiting for word spans after ${attempts} attempts (${maxWaitMs}ms)`);
+            console.error(`   useSingleFileAudioRef: ${useSingleFileAudioRef.current}`);
+            console.error(`   contentContainerRef exists: ${!!contentContainerRef.current}`);
+            console.error(`   isReading: ${isReading}`);
+            reject(new Error('Timeout waiting for word spans'));
+            return;
+          }
+
+          // Not ready yet, check again next frame
+          requestAnimationFrame(checkForSpans);
+        };
+
+        // Start checking after double RAF to give React time to render
+        requestAnimationFrame(() => {
+          requestAnimationFrame(checkForSpans);
+        });
       });
-    });
+    };
+
+    try {
+      await waitForWordSpans();
+      startDOMWordHighlighting(audio);
+    } catch (error) {
+      console.error('Failed to start highlighting:', error);
+      // Audio will still play, just without highlighting
+    }
   };
 
   // DOM-based word highlighting (same approach as BlogPostPage)
@@ -2908,9 +2977,32 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return;
     }
 
-    console.log(`📝 Starting DOM-based word highlighting for ${wordTimestamps.length} words`);
+    console.log('═══════════════════════════════════════════════════');
+    console.log(`📝 Starting DOM-based word highlighting`);
+    console.log(`   Word timestamps: ${wordTimestamps.length} words`);
+    console.log(`   Title word count: ${titleWordCountRef.current}`);
+    console.log(`   useSingleFileAudioRef: ${useSingleFileAudioRef.current}`);
+    console.log(`   contentContainerRef exists: ${!!contentContainerRef.current}`);
+
+    // DEBUG: Check if data-word-index attributes exist in DOM
+    if (contentContainerRef.current) {
+      const allWordSpans = contentContainerRef.current.querySelectorAll('[data-word-index]');
+      console.log(`   DOM word spans found: ${allWordSpans.length}`);
+      if (allWordSpans.length === 0) {
+        console.error('❌ NO WORD SPANS IN DOM! The content did not render with data-word-index attributes.');
+        console.error('   This happens when useSingleFileAudioRef.current was false during render.');
+        console.error('   isReading state:', isReading);
+      } else {
+        console.log(`   First word span: index=${allWordSpans[0].getAttribute('data-word-index')}, text="${allWordSpans[0].textContent}"`);
+        console.log(`   Last word span: index=${allWordSpans[allWordSpans.length-1].getAttribute('data-word-index')}, text="${allWordSpans[allWordSpans.length-1].textContent}"`);
+      }
+    } else {
+      console.error('❌ contentContainerRef.current is NULL!');
+    }
+    console.log('═══════════════════════════════════════════════════');
 
     let lastHighlightedWord = -1;
+    let logCounter = 0;
 
     const updateHighlight = () => {
       if (!audio || audio.paused || audio.ended) {
@@ -2939,6 +3031,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Only update if word has changed
       if (wordToHighlight !== lastHighlightedWord) {
+        // Debug log every 20th word
+        if (wordToHighlight % 20 === 0) {
+          const ts = wordTimestamps[wordToHighlight];
+          console.log(`🎯 Word ${wordToHighlight}: "${ts?.word}" at ${currentTime.toFixed(2)}s`);
+        }
+
         lastHighlightedWord = wordToHighlight;
 
         // Clear previous highlight
@@ -2952,6 +3050,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Find and highlight new word in DOM
         if (contentContainerRef.current) {
           const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
+
+          // Debug: log if we can't find the word span
+          if (!wordSpan && logCounter < 5) {
+            console.warn(`⚠️ Could not find word span for index ${wordToHighlight}`);
+            logCounter++;
+          }
+
           // Skip highlighting if word is marked to skip (e.g., title words)
           if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
             wordSpan.style.backgroundColor = '#fde7f4';
