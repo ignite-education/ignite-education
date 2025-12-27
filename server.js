@@ -1312,7 +1312,7 @@ const chunkText = (text, maxChars = 4800) => {
 };
 
 // GET /api/lesson-audio/:courseId/:module/:lesson - Get pre-generated audio
-// Returns per-section audio for sequential playback with perfect word highlighting
+// Returns single audio file with word timestamps for perfect highlighting
 app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
   try {
     const { courseId, module, lesson } = req.params;
@@ -1329,8 +1329,20 @@ app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
       return res.status(404).json({ error: 'Audio not found for this lesson' });
     }
 
-    // Return per-section audio if available, otherwise fall back to old format
-    if (data.section_audio) {
+    // NEW FORMAT: Single audio file with word timestamps (like blog audio)
+    if (data.audio_url && data.word_timestamps) {
+      res.json({
+        audio_url: data.audio_url,
+        word_timestamps: data.word_timestamps,
+        title_word_count: data.title_word_count || 0,
+        full_text: data.full_text,
+        duration_seconds: data.duration_seconds,
+        content_hash: data.content_hash,
+        created_at: data.created_at
+      });
+    }
+    // LEGACY: Per-section audio format (backward compatibility)
+    else if (data.section_audio) {
       res.json({
         section_audio: data.section_audio,
         full_text: data.full_text,
@@ -1339,7 +1351,7 @@ app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
         created_at: data.created_at
       });
     } else {
-      // Legacy format for backwards compatibility
+      // Very old legacy format
       res.json({
         audio_base64: data.audio_base64,
         alignment_data: data.alignment_data,
@@ -1415,7 +1427,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
   try {
     const { courseId, moduleNumber, lessonNumber, forceRegenerate = false, voiceGender = 'male' } = req.body;
 
-    console.log(`🎤 Generating per-section lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`🎤 Generating single-file lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     // 1. Fetch lesson sections
     const { data: sections, error: sectionsError } = await supabase
@@ -1434,25 +1446,31 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(404).json({ error: 'No sections found for this lesson' });
     }
 
-    // 2. Extract full text for hash calculation
+    // 2. Extract full text for TTS and hash calculation
+    // Normalize text same as frontend: collapse whitespace, join with spaces
     const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
     const fullText = extractLessonText(lessonName, sections);
-    const contentHash = crypto.createHash('sha256').update(fullText).digest('hex');
 
-    console.log(`📝 Lesson text: ${fullText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+    // Normalize the full text to match frontend word splitting
+    const normalizedText = fullText.replace(/\s+/g, ' ').trim();
+    const contentHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
 
-    // 3. Check if audio already exists with same hash
+    console.log(`📝 Lesson text: ${normalizedText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+    console.log(`📝 Word count: ${normalizedText.split(' ').filter(w => w.length > 0).length} words`);
+
+    // 3. Check if audio already exists with same hash (check for new single-file format)
     if (!forceRegenerate) {
       const { data: existing } = await supabase
         .from('lesson_audio')
-        .select('id, content_hash, section_audio')
+        .select('id, content_hash, audio_url, word_timestamps')
         .eq('course_id', courseId)
         .eq('module_number', moduleNumber)
         .eq('lesson_number', lessonNumber)
         .single();
 
-      if (existing && existing.content_hash === contentHash && existing.section_audio) {
-        console.log('✅ Per-section audio already exists with same hash, skipping regeneration');
+      // Check for new single-file format (audio_url + word_timestamps)
+      if (existing && existing.content_hash === contentHash && existing.audio_url && existing.word_timestamps) {
+        console.log('✅ Single-file audio already exists with same hash, skipping regeneration');
         return res.json({
           success: true,
           skipped: true,
@@ -1470,179 +1488,132 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
     }
 
-    // 5. Generate audio for each section and upload to Supabase Storage
-    const sectionAudioMetadata = []; // Store metadata only (no base64)
-    let totalDuration = 0;
-    let totalCharacters = 0;
+    // 5. Generate single audio file for entire lesson (like blog audio)
+    console.log(`🎵 Generating audio for entire lesson: "${lessonName.substring(0, 50)}..."`);
 
-    // Storage path prefix for this lesson
-    const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}`;
-
-    // Helper to extract text from section (same logic as extractLessonText but per-section)
-    const extractSectionText = (section) => {
-      if (section.content_type === 'heading' && section.content?.text) {
-        return section.content.text;
-      } else if (section.content_type === 'paragraph' && section.content?.text) {
-        let text = section.content.text;
-        text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
-        text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
-        text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
-        return text;
-      } else if (section.content_type === 'list' && section.content?.items) {
-        return section.content.items.join('. ');
+    const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+      text: normalizedText,
+      model_id: 'eleven_multilingual_v2',
+      output_format: 'mp3_44100_128',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
       }
-      return '';
-    };
-
-    // Helper to upload audio to Storage
-    const uploadAudioToStorage = async (audioBase64, fileName) => {
-      const audioBuffer = Buffer.from(audioBase64, 'base64');
-      const filePath = `${storagePath}/${fileName}`;
-
-      console.log(`  📤 Uploading ${filePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
-
-      const { data, error } = await supabase.storage
-        .from('lesson-audio')
-        .upload(filePath, audioBuffer, {
-          contentType: 'audio/mpeg',
-          upsert: true
-        });
-
-      if (error) {
-        console.error(`  ❌ Upload failed for ${filePath}:`, error);
-        throw error;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('lesson-audio')
-        .getPublicUrl(filePath);
-
-      console.log(`  ✅ Uploaded ${filePath}`);
-      return urlData.publicUrl;
-    };
-
-    // Generate audio for lesson title (section_index = -1)
-    console.log(`🎵 Generating title audio: "${lessonName.substring(0, 50)}..."`);
-    try {
-      const titleResponse = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
-        text: lessonName,
-        model_id: 'eleven_multilingual_v2',
-        output_format: 'mp3_44100_128',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true
-        }
-      });
-
-      const titleEndTimes = titleResponse.alignment?.characterEndTimesSeconds || [];
-      const titleDuration = titleEndTimes.length > 0 ? titleEndTimes[titleEndTimes.length - 1] : 0;
-
-      // Upload to Storage
-      const audioUrl = await uploadAudioToStorage(titleResponse.audioBase64, 'title.mp3');
-
-      sectionAudioMetadata.push({
-        section_index: -1,
-        text: lessonName,
-        word_count: lessonName.match(/\S+/g)?.length || 0,
-        audio_url: audioUrl,
-        alignment: titleResponse.alignment ? {
-          characters: titleResponse.alignment.characters,
-          character_start_times_seconds: titleResponse.alignment.characterStartTimesSeconds,
-          character_end_times_seconds: titleResponse.alignment.characterEndTimesSeconds
-        } : null,
-        duration_seconds: titleDuration
-      });
-
-      totalDuration += titleDuration;
-      totalCharacters += lessonName.length;
-      console.log(`✅ Title audio: ${titleDuration.toFixed(2)}s`);
-    } catch (err) {
-      console.error('Error generating title audio:', err);
-      // Continue without title audio
-    }
-
-    // Generate audio for each content section
-    for (let i = 0; i < sections.length; i++) {
-      const section = sections[i];
-      const sectionText = extractSectionText(section);
-
-      if (!sectionText || sectionText.length === 0) {
-        console.log(`⏭️ Skipping empty section ${i}`);
-        continue;
-      }
-
-      console.log(`🎵 Generating section ${i} audio (${section.content_type}): "${sectionText.substring(0, 50)}..."`);
-
-      try {
-        const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
-          text: sectionText,
-          model_id: 'eleven_multilingual_v2',
-          output_format: 'mp3_44100_128',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.0,
-            use_speaker_boost: true
-          }
-        });
-
-        const sectionEndTimes = response.alignment?.characterEndTimesSeconds || [];
-        const sectionDuration = sectionEndTimes.length > 0 ? sectionEndTimes[sectionEndTimes.length - 1] : 0;
-
-        // Upload to Storage
-        const audioUrl = await uploadAudioToStorage(response.audioBase64, `section_${i}.mp3`);
-
-        sectionAudioMetadata.push({
-          section_index: i,
-          text: sectionText,
-          word_count: sectionText.match(/\S+/g)?.length || 0,
-          audio_url: audioUrl,
-          alignment: response.alignment ? {
-            characters: response.alignment.characters,
-            character_start_times_seconds: response.alignment.characterStartTimesSeconds,
-            character_end_times_seconds: response.alignment.characterEndTimesSeconds
-          } : null,
-          duration_seconds: sectionDuration
-        });
-
-        totalDuration += sectionDuration;
-        totalCharacters += sectionText.length;
-        console.log(`✅ Section ${i} audio: ${sectionDuration.toFixed(2)}s`);
-      } catch (err) {
-        console.error(`Error generating section ${i} audio:`, err);
-        // Continue with next section
-      }
-    }
-
-    console.log(`✅ All section audio generated and uploaded: ${sectionAudioMetadata.length} sections, ${totalDuration.toFixed(2)}s total`);
-
-    // Debug: Log section audio metadata structure
-    console.log('📊 Section audio metadata:');
-    sectionAudioMetadata.forEach((s, idx) => {
-      console.log(`  [${idx}] section_index=${s.section_index}, text_length=${s.text?.length}, has_url=${!!s.audio_url}, has_alignment=${!!s.alignment}, duration=${s.duration_seconds?.toFixed(2)}s`);
     });
 
-    // 6. Store metadata in database (no base64, just URLs and alignment)
+    const endTimes = response.alignment?.characterEndTimesSeconds || [];
+    const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
+
+    // 6. Upload single audio file to Storage
+    const audioBuffer = Buffer.from(response.audioBase64, 'base64');
+    const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}/full.mp3`;
+
+    console.log(`📤 Uploading ${storagePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
+
+    const { error: uploadError } = await supabase.storage
+      .from('lesson-audio')
+      .upload(storagePath, audioBuffer, {
+        contentType: 'audio/mpeg',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('❌ Upload failed:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload audio', message: uploadError.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('lesson-audio')
+      .getPublicUrl(storagePath);
+
+    const audioUrl = urlData.publicUrl;
+    console.log(`✅ Uploaded to ${audioUrl}`);
+
+    // 7. Convert character timestamps to word timestamps (like blog audio)
+    // IMPORTANT: Matches frontend word splitting exactly
+    const wordTimestamps = [];
+    if (response.alignment) {
+      const chars = response.alignment.characters;
+      const startTimes = response.alignment.characterStartTimesSeconds;
+      const endTimesArr = response.alignment.characterEndTimesSeconds;
+
+      let currentWord = '';
+      let wordStart = null;
+      let wordEnd = null;
+      let wordIndex = 0;
+
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        // Since text is pre-normalized, only space is a word boundary
+        const isSpace = char === ' ';
+
+        if (isSpace) {
+          // End of a word - save it if we have one
+          if (currentWord.length > 0 && wordStart !== null) {
+            wordTimestamps.push({
+              word: currentWord,
+              start: wordStart,
+              end: wordEnd,
+              index: wordIndex
+            });
+            wordIndex++;
+            currentWord = '';
+            wordStart = null;
+            wordEnd = null;
+          }
+        } else {
+          // Part of a word
+          if (wordStart === null) {
+            wordStart = startTimes[i];
+          }
+          wordEnd = endTimesArr[i];
+          currentWord += char;
+        }
+      }
+
+      // Don't forget the last word if text doesn't end with space
+      if (currentWord.length > 0 && wordStart !== null) {
+        wordTimestamps.push({
+          word: currentWord,
+          start: wordStart,
+          end: wordEnd,
+          index: wordIndex
+        });
+      }
+    }
+
+    console.log(`📊 Generated ${wordTimestamps.length} word timestamps`);
+
+    // 8. Calculate title word count for frontend skip-highlight
+    const titleWords = lessonName.replace(/\s+/g, ' ').trim().split(' ').filter(w => w.length > 0);
+    const titleWordCount = titleWords.length;
+    console.log(`📊 Title has ${titleWordCount} words (indices 0-${titleWordCount - 1} should skip highlight)`);
+
+    // 9. Store metadata in database (new single-file format)
     const upsertData = {
       course_id: courseId,
       module_number: moduleNumber,
       lesson_number: lessonNumber,
       content_hash: contentHash,
       lesson_name: lessonName,
-      full_text: fullText,
-      section_audio: sectionAudioMetadata, // Now contains URLs instead of base64
+      full_text: normalizedText,
+      audio_url: audioUrl,
+      word_timestamps: wordTimestamps,
+      title_word_count: titleWordCount, // Frontend uses this to skip highlighting title words
       voice_gender: voiceGender,
       voice_id: voiceId,
-      duration_seconds: totalDuration,
-      character_count: totalCharacters,
+      duration_seconds: duration,
+      character_count: normalizedText.length,
+      // Clear old per-section data
+      section_audio: null,
       updated_at: new Date().toISOString()
     };
 
     console.log('💾 Storing lesson audio metadata in database...');
-    console.log(`  section_audio JSON size: ${JSON.stringify(upsertData.section_audio).length} chars`);
+    console.log(`  word_timestamps count: ${wordTimestamps.length}`);
 
     const { data: insertedAudio, error: insertError } = await supabase
       .from('lesson_audio')
@@ -1661,7 +1632,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
     }
 
-    console.log(`💾 Per-section audio metadata stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`💾 Single-file audio metadata stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     res.json({
       success: true,
@@ -1670,9 +1641,11 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         course_id: courseId,
         module_number: moduleNumber,
         lesson_number: lessonNumber,
-        section_count: sectionAudioMetadata.length,
-        duration_seconds: totalDuration,
-        character_count: totalCharacters,
+        audio_url: audioUrl,
+        word_count: wordTimestamps.length,
+        title_word_count: titleWordCount,
+        duration_seconds: duration,
+        character_count: normalizedText.length,
         content_hash: contentHash,
         created_at: insertedAudio.created_at
       }

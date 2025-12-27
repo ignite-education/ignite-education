@@ -113,7 +113,7 @@ const LearningHub = () => {
   const [isNarratingTitle, setIsNarratingTitle] = React.useState(false); // Track if we're narrating the title vs sections
   const audioRef = React.useRef(null);
   const wordTimerRef = React.useRef(null); // Track word highlighting timer
-  const wordTimestampsRef = React.useRef(null); // Store word timestamps for current section/title
+  const wordTimestampsRef = React.useRef(null); // Store word timestamps for entire lesson
   const isPausedRef = React.useRef(false); // Track if user manually paused
   const narrateAbortController = React.useRef(null); // Track API requests for cancellation
   const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
@@ -121,6 +121,12 @@ const LearningHub = () => {
   const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
   const isHandlingReadAloud = React.useRef(false); // Prevent multiple simultaneous calls
   const prefetchPromises = React.useRef({}); // Store promises for sections currently being prefetched
+  // NEW: DOM-based highlighting refs (like BlogPostPage)
+  const contentContainerRef = React.useRef(null); // Container for word spans
+  const currentHighlightRef = React.useRef(null); // Currently highlighted word span
+  const titleWordCountRef = React.useRef(0); // Number of title words to skip highlighting
+  const globalWordCounterRef = React.useRef(0); // Global word counter for single-file audio mode
+  const useSingleFileAudioRef = React.useRef(false); // Flag: true when using new single-file audio format
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -289,10 +295,11 @@ const LearningHub = () => {
         const courseId = await getUserCourseId();
 
         // Query Supabase directly - fetches existence AND data in one call
-        // Use maybeSingle() instead of single() to avoid error when no row exists
+        // NEW FORMAT: audio_url + word_timestamps (single file)
+        // LEGACY: section_audio (per-section)
         const { data, error } = await supabase
           .from('lesson_audio')
-          .select('section_audio')
+          .select('audio_url, word_timestamps, title_word_count, section_audio')
           .eq('course_id', courseId)
           .eq('module_number', currentModule)
           .eq('lesson_number', currentLesson)
@@ -303,19 +310,41 @@ const LearningHub = () => {
           return;
         }
 
-        if (data?.section_audio) {
+        // NEW FORMAT: Single audio file with word timestamps
+        if (data?.audio_url && data?.word_timestamps) {
           // Mark audio as available
           setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
 
           // Cache the audio data for instant playback
+          prefetchedLessonAudioRef.current = {
+            audio_url: data.audio_url,
+            word_timestamps: data.word_timestamps,
+            title_word_count: data.title_word_count || 0
+          };
+          titleWordCountRef.current = data.title_word_count || 0;
+
+          console.log('✅ Single-file audio data prefetched and ready', {
+            module: currentModule,
+            lesson: currentLesson,
+            wordCount: data.word_timestamps.length,
+            titleWordCount: data.title_word_count
+          });
+
+          // Preload audio file into browser cache for faster start
+          const preloadAudio = new Audio();
+          preloadAudio.preload = 'auto';
+          preloadAudio.src = data.audio_url;
+        }
+        // LEGACY: Per-section audio format
+        else if (data?.section_audio) {
+          setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
           prefetchedLessonAudioRef.current = { section_audio: data.section_audio };
-          console.log('✅ Audio data prefetched and ready', {
+          console.log('✅ Legacy section audio data prefetched', {
             module: currentModule,
             lesson: currentLesson,
             sections: data.section_audio.length
           });
 
-          // Preload first audio file into browser cache for even faster start
           const firstSection = data.section_audio[0];
           if (firstSection?.audio_url) {
             const preloadAudio = new Audio();
@@ -1917,11 +1946,29 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         style.backgroundColor = hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3';
       }
 
+      // Calculate global word index for single-file audio mode
+      // This uses a global counter that increments across all sections
+      const globalWordIndex = useSingleFileAudioRef.current ? globalWordCounterRef.current : null;
+
+      // Determine if this word should be skipped for highlighting (title words)
+      const shouldSkipHighlight = useSingleFileAudioRef.current &&
+        sectionIndexForHighlight === 'title';
+
+      // Build data attributes for DOM-based highlighting
+      const dataAttributes = {};
+      if (useSingleFileAudioRef.current) {
+        dataAttributes['data-word-index'] = globalWordIndex;
+        if (shouldSkipHighlight) {
+          dataAttributes['data-skip-highlight'] = 'true';
+        }
+      }
+
       elements.push(
         <span
           key={`word-${idx}-${currentWordIndex}`}
           className={className}
           style={style}
+          {...dataAttributes}
           onMouseEnter={isExplainedSection ? (e) => {
             // Explained section hover logic
             if (closeTimeoutRef.current) {
@@ -1966,6 +2013,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       );
 
       currentWordIndex++;
+
+      // Increment global counter for single-file audio mode
+      if (useSingleFileAudioRef.current) {
+        globalWordCounterRef.current++;
+      }
     });
 
     return elements;
@@ -2732,7 +2784,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const { courseId, module, lesson } = lessonAudio;
         const { data, error } = await supabase
           .from('lesson_audio')
-          .select('section_audio')
+          .select('audio_url, word_timestamps, title_word_count, section_audio')
           .eq('course_id', courseId)
           .eq('module_number', module)
           .eq('lesson_number', lesson)
@@ -2744,14 +2796,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioData = data;
       }
 
-      // Check if this is the new per-section format
+      // NEW FORMAT: Single audio file with word timestamps (like BlogPostPage)
+      if (audioData.audio_url && audioData.word_timestamps) {
+        console.log('🎬 Using single-file audio format (BlogPostPage pattern)');
+        await playSingleFileAudio(audioData);
+        return;
+      }
+
+      // LEGACY: Per-section audio format
       if (!audioData.section_audio) {
-        console.warn('⚠️ No section audio available');
+        console.warn('⚠️ No audio data available');
         setIsReading(false);
         return;
       }
 
-      console.log(`📦 Loaded ${audioData.section_audio.length} section audio segments`);
+      console.log(`📦 [LEGACY] Loaded ${audioData.section_audio.length} section audio segments`);
       sectionAudioDataRef.current = audioData.section_audio;
       currentPregenSectionRef.current = -2;
 
@@ -2774,6 +2833,155 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       console.error('Failed to play pre-generated audio:', error);
       setIsReading(false);
     }
+  };
+
+  // NEW: Play single audio file with DOM-based word highlighting (like BlogPostPage)
+  const playSingleFileAudio = async (audioData) => {
+    const { audio_url, word_timestamps, title_word_count } = audioData;
+
+    console.log(`🎵 Playing single audio file with ${word_timestamps.length} words`);
+    console.log(`📍 Title word count: ${title_word_count} (indices 0-${title_word_count - 1} skip highlight)`);
+
+    // Enable single-file audio mode
+    useSingleFileAudioRef.current = true;
+    globalWordCounterRef.current = 0; // Reset for fresh render
+
+    // Store word timestamps
+    wordTimestampsRef.current = word_timestamps;
+    titleWordCountRef.current = title_word_count || 0;
+
+    // Create audio element
+    const audio = new Audio(audio_url);
+    audioRef.current = audio;
+
+    audio.onended = () => {
+      console.log('✅ Finished playing lesson audio');
+
+      // Clear highlight
+      if (currentHighlightRef.current) {
+        currentHighlightRef.current.style.backgroundColor = '';
+        currentHighlightRef.current.style.padding = '';
+        currentHighlightRef.current.style.margin = '';
+        currentHighlightRef.current.style.borderRadius = '';
+        currentHighlightRef.current = null;
+      }
+
+      // Clear timer
+      if (wordTimerRef.current) {
+        cancelAnimationFrame(wordTimerRef.current);
+        wordTimerRef.current = null;
+      }
+
+      // Reset state
+      setIsReading(false);
+      isPausedRef.current = false;
+      audioRef.current = null;
+      useSingleFileAudioRef.current = false; // Exit single-file audio mode
+    };
+
+    audio.onerror = (e) => {
+      console.error('Audio playback error:', e);
+      setIsReading(false);
+    };
+
+    // Set playback speed
+    audio.playbackRate = playbackSpeed;
+
+    // Play the audio
+    await audio.play();
+    console.log('▶️ Audio playback started');
+
+    // Wait for DOM to be ready with word spans, then start highlighting
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        startDOMWordHighlighting(audio);
+      });
+    });
+  };
+
+  // DOM-based word highlighting (same approach as BlogPostPage)
+  const startDOMWordHighlighting = (audio) => {
+    const wordTimestamps = wordTimestampsRef.current;
+
+    if (!wordTimestamps || wordTimestamps.length === 0) {
+      console.warn('⚠️ No word timestamps available');
+      return;
+    }
+
+    console.log(`📝 Starting DOM-based word highlighting for ${wordTimestamps.length} words`);
+
+    let lastHighlightedWord = -1;
+
+    const updateHighlight = () => {
+      if (!audio || audio.paused || audio.ended) {
+        return;
+      }
+
+      const currentTime = audio.currentTime;
+
+      // Find which word should be highlighted
+      let wordToHighlight = lastHighlightedWord;
+      for (let i = 0; i < wordTimestamps.length; i++) {
+        const ts = wordTimestamps[i];
+        if (currentTime >= (ts.start + HIGHLIGHT_LAG_OFFSET) && currentTime < ts.end) {
+          wordToHighlight = i;
+          break;
+        }
+        // Anti-flicker: keep current word in gaps between words
+        if (i < wordTimestamps.length - 1) {
+          const next = wordTimestamps[i + 1];
+          if (currentTime >= ts.end && currentTime < (next.start + HIGHLIGHT_LAG_OFFSET)) {
+            wordToHighlight = i;
+            break;
+          }
+        }
+      }
+
+      // Only update if word has changed
+      if (wordToHighlight !== lastHighlightedWord) {
+        lastHighlightedWord = wordToHighlight;
+
+        // Clear previous highlight
+        if (currentHighlightRef.current) {
+          currentHighlightRef.current.style.backgroundColor = '';
+          currentHighlightRef.current.style.padding = '';
+          currentHighlightRef.current.style.margin = '';
+          currentHighlightRef.current.style.borderRadius = '';
+        }
+
+        // Find and highlight new word in DOM
+        if (contentContainerRef.current) {
+          const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
+          // Skip highlighting if word is marked to skip (e.g., title words)
+          if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
+            wordSpan.style.backgroundColor = '#fde7f4';
+            wordSpan.style.padding = '2px';
+            wordSpan.style.margin = '-2px';
+            wordSpan.style.borderRadius = '2px';
+            currentHighlightRef.current = wordSpan;
+          } else {
+            currentHighlightRef.current = null;
+          }
+        }
+      }
+
+      // If we're past all words, clear highlighting
+      if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
+        if (currentHighlightRef.current) {
+          currentHighlightRef.current.style.backgroundColor = '';
+          currentHighlightRef.current.style.padding = '';
+          currentHighlightRef.current.style.margin = '';
+          currentHighlightRef.current.style.borderRadius = '';
+          currentHighlightRef.current = null;
+        }
+        wordTimerRef.current = null;
+        return;
+      }
+
+      wordTimerRef.current = requestAnimationFrame(updateHighlight);
+    };
+
+    wordTimerRef.current = requestAnimationFrame(updateHighlight);
   };
 
   // Play a specific section from the pre-generated audio array
@@ -3007,10 +3215,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           cancelAnimationFrame(wordTimerRef.current);
           wordTimerRef.current = null;
         }
+
+        // NEW: Clear DOM highlight (for single-file audio mode)
+        if (currentHighlightRef.current) {
+          currentHighlightRef.current.style.backgroundColor = '';
+          currentHighlightRef.current.style.padding = '';
+          currentHighlightRef.current.style.margin = '';
+          currentHighlightRef.current.style.borderRadius = '';
+          currentHighlightRef.current = null;
+        }
+
         setCurrentNarrationWord(-1);
         setIsNarratingTitle(false);
 
-        // Update state (keep audioRef and currentNarrationSection for resume)
+        // Update state (keep audioRef and wordTimestampsRef for resume)
+        // DON'T reset useSingleFileAudioRef here - we need it for resume
         setIsReading(false);
         isPausedRef.current = true;
         isHandlingReadAloud.current = 0;
@@ -3025,8 +3244,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         setIsReading(true);
         isPausedRef.current = false;
 
-        // Resume word highlighting from current position
-        // Per-section indexing: word indices are 0-based within each section
+        // Resume word highlighting from current position using DOM-based approach
         const wordTimestamps = wordTimestampsRef.current;
         if (wordTimestamps && wordTimestamps.length > 0) {
           // Clear existing timer
@@ -3034,7 +3252,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             cancelAnimationFrame(wordTimerRef.current);
           }
 
-          let lastHighlightedWord = -1; // Track last highlighted word to avoid flickering
+          let lastHighlightedWord = -1;
 
           // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
           const updateHighlight = () => {
@@ -3042,19 +3260,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               return;
             }
 
-            const currentTime = audio.currentTime; // Current playback position in seconds
+            const currentTime = audio.currentTime;
 
             // Find which word should be highlighted based on actual timestamps
-            let wordToHighlight = lastHighlightedWord >= 0 ? lastHighlightedWord : 0; // Default to keeping current word
+            let wordToHighlight = lastHighlightedWord >= 0 ? lastHighlightedWord : 0;
             for (let i = 0; i < wordTimestamps.length; i++) {
               const timestamp = wordTimestamps[i];
-              // Highlight if current time is within this word's time range
               if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
                 wordToHighlight = i;
                 break;
               }
-              // If we're past this word but before the next word starts, keep highlighting this word
-              // This prevents flickering in gaps between words
               if (i < wordTimestamps.length - 1) {
                 const nextTimestamp = wordTimestamps[i + 1];
                 if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
@@ -3064,15 +3279,43 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               }
             }
 
-            // Only update state if the word has changed (prevents unnecessary re-renders)
+            // DOM-based highlighting (like BlogPostPage)
             if (wordToHighlight !== lastHighlightedWord) {
               lastHighlightedWord = wordToHighlight;
-              setCurrentNarrationWord(wordToHighlight);
+
+              // Clear previous highlight
+              if (currentHighlightRef.current) {
+                currentHighlightRef.current.style.backgroundColor = '';
+                currentHighlightRef.current.style.padding = '';
+                currentHighlightRef.current.style.margin = '';
+                currentHighlightRef.current.style.borderRadius = '';
+              }
+
+              // Find and highlight new word in DOM
+              if (contentContainerRef.current) {
+                const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
+                // Skip highlighting if word is marked to skip (e.g., title words)
+                if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
+                  wordSpan.style.backgroundColor = '#fde7f4';
+                  wordSpan.style.padding = '2px';
+                  wordSpan.style.margin = '-2px';
+                  wordSpan.style.borderRadius = '2px';
+                  currentHighlightRef.current = wordSpan;
+                } else {
+                  currentHighlightRef.current = null;
+                }
+              }
             }
 
             // If we're past all words, clear highlighting
             if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-              setCurrentNarrationWord(-1);
+              if (currentHighlightRef.current) {
+                currentHighlightRef.current.style.backgroundColor = '';
+                currentHighlightRef.current.style.padding = '';
+                currentHighlightRef.current.style.margin = '';
+                currentHighlightRef.current.style.borderRadius = '';
+                currentHighlightRef.current = null;
+              }
               wordTimerRef.current = null;
               return;
             }
@@ -3776,7 +4019,7 @@ ${currentLessonSections.map((section) => {
 
         {/* Scrollable Content - All Sections */}
         <div ref={contentScrollRef} className="flex-1 overflow-y-auto px-16 py-8 pb-20" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', position: 'relative' }}>
-          <div className="max-w-4xl mx-auto space-y-0" style={{ position: 'relative', zIndex: 2 }}>
+          <div ref={contentContainerRef} className="max-w-4xl mx-auto space-y-0" style={{ position: 'relative', zIndex: 2 }}>
             {/* Lesson Title */}
             <div style={{ marginTop: '2rem', marginBottom: '1.5rem' }}>
               <p className="text-xl font-medium" style={{ color: '#EF0B72', marginBottom: '0.25rem' }}>
