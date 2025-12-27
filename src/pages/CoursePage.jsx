@@ -7,6 +7,33 @@ import { Home, ChevronRight, Link2, Check, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
 
+// Cache TTL: 1 hour
+const CACHE_TTL = 60 * 60 * 1000;
+
+const getCachedData = (key) => {
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+      const { data, timestamp } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_TTL) return data;
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+  return null;
+};
+
+const setCachedData = (key, data) => {
+  try {
+    localStorage.setItem(key, JSON.stringify({
+      data,
+      timestamp: Date.now()
+    }));
+  } catch (e) {
+    // Ignore cache errors (e.g., quota exceeded)
+  }
+};
+
 /**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
  * Dynamically fetches course data from Supabase
@@ -108,73 +135,101 @@ const CoursePage = () => {
 
   const fetchCourseData = async () => {
     try {
-      setLoading(true);
       setError(null);
+
+      // Check cache first for instant load
+      const cacheKey = `course_${courseSlug}`;
+      const cachedCourse = getCachedData(cacheKey);
+      const cachedCoaches = getCachedData(`coaches_${courseSlug}`);
+
+      if (cachedCourse) {
+        setCourse(cachedCourse);
+        setCoaches(cachedCoaches || []);
+        setLoading(false);
+        // Refresh in background
+        refreshCourseData();
+        return;
+      }
+
+      setLoading(true);
 
       // Get all possible name variations for the slug
       const nameVariations = slugToNameVariations(courseSlug);
 
-      // Fetch course by trying different name formats
-      const { data: courseData, error: courseError } = await supabase
-        .from('courses')
-        .select('*')
-        .in('name', nameVariations)
-        .in('status', ['live', 'coming_soon'])
-        .single();
-
-      if (courseError || !courseData) {
-        // If single() fails, try fetching all and find the first match
-        const { data: allCourses } = await supabase
+      // Fetch course and coaches in parallel
+      const [courseResult, coachesResult] = await Promise.all([
+        // Course query with better fallback using ilike
+        supabase
           .from('courses')
           .select('*')
-          .in('status', ['live', 'coming_soon']);
+          .in('name', nameVariations)
+          .in('status', ['live', 'coming_soon'])
+          .limit(1)
+          .maybeSingle(),
+        // Coaches query runs in parallel
+        getCoachesForCourse(courseSlug).catch(() => [])
+      ]);
 
-        // Find course by case-insensitive match
-        const foundCourse = allCourses?.find(c => {
-          const normalizedName = c.name.toLowerCase().replace(/\s+/g, '-');
-          const normalizedSlug = courseSlug.toLowerCase();
-          return normalizedName === normalizedSlug ||
-                 c.name.toLowerCase() === normalizedSlug.replace(/-/g, ' ') ||
-                 c.name === courseSlug;
-        });
+      let courseData = courseResult.data;
 
-        if (!foundCourse) {
-          setError('Course not found');
-          setLoading(false);
-          return;
-        }
+      // If first query didn't find course, try fuzzy match
+      if (!courseData) {
+        const normalizedSlug = courseSlug.toLowerCase().replace(/-/g, ' ');
+        const { data: fuzzyResult } = await supabase
+          .from('courses')
+          .select('*')
+          .ilike('name', `%${normalizedSlug}%`)
+          .in('status', ['live', 'coming_soon'])
+          .limit(1)
+          .maybeSingle();
 
-        setCourse(foundCourse);
+        courseData = fuzzyResult;
+      }
 
-        // Fetch coaches for this course using the actual course name
-        try {
-          const coachesData = await getCoachesForCourse(foundCourse.name);
-          setCoaches(coachesData || []);
-        } catch (coachError) {
-          console.error('Error fetching coaches:', coachError);
-          setCoaches([]);
-        }
-
+      if (!courseData) {
+        setError('Course not found');
         setLoading(false);
         return;
       }
 
+      // Cache the data
+      setCachedData(cacheKey, courseData);
+      setCachedData(`coaches_${courseSlug}`, coachesResult);
+
       setCourse(courseData);
-
-      // Fetch coaches for this course using the actual course name
-      try {
-        const coachesData = await getCoachesForCourse(courseData.name);
-        setCoaches(coachesData || []);
-      } catch (coachError) {
-        console.error('Error fetching coaches:', coachError);
-        setCoaches([]);
-      }
-
+      setCoaches(coachesResult || []);
       setLoading(false);
     } catch (err) {
       console.error('Error loading course:', err);
       setError('Unable to load course. Please try again later.');
       setLoading(false);
+    }
+  };
+
+  // Background refresh to keep cache fresh
+  const refreshCourseData = async () => {
+    try {
+      const nameVariations = slugToNameVariations(courseSlug);
+
+      const [courseResult, coachesResult] = await Promise.all([
+        supabase
+          .from('courses')
+          .select('*')
+          .in('name', nameVariations)
+          .in('status', ['live', 'coming_soon'])
+          .limit(1)
+          .maybeSingle(),
+        getCoachesForCourse(courseSlug).catch(() => [])
+      ]);
+
+      if (courseResult.data) {
+        setCachedData(`course_${courseSlug}`, courseResult.data);
+        setCachedData(`coaches_${courseSlug}`, coachesResult);
+        setCourse(courseResult.data);
+        setCoaches(coachesResult || []);
+      }
+    } catch (err) {
+      // Silent fail for background refresh
     }
   };
 
@@ -375,6 +430,16 @@ const CoursePage = () => {
     const firstSentenceEnd = description.indexOf('. ');
     if (firstSentenceEnd !== -1) {
       return description.substring(0, firstSentenceEnd + 1);
+    }
+    return description;
+  };
+
+  // Get description without the first sentence (for main paragraph)
+  const getDescriptionWithoutFirstSentence = (description) => {
+    if (!description) return '';
+    const firstSentenceEnd = description.indexOf('. ');
+    if (firstSentenceEnd !== -1 && firstSentenceEnd < description.length - 2) {
+      return description.substring(firstSentenceEnd + 2).trim();
     }
     return description;
   };
@@ -629,7 +694,6 @@ const CoursePage = () => {
               {/* Title with typing animation */}
               <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left" style={{ minHeight: '4rem' }}>
                 {typedTitle}
-                {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
               </h1>
 
               {/* Subtitle/Excerpt - Ignite Pink */}
@@ -645,10 +709,10 @@ const CoursePage = () => {
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
 
-              {/* Full Course Description */}
+              {/* Full Course Description (without first sentence, which is shown in pink above) */}
               <div className="mb-8">
                 <p className="text-black text-lg leading-relaxed">
-                  {course.description}
+                  {getDescriptionWithoutFirstSentence(course.description)}
                 </p>
               </div>
 

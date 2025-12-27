@@ -1425,14 +1425,22 @@ export async function getCourseRequestAnalytics() {
 
 /**
  * Get all coaches for a specific course
- * @param {string} courseId - The course ID
+ * @param {string} courseIdOrSlug - The course ID/name or slug (e.g., "Product Manager" or "product-manager")
  * @returns {Promise<Array>} Array of coach objects
  */
-export async function getCoachesForCourse(courseId) {
+export async function getCoachesForCourse(courseIdOrSlug) {
+  // Generate possible name variations from slug
+  const slug = courseIdOrSlug.toLowerCase();
+  const nameVariations = [
+    courseIdOrSlug, // Original (could be course name)
+    slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Title Case
+    slug.replace(/-/g, ' '), // lowercase with spaces
+  ];
+
   const { data, error } = await supabase
     .from('coaches')
     .select('*')
-    .eq('course_id', courseId)
+    .in('course_id', nameVariations)
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 
