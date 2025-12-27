@@ -46,6 +46,32 @@ const CalendlyLoadingSpinner = () => {
   );
 };
 
+// Mobile Block Screen Component
+const MobileBlockScreen = () => {
+  const { lottieData } = useAnimation();
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white px-8">
+      <div style={{ opacity: lottieData ? 1 : 0, transition: 'opacity 0.3s ease-out' }}>
+        {lottieData && Object.keys(lottieData).length > 0 && (
+          <Lottie
+            animationData={lottieData}
+            loop={true}
+            autoplay={true}
+            style={{ width: 150, height: 150 }}
+          />
+        )}
+      </div>
+      <p
+        className="text-center text-lg mt-6"
+        style={{ maxWidth: '280px', lineHeight: '1.5' }}
+      >
+        Learning looks better on a laptop. Please revisit us on a tablet or computer.
+      </p>
+    </div>
+  );
+};
+
 const ProgressHub = () => {
   // IMMEDIATE LOGGING - runs before anything else
   console.log('🚀 ProgressHub component loading');
@@ -58,6 +84,7 @@ const ProgressHub = () => {
   const { firstName, user: authUser, isAdFree, signOut, updateProfile } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [user, setUser] = useState({ firstName: firstName || 'User', lastName: 'Smith', enrolledCourse: 'Product Management', progress: 40 });
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
@@ -164,6 +191,15 @@ const ProgressHub = () => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
     }
+  }, []);
+
+  // Track viewport size for mobile blocking
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Set Safari theme color to black for this page
@@ -2373,6 +2409,10 @@ const ProgressHub = () => {
 
   if (loading) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
+  }
+
+  if (isMobile) {
+    return <MobileBlockScreen />;
   }
 
   return (
