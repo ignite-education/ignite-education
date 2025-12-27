@@ -1,4 +1,4 @@
-// Read Aloud fix - v2 - 2024-11-29
+// Read Aloud fix - v3 - 2024-12-27 - Fixed timestamp sync for bullets/newlines
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,7 @@ import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
 import LoadingScreen from './LoadingScreen';
 import { supabase } from '../lib/supabase';
+import { normalizeTextForNarration, splitIntoWords, convertCharacterToWordTimestamps } from '../utils/textNormalization';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -19,80 +20,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.on
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// Helper to remove formatting markers from text
-const stripFormattingMarkers = (text) => {
-  if (!text) return '';
-  // Remove bold (**), underline (__), italic (*), and bullet markers
-  return text
-    .replace(/\*\*/g, '') // Remove bold markers
-    .replace(/__/g, '')   // Remove underline markers
-    .replace(/(?<!\*)\*(?!\*)/g, '') // Remove italic markers (single asterisks)
-    .replace(/^[•\-]\s/gm, '') // Remove bullet points
-    .trim();
-};
-
-// Helper to convert ElevenLabs character-level timestamps to word-level timestamps
-const convertCharacterToWordTimestamps = (text, characters, characterStartTimes, characterEndTimes) => {
-  if (!text || !characters || !characterStartTimes || !characterEndTimes) {
-    return [];
-  }
-
-  const wordTimestamps = [];
-  let wordIndex = 0;
-  let wordStart = null;
-  let wordEnd = null;
-  let currentWord = '';
-
-  // Characters to skip (bullets, dashes used as bullets) - these are rendered separately in the UI
-  const skipChars = new Set(['•', '–', '—', '-']);
-
-  for (let i = 0; i < characters.length; i++) {
-    const char = characters[i];
-    const isWhitespace = /\s/.test(char);
-
-    // Check if this is a bullet/dash at the start of a line (skip it)
-    // We check if currentWord is empty to only skip leading bullets
-    const isLeadingBullet = skipChars.has(char) && currentWord.length === 0;
-
-    if (isWhitespace) {
-      // End of a word - save it if we have one
-      if (currentWord.length > 0 && wordStart !== null) {
-        wordTimestamps.push({
-          word: currentWord,
-          start: wordStart,
-          end: wordEnd,
-          index: wordIndex
-        });
-        wordIndex++;
-        currentWord = '';
-        wordStart = null;
-        wordEnd = null;
-      }
-    } else if (isLeadingBullet) {
-      // Skip leading bullet/dash characters (don't include in word)
-      // But don't end the current word since we haven't started one
-    } else {
-      // Part of a word
-      if (wordStart === null) {
-        wordStart = characterStartTimes[i];
-      }
-      wordEnd = characterEndTimes[i];
-      currentWord += char;
-    }
-  }
-
-  // Don't forget the last word if text doesn't end with whitespace
-  if (currentWord.length > 0 && wordStart !== null) {
-    wordTimestamps.push({
-      word: currentWord,
-      start: wordStart,
-      end: wordEnd,
-      index: wordIndex
-    });
-  }
-
-  return wordTimestamps;
-};
+// Alias for backward compatibility - uses shared normalizeTextForNarration
+const stripFormattingMarkers = normalizeTextForNarration;
 
 // Small offset to account for audio buffering delay
 // Negative = highlight later, Positive = highlight earlier
@@ -1914,38 +1843,40 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   // Helper to render text with explained sections highlighted and word-by-word narration highlighting
+  // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
+  // which uses normalized text (collapsed whitespace, split on single space)
   const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
     if (!text) return null;
 
-    // Split text into words while preserving spaces
-    const parts = text.split(/(\s+)/); // This keeps the spaces in the array
+    // Normalize text and split into words - matching backend's splitIntoWords()
+    const normalizedText = text.replace(/\s+/g, ' ').trim();
+    const words = normalizedText.split(' ').filter(w => w.length > 0);
     const elements = [];
     let currentWordIndex = startWordIndex;
 
-    parts.forEach((part, idx) => {
-      // If this is whitespace, render it without highlighting
-      if (!part || /^\s+$/.test(part)) {
-        elements.push(<span key={`space-${idx}`}>{part}</span>);
-        return;
+    words.forEach((word, idx) => {
+      // Add space before word (except first)
+      if (idx > 0) {
+        elements.push(<span key={`space-${idx}`}> </span>);
       }
-
-      // This is an actual word
-      const word = part;
 
       // Check if this word is part of an explained section
       // We need to check if this specific word position falls within the explained text range
       let isExplainedSection = false;
       let explainedSectionId = null;
 
-      // Calculate the character position of this word in the text
-      const textBeforeWord = parts.slice(0, idx).join('');
+      // Calculate the character position of this word in the normalized text
+      // Each word is separated by a single space, so position = sum of (word lengths + spaces before)
+      const textBeforeWord = words.slice(0, idx).join(' ') + (idx > 0 ? ' ' : '');
       const wordStartPos = textBeforeWord.length;
       const wordEndPos = wordStartPos + word.length;
 
+      // For explained section matching, we need to normalize the section text the same way
       explainedSections.forEach((section) => {
-        const sectionStartPos = text.indexOf(section.text);
+        const normalizedSectionText = section.text.replace(/\s+/g, ' ').trim();
+        const sectionStartPos = normalizedText.indexOf(normalizedSectionText);
         if (sectionStartPos !== -1) {
-          const sectionEndPos = sectionStartPos + section.text.length;
+          const sectionEndPos = sectionStartPos + normalizedSectionText.length;
           // Check if this word's position overlaps with the explained section's position
           if (wordStartPos >= sectionStartPos && wordEndPos <= sectionEndPos) {
             isExplainedSection = true;
@@ -2544,8 +2475,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Set flag that we're narrating the title
       setIsNarratingTitle(true);
 
-      // Start word-by-word highlighting for title
-      const titleWords = lessonName.split(/\s+/).filter(w => w.length > 0);
+      // Start word-by-word highlighting for title - use consistent word splitting
+      const titleWords = splitIntoWords(normalizeTextForNarration(lessonName));
 
       const startTitleWordHighlighting = () => {
         const wordTimestamps = wordTimestampsRef.current;
@@ -3886,7 +3817,8 @@ ${currentLessonSections.map((section) => {
 
                     return parts.map((part, i) => {
                       const cleanPart = part.replace(/__/g, '');
-                      const wordCount = cleanPart.split(/\s+/).filter(w => w.length > 0).length;
+                      // Use consistent word counting: normalize and split on space
+                      const wordCount = splitIntoWords(normalizeTextForNarration(cleanPart)).length;
 
                       let result;
                       if (part.startsWith('__') && part.endsWith('__')) {
@@ -3944,7 +3876,8 @@ ${currentLessonSections.map((section) => {
                         .replace(/__/g, '')
                         .replace(/(?<!\*)\*(?!\*)/g, '')
                         .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
-                      const wordCount = cleanPart.split(/\s+/).filter(w => w.length > 0).length;
+                      // Use consistent word counting: normalize and split on space
+                      const wordCount = splitIntoWords(normalizeTextForNarration(cleanPart)).length;
 
                       let result;
                       if (linkMatch) {
@@ -3996,13 +3929,13 @@ ${currentLessonSections.map((section) => {
                           if (/^[•\-]\s/.test(trimmedLine)) {
                             // This is a bullet point line
                             const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
-                            // Calculate word count for this bullet
+                            // Calculate word count for this bullet using consistent normalization
                             const cleanBulletText = bulletText
                               .replace(/\*\*/g, '')
                               .replace(/__/g, '')
                               .replace(/(?<!\*)\*(?!\*)/g, '')
                               .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
-                            const bulletWordCount = cleanBulletText.split(/\s+/).filter(w => w.length > 0).length;
+                            const bulletWordCount = splitIntoWords(normalizeTextForNarration(cleanBulletText)).length;
 
                             const element = (
                               <div key={idx} className="flex items-start gap-2 mb-1">
@@ -4016,13 +3949,13 @@ ${currentLessonSections.map((section) => {
                             currentWordOffset += bulletWordCount;
                             return element;
                           } else if (trimmedLine) {
-                            // Regular text line
+                            // Regular text line - use consistent word counting
                             const cleanLineText = line
                               .replace(/\*\*/g, '')
                               .replace(/__/g, '')
                               .replace(/(?<!\*)\*(?!\*)/g, '')
                               .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1'); // Remove link syntax, keep text
-                            const lineWordCount = cleanLineText.split(/\s+/).filter(w => w.length > 0).length;
+                            const lineWordCount = splitIntoWords(normalizeTextForNarration(cleanLineText)).length;
 
                             const element = (
                               <p key={idx} className="text-base leading-relaxed mb-2">

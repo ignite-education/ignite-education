@@ -1713,27 +1713,38 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     }
 
     // 2. Extract plain text from HTML content
-    // IMPORTANT: This must match the frontend's extractTextFromHtml in BlogPostPage.jsx
-    // which uses div.textContent to extract text. We need to replicate that behavior
-    // so word timestamps align correctly with the frontend rendering.
+    // IMPORTANT: This must match the frontend's textNormalization.js extractTextFromHtml
+    // The key fix is adding spaces BEFORE block-level elements to match browser textContent behavior
+    // Without this, text from adjacent blocks gets joined: "<p>Hello</p><p>World</p>" -> "HelloWorld"
     const extractTextFromHtml = (html) => {
       if (!html) return '';
-      // Use jsdom-like approach to match browser's textContent behavior
-      // Remove script and style tags first
       let text = html
+        // Remove script and style tags entirely (including content)
         .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
         .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
         // Remove the blog-line-break spans (they don't add text content)
         .replace(/<span class="blog-line-break"><\/span>/gi, '')
-        // Remove all HTML tags, keeping only text content
+        // CRITICAL FIX: Add space BEFORE block-level elements to match browser textContent behavior
+        // This prevents words from being joined across block boundaries
+        .replace(/<(p|div|br|h[1-6]|li|tr|td|th|blockquote|pre|hr)[^>]*>/gi, ' ')
+        // Remove all remaining HTML tags
         .replace(/<[^>]+>/g, '')
-        // Decode HTML entities
+        // Decode common HTML entities
         .replace(/&nbsp;/g, ' ')
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'");
+        .replace(/&#39;/g, "'")
+        .replace(/&rsquo;/g, "'")
+        .replace(/&lsquo;/g, "'")
+        .replace(/&rdquo;/g, '"')
+        .replace(/&ldquo;/g, '"')
+        .replace(/&mdash;/g, '—')
+        .replace(/&ndash;/g, '–')
+        // Collapse all whitespace to single spaces and trim
+        .replace(/\s+/g, ' ')
+        .trim();
       return text;
     };
 
@@ -1814,7 +1825,8 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     console.log(`✅ Uploaded to ${audioUrl}`);
 
     // 7. Convert character timestamps to word timestamps for highlighting
-    // This must match how the frontend splits text into words (using /\s+/ regex)
+    // IMPORTANT: Since text is pre-normalized to single spaces, we only split on space character
+    // This matches the frontend's splitIntoWords() which uses text.split(' ')
     const wordTimestamps = [];
     if (response.alignment) {
       const chars = response.alignment.characters;
@@ -1827,10 +1839,10 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
 
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
-        // Use same whitespace detection as LearningHub - regex test for any whitespace
-        const isWhitespace = /\s/.test(char);
+        // Since text is pre-normalized, only space is a word boundary
+        const isSpace = char === ' ';
 
-        if (isWhitespace) {
+        if (isSpace) {
           // End of a word - save it if we have one
           if (currentWord.length > 0 && wordStart !== null) {
             wordTimestamps.push({
@@ -1852,7 +1864,7 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
         }
       }
 
-      // Don't forget the last word if text doesn't end with whitespace
+      // Don't forget the last word if text doesn't end with space
       if (currentWord.length > 0 && wordStart !== null) {
         wordTimestamps.push({
           word: currentWord,

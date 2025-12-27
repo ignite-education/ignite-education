@@ -6,6 +6,7 @@ import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause, Link2, Check } from 'lucide-react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../contexts/AnimationContext';
+import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -118,21 +119,17 @@ const BlogPostPage = () => {
     return () => {};
   }, [post]);
 
-  // Extract plain text from HTML content and split into words
-  const extractTextFromHtml = (html) => {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return div.textContent || div.innerText || '';
-  };
-
   // Parse content into words when post loads and build header word index map
+  // IMPORTANT: Uses shared extractTextFromHtml and splitIntoWords from textNormalization.js
+  // to ensure word counting matches the backend's word timestamp generation
   useEffect(() => {
     if (post?.content) {
       const plainText = extractTextFromHtml(post.content);
-      const words = plainText.split(/(\s+)/).filter(word => word.trim().length > 0);
+      const words = splitIntoWords(plainText);
       setContentWords(words);
 
       // Build a map of word indices where headers (h2, h3) start
+      // Note: We need to use the same normalized text extraction for consistency
       const div = document.createElement('div');
       div.innerHTML = post.content;
       const headerIndices = [];
@@ -141,7 +138,9 @@ const BlogPostPage = () => {
       const walkNodes = (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
           const text = node.textContent;
-          const nodeWords = text.split(/(\s+)/).filter(w => w.trim().length > 0);
+          // Use same normalization: collapse whitespace, split on space
+          const normalizedText = text.replace(/\s+/g, ' ').trim();
+          const nodeWords = normalizedText.split(' ').filter(w => w.length > 0);
           wordIndex += nodeWords.length;
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           const tagName = node.tagName.toLowerCase();
@@ -374,6 +373,8 @@ const BlogPostPage = () => {
   };
 
   // Render content with word highlighting
+  // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
+  // which uses normalized text (collapsed whitespace, split on single space)
   const renderContentWithHighlighting = (html) => {
     if (!isReading || currentWordIndex < 0) {
       return <div dangerouslySetInnerHTML={{ __html: html }} />;
@@ -388,11 +389,13 @@ const BlogPostPage = () => {
     const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent;
-        const words = text.split(/(\s+)/);
+        // Use same normalization as backend: collapse whitespace, split on space
+        const normalizedText = text.replace(/\s+/g, ' ');
+        const words = normalizedText.split(' ');
         const span = document.createElement('span');
 
-        words.forEach((word) => {
-          if (word.trim().length > 0) {
+        words.forEach((word, idx) => {
+          if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
             // Don't highlight words inside h2 headings
@@ -405,8 +408,13 @@ const BlogPostPage = () => {
             }
             span.appendChild(wordSpan);
             wordCounter++;
-          } else {
-            span.appendChild(document.createTextNode(word));
+            // Add space after word (except for last word if original didn't have trailing space)
+            if (idx < words.length - 1) {
+              span.appendChild(document.createTextNode(' '));
+            }
+          } else if (idx === 0 && normalizedText.startsWith(' ')) {
+            // Preserve leading whitespace
+            span.appendChild(document.createTextNode(' '));
           }
         });
 
