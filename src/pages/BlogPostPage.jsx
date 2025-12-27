@@ -287,6 +287,10 @@ const BlogPostPage = () => {
       // Use pre-generated word timestamps if available
       if (preGeneratedAudio.word_timestamps) {
         wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
+        console.log('📊 Backend word count:', preGeneratedAudio.word_timestamps.length);
+        console.log('📊 Frontend word count:', contentWords.length);
+        console.log('📊 First 10 backend words:', preGeneratedAudio.word_timestamps.slice(0, 10).map(w => w.word));
+        console.log('📊 First 10 frontend words:', contentWords.slice(0, 10));
       }
 
       // Create and play audio
