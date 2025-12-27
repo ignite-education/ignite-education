@@ -445,6 +445,7 @@ const BlogPostPage = () => {
     div.innerHTML = html;
 
     let wordCounter = 0;
+    const renderDebugLog = [];
 
     const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -458,6 +459,12 @@ const BlogPostPage = () => {
           if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
+
+            // Debug: track render word count
+            if (DEBUG_NARRATION && renderDebugLog.length < 50) {
+              renderDebugLog.push({ index: wordCounter, word, expected: contentWords[wordCounter] });
+            }
+
             // Don't highlight words inside h2 headings
             if (wordCounter === currentWordIndex && !insideH2) {
               wordSpan.style.backgroundColor = '#fde7f4';
@@ -465,6 +472,15 @@ const BlogPostPage = () => {
               wordSpan.style.margin = '-2px';
               wordSpan.style.borderRadius = '2px';
               wordSpan.style.transition = 'background-color 100ms';
+
+              // Debug: log when we highlight
+              if (DEBUG_NARRATION) {
+                const expected = contentWords[currentWordIndex];
+                const timestamp = wordTimestampsRef.current[currentWordIndex];
+                if (word !== expected) {
+                  console.warn(`⚠️ RENDER MISMATCH at index ${currentWordIndex}: rendering "${word}" but expected "${expected}" (timestamp for "${timestamp?.word}")`);
+                }
+              }
             }
             span.appendChild(wordSpan);
             wordCounter++;
