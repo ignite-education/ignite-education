@@ -11,7 +11,7 @@ import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization'
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-// ElevenLabs timestamps are accurate - no offset needed
+// No offset - using raw ElevenLabs timestamps for debugging
 const HIGHLIGHT_LAG_OFFSET = 0;
 
 // Debug mode - set to true to see detailed logging
@@ -303,19 +303,23 @@ const BlogPostPage = () => {
           let firstMismatchIndex = -1;
           let mismatchCount = 0;
 
-          console.log('\n📝 Full word-by-word comparison:');
+          console.log('\n📝 Full word-by-word comparison (ALL words with timestamps):');
           for (let i = 0; i < maxLen; i++) {
-            const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
+            const ts = preGeneratedAudio.word_timestamps[i];
+            const backendWord = ts?.word || '(none)';
             const frontendWord = contentWords[i] || '(none)';
             const match = backendWord === frontendWord;
+            const timing = ts ? `${ts.start.toFixed(3)}s - ${ts.end.toFixed(3)}s` : 'no timing';
 
             if (!match) {
               mismatchCount++;
               if (firstMismatchIndex === -1) {
                 firstMismatchIndex = i;
               }
-              // Log mismatches and surrounding context
-              console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ✗ MISMATCH`);
+              console.log(`  [${i}] "${backendWord}" vs "${frontendWord}" | ${timing} ✗ MISMATCH`);
+            } else {
+              // Log ALL words, not just mismatches
+              console.log(`  [${i}] "${backendWord}" | ${timing} ✓`);
             }
           }
 
