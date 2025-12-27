@@ -709,9 +709,9 @@ const BlogPostPage = () => {
                     color: #000000;
                   }
                   .prose br {
-                    content: '';
                     display: block;
-                    margin-top: 0.5em;
+                    content: '';
+                    margin-bottom: -0.4em;
                   }
                 `}</style>
                 {renderContentWithHighlighting(post.content)}
