@@ -534,9 +534,9 @@ const BlogPostPage = () => {
               />
             </Link>
             <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-sm font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
+              <span className="text-white text-base font-medium">Discover</span>
+              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '30px', height: '30px' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
                   <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
               </div>
@@ -567,9 +567,17 @@ const BlogPostPage = () => {
               </nav>
 
               {/* Title with typing animation - Left aligned */}
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
-                {typedTitle}
-              </h1>
+              {/* Container reserves space using invisible full title */}
+              <div className="relative">
+                {/* Invisible full title to reserve space */}
+                <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left invisible" aria-hidden="true">
+                  {post.title}
+                </h1>
+                {/* Visible typed title overlaid on top */}
+                <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left absolute top-0 left-0 right-0">
+                  {typedTitle}
+                </h1>
+              </div>
 
               {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
               <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
@@ -603,7 +611,7 @@ const BlogPostPage = () => {
           {/* Main White Content */}
           <div className="bg-white">
           {/* Speaker Button and Listen Duration */}
-          <div className="max-w-4xl mx-auto px-6 py-4 flex justify-center">
+          <div className="max-w-4xl mx-auto px-6 pt-4 flex justify-center">
             <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
               <button
                 onClick={handleReadAloud}
@@ -714,7 +722,6 @@ const BlogPostPage = () => {
                       const shareUrl = `https://ignite.education/blog/${post.slug}`;
                       navigator.clipboard.writeText(shareUrl);
                       setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
                     }}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                     style={{
