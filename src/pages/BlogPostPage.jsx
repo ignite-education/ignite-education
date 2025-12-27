@@ -128,7 +128,9 @@ const BlogPostPage = () => {
   // to ensure word counting matches the backend's word timestamp generation
   useEffect(() => {
     if (post?.content) {
-      const plainText = extractTextFromHtml(post.content);
+      // Remove H2 headers before extracting text - matches backend which excludes H2s from TTS
+      const contentWithoutH2 = post.content.replace(/<h2[^>]*>[\s\S]*?<\/h2>/gi, ' ');
+      const plainText = extractTextFromHtml(contentWithoutH2);
       const words = splitIntoWords(plainText);
       setContentWords(words);
 
@@ -519,12 +521,12 @@ const BlogPostPage = () => {
           if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
-            // Add data attribute for direct DOM manipulation (skip h2 headings)
+            // Only count and index non-H2 words (H2s are excluded from TTS on backend)
             if (!insideH2) {
               wordSpan.setAttribute('data-word-index', wordCounter.toString());
+              wordCounter++;
             }
             span.appendChild(wordSpan);
-            wordCounter++;
             // Add space after word (except for last word if original didn't have trailing space)
             if (idx < words.length - 1) {
               span.appendChild(document.createTextNode(' '));
