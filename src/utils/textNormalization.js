@@ -51,9 +51,6 @@ export function extractTextFromHtml(html) {
     // Remove script and style tags entirely (including content)
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-    // Remove H2 headers entirely - section headers shouldn't be narrated
-    // This keeps narration focused on body content
-    .replace(/<h2[^>]*>[\s\S]*?<\/h2>/gi, ' ')
     // CRITICAL: Replace blog-line-break spans with a space (they represent line breaks in text)
     // Without the space, words on either side get joined: "ever.<br>There's" -> "ever.There's"
     .replace(/<span class="blog-line-break"><\/span>/gi, ' ')

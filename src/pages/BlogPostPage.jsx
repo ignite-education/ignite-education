@@ -128,9 +128,7 @@ const BlogPostPage = () => {
   // to ensure word counting matches the backend's word timestamp generation
   useEffect(() => {
     if (post?.content) {
-      // Remove H2 headers before extracting text - matches backend which excludes H2s from TTS
-      const contentWithoutH2 = post.content.replace(/<h2[^>]*>[\s\S]*?<\/h2>/gi, ' ');
-      const plainText = extractTextFromHtml(contentWithoutH2);
+      const plainText = extractTextFromHtml(post.content);
       const words = splitIntoWords(plainText);
       setContentWords(words);
 
@@ -440,12 +438,16 @@ const BlogPostPage = () => {
             // Find and highlight new word directly in DOM
             if (contentContainerRef.current) {
               const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
-              if (wordSpan) {
+              // Only highlight if word exists and is not marked to skip (e.g., H2 headers)
+              if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
                 wordSpan.style.backgroundColor = '#fde7f4';
                 wordSpan.style.padding = '2px';
                 wordSpan.style.margin = '-2px';
                 wordSpan.style.borderRadius = '2px';
                 currentHighlightRef.current = wordSpan;
+              } else {
+                // Word is skipped (H2) - clear any previous highlight but don't set a new one
+                currentHighlightRef.current = null;
               }
             }
 
@@ -521,11 +523,13 @@ const BlogPostPage = () => {
           if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
-            // Only count and index non-H2 words (H2s are excluded from TTS on backend)
-            if (!insideH2) {
-              wordSpan.setAttribute('data-word-index', wordCounter.toString());
-              wordCounter++;
+            // All words get data-word-index to match backend timestamps
+            // H2 words also get data-skip-highlight so we don't highlight them
+            wordSpan.setAttribute('data-word-index', wordCounter.toString());
+            if (insideH2) {
+              wordSpan.setAttribute('data-skip-highlight', 'true');
             }
+            wordCounter++;
             span.appendChild(wordSpan);
             // Add space after word (except for last word if original didn't have trailing space)
             if (idx < words.length - 1) {
