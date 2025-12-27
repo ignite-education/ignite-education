@@ -1,5 +1,5 @@
 // Read Aloud fix - v3 - 2024-12-27 - Fixed timestamp sync for bullets/newlines
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Volume2, FileText, X, Linkedin, ChevronLeft, Pause, ChevronRight, Trash2, Edit2, Save, ThumbsUp, ThumbsDown, CheckCircle } from 'lucide-react';
@@ -127,6 +127,7 @@ const LearningHub = () => {
   const titleWordCountRef = React.useRef(0); // Number of title words to skip highlighting
   const globalWordCounterRef = React.useRef(0); // Global word counter for single-file audio mode
   const useSingleFileAudioRef = React.useRef(false); // Flag: true when using new single-file audio format
+  const lastProcessedH2Ref = React.useRef(null); // Track last processed H2 to prevent duplicate state updates
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -859,7 +860,8 @@ const LearningHub = () => {
 
   // Helper to determine if a section is high-priority for question generation
   // Get suggested question for section (only uses custom questions from H2 headings)
-  const generateQuestionForSection = (section) => {
+  // Memoized to prevent recreation on each render (fixes infinite loop)
+  const generateQuestionForSection = useCallback((section) => {
     if (!section) {
       console.log('generateQuestionForSection: no section');
       return null;
@@ -883,7 +885,7 @@ const LearningHub = () => {
 
     // No auto-generated questions - return null if not H2 or no custom question exists
     return null;
-  };
+  }, []);
 
 
   // Intersection Observer to track visible sections
@@ -940,19 +942,15 @@ const LearningHub = () => {
         const selectedH2 = closestH2Index;
 
         // Update the active section and suggested question
-        if (selectedH2 !== null) {
-          setActiveSectionIndex((prev) => {
-            if (prev !== selectedH2) {
-              const section = currentLessonSections[selectedH2];
+        // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
+        if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
+          lastProcessedH2Ref.current = selectedH2;
+          setActiveSectionIndex(selectedH2);
 
-              // Always show a question - either custom or fallback
-              const newQuestion = generateQuestionForSection(section);
-              setSuggestedQuestion(newQuestion || 'Can you explain this another way?');
-
-              return selectedH2;
-            }
-            return prev;
-          });
+          // Update suggested question separately (not nested in setActiveSectionIndex)
+          const section = currentLessonSections[selectedH2];
+          const newQuestion = generateQuestionForSection(section);
+          setSuggestedQuestion(newQuestion || 'Can you explain this another way?');
         }
       },
       {
@@ -976,7 +974,7 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-  }, [currentLessonSections, currentModule, currentLesson, loading]);
+  }, [currentLessonSections, currentModule, currentLesson, loading, generateQuestionForSection]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
