@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, Eye, Upload, Volume2, MoveUp, MoveDown, List, Link2, X, Youtube } from 'lucide-react';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -16,6 +16,20 @@ const generateSlug = (title) => {
     .replace(/^-+|-+$/g, '');
 };
 
+// Extract YouTube video ID from various URL formats
+const extractYouTubeId = (url) => {
+  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?]+)/,
+    /^([a-zA-Z0-9_-]{11})$/ // Direct video ID
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+};
+
 const BlogManagement = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
@@ -25,6 +39,11 @@ const BlogManagement = () => {
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioStatus, setAudioStatus] = useState(null);
   const imageInputRef = useRef(null);
+  const textareaRefs = useRef({});
+
+  // Link modal state
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [linkData, setLinkData] = useState({ url: '', text: '', blockId: null, selectionStart: 0, selectionEnd: 0 });
 
   // Content blocks state
   const [contentBlocks, setContentBlocks] = useState([
@@ -36,6 +55,7 @@ const BlogManagement = () => {
     slug: '',
     excerpt: '',
     featured_image: '',
+    featured_video: '',
     author_name: 'Ignite Team',
     author_role: '',
     author_avatar: '',
@@ -202,6 +222,7 @@ const BlogManagement = () => {
       slug: post.slug || '',
       excerpt: post.excerpt || '',
       featured_image: post.featured_image || '',
+      featured_video: post.featured_video || '',
       author_name: post.author_name || 'Ignite Team',
       author_role: post.author_role || '',
       author_avatar: post.author_avatar || '',
@@ -276,6 +297,7 @@ const BlogManagement = () => {
       slug: '',
       excerpt: '',
       featured_image: '',
+      featured_video: '',
       author_name: 'Ignite Team',
       author_role: '',
       author_avatar: '',
@@ -346,6 +368,44 @@ const BlogManagement = () => {
     const newBlocks = [...contentBlocks];
     [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
     setContentBlocks(newBlocks);
+  };
+
+  // Link insertion functions
+  const openLinkModal = (blockId) => {
+    const textarea = textareaRefs.current[blockId];
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+
+    setLinkData({
+      url: '',
+      text: selectedText,
+      blockId,
+      selectionStart: start,
+      selectionEnd: end
+    });
+    setShowLinkModal(true);
+  };
+
+  const insertLink = () => {
+    if (!linkData.url || !linkData.blockId) return;
+
+    const block = contentBlocks.find(b => b.id === linkData.blockId);
+    if (!block) return;
+
+    const linkText = linkData.text || linkData.url;
+    const linkHtml = `<a href="${linkData.url}" target="_blank" rel="noopener noreferrer">${linkText}</a>`;
+
+    const content = block.content || '';
+    const before = content.substring(0, linkData.selectionStart);
+    const after = content.substring(linkData.selectionEnd);
+    const newContent = before + linkHtml + after;
+
+    updateBlock(linkData.blockId, newContent);
+    setShowLinkModal(false);
+    setLinkData({ url: '', text: '', blockId: null, selectionStart: 0, selectionEnd: 0 });
   };
 
   const resizeImage = (file, maxSizeKB = 5000) => {
@@ -526,22 +586,37 @@ const BlogManagement = () => {
     }
 
     return (
-      <textarea
-        value={block.content}
-        onChange={(e) => updateBlock(block.id, e.target.value)}
-        onInput={(e) => {
-          e.target.style.height = 'auto';
-          e.target.style.height = e.target.scrollHeight + 'px';
-        }}
-        placeholder={
-          block.type === 'h2' ? 'Section heading...' :
-          block.type === 'h3' ? 'Subsection heading...' :
-          block.type === 'quote' ? 'Enter quote...' :
-          'Enter paragraph text...'
-        }
-        className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none min-h-[60px] ${textClass}`}
-        style={{ height: 'auto' }}
-      />
+      <div className="space-y-2">
+        {/* Mini toolbar for text formatting */}
+        <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => openLinkModal(block.id)}
+            className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-600/50 hover:bg-blue-600 rounded transition"
+            title="Insert link (select text first)"
+          >
+            <Link2 size={12} />
+            Link
+          </button>
+        </div>
+        <textarea
+          ref={(el) => { textareaRefs.current[block.id] = el; }}
+          value={block.content}
+          onChange={(e) => updateBlock(block.id, e.target.value)}
+          onInput={(e) => {
+            e.target.style.height = 'auto';
+            e.target.style.height = e.target.scrollHeight + 'px';
+          }}
+          placeholder={
+            block.type === 'h2' ? 'Section heading...' :
+            block.type === 'h3' ? 'Subsection heading...' :
+            block.type === 'quote' ? 'Enter quote...' :
+            'Enter paragraph text... (select text and click Link to add URLs)'
+          }
+          className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-none min-h-[60px] ${textClass}`}
+          style={{ height: 'auto' }}
+        />
+      </div>
     );
   };
 
@@ -626,39 +701,106 @@ const BlogManagement = () => {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Featured Image</label>
-              <div className="flex gap-2 items-center">
-                <input
-                  type="file"
-                  ref={imageInputRef}
-                  onChange={handleImageUpload}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <button
-                  type="button"
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={isUploadingImage}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg disabled:opacity-50"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isUploadingImage ? 'Uploading...' : 'Upload Image'}
-                </button>
-                <span className="text-gray-400 text-sm">or</span>
-                <input
-                  type="text"
-                  value={formData.featured_image}
-                  onChange={(e) => handleInputChange('featured_image', e.target.value)}
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
-                  placeholder="Paste image URL..."
-                />
-                {formData.featured_image && (
-                  <img
-                    src={formData.featured_image}
-                    alt="Preview"
-                    className="w-12 h-12 object-cover rounded"
-                    onError={(e) => { e.target.style.display = 'none'; }}
+              <label className="block text-sm font-medium mb-2">Featured Media</label>
+              <p className="text-xs text-gray-400 mb-3">Choose either an image or a YouTube video as your featured media</p>
+
+              {/* Image Upload Section */}
+              <div className="space-y-3">
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="file"
+                    ref={imageInputRef}
+                    onChange={handleImageUpload}
+                    accept="image/*"
+                    className="hidden"
                   />
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploadingImage || !!formData.featured_video}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg disabled:opacity-50"
+                  >
+                    <Upload className="w-4 h-4" />
+                    {isUploadingImage ? 'Uploading...' : 'Upload Image'}
+                  </button>
+                  <span className="text-gray-400 text-sm">or</span>
+                  <input
+                    type="text"
+                    value={formData.featured_image}
+                    onChange={(e) => {
+                      handleInputChange('featured_image', e.target.value);
+                      if (e.target.value) handleInputChange('featured_video', '');
+                    }}
+                    disabled={!!formData.featured_video}
+                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
+                    placeholder="Paste image URL..."
+                  />
+                  {formData.featured_image && (
+                    <>
+                      <img
+                        src={formData.featured_image}
+                        alt="Preview"
+                        className="w-12 h-12 object-cover rounded"
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleInputChange('featured_image', '')}
+                        className="p-2 hover:bg-red-900/30 text-red-400 rounded"
+                      >
+                        <X size={16} />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-white/20"></div>
+                  <span className="text-gray-400 text-sm">OR</span>
+                  <div className="flex-1 h-px bg-white/20"></div>
+                </div>
+
+                {/* YouTube Video Section */}
+                <div className="flex gap-2 items-center">
+                  <Youtube className="w-5 h-5 text-red-500 flex-shrink-0" />
+                  <input
+                    type="text"
+                    value={formData.featured_video}
+                    onChange={(e) => {
+                      handleInputChange('featured_video', e.target.value);
+                      if (e.target.value) handleInputChange('featured_image', '');
+                    }}
+                    disabled={!!formData.featured_image}
+                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72] disabled:opacity-50"
+                    placeholder="Paste YouTube URL (e.g., https://youtube.com/watch?v=...)"
+                  />
+                  {formData.featured_video && (
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('featured_video', '')}
+                      className="p-2 hover:bg-red-900/30 text-red-400 rounded"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
+
+                {/* Video Preview */}
+                {formData.featured_video && extractYouTubeId(formData.featured_video) && (
+                  <div className="aspect-video w-full max-w-md rounded-lg overflow-hidden bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${extractYouTubeId(formData.featured_video)}`}
+                      title="YouTube video preview"
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                )}
+
+                {formData.featured_video && !extractYouTubeId(formData.featured_video) && (
+                  <p className="text-red-400 text-sm">Invalid YouTube URL. Please use a valid YouTube link.</p>
                 )}
               </div>
             </div>
@@ -891,6 +1033,68 @@ const BlogManagement = () => {
           </div>
         </div>
       </div>
+
+      {/* Link Modal */}
+      {showLinkModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md border border-white/20">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Link2 size={20} />
+                Insert Link
+              </h3>
+              <button
+                onClick={() => setShowLinkModal(false)}
+                className="p-1 hover:bg-white/10 rounded"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Link Text</label>
+                <input
+                  type="text"
+                  value={linkData.text}
+                  onChange={(e) => setLinkData({ ...linkData, text: e.target.value })}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                  placeholder="Display text for the link"
+                />
+                <p className="text-xs text-gray-400 mt-1">Leave empty to show the URL as link text</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">URL *</label>
+                <input
+                  type="url"
+                  value={linkData.url}
+                  onChange={(e) => setLinkData({ ...linkData, url: e.target.value })}
+                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-[#EF0B72]"
+                  placeholder="https://example.com"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setShowLinkModal(false)}
+                  className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={insertLink}
+                  disabled={!linkData.url}
+                  className="flex-1 px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] rounded-lg disabled:opacity-50"
+                >
+                  Insert Link
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
