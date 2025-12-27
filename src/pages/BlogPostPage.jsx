@@ -253,7 +253,7 @@ const BlogPostPage = () => {
     }
   };
 
-  // Handle read aloud functionality
+  // Handle read aloud functionality - only works with pre-generated audio
   const handleReadAloud = async () => {
     // If already reading, stop
     if (isReading) {
@@ -270,57 +270,20 @@ const BlogPostPage = () => {
       return;
     }
 
+    // Only proceed if pre-generated audio exists
+    if (!preGeneratedAudio?.audio_url) return;
+
     // Reset scroll tracker when starting fresh
     lastScrolledHeaderRef.current = -1;
-
-    if (!post?.content) return;
 
     try {
       setIsReading(true);
 
-      let audioUrl;
-      let shouldRevokeUrl = false;
+      const audioUrl = preGeneratedAudio.audio_url;
 
-      // Check if pre-generated audio is available
-      if (preGeneratedAudio?.audio_url) {
-        // Use pre-generated audio
-        audioUrl = preGeneratedAudio.audio_url;
-
-        // Use pre-generated word timestamps if available
-        if (preGeneratedAudio.word_timestamps) {
-          wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
-        }
-      } else {
-        // Fall back to live TTS API
-        const plainText = extractTextFromHtml(post.content);
-
-        const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: plainText, voiceGender: 'male' })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to generate speech');
-        }
-
-        const data = await response.json();
-
-        // Convert base64 audio to blob
-        const audioData = atob(data.audio_base64);
-        const arrayBuffer = new ArrayBuffer(audioData.length);
-        const view = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < audioData.length; i++) {
-          view[i] = audioData.charCodeAt(i);
-        }
-        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-        audioUrl = URL.createObjectURL(audioBlob);
-        shouldRevokeUrl = true;
-
-        // Store word timestamps
-        if (data.word_timestamps) {
-          wordTimestampsRef.current = data.word_timestamps;
-        }
+      // Use pre-generated word timestamps if available
+      if (preGeneratedAudio.word_timestamps) {
+        wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
       }
 
       // Create and play audio
@@ -330,18 +293,12 @@ const BlogPostPage = () => {
       audio.onended = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        if (shouldRevokeUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
         audioRef.current = null;
       };
 
       audio.onerror = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        if (shouldRevokeUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
         audioRef.current = null;
       };
 
@@ -610,36 +567,36 @@ const BlogPostPage = () => {
 
           {/* Main White Content */}
           <div className="bg-white">
-          {/* Speaker Button and Listen Duration */}
-          <div className="max-w-4xl mx-auto px-6 pt-4 flex justify-center">
-            <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
-              <button
-                onClick={handleReadAloud}
-                className="rounded-lg flex items-center justify-center transition text-white"
-                style={{
-                  backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-                  width: '34px',
-                  height: '34px'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
-                title={isReading ? 'Pause narration' : 'Listen to article'}
-              >
-                {isReading ? (
-                  <Pause size={15} className="text-white" fill="white" />
-                ) : (
-                  <Volume2 size={15} className="text-white" />
-                )}
-              </button>
-              <span style={{ fontSize: '1.05rem', fontWeight: 300, color: '#000000' }}>
-                {preGeneratedAudio?.duration_seconds
-                  ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute narration`
-                  : contentWords.length > 0
-                    ? `${Math.ceil(contentWords.length / 150)} minute narration`
+          {/* Speaker Button and Listen Duration - Only show if pre-generated audio exists */}
+          {preGeneratedAudio?.audio_url && (
+            <div className="max-w-4xl mx-auto px-6 pt-4 flex justify-center">
+              <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
+                <button
+                  onClick={handleReadAloud}
+                  className="rounded-lg flex items-center justify-center transition text-white"
+                  style={{
+                    backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+                    width: '34px',
+                    height: '34px'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
+                  title={isReading ? 'Pause narration' : 'Listen to article'}
+                >
+                  {isReading ? (
+                    <Pause size={15} className="text-white" fill="white" />
+                  ) : (
+                    <Volume2 size={15} className="text-white" />
+                  )}
+                </button>
+                <span style={{ fontSize: '1.05rem', fontWeight: 300, color: '#000000' }}>
+                  {preGeneratedAudio.duration_seconds
+                    ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute narration`
                     : ''}
-              </span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="max-w-4xl mx-auto px-6 pb-16 flex justify-center">
             <article ref={articleRef} className="w-full" style={{ maxWidth: '762px' }}>
