@@ -2837,12 +2837,14 @@ const Auth = () => {
               {/* Description excerpt - pink */}
               <p className="text-[#EF0B72] auth-course-modal-excerpt" style={{ fontSize: '1.1rem', lineHeight: '1.5' }}>
                 {(() => {
+                  const courseTitle = selectedCourse.title || selectedCourse.name || 'professional';
+                  const ignitePreamble = `Become a ${courseTitle} with Ignite's free, expert-led course. `;
                   const description = selectedCourse.description || '';
                   const firstSentenceEnd = description.indexOf('. ');
                   if (firstSentenceEnd !== -1) {
-                    return description.substring(0, firstSentenceEnd + 1);
+                    return ignitePreamble + description.substring(0, firstSentenceEnd + 1);
                   }
-                  return description;
+                  return ignitePreamble + description;
                 })()}
               </p>
             </div>
