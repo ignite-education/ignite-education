@@ -51,6 +51,9 @@ export function extractTextFromHtml(html) {
     // Remove script and style tags entirely (including content)
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    // CRITICAL: Replace blog-line-break spans with a space (they represent line breaks in text)
+    // Without the space, words on either side get joined: "ever.<br>There's" -> "ever.There's"
+    .replace(/<span class="blog-line-break"><\/span>/gi, ' ')
     // CRITICAL: Add space BEFORE block-level elements to match browser textContent behavior
     // This prevents words from being joined across block boundaries
     .replace(/<(p|div|br|h[1-6]|li|tr|td|th|blockquote|pre|hr)[^>]*>/gi, ' ')
