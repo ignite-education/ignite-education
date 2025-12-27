@@ -634,7 +634,7 @@ const CoursePage = () => {
 
               {/* Subtitle/Excerpt - Ignite Pink */}
               <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
-                {getDescriptionExcerpt(course.description)}
+                {`Become a ${course.title} with Ignite's free, expert-led course. ${getDescriptionExcerpt(course.description)}`}
               </p>
             </div>
           </div>
