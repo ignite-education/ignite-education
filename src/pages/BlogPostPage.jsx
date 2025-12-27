@@ -281,6 +281,9 @@ const BlogPostPage = () => {
     // Reset scroll tracker when starting fresh
     lastScrolledHeaderRef.current = -1;
 
+    // Reset render debug flag so we log each playback session
+    window._renderDebugLogged = false;
+
     try {
       setIsReading(true);
 
@@ -450,6 +453,7 @@ const BlogPostPage = () => {
 
     let wordCounter = 0;
     const renderDebugLog = [];
+    let hasLoggedFullComparison = false;
 
     const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
@@ -464,10 +468,10 @@ const BlogPostPage = () => {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
 
-            // Debug: track render word count
-            if (DEBUG_NARRATION && renderDebugLog.length < 50) {
-              renderDebugLog.push({ index: wordCounter, word, expected: contentWords[wordCounter] });
-            }
+            // Debug: track ALL render words
+            const expected = contentWords[wordCounter];
+            const match = word === expected;
+            renderDebugLog.push({ index: wordCounter, word, expected, match });
 
             // Don't highlight words inside h2 headings
             if (wordCounter === currentWordIndex && !insideH2) {
@@ -479,7 +483,6 @@ const BlogPostPage = () => {
 
               // Debug: log when we highlight
               if (DEBUG_NARRATION) {
-                const expected = contentWords[currentWordIndex];
                 const timestamp = wordTimestampsRef.current[currentWordIndex];
                 if (word !== expected) {
                   console.warn(`⚠️ RENDER MISMATCH at index ${currentWordIndex}: rendering "${word}" but expected "${expected}" (timestamp for "${timestamp?.word}")`);
@@ -516,6 +519,42 @@ const BlogPostPage = () => {
     Array.from(div.childNodes).forEach((child) => {
       processedDiv.appendChild(processNode(child));
     });
+
+    // Log full render comparison once per playback session
+    if (DEBUG_NARRATION && currentWordIndex === 0 && !window._renderDebugLogged) {
+      window._renderDebugLogged = true;
+      console.log('═══════════════════════════════════════════════════');
+      console.log('🎨 RENDER DEBUG - Full Word Comparison During Render');
+      console.log('═══════════════════════════════════════════════════');
+      console.log('Render word count:', wordCounter);
+      console.log('Expected word count:', contentWords.length);
+      console.log('Timestamp word count:', wordTimestampsRef.current.length);
+
+      const mismatches = renderDebugLog.filter(entry => !entry.match);
+      console.log(`\n📝 Render word-by-word (${renderDebugLog.length} words, ${mismatches.length} mismatches):`);
+
+      renderDebugLog.forEach(entry => {
+        const status = entry.match ? '✓' : '✗ MISMATCH';
+        if (!entry.match) {
+          console.log(`  [${entry.index}] rendered="${entry.word}" | expected="${entry.expected}" ${status}`);
+        } else {
+          console.log(`  [${entry.index}] "${entry.word}" ${status}`);
+        }
+      });
+
+      if (mismatches.length > 0) {
+        console.log('\n🔍 First mismatch context:');
+        const firstMismatch = mismatches[0];
+        const start = Math.max(0, firstMismatch.index - 3);
+        const end = Math.min(renderDebugLog.length, firstMismatch.index + 4);
+        for (let i = start; i < end; i++) {
+          const entry = renderDebugLog[i];
+          const marker = i === firstMismatch.index ? ' <<< FIRST MISMATCH' : '';
+          console.log(`  [${entry.index}] rendered="${entry.word}" | expected="${entry.expected}" ${entry.match ? '✓' : '✗'}${marker}`);
+        }
+      }
+      console.log('═══════════════════════════════════════════════════\n');
+    }
 
     return <div dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }} />;
   };
