@@ -292,26 +292,50 @@ const BlogPostPage = () => {
 
         if (DEBUG_NARRATION) {
           console.log('═══════════════════════════════════════════════════');
-          console.log('📊 NARRATION DEBUG - Word Comparison');
+          console.log('📊 NARRATION DEBUG - Full Word Comparison');
           console.log('═══════════════════════════════════════════════════');
           console.log('Backend word count:', preGeneratedAudio.word_timestamps.length);
           console.log('Frontend word count:', contentWords.length);
+          console.log('Difference:', preGeneratedAudio.word_timestamps.length - contentWords.length);
 
-          // Compare first 150 words to find divergence
-          console.log('\n📝 Word-by-word comparison (first 150):');
-          const maxCompare = Math.min(150, preGeneratedAudio.word_timestamps.length, contentWords.length);
-          for (let i = 0; i < maxCompare; i++) {
+          // Compare ALL words and find first divergence
+          const maxLen = Math.max(preGeneratedAudio.word_timestamps.length, contentWords.length);
+          let firstMismatchIndex = -1;
+          let mismatchCount = 0;
+
+          console.log('\n📝 Full word-by-word comparison:');
+          for (let i = 0; i < maxLen; i++) {
             const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
             const frontendWord = contentWords[i] || '(none)';
-            const match = backendWord === frontendWord ? '✓' : '✗ MISMATCH';
-            console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ${match}`);
+            const match = backendWord === frontendWord;
+
+            if (!match) {
+              mismatchCount++;
+              if (firstMismatchIndex === -1) {
+                firstMismatchIndex = i;
+              }
+              // Log mismatches and surrounding context
+              console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ✗ MISMATCH`);
+            }
           }
 
-          // Show timestamp info for first 50 words
-          console.log('\n⏱️ Timestamp info (first 50 words):');
-          preGeneratedAudio.word_timestamps.slice(0, 50).forEach((ts, i) => {
-            console.log(`  [${i}] "${ts.word}" starts at ${ts.start.toFixed(3)}s, ends at ${ts.end.toFixed(3)}s`);
-          });
+          console.log('\n📊 Summary:');
+          console.log(`  Total mismatches: ${mismatchCount}`);
+          console.log(`  First mismatch at index: ${firstMismatchIndex}`);
+
+          if (firstMismatchIndex >= 0) {
+            console.log('\n🔍 Context around first mismatch (5 words before and after):');
+            const start = Math.max(0, firstMismatchIndex - 5);
+            const end = Math.min(maxLen, firstMismatchIndex + 6);
+            for (let i = start; i < end; i++) {
+              const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
+              const frontendWord = contentWords[i] || '(none)';
+              const match = backendWord === frontendWord ? '✓' : '✗';
+              const marker = i === firstMismatchIndex ? ' <<< FIRST MISMATCH' : '';
+              console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ${match}${marker}`);
+            }
+          }
+
           console.log('═══════════════════════════════════════════════════\n');
         }
       }
