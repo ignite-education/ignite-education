@@ -369,7 +369,6 @@ const BlogPostPage = () => {
       const startWordHighlighting = () => {
         setCurrentWordIndex(0);
         let lastHighlightedWord = 0;
-        let debugLogCount = 0;
 
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
@@ -399,12 +398,21 @@ const BlogPostPage = () => {
 
           // Only update state if the word has changed
           if (wordToHighlight !== lastHighlightedWord) {
-            // Debug: Log every word transition for first 20 words
-            if (DEBUG_NARRATION && debugLogCount < 20) {
+            // Debug: Log ALL word transitions and flag anomalies
+            if (DEBUG_NARRATION) {
               const ts = wordTimestampsRef.current[wordToHighlight];
               const frontendWord = contentWords[wordToHighlight] || '(none)';
-              console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | backend="${ts?.word}" | frontend="${frontendWord}"`);
-              debugLogCount++;
+              const jump = wordToHighlight - lastHighlightedWord;
+
+              // Always log if there's an anomaly (skip or backwards jump)
+              if (jump !== 1 && lastHighlightedWord !== 0) {
+                console.warn(`⚠️ JUMP DETECTED: ${lastHighlightedWord} → ${wordToHighlight} (jump of ${jump}) at audio=${currentTime.toFixed(3)}s`);
+                console.warn(`   Expected word ${lastHighlightedWord + 1}: "${contentWords[lastHighlightedWord + 1]}" | timestamp=${wordTimestampsRef.current[lastHighlightedWord + 1]?.start.toFixed(3)}-${wordTimestampsRef.current[lastHighlightedWord + 1]?.end.toFixed(3)}s`);
+                console.warn(`   Got word ${wordToHighlight}: "${ts?.word}" | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s`);
+              }
+
+              // Log every word transition
+              console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | "${ts?.word}"`);
             }
 
             lastHighlightedWord = wordToHighlight;
