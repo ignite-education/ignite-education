@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostBySlug, formatDate } from '../lib/blogApi';
 import { supabase } from '../lib/supabase';
@@ -271,6 +271,14 @@ const BlogPostPage = () => {
       if (wordTimerRef.current) {
         cancelAnimationFrame(wordTimerRef.current);
       }
+      // Clear DOM highlight
+      if (currentHighlightRef.current) {
+        currentHighlightRef.current.style.backgroundColor = '';
+        currentHighlightRef.current.style.padding = '';
+        currentHighlightRef.current.style.margin = '';
+        currentHighlightRef.current.style.borderRadius = '';
+        currentHighlightRef.current = null;
+      }
       setIsReading(false);
       setCurrentWordIndex(-1);
       lastScrolledHeaderRef.current = -1; // Reset scroll tracker
@@ -369,8 +377,7 @@ const BlogPostPage = () => {
 
       // Start word highlighting
       const startWordHighlighting = () => {
-        setCurrentWordIndex(0);
-        let lastHighlightedWord = 0;
+        let lastHighlightedWord = -1;
 
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
@@ -406,7 +413,8 @@ const BlogPostPage = () => {
               const jump = wordToHighlight - lastHighlightedWord;
 
               // Always log if there's an anomaly (skip or backwards jump)
-              if (jump !== 1 && lastHighlightedWord !== 0) {
+              // Skip logging for the initial transition from -1 to 0
+              if (jump !== 1 && lastHighlightedWord !== -1) {
                 console.warn(`⚠️ JUMP DETECTED: ${lastHighlightedWord} → ${wordToHighlight} (jump of ${jump}) at audio=${currentTime.toFixed(3)}s`);
               }
 
@@ -439,11 +447,8 @@ const BlogPostPage = () => {
               }
             }
 
-            // Still update React state for scroll-to-header functionality (but less frequently)
-            if (wordToHighlight % 10 === 0 || wordToHighlight < 10) {
-              setCurrentWordIndex(wordToHighlight);
-            }
             // Check if we've reached a header and should scroll
+            // (No React state updates here - we use direct DOM manipulation only)
             checkAndScrollToHeader(wordToHighlight);
           }
 
@@ -468,11 +473,17 @@ const BlogPostPage = () => {
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
       };
 
-      if (audio.duration && !isNaN(audio.duration)) {
-        startWordHighlighting();
-      } else {
-        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
-      }
+      // Wait for DOM to be painted with word spans before starting highlighting
+      // Using double RAF to ensure React has committed the render
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (audio.duration && !isNaN(audio.duration)) {
+            startWordHighlighting();
+          } else {
+            audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
+          }
+        });
+      });
 
     } catch (error) {
       console.error('Error reading aloud:', error);
@@ -481,18 +492,18 @@ const BlogPostPage = () => {
     }
   };
 
-  // Render content with word spans for direct DOM highlighting
+  // Memoize the processed HTML with word spans - only recompute when content or isReading changes
   // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
   // which uses normalized text (collapsed whitespace, split on single space)
-  const renderContentWithHighlighting = (html) => {
-    // When not reading, just render raw HTML
-    if (!isReading) {
-      return <div dangerouslySetInnerHTML={{ __html: html }} />;
-    }
+  const processedContentHtml = useMemo(() => {
+    if (!post?.content) return null;
+
+    // When not reading, return null to indicate we should use raw HTML
+    if (!isReading) return null;
 
     // Parse the HTML and wrap each word in a span with data-word-index
     const div = document.createElement('div');
-    div.innerHTML = html;
+    div.innerHTML = post.content;
 
     let wordCounter = 0;
 
@@ -544,22 +555,29 @@ const BlogPostPage = () => {
     });
 
     // Log word count comparison once per playback session
-    if (DEBUG_NARRATION && !window._renderDebugLogged) {
-      window._renderDebugLogged = true;
+    if (DEBUG_NARRATION) {
       console.log('═══════════════════════════════════════════════════');
       console.log('🎨 RENDER: Content prepared with', wordCounter, 'word spans');
       console.log('   Expected:', contentWords.length, 'words');
-      console.log('   Timestamps:', wordTimestampsRef.current.length, 'words');
       console.log('   Using DIRECT DOM MANIPULATION for highlighting');
       console.log('═══════════════════════════════════════════════════');
     }
 
-    return (
-      <div
-        ref={contentContainerRef}
-        dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }}
-      />
-    );
+    return processedDiv.innerHTML;
+  }, [post?.content, isReading, contentWords.length]);
+
+  // Simple render function that uses the memoized content
+  const renderContentWithHighlighting = () => {
+    if (processedContentHtml) {
+      return (
+        <div
+          ref={contentContainerRef}
+          dangerouslySetInnerHTML={{ __html: processedContentHtml }}
+        />
+      );
+    }
+    // Not reading - render raw HTML
+    return <div dangerouslySetInnerHTML={{ __html: post?.content || '' }} />;
   };
 
   if (loading) {
@@ -815,7 +833,7 @@ const BlogPostPage = () => {
                     height: 0.5em;
                   }
                 `}</style>
-                {renderContentWithHighlighting(post.content)}
+                {renderContentWithHighlighting()}
               </div>
 
               {/* Share Section */}
