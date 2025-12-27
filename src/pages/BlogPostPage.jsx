@@ -11,9 +11,10 @@ import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization'
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-// Small offset to account for audio buffering delay
+// Small offset to account for audio buffering/processing delay
 // Negative = highlight later, Positive = highlight earlier
-const HIGHLIGHT_LAG_OFFSET = 0;
+// -0.15 seconds delays the highlight to better sync with audio playback
+const HIGHLIGHT_LAG_OFFSET = -0.15;
 
 const BlogPostPage = () => {
   const { slug } = useParams();

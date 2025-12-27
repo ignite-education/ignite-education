@@ -23,9 +23,10 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 // Alias for backward compatibility - uses shared normalizeTextForNarration
 const stripFormattingMarkers = normalizeTextForNarration;
 
-// Small offset to account for audio buffering delay
+// Small offset to account for audio buffering/processing delay
 // Negative = highlight later, Positive = highlight earlier
-const HIGHLIGHT_LAG_OFFSET = 0;
+// -0.15 seconds delays the highlight to better sync with audio playback
+const HIGHLIGHT_LAG_OFFSET = -0.15;
 
 const LearningHub = () => {
   const navigate = useNavigate();
