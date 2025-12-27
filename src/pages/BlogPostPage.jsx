@@ -297,9 +297,9 @@ const BlogPostPage = () => {
           console.log('Backend word count:', preGeneratedAudio.word_timestamps.length);
           console.log('Frontend word count:', contentWords.length);
 
-          // Compare first 30 words to find divergence
-          console.log('\n📝 Word-by-word comparison (first 30):');
-          const maxCompare = Math.min(30, preGeneratedAudio.word_timestamps.length, contentWords.length);
+          // Compare first 150 words to find divergence
+          console.log('\n📝 Word-by-word comparison (first 150):');
+          const maxCompare = Math.min(150, preGeneratedAudio.word_timestamps.length, contentWords.length);
           for (let i = 0; i < maxCompare; i++) {
             const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
             const frontendWord = contentWords[i] || '(none)';
@@ -307,9 +307,9 @@ const BlogPostPage = () => {
             console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ${match}`);
           }
 
-          // Show timestamp info for first 10 words
-          console.log('\n⏱️ Timestamp info (first 10 words):');
-          preGeneratedAudio.word_timestamps.slice(0, 10).forEach((ts, i) => {
+          // Show timestamp info for first 50 words
+          console.log('\n⏱️ Timestamp info (first 50 words):');
+          preGeneratedAudio.word_timestamps.slice(0, 50).forEach((ts, i) => {
             console.log(`  [${i}] "${ts.word}" starts at ${ts.start.toFixed(3)}s, ends at ${ts.end.toFixed(3)}s`);
           });
           console.log('═══════════════════════════════════════════════════\n');
