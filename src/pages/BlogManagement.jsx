@@ -89,10 +89,13 @@ const BlogManagement = () => {
   const htmlToBlocks = (html) => {
     if (!html) return [{ id: Date.now(), type: 'paragraph', content: '' }];
 
-    // Helper to convert <br> tags back to newlines for editing
+    // Helper to convert line break spans back to newlines for editing
     const restoreLineBreaks = (htmlContent) => {
       if (!htmlContent) return '';
-      return htmlContent.replace(/<br\s*\/?>/gi, '\n');
+      // Handle both old <br> tags and new span-based line breaks
+      return htmlContent
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<span class="blog-line-break"><\/span>/gi, '\n');
     };
 
     const div = document.createElement('div');
@@ -135,10 +138,10 @@ const BlogManagement = () => {
 
   // Convert blocks to HTML content
   const blocksToHtml = () => {
-    // Helper to convert newlines to <br> tags
+    // Helper to convert newlines to styled line break spans
     const preserveLineBreaks = (text) => {
       if (!text) return '';
-      return text.replace(/\n/g, '<br>');
+      return text.replace(/\n/g, '<span class="blog-line-break"></span>');
     };
 
     return contentBlocks.map(block => {

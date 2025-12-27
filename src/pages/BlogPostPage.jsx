@@ -708,10 +708,9 @@ const BlogPostPage = () => {
                     font-style: italic;
                     color: #000000;
                   }
-                  .prose br {
+                  .prose .blog-line-break {
                     display: block;
-                    content: '';
-                    margin-bottom: -0.4em;
+                    height: 0.5em;
                   }
                 `}</style>
                 {renderContentWithHighlighting(post.content)}
