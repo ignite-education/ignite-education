@@ -286,13 +286,17 @@ const BlogManagement = () => {
       const response = await fetch(`${API_URL}/api/admin/generate-blog-audio`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ blogPostId: selectedPost.id })
+        body: JSON.stringify({ blogPostId: selectedPost.id, forceRegenerate: true })
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        alert(`Audio generated successfully! Duration: ${data.blogAudio?.duration_seconds?.toFixed(1) || 'unknown'}s`);
+        if (data.skipped) {
+          alert('Audio already up to date (content unchanged)');
+        } else {
+          alert(`Audio generated successfully! Duration: ${data.blogAudio?.duration_seconds?.toFixed(1) || 'unknown'}s`);
+        }
         await checkAudioStatus(selectedPost.id);
       } else {
         alert(`Failed to generate audio: ${data.error || data.message || 'Unknown error'}`);
