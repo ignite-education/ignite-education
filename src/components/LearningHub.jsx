@@ -972,7 +972,8 @@ const LearningHub = () => {
       },
       {
         root: contentScrollRef.current,
-        threshold: [0.5] // Single threshold to reduce firing
+        threshold: [0.5], // Single threshold to reduce firing
+        rootMargin: '-40% 0px -40% 0px' // Detect elements in middle 20% of viewport
       }
     );
 
@@ -1756,7 +1757,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsCarouselReady(true);
       isCarouselReadyRef.current = true;
     }
-  }, [upcomingLessonsToShow, currentModule, currentLesson]);
+  }, [upcomingLessonsToShow, currentModule, currentLesson, loading]);
 
   // Track container width for dynamic padding
   useEffect(() => {
