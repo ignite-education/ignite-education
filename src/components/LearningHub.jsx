@@ -2255,11 +2255,20 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           }
 
           // Auto-scroll when reaching a heading (H2/H3)
+          // Only scroll on first word of the heading to avoid repeated scrolling
           if (wordSpan && wordSpan.getAttribute('data-section-type') === 'heading') {
             const headingEl = wordSpan.closest('h2, h3, .bg-black'); // .bg-black for H2 wrapper div
-            if (headingEl) {
-              // Scroll the heading into view with some offset from top
-              headingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (headingEl && contentScrollRef.current) {
+              // Calculate scroll position with gap from top (80px offset)
+              const container = contentScrollRef.current;
+              const headingRect = headingEl.getBoundingClientRect();
+              const containerRect = container.getBoundingClientRect();
+              const scrollOffset = headingRect.top - containerRect.top + container.scrollTop - 80;
+
+              container.scrollTo({
+                top: Math.max(0, scrollOffset),
+                behavior: 'smooth'
+              });
             }
           }
 
