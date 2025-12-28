@@ -134,6 +134,7 @@ const LearningHub = () => {
   const isProgrammaticScrollRef = React.useRef(false); // Track programmatic scroll to prevent handler interference
   const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
   const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
+  const isObserverInitialCallbackRef = React.useRef(true); // Skip first observer callback to prevent render cascade
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -955,6 +956,12 @@ const LearningHub = () => {
         // Use the H2 closest to the 50% mark that has reached or passed it
         const selectedH2 = closestH2Index;
 
+        // Skip initial callback to prevent render cascade during setup
+        if (isObserverInitialCallbackRef.current) {
+          isObserverInitialCallbackRef.current = false;
+          return;
+        }
+
         // Update the active section and suggested question
         // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
         if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
@@ -977,6 +984,9 @@ const LearningHub = () => {
       }
     );
 
+    // Reset flag before setting up new observer - will skip first callback
+    isObserverInitialCallbackRef.current = true;
+
     // Small delay to ensure refs are populated
     const setupTimer = setTimeout(() => {
       // Check if refs exist before filtering
@@ -992,7 +1002,7 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-  }, [currentModule, currentLesson, currentLessonSections]);
+  }, [currentModule, currentLesson, loading, currentLessonSections]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
