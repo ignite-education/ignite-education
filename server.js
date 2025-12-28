@@ -411,8 +411,8 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
   res.json({ received: true });
 });
 
-// Parse JSON for all other routes
-app.use(express.json());
+// Parse JSON for all other routes (increased limit for large lesson contexts in Knowledge Check)
+app.use(express.json({ limit: '5mb' }));
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
