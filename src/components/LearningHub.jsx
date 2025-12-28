@@ -23,10 +23,8 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 // Alias for backward compatibility - uses shared normalizeTextForNarration
 const stripFormattingMarkers = normalizeTextForNarration;
 
-// Small offset to account for audio buffering/processing delay
-// Negative = highlight later, Positive = highlight earlier
-// -0.15 seconds delays the highlight to better sync with audio playback
-const HIGHLIGHT_LAG_OFFSET = -0.15;
+// No offset - using raw ElevenLabs timestamps for perfect sync (matches BlogPostPage)
+const HIGHLIGHT_LAG_OFFSET = 0;
 
 const LearningHub = () => {
   const navigate = useNavigate();
@@ -108,20 +106,12 @@ const LearningHub = () => {
   const isInitialMountRef = React.useRef(true);
   const lastUserScrollTime = React.useRef(0);
   const [isReading, setIsReading] = React.useState(false);
-  const [currentNarrationSection, setCurrentNarrationSection] = React.useState(0);
-  const [currentNarrationWord, setCurrentNarrationWord] = React.useState(-1); // Track which word is being spoken
-  const [isNarratingTitle, setIsNarratingTitle] = React.useState(false); // Track if we're narrating the title vs sections
   const audioRef = React.useRef(null);
   const wordTimerRef = React.useRef(null); // Track word highlighting timer
   const wordTimestampsRef = React.useRef(null); // Store word timestamps for entire lesson
   const isPausedRef = React.useRef(false); // Track if user manually paused
-  const narrateAbortController = React.useRef(null); // Track API requests for cancellation
-  const prefetchedAudioRef = React.useRef(null); // Store prefetched section audio
-  const prefetchPromiseRef = React.useRef(null); // Track ongoing prefetch operation
-  const batchPrefetchCache = React.useRef({}); // Store multiple prefetched sections for faster playback
-  const isHandlingReadAloud = React.useRef(false); // Prevent multiple simultaneous calls
-  const prefetchPromises = React.useRef({}); // Store promises for sections currently being prefetched
-  // NEW: DOM-based highlighting refs (like BlogPostPage)
+  const isHandlingReadAloud = React.useRef(0); // Debounce timestamp for handleReadAloud
+  // DOM-based highlighting refs (matches BlogPostPage)
   const contentContainerRef = React.useRef(null); // Container for word spans
   const currentHighlightRef = React.useRef(null); // Currently highlighted word span
   const titleWordCountRef = React.useRef(0); // Number of title words to skip highlighting
@@ -330,36 +320,10 @@ const LearningHub = () => {
           };
           titleWordCountRef.current = data.title_word_count || 0;
 
-          console.log('✅ Single-file audio data prefetched and ready', {
-            module: currentModule,
-            lesson: currentLesson,
-            wordCount: data.word_timestamps.length,
-            titleWordCount: data.title_word_count
-          });
-
           // Preload audio file into browser cache for faster start
           const preloadAudio = new Audio();
           preloadAudio.preload = 'auto';
           preloadAudio.src = data.audio_url;
-        }
-        // LEGACY: Per-section audio format
-        else if (data?.section_audio) {
-          setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
-          prefetchedLessonAudioRef.current = { section_audio: data.section_audio };
-          console.log('✅ Legacy section audio data prefetched', {
-            module: currentModule,
-            lesson: currentLesson,
-            sections: data.section_audio.length
-          });
-
-          const firstSection = data.section_audio[0];
-          if (firstSection?.audio_url) {
-            const preloadAudio = new Audio();
-            preloadAudio.preload = 'auto';
-            preloadAudio.src = firstSection.audio_url;
-          }
-        } else {
-          console.log('ℹ️ No pre-generated audio for this lesson');
         }
       } catch (error) {
         console.error('Error checking lesson audio:', error);
@@ -402,24 +366,21 @@ const LearningHub = () => {
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
-    // Clear any prefetched audio
-    if (prefetchedAudioRef.current) {
-      URL.revokeObjectURL(prefetchedAudioRef.current.url);
-      prefetchedAudioRef.current = null;
+    // Clear word highlighting timer
+    if (wordTimerRef.current) {
+      cancelAnimationFrame(wordTimerRef.current);
+      wordTimerRef.current = null;
     }
-    // Clear batch prefetch cache
-    Object.values(batchPrefetchCache.current).forEach(cached => {
-      if (cached && cached.url) {
-        URL.revokeObjectURL(cached.url);
-      }
-    });
-    batchPrefetchCache.current = {};
-    // Clear prefetch promises
-    prefetchPromises.current = {};
-    prefetchPromiseRef.current = null;
+    // Clear DOM highlight
+    if (currentHighlightRef.current) {
+      currentHighlightRef.current.style.backgroundColor = '';
+      currentHighlightRef.current.style.padding = '';
+      currentHighlightRef.current.style.margin = '';
+      currentHighlightRef.current.style.borderRadius = '';
+      currentHighlightRef.current = null;
+    }
     isPausedRef.current = false;
     setIsReading(false);
-    setCurrentNarrationSection(0);
 
     // Scroll lesson content to top
     if (contentScrollRef.current) {
@@ -1870,13 +1831,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
   // Helper to render text with explained sections highlighted and word-by-word narration highlighting
   // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
-  // which uses normalized text (collapsed whitespace, split on single space)
+  // Uses shared normalizeTextForNarration and splitIntoWords for consistency
   const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
     if (!text) return null;
 
-    // Normalize text and split into words - matching backend's splitIntoWords()
-    const normalizedText = text.replace(/\s+/g, ' ').trim();
-    const words = normalizedText.split(' ').filter(w => w.length > 0);
+    // Use shared normalization utilities to ensure frontend/backend word count consistency
+    const normalizedText = normalizeTextForNarration(text);
+    const words = splitIntoWords(normalizedText);
     const elements = [];
     let currentWordIndex = startWordIndex;
 
@@ -1911,20 +1872,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         }
       });
 
-      // Determine if this word should be highlighted for narration
-      // Only highlight if:
-      // 1. We're currently reading
-      // 2. This word index matches the current narration word
-      // 3. Either we're narrating the title and this is the title (sectionIndexForHighlight === 'title')
-      //    OR we're narrating a section and this section matches currentNarrationSection
-      // 4. Narration highlighting is not disabled for this text
-      const isInActiveNarrationContext =
-        (sectionIndexForHighlight === 'title' && isNarratingTitle) ||
-        (sectionIndexForHighlight !== 'title' && !isNarratingTitle && sectionIndexForHighlight === currentNarrationSection);
-
-      const isCurrentWord = !disableNarrationHighlight && isReading && isInActiveNarrationContext && currentNarrationWord === currentWordIndex;
-
       // Build className based on highlighting state
+      // Word highlighting is now handled via DOM manipulation in startDOMWordHighlighting
       // Always apply padding/margin to ALL words so there's no layout shift when highlight toggles
       let className = 'transition-colors duration-100';
       let style = {
@@ -1933,10 +1882,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         borderRadius: '2px',
       };
 
-      if (isCurrentWord) {
-        // Narration highlight (light pink)
-        style.backgroundColor = '#fde7f4';
-      } else if (isExplainedSection) {
+      if (isExplainedSection) {
         // Explained section highlight (pink)
         className += ' bg-pink-100 cursor-pointer hover:bg-pink-200';
         style.backgroundColor = hoveredExplanation === explainedSectionId ? '#fce7f3' : '#fce7f3';
@@ -2019,361 +1965,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return elements;
   };
 
-  // Narrate a single section
-  const narrateSection = async (sectionIndex) => {
-    const entryTime = performance.now();
-    console.log(`🎯 [${entryTime.toFixed(0)}ms] narrateSection(${sectionIndex}) ENTERED`);
-
-    if (sectionIndex >= currentLessonSections.length) {
-      // Finished all sections
-      console.log('✅ Finished narrating all sections');
-      setIsReading(false);
-      setCurrentNarrationSection(0);
-      setCurrentNarrationWord(-1);
-      setIsNarratingTitle(false);
-      isPausedRef.current = false;
-      // Clear word highlighting timer
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-        wordTimerRef.current = null;
-      }
-      return;
-    }
-
-    const section = currentLessonSections[sectionIndex];
-    const sectionText = extractTextFromSection(section);
-
-    if (!sectionText || sectionText.length === 0) {
-      // Skip empty sections and move to next
-      console.log(`⏭️ Skipping empty section ${sectionIndex}`);
-      await narrateSection(sectionIndex + 1);
-      return;
-    }
-
-    console.log(`📖 [${performance.now().toFixed(0)}ms] Narrating section ${sectionIndex} (${section.content_type}): ${sectionText.substring(0, 50)}...`);
-
-    // Scroll when we hit h2 or h3 headers (but skip the first h2 which is learning objectives)
-    const headingLevel = section.content_type === 'heading' ? (section.content?.level || 2) : null;
-    const isH2OrH3Header = headingLevel === 2 || headingLevel === 3;
-
-    if (isH2OrH3Header) {
-      // Find if this is the first h2 header (learning objectives)
-      const firstH2Index = currentLessonSections.findIndex(s =>
-        s.content_type === 'heading' && (s.content?.level || 2) === 2
-      );
-
-      // Skip scrolling only if this is the first h2 header
-      if (sectionIndex !== firstH2Index) {
-        scrollToSection(sectionIndex);
-      }
-    }
-
-    try {
-      let audioUrl;
-      let audio;
-      const cacheCheckTime = performance.now();
-
-      // Log batch cache status
-      const cachedSections = Object.keys(batchPrefetchCache.current);
-      const pendingPrefetches = Object.keys(prefetchPromises.current);
-      console.log(`💾 [${cacheCheckTime.toFixed(0)}ms] Batch cache has sections: [${cachedSections.join(', ')}], Pending: [${pendingPrefetches.join(', ')}]`);
-
-      // Check batch cache first, then single prefetch cache
-      const cachedAudio = batchPrefetchCache.current[sectionIndex];
-      if (cachedAudio) {
-        const cacheHitTime = performance.now();
-        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] BATCH CACHE HIT for section ${sectionIndex} (readyState: ${cachedAudio.audio.readyState})`);
-        audioUrl = cachedAudio.url;
-        audio = cachedAudio.audio;
-        // Store word timestamps if available
-        if (cachedAudio.wordTimestamps) {
-          wordTimestampsRef.current = cachedAudio.wordTimestamps;
-          console.log(`📝 Retrieved ${cachedAudio.wordTimestamps.length} word timestamps from cache`);
-        }
-        delete batchPrefetchCache.current[sectionIndex]; // Remove from cache after use
-        delete prefetchPromises.current[sectionIndex]; // Remove promise too
-        audioRef.current = audio;
-      } else if (prefetchPromises.current[sectionIndex]) {
-        // Prefetch is in progress - wait for it
-        const waitStartTime = performance.now();
-        console.log(`⏳ [${waitStartTime.toFixed(0)}ms] Waiting for prefetch of section ${sectionIndex} to complete...`);
-
-        try {
-          await prefetchPromises.current[sectionIndex];
-          const waitEndTime = performance.now();
-          console.log(`✅ [${waitEndTime.toFixed(0)}ms] Prefetch completed (waited: ${(waitEndTime - waitStartTime).toFixed(0)}ms)`);
-
-          // Now it should be in cache
-          const nowCached = batchPrefetchCache.current[sectionIndex];
-          if (nowCached) {
-            audioUrl = nowCached.url;
-            audio = nowCached.audio;
-            // Store word timestamps if available
-            if (nowCached.wordTimestamps) {
-              wordTimestampsRef.current = nowCached.wordTimestamps;
-              console.log(`📝 Retrieved ${nowCached.wordTimestamps.length} word timestamps from cache`);
-            }
-            delete batchPrefetchCache.current[sectionIndex];
-            delete prefetchPromises.current[sectionIndex];
-            audioRef.current = audio;
-          } else {
-            throw new Error('Prefetch completed but audio not in cache');
-          }
-        } catch (err) {
-          console.log(`⚠️ Prefetch failed, falling back to on-demand fetch:`, err.message);
-          // Fall through to on-demand fetch
-        }
-      } else if (prefetchedAudioRef.current && prefetchedAudioRef.current.sectionIndex === sectionIndex) {
-        const cacheHitTime = performance.now();
-        console.log(`⚡ [${cacheHitTime.toFixed(0)}ms] SINGLE CACHE HIT for section ${sectionIndex}`);
-        audioUrl = prefetchedAudioRef.current.url;
-        audio = prefetchedAudioRef.current.audio;
-        prefetchedAudioRef.current = null; // Clear after use
-        audioRef.current = audio;
-      }
-
-      // Only fetch on-demand if we haven't gotten audio yet
-      if (!audio) {
-        const fetchStartTime = performance.now();
-        console.log(`❌ [${fetchStartTime.toFixed(0)}ms] CACHE MISS - Fetching section ${sectionIndex} on-demand`);
-
-        // Create new abort controller for this request
-        narrateAbortController.current = new AbortController();
-        const controller = narrateAbortController.current;
-
-        const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ text: sectionText, voiceGender }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Section narration API error:', response.status, errorText);
-          throw new Error(`Failed to generate speech: ${response.status} - ${errorText}`);
-        }
-
-        const fetchEndTime = performance.now();
-        console.log(`📥 [${fetchEndTime.toFixed(0)}ms] TTS API response received (took: ${(fetchEndTime - fetchStartTime).toFixed(0)}ms)`);
-
-        const data = await response.json();
-        console.log('✅ Section narration API response received:', {
-          hasAudio: !!data.audio_base64,
-          hasAlignment: !!data.alignment,
-          alignmentChars: data.alignment?.characters?.length
-        });
-
-        // Convert base64 audio to blob
-        const audioData = atob(data.audio_base64);
-        const arrayBuffer = new ArrayBuffer(audioData.length);
-        const view = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < audioData.length; i++) {
-          view[i] = audioData.charCodeAt(i);
-        }
-        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-        audioUrl = URL.createObjectURL(audioBlob);
-
-        // Convert character timestamps to word timestamps
-        if (data.alignment) {
-          const wordTimestamps = convertCharacterToWordTimestamps(
-            sectionText,
-            data.alignment.characters,
-            data.alignment.character_start_times_seconds,
-            data.alignment.character_end_times_seconds
-          );
-          wordTimestampsRef.current = wordTimestamps;
-          console.log(`📝 Converted ${wordTimestamps.length} word timestamps for section ${sectionIndex}`);
-        }
-
-        audio = new Audio(audioUrl);
-        audioRef.current = audio;
-        console.log(`🎵 [${performance.now().toFixed(0)}ms] Audio object created from blob`);
-      }
-
-      audio.onended = async () => {
-        const endTime = performance.now();
-        console.log(`⏱️ [${endTime.toFixed(0)}ms] Section ${sectionIndex} ENDED`);
-        URL.revokeObjectURL(audioUrl);
-
-        // Guard: check if this audio is still the current one
-        if (audioRef.current !== audio) {
-          console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
-          return;
-        }
-
-        // Continue to next section immediately for seamless playback
-        if (!isPausedRef.current) {
-          const startNextTime = performance.now();
-          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section ${sectionIndex + 1} (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
-
-          await narrateSection(sectionIndex + 1);
-
-          const playedTime = performance.now();
-          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section ${sectionIndex + 1} PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
-        }
-      };
-
-      audio.onerror = (e) => {
-        console.error('Audio playback error:', e);
-        URL.revokeObjectURL(audioUrl);
-        setIsReading(false);
-      };
-
-      // Set playback speed
-      audio.playbackRate = playbackSpeed;
-
-      const beforePlayTime = performance.now();
-      console.log(`🎬 [${beforePlayTime.toFixed(0)}ms] Calling audio.play() for section ${sectionIndex} (readyState: ${audio.readyState})`);
-
-      await audio.play();
-
-      const afterPlayTime = performance.now();
-      console.log(`✅ [${afterPlayTime.toFixed(0)}ms] audio.play() completed (took: ${(afterPlayTime - beforePlayTime).toFixed(0)}ms) - SECTION ${sectionIndex} NOW PLAYING`);
-      console.log(`⏰ Total time from narrateSection entry to playback: ${(afterPlayTime - entryTime).toFixed(0)}ms`);
-
-      setIsReading(true);
-      setCurrentNarrationSection(sectionIndex);
-
-      // Start word-by-word highlighting
-      // Per-section word indexing: each section starts at word index 0
-      // This eliminates offset calculation mismatches between backend and frontend
-
-      // Clear any existing word timer
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-      }
-
-      // Start word-by-word highlighting using actual timestamps
-      const startWordHighlighting = () => {
-        const wordTimestamps = wordTimestampsRef.current;
-
-        if (!wordTimestamps || wordTimestamps.length === 0) {
-          console.warn('⚠️ No word timestamps available for section', sectionIndex);
-          return;
-        }
-
-        console.log(`📝 Section ${sectionIndex}: Using ${wordTimestamps.length} precise word timestamps`);
-
-        setCurrentNarrationWord(0); // Start at 0 for this section
-        let lastHighlightedWord = 0; // Track last highlighted word to avoid flickering
-
-        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
-        const updateHighlight = () => {
-          if (!audio || audio.paused || audio.ended) {
-            return;
-          }
-
-          const currentTime = audio.currentTime; // Current playback position in seconds
-
-          // Find which word should be highlighted based on actual timestamps
-          let wordToHighlight = lastHighlightedWord; // Default to keeping current word
-          for (let i = 0; i < wordTimestamps.length; i++) {
-            const timestamp = wordTimestamps[i];
-            // Highlight if current time is within this word's time range
-            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-              wordToHighlight = i;
-              break;
-            }
-            // If we're past this word but before the next word starts, keep highlighting this word
-            // This prevents flickering in gaps between words
-            if (i < wordTimestamps.length - 1) {
-              const nextTimestamp = wordTimestamps[i + 1];
-              if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
-                wordToHighlight = i;
-                break;
-              }
-            }
-          }
-
-          // Only update state if the word has changed (prevents unnecessary re-renders)
-          if (wordToHighlight !== lastHighlightedWord) {
-            lastHighlightedWord = wordToHighlight;
-            setCurrentNarrationWord(wordToHighlight);
-          }
-
-          // If we're past all words, clear highlighting
-          if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-            setCurrentNarrationWord(-1);
-            wordTimerRef.current = null;
-            return;
-          }
-
-          wordTimerRef.current = requestAnimationFrame(updateHighlight);
-        };
-
-        wordTimerRef.current = requestAnimationFrame(updateHighlight);
-      };
-
-      // If duration is already available, start immediately
-      if (audio.duration && !isNaN(audio.duration)) {
-        startWordHighlighting();
-      } else {
-        // Wait for loadedmetadata event
-        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
-      }
-
-      // Prefetch next section while current one is playing
-      const nextSectionIndex = sectionIndex + 1;
-      if (nextSectionIndex < currentLessonSections.length) {
-        const nextSection = currentLessonSections[nextSectionIndex];
-        const nextSectionText = extractTextFromSection(nextSection);
-
-        if (nextSectionText && nextSectionText.length > 0) {
-          console.log(`⚡ Prefetching section ${nextSectionIndex}...`);
-
-          // Store the prefetch promise so we can wait for it if needed
-          prefetchPromiseRef.current = (async () => {
-            try {
-              const prefetchResponse = await fetch(`${API_URL}/api/text-to-speech`, {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: nextSectionText, voiceGender }),
-              });
-
-              if (prefetchResponse.ok) {
-                const prefetchBlob = await prefetchResponse.blob();
-                const prefetchUrl = URL.createObjectURL(prefetchBlob);
-                const prefetchAudio = new Audio(prefetchUrl);
-
-                // Store for next section (only if we're still on the same section)
-                if (audioRef.current === audio) {
-                  // Clear any old prefetch first
-                  if (prefetchedAudioRef.current) {
-                    URL.revokeObjectURL(prefetchedAudioRef.current.url);
-                  }
-                  prefetchedAudioRef.current = {
-                    url: prefetchUrl,
-                    audio: prefetchAudio,
-                    sectionIndex: nextSectionIndex
-                  };
-                  console.log(`⚡ Section ${nextSectionIndex} prefetched successfully`);
-                } else {
-                  // Section changed, cleanup
-                  URL.revokeObjectURL(prefetchUrl);
-                }
-              }
-            } catch (prefetchError) {
-              console.log('Prefetch failed (non-critical):', prefetchError.message);
-            }
-          })();
-        }
-      }
-
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log(`Section ${sectionIndex} narration cancelled`);
-        return;
-      }
-      console.error('Error narrating section:', error);
-      setIsReading(false);
-    }
-  };
-
   // Scroll to a specific section with custom smooth animation
   const scrollToSection = (sectionIndex) => {
     if (!contentScrollRef.current || !sectionRefs.current[sectionIndex]) return;
@@ -2413,353 +2004,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     requestAnimationFrame(animateScroll);
   };
 
-  // Narrate the lesson title before starting content
-  const narrateLessonTitle = async () => {
-    console.log(`🎯 [ENTRY] narrateLessonTitle called for: ${lessonName}`);
-    try {
-      console.log(`📖 Narrating lesson title: ${lessonName}`);
 
-      // Create new abort controller for this request
-      narrateAbortController.current = new AbortController();
-      const controller = narrateAbortController.current;
-
-      console.log('🌐 [FETCH] Starting API call to /api/text-to-speech-timestamps...');
-      console.log('📤 [FETCH] Request body:', { text: lessonName, voiceGender });
-
-      const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: lessonName, voiceGender }),
-        signal: controller.signal,
-      });
-
-      console.log('📡 [FETCH] API response received, status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Title narration API error:', response.status, errorText);
-        throw new Error(`Failed to generate speech for lesson title: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('✅ Title narration API response received:', {
-        hasAudio: !!data.audio_base64,
-        hasAlignment: !!data.alignment,
-        alignmentChars: data.alignment?.characters?.length
-      });
-
-      // Convert base64 audio to blob
-      const audioData = atob(data.audio_base64);
-      const arrayBuffer = new ArrayBuffer(audioData.length);
-      const view = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < audioData.length; i++) {
-        view[i] = audioData.charCodeAt(i);
-      }
-      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-      const audioUrl = URL.createObjectURL(audioBlob);
-
-      // Convert character timestamps to word timestamps for title
-      if (data.alignment) {
-        const wordTimestamps = convertCharacterToWordTimestamps(
-          lessonName,
-          data.alignment.characters,
-          data.alignment.character_start_times_seconds,
-          data.alignment.character_end_times_seconds
-        );
-        wordTimestampsRef.current = wordTimestamps;
-        console.log(`📝 Converted ${wordTimestamps.length} word timestamps for lesson title`);
-      }
-
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-
-      audio.onended = async () => {
-        const endTime = performance.now();
-        console.log(`⏱️ [${endTime.toFixed(0)}ms] TITLE ENDED`);
-        URL.revokeObjectURL(audioUrl);
-
-        // Clear title narration flag
-        setIsNarratingTitle(false);
-
-        // Guard: check if this audio is still the current one
-        if (audioRef.current !== audio) {
-          console.log('Title audio is no longer active, skipping continuation');
-          return;
-        }
-
-        // Continue to lesson content immediately for seamless playback
-        if (!isPausedRef.current) {
-          const startNextTime = performance.now();
-          console.log(`🔄 [${startNextTime.toFixed(0)}ms] Starting section 0 (gap: ${(startNextTime - endTime).toFixed(0)}ms)`);
-
-          await narrateSection(0);
-
-          const playedTime = performance.now();
-          console.log(`▶️ [${playedTime.toFixed(0)}ms] Section 0 PLAYING (took: ${(playedTime - startNextTime).toFixed(0)}ms)`);
-        }
-      };
-
-      audio.onerror = (e) => {
-        console.error('Audio playback error:', e);
-        URL.revokeObjectURL(audioUrl);
-        setIsReading(false);
-      };
-
-      // Set playback speed for title
-      audio.playbackRate = playbackSpeed;
-
-      try {
-        console.log('🎬 Attempting to play title audio...');
-        await audio.play();
-        console.log('✅ Title audio playing successfully');
-      } catch (playError) {
-        console.error('❌ Failed to play title audio:', playError);
-        URL.revokeObjectURL(audioUrl);
-        setIsReading(false);
-        throw playError;
-      }
-
-      // Set flag that we're narrating the title
-      setIsNarratingTitle(true);
-
-      // Start word-by-word highlighting for title - use consistent word splitting
-      const titleWords = splitIntoWords(normalizeTextForNarration(lessonName));
-
-      const startTitleWordHighlighting = () => {
-        const wordTimestamps = wordTimestampsRef.current;
-
-        if (!wordTimestamps || wordTimestamps.length === 0) {
-          console.warn('⚠️ No word timestamps available for title');
-          return;
-        }
-
-        console.log(`📝 Title: Using ${wordTimestamps.length} precise word timestamps`);
-
-        setCurrentNarrationWord(0);
-
-        if (wordTimerRef.current) {
-          cancelAnimationFrame(wordTimerRef.current);
-        }
-
-        // Use requestAnimationFrame for smooth, real-time synchronization with timestamps
-        const updateHighlight = () => {
-          if (!audio || audio.paused || audio.ended) {
-            return;
-          }
-
-          const currentTime = audio.currentTime; // Current playback position in seconds
-
-          // Find which word should be highlighted based on actual timestamps
-          let foundWord = false;
-          for (let i = 0; i < wordTimestamps.length; i++) {
-            const timestamp = wordTimestamps[i];
-            // Highlight if current time is within this word's time range
-            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-              setCurrentNarrationWord(i);
-              foundWord = true;
-              break;
-            }
-          }
-
-          // If we're past all words, clear highlighting
-          if (!foundWord && currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-            setCurrentNarrationWord(-1);
-            setIsNarratingTitle(false); // Title narration finished
-            wordTimerRef.current = null;
-            return;
-          }
-
-          wordTimerRef.current = requestAnimationFrame(updateHighlight);
-        };
-
-        wordTimerRef.current = requestAnimationFrame(updateHighlight);
-      };
-
-      if (audio.duration && !isNaN(audio.duration)) {
-        startTitleWordHighlighting();
-      } else {
-        audio.addEventListener('loadedmetadata', startTitleWordHighlighting, { once: true });
-      }
-
-      // Prefetch first 6 sections in parallel while title is playing
-      if (currentLessonSections && currentLessonSections.length > 0) {
-        const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
-
-        sectionsToPreload.forEach(sectionIndex => {
-          const section = currentLessonSections[sectionIndex];
-          const sectionText = extractTextFromSection(section);
-
-          if (sectionText && sectionText.length > 0) {
-            console.log(`⚡ Prefetching section ${sectionIndex} during title...`);
-
-            // Only create promise if one doesn't exist yet
-            if (!prefetchPromises.current[sectionIndex]) {
-              prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-                fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ text: sectionText, voiceGender })
-                })
-                  .then(async response => {
-                    if (response.ok) return response.json();
-                    const errorText = await response.text();
-                    console.error(`❌ Title prefetch section ${sectionIndex} API error:`, response.status, errorText);
-                    throw new Error(`Prefetch failed: ${response.status}`);
-                  })
-                  .then(data => {
-                    // Convert base64 audio to blob
-                    const audioData = atob(data.audio_base64);
-                    const arrayBuffer = new ArrayBuffer(audioData.length);
-                    const view = new Uint8Array(arrayBuffer);
-                    for (let i = 0; i < audioData.length; i++) {
-                      view[i] = audioData.charCodeAt(i);
-                    }
-                    const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-                    const url = URL.createObjectURL(blob);
-                    const audio = new Audio(url);
-
-                    // Convert character timestamps to word timestamps
-                    let wordTimestamps = null;
-                    if (data.alignment) {
-                      wordTimestamps = convertCharacterToWordTimestamps(
-                        sectionText,
-                        data.alignment.characters,
-                        data.alignment.character_start_times_seconds,
-                        data.alignment.character_end_times_seconds
-                      );
-                    }
-
-                    // Store in batch cache (may already exist from upfront prefetch)
-                    if (!batchPrefetchCache.current[sectionIndex]) {
-                      // Wait for audio to fully load before caching
-                      audio.addEventListener('canplaythrough', () => {
-                        batchPrefetchCache.current[sectionIndex] = {
-                          url,
-                          audio,
-                          wordTimestamps,
-                          sectionIndex
-                        };
-                        console.log(`✅ Section ${sectionIndex} prefetched during title (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
-                        resolve();
-                      }, { once: true });
-
-                      audio.addEventListener('error', () => {
-                        console.log(`❌ Section ${sectionIndex} audio load error during title`);
-                        reject(new Error('Audio load failed'));
-                      }, { once: true });
-
-                      audio.load(); // Start loading audio
-                    } else {
-                      // Already cached from upfront prefetch, clean up duplicate
-                      URL.revokeObjectURL(url);
-                      resolve();
-                    }
-                  })
-                  .catch(err => {
-                    console.log(`Title prefetch section ${sectionIndex} failed:`, err.message);
-                    reject(err);
-                  });
-              });
-            }
-          }
-        });
-      }
-
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('Lesson title narration cancelled');
-        return;
-      }
-      console.error('Error narrating lesson title:', error);
-      setIsReading(false);
-    }
-  };
-
-  // Prefetch multiple sections upfront for smoother narration
-  const prefetchInitialSections = () => {
-    if (!currentLessonSections || currentLessonSections.length === 0) return;
-
-    // Prefetch first 6 sections in parallel for immediate playback
-    const sectionsToPreload = [0, 1, 2, 3, 4, 5].filter(i => i < currentLessonSections.length);
-
-    sectionsToPreload.forEach(sectionIndex => {
-      const section = currentLessonSections[sectionIndex];
-      const sectionText = extractTextFromSection(section);
-
-      if (sectionText && sectionText.length > 0) {
-        console.log(`⚡ Starting upfront prefetch for section ${sectionIndex}`);
-
-        // Store the promise so we can await it if needed
-        prefetchPromises.current[sectionIndex] = new Promise((resolve, reject) => {
-          fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: sectionText, voiceGender })
-          })
-            .then(async response => {
-              if (response.ok) return response.json();
-              const errorText = await response.text();
-              console.error(`❌ Prefetch section ${sectionIndex} API error:`, response.status, errorText);
-              throw new Error(`Prefetch failed: ${response.status}`);
-            })
-            .then(data => {
-              // Convert base64 audio to blob
-              const audioData = atob(data.audio_base64);
-              const arrayBuffer = new ArrayBuffer(audioData.length);
-              const view = new Uint8Array(arrayBuffer);
-              for (let i = 0; i < audioData.length; i++) {
-                view[i] = audioData.charCodeAt(i);
-              }
-              const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-              const url = URL.createObjectURL(blob);
-              const audio = new Audio(url);
-
-              // Convert character timestamps to word timestamps
-              let wordTimestamps = null;
-              if (data.alignment) {
-                wordTimestamps = convertCharacterToWordTimestamps(
-                  sectionText,
-                  data.alignment.characters,
-                  data.alignment.character_start_times_seconds,
-                  data.alignment.character_end_times_seconds
-                );
-              }
-
-              // Wait for audio to fully load before caching
-              audio.addEventListener('canplaythrough', () => {
-                batchPrefetchCache.current[sectionIndex] = {
-                  url,
-                  audio,
-                  wordTimestamps,
-                  sectionIndex
-                };
-                console.log(`✅ Section ${sectionIndex} prefetched and cached (readyState: ${audio.readyState}, ${wordTimestamps?.length || 0} timestamps)`);
-                resolve(); // Resolve promise when ready
-              }, { once: true });
-
-              audio.addEventListener('error', () => {
-                console.log(`❌ Section ${sectionIndex} audio load error`);
-                reject(new Error('Audio load failed'));
-              }, { once: true });
-
-              audio.load(); // Start loading audio
-            })
-            .catch(err => {
-              console.log(`Prefetch section ${sectionIndex} failed:`, err.message);
-              reject(err);
-            });
-        });
-      }
-    });
-  };
-
-  // Play pre-generated lesson audio with word highlighting
-  // Store fetched section audio data for sequential playback
-  const sectionAudioDataRef = React.useRef(null);
-  const currentPregenSectionRef = React.useRef(-2); // -2 = not started, -1 = title, 0+ = sections
-
+  // Play pre-generated lesson audio with word highlighting (single-file mode only)
   const playPreGeneratedAudio = async () => {
     if (!lessonAudio) return;
 
@@ -2770,15 +2016,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Use prefetched data if available (instant playback!)
       if (prefetchedLessonAudioRef.current) {
-        console.log('🎬 Using prefetched audio data (instant!)');
         audioData = prefetchedLessonAudioRef.current;
       } else {
         // Fallback: query Supabase directly if prefetch hasn't completed
-        console.log('🎬 Fetching audio data from Supabase (prefetch not ready)');
         const { courseId, module, lesson } = lessonAudio;
         const { data, error } = await supabase
           .from('lesson_audio')
-          .select('audio_url, word_timestamps, title_word_count, section_audio')
+          .select('audio_url, word_timestamps, title_word_count')
           .eq('course_id', courseId)
           .eq('module_number', module)
           .eq('lesson_number', lesson)
@@ -2790,51 +2034,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioData = data;
       }
 
-      // NEW FORMAT: Single audio file with word timestamps (like BlogPostPage)
-      if (audioData.audio_url && audioData.word_timestamps) {
-        // CRITICAL: Set the single-file audio flag BEFORE setIsReading(true)
-        // This ensures the re-render includes data-word-index attributes
-        useSingleFileAudioRef.current = true;
-        globalWordCounterRef.current = 0;
-
-        // Now trigger the re-render with isReading=true
-        setIsReading(true);
-
-        await playSingleFileAudio(audioData);
+      // Single audio file with word timestamps (matches BlogPostPage)
+      if (!audioData.audio_url || !audioData.word_timestamps) {
+        console.warn('No single-file audio available');
         return;
       }
 
-      // LEGACY: Show loading state for per-section audio
+      // Set the single-file audio flag BEFORE setIsReading(true)
+      // This ensures the re-render includes data-word-index attributes
+      useSingleFileAudioRef.current = true;
+      globalWordCounterRef.current = 0;
+
+      // Trigger the re-render with isReading=true
       setIsReading(true);
 
-      // LEGACY: Per-section audio format
-      if (!audioData.section_audio) {
-        console.warn('⚠️ No audio data available');
-        setIsReading(false);
-        return;
-      }
-
-      console.log(`📦 [LEGACY] Loaded ${audioData.section_audio.length} section audio segments`);
-      sectionAudioDataRef.current = audioData.section_audio;
-      currentPregenSectionRef.current = -2;
-
-      // Start playing from the first section (title if available, otherwise section 0)
-      const firstSection = audioData.section_audio[0];
-      if (firstSection) {
-        if (firstSection.section_index === -1) {
-          // Start with title
-          setIsNarratingTitle(true);
-          setCurrentNarrationSection(0);
-          await playPregenSection(0); // Index in section_audio array
-        } else {
-          // No title, start with first content section
-          setIsNarratingTitle(false);
-          setCurrentNarrationSection(firstSection.section_index);
-          await playPregenSection(0);
-        }
-      }
+      await playSingleFileAudio(audioData);
     } catch (error) {
-      console.error('Failed to play pre-generated audio:', error);
+      console.error('Failed to play audio:', error);
       setIsReading(false);
     }
   };
@@ -2852,8 +2068,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     audioRef.current = audio;
 
     audio.onended = () => {
-      console.log('✅ Finished playing lesson audio');
-
       // Clear highlight
       if (currentHighlightRef.current) {
         currentHighlightRef.current.style.backgroundColor = '';
@@ -2900,33 +2114,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     const wordTimestamps = wordTimestampsRef.current;
 
     if (!wordTimestamps || wordTimestamps.length === 0) {
-      console.warn('⚠️ No word timestamps available');
+      console.warn('No word timestamps available for highlighting');
       return;
     }
 
-    // DEBUG: Log setup info
-    console.log('═══════════════════════════════════════════════════');
-    console.log('🎤 Starting DOM-based word highlighting');
-    console.log(`   Total timestamps: ${wordTimestamps.length}`);
-    console.log(`   Title word count: ${titleWordCountRef.current}`);
-    console.log(`   HIGHLIGHT_LAG_OFFSET: ${HIGHLIGHT_LAG_OFFSET}s`);
-    console.log(`   First 10 timestamps:`, wordTimestamps.slice(0, 10).map((ts, i) =>
-      `[${i}] "${ts.word}" ${ts.start.toFixed(3)}-${ts.end.toFixed(3)}s`
-    ));
-
-    // DEBUG: Check DOM word spans
-    if (contentContainerRef.current) {
-      const allSpans = contentContainerRef.current.querySelectorAll('[data-word-index]');
-      console.log(`   DOM word spans found: ${allSpans.length}`);
-      const firstFewSpans = Array.from(allSpans).slice(0, 10);
-      console.log(`   First 10 DOM spans:`, firstFewSpans.map(span =>
-        `[${span.getAttribute('data-word-index')}] "${span.textContent}"${span.hasAttribute('data-skip-highlight') ? ' (skip)' : ''}`
-      ));
-    }
-    console.log('═══════════════════════════════════════════════════');
-
     let lastHighlightedWord = -1;
-    let logCounter = 0;
 
     const updateHighlight = () => {
       if (!audio || audio.paused || audio.ended) {
@@ -2937,7 +2129,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Find which word should be highlighted
       let wordToHighlight = lastHighlightedWord;
-      let matchReason = '';
 
       for (let i = 0; i < wordTimestamps.length; i++) {
         const ts = wordTimestamps[i];
@@ -2945,7 +2136,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         if (currentTime >= adjustedStart && currentTime < ts.end) {
           wordToHighlight = i;
-          matchReason = `in-range: ${adjustedStart.toFixed(3)} <= ${currentTime.toFixed(3)} < ${ts.end.toFixed(3)}`;
           break;
         }
         // Anti-flicker: keep current word in gaps between words
@@ -2954,7 +2144,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           const nextAdjustedStart = next.start + HIGHLIGHT_LAG_OFFSET;
           if (currentTime >= ts.end && currentTime < nextAdjustedStart) {
             wordToHighlight = i;
-            matchReason = `gap-hold: ${ts.end.toFixed(3)} <= ${currentTime.toFixed(3)} < ${nextAdjustedStart.toFixed(3)}`;
             break;
           }
         }
@@ -2962,11 +2151,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Only update if word has changed
       if (wordToHighlight !== lastHighlightedWord) {
-        const ts = wordTimestamps[wordToHighlight];
-
-        // DEBUG: Log every word change
-        console.log(`🔸 Word change: ${lastHighlightedWord} → ${wordToHighlight} | time=${currentTime.toFixed(3)}s | word="${ts?.word}" | ${matchReason}`);
-
         lastHighlightedWord = wordToHighlight;
 
         // Clear previous highlight
@@ -2981,12 +2165,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         if (contentContainerRef.current) {
           const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
 
-          if (!wordSpan) {
-            console.warn(`⚠️ Could not find DOM span for data-word-index="${wordToHighlight}"`);
-          } else {
-            console.log(`   Found span: "${wordSpan.textContent}" | skip=${wordSpan.hasAttribute('data-skip-highlight')}`);
-          }
-
           // Skip highlighting if word is marked to skip (e.g., title words)
           if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
             wordSpan.style.backgroundColor = '#fde7f4';
@@ -3000,16 +2178,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         }
       }
 
-      // DEBUG: Log periodic status (every 60 frames = ~1 second)
-      logCounter++;
-      if (logCounter % 60 === 0) {
-        const ts = wordTimestamps[lastHighlightedWord];
-        console.log(`📍 Status: time=${currentTime.toFixed(3)}s | word[${lastHighlightedWord}]="${ts?.word}" | range=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s`);
-      }
-
       // If we're past all words, clear highlighting
       if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-        console.log('🏁 Past all words, clearing highlight');
         if (currentHighlightRef.current) {
           currentHighlightRef.current.style.backgroundColor = '';
           currentHighlightRef.current.style.padding = '';
@@ -3027,208 +2197,11 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     wordTimerRef.current = requestAnimationFrame(updateHighlight);
   };
 
-  // Play a specific section from the pre-generated audio array
-  const playPregenSection = async (arrayIndex) => {
-    const sectionAudioArray = sectionAudioDataRef.current;
-    if (!sectionAudioArray || arrayIndex >= sectionAudioArray.length) {
-      // Finished all sections
-      console.log('✅ Finished playing all pre-generated sections');
-      setIsReading(false);
-      setCurrentNarrationSection(0);
-      setCurrentNarrationWord(-1);
-      setIsNarratingTitle(false);
-      isPausedRef.current = false;
-      sectionAudioDataRef.current = null;
-      currentPregenSectionRef.current = -2;
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-        wordTimerRef.current = null;
-      }
-      return;
-    }
-
-    const sectionData = sectionAudioArray[arrayIndex];
-    const sectionIndex = sectionData.section_index; // -1 for title, 0+ for content sections
-    currentPregenSectionRef.current = sectionIndex;
-
-    console.log(`🎵 Playing pre-generated section ${sectionIndex} (array index ${arrayIndex}): "${sectionData.text?.substring(0, 50)}..."`);
-
-    // Use audio URL from Supabase Storage (or fallback to base64 for legacy data)
-    let audioUrl;
-    let needsRevoke = false;
-
-    if (sectionData.audio_url) {
-      // New format: direct URL from Supabase Storage
-      audioUrl = sectionData.audio_url;
-      console.log(`  📥 Using Storage URL: ${audioUrl.substring(0, 80)}...`);
-    } else if (sectionData.audio_base64) {
-      // Legacy format: convert base64 to blob
-      const binaryData = atob(sectionData.audio_base64);
-      const arrayBuffer = new ArrayBuffer(binaryData.length);
-      const view = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < binaryData.length; i++) {
-        view[i] = binaryData.charCodeAt(i);
-      }
-      const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-      audioUrl = URL.createObjectURL(audioBlob);
-      needsRevoke = true;
-      console.log(`  📥 Using legacy base64 audio`);
-    } else {
-      console.error(`❌ No audio data for section ${sectionIndex}`);
-      // Skip to next section
-      await playPregenSection(arrayIndex + 1);
-      return;
-    }
-
-    const audio = new Audio(audioUrl);
-    audioRef.current = audio;
-
-    // Convert character timestamps to word timestamps for this section
-    if (sectionData.alignment) {
-      const wordTimestamps = convertCharacterToWordTimestamps(
-        sectionData.text,
-        sectionData.alignment.characters,
-        sectionData.alignment.character_start_times_seconds,
-        sectionData.alignment.character_end_times_seconds
-      );
-      wordTimestampsRef.current = wordTimestamps;
-    }
-
-    // Per-section word indexing: each section starts at word index 0
-    // This eliminates offset calculation mismatches between backend and frontend
-    console.log(`📍 Section ${sectionIndex}: using per-section indexing (starting at 0)`);
-
-    // Update section state
-    if (sectionIndex === -1) {
-      setIsNarratingTitle(true);
-      setCurrentNarrationSection(0);
-    } else {
-      setIsNarratingTitle(false);
-      setCurrentNarrationSection(sectionIndex);
-
-      // Scroll to section for h2/h3 headers (same logic as narrateSection)
-      if (sectionIndex < currentLessonSections.length) {
-        const section = currentLessonSections[sectionIndex];
-        const headingLevel = section.content_type === 'heading' ? (section.content?.level || 2) : null;
-        const isH2OrH3Header = headingLevel === 2 || headingLevel === 3;
-
-        if (isH2OrH3Header) {
-          const firstH2Index = currentLessonSections.findIndex(s =>
-            s.content_type === 'heading' && (s.content?.level || 2) === 2
-          );
-          if (sectionIndex !== firstH2Index) {
-            scrollToSection(sectionIndex);
-          }
-        }
-      }
-    }
-
-    audio.onended = async () => {
-      console.log(`⏱️ Pre-generated section ${sectionIndex} ended`);
-      if (needsRevoke) {
-        URL.revokeObjectURL(audioUrl);
-      }
-
-      // Clear word highlighting timer
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-        wordTimerRef.current = null;
-      }
-
-      // Guard: check if this audio is still the current one
-      if (audioRef.current !== audio) {
-        console.log(`Section ${sectionIndex} audio is no longer active, skipping continuation`);
-        return;
-      }
-
-      // Continue to next section
-      if (!isPausedRef.current) {
-        await playPregenSection(arrayIndex + 1);
-      }
-    };
-
-    audio.onerror = (e) => {
-      console.error('Pre-generated section audio playback error:', e);
-      if (needsRevoke) {
-        URL.revokeObjectURL(audioUrl);
-      }
-      setIsReading(false);
-    };
-
-    // Set playback speed
-    audio.playbackRate = playbackSpeed;
-
-    // Play the audio
-    await audio.play();
-    console.log(`✅ Pre-generated section ${sectionIndex} now playing`);
-
-    // Start word-by-word highlighting (same pattern as narrateSection)
-    // Per-section indexing: word indices are 0-based within each section
-    const wordTimestamps = wordTimestampsRef.current;
-    if (wordTimestamps && wordTimestamps.length > 0) {
-      setCurrentNarrationWord(0); // Start at 0 for this section
-      let lastHighlightedWord = 0; // Track last highlighted word to avoid unnecessary state updates
-
-      if (wordTimerRef.current) {
-        cancelAnimationFrame(wordTimerRef.current);
-      }
-
-      const updateHighlight = () => {
-        if (!audio || audio.paused || audio.ended) {
-          return;
-        }
-
-        const currentTime = audio.currentTime;
-
-        // Find which word should be highlighted based on actual timestamps
-        let wordToHighlight = lastHighlightedWord; // Default to keeping current word
-        for (let i = 0; i < wordTimestamps.length; i++) {
-          const timestamp = wordTimestamps[i];
-          // Check if we're within this word's time range (with offset)
-          if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
-            wordToHighlight = i;
-            break;
-          }
-          // If we're past this word but before the next word starts, keep highlighting this word
-          // This prevents flickering in gaps between words
-          if (i < wordTimestamps.length - 1) {
-            const nextTimestamp = wordTimestamps[i + 1];
-            if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
-              wordToHighlight = i;
-              break;
-            }
-          }
-        }
-
-        // Only update state if the word has changed (prevents unnecessary re-renders)
-        if (wordToHighlight !== lastHighlightedWord) {
-          lastHighlightedWord = wordToHighlight;
-          setCurrentNarrationWord(wordToHighlight);
-        }
-
-        // If we're past all words, clear highlighting
-        if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-          setCurrentNarrationWord(-1);
-          wordTimerRef.current = null;
-          return;
-        }
-
-        wordTimerRef.current = requestAnimationFrame(updateHighlight);
-      };
-
-      wordTimerRef.current = requestAnimationFrame(updateHighlight);
-    }
-  };
-
   // Handle read-aloud functionality with ElevenLabs
   const handleReadAloud = async () => {
-    console.log('🔵 handleReadAloud called, isHandlingReadAloud:', isHandlingReadAloud.current, 'isReading:', isReading);
-    console.log('🔍 State check:', { isReading, audioRef: !!audioRef.current, isPausedRef: isPausedRef.current, hasPreGeneratedAudio: !!lessonAudio });
-
     // Prevent multiple simultaneous calls - use a 500ms debounce
     const now = Date.now();
     if (isHandlingReadAloud.current > 0 && (now - isHandlingReadAloud.current) < 500) {
-      console.warn('⚠️ handleReadAloud called too quickly, ignoring (debounce). Time since last call:', now - isHandlingReadAloud.current, 'ms');
       return;
     }
 
@@ -3237,21 +2210,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     try {
       // Case 1: If audio is playing, pause it
       if (isReading && audioRef.current) {
-        console.log('⏸️ Pausing audio');
-        // Abort any in-flight API requests
-        if (narrateAbortController.current) {
-          narrateAbortController.current.abort();
-        }
-
         // Pause current audio (preserve position and reference for resume)
         const audio = audioRef.current;
         audio.pause();
-
-        // Verify pause succeeded
-        if (!audio.paused) {
-          console.warn('Audio pause failed - forcing pause state');
-          audio.pause();
-        }
 
         // Clear word highlighting timer
         if (wordTimerRef.current) {
@@ -3259,7 +2220,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           wordTimerRef.current = null;
         }
 
-        // NEW: Clear DOM highlight (for single-file audio mode)
+        // Clear DOM highlight
         if (currentHighlightRef.current) {
           currentHighlightRef.current.style.backgroundColor = '';
           currentHighlightRef.current.style.padding = '';
@@ -3268,11 +2229,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           currentHighlightRef.current = null;
         }
 
-        setCurrentNarrationWord(-1);
-        setIsNarratingTitle(false);
-
         // Update state (keep audioRef and wordTimestampsRef for resume)
-        // DON'T reset useSingleFileAudioRef here - we need it for resume
         setIsReading(false);
         isPausedRef.current = true;
         isHandlingReadAloud.current = 0;
@@ -3281,7 +2238,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Case 2: If audio exists and is paused, resume it
       if (audioRef.current && !isReading && isPausedRef.current) {
-        console.log('▶️ Resuming audio');
         const audio = audioRef.current;
         audio.play();
         setIsReading(true);
@@ -3374,23 +2330,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       }
 
       // Case 3: Start reading from the beginning
-      console.log('🎬 Starting narration from beginning');
-      setCurrentNarrationSection(0);
-
-      // Check if pre-generated audio is available
       if (lessonAudio) {
-        console.log('🎵 Using pre-generated audio');
         playPreGeneratedAudio();
         isHandlingReadAloud.current = 0;
         return;
       }
 
-      // No pre-generated audio available - do not use on-demand API
-      console.log('❌ No pre-generated audio available for this lesson');
+      // No pre-generated audio available
       isHandlingReadAloud.current = 0;
-      // Audio not available - silently fail (button will appear inactive)
     } catch (error) {
-      console.error('❌ Error in handleReadAloud:', error);
+      console.error('Error in handleReadAloud:', error);
       isHandlingReadAloud.current = 0;
       setIsReading(false);
     }
@@ -3403,17 +2352,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         audioRef.current.pause();
         audioRef.current = null;
       }
-      if (prefetchedAudioRef.current) {
-        URL.revokeObjectURL(prefetchedAudioRef.current.url);
-        prefetchedAudioRef.current = null;
-      }
-      // Cleanup batch prefetch cache
-      Object.values(batchPrefetchCache.current).forEach(cached => {
-        if (cached && cached.url) {
-          URL.revokeObjectURL(cached.url);
-        }
-      });
-      batchPrefetchCache.current = {};
       // Cleanup word highlighting timer
       if (wordTimerRef.current) {
         cancelAnimationFrame(wordTimerRef.current);
