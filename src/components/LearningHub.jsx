@@ -2259,16 +2259,38 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           if (wordSpan && wordSpan.getAttribute('data-section-type') === 'heading') {
             const headingEl = wordSpan.closest('h2, h3, .bg-black'); // .bg-black for H2 wrapper div
             if (headingEl && contentScrollRef.current) {
-              // Calculate scroll position with gap from top (80px offset)
               const container = contentScrollRef.current;
               const headingRect = headingEl.getBoundingClientRect();
               const containerRect = container.getBoundingClientRect();
-              const scrollOffset = headingRect.top - containerRect.top + container.scrollTop - 80;
+              const targetScrollTop = headingRect.top - containerRect.top + container.scrollTop - 80;
 
-              container.scrollTo({
-                top: Math.max(0, scrollOffset),
-                behavior: 'smooth'
-              });
+              // Custom smooth scroll with easing (matching BlogPostPage)
+              const startPosition = container.scrollTop;
+              const distance = Math.max(0, targetScrollTop) - startPosition;
+              const duration = 1200; // Longer duration for smoother scroll
+              let startTime = null;
+
+              // Ease in-out cubic function for smooth acceleration and deceleration
+              const easeInOutCubic = (t) => {
+                return t < 0.5
+                  ? 4 * t * t * t
+                  : 1 - Math.pow(-2 * t + 2, 3) / 2;
+              };
+
+              const animateScroll = (currentTime) => {
+                if (!startTime) startTime = currentTime;
+                const timeElapsed = currentTime - startTime;
+                const progress = Math.min(timeElapsed / duration, 1);
+                const easedProgress = easeInOutCubic(progress);
+
+                container.scrollTop = startPosition + distance * easedProgress;
+
+                if (progress < 1) {
+                  requestAnimationFrame(animateScroll);
+                }
+              };
+
+              requestAnimationFrame(animateScroll);
             }
           }
 
