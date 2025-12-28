@@ -851,58 +851,6 @@ const LearningHub = () => {
     globalWordCounterRef.current = 0;
   }
 
-  // Debug: Track render count to identify infinite loop
-  const renderCountRef = React.useRef(0);
-  renderCountRef.current++;
-
-  // Track previous state values to identify what's changing
-  const prevStateRef = React.useRef({});
-
-  // Log state changes between renders
-  const currentState = {
-    loading,
-    currentModule,
-    currentLesson,
-    isReading,
-    groupedLessonsKeys: Object.keys(groupedLessons).length,
-    activeSectionIndex,
-    suggestedQuestion,
-    activeCardIndex,
-    isCarouselReady,
-    containerWidth,
-    displayedTextLen: displayedText?.length || 0,
-    lessonAudioLoading,
-    showKnowledgeCheck,
-  };
-
-  if (renderCountRef.current > 5) {
-    const changes = [];
-    for (const [key, value] of Object.entries(currentState)) {
-      if (prevStateRef.current[key] !== value) {
-        changes.push(`${key}: ${prevStateRef.current[key]} → ${value}`);
-      }
-    }
-    if (changes.length > 0) {
-      console.log(`🔄 Render #${renderCountRef.current} - State changes:`, changes.join(', '));
-    }
-  }
-  prevStateRef.current = { ...currentState };
-
-  if (renderCountRef.current === 50) {
-    console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
-    console.log('Current state values:', currentState);
-    console.log('⚠️ Component is re-rendering infinitely. Check useEffect dependencies.');
-  }
-
-  // Debug: Log the lesson being displayed (only first few renders)
-  if (renderCountRef.current <= 5) {
-    console.log('📖 Displaying lesson (render #' + renderCountRef.current + '):', {
-      module: currentModule,
-      lesson: currentLesson,
-      lessonName: lessonName,
-      sectionsCount: Array.isArray(currentLessonSections) ? currentLessonSections.length : 0
-    });
-  }
 
   // Get suggested question for section (only uses custom questions from H2 headings)
   // Memoized to prevent recreation on each render (fixes infinite loop)
