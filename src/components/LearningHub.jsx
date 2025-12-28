@@ -4126,14 +4126,7 @@ ${currentLessonSections.map((section) => {
                 }
 
                 if (section.content_type === 'paragraph') {
-                  let text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
-
-                  // Normalize spacing: add space after colons followed directly by a letter
-                  // This fixes inconsistent data where some entries have ":**H" instead of ": H"
-                  // Does NOT affect URLs (://) or times (10:30) since those have non-letters after colon
-                  if (text) {
-                    text = text.replace(/:([A-Za-z])/g, ': $1');
-                  }
+                  const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
 
                   // Per-section word indexing: always start at 0 for each section
                   // This matches how narration indexes words within each section
@@ -4186,7 +4179,17 @@ ${currentLessonSections.map((section) => {
                         const innerText = part.slice(1, -1);
                         result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</em>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
+                        // Normalize spacing: if part starts with letter and previous part ended with colon, add leading space
+                        // This fixes data where bold text ends with colon: "**Bold:**Text" → "**Bold:** Text"
+                        let normalizedPart = part;
+                        if (i > 0 && /^[A-Za-z]/.test(part)) {
+                          const prevPart = parts[i - 1];
+                          // Check if prev part (bold/underline/italic) ends with colon
+                          if (prevPart && (prevPart.endsWith(':**') || prevPart.endsWith(':__') || prevPart.endsWith(':*') || prevPart.endsWith(':'))) {
+                            normalizedPart = ' ' + part;
+                          }
+                        }
+                        result = <span key={i}>{renderTextWithHighlight(normalizedPart, currentOffset, sectionIdx)}</span>;
                       }
 
                       currentOffset += wordCount;
