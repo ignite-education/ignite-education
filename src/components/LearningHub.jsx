@@ -114,6 +114,7 @@ const LearningHub = () => {
   // DOM-based highlighting refs (matches BlogPostPage)
   const contentContainerRef = React.useRef(null); // Container for word spans
   const currentHighlightRef = React.useRef(null); // Currently highlighted word span
+  const lastScrolledHeadingRef = React.useRef(null); // Track last scrolled heading to prevent repeated scrolling
   const titleWordCountRef = React.useRef(0); // Number of title words to skip highlighting
   const globalWordCounterRef = React.useRef(0); // Global word counter for single-file audio mode
   const useSingleFileAudioRef = React.useRef(false); // Flag: true when using new single-file audio format
@@ -379,6 +380,7 @@ const LearningHub = () => {
       currentHighlightRef.current.style.borderRadius = '';
       currentHighlightRef.current = null;
     }
+    lastScrolledHeadingRef.current = null; // Reset heading scroll tracking
     isPausedRef.current = false;
     setIsReading(false);
 
@@ -2258,7 +2260,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           // Only scroll on first word of the heading to avoid repeated scrolling
           if (wordSpan && wordSpan.getAttribute('data-section-type') === 'heading') {
             const headingEl = wordSpan.closest('h2, h3, .bg-black'); // .bg-black for H2 wrapper div
-            if (headingEl && contentScrollRef.current) {
+            // Only scroll if this is a different heading than the last one we scrolled to
+            if (headingEl && contentScrollRef.current && headingEl !== lastScrolledHeadingRef.current) {
+              lastScrolledHeadingRef.current = headingEl;
+
               const container = contentScrollRef.current;
               const headingRect = headingEl.getBoundingClientRect();
               const containerRect = container.getBoundingClientRect();
