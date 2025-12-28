@@ -1830,20 +1830,19 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   // Helper to render text with explained sections highlighted and word-by-word narration highlighting
-  // Uses display-focused normalization that preserves hyphens in compound words
+  // IMPORTANT: Word counting must match backend timestamps exactly
   const renderTextWithHighlight = (text, startWordIndex, sectionIndexForHighlight = null, disableNarrationHighlight = false) => {
     if (!text) return null;
 
-    // For display: strip markdown formatting but preserve hyphens in compound words
-    // (normalizeTextForNarration strips ALL hyphens which breaks "Top-down" → "Topdown")
-    const displayText = text
+    // For word counting: use same normalization as backend (collapse whitespace, strip markdown)
+    // IMPORTANT: Keep bullet characters (•) as they're included in backend word timestamps
+    const normalizedText = text
       .replace(/\s+/g, ' ')                    // Collapse whitespace
       .replace(/\*\*/g, '')                    // Remove bold markers
       .replace(/__/g, '')                      // Remove underline markers
       .replace(/(?<!\*)\*(?!\*)/g, '')         // Remove italic markers
-      .replace(/(?:^|\s)[•–—]\s*/g, ' ')       // Remove bullet chars (but NOT hyphens)
       .trim();
-    const words = displayText.split(' ').filter(w => w.length > 0);
+    const words = normalizedText.split(' ').filter(w => w.length > 0);
     const elements = [];
     let currentWordIndex = startWordIndex;
 
