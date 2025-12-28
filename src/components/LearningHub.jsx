@@ -1756,7 +1756,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsCarouselReady(true);
       isCarouselReadyRef.current = true;
     }
-  }, [upcomingLessonsToShow, loading, currentModule, currentLesson, isLessonCompleted]);
+  }, [upcomingLessonsToShow, loading, currentModule, currentLesson]);
 
   // Track container width for dynamic padding
   useEffect(() => {
