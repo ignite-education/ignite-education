@@ -991,7 +991,7 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-  }, [currentModule, currentLesson, loading]);
+  }, [currentModule, currentLesson, loading, currentLessonSections]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
@@ -1756,7 +1756,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsCarouselReady(true);
       isCarouselReadyRef.current = true;
     }
-  }, [upcomingLessonsToShow, loading, currentModule, currentLesson]);
+  }, [upcomingLessonsToShow, currentModule, currentLesson]);
 
   // Track container width for dynamic padding
   useEffect(() => {
