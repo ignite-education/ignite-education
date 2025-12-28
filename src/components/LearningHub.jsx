@@ -852,7 +852,7 @@ const LearningHub = () => {
   const renderCountRef = React.useRef(0);
   renderCountRef.current++;
 
-  if (renderCountRef.current === 11) {
+  if (renderCountRef.current === 25) {
     console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
     console.log('Current state values:', {
       loading,
