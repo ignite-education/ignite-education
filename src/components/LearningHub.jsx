@@ -2129,49 +2129,15 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return;
     }
 
-    // ═══════════════════════════════════════════════════════════════════
-    // DEBUG: Comprehensive logging for word highlight timing analysis
-    // ═══════════════════════════════════════════════════════════════════
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log('🎤 HIGHLIGHT DEBUG: Starting word highlighting');
-    console.log('═══════════════════════════════════════════════════════════════');
-    console.log(`📊 Total word timestamps from backend: ${wordTimestamps.length}`);
-    console.log(`📊 Title word count (skipped): ${titleWordCountRef.current}`);
-    console.log(`📊 HIGHLIGHT_LAG_OFFSET: ${HIGHLIGHT_LAG_OFFSET}s`);
-
-    // Log first 20 word timestamps with their timing
-    console.log('\n📝 First 20 word timestamps from backend:');
-    wordTimestamps.slice(0, 20).forEach((ts, i) => {
-      console.log(`   [${i}] "${ts.word}" | start: ${ts.start.toFixed(3)}s | end: ${ts.end.toFixed(3)}s | duration: ${(ts.end - ts.start).toFixed(3)}s`);
-    });
-
-    // Count DOM word spans and compare
+    // Check for word count mismatch (only warn if there's an issue)
     if (contentContainerRef.current) {
       const allSpans = contentContainerRef.current.querySelectorAll('[data-word-index]');
-      console.log(`\n📊 DOM word spans found: ${allSpans.length}`);
-
-      // Log first 20 DOM spans with their indices and text
-      console.log('\n📝 First 20 DOM word spans:');
-      Array.from(allSpans).slice(0, 20).forEach((span, i) => {
-        const idx = span.getAttribute('data-word-index');
-        const skip = span.hasAttribute('data-skip-highlight');
-        console.log(`   [${idx}] "${span.textContent}"${skip ? ' (SKIP)' : ''}`);
-      });
-
-      // Check for word count mismatch
       if (allSpans.length !== wordTimestamps.length) {
-        console.warn(`\n⚠️ WORD COUNT MISMATCH!`);
-        console.warn(`   Backend timestamps: ${wordTimestamps.length} words`);
-        console.warn(`   Frontend DOM spans: ${allSpans.length} words`);
-        console.warn(`   Difference: ${Math.abs(wordTimestamps.length - allSpans.length)} words`);
-      } else {
-        console.log(`\n✅ Word counts match: ${wordTimestamps.length} words`);
+        console.warn(`⚠️ Word count mismatch: Backend=${wordTimestamps.length}, Frontend=${allSpans.length}`);
       }
     }
-    console.log('═══════════════════════════════════════════════════════════════\n');
 
     let lastHighlightedWord = -1;
-    let frameCount = 0;
 
     const updateHighlight = () => {
       if (!audio || audio.paused || audio.ended) {
@@ -2179,11 +2145,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       }
 
       const currentTime = audio.currentTime;
-      frameCount++;
 
       // Find which word should be highlighted
       let wordToHighlight = lastHighlightedWord;
-      let matchReason = 'no-match';
 
       for (let i = 0; i < wordTimestamps.length; i++) {
         const ts = wordTimestamps[i];
@@ -2191,7 +2155,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         if (currentTime >= adjustedStart && currentTime < ts.end) {
           wordToHighlight = i;
-          matchReason = `in-range [${adjustedStart.toFixed(3)} <= ${currentTime.toFixed(3)} < ${ts.end.toFixed(3)}]`;
           break;
         }
         // Anti-flicker: keep current word in gaps between words
@@ -2200,7 +2163,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           const nextAdjustedStart = next.start + HIGHLIGHT_LAG_OFFSET;
           if (currentTime >= ts.end && currentTime < nextAdjustedStart) {
             wordToHighlight = i;
-            matchReason = `gap-hold [${ts.end.toFixed(3)} <= ${currentTime.toFixed(3)} < ${nextAdjustedStart.toFixed(3)}]`;
             break;
           }
         }
@@ -2208,33 +2170,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       // Only update if word has changed
       if (wordToHighlight !== lastHighlightedWord) {
-        const ts = wordTimestamps[wordToHighlight];
-        const prevTs = lastHighlightedWord >= 0 ? wordTimestamps[lastHighlightedWord] : null;
-
-        // ═══════════════════════════════════════════════════════════════════
-        // DEBUG: Log every word change with comprehensive timing info
-        // ═══════════════════════════════════════════════════════════════════
-        console.log(`🔸 WORD CHANGE [frame ${frameCount}]:`);
-        console.log(`   Time: ${currentTime.toFixed(3)}s`);
-        console.log(`   Word index: ${lastHighlightedWord} → ${wordToHighlight}`);
-        console.log(`   Previous word: "${prevTs?.word || 'none'}" (${prevTs?.start.toFixed(3) || 'N/A'}-${prevTs?.end.toFixed(3) || 'N/A'}s)`);
-        console.log(`   New word: "${ts?.word}" (${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s)`);
-        console.log(`   Match reason: ${matchReason}`);
-
-        // Calculate timing offset (how early/late the highlight is)
-        if (ts) {
-          const expectedStart = ts.start;
-          const offset = currentTime - expectedStart;
-          const offsetMs = (offset * 1000).toFixed(0);
-          if (offset < 0) {
-            console.log(`   ⚡ Highlight is ${Math.abs(offsetMs)}ms EARLY (before word starts)`);
-          } else if (offset > 0.1) {
-            console.log(`   🐢 Highlight is ${offsetMs}ms LATE (word already playing)`);
-          } else {
-            console.log(`   ✅ Timing: ${offsetMs}ms offset (good)`);
-          }
-        }
-
         lastHighlightedWord = wordToHighlight;
 
         // Clear previous highlight
@@ -2248,13 +2183,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         // Find and highlight new word in DOM
         if (contentContainerRef.current) {
           const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
-
-          // DEBUG: Log DOM span lookup result
-          if (!wordSpan) {
-            console.warn(`   ⚠️ DOM span NOT FOUND for data-word-index="${wordToHighlight}"`);
-          } else {
-            console.log(`   📍 DOM span found: "${wordSpan.textContent}" | skip=${wordSpan.hasAttribute('data-skip-highlight')}`);
-          }
 
           // Auto-scroll when reaching a heading (H2/H3)
           // Only scroll on first word of the heading to avoid repeated scrolling
@@ -2310,18 +2238,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             currentHighlightRef.current = null;
           }
         }
-        console.log(''); // Empty line for readability
-      }
-
-      // Periodic status log (every 60 frames ≈ 1 second)
-      if (frameCount % 60 === 0) {
-        const ts = wordTimestamps[lastHighlightedWord];
-        console.log(`📍 STATUS [frame ${frameCount}]: time=${currentTime.toFixed(3)}s | word[${lastHighlightedWord}]="${ts?.word}" | range=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s`);
       }
 
       // If we're past all words, clear highlighting
       if (currentTime >= wordTimestamps[wordTimestamps.length - 1].end) {
-        console.log('🏁 HIGHLIGHT DEBUG: Past all words, clearing highlight');
         if (currentHighlightRef.current) {
           currentHighlightRef.current.style.backgroundColor = '';
           currentHighlightRef.current.style.padding = '';
