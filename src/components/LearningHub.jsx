@@ -3118,23 +3118,28 @@ ${currentLessonSections.map((section) => {
 
                   // Helper function to render text with underline formatting and highlighting
                   const renderHeadingText = (text, wordOffset) => {
-                    const parts = text.split(/(__[^_]+__)/g);
+                    // Capture trailing punctuation with underline markers
+                    const parts = text.split(/(__[^_]+__[:\.,;!?]?)/g);
                     let currentOffset = wordOffset;
 
                     return parts.map((part, i) => {
-                      const cleanPart = part.replace(/__/g, '');
+                      const cleanPart = part.replace(/__/g, '').replace(/[:\.,;!?]$/, '');
                       // Use consistent word counting: normalize and split on space
                       const wordCount = splitIntoWords(normalizeTextForNarration(cleanPart)).length;
+                      // Add back trailing punctuation for word count
+                      const trailingPunct = part.match(/__([:\.,;!?])$/)?.[1] || '';
+                      const totalWordCount = trailingPunct ? wordCount : wordCount; // Punct doesn't add words
 
                       let result;
-                      if (part.startsWith('__') && part.endsWith('__')) {
-                        const innerText = part.slice(2, -2);
-                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx, true)}</u>;
+                      if (part.startsWith('__') && part.match(/__[:\.,;!?]?$/)) {
+                        const innerText = part.replace(/^__/, '').replace(/__[:\.,;!?]?$/, '');
+                        const punct = part.match(/__([:\.,;!?])$/)?.[1] || '';
+                        result = <u key={i}>{renderTextWithHighlight(innerText + punct, currentOffset, sectionIdx, true)}</u>;
                       } else {
                         result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx, true)}</span>;
                       }
 
-                      currentOffset += wordCount;
+                      currentOffset += totalWordCount;
                       return result;
                     });
                   };
@@ -3166,7 +3171,9 @@ ${currentLessonSections.map((section) => {
                   const renderTextWithBold = (text, wordOffset = 0) => {
                     // Split by bold (**), underline (__), italic (*), and link [text](url) markers
                     // Match ** before * to avoid conflicts
-                    const parts = text.split(/(\*\*.+?\*\*|__.+?__|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*))/g);
+                    // IMPORTANT: [:\.,;!?]? captures trailing punctuation to keep it with formatted text
+                    // This prevents "**Bold**:" from splitting ":" into a separate word
+                    const parts = text.split(/(\*\*.+?\*\*[:\.,;!?]?|__.+?__[:\.,;!?]?|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*)[:\.,;!?]?)/g);
                     let currentOffset = wordOffset;
 
                     return parts.map((part, i) => {
@@ -3200,15 +3207,21 @@ ${currentLessonSections.map((section) => {
                             {renderTextWithHighlight(linkText, currentOffset, sectionIdx)}
                           </a>
                         );
-                      } else if (part.startsWith('**') && part.endsWith('**')) {
-                        const innerText = part.slice(2, -2);
-                        result = <strong key={i} className="font-semibold">{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</strong>;
-                      } else if (part.startsWith('__') && part.endsWith('__')) {
-                        const innerText = part.slice(2, -2);
-                        result = <u key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</u>;
-                      } else if (part.match(/^(?<!\*)\*(?!\*)([^*]+)\*(?!\*)$/)) {
-                        const innerText = part.slice(1, -1);
-                        result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</em>;
+                      } else if (part.startsWith('**') && part.match(/\*\*[:\.,;!?]?$/)) {
+                        // Bold text - may have trailing punctuation like "**Bold**:"
+                        const innerText = part.replace(/^\*\*/, '').replace(/\*\*[:\.,;!?]?$/, '');
+                        const trailingPunct = part.match(/\*\*([:\.,;!?])$/)?.[1] || '';
+                        result = <strong key={i} className="font-semibold">{renderTextWithHighlight(innerText + trailingPunct, currentOffset, sectionIdx)}</strong>;
+                      } else if (part.startsWith('__') && part.match(/__[:\.,;!?]?$/)) {
+                        // Underline text - may have trailing punctuation
+                        const innerText = part.replace(/^__/, '').replace(/__[:\.,;!?]?$/, '');
+                        const trailingPunct = part.match(/__([:\.,;!?])$/)?.[1] || '';
+                        result = <u key={i}>{renderTextWithHighlight(innerText + trailingPunct, currentOffset, sectionIdx)}</u>;
+                      } else if (part.match(/^(?<!\*)\*(?!\*)(.+)\*(?!\*)[:\.,;!?]?$/)) {
+                        // Italic text - may have trailing punctuation
+                        const innerText = part.replace(/^\*/, '').replace(/\*[:\.,;!?]?$/, '');
+                        const trailingPunct = part.match(/\*([:\.,;!?])$/)?.[1] || '';
+                        result = <em key={i}>{renderTextWithHighlight(innerText + trailingPunct, currentOffset, sectionIdx)}</em>;
                       } else {
                         result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
                       }
