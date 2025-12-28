@@ -135,6 +135,7 @@ const LearningHub = () => {
   const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
   const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
   const isObserverInitialCallbackRef = React.useRef(true); // Skip first observer callback to prevent render cascade
+  const observerDebounceRef = React.useRef(null); // Debounce observer state updates to prevent rapid re-renders
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -874,29 +875,17 @@ const LearningHub = () => {
     });
   }
 
-  // Helper to determine if a section is high-priority for question generation
   // Get suggested question for section (only uses custom questions from H2 headings)
   // Memoized to prevent recreation on each render (fixes infinite loop)
   const generateQuestionForSection = useCallback((section) => {
-    if (!section) {
-      console.log('generateQuestionForSection: no section');
-      return null;
-    }
-
-    console.log('generateQuestionForSection:', {
-      content_type: section.content_type,
-      level: section.content?.level,
-      suggested_question: section.suggested_question
-    });
+    if (!section) return null;
 
     // Only check H2 headings for suggested questions
     if (section.content_type === 'heading' && section.content?.level === 2) {
       // Only return custom suggested question if available
       if (section.suggested_question && section.suggested_question.trim()) {
-        console.log('✅ Returning question:', section.suggested_question);
         return section.suggested_question;
       }
-      console.log('⚠️ H2 found but no suggested_question');
     }
 
     // No auto-generated questions - return null if not H2 or no custom question exists
@@ -962,24 +951,32 @@ const LearningHub = () => {
           return;
         }
 
-        // Update the active section and suggested question
-        // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
-        if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
-          lastProcessedH2Ref.current = selectedH2;
-          setActiveSectionIndex(prev => prev === selectedH2 ? prev : selectedH2);
-
-          // Update suggested question separately
-          const section = sections[selectedH2];
-          if (section) {
-            const newQuestion = generateQuestionForSection(section);
-            const questionToSet = newQuestion || 'Can you explain this another way?';
-            setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
-          }
+        // Clear any pending debounce
+        if (observerDebounceRef.current) {
+          clearTimeout(observerDebounceRef.current);
         }
+
+        // Debounce state updates to prevent rapid re-renders
+        observerDebounceRef.current = setTimeout(() => {
+          // Update the active section and suggested question
+          // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
+          if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
+            lastProcessedH2Ref.current = selectedH2;
+            setActiveSectionIndex(prev => prev === selectedH2 ? prev : selectedH2);
+
+            // Update suggested question separately
+            const section = sections[selectedH2];
+            if (section) {
+              const newQuestion = generateQuestionForSection(section);
+              const questionToSet = newQuestion || 'Can you explain this another way?';
+              setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
+            }
+          }
+        }, 50);
       },
       {
         root: contentScrollRef.current,
-        threshold: [0, 0.25, 0.5, 0.75, 1], // Multiple thresholds for better detection
+        threshold: 0.5, // Single threshold to reduce callback frequency
         rootMargin: '0px 0px -50% 0px' // Focus on upper half of viewport
       }
     );
@@ -1000,6 +997,9 @@ const LearningHub = () => {
 
     return () => {
       clearTimeout(setupTimer);
+      if (observerDebounceRef.current) {
+        clearTimeout(observerDebounceRef.current);
+      }
       observer.disconnect();
     };
   }, [currentModule, currentLesson, loading, currentLessonSections]);
