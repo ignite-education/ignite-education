@@ -951,17 +951,18 @@ const LearningHub = () => {
         // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
         if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
           lastProcessedH2Ref.current = selectedH2;
-          setActiveSectionIndex(selectedH2);
+          setActiveSectionIndex(prev => prev === selectedH2 ? prev : selectedH2);
 
           // Update suggested question separately (not nested in setActiveSectionIndex)
           const section = currentLessonSections[selectedH2];
           const newQuestion = generateQuestionForSection(section);
-          setSuggestedQuestion(newQuestion || 'Can you explain this another way?');
+          const questionToSet = newQuestion || 'Can you explain this another way?';
+          setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
         }
       },
       {
         root: contentScrollRef.current,
-        threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        threshold: [0, 0.5, 1.0] // Reduced from 11 thresholds to prevent rapid firing
       }
     );
 
