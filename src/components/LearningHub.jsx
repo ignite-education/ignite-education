@@ -627,15 +627,10 @@ const LearningHub = () => {
   useEffect(() => {
     if (!scrollContainerRef.current || cardRefs.current.length === 0) return;
 
-    const observerOptions = {
-      root: scrollContainerRef.current,
-      threshold: [0, 0.5, 1], // Multiple thresholds to catch more intersection events
-      rootMargin: '0px'
-    };
-
     const observer = new IntersectionObserver((entries) => {
-      // Skip until carousel is initialized to prevent overriding the correct initial position
-      if (!isCarouselReady) return;
+      // Use refs instead of state for stable access (avoids stale closures)
+      if (!isCarouselReadyRef.current) return;
+      if (isProgrammaticScrollRef.current) return;
 
       // Find the most visible card
       let mostVisibleCard = null;
@@ -654,7 +649,11 @@ const LearningHub = () => {
           setActiveCardIndex(prev => prev === cardIndex ? prev : cardIndex);
         }
       }
-    }, observerOptions);
+    }, {
+      root: scrollContainerRef.current,
+      threshold: [0.5], // Single threshold to reduce firing
+      rootMargin: '0px'
+    });
 
     // Observe all card elements
     cardRefs.current.forEach((card) => {
@@ -664,13 +663,10 @@ const LearningHub = () => {
     // Force initial check - manually determine which card is most visible
     // Only run once after carousel is initialized to prevent overriding the correct position
     requestAnimationFrame(() => {
-      if (!isCarouselReady) return;
+      if (!isCarouselReadyRef.current) return;
       if (hasInitializedCardIndexRef.current) return; // Prevent running multiple times
       if (scrollContainerRef.current && cardRefs.current.length > 0) {
         hasInitializedCardIndexRef.current = true; // Mark as initialized
-
-        const scrollLeft = scrollContainerRef.current.scrollLeft;
-        const containerWidth = scrollContainerRef.current.clientWidth;
 
         // Find which card is most visible
         let mostVisibleIndex = 0;
@@ -701,7 +697,7 @@ const LearningHub = () => {
     return () => {
       observer.disconnect();
     };
-  }, [groupedLessons, currentModule, currentLesson]); // Removed isCarouselReady to prevent circular dependency (check is inside callback)
+  }, [groupedLessons, currentModule, currentLesson]);
 
   const fetchLessonData = async () => {
     try {
@@ -911,6 +907,10 @@ const LearningHub = () => {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        // Use ref for stable access to sections data (avoids stale closures)
+        const sections = currentLessonSectionsRef.current;
+        if (!sections || sections.length === 0) return;
+
         // Find the H2 heading closest to the 50% mark of the viewport
         let closestH2Index = null;
         let smallestDistance = Infinity;
@@ -919,8 +919,8 @@ const LearningHub = () => {
           if (entry.isIntersecting) {
             const sectionIndex = parseInt(entry.target.dataset.sectionIndex);
             // Verify section exists before accessing
-            if (sectionIndex >= 0 && sectionIndex < currentLessonSections.length) {
-              const section = currentLessonSections[sectionIndex];
+            if (sectionIndex >= 0 && sectionIndex < sections.length) {
+              const section = sections[sectionIndex];
               const rect = entry.boundingClientRect;
               const containerRect = entry.rootBounds;
 
@@ -956,8 +956,8 @@ const LearningHub = () => {
           lastProcessedH2Ref.current = selectedH2;
           setActiveSectionIndex(prev => prev === selectedH2 ? prev : selectedH2);
 
-          // Update suggested question separately (not nested in setActiveSectionIndex)
-          const section = currentLessonSections[selectedH2];
+          // Update suggested question separately
+          const section = sections[selectedH2];
           if (section) {
             const newQuestion = generateQuestionForSection(section);
             const questionToSet = newQuestion || 'Can you explain this another way?';
@@ -967,7 +967,7 @@ const LearningHub = () => {
       },
       {
         root: contentScrollRef.current,
-        threshold: [0, 0.5, 1.0]
+        threshold: [0.5] // Single threshold to reduce firing
       }
     );
 
@@ -986,9 +986,6 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-    // FIX: Removed currentLessonSections.length entirely.
-    // We only reset if the module/lesson changes or loading finishes.
-    // The loading guard ensures currentLessonSections is populated when effect runs.
   }, [currentModule, currentLesson, loading]);
 
   const handleContinue = async () => {
@@ -1469,6 +1466,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   };
 
   const handleScroll = () => {
+    // Skip if programmatic scroll in progress
+    if (isProgrammaticScrollRef.current) return;
     if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0) return;
 
     const scrollPosition = scrollContainerRef.current.scrollLeft;
@@ -1501,7 +1500,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       }
     }
 
-    setActiveCardIndex(index);
+    setActiveCardIndex(prev => prev === index ? prev : index);
   };
 
   const scrollToCurrentLesson = () => {
@@ -1726,6 +1725,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       container.style.scrollSnapType = 'none';
       container.style.scrollBehavior = 'auto';
 
+      // Prevent handleScroll and observers from firing during programmatic scroll
+      isProgrammaticScrollRef.current = true;
+
       // Defer scroll to next frame to ensure DOM is ready
       requestAnimationFrame(() => {
         container.scrollLeft = scrollPosition;
@@ -1736,11 +1738,18 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           container.style.scrollSnapType = originalScrollSnap;
           container.style.scrollBehavior = originalScrollBehavior;
           setIsCarouselReady(true);
+          isCarouselReadyRef.current = true; // Keep ref in sync
+
+          // Release after scroll animation completes
+          setTimeout(() => {
+            isProgrammaticScrollRef.current = false;
+          }, 100);
         });
       });
     } else {
       // No current lesson found, just show the carousel
       setIsCarouselReady(true);
+      isCarouselReadyRef.current = true;
     }
   }, [upcomingLessonsToShow, loading, currentModule, currentLesson, isLessonCompleted]);
 
@@ -1754,7 +1763,8 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
     const updateContainerWidth = () => {
       if (scrollContainerRef.current) {
-        setContainerWidth(scrollContainerRef.current.clientWidth);
+        const newWidth = scrollContainerRef.current.clientWidth;
+        setContainerWidth(prev => prev === newWidth ? prev : newWidth);
       }
     };
 
