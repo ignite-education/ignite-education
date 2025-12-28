@@ -4126,7 +4126,14 @@ ${currentLessonSections.map((section) => {
                 }
 
                 if (section.content_type === 'paragraph') {
-                  const text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
+                  let text = typeof section.content === 'string' ? section.content : section.content?.text || section.content_text;
+
+                  // Normalize spacing: add space after colons followed directly by a letter
+                  // This fixes inconsistent data where some entries have ":**H" instead of ": H"
+                  // Does NOT affect URLs (://) or times (10:30) since those have non-letters after colon
+                  if (text) {
+                    text = text.replace(/:([A-Za-z])/g, ': $1');
+                  }
 
                   // Per-section word indexing: always start at 0 for each section
                   // This matches how narration indexes words within each section
