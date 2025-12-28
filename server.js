@@ -1218,6 +1218,10 @@ const extractLessonText = (lessonName, sections) => {
       text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
       text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
       text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
+      // Strip bullet characters at line start to match frontend word count
+      // Frontend renders bullets as separate elements, not as part of word spans
+      text = text.replace(/^[•–—]\s*/gm, ''); // Remove bullet chars at line start (not hyphens)
+      text = text.replace(/\n-\s+/g, '\n'); // Remove dash bullets at line start
       textParts.push(text);
     } else if (section.content_type === 'list' && section.content?.items) {
       textParts.push(section.content.items.join('. '));
