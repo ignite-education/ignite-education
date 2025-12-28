@@ -855,15 +855,42 @@ const LearningHub = () => {
   const renderCountRef = React.useRef(0);
   renderCountRef.current++;
 
+  // Track previous state values to identify what's changing
+  const prevStateRef = React.useRef({});
+
+  // Log state changes between renders
+  const currentState = {
+    loading,
+    currentModule,
+    currentLesson,
+    isReading,
+    groupedLessonsKeys: Object.keys(groupedLessons).length,
+    activeSectionIndex,
+    suggestedQuestion,
+    activeCardIndex,
+    isCarouselReady,
+    containerWidth,
+    displayedTextLen: displayedText?.length || 0,
+    lessonAudioLoading,
+    showKnowledgeCheck,
+  };
+
+  if (renderCountRef.current > 5) {
+    const changes = [];
+    for (const [key, value] of Object.entries(currentState)) {
+      if (prevStateRef.current[key] !== value) {
+        changes.push(`${key}: ${prevStateRef.current[key]} → ${value}`);
+      }
+    }
+    if (changes.length > 0) {
+      console.log(`🔄 Render #${renderCountRef.current} - State changes:`, changes.join(', '));
+    }
+  }
+  prevStateRef.current = { ...currentState };
+
   if (renderCountRef.current === 50) {
     console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
-    console.log('Current state values:', {
-      loading,
-      currentModule,
-      currentLesson,
-      isReading,
-      groupedLessonsKeys: Object.keys(groupedLessons).length
-    });
+    console.log('Current state values:', currentState);
     console.log('⚠️ Component is re-rendering infinitely. Check useEffect dependencies.');
   }
 
