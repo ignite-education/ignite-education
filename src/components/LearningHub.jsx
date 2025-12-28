@@ -896,7 +896,7 @@ const LearningHub = () => {
   // Intersection Observer to track visible sections
   useEffect(() => {
     // Wait for loading to complete and DOM to render
-    if (loading || !currentLessonSections || currentLessonSections.length === 0 || !contentScrollRef.current) {
+    if (loading || !currentLessonSectionsRef.current || currentLessonSectionsRef.current.length === 0 || !contentScrollRef.current) {
       return;
     }
 
@@ -972,7 +972,7 @@ const LearningHub = () => {
               setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
             }
           }
-        }, 50);
+        }, 150);
       },
       {
         root: contentScrollRef.current,
@@ -1002,7 +1002,7 @@ const LearningHub = () => {
       }
       observer.disconnect();
     };
-  }, [currentModule, currentLesson, loading]);
+  }, [currentModule, currentLesson, loading, currentLessonSections.length]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
