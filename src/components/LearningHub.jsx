@@ -131,6 +131,9 @@ const LearningHub = () => {
   const hasInitializedScrollRef = React.useRef(false); // Track if scroll has been initialized (prevents infinite loop)
   const hasInitializedContainerWidthRef = React.useRef(false); // Track if container width has been initialized (prevents infinite loop)
   const hasInitializedCardIndexRef = React.useRef(false); // Track if initial card index has been set (prevents infinite loop)
+  const isProgrammaticScrollRef = React.useRef(false); // Track programmatic scroll to prevent handler interference
+  const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
+  const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -830,6 +833,11 @@ const LearningHub = () => {
 
   const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
   const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
+
+  // Keep ref in sync with memoized value for stable observer access
+  React.useEffect(() => {
+    currentLessonSectionsRef.current = currentLessonSections;
+  }, [currentLessonSections]);
 
   // CRITICAL: Reset globalWordCounterRef at the START of each render
   // This ensures word indices are correct even if the component re-renders
