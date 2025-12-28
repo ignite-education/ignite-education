@@ -372,17 +372,21 @@ const LearningHub = () => {
   }, [currentModule, currentLesson]);
 
   // Update current module and lesson when URL params change
-  useEffect(() => {
-    const moduleParam = parseInt(searchParams.get('module'));
-    const lessonParam = parseInt(searchParams.get('lesson'));
+  // Extract primitives to avoid object identity churn from searchParams
+  const moduleParam = searchParams.get('module');
+  const lessonParam = searchParams.get('lesson');
 
-    if (moduleParam && moduleParam !== currentModule) {
-      setCurrentModule(moduleParam);
+  useEffect(() => {
+    const m = moduleParam ? Number(moduleParam) : null;
+    const l = lessonParam ? Number(lessonParam) : null;
+
+    if (Number.isFinite(m)) {
+      setCurrentModule(prev => (prev === m ? prev : m));
     }
-    if (lessonParam && lessonParam !== currentLesson) {
-      setCurrentLesson(lessonParam);
+    if (Number.isFinite(l)) {
+      setCurrentLesson(prev => (prev === l ? prev : l));
     }
-  }, [searchParams]);
+  }, [moduleParam, lessonParam]);
 
   // Reset audio and scroll position when lesson changes (chat persists)
   useEffect(() => {
