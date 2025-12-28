@@ -407,6 +407,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         }];
       }
     });
+
+    // Force scroll to bottom after result message appears so user can see it fully
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   };
 
   const autoResizeTextarea = () => {
@@ -529,7 +539,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       <div className="relative">
         {/* Title and close button row - above the box */}
         <div className="flex justify-between items-center" style={{ marginBottom: '0.15rem' }}>
-          <h2 className="text-xl font-semibold text-white pl-1">
+          <h2 className="text-xl font-medium text-white pl-1">
             Knowledge Check
           </h2>
           <button
@@ -594,10 +604,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#22c55e' }}>
                           <Check size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
                         </div>
-                        <span className="font-semibold mt-1">You scored {msg.score}</span>
+                        <span className="font-medium mt-1">You scored {msg.score}</span>
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
-                        <p className="font-semibold">{msg.congratsLine1}</p>
+                        <p className="font-medium">{msg.congratsLine1}</p>
                         <p style={{ marginTop: '2px' }}>{msg.congratsLine2}</p>
                         <p style={{ marginTop: '2px' }}>{msg.congratsLine3}</p>
                       </div>
@@ -616,17 +626,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
                           <X size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
                         </div>
-                        <span className="font-semibold mt-1">You scored {msg.score}</span>
+                        <span className="font-medium mt-1">You scored {msg.score}</span>
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
-                        <p className="font-semibold">{msg.failedLine1}</p>
+                        <p className="font-medium">{msg.failedLine1}</p>
                         <p style={{ marginTop: '2px' }}>{msg.failedLine2}</p>
                         <p style={{ marginTop: '2px' }}>{msg.failedLine3}</p>
                       </div>
                     </div>
                   ) : (
                     // Regular assistant message
-                    <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-semibold' : ''}`} style={{
+                    <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-medium' : ''}`} style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6',
                       animation: 'slideUp 0.25s ease-out forwards'
@@ -659,11 +669,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
                               if (boldEnd === -1) {
                                 // No closing ** yet (typing in progress) - render as bold without the **
-                                result.push(<strong key={key++} className="font-semibold">{afterStart}</strong>);
+                                result.push(<strong key={key++} className="font-medium">{afterStart}</strong>);
                                 break;
                               } else {
                                 // Complete bold section
-                                result.push(<strong key={key++} className="font-semibold">{afterStart.substring(0, boldEnd)}</strong>);
+                                result.push(<strong key={key++} className="font-medium">{afterStart.substring(0, boldEnd)}</strong>);
                                 remaining = afterStart.substring(boldEnd + 2);
                               }
                             }
@@ -679,7 +689,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         })}
                         {/* Show bold suffix instantly when message is complete */}
                         {msg.boldSuffix && msg.isComplete && (
-                          <p className="mt-3 font-semibold">{msg.boldSuffix}</p>
+                          <p className="mt-3 font-medium">{msg.boldSuffix}</p>
                         )}
                       </div>
                     </div>
@@ -741,7 +751,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 <button
                   type="submit"
                   disabled={isEvaluating || !chatInput.trim()}
-                  className="w-full text-white px-4 py-2 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                   onMouseEnter={(e) => !isEvaluating && chatInput.trim() && (e.currentTarget.style.backgroundColor = '#6610C7')}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
@@ -754,7 +764,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 {score >= PASS_THRESHOLD ? (
                   <button
                     onClick={handleProceed}
-                    className="w-full text-white px-4 py-2 font-semibold transition"
+                    className="w-full text-white px-4 py-2 font-medium transition"
                     style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#EF0B72' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
@@ -764,7 +774,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 ) : (
                   <button
                     onClick={handleClose}
-                    className="w-full text-white px-4 py-2 font-semibold transition"
+                    className="w-full text-white px-4 py-2 font-medium transition"
                     style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}
