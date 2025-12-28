@@ -750,7 +750,9 @@ const LearningHub = () => {
         setCompletedLessons([]);
       }
 
-      // Check daily course completion limit
+      // TEMPORARILY DISABLED - course_completions table doesn't exist yet
+      // Run migration at /migrations/add_daily_course_completion_limit.sql then uncomment
+      /*
       try {
         console.log('🔒 Checking daily course completion limit...');
         const completedCount = await getCourseCompletionsToday(userId);
@@ -778,6 +780,9 @@ const LearningHub = () => {
         console.error('Error checking daily course limit:', error);
         setDailyLimitReached(false);
       }
+      */
+      // Default to no limit until table exists
+      setDailyLimitReached(false);
 
       console.log('✅ All data loaded, setting loading to false');
       setLoading(false);
