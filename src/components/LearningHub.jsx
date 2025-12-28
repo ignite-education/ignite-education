@@ -4179,17 +4179,7 @@ ${currentLessonSections.map((section) => {
                         const innerText = part.slice(1, -1);
                         result = <em key={i}>{renderTextWithHighlight(innerText, currentOffset, sectionIdx)}</em>;
                       } else {
-                        // Normalize spacing: if part starts with letter and previous part ended with colon, add leading space
-                        // This fixes data where bold text ends with colon: "**Bold:**Text" → "**Bold:** Text"
-                        let normalizedPart = part;
-                        if (i > 0 && /^[A-Za-z]/.test(part)) {
-                          const prevPart = parts[i - 1];
-                          // Check if prev part (bold/underline/italic) ends with colon
-                          if (prevPart && (prevPart.endsWith(':**') || prevPart.endsWith(':__') || prevPart.endsWith(':*') || prevPart.endsWith(':'))) {
-                            normalizedPart = ' ' + part;
-                          }
-                        }
-                        result = <span key={i}>{renderTextWithHighlight(normalizedPart, currentOffset, sectionIdx)}</span>;
+                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
                       }
 
                       currentOffset += wordCount;
