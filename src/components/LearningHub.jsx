@@ -1897,9 +1897,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // This uses a global counter that increments across all sections
       const globalWordIndex = useSingleFileAudioRef.current ? globalWordCounterRef.current : null;
 
-      // Determine if this word should be skipped for highlighting (title words)
+      // Determine if this word should be skipped for highlighting (title words and headings)
       const shouldSkipHighlight = useSingleFileAudioRef.current &&
-        sectionIndexForHighlight === 'title';
+        (sectionIndexForHighlight === 'title' || disableNarrationHighlight);
 
       // Build data attributes for DOM-based highlighting
       const dataAttributes = {};
@@ -1907,6 +1907,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         dataAttributes['data-word-index'] = globalWordIndex;
         if (shouldSkipHighlight) {
           dataAttributes['data-skip-highlight'] = 'true';
+        }
+        // Mark heading words for auto-scroll detection
+        if (disableNarrationHighlight && sectionIndexForHighlight !== 'title') {
+          dataAttributes['data-section-type'] = 'heading';
         }
       }
 
@@ -2250,7 +2254,16 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             console.log(`   📍 DOM span found: "${wordSpan.textContent}" | skip=${wordSpan.hasAttribute('data-skip-highlight')}`);
           }
 
-          // Skip highlighting if word is marked to skip (e.g., title words)
+          // Auto-scroll when reaching a heading (H2/H3)
+          if (wordSpan && wordSpan.getAttribute('data-section-type') === 'heading') {
+            const headingEl = wordSpan.closest('h2, h3, .bg-black'); // .bg-black for H2 wrapper div
+            if (headingEl) {
+              // Scroll the heading into view with some offset from top
+              headingEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }
+
+          // Skip highlighting if word is marked to skip (e.g., title words, headings)
           if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
             wordSpan.style.backgroundColor = '#fde7f4';
             wordSpan.style.padding = '2px';
