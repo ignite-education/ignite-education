@@ -898,16 +898,8 @@ const LearningHub = () => {
   useEffect(() => {
     // Wait for loading to complete and DOM to render
     if (loading || !currentLessonSections || currentLessonSections.length === 0 || !contentScrollRef.current) {
-      console.log('Observer setup skipped - missing requirements:', {
-        loading,
-        hasLessonSections: !!currentLessonSections,
-        lessonSectionsLength: currentLessonSections?.length || 0,
-        hasContentScrollRef: !!contentScrollRef.current
-      });
       return;
     }
-
-    console.log('Setting up Intersection Observer for', currentLessonSections.length, 'sections');
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -918,26 +910,29 @@ const LearningHub = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const sectionIndex = parseInt(entry.target.dataset.sectionIndex);
-            const section = currentLessonSections[sectionIndex];
-            const rect = entry.boundingClientRect;
-            const containerRect = entry.rootBounds;
+            // Verify section exists before accessing
+            if (sectionIndex >= 0 && sectionIndex < currentLessonSections.length) {
+              const section = currentLessonSections[sectionIndex];
+              const rect = entry.boundingClientRect;
+              const containerRect = entry.rootBounds;
 
-            if (!containerRect) return;
+              if (!containerRect) return;
 
-            // Only check H2 headings for suggested questions
-            const isH2 = section && section.content_type === 'heading' && section.content?.level === 2;
+              // Only check H2 headings for suggested questions
+              const isH2 = section && section.content_type === 'heading' && section.content?.level === 2;
 
-            if (isH2) {
-              // Calculate how close the H2 is to the 50% point of the viewport (midway)
-              const targetPosition = containerRect.height * 0.5;
-              const sectionTop = rect.top;
+              if (isH2) {
+                // Calculate how close the H2 is to the 50% point of the viewport (midway)
+                const targetPosition = containerRect.height * 0.5;
+                const sectionTop = rect.top;
 
-              // Only consider H2s that have reached or passed the 50% mark (midway)
-              if (sectionTop <= targetPosition) {
-                const distanceFromTarget = Math.abs(sectionTop - targetPosition);
-                if (distanceFromTarget < smallestDistance) {
-                  smallestDistance = distanceFromTarget;
-                  closestH2Index = sectionIndex;
+                // Only consider H2s that have reached or passed the 50% mark (midway)
+                if (sectionTop <= targetPosition) {
+                  const distanceFromTarget = Math.abs(sectionTop - targetPosition);
+                  if (distanceFromTarget < smallestDistance) {
+                    smallestDistance = distanceFromTarget;
+                    closestH2Index = sectionIndex;
+                  }
                 }
               }
             }
@@ -955,35 +950,38 @@ const LearningHub = () => {
 
           // Update suggested question separately (not nested in setActiveSectionIndex)
           const section = currentLessonSections[selectedH2];
-          const newQuestion = generateQuestionForSection(section);
-          const questionToSet = newQuestion || 'Can you explain this another way?';
-          setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
+          if (section) {
+            const newQuestion = generateQuestionForSection(section);
+            const questionToSet = newQuestion || 'Can you explain this another way?';
+            setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
+          }
         }
       },
       {
         root: contentScrollRef.current,
-        threshold: [0, 0.5, 1.0] // Reduced from 11 thresholds to prevent rapid firing
+        threshold: [0, 0.5, 1.0]
       }
     );
 
     // Small delay to ensure refs are populated
     const setupTimer = setTimeout(() => {
-      // Observe ALL section refs
-      const refsToObserve = sectionRefs.current.filter(ref => ref !== null);
-      console.log('Observing', refsToObserve.length, 'section refs');
-
-      refsToObserve.forEach((ref) => {
-        observer.observe(ref);
-      });
+      // Check if refs exist before filtering
+      if (sectionRefs.current) {
+        const refsToObserve = sectionRefs.current.filter(ref => ref !== null);
+        refsToObserve.forEach((ref) => {
+          observer.observe(ref);
+        });
+      }
     }, 100);
 
     return () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-    // FIX: Use .length instead of array reference to prevent infinite loop
-    // The array reference changes on every render even if data is identical
-  }, [currentLessonSections.length, currentModule, currentLesson, loading]);
+    // FIX: Removed currentLessonSections.length entirely.
+    // We only reset if the module/lesson changes or loading finishes.
+    // The loading guard ensures currentLessonSections is populated when effect runs.
+  }, [currentModule, currentLesson, loading]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
