@@ -981,7 +981,9 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-  }, [currentLessonSections, currentModule, currentLesson, loading, generateQuestionForSection]);
+    // FIX: Use .length instead of array reference to prevent infinite loop
+    // The array reference changes on every render even if data is identical
+  }, [currentLessonSections.length, currentModule, currentLesson, loading]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
