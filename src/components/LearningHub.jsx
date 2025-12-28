@@ -853,7 +853,7 @@ const LearningHub = () => {
   const renderCountRef = React.useRef(0);
   renderCountRef.current++;
 
-  if (renderCountRef.current === 25) {
+  if (renderCountRef.current === 50) {
     console.error('🔴 INFINITE LOOP DETECTED! Render count:', renderCountRef.current);
     console.log('Current state values:', {
       loading,
@@ -976,7 +976,7 @@ const LearningHub = () => {
       },
       {
         root: contentScrollRef.current,
-        threshold: 0.5, // Single threshold to reduce callback frequency
+        threshold: 0.1, // Low threshold - fire when 10% visible in top half
         rootMargin: '0px 0px -50% 0px' // Focus on upper half of viewport
       }
     );
@@ -1002,7 +1002,7 @@ const LearningHub = () => {
       }
       observer.disconnect();
     };
-  }, [currentModule, currentLesson, loading, currentLessonSections]);
+  }, [currentModule, currentLesson, loading]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
