@@ -972,8 +972,8 @@ const LearningHub = () => {
       },
       {
         root: contentScrollRef.current,
-        threshold: [0.5], // Single threshold to reduce firing
-        rootMargin: '-40% 0px -40% 0px' // Detect elements in middle 20% of viewport
+        threshold: [0, 0.25, 0.5, 0.75, 1], // Multiple thresholds for better detection
+        rootMargin: '0px 0px -50% 0px' // Focus on upper half of viewport
       }
     );
 
