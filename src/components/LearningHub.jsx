@@ -3136,7 +3136,15 @@ ${currentLessonSections.map((section) => {
                         const punct = part.match(/__([:\.,;!?])$/)?.[1] || '';
                         result = <u key={i}>{renderTextWithHighlight(innerText + punct, currentOffset, sectionIdx, true)}</u>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx, true)}</span>;
+                        // Plain text - preserve leading whitespace that would be trimmed by renderTextWithHighlight
+                        const leadingSpace = part.match(/^(\s+)/)?.[1] || '';
+                        const trimmedPart = part.trimStart();
+                        result = (
+                          <span key={i}>
+                            {leadingSpace}
+                            {trimmedPart && renderTextWithHighlight(trimmedPart, currentOffset, sectionIdx, true)}
+                          </span>
+                        );
                       }
 
                       currentOffset += totalWordCount;
@@ -3223,7 +3231,15 @@ ${currentLessonSections.map((section) => {
                         const trailingPunct = part.match(/\*([:\.,;!?])$/)?.[1] || '';
                         result = <em key={i}>{renderTextWithHighlight(innerText + trailingPunct, currentOffset, sectionIdx)}</em>;
                       } else {
-                        result = <span key={i}>{renderTextWithHighlight(part, currentOffset, sectionIdx)}</span>;
+                        // Plain text - preserve leading whitespace that would be trimmed by renderTextWithHighlight
+                        const leadingSpace = part.match(/^(\s+)/)?.[1] || '';
+                        const trimmedPart = part.trimStart();
+                        result = (
+                          <span key={i}>
+                            {leadingSpace}
+                            {trimmedPart && renderTextWithHighlight(trimmedPart, currentOffset, sectionIdx)}
+                          </span>
+                        );
                       }
 
                       currentOffset += wordCount;
