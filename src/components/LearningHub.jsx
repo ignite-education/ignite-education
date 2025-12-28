@@ -134,8 +134,6 @@ const LearningHub = () => {
   const isProgrammaticScrollRef = React.useRef(false); // Track programmatic scroll to prevent handler interference
   const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
   const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
-  const isObserverInitialCallbackRef = React.useRef(true); // Skip first observer callback to prevent render cascade
-  const observerDebounceRef = React.useRef(null); // Debounce observer state updates to prevent rapid re-renders
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -893,116 +891,81 @@ const LearningHub = () => {
   }, []);
 
 
-  // Intersection Observer to track visible sections
+  // Scroll-based section detection for suggested questions
   useEffect(() => {
-    // Wait for loading to complete and DOM to render
-    if (loading || !currentLessonSectionsRef.current || currentLessonSectionsRef.current.length === 0 || !contentScrollRef.current) {
-      return;
-    }
+    if (loading || !contentScrollRef.current) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // Use ref for stable access to sections data (avoids stale closures)
-        const sections = currentLessonSectionsRef.current;
-        if (!sections || sections.length === 0) return;
+    const sections = currentLessonSectionsRef.current;
+    if (!sections || sections.length === 0) return;
 
-        // Find the H2 heading closest to the 50% mark of the viewport
-        let closestH2Index = null;
-        let smallestDistance = Infinity;
+    const container = contentScrollRef.current;
 
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const sectionIndex = parseInt(entry.target.dataset.sectionIndex);
-            // Verify section exists before accessing
-            if (sectionIndex >= 0 && sectionIndex < sections.length) {
-              const section = sections[sectionIndex];
-              const rect = entry.boundingClientRect;
-              const containerRect = entry.rootBounds;
+    const handleScroll = () => {
+      const refs = sectionRefs.current;
+      if (!refs || refs.length === 0) return;
 
-              if (!containerRect) return;
+      const containerRect = container.getBoundingClientRect();
+      const targetY = containerRect.top + containerRect.height * 0.3; // 30% from top
 
-              // Only check H2 headings for suggested questions
-              const isH2 = section && section.content_type === 'heading' && section.content?.level === 2;
+      // Find the H2 heading closest to (but above) the target position
+      let closestH2Index = null;
+      let closestDistance = Infinity;
 
-              if (isH2) {
-                // Calculate how close the H2 is to the 50% point of the viewport (midway)
-                const targetPosition = containerRect.height * 0.5;
-                const sectionTop = rect.top;
+      refs.forEach((ref, index) => {
+        if (!ref) return;
 
-                // Only consider H2s that have reached or passed the 50% mark (midway)
-                if (sectionTop <= targetPosition) {
-                  const distanceFromTarget = Math.abs(sectionTop - targetPosition);
-                  if (distanceFromTarget < smallestDistance) {
-                    smallestDistance = distanceFromTarget;
-                    closestH2Index = sectionIndex;
-                  }
-                }
-              }
+        const section = sections[index];
+        const isH2 = section && section.content_type === 'heading' && section.content?.level === 2;
+
+        if (isH2) {
+          const rect = ref.getBoundingClientRect();
+          const sectionTop = rect.top;
+
+          // H2 must be at or above the target line
+          if (sectionTop <= targetY) {
+            const distance = targetY - sectionTop;
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestH2Index = index;
             }
           }
-        });
-
-        // Use the H2 closest to the 50% mark that has reached or passed it
-        const selectedH2 = closestH2Index;
-
-        // Skip initial callback to prevent render cascade during setup
-        if (isObserverInitialCallbackRef.current) {
-          isObserverInitialCallbackRef.current = false;
-          return;
         }
+      });
 
-        // Clear any pending debounce
-        if (observerDebounceRef.current) {
-          clearTimeout(observerDebounceRef.current);
+      // Update state if we found a different H2
+      if (closestH2Index !== null && closestH2Index !== lastProcessedH2Ref.current) {
+        lastProcessedH2Ref.current = closestH2Index;
+        setActiveSectionIndex(closestH2Index);
+
+        const section = sections[closestH2Index];
+        if (section) {
+          const newQuestion = generateQuestionForSection(section);
+          const questionToSet = newQuestion || 'Can you explain this another way?';
+          setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
         }
-
-        // Debounce state updates to prevent rapid re-renders
-        observerDebounceRef.current = setTimeout(() => {
-          // Update the active section and suggested question
-          // Only process if selectedH2 is different from the last processed value (prevents infinite loop)
-          if (selectedH2 !== null && selectedH2 !== lastProcessedH2Ref.current) {
-            lastProcessedH2Ref.current = selectedH2;
-            setActiveSectionIndex(prev => prev === selectedH2 ? prev : selectedH2);
-
-            // Update suggested question separately
-            const section = sections[selectedH2];
-            if (section) {
-              const newQuestion = generateQuestionForSection(section);
-              const questionToSet = newQuestion || 'Can you explain this another way?';
-              setSuggestedQuestion(prev => prev === questionToSet ? prev : questionToSet);
-            }
-          }
-        }, 150);
-      },
-      {
-        root: contentScrollRef.current,
-        threshold: 0.1, // Low threshold - fire when 10% visible in top half
-        rootMargin: '0px 0px -50% 0px' // Focus on upper half of viewport
       }
-    );
+    };
 
-    // Reset flag before setting up new observer - will skip first callback
-    isObserverInitialCallbackRef.current = true;
+    // Run once on mount to set initial state
+    const initTimer = setTimeout(handleScroll, 200);
 
-    // Small delay to ensure refs are populated
-    const setupTimer = setTimeout(() => {
-      // Check if refs exist before filtering
-      if (sectionRefs.current) {
-        const refsToObserve = sectionRefs.current.filter(ref => ref !== null);
-        refsToObserve.forEach((ref) => {
-          observer.observe(ref);
-        });
+    // Throttle scroll events (run at most every 100ms)
+    let lastCall = 0;
+    const throttledHandler = () => {
+      const now = Date.now();
+      if (now - lastCall >= 100) {
+        lastCall = now;
+        handleScroll();
       }
-    }, 100);
+    };
+
+    container.addEventListener('scroll', throttledHandler, { passive: true });
 
     return () => {
-      clearTimeout(setupTimer);
-      if (observerDebounceRef.current) {
-        clearTimeout(observerDebounceRef.current);
-      }
-      observer.disconnect();
+      clearTimeout(initTimer);
+      container.removeEventListener('scroll', throttledHandler);
     };
-  }, [currentModule, currentLesson, loading, currentLessonSections.length]);
+  }, [loading, currentModule, currentLesson, currentLessonSections.length, generateQuestionForSection]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
