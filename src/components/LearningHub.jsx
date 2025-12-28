@@ -3469,66 +3469,54 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     };
   }, []);
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  // Memoize lesson lock status to prevent recalculation on every render
+  const { isLessonLocked, lockReason, currentLessonToNavigate } = useMemo(() => {
+    let locked = false;
+    let reason = 'prerequisite';
+    let lessonToNavigate = null;
 
-  // Check if user is trying to access a lesson ahead of their progress
-  // Only run this check after completedLessons has been loaded to avoid false positives
-  let isLessonLocked = false;
-  let lockReason = 'prerequisite'; // 'prerequisite' or 'daily_limit'
-  let currentLessonToNavigate = null;
-
-  if (!loading && lessonsMetadata.length > 0 && completedLessons !== null) {
-    const allLessons = [...lessonsMetadata].sort((a, b) => {
-      if (a.module_number !== b.module_number) {
-        return a.module_number - b.module_number;
-      }
-      return a.lesson_number - b.lesson_number;
-    });
-
-    // FIRST: Check daily course completion limit
-    if (dailyLimitReached) {
-      console.log('🚫 LESSON LOCKED - Daily course completion limit reached (2 courses/day)');
-      isLessonLocked = true;
-      lockReason = 'daily_limit';
-      // Navigate to first lesson of current course
-      currentLessonToNavigate = allLessons[0];
-    } else {
-      // SECOND: Check if the previous lesson is completed (normal progression check)
-      const requestedLessonIndex = allLessons.findIndex(
-        lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
-      );
-
-      console.log('🔒 Lesson Lock Check:');
-      console.log('  Current Module/Lesson:', currentModule, currentLesson);
-      console.log('  Requested Lesson Index:', requestedLessonIndex);
-      console.log('  Completed Lessons:', completedLessons.map(l => `M${l.module_number}L${l.lesson_number}`).join(', '));
-
-      if (requestedLessonIndex > 0) {
-        // There is a previous lesson - check if it's completed
-        const previousLesson = allLessons[requestedLessonIndex - 1];
-        console.log('  Previous Lesson:', `M${previousLesson.module_number}L${previousLesson.lesson_number}`);
-
-        const isPreviousCompleted = isLessonCompleted(previousLesson.module_number, previousLesson.lesson_number);
-        console.log('  Is Previous Completed?', isPreviousCompleted);
-
-        if (!isPreviousCompleted) {
-          console.log('  ❌ LESSON LOCKED - previous lesson not completed');
-          isLessonLocked = true;
-          lockReason = 'prerequisite';
-          // Find the first incomplete lesson to navigate to
-          const firstIncompleteIndex = allLessons.findIndex(
-            lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
-          );
-          currentLessonToNavigate = allLessons[firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0];
-        } else {
-          console.log('  ✅ LESSON UNLOCKED - previous lesson is completed');
+    if (!loading && lessonsMetadata.length > 0 && completedLessons !== null) {
+      const allLessons = [...lessonsMetadata].sort((a, b) => {
+        if (a.module_number !== b.module_number) {
+          return a.module_number - b.module_number;
         }
+        return a.lesson_number - b.lesson_number;
+      });
+
+      if (dailyLimitReached) {
+        locked = true;
+        reason = 'daily_limit';
+        lessonToNavigate = allLessons[0];
       } else {
-        console.log('  ✅ LESSON UNLOCKED - this is the first lesson');
+        const requestedLessonIndex = allLessons.findIndex(
+          lesson => lesson.module_number === currentModule && lesson.lesson_number === currentLesson
+        );
+
+        if (requestedLessonIndex > 0) {
+          const previousLesson = allLessons[requestedLessonIndex - 1];
+          const isPreviousCompleted = completedLessons.some(
+            c => c.module_number === previousLesson.module_number && c.lesson_number === previousLesson.lesson_number
+          );
+
+          if (!isPreviousCompleted) {
+            locked = true;
+            reason = 'prerequisite';
+            const firstIncompleteIndex = allLessons.findIndex(
+              lesson => !completedLessons.some(
+                c => c.module_number === lesson.module_number && c.lesson_number === lesson.lesson_number
+              )
+            );
+            lessonToNavigate = allLessons[firstIncompleteIndex !== -1 ? firstIncompleteIndex : 0];
+          }
+        }
       }
     }
+
+    return { isLessonLocked: locked, lockReason: reason, currentLessonToNavigate: lessonToNavigate };
+  }, [loading, lessonsMetadata, completedLessons, dailyLimitReached, currentModule, currentLesson]);
+
+  if (loading) {
+    return <LoadingScreen />;
   }
 
   if (!currentLessonSections || currentLessonSections.length === 0) {
