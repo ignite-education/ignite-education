@@ -2355,7 +2355,40 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               // Find and highlight new word in DOM
               if (contentContainerRef.current) {
                 const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
-                // Skip highlighting if word is marked to skip (e.g., title words)
+
+                // Auto-scroll when reaching a heading (H2/H3)
+                if (wordSpan && wordSpan.getAttribute('data-section-type') === 'heading') {
+                  const headingEl = wordSpan.closest('h2, h3, .bg-black');
+                  if (headingEl && contentScrollRef.current && headingEl !== lastScrolledHeadingRef.current) {
+                    lastScrolledHeadingRef.current = headingEl;
+
+                    const container = contentScrollRef.current;
+                    const headingRect = headingEl.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    const targetScrollTop = headingRect.top - containerRect.top + container.scrollTop - 80;
+
+                    const startPosition = container.scrollTop;
+                    const distance = Math.max(0, targetScrollTop) - startPosition;
+                    const duration = 1200;
+                    let startTime = null;
+
+                    const easeInOutCubic = (t) => {
+                      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    };
+
+                    const animateScroll = (currentTime) => {
+                      if (!startTime) startTime = currentTime;
+                      const timeElapsed = currentTime - startTime;
+                      const progress = Math.min(timeElapsed / duration, 1);
+                      container.scrollTop = startPosition + distance * easeInOutCubic(progress);
+                      if (progress < 1) requestAnimationFrame(animateScroll);
+                    };
+
+                    requestAnimationFrame(animateScroll);
+                  }
+                }
+
+                // Skip highlighting if word is marked to skip (e.g., title words, headings)
                 if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
                   wordSpan.style.backgroundColor = '#fde7f4';
                   wordSpan.style.padding = '2px';
