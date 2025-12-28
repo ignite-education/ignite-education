@@ -647,7 +647,7 @@ const LearningHub = () => {
       if (mostVisibleCard) {
         const cardIndex = cardRefs.current.indexOf(mostVisibleCard);
         if (cardIndex !== -1) {
-          setActiveCardIndex(cardIndex);
+          setActiveCardIndex(prev => prev === cardIndex ? prev : cardIndex);
         }
       }
     }, observerOptions);
@@ -687,7 +687,7 @@ const LearningHub = () => {
           }
         });
 
-        setActiveCardIndex(mostVisibleIndex);
+        setActiveCardIndex(prev => prev === mostVisibleIndex ? prev : mostVisibleIndex);
       }
     });
 
