@@ -992,7 +992,7 @@ const LearningHub = () => {
       clearTimeout(setupTimer);
       observer.disconnect();
     };
-  }, [currentModule, currentLesson, loading, currentLessonSections]);
+  }, [currentModule, currentLesson, currentLessonSections]);
 
   const handleContinue = async () => {
     // Check if the current lesson is already completed
