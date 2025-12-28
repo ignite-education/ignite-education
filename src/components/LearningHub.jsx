@@ -130,6 +130,7 @@ const LearningHub = () => {
   const lastProcessedH2Ref = React.useRef(null); // Track last processed H2 to prevent duplicate state updates
   const hasInitializedScrollRef = React.useRef(false); // Track if scroll has been initialized (prevents infinite loop)
   const hasInitializedContainerWidthRef = React.useRef(false); // Track if container width has been initialized (prevents infinite loop)
+  const hasInitializedCardIndexRef = React.useRef(false); // Track if initial card index has been set (prevents infinite loop)
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -658,10 +659,13 @@ const LearningHub = () => {
     });
 
     // Force initial check - manually determine which card is most visible
-    // Only run after carousel is initialized to prevent overriding the correct position
+    // Only run once after carousel is initialized to prevent overriding the correct position
     requestAnimationFrame(() => {
       if (!isCarouselReady) return;
+      if (hasInitializedCardIndexRef.current) return; // Prevent running multiple times
       if (scrollContainerRef.current && cardRefs.current.length > 0) {
+        hasInitializedCardIndexRef.current = true; // Mark as initialized
+
         const scrollLeft = scrollContainerRef.current.scrollLeft;
         const containerWidth = scrollContainerRef.current.clientWidth;
 
@@ -1716,7 +1720,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Defer scroll to next frame to ensure DOM is ready
       requestAnimationFrame(() => {
         container.scrollLeft = scrollPosition;
-        setActiveCardIndex(currentLessonIndex);
+        setActiveCardIndex(prev => prev === currentLessonIndex ? prev : currentLessonIndex);
 
         // Re-enable scroll-snap after scroll is set
         requestAnimationFrame(() => {
