@@ -2153,6 +2153,21 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       const allSpans = contentContainerRef.current.querySelectorAll('[data-word-index]');
       if (allSpans.length !== wordTimestamps.length) {
         console.warn(`⚠️ Word count mismatch: Backend=${wordTimestamps.length}, Frontend=${allSpans.length}`);
+
+        // Debug: Find and log the first divergence point
+        const frontendWords = Array.from(allSpans).map(s => s.textContent);
+        const backendWords = wordTimestamps.map(t => t.word);
+
+        for (let i = 0; i < Math.max(frontendWords.length, backendWords.length); i++) {
+          if (frontendWords[i] !== backendWords[i]) {
+            console.warn(`🔍 First mismatch at index ${i}:`);
+            console.warn(`   Backend[${i}]: "${backendWords[i]}"`);
+            console.warn(`   Frontend[${i}]: "${frontendWords[i]}"`);
+            console.warn(`   Context (backend ${i-2} to ${i+2}):`, backendWords.slice(Math.max(0, i-2), i+3));
+            console.warn(`   Context (frontend ${i-2} to ${i+2}):`, frontendWords.slice(Math.max(0, i-2), i+3));
+            break;
+          }
+        }
       }
     }
 
