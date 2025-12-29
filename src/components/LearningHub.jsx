@@ -72,8 +72,6 @@ const LearningHub = () => {
   const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
   const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
-  const [didPassKnowledgeCheck, setDidPassKnowledgeCheck] = useState(false);
-  const [isFirstLessonPass, setIsFirstLessonPass] = useState(false);
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
   const [isClosingLinkedInModal, setIsClosingLinkedInModal] = useState(false);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
@@ -962,22 +960,6 @@ const LearningHub = () => {
 
   const handleKnowledgeCheckClose = () => {
     setShowKnowledgeCheck(false);
-
-    // Handle navigation/next step after knowledge check modal closes
-    if (didPassKnowledgeCheck) {
-      if (isFirstLessonPass) {
-        // Show LinkedIn modal for first lesson completion
-        console.log('🎉 Showing LinkedIn modal after knowledge check close');
-        setShowLinkedInModal(true);
-      } else {
-        // Navigate to Progress Hub for subsequent lessons
-        console.log('➡️ Navigating to Progress Hub after knowledge check close');
-        navigate('/');
-      }
-      // Reset pass state
-      setDidPassKnowledgeCheck(false);
-      setIsFirstLessonPass(false);
-    }
   };
 
   const handleOpenFlashcards = async () => {
@@ -1066,7 +1048,7 @@ const LearningHub = () => {
     console.log('🎯 handleKnowledgeCheckPass called');
     console.log('📍 Current lesson:', { module: currentModule, lesson: currentLesson });
 
-    // Mark lesson as complete - do backend work only, no navigation
+    // Mark lesson as complete
     try {
       const userId = user?.id || 'temp-user-id';
       const courseId = await getUserCourseId();
@@ -1075,13 +1057,9 @@ const LearningHub = () => {
       await markLessonComplete(userId, courseId, currentModule, currentLesson);
       console.log('✅ Lesson marked as complete in database');
 
-      // Check if this is the first lesson completed (before refreshing)
+      // Check if this is the first lesson completed
       const isFirstLesson = completedLessons.length === 0;
       console.log('🔍 Is first lesson?', isFirstLesson, '(Current completed count:', completedLessons.length, ')');
-
-      // Store pass state for navigation after modal closes
-      setDidPassKnowledgeCheck(true);
-      setIsFirstLessonPass(isFirstLesson);
 
       // Refresh completed lessons data
       try {
@@ -1149,23 +1127,32 @@ const LearningHub = () => {
         console.error('❌ Error refreshing completed lessons:', error);
       }
 
-      // Send first lesson completion email if applicable (don't block UI)
+      // Close knowledge check
+      setShowKnowledgeCheck(false);
+
+      // If this is the first lesson, store flag for congrats modal and show LinkedIn modal
       if (isFirstLesson) {
-        console.log('🎉 First lesson complete! Will show LinkedIn modal after knowledge check closes');
+        console.log('🎉 First lesson complete! Showing LinkedIn modal');
+        // Store flag to show congratulations on Progress Hub
+        localStorage.setItem('showFirstLessonCongrats', 'true');
+        setShowLinkedInModal(true);
+
+        // Send first lesson completion email (don't block UI)
         const courseName = courseId === 'product-manager' ? 'Product Manager' : 'Cybersecurity';
         const lessonName = lessons[currentLesson - 1]?.name || `Lesson ${currentLesson}`;
         sendFirstLessonEmail(userId, lessonName, courseName).catch(err =>
           console.error('Failed to send first lesson email:', err)
         );
+      } else {
+        // Otherwise navigate back to Progress Hub
+        console.log('➡️ Navigating to Progress Hub');
+        navigate('/');
       }
-
-      // Navigation will happen in handleKnowledgeCheckClose after user dismisses the modal
-      console.log('✅ Backend work complete. Waiting for user to dismiss knowledge check modal.');
-
     } catch (error) {
       console.error('❌ Error marking lesson complete:', error);
-      // On error, still allow modal to close normally - navigation will happen in handleKnowledgeCheckClose
-      setDidPassKnowledgeCheck(false);
+      // Still navigate back on error
+      setShowKnowledgeCheck(false);
+      navigate('/');
     }
   };
 

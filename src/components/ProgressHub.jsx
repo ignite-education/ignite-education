@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle, Check } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
@@ -193,6 +193,10 @@ const ProgressHub = () => {
   const [userCertificate, setUserCertificate] = useState(null);
   const [certificateGenerated, setCertificateGenerated] = useState(false);
 
+  // First lesson congratulations modal state
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const [isClosingCongratsModal, setIsClosingCongratsModal] = useState(false);
+
   // Payment modal state variables
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
@@ -239,6 +243,14 @@ const ProgressHub = () => {
       document.documentElement.style.backgroundColor = originalHtmlBg;
       document.body.style.backgroundColor = originalBodyBg;
     };
+  }, []);
+
+  // Check for first lesson congratulations flag on mount
+  useEffect(() => {
+    const shouldShowCongrats = localStorage.getItem('showFirstLessonCongrats');
+    if (shouldShowCongrats === 'true') {
+      setShowCongratsModal(true);
+    }
   }, []);
 
   // Refresh user session after successful payment
@@ -1354,6 +1366,16 @@ const ProgressHub = () => {
     setTimeout(() => {
       setShowSettingsModal(false);
       setIsClosingSettingsModal(false);
+    }, 200);
+  };
+
+  const handleCloseCongratsModal = () => {
+    setIsClosingCongratsModal(true);
+    setTimeout(() => {
+      setShowCongratsModal(false);
+      setIsClosingCongratsModal(false);
+      // Clear the localStorage flag so it doesn't show again
+      localStorage.removeItem('showFirstLessonCongrats');
     }, 200);
   };
 
@@ -3719,6 +3741,62 @@ const ProgressHub = () => {
               </div>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* First Lesson Congratulations Modal */}
+      {showCongratsModal && (
+        <div
+          className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingCongratsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
+            padding: '2rem'
+          }}
+          onClick={handleCloseCongratsModal}
+        >
+          <div
+            className="bg-white text-black relative"
+            style={{
+              animation: isClosingCongratsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              maxWidth: '400px',
+              width: '100%'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={handleCloseCongratsModal}
+              className="absolute top-4 right-4 text-gray-600 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+
+            {/* Content */}
+            <div className="flex flex-col items-center text-center">
+              {/* Green checkmark icon */}
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: '#22c55e' }}
+              >
+                <Check size={32} strokeWidth={3} style={{ color: 'white' }} />
+              </div>
+
+              <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
+              <p className="text-gray-600 mb-6">
+                You've completed your first lesson. Keep up the great work on your learning journey!
+              </p>
+
+              <button
+                onClick={handleCloseCongratsModal}
+                className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
+              >
+                Continue Learning
+              </button>
             </div>
           </div>
         </div>
