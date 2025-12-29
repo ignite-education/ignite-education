@@ -378,22 +378,13 @@ const ProgressHub = () => {
 
   // Fetch data from Supabase - wait for auth to be initialized first
   useEffect(() => {
-    console.log('🔵 [ProgressHub] fetchData useEffect triggered');
-    console.log('🔵 [ProgressHub] isInitialized:', isInitialized);
-    console.log('🔵 [ProgressHub] authUser:', authUser?.id ?? 'null');
-    console.log('🔵 [ProgressHub] loading state:', loading);
-
     if (!isInitialized) {
-      console.log('🔵 [ProgressHub] ⏳ Waiting for auth to initialize...');
       return; // Wait for auth to be ready before fetching
     }
-
-    console.log('🔵 [ProgressHub] ✅ Auth initialized, starting fetchData...');
 
     let isMounted = true;
 
     const loadData = async () => {
-      console.log('🔵 [ProgressHub] loadData called, isMounted:', isMounted);
       if (isMounted) {
         await fetchData();
       }
@@ -543,16 +534,8 @@ const ProgressHub = () => {
 
   const fetchData = async () => {
     try {
-      console.log('🟢 [fetchData] ========== STARTING fetchData ==========');
-      console.log('🟢 [fetchData] Timestamp:', new Date().toISOString());
-      console.log('🟢 [fetchData] authUser?.id:', authUser?.id ?? 'null');
-      console.log('🟢 [fetchData] isInitialized:', isInitialized);
-
-      // Use authUser from context - already validated by onAuthStateChange
-      // DO NOT call supabase.auth.getSession() here - it hangs with hybrid storage adapter
       const userId = authUser?.id;
       if (!userId) {
-        console.log('🟢 [fetchData] No authUser, skipping authenticated queries');
         setLoading(false);
         return;
       }
@@ -561,59 +544,19 @@ const ProgressHub = () => {
       let courseId = 'product-manager'; // Default fallback
       let fetchedCourseData = null; // Store course data for later use
 
-      console.log('🟢 [fetchData] userId for query:', userId ?? 'null');
-
       if (userId) {
-        console.log('🟢 [fetchData] Starting Supabase user query...');
-        console.log('🟢 [fetchData] Supabase client exists:', !!supabase);
-        console.log('🟢 [fetchData] Supabase.from exists:', typeof supabase?.from);
-        const queryStartTime = Date.now();
-
-        // Create the query builder
-        console.log('🟢 [fetchData] Creating query builder...');
-        const queryBuilder = supabase.from('users').select('enrolled_course').eq('id', userId);
-        console.log('🟢 [fetchData] Query builder created, calling .single()...');
-
-        // Wrap in Promise.race with timeout to detect hanging
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => {
-            console.error('🔴 [fetchData] QUERY TIMEOUT after 10 seconds!');
-            reject(new Error('Query timeout after 10 seconds'));
-          }, 10000);
-        });
-
-        let userData, userError;
-        try {
-          console.log('🟢 [fetchData] Executing query with 10s timeout...');
-          const result = await Promise.race([
-            queryBuilder.single(),
-            timeoutPromise
-          ]);
-          userData = result.data;
-          userError = result.error;
-          console.log('🟢 [fetchData] Query resolved successfully');
-        } catch (timeoutErr) {
-          console.error('🔴 [fetchData] Query failed or timed out:', timeoutErr.message);
-          userError = timeoutErr;
-        }
-
-        console.log('🟢 [fetchData] User query completed in', Date.now() - queryStartTime, 'ms');
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', userId)
+          .single();
 
         if (userError) {
-          console.error('❌ [fetchData] User query error:', userError.message, userError);
-          // If query timed out, use default and continue (don't block the rest of the page)
-          console.log('⚠️ [fetchData] Using default course due to error:', courseId);
+          console.error('[fetchData] User query error:', userError.message);
         } else if (userData?.enrolled_course) {
           courseId = userData.enrolled_course;
-          console.log('✅ [fetchData] User enrolled in course:', courseId);
-        } else {
-          console.log('⚠️ [fetchData] No enrolled_course found, using default:', courseId);
         }
-      } else {
-        console.log('🟡 [fetchData] No userId available, skipping user query');
       }
-
-      console.log('🟢 [fetchData] Proceeding with courseId:', courseId);
 
       // Fetch course data including tutor information
       try {
