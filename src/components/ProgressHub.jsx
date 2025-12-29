@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle, Check } from 'lucide-react';
+import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
@@ -1377,6 +1377,12 @@ const ProgressHub = () => {
       // Clear the localStorage flag so it doesn't show again
       localStorage.removeItem('showFirstLessonCongrats');
     }, 200);
+  };
+
+  const handleAddToLinkedIn = () => {
+    const linkedInUrl = 'https://www.linkedin.com/in/me/edit/forms/education/new/';
+    window.open(linkedInUrl, '_blank');
+    handleCloseCongratsModal();
   };
 
   const handleManageSubscription = async () => {
@@ -3749,54 +3755,76 @@ const ProgressHub = () => {
       {/* First Lesson Congratulations Modal */}
       {showCongratsModal && (
         <div
-          className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm"
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
-            animation: isClosingCongratsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
-            padding: '2rem'
+            animation: isClosingCongratsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
           }}
           onClick={handleCloseCongratsModal}
         >
-          <div
-            className="bg-white text-black relative"
-            style={{
-              animation: isClosingCongratsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
-              borderRadius: '0.5rem',
-              padding: '2rem',
-              maxWidth: '400px',
-              width: '100%'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close button */}
-            <button
-              onClick={handleCloseCongratsModal}
-              className="absolute top-4 right-4 text-gray-600 hover:text-black"
+          <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
+            {/* Modal Card - Entire card is clickable */}
+            <div
+              className="bg-white text-black relative cursor-pointer hover:opacity-95 transition"
+              style={{
+                animation: isClosingCongratsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                padding: '2rem',
+                position: 'relative',
+                zIndex: 9999
+              }}
+              onClick={handleAddToLinkedIn}
             >
-              <X size={24} />
-            </button>
-
-            {/* Content */}
-            <div className="flex flex-col items-center text-center">
-              {/* Green checkmark icon */}
-              <div
-                className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-                style={{ backgroundColor: '#22c55e' }}
-              >
-                <Check size={32} strokeWidth={3} style={{ color: 'white' }} />
-              </div>
-
-              <h2 className="text-2xl font-bold mb-2">Congratulations!</h2>
-              <p className="text-gray-600 mb-6">
-                You've completed your first lesson. Keep up the great work on your learning journey!
-              </p>
-
+              {/* Close button */}
               <button
-                onClick={handleCloseCongratsModal}
-                className="w-full py-3 bg-black text-white font-semibold rounded-lg hover:bg-gray-800 transition"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseCongratsModal();
+                }}
+                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
               >
-                Continue Learning
+                <X size={24} />
               </button>
+
+              {/* Content */}
+              <div className="text-center">
+                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
+                  Congratulations, you've completed your first lesson.
+                </p>
+                <p className="text-black mb-6">
+                  Add to your LinkedIn to showcase your progress<br />
+                  and we'll send you a free Ignite Tote Bag.
+                </p>
+
+                {/* Image */}
+                <div className="mb-6 flex justify-center">
+                  <img
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-16%20at%2022.16.20.png"
+                    alt="Add to LinkedIn"
+                    className="h-auto rounded-lg"
+                    style={{ width: '85%' }}
+                  />
+                </div>
+
+                {/* Add to LinkedIn Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToLinkedIn();
+                  }}
+                  className="w-full text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#EF0B72' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D90A65'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+                >
+                  Add to
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
+                    alt="LinkedIn"
+                    style={{ height: '18px', marginLeft: '-2px' }}
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </div>
