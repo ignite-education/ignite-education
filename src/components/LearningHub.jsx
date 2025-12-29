@@ -36,13 +36,25 @@ const LearningHub = () => {
   const getUserCourseId = async () => {
     if (!user?.id) return 'product-manager'; // Default fallback
 
-    const { data: userData } = await supabase
-      .from('users')
-      .select('enrolled_course')
-      .eq('id', user.id)
-      .single();
+    try {
+      // Add timeout to prevent hanging on slow Supabase queries
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('getUserCourseId timed out')), 10000);
+      });
 
-    return userData?.enrolled_course || 'product-manager';
+      const queryPromise = supabase
+        .from('users')
+        .select('enrolled_course')
+        .eq('id', user.id)
+        .single();
+
+      const { data: userData } = await Promise.race([queryPromise, timeoutPromise]);
+      console.log('📝 getUserCourseId result:', userData?.enrolled_course || 'product-manager');
+      return userData?.enrolled_course || 'product-manager';
+    } catch (error) {
+      console.error('❌ getUserCourseId error:', error.message);
+      return 'product-manager'; // Default fallback on error
+    }
   };
   const [loading, setLoading] = useState(true);
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -2503,7 +2515,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
   }, [loading, lessonsMetadata, completedLessons, dailyLimitReached, currentModule, currentLesson]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen autoRefresh={true} autoRefreshDelay={45000} />;
   }
 
   if (!currentLessonSections || currentLessonSections.length === 0) {
