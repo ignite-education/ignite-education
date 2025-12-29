@@ -556,24 +556,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex flex-col min-h-full justify-end">
-            {chatMessages.map((msg, idx) => {
-              // Calculate spacing: more space around user messages for visual separation
-              const isUserMessage = msg.type === 'user';
-              const prevIsAssistant = idx > 0 && chatMessages[idx - 1]?.type === 'assistant';
-              const nextIsAssistant = idx < chatMessages.length - 1 && chatMessages[idx + 1]?.type === 'assistant';
-
-              // Add top margin when user message follows assistant message
-              const marginTop = isUserMessage && prevIsAssistant ? '1rem' : '0';
-              // Add bottom margin when user message precedes assistant message
-              const marginBottom = idx < chatMessages.length - 1
-                ? (isUserMessage && nextIsAssistant ? '1rem' : '0.5rem')
-                : '0';
-
-              return (
+            {chatMessages.map((msg, idx) => (
               <div
                 key={idx}
                 className={msg.type === 'user' ? 'flex justify-end' : ''}
-                style={{ marginTop, marginBottom }}
+                style={{ marginBottom: idx < chatMessages.length - 1 ? '0.75rem' : '0' }}
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
@@ -690,8 +677,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   </div>
                 )}
               </div>
-              );
-            })}
+            ))}
 
             {isEvaluating && (
               <div style={{ marginTop: '1rem' }}>
