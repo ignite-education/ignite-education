@@ -3280,7 +3280,7 @@ const ProgressHub = () => {
                                 return (
                                   <div key={comment.id}>
                                     <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs text-white">{commentAuthor}</span>
+                                      <span className="text-xs text-white font-semibold">{commentAuthor}</span>
                                       <span className="text-xs text-white">• {timeAgo}</span>
                                     </div>
                                     <p className="text-xs text-white">{comment.content}</p>
