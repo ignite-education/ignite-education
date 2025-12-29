@@ -274,43 +274,17 @@ const ProgressHub = () => {
         console.log('⏰ Timestamp:', new Date().toISOString());
         console.log('🔑 Session ID:', hasSessionId);
         console.log('🏁 Pending refresh:', hasPendingRefresh);
-        console.log('⏳ Waiting 3 seconds for webhook to process...');
 
-        // Wait 3 seconds to ensure webhook has time to update user metadata
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Clear the localStorage flag immediately to prevent repeated triggers
+        localStorage.removeItem('pendingPaymentRefresh');
 
-        console.log('🔄 Calling supabase.auth.refreshSession()...');
+        // Remove the query parameters to prevent repeated refreshes
+        window.history.replaceState({}, '', window.location.pathname);
 
-        try {
-          const { data, error } = await supabase.auth.refreshSession();
-
-          if (error) {
-            console.error('❌ Session refresh FAILED');
-            console.error('❌ Error:', error.message);
-            console.error('❌ Error details:', JSON.stringify(error, null, 2));
-            return;
-          }
-
-          console.log('✅ Session refreshed successfully');
-          console.log('👤 User data:', JSON.stringify(data.session?.user, null, 2));
-          console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
-          console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
-
-          // Clear the localStorage flag to prevent repeated refreshes
-          localStorage.removeItem('pendingPaymentRefresh');
-
-          // Remove the query parameters to prevent repeated refreshes
-          window.history.replaceState({}, '', window.location.pathname);
-
-          // Note: No page reload needed - the auth context will automatically update
-          // when the session is refreshed, causing components to re-render with new user data
-          console.log('✅ Payment processed successfully without page reload');
-
-        } catch (err) {
-          console.error('❌ Exception during session refresh');
-          console.error('❌ Error:', err.message);
-          console.error('❌ Stack:', err.stack);
-        }
+        // DO NOT call supabase.auth.refreshSession() - it hangs with the hybrid storage adapter
+        // Instead, just let the page load normally. The user metadata will be fetched fresh
+        // from the database when needed. If we need to force a session update, do a page reload.
+        console.log('✅ Payment flag cleared. User metadata will be fetched from database.');
       }
     };
 
