@@ -563,17 +563,29 @@ const ProgressHub = () => {
       let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('enrolled_course')
-          .eq('id', userId)
-          .single();
+        try {
+          // Add timeout to prevent hanging on slow Supabase queries
+          const userQueryPromise = supabase
+            .from('users')
+            .select('enrolled_course')
+            .eq('id', userId)
+            .single();
 
-        if (userData?.enrolled_course) {
-          courseId = userData.enrolled_course;
-          console.log('✅ User enrolled in course:', courseId);
-        } else {
-          console.log('⚠️ No enrolled_course found, using default:', courseId);
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('User query timed out')), 10000)
+          );
+
+          const { data: userData } = await Promise.race([userQueryPromise, timeoutPromise]);
+
+          if (userData?.enrolled_course) {
+            courseId = userData.enrolled_course;
+            console.log('✅ User enrolled in course:', courseId);
+          } else {
+            console.log('⚠️ No enrolled_course found, using default:', courseId);
+          }
+        } catch (error) {
+          console.error('❌ User query error:', error.message);
+          console.log('⚠️ Using default course:', courseId);
         }
       }
 
