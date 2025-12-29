@@ -29,32 +29,26 @@ const HIGHLIGHT_LAG_OFFSET = 0;
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { firstName, lastName, user, isAdFree, userRole } = useAuth();
+  const { firstName, lastName, user, isAdFree, userRole, isInitialized } = useAuth();
   const { lottieData } = useAnimation();
 
   // Helper function to get user's enrolled course
   const getUserCourseId = async () => {
     if (!user?.id) return 'product-manager'; // Default fallback
 
-    try {
-      // Add timeout to prevent hanging on slow Supabase queries
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('getUserCourseId timed out')), 10000);
-      });
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('enrolled_course')
+      .eq('id', user.id)
+      .single();
 
-      const queryPromise = supabase
-        .from('users')
-        .select('enrolled_course')
-        .eq('id', user.id)
-        .single();
-
-      const { data: userData } = await Promise.race([queryPromise, timeoutPromise]);
-      console.log('📝 getUserCourseId result:', userData?.enrolled_course || 'product-manager');
-      return userData?.enrolled_course || 'product-manager';
-    } catch (error) {
+    if (error) {
       console.error('❌ getUserCourseId error:', error.message);
-      return 'product-manager'; // Default fallback on error
+      return 'product-manager';
     }
+
+    console.log('📝 getUserCourseId result:', userData?.enrolled_course || 'product-manager');
+    return userData?.enrolled_course || 'product-manager';
   };
   const [loading, setLoading] = useState(true);
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -155,13 +149,16 @@ const LearningHub = () => {
   const [dailyLimitReached, setDailyLimitReached] = useState(false);
   const [nextAvailableDate, setNextAvailableDate] = useState('');
 
+  // Fetch lesson data - wait for auth to be initialized first
   useEffect(() => {
+    if (!isInitialized) return; // Wait for auth to be ready before fetching
+
     fetchLessonData();
     // Start typing animation for initial greeting message with a slight delay
     setTimeout(() => {
       setTypingMessageIndex(0);
     }, 2500);
-  }, []);
+  }, [isInitialized]);
 
   // Set Safari theme color to black for this page
   useEffect(() => {

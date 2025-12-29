@@ -97,7 +97,7 @@ const ProgressHub = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { firstName, user: authUser, isAdFree, signOut, updateProfile } = useAuth();
+  const { firstName, user: authUser, isAdFree, signOut, updateProfile, isInitialized } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
@@ -402,8 +402,10 @@ const ProgressHub = () => {
     checkRedditAuth();
   }, []);
 
-  // Fetch data from Supabase
+  // Fetch data from Supabase - wait for auth to be initialized first
   useEffect(() => {
+    if (!isInitialized) return; // Wait for auth to be ready before fetching
+
     let isMounted = true;
 
     const loadData = async () => {
@@ -417,7 +419,7 @@ const ProgressHub = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [isInitialized]);
 
   // Refetch completed lessons when returning to ProgressHub
   useEffect(() => {
@@ -563,29 +565,19 @@ const ProgressHub = () => {
       let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
-        try {
-          // Add timeout to prevent hanging on slow Supabase queries
-          const userQueryPromise = supabase
-            .from('users')
-            .select('enrolled_course')
-            .eq('id', userId)
-            .single();
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', userId)
+          .single();
 
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('User query timed out')), 10000)
-          );
-
-          const { data: userData } = await Promise.race([userQueryPromise, timeoutPromise]);
-
-          if (userData?.enrolled_course) {
-            courseId = userData.enrolled_course;
-            console.log('✅ User enrolled in course:', courseId);
-          } else {
-            console.log('⚠️ No enrolled_course found, using default:', courseId);
-          }
-        } catch (error) {
-          console.error('❌ User query error:', error.message);
-          console.log('⚠️ Using default course:', courseId);
+        if (userError) {
+          console.error('❌ User query error:', userError.message);
+        } else if (userData?.enrolled_course) {
+          courseId = userData.enrolled_course;
+          console.log('✅ User enrolled in course:', courseId);
+        } else {
+          console.log('⚠️ No enrolled_course found, using default:', courseId);
         }
       }
 
