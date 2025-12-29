@@ -33,17 +33,14 @@ const LearningHub = () => {
   const { lottieData } = useAnimation();
 
   // Helper function to get user's enrolled course
+  // DO NOT call supabase.auth.getSession() - it hangs with hybrid storage adapter
   const getUserCourseId = async () => {
-    // Get session from Supabase client to ensure we have valid auth
-    const { data: { session } } = await supabase.auth.getSession();
-    const userId = session?.user?.id || user?.id;
-
-    if (!userId) return 'product-manager'; // Default fallback
+    if (!user?.id) return 'product-manager'; // Default fallback
 
     const { data: userData, error } = await supabase
       .from('users')
       .select('enrolled_course')
-      .eq('id', userId)
+      .eq('id', user.id)
       .single();
 
     if (error) {
@@ -683,18 +680,15 @@ const LearningHub = () => {
     try {
       console.log('🔄 Starting fetchLessonData...');
 
-      // Ensure Supabase client has the session before making authenticated queries
-      console.log('🟢 [fetchLessonData] Verifying Supabase session...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('🟢 [fetchLessonData] Session check result:', session?.user?.id ?? 'no session', sessionError ? `Error: ${sessionError.message}` : 'no error');
-
-      if (!session?.user) {
-        console.log('🟢 [fetchLessonData] No active Supabase session, skipping authenticated queries');
+      // Use user from context - already validated by onAuthStateChange
+      // DO NOT call supabase.auth.getSession() - it hangs with hybrid storage adapter
+      const userId = user?.id;
+      if (!userId) {
+        console.log('🟢 [fetchLessonData] No user, skipping authenticated queries');
         setLoading(false);
         return;
       }
 
-      const userId = session.user.id; // Use session user ID for consistency
       const courseId = await getUserCourseId();
 
       console.log('📝 Using userId:', userId, 'courseId:', courseId);

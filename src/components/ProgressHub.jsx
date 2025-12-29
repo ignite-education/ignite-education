@@ -574,21 +574,16 @@ const ProgressHub = () => {
       console.log('🟢 [fetchData] authUser?.id:', authUser?.id ?? 'null');
       console.log('🟢 [fetchData] isInitialized:', isInitialized);
 
-      // Ensure Supabase client has the session before making authenticated queries
-      // This is necessary because React state updates (isInitialized) may happen
-      // before Supabase's internal client session is fully synced
-      console.log('🟢 [fetchData] Verifying Supabase session...');
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      console.log('🟢 [fetchData] Session check result:', session?.user?.id ?? 'no session', sessionError ? `Error: ${sessionError.message}` : 'no error');
-
-      if (!session?.user) {
-        console.log('🟢 [fetchData] No active Supabase session, skipping authenticated queries');
+      // Use authUser from context - already validated by onAuthStateChange
+      // DO NOT call supabase.auth.getSession() here - it hangs with hybrid storage adapter
+      const userId = authUser?.id;
+      if (!userId) {
+        console.log('🟢 [fetchData] No authUser, skipping authenticated queries');
         setLoading(false);
         return;
       }
 
       // Fetch user's enrolled course from database
-      const userId = session.user.id; // Use session user ID for consistency
       let courseId = 'product-manager'; // Default fallback
       let fetchedCourseData = null; // Store course data for later use
 
