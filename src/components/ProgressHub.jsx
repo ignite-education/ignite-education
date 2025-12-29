@@ -975,8 +975,7 @@ const ProgressHub = () => {
 
       // Post to Reddit using the post subreddit
       console.log('📤 Posting to Reddit...');
-      const contextLine = `\n\nFor context, I'm on the ${user.enrolledCourse} course at [Ignite](https://ignite.education).`;
-      const redditContent = newPost.content + contextLine;
+      const redditContent = newPost.content;
 
       // Use postChannel if available, fallback to channel
       const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
