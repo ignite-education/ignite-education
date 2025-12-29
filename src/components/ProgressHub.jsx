@@ -378,15 +378,24 @@ const ProgressHub = () => {
 
   // Fetch data from Supabase - wait for auth to be initialized first
   useEffect(() => {
+    console.log('🔵 [ProgressHub] fetchData useEffect triggered');
+    console.log('🔵 [ProgressHub] isInitialized:', isInitialized);
+    console.log('🔵 [ProgressHub] authUser:', authUser?.id ?? 'null');
+
     if (!isInitialized) {
+      console.log('🔵 [ProgressHub] ⏳ Waiting for auth to initialize...');
       return; // Wait for auth to be ready before fetching
     }
+
+    console.log('🔵 [ProgressHub] ✅ Auth initialized, calling fetchData...');
 
     let isMounted = true;
 
     const loadData = async () => {
+      console.log('🔵 [ProgressHub] loadData called, isMounted:', isMounted);
       if (isMounted) {
         await fetchData();
+        console.log('🔵 [ProgressHub] fetchData completed');
       }
     };
 
@@ -533,28 +542,43 @@ const ProgressHub = () => {
 
 
   const fetchData = async () => {
+    console.log('🟢 [fetchData] ========== STARTING fetchData ==========');
+    console.log('🟢 [fetchData] Timestamp:', new Date().toISOString());
+    console.log('🟢 [fetchData] authUser?.id:', authUser?.id ?? 'null');
+
     try {
       const userId = authUser?.id;
       if (!userId) {
+        console.log('🟢 [fetchData] No userId, setting loading=false and returning');
         setLoading(false);
         return;
       }
+
+      console.log('🟢 [fetchData] userId:', userId);
 
       // Fetch user's enrolled course from database
       let courseId = 'product-manager'; // Default fallback
       let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
+        console.log('🟢 [fetchData] Starting users table query...');
+        const queryStartTime = Date.now();
+
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('enrolled_course')
           .eq('id', userId)
           .single();
 
+        console.log('🟢 [fetchData] Users query completed in', Date.now() - queryStartTime, 'ms');
+
         if (userError) {
-          console.error('[fetchData] User query error:', userError.message);
+          console.error('🔴 [fetchData] User query error:', userError.message);
         } else if (userData?.enrolled_course) {
           courseId = userData.enrolled_course;
+          console.log('🟢 [fetchData] Got enrolled_course:', courseId);
+        } else {
+          console.log('🟡 [fetchData] No enrolled_course found, using default:', courseId);
         }
       }
 
