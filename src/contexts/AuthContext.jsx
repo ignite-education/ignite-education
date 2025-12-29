@@ -93,48 +93,21 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Timeout handler - use session from listener if available
+    // Timeout handler - fallback if onAuthStateChange doesn't fire
+    // DO NOT call supabase.auth.getSession() - it hangs with the hybrid storage adapter
+    // and poisons all subsequent Supabase client operations
     loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
-      console.warn('[AuthContext] Auth session check timed out after 5 seconds');
+      console.warn('[AuthContext] Auth initialization timed out after 5 seconds');
       console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
 
-      // Check if onAuthStateChange already gave us a session
+      // Use session from listener if available, otherwise assume no user
       if (sessionFromListener?.user) {
         safeInitialize(sessionFromListener, 'timeout-with-listener-session');
       } else {
         safeInitialize(null, 'timeout-no-session');
       }
-    }, 5000); // 5 seconds - reduced from 30s since we use localStorage first
-
-    // Try getSession as backup (may hang on some browsers/conditions)
-    console.log('[AuthContext] Calling getSession...');
-    supabase.auth.getSession()
-      .then(({ data: { session } }) => {
-        if (!isSubscribed) return;
-        console.log('[AuthContext] getSession resolved:', session?.user?.id ?? 'no user');
-        clearTimeout(loadingTimeout);
-
-        // Only use getSession result if listener hasn't already initialized
-        if (!sessionFromListener?.user) {
-          safeInitialize(session, 'getSession');
-        } else {
-          // Listener already handled it, just mark as initialized
-          safeInitialize(sessionFromListener, 'getSession-with-listener-session');
-        }
-      })
-      .catch((error) => {
-        if (!isSubscribed) return;
-        clearTimeout(loadingTimeout);
-        console.error('[AuthContext] Error getting session:', error);
-
-        // Use listener session if available, otherwise no user
-        if (sessionFromListener?.user) {
-          safeInitialize(sessionFromListener, 'getSession-error-with-listener-session');
-        } else {
-          safeInitialize(null, 'getSession-error');
-        }
-      });
+    }, 5000);
 
     return () => {
       isSubscribed = false;
