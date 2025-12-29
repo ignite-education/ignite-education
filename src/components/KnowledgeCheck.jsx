@@ -642,7 +642,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
                               if (boldEnd === -1) {
                                 // No closing ** yet (typing in progress) - render as bold without the **
-                                result.push(<strong key={key++} className="font-semibold">{afterStart}</strong>);
+                                // Strip trailing * to avoid flash when typing the closing **
+                                const textToShow = afterStart.endsWith('*') ? afterStart.slice(0, -1) : afterStart;
+                                result.push(<strong key={key++} className="font-semibold">{textToShow}</strong>);
                                 break;
                               } else {
                                 // Complete bold section
