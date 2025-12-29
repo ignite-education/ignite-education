@@ -404,11 +404,22 @@ const ProgressHub = () => {
 
   // Fetch data from Supabase - wait for auth to be initialized first
   useEffect(() => {
-    if (!isInitialized) return; // Wait for auth to be ready before fetching
+    console.log('🔵 [ProgressHub] fetchData useEffect triggered');
+    console.log('🔵 [ProgressHub] isInitialized:', isInitialized);
+    console.log('🔵 [ProgressHub] authUser:', authUser?.id ?? 'null');
+    console.log('🔵 [ProgressHub] loading state:', loading);
+
+    if (!isInitialized) {
+      console.log('🔵 [ProgressHub] ⏳ Waiting for auth to initialize...');
+      return; // Wait for auth to be ready before fetching
+    }
+
+    console.log('🔵 [ProgressHub] ✅ Auth initialized, starting fetchData...');
 
     let isMounted = true;
 
     const loadData = async () => {
+      console.log('🔵 [ProgressHub] loadData called, isMounted:', isMounted);
       if (isMounted) {
         await fetchData();
       }
@@ -417,6 +428,7 @@ const ProgressHub = () => {
     loadData();
 
     return () => {
+      console.log('🔵 [ProgressHub] useEffect cleanup, setting isMounted=false');
       isMounted = false;
     };
   }, [isInitialized]);
@@ -557,28 +569,40 @@ const ProgressHub = () => {
 
   const fetchData = async () => {
     try {
-      console.log('🔄 Starting fetchData...');
+      console.log('🟢 [fetchData] ========== STARTING fetchData ==========');
+      console.log('🟢 [fetchData] Timestamp:', new Date().toISOString());
+      console.log('🟢 [fetchData] authUser?.id:', authUser?.id ?? 'null');
+      console.log('🟢 [fetchData] isInitialized:', isInitialized);
 
       // Fetch user's enrolled course from database
       const userId = authUser?.id;
       let courseId = 'product-manager'; // Default fallback
       let fetchedCourseData = null; // Store course data for later use
 
+      console.log('🟢 [fetchData] userId for query:', userId ?? 'null');
+
       if (userId) {
+        console.log('🟢 [fetchData] Starting Supabase user query...');
+        const queryStartTime = Date.now();
+
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('enrolled_course')
           .eq('id', userId)
           .single();
 
+        console.log('🟢 [fetchData] User query completed in', Date.now() - queryStartTime, 'ms');
+
         if (userError) {
-          console.error('❌ User query error:', userError.message);
+          console.error('❌ [fetchData] User query error:', userError.message, userError);
         } else if (userData?.enrolled_course) {
           courseId = userData.enrolled_course;
-          console.log('✅ User enrolled in course:', courseId);
+          console.log('✅ [fetchData] User enrolled in course:', courseId);
         } else {
-          console.log('⚠️ No enrolled_course found, using default:', courseId);
+          console.log('⚠️ [fetchData] No enrolled_course found, using default:', courseId);
         }
+      } else {
+        console.log('🟡 [fetchData] No userId available, skipping user query');
       }
 
       // Fetch course data including tutor information

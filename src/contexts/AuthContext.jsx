@@ -31,13 +31,23 @@ export const AuthProvider = ({ children }) => {
 
     // Helper to safely initialize (prevents double initialization)
     const safeInitialize = (session, source) => {
-      if (!isSubscribed || hasInitialized) return;
+      console.log(`🔴 [AuthContext] safeInitialize called from: ${source}`);
+      console.log(`🔴 [AuthContext] isSubscribed: ${isSubscribed}, hasInitialized: ${hasInitialized}`);
+
+      if (!isSubscribed || hasInitialized) {
+        console.log(`🔴 [AuthContext] safeInitialize SKIPPED - already initialized or unsubscribed`);
+        return;
+      }
       hasInitialized = true;
-      if (loadingTimeout) clearTimeout(loadingTimeout); // Clear timeout as soon as any initialization path succeeds
-      console.log(`[AuthContext] Initializing from ${source}:`, session?.user?.id ?? 'no user');
+      if (loadingTimeout) {
+        console.log(`🔴 [AuthContext] Clearing loadingTimeout`);
+        clearTimeout(loadingTimeout);
+      }
+      console.log(`🔴 [AuthContext] ✅ Setting isInitialized=TRUE, user:`, session?.user?.id ?? 'no user');
       setUser(session?.user ?? null);
       setLoading(false);
       setIsInitialized(true);
+      console.log(`🔴 [AuthContext] ✅ Auth initialization COMPLETE`);
     };
 
     // Set up auth state listener FIRST (before getSession)

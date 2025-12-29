@@ -178,19 +178,30 @@ const ProtectedRoute = ({ children }) => {
     }
   };
 
+  // Debug logging for render decisions
+  console.log('🟣 [ProtectedRoute] Render check:');
+  console.log('🟣 [ProtectedRoute] isInitialized:', isInitialized);
+  console.log('🟣 [ProtectedRoute] onboardingLoading:', onboardingLoading);
+  console.log('🟣 [ProtectedRoute] user:', user?.id ?? 'null');
+  console.log('🟣 [ProtectedRoute] needsOnboarding:', needsOnboarding);
+
   // Wait for auth to be initialized first
   if (!isInitialized || onboardingLoading) {
+    console.log('🟣 [ProtectedRoute] ⏳ Showing LoadingScreen - isInitialized:', isInitialized, 'onboardingLoading:', onboardingLoading);
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={45000} />;
   }
 
   if (!user) {
+    console.log('🟣 [ProtectedRoute] ❌ No user, redirecting to /welcome');
     return <Navigate to="/welcome" replace />;
   }
 
   if (needsOnboarding) {
+    console.log('🟣 [ProtectedRoute] 📝 Showing Onboarding');
     return <Onboarding firstName={firstName || user.user_metadata?.first_name || 'there'} userId={user.id} />;
   }
 
+  console.log('🟣 [ProtectedRoute] ✅ Rendering children');
   return children;
 };
 
