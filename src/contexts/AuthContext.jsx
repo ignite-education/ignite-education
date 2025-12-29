@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
 
     // Timeout handler - fallback if onAuthStateChange doesn't fire quickly
     // For unauthenticated users, onAuthStateChange may not fire immediately
-    // 500ms is enough time for Supabase to detect an existing session
+    // 200ms is enough time for Supabase to detect an existing session
     loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
       console.log('[AuthContext] Auth initialization timeout - no session detected');
@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         safeInitialize(null, 'timeout-no-session');
       }
-    }, 500);
+    }, 200);
 
     return () => {
       isSubscribed = false;
