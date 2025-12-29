@@ -3789,32 +3789,13 @@ const ProgressHub = () => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-medium text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
+                <p className="text-black font-semibold text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
                   Congratulations {user.firstName}, you've completed your first lesson!
                 </p>
                 <p className="text-black mb-6">
-                  Add to your LinkedIn to showcase your progress<br />
-                  and we'll send you a free Ignite Tote Bag.
+                  Celebrate your progress by adding to LinkedIn.<br />
+                  Profiles with certifications get 6x more profile views than those without.
                 </p>
-
-                {/* Image */}
-                <div className="mb-6 flex justify-center">
-                  <a
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleAddToLinkedIn();
-                    }}
-                  >
-                    <img
-                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-16%20at%2022.16.20.png"
-                      alt="Add to LinkedIn"
-                      className="h-auto rounded-lg cursor-pointer hover:opacity-90 transition"
-                      style={{ width: '85%' }}
-                    />
-                  </a>
-                </div>
 
                 {/* Add to LinkedIn Button */}
                 <button
