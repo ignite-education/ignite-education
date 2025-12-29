@@ -80,16 +80,14 @@ export const AuthProvider = ({ children }) => {
         window.history.replaceState(null, '', window.location.pathname + window.location.search);
       }
 
-      // Update last_active_at on sign in
+      // Update last_active_at on sign in (fire-and-forget - don't block auth initialization)
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        try {
-          await supabase
-            .from('users')
-            .update({ last_active_at: new Date().toISOString() })
-            .eq('id', session.user.id);
-        } catch (err) {
-          console.error('Failed to update last_active_at:', err);
-        }
+        supabase
+          .from('users')
+          .update({ last_active_at: new Date().toISOString() })
+          .eq('id', session.user.id)
+          .then(() => console.log('[AuthContext] Updated last_active_at'))
+          .catch(err => console.error('[AuthContext] Failed to update last_active_at:', err));
       }
     });
 
