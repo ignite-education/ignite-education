@@ -504,10 +504,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     askNextQuestion();
   };
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     if (score >= PASS_THRESHOLD && !hasCalledOnPassRef.current) {
       hasCalledOnPassRef.current = true;
-      onPass();
+      await onPass();
       handleClose();
     }
   };
