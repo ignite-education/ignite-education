@@ -2998,7 +2998,7 @@ const ProgressHub = () => {
                 <button className="hover:text-[#EF0B72] transition" onClick={handleOpenSettings}>Settings</button>
                 <button
                   className="hover:text-[#EF0B72] transition"
-                  onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.firstName} ${user.lastName}&body=My Ignite Account is ${user.email}`}
+                  onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.email}`}
                 >
                   Support
                 </button>
@@ -3253,7 +3253,7 @@ const ProgressHub = () => {
 
                           {/* Scrollable comments area - max 3 visible */}
                           <div
-                            className="space-y-3 overflow-y-auto"
+                            className="space-y-3 overflow-y-auto overflow-x-hidden"
                             style={{
                               maxHeight: postComments[post.id] === 'AUTH_REQUIRED' ? '60px' : '200px', // Reduce height for auth required
                               scrollbarWidth: 'thin',
@@ -3283,7 +3283,7 @@ const ProgressHub = () => {
                                       <span className="text-xs text-white font-semibold">{commentAuthor}</span>
                                       <span className="text-xs text-white">• {timeAgo}</span>
                                     </div>
-                                    <p className="text-xs text-white">{comment.content}</p>
+                                    <p className="text-xs text-white break-words">{comment.content}</p>
                                   </div>
                                 );
                               })
