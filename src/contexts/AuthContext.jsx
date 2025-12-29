@@ -91,13 +91,12 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
-    // Timeout handler - fallback if onAuthStateChange doesn't fire
-    // DO NOT call supabase.auth.getSession() - it hangs with the hybrid storage adapter
-    // and poisons all subsequent Supabase client operations
+    // Timeout handler - fallback if onAuthStateChange doesn't fire quickly
+    // For unauthenticated users, onAuthStateChange may not fire immediately
+    // 500ms is enough time for Supabase to detect an existing session
     loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
-      console.warn('[AuthContext] Auth initialization timed out after 5 seconds');
-      console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
+      console.log('[AuthContext] Auth initialization timeout - no session detected');
 
       // Use session from listener if available, otherwise assume no user
       if (sessionFromListener?.user) {
@@ -105,7 +104,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         safeInitialize(null, 'timeout-no-session');
       }
-    }, 5000);
+    }, 500);
 
     return () => {
       isSubscribed = false;
