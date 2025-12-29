@@ -18,7 +18,6 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const [displayedText, setDisplayedText] = useState('');
   const [pendingTypingIndex, setPendingTypingIndex] = useState(null);
   const chatContainerRef = useRef(null);
-  const lastUserScrollTime = useRef(0);
   const pendingFinalScoreRef = useRef(null);
   const pendingNextQuestionRef = useRef(null);
   const textareaRef = useRef(null);
@@ -71,25 +70,13 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
   }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
 
-  // Handle chat scroll to track user scroll time
-  const handleChatScroll = () => {
-    lastUserScrollTime.current = Date.now();
-  };
-
   useEffect(() => {
     if (chatContainerRef.current) {
-      // Skip auto-scroll if user scrolled recently (within 150ms)
-      if (Date.now() - lastUserScrollTime.current < 150) {
-        return;
-      }
-
-      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-      // Only auto-scroll if user is already near the bottom
-      if (isAtBottom) {
-        chatContainerRef.current.scrollTop = scrollHeight;
-      }
+      // Always scroll to bottom when messages change or during typing
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [chatMessages, displayedText]);
 
@@ -565,7 +552,6 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           {/* Chat messages */}
           <div
             ref={chatContainerRef}
-            onScroll={handleChatScroll}
             className="flex-1 overflow-y-auto px-8 py-8 hide-scrollbar"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
