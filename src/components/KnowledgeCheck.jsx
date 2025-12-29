@@ -508,6 +508,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     if (score >= PASS_THRESHOLD && !hasCalledOnPassRef.current) {
       hasCalledOnPassRef.current = true;
       onPass();
+      handleClose();
     }
   };
 

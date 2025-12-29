@@ -1127,9 +1127,6 @@ const LearningHub = () => {
         console.error('❌ Error refreshing completed lessons:', error);
       }
 
-      // Close knowledge check
-      setShowKnowledgeCheck(false);
-
       // If this is the first lesson, show LinkedIn modal and send first lesson email
       if (isFirstLesson) {
         console.log('🎉 First lesson complete! Showing LinkedIn modal');
