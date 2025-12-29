@@ -7,8 +7,8 @@ import LoadingScreen from './LoadingScreen';
 
 const ONBOARDING_CACHE_KEY = 'onboarding_status_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-const DB_TIMEOUT = 10000; // 10 seconds - reduced from 30s
-const MAX_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
+const DB_TIMEOUT = 15000; // 15 seconds - allow for Supabase cold starts
+const MAX_RETRIES = 1; // Will try 2 times total (initial + 1 retry)
 
 const ProtectedRoute = ({ children }) => {
   const { user, firstName, isInitialized } = useAuth();
@@ -180,7 +180,7 @@ const ProtectedRoute = ({ children }) => {
 
   // Wait for auth to be initialized first
   if (!isInitialized || onboardingLoading) {
-    return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
+    return <LoadingScreen autoRefresh={true} autoRefreshDelay={45000} />;
   }
 
   if (!user) {

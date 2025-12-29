@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     let isSubscribed = true;
     let sessionFromListener = null;
     let hasInitialized = false;
+    let loadingTimeout = null; // Declare early so safeInitialize can clear it
 
     console.log('[AuthContext] Starting auth initialization...');
 
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }) => {
     const safeInitialize = (session, source) => {
       if (!isSubscribed || hasInitialized) return;
       hasInitialized = true;
+      if (loadingTimeout) clearTimeout(loadingTimeout); // Clear timeout as soon as any initialization path succeeds
       console.log(`[AuthContext] Initializing from ${source}:`, session?.user?.id ?? 'no user');
       setUser(session?.user ?? null);
       setLoading(false);
@@ -82,7 +84,7 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Timeout handler - use session from listener if available
-    const loadingTimeout = setTimeout(() => {
+    loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
       console.warn('[AuthContext] Auth session check timed out after 5 seconds');
       console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
