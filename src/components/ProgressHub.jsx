@@ -3789,7 +3789,7 @@ const ProgressHub = () => {
 
               {/* Content */}
               <div className="text-center">
-                <p className="text-black font-semibold text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
+                <p className="text-black font-semibold" style={{ fontSize: '1.3rem', marginBottom: '0.5rem', paddingTop: '15px' }}>
                   Congratulations, {user.firstName}!
                 </p>
                 <p className="text-black mb-6">
