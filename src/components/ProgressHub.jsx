@@ -3790,10 +3790,10 @@ const ProgressHub = () => {
               {/* Content */}
               <div className="text-center">
                 <p className="text-black font-semibold text-lg" style={{ marginBottom: '0.5rem', paddingTop: '15px' }}>
-                  Congratulations {user.firstName}, you've completed your first lesson!
+                  Congratulations, {user.firstName}!
                 </p>
                 <p className="text-black mb-6">
-                  Celebrate your progress by adding to LinkedIn.<br />
+                  Celebrate completing your first lesson by adding the course to LinkedIn.<br />
                   Profiles with certifications get 6x more profile views than those without.
                 </p>
 

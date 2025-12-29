@@ -586,7 +586,7 @@ const LearningHub = () => {
             origin: { x: randomInRange(0.6, 0.8), y: Math.random() - 0.2 }
           });
         }, 400);  // Fire less frequently
-      }, 300);
+      }, 750);
     }
   }, [showLinkedInModal]);
 
