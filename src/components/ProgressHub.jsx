@@ -3223,11 +3223,7 @@ const ProgressHub = () => {
                           {/* Comment Input - Only show if Reddit is authenticated */}
                           {postComments[post.id] !== 'AUTH_REQUIRED' && (
                             <div className="flex gap-2 mb-4">
-                              <div className={`w-6 h-6 ${post.avatar} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}>
-                                {user.firstName.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="flex-1 flex gap-2">
-                                <input
+                              <input
                                   type="text"
                                   value={commentInputs[post.id] || ''}
                                   onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
@@ -3239,14 +3235,13 @@ const ProgressHub = () => {
                                   placeholder="Add a comment..."
                                   className="flex-1 bg-white text-black text-xs px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-gray-500"
                                 />
-                                <button
-                                  onClick={() => handleSubmitComment(post.id)}
-                                  className="text-white text-xs px-3 py-2 rounded-lg transition font-semibold hover:opacity-90"
-                                  style={{ backgroundColor: '#EF0B72' }}
-                                >
-                                  Post
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleSubmitComment(post.id)}
+                                className="text-white text-xs px-3 py-2 rounded-lg transition font-semibold hover:opacity-90"
+                                style={{ backgroundColor: '#EF0B72' }}
+                              >
+                                Post
+                              </button>
                             </div>
                           )}
 
@@ -3281,39 +3276,15 @@ const ProgressHub = () => {
                               postComments[post.id].map((comment) => {
                                 // Handle both Reddit comments and user comments
                                 const commentAuthor = comment.author || comment.user_metadata?.first_name || 'User';
-                                const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500', 'bg-blue-600', 'bg-green-600', 'bg-red-600'];
-                                const avatarColor = comment.user_id
-                                  ? avatarColors[comment.user_id.charCodeAt(0) % avatarColors.length]
-                                  : avatarColors[commentAuthor.charCodeAt(0) % avatarColors.length];
                                 const timeAgo = getTimeAgo(comment.created_at);
 
                                 return (
-                                  <div key={comment.id} className="flex gap-2">
-                                    {comment.author_icon ? (
-                                      <img
-                                        src={comment.author_icon}
-                                        alt={commentAuthor}
-                                        className="w-6 h-6 rounded-lg flex-shrink-0 object-cover"
-                                        onError={(e) => {
-                                          // Fallback to colored circle if image fails to load
-                                          e.target.style.display = 'none';
-                                          e.target.nextSibling.style.display = 'flex';
-                                        }}
-                                      />
-                                    ) : null}
-                                    <div
-                                      className={`w-6 h-6 ${avatarColor} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}
-                                      style={{ display: comment.author_icon ? 'none' : 'flex' }}
-                                    >
-                                      {commentAuthor.charAt(0).toUpperCase()}
+                                  <div key={comment.id}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs text-white">{commentAuthor}</span>
+                                      <span className="text-xs text-white">• {timeAgo}</span>
                                     </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs text-white">u/{commentAuthor}</span>
-                                        <span className="text-xs text-white">• {timeAgo}</span>
-                                      </div>
-                                      <p className="text-xs text-gray-300">{comment.content}</p>
-                                    </div>
+                                    <p className="text-xs text-white">{comment.content}</p>
                                   </div>
                                 );
                               })
