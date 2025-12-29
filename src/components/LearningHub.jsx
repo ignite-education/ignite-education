@@ -320,6 +320,13 @@ const LearningHub = () => {
 
         // NEW FORMAT: Single audio file with word timestamps
         if (data?.audio_url && data?.word_timestamps) {
+          // Debug: Log audio data being loaded
+          console.log(`🎵 Audio loaded for M${currentModule}L${currentLesson}:`);
+          console.log(`   URL: ${data.audio_url}`);
+          console.log(`   Word timestamps: ${data.word_timestamps.length} words`);
+          console.log(`   First 5 words:`, data.word_timestamps.slice(0, 5).map(t => t.word));
+          console.log(`   Last 5 words:`, data.word_timestamps.slice(-5).map(t => t.word));
+
           // Mark audio as available
           setLessonAudio({ exists: true, courseId, module: currentModule, lesson: currentLesson });
 

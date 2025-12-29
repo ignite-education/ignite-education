@@ -1599,15 +1599,6 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
 
     console.log(`📊 Generated ${wordTimestamps.length} word timestamps`);
 
-    // Strip trailing periods from word timestamps to match frontend display
-    // (Periods are added by textParts.join('. ') for natural narration pauses,
-    // but frontend displays words without these joining periods)
-    wordTimestamps.forEach(wt => {
-      if (wt.word.endsWith('.')) {
-        wt.word = wt.word.slice(0, -1);
-      }
-    });
-
     // 8. Calculate title word count for frontend skip-highlight
     const titleWords = lessonName.replace(/\s+/g, ' ').trim().split(' ').filter(w => w.length > 0);
     const titleWordCount = titleWords.length;
