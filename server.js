@@ -1425,6 +1425,50 @@ app.get('/api/admin/lesson-audio-status/:courseId/:module/:lesson', async (req, 
   }
 });
 
+// DELETE /api/admin/lesson-audio/:courseId/:module/:lesson - Delete lesson audio (database + storage)
+app.delete('/api/admin/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+    const moduleNum = parseInt(module);
+    const lessonNum = parseInt(lesson);
+
+    console.log(`🗑️ Deleting audio for ${courseId} M${moduleNum}L${lessonNum}`);
+
+    // 1. Delete from lesson_audio table
+    const { error: dbError } = await supabase
+      .from('lesson_audio')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum);
+
+    if (dbError) {
+      console.error('Error deleting from database:', dbError);
+      return res.status(500).json({ error: 'Failed to delete from database', message: dbError.message });
+    }
+
+    // 2. Delete from storage
+    const storagePath = `${courseId}/${moduleNum}/${lessonNum}/full.mp3`;
+    const { error: storageError } = await supabase.storage
+      .from('lesson-audio')
+      .remove([storagePath]);
+
+    if (storageError) {
+      console.warn('Warning: Could not delete from storage (may not exist):', storageError.message);
+    }
+
+    console.log(`✅ Deleted audio for ${courseId} M${moduleNum}L${lessonNum}`);
+    res.json({
+      success: true,
+      message: `Deleted audio for ${courseId} module ${moduleNum} lesson ${lessonNum}`,
+      deletedPath: storagePath
+    });
+  } catch (error) {
+    console.error('Error deleting lesson audio:', error);
+    res.status(500).json({ error: 'Failed to delete lesson audio', message: error.message });
+  }
+});
+
 // POST /api/admin/generate-lesson-audio - Generate audio for a lesson
 // NEW: Generates per-section audio for perfect word highlighting sync
 app.post('/api/admin/generate-lesson-audio', async (req, res) => {
