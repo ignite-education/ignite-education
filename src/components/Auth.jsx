@@ -2239,10 +2239,8 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            lineHeight: '1.2',
-                            textAlign: 'center'
+                            left: '1.5rem',
+                            lineHeight: '1.2'
                           }}
                         >
                           <div className="font-semibold text-black">{testimonial.name}</div>
@@ -2253,7 +2251,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-center gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem' }}>
+                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '1.5rem' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
