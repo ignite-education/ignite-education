@@ -2257,29 +2257,29 @@ const Auth = () => {
                         </div>
                       </div>
                     ))}
-                  </div>
-                  
-                  {/* Carousel Indicators */}
-                  <div style={{ width: '100%', maxWidth: '36rem', marginTop: '1rem', padding: isMobile ? '0' : '0 1.5rem', boxSizing: 'border-box' }}>
-                    <div style={{ display: 'flex', justifyContent: isMobile ? 'flex-start' : 'center' }}>
-                      <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: isMobile ? 'auto' : '80%' }}>
-                        {[0, 1, 2, 3, 4].map((idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => setCurrentTestimonialIndex(idx)}
-                            className={`transition-all duration-300 ${
-                              currentTestimonialIndex === idx
-                                ? 'bg-[#EF0B72]'
-                                : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
-                            }`}
-                            style={{
-                              width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
-                              height: '0.625rem',
-                              borderRadius: '0.125rem'
-                            }}
-                            aria-label={`Go to testimonial ${idx + 1}`}
-                          />
-                        ))}
+
+                    {/* Carousel Indicators */}
+                    <div className="auth-testimonial-card" style={{ marginTop: '1rem', padding: isMobile ? '0' : '0 1.5rem', boxSizing: 'border-box', backgroundColor: 'transparent', height: 'auto' }}>
+                      <div style={{ display: 'flex', justifyContent: isMobile ? 'flex-start' : 'center' }}>
+                        <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: isMobile ? 'auto' : '80%' }}>
+                          {[0, 1, 2, 3, 4].map((idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setCurrentTestimonialIndex(idx)}
+                              className={`transition-all duration-300 ${
+                                currentTestimonialIndex === idx
+                                  ? 'bg-[#EF0B72]'
+                                  : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
+                              }`}
+                              style={{
+                                width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
+                                height: '0.625rem',
+                                borderRadius: '0.125rem'
+                              }}
+                              aria-label={`Go to testimonial ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
