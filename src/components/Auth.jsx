@@ -2228,7 +2228,7 @@ const Auth = () => {
                           padding: '1rem 1.5rem 1.5rem 1.5rem'
                         }}
                       >
-                        <div className="auth-testimonial-quote-wrapper" style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.625rem' }}>
+                        <div className="auth-testimonial-quote-wrapper" style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginTop: '0.625rem' }}>
                           <p className="auth-testimonial-quote text-gray-900 text-2xl font-medium leading-snug text-left" style={{ maxWidth: '80%' }}>
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
@@ -2239,7 +2239,7 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '2.75rem',
+                            left: '1.5rem',
                             lineHeight: '1.2'
                           }}
                         >
@@ -2251,7 +2251,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '2.75rem' }}>
+                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '1.5rem' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
