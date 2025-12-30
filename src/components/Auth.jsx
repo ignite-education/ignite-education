@@ -2454,7 +2454,7 @@ const Auth = () => {
                   lineHeight: '1.2',
                   marginTop: '1rem',
                   marginBottom: isMobile ? '0.6rem' : '1rem',
-                  minHeight: isMobile ? '6rem' : '3rem'
+                  minHeight: isMobile ? '4rem' : '3rem'
                 }}
               >
                 {renderTypedMerchHeading()}
