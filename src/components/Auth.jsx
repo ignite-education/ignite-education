@@ -1714,7 +1714,7 @@ const Auth = () => {
                 <div className="space-y-3 text-left auth-promises-list">
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1726,7 +1726,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -1738,7 +1738,7 @@ const Auth = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
                         <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
                           <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
@@ -2837,14 +2837,12 @@ const Auth = () => {
               {/* Description excerpt - pink */}
               <p className="text-[#EF0B72] auth-course-modal-excerpt" style={{ fontSize: '1.1rem', lineHeight: '1.5' }}>
                 {(() => {
-                  const courseTitle = selectedCourse.title || selectedCourse.name || 'professional';
-                  const ignitePreamble = `Become a ${courseTitle} with Ignite's free, expert-led course. `;
                   const description = selectedCourse.description || '';
                   const firstSentenceEnd = description.indexOf('. ');
                   if (firstSentenceEnd !== -1) {
-                    return ignitePreamble + description.substring(0, firstSentenceEnd + 1);
+                    return description.substring(0, firstSentenceEnd + 1);
                   }
-                  return ignitePreamble + description;
+                  return description;
                 })()}
               </p>
             </div>
