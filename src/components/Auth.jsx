@@ -2635,9 +2635,9 @@ const Auth = () => {
 
             {/* Footer Links */}
             {isMobile ? (
-              <div className="flex justify-center gap-12 px-4" style={{ paddingBottom: '0.5rem' }}>
+              <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
                 {/* Left Column */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-4 items-center" style={{ minWidth: '6rem' }}>
                   <a
                     href="https://shop.ignite.education"
                     target="_blank"
@@ -2665,7 +2665,7 @@ const Auth = () => {
                   </a>
                 </div>
                 {/* Right Column */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-4 items-center" style={{ minWidth: '6rem' }}>
                   <a
                     href="/privacy"
                     target="_blank"
