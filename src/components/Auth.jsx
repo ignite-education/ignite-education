@@ -2239,7 +2239,7 @@ const Auth = () => {
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '1.5rem',
+                            left: '10%',
                             lineHeight: '1.2'
                           }}
                         >
@@ -2251,7 +2251,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '1.5rem' }}>
+                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : 'calc(10% - 1.25rem)' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
