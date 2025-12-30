@@ -2454,7 +2454,7 @@ const Auth = () => {
                   lineHeight: '1.2',
                   marginTop: '1rem',
                   marginBottom: isMobile ? '0.6rem' : '1rem',
-                  minHeight: isMobile ? '4rem' : '3rem'
+                  minHeight: isMobile ? '5rem' : '3rem'
                 }}
               >
                 {renderTypedMerchHeading()}
@@ -2634,60 +2634,123 @@ const Auth = () => {
             </div>
 
             {/* Footer Links */}
-            <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
-              <a
-                href="mailto:hello@ignite.education"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Contact
-              </a>
-              <a
-                href="https://shop.ignite.education"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Store
-              </a>
-              <a
-                href="https://www.linkedin.com/school/ignite-courses/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                LinkedIn
-              </a>
-              <a
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Privacy
-              </a>
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Terms
-              </a>
-              <a
-                href="/release-notes"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Release
-              </a>
-            </div>
+            {isMobile ? (
+              <div className="flex justify-center gap-12 px-4" style={{ paddingBottom: '0.5rem' }}>
+                {/* Left Column */}
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="https://shop.ignite.education"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    Store
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/school/ignite-courses/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    LinkedIn
+                  </a>
+                  <a
+                    href="mailto:hello@ignite.education"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    Contact
+                  </a>
+                </div>
+                {/* Right Column */}
+                <div className="flex flex-col gap-2">
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    Privacy
+                  </a>
+                  <a
+                    href="/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    Terms
+                  </a>
+                  <a
+                    href="/release-notes"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white hover:text-[#EF0B72] transition font-semibold"
+                    style={{ fontSize: '14px' }}
+                  >
+                    Release
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
+                <a
+                  href="mailto:hello@ignite.education"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  Contact
+                </a>
+                <a
+                  href="https://shop.ignite.education"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  Store
+                </a>
+                <a
+                  href="https://www.linkedin.com/school/ignite-courses/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  LinkedIn
+                </a>
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  Privacy
+                </a>
+                <a
+                  href="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  Terms
+                </a>
+                <a
+                  href="/release-notes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white hover:text-[#EF0B72] transition font-semibold"
+                  style={{ fontSize: '14px' }}
+                >
+                  Release
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

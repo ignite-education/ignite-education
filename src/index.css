@@ -1271,6 +1271,10 @@ body {
     font-size: 1.3rem !important;
   }
 
+  .blog-card-image-container {
+    height: 271px !important;
+  }
+
   .auth-section-6-get-started {
     padding-bottom: 3rem !important;
   }
