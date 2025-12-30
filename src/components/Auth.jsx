@@ -1376,12 +1376,6 @@ const Auth = () => {
       }
     }
 
-    if (!isTestimonialsHeadingTypingComplete && isMobile) {
-      result.push(
-        <span key="cursor" className="animate-blink font-thin" style={{ color: '#F0F0F2' }}>|</span>
-      );
-    }
-
     return result;
   };
 
@@ -2459,7 +2453,7 @@ const Auth = () => {
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
                   marginTop: '1rem',
-                  marginBottom: '1rem',
+                  marginBottom: isMobile ? '0.6rem' : '1rem',
                   minHeight: isMobile ? '6rem' : '3rem'
                 }}
               >
@@ -2615,7 +2609,7 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
 
-                <div className="w-full" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
+                <div className="w-full auth-section-6-blog-carousel-container" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
                   <BlogCarousel limit={5} />
                 </div>
               </div>

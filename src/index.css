@@ -1091,7 +1091,7 @@ body {
   .auth-testimonial-indicators {
     width: 100% !important;
     max-width: 100% !important;
-    margin-top: 0.45rem !important;
+    margin-top: 0.225rem !important;
     margin-left: 0 !important;
     padding-left: 0 !important;
     margin-bottom: 2rem !important;
@@ -1174,8 +1174,8 @@ body {
 
   .auth-section-merch-title-container {
     width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
     margin: 0 !important;
   }
 
@@ -1235,11 +1235,19 @@ body {
   .auth-section-6-blog-title-container {
     min-height: 2.5rem !important;
     padding-top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
 
   .auth-section-6-blog-title {
     min-height: 2.5rem !important;
     padding-top: 0 !important;
+  }
+
+  .auth-section-6-blog-carousel-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
   }
 
   /* Section 6 - FAQ title container reserves space for typing animation */
