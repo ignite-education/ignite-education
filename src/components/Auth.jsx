@@ -957,7 +957,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.2, rootMargin: '-100px 0px -100px 0px' }
+      { threshold: isMobile ? 0.1 : 0.2, rootMargin: isMobile ? '0px' : '-100px 0px -100px 0px' }
     );
 
     observer.observe(testimonialsSectionRef.current);
@@ -967,7 +967,7 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal]);
+  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal, isMobile]);
 
   // Intersection observer for merch section typing animation
   useEffect(() => {
