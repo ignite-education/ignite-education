@@ -2259,8 +2259,22 @@ const Auth = () => {
                     ))}
 
                     {/* Carousel Indicators */}
-                    <div className="auth-testimonial-card" style={{ marginTop: '1rem', paddingLeft: isMobile ? '0' : '10%', boxSizing: 'border-box', backgroundColor: 'transparent', height: 'auto' }}>
-                      <div className="auth-testimonial-indicators flex justify-start gap-2">
+                    <div
+                      className="auth-testimonial-card"
+                      style={{
+                        marginTop: '1rem',
+                        padding: isMobile ? '0' : '0 1.5rem',
+                        boxSizing: 'border-box',
+                        backgroundColor: 'transparent',
+                        height: 'auto',
+                        display: 'flex',
+                        justifyContent: isMobile ? 'flex-start' : 'center'
+                      }}
+                    >
+                      <div
+                        className="auth-testimonial-indicators flex justify-start gap-2"
+                        style={{ width: isMobile ? 'auto' : '80%' }}
+                      >
                         {[0, 1, 2, 3, 4].map((idx) => (
                           <button
                             key={idx}
