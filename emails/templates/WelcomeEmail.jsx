@@ -23,8 +23,8 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manage
         <Section style={logoSection}>
           <Link href="https://www.linkedin.com/school/ignite-courses">
             <Img
-              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
-              width="140"
+              src="https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif"
+              width="161"
               alt="Ignite"
               style={logo}
             />
@@ -33,7 +33,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manage
 
         {/* Welcome Header */}
         <Heading style={h1}>
-          <span style={{ color: '#f0f0f0' }}>Welcome, </span>
+          <span style={{ color: '#000000' }}>Welcome, </span>
           <span style={{ color: '#ef0b72' }}>{firstName}</span>
         </Heading>
 
@@ -129,7 +129,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manage
         {/* Footer */}
         <Section style={footerSection}>
           <Img
-            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png"
+            src="https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif"
             width="100"
             alt="Ignite"
             style={footerLogo}
@@ -148,12 +148,12 @@ export default WelcomeEmail;
 
 // Styles
 const main = {
-  backgroundColor: '#f0f1f5',
+  backgroundColor: '#F7F7F8',
   fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
 const container = {
-  backgroundColor: '#000000',
+  backgroundColor: '#F7F7F8',
   margin: '0 auto',
   padding: '10px 0',
   maxWidth: '600px',
@@ -186,25 +186,27 @@ const certificateIcon = {
 };
 
 const divider = {
-  borderColor: '#000000',
+  borderColor: '#cccccc',
   borderWidth: '1px',
   margin: '16px auto',
   width: '239px',
 };
 
 const introTitle = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '16px',
   fontWeight: '700',
   lineHeight: '1.4',
   margin: '16px 0',
+  textAlign: 'center',
 };
 
 const introText = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '16px',
   lineHeight: '1.28',
   margin: '16px 0',
+  textAlign: 'center',
 };
 
 const tipContainer = {
@@ -272,21 +274,21 @@ const closingSection = {
 };
 
 const closingText = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '16px',
   lineHeight: '1.4',
   margin: '16px 0',
 };
 
 const signatureText = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '16px',
   fontWeight: '700',
   margin: '16px 0',
 };
 
 const footerSection = {
-  backgroundColor: '#000000',
+  backgroundColor: '#F7F7F8',
   textAlign: 'center',
   padding: '20px',
 };
@@ -296,19 +298,19 @@ const footerLogo = {
 };
 
 const footerText = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '12px',
   margin: '0 0 16px 0',
   lineHeight: '1.4',
 };
 
 const footerLink = {
-  color: '#ffffff',
+  color: '#000000',
   textDecoration: 'underline',
 };
 
 const copyrightText = {
-  color: '#ffffff',
+  color: '#000000',
   fontSize: '11px',
   margin: '0',
 };

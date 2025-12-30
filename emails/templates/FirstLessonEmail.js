@@ -101,7 +101,7 @@ const FirstLessonEmail = ({ firstName = 'there', lessonName = 'your first lesson
     e(Body, { style: main },
       e(Container, { style: container },
         e(Img, {
-          src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
+          src: 'https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif',
           width: '140',
           height: '45',
           alt: 'Ignite',
