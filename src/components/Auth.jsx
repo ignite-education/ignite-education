@@ -214,18 +214,20 @@ const Auth = () => {
   const { displayText: typedTestimonialsHeading, isComplete: isTestimonialsHeadingTypingComplete } = useTypingAnimation(
     testimonialsHeadingText,
     {
-      charDelay: 75,
-      startDelay: 500,
+      charDelay: 40,
+      startDelay: 200,
       pausePoints: [
-        { after: 23, duration: 700 },  // After "Ignite is for everyone."
-        { after: 37, duration: 500 },  // After "The curious,"
-        { after: 52, duration: 500 }   // After "the committed,"
+        { after: 23, duration: 400 },  // After "Ignite is for everyone."
+        { after: 37, duration: 300 },  // After "The curious,"
+        { after: 52, duration: 300 }   // After "the committed,"
       ],
       enabled: testimonialsTypingEnabled
     }
   );
 
-  const merchHeadingText = 'Big dreams. Universal fit.';
+  const merchHeadingTextDesktop = 'Big dreams. Universal fit.';
+  const merchHeadingTextMobile = 'Big dreams.\nUniversal fit.';
+  const merchHeadingText = isMobile ? merchHeadingTextMobile : merchHeadingTextDesktop;
   const { displayText: typedMerchHeading } = useTypingAnimation(
     merchHeadingText,
     {
@@ -241,13 +243,13 @@ const Auth = () => {
   // Helper to render merch heading with pink "Universal fit."
   const renderTypedMerchHeading = () => {
     const text = typedMerchHeading;
-    const splitIndex = 12; // After "Big dreams. "
+    const splitIndex = isMobile ? 11 : 12; // After "Big dreams." (mobile has \n, desktop has space)
     const firstPart = text.slice(0, splitIndex);
     const secondPart = text.slice(splitIndex);
     return (
       <>
-        <span className="text-black">{firstPart}</span>
-        <span style={{ color: '#EF0B72' }}>{secondPart}</span>
+        <span className="text-black" style={{ whiteSpace: 'pre-wrap' }}>{firstPart}</span>
+        <span style={{ color: '#EF0B72', whiteSpace: 'pre-wrap' }}>{secondPart}</span>
       </>
     );
   };
@@ -2478,8 +2480,7 @@ const Auth = () => {
                 color: 'black',
                 marginBottom: '1.5rem'
               }}>
-                Discover official Ignite merchandise. All profit supports<br />
-                education and social mobility projects across the UK.
+                Discover official Ignite merchandise. All profit supports education and social mobility projects across the UK.
               </p>
             </div>
 
@@ -2510,12 +2511,12 @@ const Auth = () => {
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenNotebook}
                 />
-                {!isTablet && (
+                {!isTablet && !isMobile && (
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
                     alt="Quote Tote"
                     className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                    style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                    style={{ height: '250px', width: 'auto', maxWidth: '18%' }}
                     onClick={handleOpenQuoteTote}
                   />
                 )}
