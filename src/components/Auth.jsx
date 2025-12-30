@@ -214,12 +214,12 @@ const Auth = () => {
   const { displayText: typedTestimonialsHeading, isComplete: isTestimonialsHeadingTypingComplete } = useTypingAnimation(
     testimonialsHeadingText,
     {
-      charDelay: 40,
-      startDelay: 200,
+      charDelay: 75,
+      startDelay: 0,
       pausePoints: [
-        { after: 23, duration: 400 },  // After "Ignite is for everyone."
-        { after: 37, duration: 300 },  // After "The curious,"
-        { after: 52, duration: 300 }   // After "the committed,"
+        { after: 23, duration: 700 },  // After "Ignite is for everyone."
+        { after: 37, duration: 700 },  // After "The curious,"
+        { after: 52, duration: 700 }   // After "the committed,"
       ],
       enabled: testimonialsTypingEnabled
     }
@@ -2119,17 +2119,7 @@ const Auth = () => {
                 </span>
                 {/* Actual typed content */}
                 <span style={{ position: 'relative' }}>
-                  {isMobile ? (
-                    <>
-                      <span className="text-black">Ignite is for everyone.</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>The curious,</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>the committed,</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>the ambitious.</span>
-                    </>
-                  ) : renderTypedTestimonialsHeading()}
+                  {renderTypedTestimonialsHeading()}
                 </span>
               </h3>
             </div>
@@ -2470,7 +2460,7 @@ const Auth = () => {
                   lineHeight: '1.2',
                   marginTop: '1rem',
                   marginBottom: '1rem',
-                  minHeight: '3rem'
+                  minHeight: isMobile ? '6rem' : '3rem'
                 }}
               >
                 {renderTypedMerchHeading()}
