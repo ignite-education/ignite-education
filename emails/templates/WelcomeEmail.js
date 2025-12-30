@@ -224,7 +224,7 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         ),
         // Closing Section
         e(Section, { style: closingSection, className: 'content-section' },
-          e(Text, { style: closingText }, "We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Learning Hub Dashboard."),
+          e(Text, { style: closingText }, "We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Learning Hub."),
           // LinkedIn section
           e('div', { style: { textAlign: 'center', margin: '19px 0' } },
             e(Text, { style: { color: '#000000', fontSize: '14.67px', lineHeight: '1.28', margin: '0 0 12px 0', textAlign: 'center' } },
