@@ -1734,7 +1734,7 @@ const Auth = () => {
                         </div>
                         <div className="leading-snug font-light">
                           <div className="text-lg font-semibold text-white">Ignite is Free</div>
-                          <div className="text-base text-white auth-promise-subtext">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
+                          <div className="text-base text-white auth-promise-subtext">All of our courses are free. Always have been and always will be.</div>
                         </div>
                       </div>
 
@@ -2065,7 +2065,7 @@ const Auth = () => {
                 }}>
                   <div>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
-                      Get certified to {isMobile && <br />}<span style={{ color: '#FFFFFF' }}>take on your next role</span>
+                      Get certified to take<br /><span style={{ color: '#FFFFFF' }}>on your next role</span>
                     </h4>
                     <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
@@ -2180,32 +2180,32 @@ const Auth = () => {
                   <div className="relative">
                     {[
                       {
-                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
-                        name: "Amelia Chen",
-                        role: "Junior Designer",
+                        quote: "I was pretty lost about my career direction. I joined the Ignite beta, and it helped me identify my strengths and understand different paths I could take. Crazy considering it's free.",
+                        name: "Amelia C",
+                        role: "Jr Product Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
                       },
                       {
-                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
-                        name: "Sarah Matthews",
+                        quote: "Ignite gave me the confidence to explore a careers. Best decision I've made.",
+                        name: "Sarah M",
                         role: "Product Marketing Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
-                        quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
-                        name: "James Patel",
-                        role: "University Student",
+                        quote: "I needed something more than just my University degree to get into Product Management, so I started the Ignite course. I wish I'd found this sooner!",
+                        name: "James P",
+                        role: "Student",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
-                        quote: "Taking a career break left me feeling out of touch. Following the course and using the neat AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
-                        name: "Rebecca Thompson",
-                        role: "Former Teacher",
+                        quote: "Taking a career break left me feeling out of touch. I joined Ignite and the neat AI features allowed me learn at my own pace. I'm now feeling more confident.",
+                        name: "Rebecca T",
+                        role: "Programme Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
                       },
                       {
                         quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
-                        name: "David Morrison",
+                        name: "David M",
                         role: "Sr Product Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
                       }
@@ -2233,25 +2233,13 @@ const Auth = () => {
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
                         </div>
-                        {/* Avatar positioned on bottom edge */}
-                        <div
-                          className="auth-testimonial-avatar w-24 h-24 rounded flex-shrink-0"
-                          style={{
-                            position: 'absolute',
-                            bottom: '-2.5rem',
-                            left: '2.75rem',
-                            backgroundImage: `url(${testimonial.avatar})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        ></div>
                         {/* Name and role positioned at bottom edge */}
                         <div
                           className="auth-testimonial-info"
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '9.6875rem',
+                            left: '2.75rem',
                             lineHeight: '1.2'
                           }}
                         >
@@ -2263,7 +2251,7 @@ const Auth = () => {
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '9.6875rem' }}>
+                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '2.75rem' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
