@@ -1096,6 +1096,14 @@ body {
     justify-content: flex-start !important;
   }
 
+  /* Override card styles for indicators container */
+  .auth-testimonial-card:has(.auth-testimonial-indicators) {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    background-color: transparent !important;
+  }
+
   .auth-testimonial-indicators button.bg-white {
     background-color: #F0F0F2 !important;
   }
