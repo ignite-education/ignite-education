@@ -219,12 +219,12 @@ const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manager' }) =
         ),
         // Intro Text
         e(Section, { style: contentSection, className: 'content-section' },
-          e(Text, { style: introTitle }, `Welcome to the ${courseName} Course`),
+          e(Text, { style: introTitle }, `Welcome to the ${courseName} course`),
           e(Text, { style: introText }, "We're building a smarter, more personalised era of education for everyone, and we're glad you've joined us.")
         ),
         // Closing Section
         e(Section, { style: closingSection, className: 'content-section' },
-          e(Text, { style: closingText }, "We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Learning Hub."),
+          e(Text, { style: closingText }, "We'll be in touch as you proceed through the course. If you ever need support, you can contact us through the Progress Hub."),
           // LinkedIn section
           e('div', { style: { textAlign: 'center', margin: '19px 0' } },
             e(Text, { style: { color: '#000000', fontSize: '14.67px', lineHeight: '1.28', margin: '0 0 12px 0', textAlign: 'center' } },
