@@ -2635,7 +2635,7 @@ const Auth = () => {
 
             {/* Footer Links */}
             {isMobile ? (
-              <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
+              <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0' }}>
                 {/* Left Column */}
                 <div className="flex flex-col gap-4 items-center" style={{ minWidth: '6rem' }}>
                   <a
