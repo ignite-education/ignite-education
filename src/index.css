@@ -1275,6 +1275,10 @@ body {
     height: 271px !important;
   }
 
+  .min-h-\[500px\] {
+    min-height: 350px !important;
+  }
+
   .auth-section-6-get-started {
     padding-bottom: 3rem !important;
   }
