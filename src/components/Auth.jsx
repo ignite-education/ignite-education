@@ -2235,23 +2235,33 @@ const Auth = () => {
                         </div>
                         {/* Name and role positioned at bottom edge */}
                         <div
-                          className="auth-testimonial-info"
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '10%',
-                            lineHeight: '1.2'
+                            left: '1.5rem',
+                            right: '1.5rem',
+                            display: 'flex',
+                            justifyContent: 'center'
                           }}
                         >
-                          <div className="font-semibold text-black">{testimonial.name}</div>
-                          <div className="auth-testimonial-role text-sm text-gray-600">{testimonial.role}</div>
+                          <div
+                            className="auth-testimonial-info"
+                            style={{
+                              width: '80%',
+                              lineHeight: '1.2'
+                            }}
+                          >
+                            <div className="font-semibold text-black">{testimonial.name}</div>
+                            <div className="auth-testimonial-role text-sm text-gray-600">{testimonial.role}</div>
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
                   
                   {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : 'calc(10% - 1.25rem)' }}>
+                  <div style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', display: 'flex', justifyContent: isMobile ? 'flex-start' : 'center' }}>
+                    <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: isMobile ? 'auto' : '80%' }}>
                     {[0, 1, 2, 3, 4].map((idx) => (
                       <button
                         key={idx}
@@ -2269,6 +2279,7 @@ const Auth = () => {
                         aria-label={`Go to testimonial ${idx + 1}`}
                       />
                     ))}
+                    </div>
                   </div>
                 </div>
 
