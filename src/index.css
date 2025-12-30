@@ -810,7 +810,7 @@ body {
   }
 
   .auth-course-modal-title {
-    font-size: 1.5rem !important;
+    font-size: 1.7rem !important;
     margin-top: 0.75rem !important;
     margin-bottom: 0.75rem !important;
   }
@@ -961,6 +961,10 @@ body {
 
   .auth-section-4-arrow {
     margin-top: 1rem !important;
+  }
+
+  .auth-section-4-feature img {
+    width: 86vw !important;
   }
 
   /* Section 5 - Testimonials & Use Cases (match Section 4 padding) */
