@@ -1,94 +1,146 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
   Html,
   Img,
+  Link,
   Preview,
   Section,
   Text,
 } from '@react-email/components';
 import * as React from 'react';
 
+// Styles - matching WelcomeEmail design
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  backgroundColor: '#F7F7F8',
+  fontFamily: 'Geist, Arial, Helvetica, sans-serif',
 };
 
 const container = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#F7F7F8',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-};
-
-const logo = {
-  margin: '0 auto',
-  display: 'block',
-  marginBottom: '32px',
-};
-
-const h1 = {
-  color: '#1a1a1a',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '40px 0',
   padding: '0',
-  textAlign: 'center',
+  maxWidth: '600px',
 };
 
-const text = {
-  color: '#525252',
-  fontSize: '16px',
-  lineHeight: '24px',
-  textAlign: 'left',
-  margin: '16px 32px',
-};
-
-const motivationBox = {
-  backgroundColor: '#eff6ff',
-  borderRadius: '8px',
-  margin: '24px 32px',
-  padding: '16px 24px',
-};
-
-const motivationText = {
-  color: '#1e40af',
-  fontSize: '15px',
-  lineHeight: '22px',
+const logoSection = {
+  backgroundColor: '#F7F7F8',
+  padding: '38px 20px 11px 20px',
   margin: '0',
   textAlign: 'center',
 };
 
-const buttonContainer = {
+const logo = {
+  display: 'block',
+  margin: '0 auto',
+};
+
+const h1 = {
+  fontSize: '30px',
+  fontWeight: '700',
   textAlign: 'center',
-  margin: '32px 0',
+  margin: '16px 20px 22px 20px',
+  padding: '0',
+};
+
+const imageSection = {
+  padding: '0 20px',
+  textAlign: 'center',
+  marginBottom: '16px',
+};
+
+const certificateIcon = {
+  margin: '0 auto 16px',
+};
+
+const contentSection = {
+  padding: '0 90px',
+  marginBottom: '16px',
+};
+
+const introTitle = {
+  color: '#000000',
+  fontSize: '16px',
+  fontWeight: '700',
+  lineHeight: '1.28',
+  margin: '0 0 16px 0',
+  textAlign: 'center',
+};
+
+const introText = {
+  color: '#000000',
+  fontSize: '14.67px',
+  lineHeight: '1.28',
+  margin: '0 0 16px 0',
+  textAlign: 'center',
+};
+
+const statsBox = {
+  backgroundColor: '#f0f0f0',
+  borderRadius: '2px',
+  padding: '12px',
+  marginBottom: '16px',
+};
+
+const statsText = {
+  color: '#000000',
+  fontSize: '14.67px',
+  lineHeight: '1.28',
+  margin: '0',
+  textAlign: 'center',
+};
+
+const buttonSection = {
+  padding: '0 20px',
+  marginBottom: '16px',
+  textAlign: 'center',
 };
 
 const button = {
-  backgroundColor: '#ec4899',
-  borderRadius: '8px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
+  backgroundColor: '#EF0B72',
+  borderRadius: '4px',
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '700',
   textDecoration: 'none',
   textAlign: 'center',
   display: 'inline-block',
-  padding: '12px 32px',
+  padding: '12px 24px',
 };
 
-const footer = {
-  color: '#8898aa',
-  fontSize: '14px',
-  lineHeight: '24px',
+const closingSection = {
+  padding: '0 90px',
+  marginBottom: '34px',
+};
+
+const signatureText = {
+  color: '#000000',
+  fontSize: '14.67px',
+  fontWeight: '700',
+  lineHeight: '1.28',
+  margin: '0',
   textAlign: 'center',
-  margin: '32px 32px 0',
 };
 
-const link = {
-  color: '#ec4899',
+const footerSection = {
+  backgroundColor: '#F7F7F8',
+  padding: '12px 20px 45px 20px',
+  margin: '0',
+  textAlign: 'center',
+};
+
+const footerText = {
+  color: '#000000',
+  fontSize: '10.67px',
+  letterSpacing: '-0.0025em',
+  lineHeight: '1.4',
+  margin: '0',
+};
+
+const footerLink = {
+  color: '#000000',
   textDecoration: 'underline',
 };
 
@@ -96,36 +148,76 @@ const InactivityReminderEmail = ({ firstName = 'there', daysSinceLogin = 14, cou
   const e = React.createElement;
 
   return e(Html, null,
-    e(Head, null),
+    e(Head, null,
+      e('meta', { name: 'color-scheme', content: 'light' }),
+      e('meta', { name: 'supported-color-schemes', content: 'light' }),
+      e('style', null, `
+        @media only screen and (max-width: 600px) {
+          .content-section {
+            padding-left: 30px !important;
+            padding-right: 30px !important;
+          }
+        }
+      `)
+    ),
     e(Preview, null, `We miss you - your ${courseName} progress is waiting`),
     e(Body, { style: main },
       e(Container, { style: container },
-        e(Img, {
-          src: 'https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif',
-          width: '140',
-          height: '45',
-          alt: 'Ignite',
-          style: logo
-        }),
-        e(Heading, { style: h1 }, `We miss you, ${firstName}!`),
-        e(Text, { style: text },
-          `It's been ${daysSinceLogin} days since you last logged in. Your progress in `,
-          e('strong', null, courseName),
-          ' is waiting for you.'
+        // Logo Section
+        e(Section, { style: logoSection },
+          e(Link, { href: 'https://ignite.education' },
+            e(Img, {
+              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png',
+              width: '80',
+              alt: 'Ignite',
+              style: logo
+            })
+          )
         ),
-        e(Section, { style: motivationBox },
-          e(Text, { style: motivationText }, 'Even 10 minutes of learning today can help you build momentum and stay on track with your goals.')
+        // Header
+        e(Heading, { style: h1 },
+          e('span', { style: { color: '#000000' } }, 'We miss you, '),
+          e('span', { style: { color: '#ed1574' } }, firstName),
+          e('span', { style: { color: '#000000' } }, '!')
         ),
-        e(Text, { style: text }, 'Pick up where you left off - your course is ready when you are.'),
-        e(Section, { style: buttonContainer },
-          e(Button, { style: button, href: 'https://ignite.education/progress' }, 'Resume Learning')
+        // Certificate Image
+        e(Section, { style: imageSection },
+          e(Img, {
+            src: 'https://auth.ignite.education/storage/v1/object/public/assets/db6d49f3f5a82b1540bf96c8d4a06334.png',
+            width: '235',
+            height: '239',
+            alt: 'Certificate',
+            style: certificateIcon
+          })
         ),
-        e(Text, { style: footer },
-          "If you're no longer interested in receiving these reminders, you can update your preferences in your account settings.",
-          e('br', null),
-          e('br', null),
-          'Questions? Email us at ',
-          e('a', { href: 'mailto:hello@ignite.education', style: link }, 'hello@ignite.education')
+        // Content Section
+        e(Section, { style: contentSection, className: 'content-section' },
+          e(Text, { style: introTitle }, `Your ${courseName} progress is waiting`),
+          e(Text, { style: introText },
+            `It's been ${daysSinceLogin} days since you last logged in. Pick up where you left off - your course is ready when you are.`
+          ),
+          // Stats Box
+          e('div', { style: statsBox },
+            e(Text, { style: statsText },
+              'Even 10 minutes of learning today can help you build momentum and stay on track with your goals.'
+            )
+          )
+        ),
+        // Button Section
+        e(Section, { style: buttonSection },
+          e(Link, { href: 'https://ignite.education/progress', style: button }, 'Resume Learning')
+        ),
+        // Closing Section
+        e(Section, { style: closingSection, className: 'content-section' },
+          e(Text, { style: signatureText }, 'Team Ignite')
+        ),
+        // Footer
+        e(Section, { style: footerSection },
+          e(Text, { style: footerText },
+            'Ignite Education AI Ltd. Unsubscribe from emails ',
+            e(Link, { href: 'https://ignite.education/unsubscribe', style: footerLink }, 'here'),
+            '.'
+          )
         )
       )
     )

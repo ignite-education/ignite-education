@@ -23,7 +23,10 @@
       "Bash(cat:*)",
       "Bash(node:*)",
       "Bash(find:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(source .env.local)",
+      "Bash(source .env)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []

@@ -23,7 +23,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manage
         <Section style={logoSection}>
           <Link href="https://www.linkedin.com/school/ignite-courses">
             <Img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif"
+              src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png"
               width="161"
               alt="Ignite"
               style={logo}
@@ -129,7 +129,7 @@ export const WelcomeEmail = ({ firstName = 'there', courseName = 'Product Manage
         {/* Footer */}
         <Section style={footerSection}>
           <Img
-            src="https://auth.ignite.education/storage/v1/object/public/assets/icon_v1-ezgif.com-loop-count.gif"
+            src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png"
             width="100"
             alt="Ignite"
             style={footerLogo}

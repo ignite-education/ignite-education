@@ -47,6 +47,48 @@ let resend = null;
 const linkedInCache = new NodeCache({ stdTTL: 24 * 60 * 60 }); // 24 hours in seconds
 const LINKEDIN_CACHE_KEY = 'linkedin_posts';
 
+// ============================================================================
+// EMAIL UNSUBSCRIBE HELPERS
+// ============================================================================
+
+// Secret key for signing unsubscribe tokens (use env var in production)
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET || crypto.randomBytes(32).toString('hex');
+
+// Generate a secure unsubscribe token for a user
+function generateUnsubscribeToken(userId) {
+  const payload = {
+    userId,
+    exp: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year expiry
+  };
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET).update(data).digest('base64url');
+  return `${data}.${signature}`;
+}
+
+// Verify and decode an unsubscribe token
+function verifyUnsubscribeToken(token) {
+  try {
+    const [data, signature] = token.split('.');
+    const expectedSignature = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET).update(data).digest('base64url');
+    if (signature !== expectedSignature) {
+      return null;
+    }
+    const payload = JSON.parse(Buffer.from(data, 'base64url').toString());
+    if (payload.exp < Date.now()) {
+      return null; // Token expired
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// Define which email types are marketing (respect preference) vs transactional (always send)
+const MARKETING_EMAIL_TYPES = ['inactivity_reminder', 'promotional'];
+
+// Base URL for the API (use env var in production)
+const API_BASE_URL = process.env.API_BASE_URL || 'https://ignite.education';
+
 app.use(cors());
 
 // Stripe webhook endpoint MUST come before express.json() to receive raw body for signature verification
@@ -2497,6 +2539,19 @@ app.post('/api/send-email', async (req, res) => {
     const userEmail = authUser.email;
     const firstName = user?.first_name || 'there';
 
+    // Check if this is a marketing email and if user has unsubscribed
+    const isMarketingEmail = MARKETING_EMAIL_TYPES.includes(type);
+    const marketingEmailsEnabled = authUser.user_metadata?.marketing_emails !== false;
+
+    if (isMarketingEmail && !marketingEmailsEnabled) {
+      console.log(`📧 Skipping ${type} email - user ${userId} has unsubscribed from marketing emails`);
+      return res.json({
+        success: true,
+        message: 'User has unsubscribed from marketing emails',
+        skipped: true
+      });
+    }
+
     // Prepare email based on type
     let subject, htmlContent;
 
@@ -2580,12 +2635,33 @@ app.post('/api/send-email', async (req, res) => {
       resend = new Resend(process.env.RESEND_API_KEY);
     }
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
+    // Generate unsubscribe token and URL for this user
+    const unsubscribeToken = generateUnsubscribeToken(userId);
+    const unsubscribeUrl = `${API_BASE_URL}/api/unsubscribe?token=${unsubscribeToken}`;
+
+    // Replace placeholder unsubscribe URL with the tokenized URL
+    const finalHtml = htmlContent.replace(
+      /https:\/\/ignite\.education\/unsubscribe/g,
+      unsubscribeUrl
+    );
+
+    // Build email options
+    const emailOptions = {
       from: 'Ignite <hello@ignite.education>',
       to: userEmail,
       subject,
-      html: htmlContent,
-    });
+      html: finalHtml,
+    };
+
+    // Add List-Unsubscribe headers for marketing emails (RFC 8058 compliant)
+    if (isMarketingEmail) {
+      emailOptions.headers = {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+      };
+    }
+
+    const { data: emailData, error: emailError } = await resend.emails.send(emailOptions);
 
     if (emailError) {
       console.error('❌ Resend error:', emailError);
@@ -2601,6 +2677,129 @@ app.post('/api/send-email', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// ============================================================================
+// EMAIL UNSUBSCRIBE ENDPOINTS
+// ============================================================================
+
+// Unsubscribe endpoint - handles both GET (email link) and POST (one-click)
+app.get('/api/unsubscribe', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Unsubscribe Error</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Invalid Link</h1>
+            <p>This unsubscribe link is invalid or missing a token.</p>
+          </body>
+        </html>
+      `);
+    }
+
+    const payload = verifyUnsubscribeToken(token);
+    if (!payload) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Link Expired</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Link Expired</h1>
+            <p>This unsubscribe link has expired. Please update your email preferences in your account settings.</p>
+            <a href="https://ignite.education" style="color: #ef0b72;">Go to Ignite</a>
+          </body>
+        </html>
+      `);
+    }
+
+    // Update user's marketing_emails preference to false
+    const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
+      user_metadata: { marketing_emails: false }
+    });
+
+    if (error) {
+      console.error('❌ Failed to unsubscribe user:', error);
+      return res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Error</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Something went wrong</h1>
+            <p>We couldn't process your unsubscribe request. Please try again or contact support.</p>
+          </body>
+        </html>
+      `);
+    }
+
+    console.log(`✅ User ${payload.userId} unsubscribed from marketing emails`);
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Unsubscribed</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center; padding: 20px; }
+            h1 { color: #1a1a1a; }
+            p { color: #525252; line-height: 1.6; }
+            .success { color: #10b981; font-size: 48px; margin-bottom: 20px; }
+            a { color: #ef0b72; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+          </style>
+        </head>
+        <body>
+          <div class="success">✓</div>
+          <h1>You've been unsubscribed</h1>
+          <p>You will no longer receive marketing emails from Ignite.</p>
+          <p>You will still receive important account and course-related emails.</p>
+          <p style="margin-top: 30px;">
+            <a href="https://ignite.education">Return to Ignite</a>
+          </p>
+        </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error('❌ Unsubscribe error:', error);
+    res.status(500).send('An error occurred');
+  }
+});
+
+// POST endpoint for RFC 8058 one-click unsubscribe
+app.post('/api/unsubscribe', express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    const token = req.query.token || req.body.token;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Missing token' });
+    }
+
+    const payload = verifyUnsubscribeToken(token);
+    if (!payload) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    // Update user's marketing_emails preference to false
+    const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
+      user_metadata: { marketing_emails: false }
+    });
+
+    if (error) {
+      console.error('❌ Failed to unsubscribe user:', error);
+      return res.status(500).json({ error: 'Failed to unsubscribe' });
+    }
+
+    console.log(`✅ User ${payload.userId} unsubscribed via one-click`);
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error('❌ One-click unsubscribe error:', error);
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
