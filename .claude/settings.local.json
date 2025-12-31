@@ -31,7 +31,10 @@
       "Bash(git commit:*)",
       "Bash(npm run lint)",
       "Bash(git push:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git branch:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
