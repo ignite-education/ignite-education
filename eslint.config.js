@@ -5,7 +5,13 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', 'check-lesson-data.js', 'backfill_stripe_ids.js']),
+  globalIgnores([
+    'dist',
+    'check-lesson-data.js',
+    'backfill_stripe_ids.js',
+    'check_user_subscription.js',
+    'emails/**',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
