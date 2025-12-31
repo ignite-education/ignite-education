@@ -35,7 +35,6 @@ git push -u origin feature/your-feature-name
 ```
 
 **What happens:**
-- CI runs linting and build checks
 - Vercel creates a preview deployment URL
 - Review the preview, get PR approval
 - Merge to `develop` for staging testing
@@ -65,7 +64,6 @@ git push -u origin hotfix/describe-the-bug
 ```
 
 **What happens:**
-- CI runs linting and build checks
 - Vercel creates a preview deployment URL
 - **Test the fix on the preview URL before merging**
 - Merge to `main` → automatically deploys to production
@@ -79,15 +77,6 @@ git push origin develop
 ```
 
 ---
-
-## CI/CD Pipeline
-
-Every PR triggers:
-1. **Linting** - ESLint checks
-2. **Build** - Ensures production build succeeds
-3. **Preview Deployment** - Vercel creates a unique URL for testing
-
-PRs cannot be merged if CI checks fail.
 
 ## Quick Reference
 
