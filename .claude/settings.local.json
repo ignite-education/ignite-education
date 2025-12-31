@@ -26,7 +26,12 @@
       "Bash(ls:*)",
       "Bash(source .env.local)",
       "Bash(source .env)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npm run lint)",
+      "Bash(git push:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
