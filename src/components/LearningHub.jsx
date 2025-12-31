@@ -2155,15 +2155,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return;
     }
 
-    // Check for word count mismatch (only warn if there's an issue)
+    // Always log word count comparison for debugging (even when matching)
     if (contentContainerRef.current) {
       const allSpans = contentContainerRef.current.querySelectorAll('[data-word-index]');
-      if (allSpans.length !== wordTimestamps.length) {
-        console.warn(`⚠️ Word count mismatch: Backend=${wordTimestamps.length}, Frontend=${allSpans.length}`);
+      const frontendWords = Array.from(allSpans).map(s => s.textContent);
+      const backendWords = wordTimestamps.map(t => t.word);
 
-        // Enhanced debug: Find ALL mismatches and group them
-        const frontendWords = Array.from(allSpans).map(s => s.textContent);
-        const backendWords = wordTimestamps.map(t => t.word);
+      const match = allSpans.length === wordTimestamps.length;
+
+      // Check for standalone periods in backend (suspected issue cause)
+      const standalonePeriods = backendWords.filter(w => w === '.').length;
+      const doublePeriodWords = backendWords.filter(w => w && w.endsWith('..')).length;
+
+      console.log(`📊 Word count check: Backend=${wordTimestamps.length}, Frontend=${allSpans.length} ${match ? '✅' : '❌'}`);
+      console.log(`   Standalone periods in backend: ${standalonePeriods}, Double-period words: ${doublePeriodWords}`);
+
+      if (!match) {
+        console.warn(`⚠️ Word count mismatch detected!`);
 
         console.log('📊 Detailed word comparison analysis:');
 
