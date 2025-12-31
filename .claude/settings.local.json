@@ -34,7 +34,8 @@
       "Bash(rm:*)",
       "Bash(git branch:*)",
       "Bash(git merge:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
