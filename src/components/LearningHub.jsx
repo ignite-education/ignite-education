@@ -2161,19 +2161,61 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       if (allSpans.length !== wordTimestamps.length) {
         console.warn(`⚠️ Word count mismatch: Backend=${wordTimestamps.length}, Frontend=${allSpans.length}`);
 
-        // Debug: Find and log the first divergence point
+        // Enhanced debug: Find ALL mismatches and group them
         const frontendWords = Array.from(allSpans).map(s => s.textContent);
         const backendWords = wordTimestamps.map(t => t.word);
 
+        console.log('📊 Detailed word comparison analysis:');
+
+        // Find all mismatches with context
+        const mismatches = [];
+        let matchStreak = 0;
+        let mismatchCount = 0;
+
         for (let i = 0; i < Math.max(frontendWords.length, backendWords.length); i++) {
-          if (frontendWords[i] !== backendWords[i]) {
-            console.warn(`🔍 First mismatch at index ${i}:`);
-            console.warn(`   Backend[${i}]: "${backendWords[i]}"`);
-            console.warn(`   Frontend[${i}]: "${frontendWords[i]}"`);
-            console.warn(`   Context (backend ${i-2} to ${i+2}):`, backendWords.slice(Math.max(0, i-2), i+3));
-            console.warn(`   Context (frontend ${i-2} to ${i+2}):`, frontendWords.slice(Math.max(0, i-2), i+3));
-            break;
+          const fe = frontendWords[i] || '(missing)';
+          const be = backendWords[i] || '(missing)';
+
+          if (fe !== be) {
+            if (matchStreak > 0) {
+              console.log(`   ✓ ${matchStreak} words matched (indices ${i - matchStreak} to ${i - 1})`);
+              matchStreak = 0;
+            }
+            mismatchCount++;
+
+            // Check if this is a period-related mismatch (e.g., "word" vs "word.")
+            const isPeriodMismatch = be === fe + '.' || fe === be + '.';
+            const mismatchType = isPeriodMismatch ? '📍 PERIOD' : '❌ CONTENT';
+
+            mismatches.push({ index: i, frontend: fe, backend: be, isPeriodMismatch });
+            console.log(`   ${mismatchType} at index ${i}: Frontend="${fe}" vs Backend="${be}"`);
+
+            // Show context around this mismatch
+            if (mismatchCount <= 5) {
+              console.log(`      Context [-3 to +3]:`);
+              console.log(`        Backend:  [${backendWords.slice(Math.max(0, i-3), i+4).join(', ')}]`);
+              console.log(`        Frontend: [${frontendWords.slice(Math.max(0, i-3), i+4).join(', ')}]`);
+            }
+          } else {
+            matchStreak++;
           }
+        }
+
+        if (matchStreak > 0) {
+          console.log(`   ✓ ${matchStreak} words matched (indices ${Math.max(frontendWords.length, backendWords.length) - matchStreak} to end)`);
+        }
+
+        // Summary
+        console.log('📋 Summary:');
+        console.log(`   Total mismatches: ${mismatches.length}`);
+        console.log(`   Period-related mismatches: ${mismatches.filter(m => m.isPeriodMismatch).length}`);
+        console.log(`   Content mismatches: ${mismatches.filter(m => !m.isPeriodMismatch).length}`);
+
+        // Find words with periods attached (backend joining with ". ")
+        const wordsWithPeriods = backendWords.filter(w => w && w.endsWith('.')).map((w, i) => ({ word: w, index: backendWords.indexOf(w) }));
+        console.log(`   Backend words ending with period: ${wordsWithPeriods.length}`);
+        if (wordsWithPeriods.length > 0 && wordsWithPeriods.length <= 20) {
+          console.log(`   Period words:`, wordsWithPeriods.slice(0, 10).map(w => `"${w.word}" @${w.index}`).join(', '));
         }
       }
     }
