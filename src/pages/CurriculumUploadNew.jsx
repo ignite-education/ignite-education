@@ -602,6 +602,30 @@ const CurriculumUploadNew = () => {
     }
   };
 
+  const deleteQuestion = async (questionToDelete) => {
+    if (!confirm('Delete this question? This cannot be undone.')) return;
+
+    setIsSavingQuestion(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/lesson-questions/${questionToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete question');
+      }
+
+      // Remove from local state
+      setGeneratedQuestions(prev => prev.filter(q => q.id !== questionToDelete.id));
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
+
   // Course management
   const saveCourse = async () => {
     if (!selectedCourseId.trim() || !courseName.trim()) {
@@ -2714,10 +2738,17 @@ ${contentBlocks.map((block, index) => {
                                       </button>
                                       <button
                                         onClick={() => deleteAndRegenerateQuestion(question)}
+                                        className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Regenerate
+                                      </button>
+                                      <button
+                                        onClick={() => deleteQuestion(question)}
                                         className="text-xs text-red-400 hover:text-red-300 transition"
                                         disabled={isSavingQuestion}
                                       >
-                                        {isSavingQuestion ? 'Regenerating...' : 'Regenerate'}
+                                        Delete
                                       </button>
                                     </div>
                                   </div>
