@@ -56,6 +56,8 @@ const CurriculumUploadNew = () => {
   // Knowledge check questions state
   const [questionStatus, setQuestionStatus] = useState(null);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [showQuestions, setShowQuestions] = useState(false);
 
   // Audio generation state
   const [audioStatus, setAudioStatus] = useState(null);
@@ -170,6 +172,7 @@ const CurriculumUploadNew = () => {
       loadFlashcards(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
       checkAudioStatus(); // Check if audio exists for this lesson
       checkQuestionStatus(selectedCourseId, selectedModuleNumber, selectedLessonNumber); // Check if questions exist
+      loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber); // Load existing questions
     }
   }, [selectedCourseId, selectedModuleNumber, selectedLessonNumber]);
 
@@ -434,6 +437,30 @@ const CurriculumUploadNew = () => {
     }
   };
 
+  // Load generated questions for current lesson
+  const loadQuestions = async (courseId, moduleNumber, lessonNumber) => {
+    try {
+      const { data, error } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .order('created_at');
+
+      if (error) {
+        console.error('Error loading questions:', error);
+        setGeneratedQuestions([]);
+        return;
+      }
+
+      setGeneratedQuestions(data || []);
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      setGeneratedQuestions([]);
+    }
+  };
+
   // Generate knowledge check questions for current lesson
   const handleGenerateQuestions = async () => {
     if (!selectedCourseId || !selectedModuleNumber || !selectedLessonNumber) {
@@ -459,6 +486,7 @@ const CurriculumUploadNew = () => {
       if (response.ok && data.success) {
         alert(`Successfully generated ${data.questionCount} knowledge check questions!`);
         await checkQuestionStatus(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+        await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
       } else {
         alert(`Failed to generate questions: ${data.error || 'Unknown error'}`);
       }
@@ -2492,6 +2520,50 @@ ${contentBlocks.map((block, index) => {
                   <p className="text-sm text-gray-400 text-center mt-2">
                     Generate knowledge check questions after saving your lesson content
                   </p>
+
+                  {/* Questions Display */}
+                  {generatedQuestions.length > 0 && (
+                    <div className="mt-6 border-t border-gray-700 pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-white">
+                          Generated Questions ({generatedQuestions.length})
+                        </h3>
+                        <button
+                          onClick={() => setShowQuestions(!showQuestions)}
+                          className="text-sm text-purple-400 hover:text-purple-300 font-medium transition"
+                        >
+                          {showQuestions ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+
+                      {showQuestions && (
+                        <div className="space-y-3">
+                          {generatedQuestions.map((question, index) => (
+                            <div
+                              key={question.id}
+                              className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                  {index + 1}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-gray-200">{question.question_text}</p>
+                                  <span className={`inline-block mt-2 px-2 py-0.5 text-xs rounded-full ${
+                                    question.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                                    question.difficulty === 'hard' ? 'bg-red-900 text-red-300' :
+                                    'bg-yellow-900 text-yellow-300'
+                                  }`}>
+                                    {question.difficulty}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
