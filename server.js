@@ -1059,6 +1059,166 @@ app.put('/api/admin/lesson-questions/:questionId', async (req, res) => {
   }
 });
 
+// Delete a question (admin endpoint)
+app.delete('/api/admin/lesson-questions/:questionId', async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    const { error } = await supabase
+      .from('lesson_questions')
+      .delete()
+      .eq('id', questionId);
+
+    if (error) {
+      throw new Error(`Failed to delete question: ${error.message}`);
+    }
+
+    console.log(`🗑️ Deleted question ${questionId}`);
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Generate a single replacement question for a lesson (admin endpoint)
+app.post('/api/admin/generate-single-question', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber, difficulty, existingQuestions } = req.body;
+
+    // 1. Fetch lesson content
+    const { data: sections, error: fetchError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (fetchError) {
+      throw new Error(`Failed to fetch lesson: ${fetchError.message}`);
+    }
+
+    if (!sections || sections.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Lesson not found'
+      });
+    }
+
+    const lessonName = sections[0]?.lesson_name || 'Unknown Lesson';
+    const lessonText = sections
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    if (!lessonText.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'No lesson content found'
+      });
+    }
+
+    // 2. Generate a single question using Claude
+    const existingQuestionsText = (existingQuestions || []).join('\n- ');
+
+    const systemPrompt = `You are Will, an AI tutor creating a knowledge check question for a lesson.
+
+LANGUAGE REQUIREMENT:
+- Use BRITISH ENGLISH spelling throughout
+
+Your task:
+Generate exactly ONE ${difficulty || 'medium'} difficulty open-ended question based on this lesson content.
+
+REQUIREMENTS:
+1. Generate exactly 1 question - no more, no less
+2. The question should be open-ended (NOT multiple choice)
+3. The question should test understanding, not just recall
+4. The question should be answerable from the lesson content alone
+5. Be friendly and encouraging in tone
+6. The question should be clear and specific
+7. IMPORTANT: The question must be DIFFERENT from these existing questions:
+${existingQuestionsText ? `- ${existingQuestionsText}` : '(none)'}
+
+Lesson Name: ${lessonName}
+
+Lesson Content:
+${lessonText}
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "question": "Your question here?",
+  "difficulty": "${difficulty || 'medium'}"
+}`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-7-sonnet-20250219',
+      max_tokens: 512,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: 'Generate exactly 1 unique knowledge check question in JSON format.'
+        }
+      ],
+    });
+
+    const responseText = message.content[0].text;
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Claude response');
+    }
+
+    const questionData = JSON.parse(jsonMatch[0]);
+
+    // 3. Get content hash for the question
+    const contentHash = crypto.createHash('sha256').update(lessonText).digest('hex');
+
+    // 4. Save to database
+    const { data: inserted, error: insertError } = await supabase
+      .from('lesson_questions')
+      .insert({
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        question_text: questionData.question,
+        difficulty: questionData.difficulty || difficulty || 'medium',
+        content_hash: contentHash
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      throw new Error(`Failed to save question: ${insertError.message}`);
+    }
+
+    console.log(`✨ Generated new ${inserted.difficulty} question for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    res.json({
+      success: true,
+      question: inserted
+    });
+
+  } catch (error) {
+    console.error('Error generating single question:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Generate and store flashcards for a lesson (admin/setup endpoint)
 app.post('/api/generate-flashcards', async (req, res) => {
   try {

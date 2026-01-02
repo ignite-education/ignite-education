@@ -547,6 +547,61 @@ const CurriculumUploadNew = () => {
     }
   };
 
+  const deleteAndRegenerateQuestion = async (questionToDelete) => {
+    if (!confirm('Delete this question and generate a new one?')) return;
+
+    setIsSavingQuestion(true);
+    try {
+      // 1. Delete the question
+      const deleteResponse = await fetch(`${API_URL}/api/admin/lesson-questions/${questionToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!deleteResponse.ok) {
+        const data = await deleteResponse.json();
+        throw new Error(data.error || 'Failed to delete question');
+      }
+
+      // 2. Generate a new question with the same difficulty
+      const existingQuestions = generatedQuestions
+        .filter(q => q.id !== questionToDelete.id)
+        .map(q => q.question_text);
+
+      const generateResponse = await fetch(`${API_URL}/api/admin/generate-single-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: selectedCourseId,
+          moduleNumber: selectedModuleNumber,
+          lessonNumber: selectedLessonNumber,
+          difficulty: questionToDelete.difficulty,
+          existingQuestions
+        })
+      });
+
+      const generateData = await generateResponse.json();
+
+      if (generateResponse.ok && generateData.success) {
+        // Update local state: remove old question, add new one
+        setGeneratedQuestions(prev => {
+          const filtered = prev.filter(q => q.id !== questionToDelete.id);
+          return [...filtered, generateData.question];
+        });
+      } else {
+        // Question was deleted but regeneration failed - reload questions
+        alert(`Question deleted but failed to generate new one: ${generateData.error || 'Unknown error'}`);
+        await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+      }
+    } catch (error) {
+      console.error('Error deleting/regenerating question:', error);
+      alert(`Error: ${error.message}`);
+      // Reload questions to ensure consistent state
+      await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
+
   // Course management
   const saveCourse = async () => {
     if (!selectedCourseId.trim() || !courseName.trim()) {
@@ -2653,8 +2708,16 @@ ${contentBlocks.map((block, index) => {
                                       <button
                                         onClick={() => startEditingQuestion(question)}
                                         className="text-xs text-purple-400 hover:text-purple-300 transition"
+                                        disabled={isSavingQuestion}
                                       >
                                         Edit
+                                      </button>
+                                      <button
+                                        onClick={() => deleteAndRegenerateQuestion(question)}
+                                        className="text-xs text-red-400 hover:text-red-300 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        {isSavingQuestion ? 'Regenerating...' : 'Regenerate'}
                                       </button>
                                     </div>
                                   </div>
