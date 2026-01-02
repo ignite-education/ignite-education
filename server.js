@@ -563,80 +563,85 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Claude chat server is running' });
 });
 
-// Knowledge Check - Generate question
+// Knowledge Check - Get a random question from the pre-generated question bank
 app.post('/api/knowledge-check/question', async (req, res) => {
   try {
-    const { lessonContext, priorLessonsContext, questionNumber, totalQuestions, previousQA, isAboutPriorLessons, numPriorQuestions, useBritishEnglish } = req.body;
+    const {
+      courseId,
+      moduleNumber,
+      lessonNumber,
+      questionNumber,
+      totalQuestions,
+      previousQA,
+      isAboutPriorLessons
+    } = req.body;
 
-    // Build a list of previously asked questions to avoid repetition
-    const previousQuestions = previousQA?.map(qa => qa.question).join('\n') || 'None yet';
+    // Get IDs of previously asked questions to avoid repetition
+    const askedQuestionIds = previousQA?.map(qa => qa.questionId).filter(Boolean) || [];
 
-    // Determine which content to use for question generation
-    const contentToUse = isAboutPriorLessons ? priorLessonsContext : lessonContext;
-    const contentLabel = isAboutPriorLessons ? 'Prior Lessons Content' : 'Current Lesson Content';
-    
-    // Build the context section
-    let contextSection = `${contentLabel}:
-${contentToUse}`;
-    
-    // If we have prior lessons and this is about the current lesson, include a note
-    if (!isAboutPriorLessons && priorLessonsContext && priorLessonsContext.trim()) {
-      contextSection += `\n\nNote: The student has completed prior lessons, but this question should focus ONLY on the current lesson content above.`;
+    let questions;
+    let error;
+
+    if (isAboutPriorLessons) {
+      // For recall questions: fetch from ALL prior lessons (before current)
+      // Query: (module < current) OR (module = current AND lesson < current)
+      const { data, error: queryError } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .or(`module_number.lt.${moduleNumber},and(module_number.eq.${moduleNumber},lesson_number.lt.${lessonNumber})`);
+
+      questions = data;
+      error = queryError;
+    } else {
+      // For current lesson questions: fetch from current lesson only
+      const { data, error: queryError } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber);
+
+      questions = data;
+      error = queryError;
     }
 
-    // For prior lesson questions, add instruction to pick from different lessons
-    const priorLessonInstruction = isAboutPriorLessons
-      ? `- IMPORTANT: The prior lessons content contains MULTIPLE lessons separated by "========". You MUST randomly select a lesson from ANYWHERE in the content - do NOT always pick from the first lesson. Spread your questions across different lessons.
-- This question should test recall and understanding from lessons completed BEFORE the current lesson
-- If this is prior question 2, pick from a DIFFERENT lesson than prior question 1`
-      : '- Focus exclusively on the current lesson content';
+    if (error) {
+      console.error('Database error fetching questions:', error);
+      throw new Error('Failed to fetch questions from database');
+    }
 
-    // British English instruction
-    const languageInstruction = useBritishEnglish
-      ? `- IMPORTANT: Use British English spelling throughout (e.g., 'prioritise' not 'prioritize', 'organisation' not 'organization', 'colour' not 'color', 'analyse' not 'analyze')`
-      : '';
+    // Filter out already asked questions
+    const availableQuestions = (questions || []).filter(q => !askedQuestionIds.includes(q.id));
 
-    const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions}.
+    if (availableQuestions.length === 0) {
+      // No questions available - either none generated or all have been asked
+      console.log(`⚠️ No available questions for ${courseId} M${moduleNumber}L${lessonNumber} (isAboutPriorLessons: ${isAboutPriorLessons})`);
+      return res.status(404).json({
+        success: false,
+        error: 'No questions available',
+        needsGeneration: true
+      });
+    }
 
-${contextSection}
+    // Pick a random question from available ones
+    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+    const selectedQuestion = availableQuestions[randomIndex];
 
-Previously Asked Questions:
-${previousQuestions}
-
-Your task:
-- Generate ONE clear, specific question that tests the student's understanding of the ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'}
-- The question should be open-ended (not multiple choice)
-- Vary the difficulty - some questions should be straightforward recall, others should require deeper understanding or application
-- DO NOT repeat any previously asked questions
-- Make sure the question can be answered based on the content provided
-- Keep the question concise and clear
-- Be friendly and encouraging in your tone
-${priorLessonInstruction}
-${languageInstruction}
-
-Generate ONLY the question, nothing else.`;
-
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 256,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: `Generate question ${questionNumber} of ${totalQuestions} for this knowledge check.`
-        }
-      ],
-    });
-
-    const question = message.content[0].text;
+    console.log(`✅ Selected question ${questionNumber}/${totalQuestions} for ${courseId} M${moduleNumber}L${lessonNumber} (from ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'})`);
 
     res.json({
       success: true,
-      question: question
+      question: selectedQuestion.question_text,
+      questionId: selectedQuestion.id,
+      difficulty: selectedQuestion.difficulty,
+      // Include source info for recall questions
+      sourceModule: selectedQuestion.module_number,
+      sourceLesson: selectedQuestion.lesson_number
     });
 
   } catch (error) {
-    console.error('Error generating question:', error);
+    console.error('Error fetching question:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -736,6 +741,241 @@ Respond in JSON format:
       success: false,
       error: error.message
     });
+  }
+});
+
+// ============================================================================
+// KNOWLEDGE CHECK QUESTION BANK - Pre-generated questions stored in database
+// ============================================================================
+
+// Generate and store knowledge check questions for a lesson (admin endpoint)
+app.post('/api/admin/generate-lesson-questions', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber, forceRegenerate = false } = req.body;
+
+    console.log(`📝 Generating knowledge check questions for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    // 1. Fetch lesson sections
+    const { data: sections, error: sectionsError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (sectionsError || !sections || sections.length === 0) {
+      console.error('❌ No lesson content found:', sectionsError);
+      return res.status(404).json({ success: false, error: 'No lesson content found' });
+    }
+
+    // 2. Extract lesson text for question generation
+    const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
+    const lessonText = sections
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    if (!lessonText.trim()) {
+      return res.status(400).json({ success: false, error: 'No text content found in lesson' });
+    }
+
+    const contentHash = crypto.createHash('sha256').update(lessonText).digest('hex');
+
+    // 3. Check if questions already exist with same hash (skip if unchanged)
+    if (!forceRegenerate) {
+      const { data: existing } = await supabase
+        .from('lesson_questions')
+        .select('id, content_hash')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .limit(1);
+
+      if (existing && existing.length > 0 && existing[0].content_hash === contentHash) {
+        console.log('⏭️  Questions already exist and content unchanged, skipping');
+        return res.json({
+          success: true,
+          message: 'Questions already exist and content unchanged',
+          skipped: true
+        });
+      }
+    }
+
+    // 4. Generate 10 questions using Claude
+    const systemPrompt = `You are Will, an AI tutor creating knowledge check questions for a lesson.
+
+LANGUAGE REQUIREMENT:
+- Use BRITISH ENGLISH spelling throughout
+- Examples: "organise" not "organize", "colour" not "color", "analyse" not "analyze", "behaviour" not "behavior"
+
+Your task:
+Generate EXACTLY 10 open-ended knowledge check questions based on this lesson content.
+
+REQUIREMENTS:
+1. Generate exactly 10 questions - no more, no less
+2. Questions should be open-ended (NOT multiple choice)
+3. Questions should test understanding, not just recall
+4. Vary difficulty: 3 easy, 4 medium, 3 hard
+5. Questions should be answerable from the lesson content alone
+6. Be friendly and encouraging in tone
+7. Each question should be clear and specific
+8. Cover the full breadth of the lesson content
+
+Lesson Name: ${lessonName}
+
+Lesson Content:
+${lessonText}
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "questions": [
+    {"text": "Question 1 here?", "difficulty": "easy"},
+    {"text": "Question 2 here?", "difficulty": "easy"},
+    {"text": "Question 3 here?", "difficulty": "easy"},
+    {"text": "Question 4 here?", "difficulty": "medium"},
+    {"text": "Question 5 here?", "difficulty": "medium"},
+    {"text": "Question 6 here?", "difficulty": "medium"},
+    {"text": "Question 7 here?", "difficulty": "medium"},
+    {"text": "Question 8 here?", "difficulty": "hard"},
+    {"text": "Question 9 here?", "difficulty": "hard"},
+    {"text": "Question 10 here?", "difficulty": "hard"}
+  ]
+}`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-7-sonnet-20250219',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: 'Generate exactly 10 knowledge check questions in JSON format.'
+        }
+      ],
+    });
+
+    const responseText = message.content[0].text;
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Claude response');
+    }
+
+    const questionsData = JSON.parse(jsonMatch[0]);
+    const questions = questionsData.questions || [];
+
+    if (questions.length === 0) {
+      throw new Error('No questions generated');
+    }
+
+    console.log(`✅ Generated ${questions.length} questions`);
+
+    // 5. Delete existing questions for this lesson
+    const { error: deleteError } = await supabase
+      .from('lesson_questions')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber);
+
+    if (deleteError) {
+      console.warn('Warning: Could not delete existing questions:', deleteError);
+    }
+
+    // 6. Insert new questions
+    const questionsToInsert = questions.map(q => ({
+      course_id: courseId,
+      module_number: moduleNumber,
+      lesson_number: lessonNumber,
+      question_text: q.text,
+      difficulty: q.difficulty || 'medium',
+      content_hash: contentHash
+    }));
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('lesson_questions')
+      .insert(questionsToInsert)
+      .select();
+
+    if (insertError) {
+      throw new Error(`Failed to save questions: ${insertError.message}`);
+    }
+
+    console.log(`💾 Saved ${inserted.length} questions to database`);
+
+    res.json({
+      success: true,
+      questionCount: inserted.length,
+      contentHash
+    });
+
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Check question status for a lesson (admin endpoint)
+app.get('/api/admin/lesson-questions-status/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+    const moduleNum = parseInt(module);
+    const lessonNum = parseInt(lesson);
+
+    // Get current content hash from lesson
+    const { data: sections } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum)
+      .order('section_number', { ascending: true });
+
+    const lessonText = (sections || [])
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    const currentHash = lessonText.trim() ? crypto.createHash('sha256').update(lessonText).digest('hex') : null;
+
+    // Check existing questions
+    const { data: questions, error } = await supabase
+      .from('lesson_questions')
+      .select('id, content_hash, created_at')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum);
+
+    const hasQuestions = !error && questions && questions.length > 0;
+    const questionHash = questions?.[0]?.content_hash || null;
+    const needsRegeneration = hasQuestions ? (questionHash !== currentHash) : true;
+
+    res.json({
+      hasQuestions,
+      questionCount: questions?.length || 0,
+      contentHash: currentHash,
+      questionHash,
+      needsRegeneration,
+      lastGenerated: questions?.[0]?.created_at || null
+    });
+  } catch (error) {
+    console.error('Error checking question status:', error);
+    res.status(500).json({ error: 'Failed to check question status' });
   }
 });
 

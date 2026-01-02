@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, Eye, ArrowLeft, Image as ImageIcon, Youtube, PlusCircle, History, RotateCcw, Clock, X } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, Eye, ArrowLeft, Image as ImageIcon, Youtube, PlusCircle, History, RotateCcw, Clock, X, HelpCircle, RefreshCw } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
 import { createLessonBackup, getLessonBackups, restoreLessonFromBackup, deleteLessonBackup } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const CurriculumUpload = () => {
   const navigate = useNavigate();
@@ -41,6 +43,10 @@ const CurriculumUpload = () => {
   const [restoringBackup, setRestoringBackup] = useState(null);
   const [selectedBackupPreview, setSelectedBackupPreview] = useState(null);
 
+  // Knowledge check questions states
+  const [questionStatus, setQuestionStatus] = useState(null);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+
   // Load existing data on mount
   useEffect(() => {
     loadExistingData();
@@ -66,6 +72,62 @@ const CurriculumUpload = () => {
       loadLessonNames(courseId, moduleNumber, lessonNumber);
     }
   }, [courseId, moduleNumber, lessonNumber]);
+
+  // Check question status when lesson changes
+  useEffect(() => {
+    if (courseId && moduleNumber && lessonNumber) {
+      checkQuestionStatus();
+    }
+  }, [courseId, moduleNumber, lessonNumber]);
+
+  // Check if knowledge check questions exist for this lesson
+  const checkQuestionStatus = async () => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/admin/lesson-questions-status/${courseId}/${moduleNumber}/${lessonNumber}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setQuestionStatus(data);
+      } else {
+        setQuestionStatus(null);
+      }
+    } catch (error) {
+      console.error('Error checking question status:', error);
+      setQuestionStatus(null);
+    }
+  };
+
+  // Generate knowledge check questions for the current lesson
+  const handleGenerateQuestions = async () => {
+    setIsGeneratingQuestions(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/generate-lesson-questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId,
+          moduleNumber,
+          lessonNumber,
+          forceRegenerate: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`Successfully generated ${data.questionCount} questions!`);
+        await checkQuestionStatus();
+      } else {
+        alert(`Failed to generate questions: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      alert(`Error generating questions: ${error.message}`);
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
+  };
 
   const loadExistingData = async () => {
     try {
@@ -723,6 +785,47 @@ const CurriculumUpload = () => {
                   </p>
                 )}
               </div>
+            </div>
+          </div>
+
+          {/* Knowledge Check Questions Section */}
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <HelpCircle size={20} className="text-purple-600" />
+                <div>
+                  <h3 className="font-medium text-gray-900">Knowledge Check Questions</h3>
+                  {questionStatus ? (
+                    <p className="text-sm text-gray-600">
+                      {questionStatus.hasQuestions
+                        ? `${questionStatus.questionCount} questions generated`
+                        : 'No questions yet'}
+                      {questionStatus.needsRegeneration && questionStatus.hasQuestions && (
+                        <span className="text-orange-600 ml-2">(Content changed - regenerate recommended)</span>
+                      )}
+                    </p>
+                  ) : (
+                    <p className="text-sm text-gray-400">Loading status...</p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={handleGenerateQuestions}
+                disabled={isGeneratingQuestions}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isGeneratingQuestions ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw size={16} />
+                    Generate Questions
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

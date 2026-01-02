@@ -56,6 +56,7 @@ const LearningHub = () => {
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [userCourseName, setUserCourseName] = useState('Product Management');
+  const [userCourseId, setUserCourseId] = useState('product-manager');
   const [currentModule, setCurrentModule] = useState(parseInt(searchParams.get('module')) || 1);
   const [currentLesson, setCurrentLesson] = useState(parseInt(searchParams.get('lesson')) || 1);
   const [chatMessages, setChatMessages] = useState([
@@ -697,6 +698,7 @@ const LearningHub = () => {
       }
 
       const courseId = await getUserCourseId();
+      setUserCourseId(courseId);
 
       console.log('📝 Using userId:', userId, 'courseId:', courseId);
 
@@ -789,39 +791,6 @@ const LearningHub = () => {
     const moduleKey = `module_${currentModule}`;
     const lessonKey = `lesson_${currentLesson}`;
     return groupedLessons[moduleKey]?.[lessonKey] || [];
-  };
-
-  // Get all lessons prior to the current lesson for knowledge check
-  const getPriorLessonsData = () => {
-    const allPriorSections = [];
-    
-    // Iterate through all modules and lessons before the current one
-    for (let m = 1; m <= currentModule; m++) {
-      const moduleKey = `module_${m}`;
-      const moduleData = groupedLessons[moduleKey];
-      
-      if (!moduleData) continue;
-      
-      // For modules before current module, include all lessons
-      // For current module, only include lessons before current lesson
-      const maxLesson = (m === currentModule) ? currentLesson - 1 : Object.keys(moduleData).length;
-      
-      for (let l = 1; l <= maxLesson; l++) {
-        const lessonKey = `lesson_${l}`;
-        const lessonSections = moduleData[lessonKey];
-        
-        if (lessonSections && Array.isArray(lessonSections)) {
-          allPriorSections.push({
-            module: m,
-            lesson: l,
-            lessonName: lessonSections.lessonName || `Module ${m}, Lesson ${l}`,
-            sections: lessonSections
-          });
-        }
-      }
-    }
-    
-    return allPriorSections;
   };
 
   const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
@@ -3810,6 +3779,7 @@ ${currentLessonSections.map((section) => {
         isOpen={showKnowledgeCheck}
         onClose={handleKnowledgeCheckClose}
         onPass={handleKnowledgeCheckPass}
+        courseId={userCourseId}
         lessonContext={currentLessonSections.length > 0 ? `
 Lesson: ${lessonName}
 Module: ${currentModule}
@@ -3820,21 +3790,6 @@ Title: ${section.title}
 Content: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
 `).join('\n---\n')}
         `.trim() : ''}
-        priorLessonsContext={(() => {
-          const priorLessons = getPriorLessonsData();
-          if (priorLessons.length === 0) return '';
-          
-          return priorLessons.map(lesson => `
-Lesson: ${lesson.lessonName}
-Module: ${lesson.module}, Lesson: ${lesson.lesson}
-
-Sections:
-${lesson.sections.map(section => `
-Title: ${section.title}
-Content: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}
-`).join('\n---\n')}
-          `).join('\n\n========\n\n').trim();
-        })()}
         lessonName={lessonName}
         moduleNum={currentModule}
         lessonNum={currentLesson}

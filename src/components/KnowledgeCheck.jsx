@@ -5,7 +5,7 @@ import { logKnowledgeCheck } from '../lib/api';
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
+const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -221,14 +221,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lessonContext,
-          priorLessonsContext,
+          courseId,
+          moduleNumber: moduleNum,
+          lessonNumber: lessonNum,
           questionNumber: questionNum,
           totalQuestions: TOTAL_QUESTIONS,
-          previousQA: currentAnswers,
+          previousQA: currentAnswers.map(qa => ({
+            question: qa.question,
+            questionId: qa.questionId
+          })),
           isAboutPriorLessons,
-          numPriorQuestions: NUM_PRIOR_QUESTIONS,
-          useBritishEnglish: true,
         }),
       });
 
@@ -242,7 +244,19 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             type: 'assistant',
             text: `${questionNum}. ${data.question}`,
             isComplete: false,
-            isQuestion: true
+            isQuestion: true,
+            questionId: data.questionId
+          }];
+        });
+      } else if (data.needsGeneration) {
+        // Questions not yet generated for this lesson
+        setChatMessages(prev => {
+          const newMessageIndex = prev.length;
+          setPendingTypingIndex(newMessageIndex);
+          return [...prev, {
+            type: 'assistant',
+            text: 'Knowledge check questions are still being prepared for this lesson. Please try again in a moment or contact support if this persists.',
+            isComplete: false
           }];
         });
       } else {
@@ -255,7 +269,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         setPendingTypingIndex(newMessageIndex);
         return [...prev, {
           type: 'assistant',
-          text: 'Sorry, I encountered an error getting the next question. Please try again! 😊',
+          text: 'Sorry, I encountered an error getting the next question. Please try again!',
           isComplete: false
         }];
       });
@@ -283,8 +297,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       const data = await response.json();
 
       if (data.success) {
+        // Get the last question message to extract questionId
+        const lastQuestionMessage = chatMessages[chatMessages.length - 1];
         const newAnswer = {
-          question: chatMessages[chatMessages.length - 1].text,
+          question: lastQuestionMessage.text,
+          questionId: lastQuestionMessage.questionId,
           answer: userAnswer,
           isCorrect: data.isCorrect,
           feedback: data.feedback,
