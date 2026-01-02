@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
@@ -1293,22 +1293,22 @@ const ProgressHub = () => {
     return Math.round((completedLessons / totalLessons) * 100);
   };
 
-  // Helper function to get ALL lessons (including completed, current, and upcoming)
-  const getAllLessonsForCarousel = () => {
-    if (lessonsMetadata.length === 0) return [];
+  // Only call getAllLessonsForCarousel if we have data
+  const hasLessonData = Object.keys(groupedLessons).length > 0;
+
+  // Memoize upcomingLessons to prevent infinite re-render loop
+  // (the scroll useEffect depends on this array)
+  const upcomingLessons = useMemo(() => {
+    if (!hasLessonData || lessonsMetadata.length === 0) return [];
 
     // Return all lessons sorted by module and lesson number
-    return lessonsMetadata.sort((a, b) => {
+    return [...lessonsMetadata].sort((a, b) => {
       if (a.module_number !== b.module_number) {
         return a.module_number - b.module_number;
       }
       return a.lesson_number - b.lesson_number;
     });
-  };
-
-  // Only call getAllLessonsForCarousel if we have data
-  const hasLessonData = Object.keys(groupedLessons).length > 0;
-  const upcomingLessons = hasLessonData ? getAllLessonsForCarousel() : [];
+  }, [hasLessonData, lessonsMetadata]);
   const progressPercentage = hasLessonData ? calculateProgressPercentage() : user.progress;
 
   // Settings Modal Handlers
