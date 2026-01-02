@@ -20,7 +20,7 @@ const supabase = createClient(
   process.env.VITE_SUPABASE_ANON_KEY
 );
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = process.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 async function getAllLessons(courseId) {
   const { data, error } = await supabase

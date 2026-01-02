@@ -787,47 +787,6 @@ const CurriculumUpload = () => {
               </div>
             </div>
           </div>
-
-          {/* Knowledge Check Questions Section */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <HelpCircle size={20} className="text-purple-600" />
-                <div>
-                  <h3 className="font-medium text-gray-900">Knowledge Check Questions</h3>
-                  {questionStatus ? (
-                    <p className="text-sm text-gray-600">
-                      {questionStatus.hasQuestions
-                        ? `${questionStatus.questionCount} questions generated`
-                        : 'No questions yet'}
-                      {questionStatus.needsRegeneration && questionStatus.hasQuestions && (
-                        <span className="text-orange-600 ml-2">(Content changed - regenerate recommended)</span>
-                      )}
-                    </p>
-                  ) : (
-                    <p className="text-sm text-gray-400">Loading status...</p>
-                  )}
-                </div>
-              </div>
-              <button
-                onClick={handleGenerateQuestions}
-                disabled={isGeneratingQuestions}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isGeneratingQuestions ? (
-                  <>
-                    <RefreshCw size={16} className="animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw size={16} />
-                    Generate Questions
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Modals for creating new items */}
@@ -963,6 +922,47 @@ const CurriculumUpload = () => {
                 {renderBlockEditor(block, index)}
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Knowledge Check Questions Section */}
+        <div className="bg-white rounded-lg p-6 shadow mt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <HelpCircle size={24} className="text-purple-600" />
+              <div>
+                <h2 className="text-xl font-semibold">Knowledge Check Questions</h2>
+                {questionStatus ? (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {questionStatus.hasQuestions
+                      ? `${questionStatus.questionCount} questions generated`
+                      : 'No questions generated yet'}
+                    {questionStatus.needsRegeneration && questionStatus.hasQuestions && (
+                      <span className="text-orange-600 ml-2">(Content changed - regenerate recommended)</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-400 mt-1">Loading status...</p>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={handleGenerateQuestions}
+              disabled={isGeneratingQuestions}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isGeneratingQuestions ? (
+                <>
+                  <RefreshCw size={16} className="animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw size={16} />
+                  Generate 10 Questions
+                </>
+              )}
+            </button>
           </div>
         </div>
           </>
