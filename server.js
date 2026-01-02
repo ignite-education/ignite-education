@@ -624,11 +624,26 @@ app.post('/api/knowledge-check/question', async (req, res) => {
       });
     }
 
-    // Pick a random question from available ones
-    const randomIndex = Math.floor(Math.random() * availableQuestions.length);
-    const selectedQuestion = availableQuestions[randomIndex];
+    // Progressive difficulty for 3-question knowledge checks:
+    // Question 1 (recall from prior lessons) → Medium
+    // Question 2 (current lesson) → Easy
+    // Question 3 (current lesson) → Medium
+    const targetDifficulty = questionNumber === 2 ? 'easy' : 'medium';
 
-    console.log(`✅ Selected question ${questionNumber}/${totalQuestions} for ${courseId} M${moduleNumber}L${lessonNumber} (from ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'})`);
+    // Filter by target difficulty first
+    let filteredByDifficulty = availableQuestions.filter(q => q.difficulty === targetDifficulty);
+
+    // Fallback: if no questions of target difficulty available, use any available question
+    if (filteredByDifficulty.length === 0) {
+      console.log(`⚠️ No ${targetDifficulty} questions available, falling back to any difficulty`);
+      filteredByDifficulty = availableQuestions;
+    }
+
+    // Pick a random question from the filtered set
+    const randomIndex = Math.floor(Math.random() * filteredByDifficulty.length);
+    const selectedQuestion = filteredByDifficulty[randomIndex];
+
+    console.log(`✅ Selected ${selectedQuestion.difficulty} question ${questionNumber}/${totalQuestions} for ${courseId} M${moduleNumber}L${lessonNumber} (from ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'})`);
 
     res.json({
       success: true,

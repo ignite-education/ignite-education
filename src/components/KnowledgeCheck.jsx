@@ -23,10 +23,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, less
   const textareaRef = useRef(null);
   const hasCalledOnPassRef = useRef(false);
 
-  // Dynamic question count and pass threshold based on whether it's the first lesson
-  const TOTAL_QUESTIONS = isFirstLesson ? 3 : 5;
-  const PASS_THRESHOLD = isFirstLesson ? 2 : 4;
-  const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 2;
+  // All lessons have 3 questions: 1 recall from prior lessons, 2 from current lesson
+  // First lesson has no prior content to recall from, so all 3 are from current lesson
+  const TOTAL_QUESTIONS = 3;
+  const PASS_THRESHOLD = 2;
+  const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 1;
 
   useEffect(() => {
     if (isOpen && currentQuestionIndex === 0 && chatMessages.length === 0) {
@@ -55,9 +56,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, less
         if (isFirstLesson) {
           messageText = `${greetingText}.\n\nI'll now ask you three questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to answer two or more correctly to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         } else {
-          const courseNameText = courseName || "course";
-          const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by three questions from ${lessonNameText}. You need to answer four or more correctly to pass.\n\n**Ready to begin?**`;
+          const lessonNameTextForMsg = lessonName || "this lesson";
+          messageText = `${greetingText}.\n\nI'll now ask you three questions, which you should answer in natural language as if you were talking to a person. The first question reviews previous content, followed by two questions from ${lessonNameTextForMsg}. You need to answer two or more correctly to pass.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
