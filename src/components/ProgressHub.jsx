@@ -3165,9 +3165,9 @@ const ProgressHub = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-sm text-white">{post.title}</h3>
                             <span className="text-xs text-white">{post.time}</span>
                           </div>
-                          <h3 className="font-bold mb-1 text-sm text-white">{post.title}</h3>
                           <p className={`text-xs text-white leading-relaxed mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`}>{post.content}</p>
                           <div className="flex items-center gap-4 text-xs text-white">
                             <div className="flex items-center gap-1.5">
