@@ -837,7 +837,7 @@ REQUIREMENTS:
 1. Generate exactly 10 questions - no more, no less
 2. Questions should be open-ended (NOT multiple choice)
 3. Questions should test understanding, not just recall
-4. Vary difficulty: 3 easy, 4 medium, 3 hard
+4. Vary difficulty: 3 easy, 7 medium (no hard questions)
 5. Questions should be answerable from the lesson content alone
 6. Be friendly and encouraging in tone
 7. Each question should be clear and specific
@@ -858,9 +858,9 @@ Respond ONLY with valid JSON in this exact format:
     {"text": "Question 5 here?", "difficulty": "medium"},
     {"text": "Question 6 here?", "difficulty": "medium"},
     {"text": "Question 7 here?", "difficulty": "medium"},
-    {"text": "Question 8 here?", "difficulty": "hard"},
-    {"text": "Question 9 here?", "difficulty": "hard"},
-    {"text": "Question 10 here?", "difficulty": "hard"}
+    {"text": "Question 8 here?", "difficulty": "medium"},
+    {"text": "Question 9 here?", "difficulty": "medium"},
+    {"text": "Question 10 here?", "difficulty": "medium"}
   ]
 }`;
 
