@@ -994,6 +994,71 @@ app.get('/api/admin/lesson-questions-status/:courseId/:module/:lesson', async (r
   }
 });
 
+// Update a single question (admin endpoint)
+app.put('/api/admin/lesson-questions/:questionId', async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { question_text, difficulty } = req.body;
+
+    if (!question_text || !question_text.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Question text is required'
+      });
+    }
+
+    // Validate difficulty if provided
+    const validDifficulties = ['easy', 'medium', 'hard'];
+    if (difficulty && !validDifficulties.includes(difficulty)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid difficulty. Must be: easy, medium, or hard'
+      });
+    }
+
+    const updateData = {
+      question_text: question_text.trim(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (difficulty) {
+      updateData.difficulty = difficulty;
+    }
+
+    const { data, error } = await supabase
+      .from('lesson_questions')
+      .update(updateData)
+      .eq('id', questionId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update question: ${error.message}`);
+    }
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        error: 'Question not found'
+      });
+    }
+
+    console.log(`✏️ Updated question ${questionId}`);
+
+    res.json({
+      success: true,
+      question: data
+    });
+
+  } catch (error) {
+    console.error('Error updating question:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Generate and store flashcards for a lesson (admin/setup endpoint)
 app.post('/api/generate-flashcards', async (req, res) => {
   try {

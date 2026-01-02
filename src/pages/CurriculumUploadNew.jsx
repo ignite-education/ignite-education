@@ -58,6 +58,10 @@ const CurriculumUploadNew = () => {
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
   const [showQuestions, setShowQuestions] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingQuestionDifficulty, setEditingQuestionDifficulty] = useState('medium');
+  const [isSavingQuestion, setIsSavingQuestion] = useState(false);
 
   // Audio generation state
   const [audioStatus, setAudioStatus] = useState(null);
@@ -495,6 +499,51 @@ const CurriculumUploadNew = () => {
       alert(`Error generating questions: ${error.message}`);
     } finally {
       setIsGeneratingQuestions(false);
+    }
+  };
+
+  const startEditingQuestion = (question) => {
+    setEditingQuestionId(question.id);
+    setEditingQuestionText(question.question_text);
+    setEditingQuestionDifficulty(question.difficulty || 'medium');
+  };
+
+  const cancelEditingQuestion = () => {
+    setEditingQuestionId(null);
+    setEditingQuestionText('');
+    setEditingQuestionDifficulty('medium');
+  };
+
+  const saveEditedQuestion = async () => {
+    if (!editingQuestionId || !editingQuestionText.trim()) return;
+
+    setIsSavingQuestion(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/lesson-questions/${editingQuestionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_text: editingQuestionText,
+          difficulty: editingQuestionDifficulty
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update the question in local state
+        setGeneratedQuestions(prev =>
+          prev.map(q => q.id === editingQuestionId ? data.question : q)
+        );
+        cancelEditingQuestion();
+      } else {
+        alert(`Failed to save question: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving question:', error);
+      alert(`Error saving question: ${error.message}`);
+    } finally {
+      setIsSavingQuestion(false);
     }
   };
 
@@ -2543,21 +2592,74 @@ ${contentBlocks.map((block, index) => {
                               key={question.id}
                               className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition"
                             >
-                              <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                                  {index + 1}
+                              {editingQuestionId === question.id ? (
+                                /* Editing mode */
+                                <div className="space-y-3">
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                      {index + 1}
+                                    </div>
+                                    <textarea
+                                      value={editingQuestionText}
+                                      onChange={(e) => setEditingQuestionText(e.target.value)}
+                                      className="flex-1 bg-gray-700 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                      rows={3}
+                                      autoFocus
+                                    />
+                                  </div>
+                                  <div className="flex items-center justify-between pl-11">
+                                    <select
+                                      value={editingQuestionDifficulty}
+                                      onChange={(e) => setEditingQuestionDifficulty(e.target.value)}
+                                      className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:ring-2 focus:ring-purple-500"
+                                    >
+                                      <option value="easy">Easy</option>
+                                      <option value="medium">Medium</option>
+                                    </select>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={cancelEditingQuestion}
+                                        className="px-3 py-1.5 text-sm text-gray-400 hover:text-gray-200 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={saveEditedQuestion}
+                                        disabled={isSavingQuestion || !editingQuestionText.trim()}
+                                        className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                                      >
+                                        {isSavingQuestion ? 'Saving...' : 'Save'}
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
-                                <div className="flex-1">
-                                  <p className="text-gray-200">{question.question_text}</p>
-                                  <span className={`inline-block mt-2 px-2 py-0.5 text-xs rounded-full ${
-                                    question.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
-                                    question.difficulty === 'hard' ? 'bg-red-900 text-red-300' :
-                                    'bg-yellow-900 text-yellow-300'
-                                  }`}>
-                                    {question.difficulty}
-                                  </span>
+                              ) : (
+                                /* Display mode */
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-gray-200">{question.question_text}</p>
+                                    <div className="flex items-center gap-3 mt-2">
+                                      <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${
+                                        question.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                                        question.difficulty === 'hard' ? 'bg-red-900 text-red-300' :
+                                        'bg-yellow-900 text-yellow-300'
+                                      }`}>
+                                        {question.difficulty}
+                                      </span>
+                                      <button
+                                        onClick={() => startEditingQuestion(question)}
+                                        className="text-xs text-purple-400 hover:text-purple-300 transition"
+                                      >
+                                        Edit
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           ))}
                         </div>
