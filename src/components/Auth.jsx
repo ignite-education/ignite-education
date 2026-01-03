@@ -2577,6 +2577,7 @@ const Auth = () => {
             </div>
 
             {/* Footer */}
+            <div className="w-full" style={{ backgroundColor: '#F0F0F2' }}>
             <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-8 lg:px-16 py-8" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
               <div className="flex flex-col items-start gap-6">
@@ -2586,8 +2587,8 @@ const Auth = () => {
                   style={{ height: '37px', width: 'auto' }}
                 />
                 <div className="flex flex-col gap-1">
-                  <span className="text-white font-semibold" style={{ fontSize: '15px' }}>Built in London, UK.</span>
-                  <span className="text-white font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
+                  <span className="text-black font-semibold" style={{ fontSize: '15px' }}>Built in London, UK.</span>
+                  <span className="text-black font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
                 </div>
               </div>
 
@@ -2595,14 +2596,14 @@ const Auth = () => {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
                 {/* Product Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Product</span>
+                  <span className="text-black font-semibold mb-4" style={{ fontSize: '15px' }}>Product</span>
                   <div className="flex flex-col gap-2">
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
+                    <span className="text-black hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
                     <a
                       href="https://shop.ignite.education"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Store
@@ -2611,7 +2612,7 @@ const Auth = () => {
                       href="https://forms.gle/XsRJE8RKWxTTsMom8"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Feedback
@@ -2621,14 +2622,14 @@ const Auth = () => {
 
                 {/* Resources Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Resources</span>
+                  <span className="text-black font-semibold mb-4" style={{ fontSize: '15px' }}>Resources</span>
                   <div className="flex flex-col gap-2">
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
+                    <span className="text-black hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
                     <a
                       href="/release-notes"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Releases
@@ -2637,7 +2638,7 @@ const Auth = () => {
                       href="/terms"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Terms of Service
@@ -2646,7 +2647,7 @@ const Auth = () => {
                       href="/privacy"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Privacy Policy
@@ -2656,14 +2657,14 @@ const Auth = () => {
 
                 {/* Company Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Company</span>
+                  <span className="text-black font-semibold mb-4" style={{ fontSize: '15px' }}>Company</span>
                   <div className="flex flex-col gap-2">
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About</span>
+                    <span className="text-black hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About</span>
                     <a
                       href="https://www.linkedin.com/school/ignite-courses/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       LinkedIn
@@ -2672,7 +2673,7 @@ const Auth = () => {
                       href="https://www.linkedin.com/school/ignite-courses/jobs"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Careers
@@ -2682,11 +2683,11 @@ const Auth = () => {
 
                 {/* Support Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Support</span>
+                  <span className="text-black font-semibold mb-4" style={{ fontSize: '15px' }}>Support</span>
                   <div className="flex flex-col gap-2">
                     <a
                       href="mailto:hello@ignite.education"
-                      className="text-white hover:text-[#EF0B72] transition"
+                      className="text-black hover:text-[#EF0B72] transition"
                       style={{ fontSize: '14px' }}
                     >
                       Contact
@@ -2694,6 +2695,7 @@ const Auth = () => {
                   </div>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
