@@ -2579,11 +2579,11 @@ const Auth = () => {
             {/* Footer */}
             <div className={`flex ${isMobile ? 'flex-col items-center gap-8' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
-              <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-4`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
+              <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-6`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-03%20at%2016.08.16.png"
                   alt="Ignite Education"
-                  style={{ height: '34px', width: 'auto' }}
+                  style={{ height: '37px', width: 'auto' }}
                 />
                 <div className="flex flex-col gap-1">
                   <span className="text-white font-semibold" style={{ fontSize: '14px' }}>Built in London, UK.</span>
