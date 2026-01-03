@@ -2577,9 +2577,10 @@ const Auth = () => {
             </div>
 
             {/* Footer */}
-            <div className={`flex ${isMobile ? 'flex-col items-center gap-8' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+            <div className="w-full h-px bg-white" />
+            <div className={`flex ${isMobile ? 'flex-col items-center gap-8' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
-              <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-4`}>
+              <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-4`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-03%20at%2016.08.16.png"
                   alt="Ignite Education"
@@ -2592,11 +2593,11 @@ const Auth = () => {
               </div>
 
               {/* Right Side - Link Columns */}
-              <div className={`grid ${isMobile ? 'grid-cols-2 gap-8' : 'grid-cols-4 gap-16'}`}>
+              <div className={`grid ${isMobile ? 'grid-cols-2 gap-8' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
                 {/* Product Column */}
                 <div className="flex flex-col gap-3">
                   <span className="text-white font-bold" style={{ fontSize: '16px' }}>Product</span>
-                  <span className="text-white" style={{ fontSize: '14px' }}>Courses</span>
+                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
                   <a
                     href="https://shop.ignite.education"
                     target="_blank"
@@ -2606,13 +2607,13 @@ const Auth = () => {
                   >
                     Store
                   </a>
-                  <span className="text-white" style={{ fontSize: '14px' }}>Feedback</span>
+                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Feedback</span>
                 </div>
 
                 {/* Resources Column */}
                 <div className="flex flex-col gap-3">
                   <span className="text-white font-bold" style={{ fontSize: '16px' }}>Resources</span>
-                  <span className="text-white" style={{ fontSize: '14px' }}>Blog</span>
+                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
                   <a
                     href="/release-notes"
                     target="_blank"
@@ -2645,7 +2646,7 @@ const Auth = () => {
                 {/* Company Column */}
                 <div className="flex flex-col gap-3">
                   <span className="text-white font-bold" style={{ fontSize: '16px' }}>Company</span>
-                  <span className="text-white" style={{ fontSize: '14px' }}>About Us</span>
+                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About Us</span>
                   <a
                     href="https://www.linkedin.com/school/ignite-courses/"
                     target="_blank"
@@ -2655,7 +2656,7 @@ const Auth = () => {
                   >
                     LinkedIn
                   </a>
-                  <span className="text-white" style={{ fontSize: '14px' }}>Careers</span>
+                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Careers</span>
                 </div>
 
                 {/* Support Column */}
