@@ -2577,9 +2577,9 @@ const Auth = () => {
             </div>
 
             {/* Footer */}
-            <div className={`flex ${isMobile ? 'flex-col items-start gap-10' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-8 lg:px-16 py-8" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
-              <div className={`flex flex-col items-start gap-6`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
+              <div className="flex flex-col items-start gap-6 lg:-ml-[5%]">
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
                   alt="Ignite Education"
@@ -2592,7 +2592,7 @@ const Auth = () => {
               </div>
 
               {/* Right Side - Link Columns */}
-              <div className={`grid ${isMobile ? 'grid-cols-2 gap-x-16 gap-y-10 w-full' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
                 {/* Product Column */}
                 <div className="flex flex-col">
                   <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Product</span>
