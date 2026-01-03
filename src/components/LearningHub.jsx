@@ -133,6 +133,11 @@ const LearningHub = () => {
   const isProgrammaticScrollRef = React.useRef(false); // Track programmatic scroll to prevent handler interference
   const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
   const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
+
+  // Event handler refs - store current handlers to avoid recreating listeners
+  const handleSelectionRef = React.useRef(null);
+  const handleKeyDownRef = React.useRef(null);
+
   const [lessonRating, setLessonRating] = useState(null); // null, true (thumbs up), or false (thumbs down)
   const [showRatingFeedback, setShowRatingFeedback] = useState(false);
 
@@ -430,9 +435,9 @@ const LearningHub = () => {
     }
   }, [chatMessages, displayedText]);
 
-  // Handle text selection
+  // Handle text selection - Update handler ref when dependencies change
   useEffect(() => {
-    const handleSelection = () => {
+    handleSelectionRef.current = () => {
       // Don't handle text selection if knowledge check or flashcards are open
       if (showKnowledgeCheck || showFlashcards) return;
 
@@ -461,19 +466,23 @@ const LearningHub = () => {
         }
       }
     };
-
-    document.addEventListener('mouseup', handleSelection);
-    document.addEventListener('selectionchange', handleSelection);
-
-    return () => {
-      document.removeEventListener('mouseup', handleSelection);
-      document.removeEventListener('selectionchange', handleSelection);
-    };
   }, [chatInput, isEditingInput, showKnowledgeCheck, showFlashcards]);
 
-  // Handle Enter key to send auto-populated explanation prompts
+  // Register text selection listeners only once (prevents accumulation)
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const listener = () => handleSelectionRef.current?.();
+    document.addEventListener('mouseup', listener);
+    document.addEventListener('selectionchange', listener);
+
+    return () => {
+      document.removeEventListener('mouseup', listener);
+      document.removeEventListener('selectionchange', listener);
+    };
+  }, []); // Empty deps - listener registered once
+
+  // Handle Enter key - Update handler ref when chatInput changes
+  useEffect(() => {
+    handleKeyDownRef.current = (e) => {
       // Only trigger if Enter is pressed, there's an explanation prompt, and user is not focused on an input
       if (
         e.key === 'Enter' &&
@@ -490,13 +499,17 @@ const LearningHub = () => {
         }
       }
     };
+  }, [chatInput]);
 
-    document.addEventListener('keydown', handleKeyDown);
+  // Register keydown listener only once (prevents accumulation)
+  useEffect(() => {
+    const listener = (e) => handleKeyDownRef.current?.(e);
+    document.addEventListener('keydown', listener);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', listener);
     };
-  }, [chatInput]);
+  }, []); // Empty deps - listener registered once
 
   // Typing animation effect
   useEffect(() => {
@@ -682,7 +695,7 @@ const LearningHub = () => {
     return () => {
       observer.disconnect();
     };
-  }, [groupedLessons, currentModule, currentLesson]);
+  }, [groupedLessons]); // Only recreate when lesson cards change, not on navigation
 
   const fetchLessonData = async () => {
     try {
