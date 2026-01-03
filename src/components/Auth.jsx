@@ -2587,7 +2587,7 @@ const Auth = () => {
                 />
                 <div className="flex flex-col gap-1">
                   <span className="text-white font-semibold" style={{ fontSize: '14px' }}>Built in London, UK.</span>
-                  <span className="text-white" style={{ fontSize: '14px' }}>Ignite Education AI Ltd.</span>
+                  <span className="text-white font-light" style={{ fontSize: '14px' }}>Ignite Education AI Ltd.</span>
                 </div>
               </div>
 
@@ -2595,7 +2595,7 @@ const Auth = () => {
               <div className={`grid ${isMobile ? 'grid-cols-2 gap-8' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
                 {/* Product Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Product</span>
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Product</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
                     <a
@@ -2613,7 +2613,7 @@ const Auth = () => {
 
                 {/* Resources Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Resources</span>
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Resources</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
                     <a
@@ -2648,7 +2648,7 @@ const Auth = () => {
 
                 {/* Company Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Company</span>
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Company</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About Us</span>
                     <a
@@ -2666,7 +2666,7 @@ const Auth = () => {
 
                 {/* Support Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Support</span>
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Support</span>
                   <div className="flex flex-col gap-2">
                     <a
                       href="mailto:hello@ignite.education"
