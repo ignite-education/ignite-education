@@ -2587,7 +2587,7 @@ const Auth = () => {
                 />
                 <div className="flex flex-col gap-1">
                   <span className="text-white font-semibold" style={{ fontSize: '14px' }}>Built in London, UK.</span>
-                  <span className="text-white font-light" style={{ fontSize: '14px' }}>Ignite Education AI Ltd.</span>
+                  <span className="text-white font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
                 </div>
               </div>
 
@@ -2650,7 +2650,7 @@ const Auth = () => {
                 <div className="flex flex-col">
                   <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Company</span>
                   <div className="flex flex-col gap-2">
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About Us</span>
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About</span>
                     <a
                       href="https://www.linkedin.com/school/ignite-courses/"
                       target="_blank"
