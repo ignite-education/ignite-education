@@ -259,6 +259,18 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  // Sign in with Google ID token (for One-Tap sign-in)
+  const signInWithIdToken = async (idToken, nonce) => {
+    const { data, error } = await supabase.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
+      nonce: nonce, // raw nonce, not hashed
+    });
+
+    if (error) throw error;
+    return data;
+  };
+
   // Reset password - sends password reset email
   const resetPassword = async (email) => {
     console.log('Calling resetPasswordForEmail with:', {
@@ -298,6 +310,7 @@ export const AuthProvider = ({ children }) => {
     signOut,
     updateProfile,
     signInWithOAuth,
+    signInWithIdToken,
     resetPassword,
     updatePassword,
     firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,

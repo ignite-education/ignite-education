@@ -6,8 +6,11 @@ import SEO, { generateSpeakableSchema } from '../components/SEO';
 import { Home, ChevronRight, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
+import { useAuth } from '../contexts/AuthContext';
 
 import OptimizedImage from '../components/OptimizedImage';
+import GoogleOneTap from '../components/GoogleOneTap';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 
 // Lazy load below-fold components for better initial load
 const SocialShareButtons = lazy(() => import('../components/SocialShareButtons'));
@@ -58,6 +61,7 @@ const throttle = (func, limit) => {
 const CoursePage = () => {
   const navigate = useNavigate();
   const { courseSlug } = useParams();
+  const { user } = useAuth();
 
   // State
   const [course, setCourse] = useState(null);
@@ -832,19 +836,31 @@ const CoursePage = () => {
                       </div>
                     </div>
 
-                    {/* Right Column - Sticky Image (hidden on narrow viewports) */}
+                    {/* Right Column - Sticky Google One-Tap or Image (hidden on narrow viewports) */}
                     <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
                       <div className="sticky top-24">
-                        <OptimizedImage
-                          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
-                          alt="Course curriculum illustration"
-                          className="w-full rounded-lg object-cover"
-                          style={{ maxHeight: '500px' }}
-                          width={315}
-                          height={500}
-                          widths={[315, 630]}
-                          sizes="315px"
-                        />
+                        {!user ? (
+                          <GoogleOneTap
+                            courseSlug={courseSlug}
+                            onSuccess={() => {
+                              // Navigation handled in component
+                            }}
+                            onError={(error) => {
+                              console.error('[CoursePage] One-Tap error:', error);
+                            }}
+                          />
+                        ) : (
+                          <OptimizedImage
+                            src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                            alt="Course curriculum illustration"
+                            className="w-full rounded-lg object-cover"
+                            style={{ maxHeight: '500px' }}
+                            width={315}
+                            height={500}
+                            widths={[315, 630]}
+                            sizes="315px"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -997,6 +1013,17 @@ const CoursePage = () => {
                   ))}
                 </div>
               </div>
+
+              {/* Mobile Google Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
+              {!user && (
+                <div className="lg:hidden mt-8 mb-4">
+                  <GoogleSignInButton
+                    courseSlug={courseSlug}
+                    variant="standard"
+                    className="w-full"
+                  />
+                </div>
+              )}
 
               {/* Get Started / Register Interest CTA Button */}
               <div className="mt-8 mb-8 text-left">
