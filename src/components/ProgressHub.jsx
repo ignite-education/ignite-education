@@ -97,7 +97,7 @@ const ProgressHub = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { firstName, profilePicture, user: authUser, isAdFree, signOut, updateProfile, isInitialized } = useAuth();
+  const { firstName, user: authUser, isAdFree, signOut, updateProfile, isInitialized } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
@@ -2501,37 +2501,14 @@ const ProgressHub = () => {
           <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
               {/* Welcome Section */}
               <div className="flex-shrink-0" style={{ minHeight: '165px', paddingTop: '10px' }}>
-                <div className="flex items-center gap-4" style={{ marginBottom: '8px' }}>
-                  {profilePicture ? (
-                    <img
-                      src={profilePicture}
-                      alt="Profile"
-                      className="rounded-full object-cover flex-shrink-0"
-                      style={{ width: '52px', height: '52px' }}
-                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                    />
-                  ) : null}
-                  <div
-                    className="rounded-full flex-shrink-0 items-center justify-center text-white font-semibold"
-                    style={{
-                      width: '52px',
-                      height: '52px',
-                      backgroundColor: '#EF0B72',
-                      fontSize: '22px',
-                      display: profilePicture ? 'none' : 'flex'
-                    }}
-                  >
-                    {(firstName || 'U').charAt(0).toUpperCase()}
-                  </div>
-                  <h1 className="font-semibold" style={{ fontSize: '34px' }}>
-                    Welcome, <span style={{ color: '#EF0B72' }}>
-                      {typedFirstName}
-                      {!isNameTypingComplete && (
-                        <span className="animate-blink font-light">|</span>
-                      )}
-                    </span>
-                  </h1>
-                </div>
+                <h1 className="font-semibold" style={{ fontSize: '34px', marginBottom: '8px' }}>
+                  Welcome, <span style={{ color: '#EF0B72' }}>
+                    {typedFirstName}
+                    {!isNameTypingComplete && (
+                      <span className="animate-blink font-light">|</span>
+                    )}
+                  </span>
+                </h1>
                 <h2 className="font-semibold mb-0.5" style={{ letterSpacing: '0.011em', fontSize: '27px' }}>{user.enrolledCourse}</h2>
                 <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '0.2rem' }}>
                   {completedLessons.length === 0 ? (

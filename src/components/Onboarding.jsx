@@ -12,7 +12,7 @@ const MAX_COURSE_RETRIES = 2;
 const Onboarding = ({ firstName, userId }) => {
   console.log('[Onboarding] 🚀 Component rendering with props:', { firstName, userId });
 
-  const { user } = useAuth();
+  const { user, profilePicture } = useAuth();
   const [selectedCourse, setSelectedCourse] = useState('');
   const [courseStatus, setCourseStatus] = useState(''); // 'live', 'coming_soon', 'requested', or 'unrecognized'
   const [displayedName, setDisplayedName] = useState('');
@@ -431,38 +431,63 @@ const Onboarding = ({ firstName, userId }) => {
           }
         `}
       </style>
-      {/* Blurred Background */}
-      <div className="fixed inset-0 bg-black" style={{ opacity: 0.95 }} />
+      {/* White Background */}
+      <div className="fixed inset-0 bg-white" />
 
       {/* Onboarding Content */}
-      <div className="fixed inset-0 z-50 px-4" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="w-full max-w-3xl text-white px-4 relative">
-          {/* Welcome message - absolutely positioned */}
-          <div style={{
-            position: 'absolute',
-            top: '-100px',
-            left: '40px',
-            right: '40px'
-          }}>
-            <h1 className="text-5xl font-bold inline-flex items-start animate-fadeIn">
-              <span style={{ animation: 'fadeIn 0.3s ease-in' }}>Welcome</span>
-              <span style={{ animation: 'fadeIn 0.3s ease-in' }}>,</span>
-              <span className="ml-3 relative" style={{ minWidth: displayedName ? 'auto' : '0', color: '#EF0B72' }}>
-                {displayedName}
-                {showCursor && displayedName && (
-                  <span
-                    className="absolute h-12 ml-1"
-                    style={{
-                      animation: 'blink 1s step-end infinite',
-                      width: '4px',
-                      transition: 'opacity 0.3s',
-                      backgroundColor: '#EF0B72'
-                    }}
-                  />
-                )}
-              </span>
-            </h1>
+      <div className="fixed inset-0 z-50 px-4 flex flex-col items-center justify-center">
+        {/* Ignite Logo */}
+        <img
+          src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
+          alt="Ignite"
+          className="absolute top-8"
+          style={{ height: '40px' }}
+        />
+
+        <div className="w-full max-w-xl text-center">
+          {/* Profile Picture - Square, Centered */}
+          <div className="flex justify-center mb-4">
+            {profilePicture ? (
+              <img
+                src={profilePicture}
+                alt="Profile"
+                className="rounded-lg object-cover"
+                style={{ width: '80px', height: '80px' }}
+                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+              />
+            ) : null}
+            <div
+              className="rounded-lg items-center justify-center text-white font-semibold"
+              style={{
+                width: '80px',
+                height: '80px',
+                backgroundColor: '#EF0B72',
+                fontSize: '32px',
+                display: profilePicture ? 'none' : 'flex'
+              }}
+            >
+              {(firstName || 'U').charAt(0).toUpperCase()}
+            </div>
           </div>
+
+          {/* Welcome Message - Below Picture, Centered */}
+          <h1 className="text-4xl font-bold text-gray-900 mb-8 animate-fadeIn">
+            <span>Welcome, </span>
+            <span className="relative" style={{ color: '#EF0B72' }}>
+              {displayedName}
+              {showCursor && displayedName && (
+                <span
+                  className="absolute h-10 ml-1"
+                  style={{
+                    animation: 'blink 1s step-end infinite',
+                    width: '3px',
+                    transition: 'opacity 0.3s',
+                    backgroundColor: '#EF0B72'
+                  }}
+                />
+              )}
+            </span>
+          </h1>
 
           {/* Course selection appears after typing AND courses are loaded */}
           {console.log('[Onboarding] 🎯 UI render check:', {
@@ -473,32 +498,28 @@ const Onboarding = ({ firstName, userId }) => {
           })}
           {showCourseSelection && !isLoadingCourses && (
             <div style={{
-              position: 'absolute',
-              top: '-30px',
-              left: '40px',
-              right: '40px',
               animation: 'slideUpFadeIn 0.8s ease-out forwards',
               opacity: 0
             }}>
-              <h2 className="text-2xl font-light mb-2">
+              <h2 className="text-2xl font-light text-gray-700 mb-4">
                 See yourself as a
               </h2>
 
               {/* Show error state with retry button if courses failed to load */}
               {courseError ? (
-                <div className="mb-12 flex flex-col items-center py-4">
-                  <p className="text-red-400 text-center mb-4">{courseError}</p>
+                <div className="flex flex-col items-center py-4">
+                  <p className="text-red-500 text-center mb-4">{courseError}</p>
                   <button
                     onClick={handleRetryCourses}
-                    className="px-6 py-2 bg-white text-gray-800 rounded-xl hover:bg-gray-100 transition flex items-center gap-2"
+                    className="px-6 py-2 bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 transition flex items-center gap-2"
                   >
                     <RefreshCw size={20} />
                     Retry
                   </button>
                 </div>
               ) : !showNotification ? (
-                <div className="mb-12 flex items-start gap-4">
-                  <div className="flex-1 relative" ref={dropdownRef}>
+                <div className="flex justify-center">
+                  <div className="w-full max-w-md relative" ref={dropdownRef}>
                     <div className="relative">
                       <input
                         type="text"
@@ -544,7 +565,7 @@ const Onboarding = ({ firstName, userId }) => {
                         }}
                         placeholder=""
                         autoFocus
-                        className="w-full bg-white text-black text-xl px-6 py-3 rounded-xl focus:outline-none"
+                        className="w-full bg-gray-100 text-gray-900 text-xl px-6 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-300"
                         style={{
                           caretColor: '#ec4899'
                         }}
@@ -559,6 +580,17 @@ const Onboarding = ({ firstName, userId }) => {
                           }}
                         />
                       )}
+                      <button
+                        onClick={handleComplete}
+                        disabled={!selectedCourse || isSubmitting}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-pink-500 hover:bg-pink-600 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center p-2"
+                      >
+                        {isSubmitting ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <ArrowRight size={20} className="text-white" strokeWidth={2} />
+                        )}
+                      </button>
                     </div>
 
                     {isDropdownOpen && (
@@ -606,40 +638,25 @@ const Onboarding = ({ firstName, userId }) => {
                       </div>
                     )}
                   </div>
-
-                  <button
-                    onClick={handleComplete}
-                    disabled={!selectedCourse || isSubmitting}
-                    className="bg-white hover:bg-white rounded-xl transition disabled:cursor-not-allowed flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
-                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px', minWidth: '56px' }}
-                  >
-                    {isSubmitting ? (
-                      <div className="w-6 h-6 border-2 border-gray-300 border-t-pink-500 rounded-full animate-spin" />
-                    ) : (
-                      <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
-                    )}
-                  </button>
                 </div>
               ) : (
-                <div className="mb-12 flex items-start gap-4 animate-fadeIn">
-                  <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-xl px-6 py-3 text-white flex items-center">
+                <div className="flex justify-center animate-fadeIn">
+                  <div className="bg-gray-100 rounded-xl px-6 py-4 text-gray-700 flex items-center gap-4">
                     <p className="text-lg font-light">
                       We'll email you when the {selectedCourse.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ')} course is available
                     </p>
+                    <button
+                      onClick={async () => {
+                        // Sign out the user
+                        await supabase.auth.signOut();
+                        // Redirect to main landing page
+                        window.location.href = 'https://ignite.education';
+                      }}
+                      className="bg-pink-500 hover:bg-pink-600 rounded-lg transition flex-shrink-0 flex items-center justify-center p-2"
+                    >
+                      <ArrowRight size={20} className="text-white" strokeWidth={2} />
+                    </button>
                   </div>
-
-                  <button
-                    onClick={async () => {
-                      // Sign out the user
-                      await supabase.auth.signOut();
-                      // Redirect to main landing page
-                      window.location.href = 'https://ignite.education';
-                    }}
-                    className="bg-white hover:bg-white rounded-xl transition flex-shrink-0 group flex items-center justify-center px-4 shadow-sm"
-                    style={{ border: 'none', paddingTop: '13.5px', paddingBottom: '13.5px' }}
-                  >
-                    <ArrowRight size={24} className="text-gray-800 group-hover:text-pink-500 transition" strokeWidth={2} />
-                  </button>
                 </div>
               )}
             </div>
