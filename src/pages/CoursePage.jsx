@@ -1,12 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from '../components/SEO';
-import LoadingScreen from '../components/LoadingScreen';
-import { Home, ChevronRight, Link2, Check, X } from 'lucide-react';
+import { Home, ChevronRight, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
+
+import OptimizedImage from '../components/OptimizedImage';
+
+// Lazy load below-fold components for better initial load
+const SocialShareButtons = lazy(() => import('../components/SocialShareButtons'));
 
 // Cache TTL: 1 hour
 const CACHE_TTL = 60 * 60 * 1000;
@@ -35,6 +39,18 @@ const setCachedData = (key, data) => {
   }
 };
 
+// Throttle utility for scroll performance
+const throttle = (func, limit) => {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+};
+
 /**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
  * Dynamically fetches course data from Supabase
@@ -54,6 +70,11 @@ const CoursePage = () => {
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [copied, setCopied] = useState(false);
 
+  // Mobile detection for performance optimizations
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.innerWidth < 768
+  );
+
   // Become a course leader modal state
   const [showLeaderModal, setShowLeaderModal] = useState(false);
   const [leaderForm, setLeaderForm] = useState({ name: '', email: '', linkedin: '' });
@@ -68,9 +89,9 @@ const CoursePage = () => {
   const curriculumSectionRef = useRef(null);
   const whiteContentRef = useRef(null);
 
-  // Track scroll progress for pink progress bar
+  // Track scroll progress for pink progress bar (throttled for performance)
   useEffect(() => {
-    const handleScroll = () => {
+    const handleScroll = throttle(() => {
       if (!whiteContentRef.current) return;
 
       const navBarHeight = 58;
@@ -90,9 +111,9 @@ const CoursePage = () => {
         const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
         setScrollProgress(progress);
       }
-    };
+    }, 16); // ~60fps
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -235,9 +256,18 @@ const CoursePage = () => {
   };
 
   // Typing animation for title (75ms per character, 1 second delay)
+  // Skip animation on mobile for faster LCP
   useEffect(() => {
     if (!course) return;
 
+    // On mobile, show title immediately for faster LCP
+    if (isMobile) {
+      setTypedTitle(course.title);
+      setIsTypingComplete(true);
+      return;
+    }
+
+    // Desktop: animate the title
     let currentIndex = 0;
     const titleText = course.title;
 
@@ -256,7 +286,7 @@ const CoursePage = () => {
     }, 1000);
 
     return () => clearTimeout(timeoutId);
-  }, [course]);
+  }, [course, isMobile]);
 
   // Helper function to generate AI-powered module intro based on lesson content
   const generateModuleIntro = (module) => {
@@ -571,9 +601,13 @@ const CoursePage = () => {
   // Get testimonial for this course
   const testimonial = getTestimonialForCourse(courseSlug);
 
-  // Loading state - show Ignite loading animation
+  // Lightweight loading state (no Lottie for faster initial load)
   if (loading) {
-    return <LoadingScreen />;
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="w-10 h-10 border-3 border-[#EF0B72] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   // Error/404 state
@@ -776,14 +810,15 @@ const CoursePage = () => {
                     {/* Right Column - Sticky Image (hidden on narrow viewports) */}
                     <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
                       <div className="sticky top-24">
-                        <img
+                        <OptimizedImage
                           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                           alt="Course curriculum illustration"
                           className="w-full rounded-lg object-cover"
                           style={{ maxHeight: '500px' }}
-                          width="315"
-                          height="500"
-                          loading="lazy"
+                          width={315}
+                          height={500}
+                          widths={[315, 630]}
+                          sizes="315px"
                         />
                       </div>
                     </div>
@@ -818,13 +853,14 @@ const CoursePage = () => {
                             className="flex gap-4 items-start flex-1"
                           >
                             {coach.image_url ? (
-                              <img
+                              <OptimizedImage
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
                                 className="w-20 h-20 rounded object-cover flex-shrink-0"
-                                loading="lazy"
-                                width="80"
-                                height="80"
+                                width={80}
+                                height={80}
+                                widths={[80, 160, 240]}
+                                sizes="80px"
                               />
                             ) : (
                               <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
@@ -848,13 +884,14 @@ const CoursePage = () => {
                         ) : (
                           <div className="flex gap-4 items-start flex-1">
                             {coach.image_url ? (
-                              <img
+                              <OptimizedImage
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
                                 className="w-20 h-20 rounded object-cover flex-shrink-0"
-                                loading="lazy"
-                                width="80"
-                                height="80"
+                                width={80}
+                                height={80}
+                                widths={[80, 160, 240]}
+                                sizes="80px"
                               />
                             ) : (
                               <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
@@ -959,63 +996,14 @@ const CoursePage = () => {
 
               {/* Share Section */}
               <div className="mt-6 pt-4">
-                <div className="flex items-center gap-3">
-                  {/* Copy URL Button */}
-                  <button
-                    onClick={() => {
-                      const shareUrl = `https://ignite.education/courses/${courseSlug}`;
-                      navigator.clipboard.writeText(shareUrl);
-                      setCopied(true);
-                    }}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
-                    style={{
-                      backgroundColor: copied ? '#10B981' : '#F0F0F2',
-                      color: copied ? 'white' : '#374151'
-                    }}
-                  >
-                    {copied ? <Check size={18} /> : <Link2 size={18} />}
-                    <span className="text-sm font-medium">{copied ? 'Copied!' : 'Copy link'}</span>
-                  </button>
-
-                  {/* LinkedIn */}
-                  <a
-                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`https://ignite.education/courses/${courseSlug}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#0A66C2] hover:bg-[#004182] transition-colors"
-                    title="Share on LinkedIn"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                    </svg>
-                  </a>
-
-                  {/* X (Twitter) */}
-                  <a
-                    href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`https://ignite.education/courses/${courseSlug}`)}&text=${encodeURIComponent(course.title)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-black hover:bg-gray-800 transition-colors"
-                    title="Share on X"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                    </svg>
-                  </a>
-
-                  {/* Facebook */}
-                  <a
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`https://ignite.education/courses/${courseSlug}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center px-3 py-2 rounded-lg bg-[#1877F2] hover:bg-[#0d65d9] transition-colors"
-                    title="Share on Facebook"
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                    </svg>
-                  </a>
-                </div>
+                <Suspense fallback={<div className="h-10" />}>
+                  <SocialShareButtons
+                    courseSlug={courseSlug}
+                    courseTitle={course.title}
+                    copied={copied}
+                    onCopy={() => setCopied(true)}
+                  />
+                </Suspense>
               </div>
 
             </div>
