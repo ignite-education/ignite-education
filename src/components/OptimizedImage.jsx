@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { getOptimizedImageUrl, generateSrcSet } from '../utils/imageUtils';
 
 /**
  * OptimizedImage - Responsive image component with Cloudflare Image Transformations
  * Provides srcset for responsive loading and automatic WebP/AVIF conversion
+ * Falls back to original URL if CDN transformation fails
  */
 const OptimizedImage = ({
   src,
@@ -19,15 +20,17 @@ const OptimizedImage = ({
   quality = 85,
   ...props
 }) => {
-  // Generate optimized URLs via Cloudflare
-  const srcSet = generateSrcSet(src, widths, { fit, quality });
-  const defaultSrc = getOptimizedImageUrl(src, { width: widths[1], fit, quality });
+  const [useFallback, setUseFallback] = useState(false);
+
+  // Generate optimized URLs via Cloudflare (or fallback to original)
+  const srcSet = useFallback ? undefined : generateSrcSet(src, widths, { fit, quality });
+  const defaultSrc = useFallback ? src : getOptimizedImageUrl(src, { width: widths[1], fit, quality });
 
   return (
     <img
       src={defaultSrc}
       srcSet={srcSet}
-      sizes={sizes}
+      sizes={srcSet ? sizes : undefined}
       alt={alt}
       width={width}
       height={height}
@@ -35,6 +38,11 @@ const OptimizedImage = ({
       fetchpriority={fetchPriority}
       decoding="async"
       className={className}
+      onError={() => {
+        if (!useFallback) {
+          setUseFallback(true);
+        }
+      }}
       {...props}
     />
   );

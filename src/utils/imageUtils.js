@@ -20,6 +20,12 @@ const CF_TRANSFORM_BASE = 'https://ignite.education/cdn-cgi/image';
 export function getOptimizedImageUrl(originalUrl, { width, height, fit = 'cover', quality = 85 } = {}) {
   if (!originalUrl) return originalUrl;
 
+  // TODO: Re-enable once Cloudflare transformations are confirmed working
+  // Temporarily return original URL to debug
+  const USE_CDN = false;
+
+  if (!USE_CDN) return originalUrl;
+
   // Build transformation parameters
   const params = [`width=${width}`, `fit=${fit}`, `format=auto`, `quality=${quality}`];
   if (height) params.push(`height=${height}`);
