@@ -8,12 +8,9 @@ import useGoogleOneTap from '../hooks/useGoogleOneTap';
 
 /**
  * Google One-Tap Sign-In component for course pages
- * Displays in the sticky right column on desktop, replacing the curriculum image
+ * Shows floating One-Tap prompt in top-right corner (via FedCM)
  * After successful auth, auto-enrolls user in the course and redirects to /progress
  */
-// Container ID for Google One-Tap prompt
-const PROMPT_CONTAINER_ID = 'google-one-tap-container';
-
 const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
   const navigate = useNavigate();
   const { signInWithIdToken, signInWithOAuth } = useAuth();
@@ -108,13 +105,12 @@ const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
     onError?.(err);
   }, [onError]);
 
-  // Use the One-Tap hook with container ID for in-place rendering
+  // Use the One-Tap hook - prompt appears in top-right corner via FedCM
   const { isLoaded, error: hookError } = useGoogleOneTap({
     onSuccess: handleCredentialSuccess,
     onError: handleOneTapError,
     enabled: true,
-    autoPrompt: true, // Show prompt automatically
-    promptParentId: PROMPT_CONTAINER_ID, // Render inside container instead of top-right corner
+    autoPrompt: true, // Show floating prompt automatically
   });
 
   // Fallback to standard OAuth
@@ -172,11 +168,11 @@ const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
           </div>
         ) : (
           <div className="text-center">
-            {/* Google One-Tap prompt renders here (personalized account selector) */}
+            {/* One-Tap prompt appears in top-right corner automatically */}
             <p className="text-gray-700 mb-4">Enroll for free with Google</p>
-            <div id={PROMPT_CONTAINER_ID} className="flex justify-center mb-4 min-h-[44px]" />
+            <p className="text-gray-500 text-sm mb-4">Look for the Google sign-in prompt in the top-right corner</p>
 
-            {/* Fallback button if One-Tap doesn't appear */}
+            {/* Fallback button if One-Tap doesn't appear or user dismisses it */}
             <button
               onClick={handleOAuthFallback}
               className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

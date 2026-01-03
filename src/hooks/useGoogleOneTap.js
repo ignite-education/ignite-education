@@ -23,13 +23,13 @@ export const generateNonce = async () => {
 /**
  * Custom hook for Google One-Tap sign-in
  * Handles GIS script loading, initialization, and prompt management
+ * Prompt appears in top-right corner via FedCM (browser-controlled)
  */
 const useGoogleOneTap = ({
   onSuccess,
   onError,
   enabled = true,
   autoPrompt = true,
-  promptParentId = null, // DOM ID for container - renders prompt inside instead of top-right corner
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPromptShown, setIsPromptShown] = useState(false);
@@ -101,16 +101,11 @@ const useGoogleOneTap = ({
           }
         },
         nonce: hashedNonce,
-        use_fedcm_for_prompt: false, // Disabled to allow prompt_parent_id container positioning
+        use_fedcm_for_prompt: true, // Chrome FedCM compatibility
         cancel_on_tap_outside: false,
         context: 'signup',
         itp_support: true, // Safari ITP compatibility
       };
-
-      // If promptParentId is provided, render prompt in that container instead of top-right corner
-      if (promptParentId) {
-        initOptions.prompt_parent_id = promptParentId;
-      }
 
       window.google.accounts.id.initialize(initOptions);
 
@@ -124,7 +119,7 @@ const useGoogleOneTap = ({
       setError(err);
       onError?.(err);
     }
-  }, [isLoaded, enabled, onSuccess, onError, autoPrompt, promptParentId]);
+  }, [isLoaded, enabled, onSuccess, onError, autoPrompt]);
 
   // Initialize when GIS loads
   useEffect(() => {
