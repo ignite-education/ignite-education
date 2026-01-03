@@ -2592,7 +2592,7 @@ const Auth = () => {
               </div>
 
               {/* Right Side - Link Columns */}
-              <div className={`grid ${isMobile ? 'grid-cols-2 gap-8' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
+              <div className={`grid ${isMobile ? 'grid-cols-2 gap-x-16 gap-y-10 w-full' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
                 {/* Product Column */}
                 <div className="flex flex-col">
                   <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Product</span>
