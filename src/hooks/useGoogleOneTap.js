@@ -166,6 +166,21 @@ const useGoogleOneTap = ({
     }
   }, []);
 
+  // Render Google Sign-In button in a specific container
+  const renderButton = useCallback((containerElement, options = {}) => {
+    if (!isLoaded || !initializedRef.current || !containerElement) return;
+
+    window.google.accounts.id.renderButton(containerElement, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'continue_with',
+      shape: 'rectangular',
+      width: 280,
+      ...options
+    });
+  }, [isLoaded]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -186,6 +201,7 @@ const useGoogleOneTap = ({
     error,
     showPrompt,
     cancelPrompt,
+    renderButton,
     regenerateNonce,
     nonce: nonceRef.current,
   };
