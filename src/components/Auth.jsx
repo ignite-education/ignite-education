@@ -2577,11 +2577,11 @@ const Auth = () => {
             </div>
 
             {/* Footer */}
-            <div className={`flex ${isMobile ? 'flex-col items-center gap-8' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+            <div className={`flex ${isMobile ? 'flex-col items-start gap-10' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
-              <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-6`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
+              <div className={`flex flex-col items-start gap-6`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-03%20at%2016.08.16.png"
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
                   alt="Ignite Education"
                   style={{ height: '37px', width: 'auto' }}
                 />
