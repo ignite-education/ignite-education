@@ -13,10 +13,12 @@
       "destination": "https://ignite-education-api.onrender.com/sitemap.xml"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ],
+  "trailingSlash": false,
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",

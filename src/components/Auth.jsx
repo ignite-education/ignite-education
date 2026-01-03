@@ -4,8 +4,116 @@ import { useAuth } from '../contexts/AuthContext';
 import { ChevronDown, ChevronRight, Home, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
-import SEO from './SEO';
+import SEO, { generateSpeakableSchema } from './SEO';
 import useTypingAnimation from '../hooks/useTypingAnimation';
+
+// Structured data for welcome page SEO (static for prerendering)
+const welcomePageStructuredData = [
+  // ItemList - Available courses
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Free Online Courses at Ignite Education",
+    "description": "Expert-led courses in tech and professional skills",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "Course",
+          "name": "Product Manager",
+          "description": "Learn product management from industry experts with real-world projects",
+          "url": "https://ignite.education/courses/product-manager",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "Course",
+          "name": "Data Analyst",
+          "description": "Master data analysis skills with hands-on projects and AI-powered feedback",
+          "url": "https://ignite.education/courses/data-analyst",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@type": "Course",
+          "name": "Cyber Security Analyst",
+          "description": "Build cybersecurity expertise with practical training and expert guidance",
+          "url": "https://ignite.education/courses/cyber-security-analyst",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "Course",
+          "name": "Digital Marketing Specialist",
+          "description": "Learn digital marketing strategies from industry professionals",
+          "url": "https://ignite.education/courses/digital-marketing-specialist",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      }
+    ]
+  },
+  // FAQPage - Common questions
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are Ignite courses really free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! All Ignite courses are completely free. We believe education should be accessible to everyone. You can access all course content, AI-powered lessons, and earn a certificate at no cost."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does it take to complete a course?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Course duration varies, but most courses can be completed in 4-8 weeks learning at your own pace. Each course is broken into bite-sized lessons that fit around your schedule."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I get a certificate after completing a course?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Upon completing a course, you'll receive a verified digital certificate that you can share on LinkedIn and add to your CV."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What makes Ignite different from other online learning platforms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ignite uses AI-powered personalised learning with real-world projects, expert-led content, and interactive lessons. Our courses are designed by industry professionals and include hands-on projects that build your portfolio."
+        }
+      }
+    ]
+  },
+  // WebPage with Speakable for voice search
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Welcome to Ignite Education",
+    "description": "Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.",
+    "url": "https://ignite.education/welcome",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".hero-text", "h1", ".course-description", ".testimonial-text"]
+    }
+  }
+];
 
 // Lazy-load below-fold components for better initial page load
 const Onboarding = lazy(() => import('./Onboarding'));
@@ -1371,8 +1479,9 @@ const Auth = () => {
       <SEO
         title="Ignite | Welcome"
         description="Transform your career with Ignite's interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback."
-        keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
+        keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development, free online courses, tech career, professional development"
         url="https://ignite.education/welcome"
+        structuredData={welcomePageStructuredData}
       />
       {/* Auth Scrollable Container */}
       <div

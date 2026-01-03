@@ -503,7 +503,7 @@ const CoursePage = () => {
     }
   ];
 
-  // Generate Course structured data for SEO - enhanced with instructors
+  // Generate Course structured data for SEO - enhanced with instructors and additional properties
   const generateCourseStructuredData = (courseData, courseCoaches) => {
     const baseUrl = 'https://ignite.education';
 
@@ -513,18 +513,24 @@ const CoursePage = () => {
       ...(m.lessons?.map(l => l.name) || [])
     ]) || [];
 
+    // Calculate total lessons for duration estimate
+    const totalLessons = courseData.module_structure?.reduce(
+      (acc, m) => acc + (m.lessons?.length || 0), 0
+    ) || 10;
+
     return {
       "@context": "https://schema.org",
       "@type": "Course",
       "name": courseData.title,
       "description": courseData.description,
       "url": `${baseUrl}/courses/${courseSlug}`,
+      "image": courseData.image_url || `${baseUrl}/og-image.png`,
       "provider": {
         "@type": "EducationalOrganization",
-        "name": "Ignite",
+        "name": "Ignite Education",
         "url": baseUrl,
         "sameAs": [
-          "https://www.linkedin.com/company/igniteeducation"
+          "https://www.linkedin.com/school/ignite-courses"
         ]
       },
       "educationalLevel": "Beginner",
@@ -532,6 +538,15 @@ const CoursePage = () => {
       "isAccessibleForFree": true,
       "inLanguage": "en-GB",
       "teaches": teaches,
+      "coursePrerequisites": "No prior experience required. Basic computer skills and internet access.",
+      "timeRequired": `PT${totalLessons * 2}H`,
+      "numberOfCredits": totalLessons,
+      "educationalCredentialAwarded": {
+        "@type": "EducationalOccupationalCredential",
+        "credentialCategory": "Certificate of Completion",
+        "name": `${courseData.title} Certificate`,
+        "description": `Verified certificate of completion for the ${courseData.title} course from Ignite Education`
+      },
       "audience": {
         "@type": "EducationalAudience",
         "educationalRole": "student",
@@ -542,18 +557,28 @@ const CoursePage = () => {
         "price": "0",
         "priceCurrency": "GBP",
         "availability": "https://schema.org/InStock",
-        "url": `${baseUrl}/courses/${courseSlug}`
+        "url": `${baseUrl}/courses/${courseSlug}`,
+        "validFrom": "2024-01-01"
       },
       "hasCourseInstance": {
         "@type": "CourseInstance",
         "courseMode": "online",
-        "courseWorkload": `PT${(courseData.lessons || 10) * 2}H`
+        "courseSchedule": {
+          "@type": "Schedule",
+          "repeatFrequency": "P1W",
+          "repeatCount": Math.ceil(totalLessons / 4)
+        },
+        "courseWorkload": `PT${totalLessons * 2}H`
       },
       "instructor": courseCoaches?.map(coach => ({
         "@type": "Person",
         "name": coach.name,
         "jobTitle": coach.position,
-        "image": coach.image_url
+        "image": coach.image_url,
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Ignite Education"
+        }
       })) || []
     };
   };

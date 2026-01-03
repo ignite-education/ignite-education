@@ -11,8 +11,8 @@
     "server": "node server.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "prerender": "node scripts/prerender.js",
-    "build": "npm run generate-sitemap && vite build",
-    "build:seo": "npm run build && npm run prerender",
+    "build": "npm run generate-sitemap && vite build && npm run prerender",
+    "build:no-prerender": "npm run generate-sitemap && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
