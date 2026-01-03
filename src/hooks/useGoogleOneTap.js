@@ -101,7 +101,7 @@ const useGoogleOneTap = ({
           }
         },
         nonce: hashedNonce,
-        use_fedcm_for_prompt: true, // Chrome FedCM compatibility
+        use_fedcm_for_prompt: false, // Disabled to allow prompt_parent_id container positioning
         cancel_on_tap_outside: false,
         context: 'signup',
         itp_support: true, // Safari ITP compatibility
