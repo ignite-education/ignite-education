@@ -2577,7 +2577,6 @@ const Auth = () => {
             </div>
 
             {/* Footer */}
-            <div className="w-full h-px bg-white" />
             <div className={`flex ${isMobile ? 'flex-col items-center gap-8' : 'flex-row justify-between items-start'} px-8 lg:px-16 py-8`} style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
               {/* Left Side - Logo & Company Info */}
               <div className={`flex flex-col ${isMobile ? 'items-center text-center' : 'items-start'} gap-4`} style={!isMobile ? { marginLeft: '-5%' } : {}}>
@@ -2595,80 +2594,88 @@ const Auth = () => {
               {/* Right Side - Link Columns */}
               <div className={`grid ${isMobile ? 'grid-cols-2 gap-8' : 'grid-cols-4 gap-16'}`} style={!isMobile ? { marginRight: '-5%' } : {}}>
                 {/* Product Column */}
-                <div className="flex flex-col gap-3">
-                  <span className="text-white font-bold" style={{ fontSize: '16px' }}>Product</span>
-                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
-                  <a
-                    href="https://shop.ignite.education"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    Store
-                  </a>
-                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Feedback</span>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Product</span>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
+                    <a
+                      href="https://shop.ignite.education"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Store
+                    </a>
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Feedback</span>
+                  </div>
                 </div>
 
                 {/* Resources Column */}
-                <div className="flex flex-col gap-3">
-                  <span className="text-white font-bold" style={{ fontSize: '16px' }}>Resources</span>
-                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
-                  <a
-                    href="/release-notes"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    Releases
-                  </a>
-                  <a
-                    href="/terms"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    Terms of Service
-                  </a>
-                  <a
-                    href="/privacy"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    Privacy Policy
-                  </a>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Resources</span>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
+                    <a
+                      href="/release-notes"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Releases
+                    </a>
+                    <a
+                      href="/terms"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Terms of Service
+                    </a>
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Privacy Policy
+                    </a>
+                  </div>
                 </div>
 
                 {/* Company Column */}
-                <div className="flex flex-col gap-3">
-                  <span className="text-white font-bold" style={{ fontSize: '16px' }}>Company</span>
-                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About Us</span>
-                  <a
-                    href="https://www.linkedin.com/school/ignite-courses/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    LinkedIn
-                  </a>
-                  <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Careers</span>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Company</span>
+                  <div className="flex flex-col gap-2">
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About Us</span>
+                    <a
+                      href="https://www.linkedin.com/school/ignite-courses/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      LinkedIn
+                    </a>
+                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Careers</span>
+                  </div>
                 </div>
 
                 {/* Support Column */}
-                <div className="flex flex-col gap-3">
-                  <span className="text-white font-bold" style={{ fontSize: '16px' }}>Support</span>
-                  <a
-                    href="mailto:hello@ignite.education"
-                    className="text-white hover:text-[#EF0B72] transition"
-                    style={{ fontSize: '14px' }}
-                  >
-                    Contact
-                  </a>
+                <div className="flex flex-col">
+                  <span className="text-white font-bold mb-4" style={{ fontSize: '16px' }}>Support</span>
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href="mailto:hello@ignite.education"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Contact
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
