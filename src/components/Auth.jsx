@@ -2595,7 +2595,7 @@ const Auth = () => {
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
                 {/* Product Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '15px' }}>Product</span>
+                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Product</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
                     <a
@@ -2621,7 +2621,7 @@ const Auth = () => {
 
                 {/* Resources Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '15px' }}>Resources</span>
+                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Resources</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
                     <a
@@ -2656,7 +2656,7 @@ const Auth = () => {
 
                 {/* Company Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '15px' }}>Company</span>
+                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Company</span>
                   <div className="flex flex-col gap-2">
                     <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About</span>
                     <a
@@ -2682,7 +2682,7 @@ const Auth = () => {
 
                 {/* Support Column */}
                 <div className="flex flex-col">
-                  <span className="text-white font-bold mb-4" style={{ fontSize: '15px' }}>Support</span>
+                  <span className="text-white font-semibold mb-4" style={{ fontSize: '15px' }}>Support</span>
                   <div className="flex flex-col gap-2">
                     <a
                       href="mailto:hello@ignite.education"
