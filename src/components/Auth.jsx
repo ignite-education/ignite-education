@@ -2592,7 +2592,7 @@ const Auth = () => {
               </div>
 
               {/* Right Side - Link Columns */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
                 {/* Product Column */}
                 <div className="flex flex-col">
                   <span className="text-white font-bold mb-4" style={{ fontSize: '14px' }}>Product</span>
