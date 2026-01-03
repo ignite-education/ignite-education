@@ -179,6 +179,7 @@ const ProgressHub = () => {
   const [snappedCardIndex, setSnappedCardIndex] = useState(0);
   const [isCarouselReady, setIsCarouselReady] = useState(false);
   const hasInitializedScrollRef = useRef(false);
+  const hasInitialDataFetchRef = useRef(false); // Track if initial fetchData has run
   const [enableSmoothScroll, setEnableSmoothScroll] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
@@ -395,6 +396,7 @@ const ProgressHub = () => {
       console.log('🔵 [ProgressHub] loadData called, isMounted:', isMounted);
       if (isMounted) {
         await fetchData();
+        hasInitialDataFetchRef.current = true; // Mark that initial fetch is done
         console.log('🔵 [ProgressHub] fetchData completed');
       }
     };
@@ -407,10 +409,17 @@ const ProgressHub = () => {
     };
   }, [isInitialized]);
 
-  // Refetch completed lessons when returning to ProgressHub
+  // Refetch completed lessons only when RETURNING to ProgressHub (not on initial mount)
+  // The initial fetch is handled by fetchData above
   useEffect(() => {
+    // Skip on initial mount - fetchData already handles the first load
+    if (!hasInitialDataFetchRef.current) {
+      console.log('🔄 [ProgressHub] Skipping refetch - initial data fetch not yet complete');
+      return;
+    }
+
     const refetchCompletedLessons = async () => {
-      console.log('🔄 ProgressHub useEffect triggered - Location:', location.pathname);
+      console.log('🔄 ProgressHub refetch triggered - Location:', location.pathname);
       if (!authUser) {
         console.log('❌ No authUser, skipping refetch');
         return;
@@ -432,7 +441,7 @@ const ProgressHub = () => {
         }
       }
 
-      console.log('🔄 Fetching completed lessons for userId:', userId);
+      console.log('🔄 Refetching completed lessons for userId:', userId);
 
       try {
         const completedLessonsData = await getCompletedLessons(userId, courseId);
@@ -445,7 +454,7 @@ const ProgressHub = () => {
     };
 
     refetchCompletedLessons();
-  }, [location.pathname, location.search, authUser?.id]);
+  }, [location.pathname]); // Removed location.search - only pathname changes matter
 
   // Update user state when firstName from auth changes
   useEffect(() => {
@@ -1267,8 +1276,8 @@ const ProgressHub = () => {
     return isLessonCompleted(prevModuleNum, prevLessonNum);
   };
 
-  // Helper function to calculate total number of lessons in the course
-  const getTotalLessonsCount = () => {
+  // Memoized lesson count calculations to prevent recalculation on every render
+  const totalLessonsCount = useMemo(() => {
     let totalCount = 0;
     Object.keys(groupedLessons).forEach(moduleKey => {
       const moduleData = groupedLessons[moduleKey];
@@ -1276,22 +1285,21 @@ const ProgressHub = () => {
       totalCount += lessonKeys.length;
     });
     return totalCount;
-  };
+  }, [groupedLessons]);
 
-  // Helper function to calculate how many lessons have been completed
-  const getCompletedLessonsCount = () => {
-    // Use the actual completedLessons array from the database
+  const completedLessonsCount = useMemo(() => {
     return completedLessons.length;
-  };
+  }, [completedLessons]);
 
-  // Calculate progress percentage
-  const calculateProgressPercentage = () => {
-    const totalLessons = getTotalLessonsCount();
-    if (totalLessons === 0) return 0;
+  const calculatedProgressPercentage = useMemo(() => {
+    if (totalLessonsCount === 0) return 0;
+    return Math.round((completedLessonsCount / totalLessonsCount) * 100);
+  }, [completedLessonsCount, totalLessonsCount]);
 
-    const completedLessons = getCompletedLessonsCount();
-    return Math.round((completedLessons / totalLessons) * 100);
-  };
+  // Legacy function wrappers for backwards compatibility with existing code
+  const getTotalLessonsCount = () => totalLessonsCount;
+  const getCompletedLessonsCount = () => completedLessonsCount;
+  const calculateProgressPercentage = () => calculatedProgressPercentage;
 
   // Only call getAllLessonsForCarousel if we have data
   const hasLessonData = Object.keys(groupedLessons).length > 0;
@@ -1309,7 +1317,7 @@ const ProgressHub = () => {
       return a.lesson_number - b.lesson_number;
     });
   }, [hasLessonData, lessonsMetadata]);
-  const progressPercentage = hasLessonData ? calculateProgressPercentage() : user.progress;
+  const progressPercentage = hasLessonData ? calculatedProgressPercentage : user.progress;
 
   // Settings Modal Handlers
   const handleOpenSettings = async () => {

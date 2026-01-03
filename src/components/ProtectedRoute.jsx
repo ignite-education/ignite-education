@@ -23,9 +23,8 @@ const ProtectedRoute = ({ children }) => {
         return;
       }
 
-      setOnboardingLoading(true);
-
-      // Check session storage cache first
+      // Check session storage cache FIRST before setting loading state
+      // This prevents the unmount/remount cycle that causes ProgressHub to re-fetch
       try {
         const cached = sessionStorage.getItem(ONBOARDING_CACHE_KEY);
         if (cached) {
@@ -36,6 +35,7 @@ const ProtectedRoute = ({ children }) => {
           if (userId === user.id && age < CACHE_DURATION) {
             console.log('[ProtectedRoute] Using cached onboarding status:', { needsOnboarding: cachedNeedsOnboarding, ageSeconds: Math.floor(age / 1000) });
             setNeedsOnboarding(cachedNeedsOnboarding);
+            // Don't set onboardingLoading to true - use cached value immediately
             setOnboardingLoading(false);
             return;
           } else {
@@ -47,6 +47,9 @@ const ProtectedRoute = ({ children }) => {
         console.warn('[ProtectedRoute] Error reading cache:', cacheError);
         // Continue to database check
       }
+
+      // Only show loading screen when we need to hit the database
+      setOnboardingLoading(true);
 
       // Retry logic wrapper
       let lastError = null;
