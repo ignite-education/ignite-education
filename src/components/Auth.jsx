@@ -1,111 +1,15 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Onboarding from './Onboarding';
 import { ChevronDown, ChevronRight, Home, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO from './SEO';
-import BlogCarousel from './BlogCarousel';
+import useTypingAnimation from '../hooks/useTypingAnimation';
 
-// Custom hook for typing animations using requestAnimationFrame
-// This prevents Chrome's timer throttling issues that cause glitchy animations
-const useTypingAnimation = (fullText, config = {}) => {
-  const {
-    charDelay = 75,
-    startDelay = 0,
-    pausePoints = [],
-    enabled = true,
-    onComplete = null
-  } = config;
-
-  const [displayText, setDisplayText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  const animationRef = useRef(null);
-  const stateRef = useRef({
-    startTime: null,
-    currentIndex: 0,
-    totalPauseTime: 0,
-    activePauseEnd: 0
-  });
-
-  useEffect(() => {
-    if (!enabled || !fullText) {
-      return;
-    }
-
-    // Reset state when enabled or text changes
-    stateRef.current = {
-      startTime: null,
-      currentIndex: 0,
-      totalPauseTime: 0,
-      activePauseEnd: 0
-    };
-    setDisplayText('');
-    setIsComplete(false);
-
-    const animate = (timestamp) => {
-      const state = stateRef.current;
-
-      if (!state.startTime) {
-        state.startTime = timestamp;
-      }
-
-      const elapsed = timestamp - state.startTime;
-
-      // Handle start delay
-      if (elapsed < startDelay) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      // Handle active pause
-      if (state.activePauseEnd > 0 && timestamp < state.activePauseEnd) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      // Calculate target index based on elapsed time minus pauses
-      const typingElapsed = elapsed - startDelay - state.totalPauseTime;
-      const targetIndex = Math.min(
-        Math.floor(typingElapsed / charDelay),
-        fullText.length
-      );
-
-      // Update if we've advanced
-      if (targetIndex > state.currentIndex) {
-        state.currentIndex = targetIndex;
-        setDisplayText(fullText.substring(0, targetIndex));
-
-        // Check for pause point at this position
-        const pausePoint = pausePoints.find(p => p.after === targetIndex);
-        if (pausePoint) {
-          state.activePauseEnd = timestamp + pausePoint.duration;
-          state.totalPauseTime += pausePoint.duration;
-        }
-      }
-
-      // Check if complete
-      if (state.currentIndex >= fullText.length) {
-        setIsComplete(true);
-        if (onComplete) onComplete();
-        return;
-      }
-
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [fullText, charDelay, startDelay, JSON.stringify(pausePoints), enabled]);
-
-  return { displayText, isComplete };
-};
+// Lazy-load below-fold components for better initial page load
+const Onboarding = lazy(() => import('./Onboarding'));
+const BlogCarousel = lazy(() => import('./BlogCarousel'));
 
 const Auth = () => {
   // Debounce helper to prevent rapid state updates
@@ -569,15 +473,22 @@ const Auth = () => {
     };
   }, []);
 
-  // Track mobile and tablet viewport for conditional rendering
+  // Track mobile and tablet viewport for conditional rendering (debounced for performance)
   useEffect(() => {
+    let resizeTimeout;
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
-      setIsSection6SingleColumn(window.innerWidth < 870);
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setIsMobile(window.innerWidth < 768);
+        setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
+        setIsSection6SingleColumn(window.innerWidth < 870);
+      }, 100);
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Start tagline typing animation on mount
@@ -864,13 +775,21 @@ const Auth = () => {
     // Initial check
     updateCardBlur();
 
-    // Listen to scroll events
+    // Debounced resize handler for performance
+    let resizeTimeout;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateCardBlur, 100);
+    };
+
+    // Listen to scroll events (immediate) and resize events (debounced)
     scrollContainer.addEventListener('scroll', updateCardBlur);
-    window.addEventListener('resize', updateCardBlur);
+    window.addEventListener('resize', debouncedResize);
 
     return () => {
+      clearTimeout(resizeTimeout);
       scrollContainer.removeEventListener('scroll', updateCardBlur);
-      window.removeEventListener('resize', updateCardBlur);
+      window.removeEventListener('resize', debouncedResize);
     };
   }, [courses]);
 
@@ -1440,7 +1359,11 @@ const Auth = () => {
 
   // Show onboarding if user just signed up
   if (showOnboarding) {
-    return <Onboarding firstName={firstName} userId={newUserId} />;
+    return (
+      <Suspense fallback={<div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#EF0B72] border-t-transparent rounded-full animate-spin" /></div>}>
+        <Onboarding firstName={firstName} userId={newUserId} />
+      </Suspense>
+    );
   }
 
   return (
@@ -1980,6 +1903,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/AI%20v7.png"
                     alt="Levelling up learning with smart AI integration"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2010,6 +1935,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v7.png"
                     alt="Personalised support from industry professionals"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2040,6 +1967,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v8.png"
                     alt="Connect with the global community"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2070,6 +1999,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate%20v2.png"
                     alt="Get certified to take on your next role"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2477,6 +2408,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                   alt="Tote bag"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenToteBag}
@@ -2484,6 +2417,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                   alt="Black Mug"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenMug}
@@ -2491,6 +2426,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                   alt="Notebook"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenNotebook}
@@ -2499,6 +2436,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
                     alt="Quote Tote"
+                    loading="lazy"
+                    decoding="async"
                     className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                     style={{ height: '250px', width: 'auto', maxWidth: '18%' }}
                     onClick={handleOpenQuoteTote}
@@ -2507,6 +2446,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                   alt="Sweatshirt"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenSweatshirt}
@@ -2610,7 +2551,9 @@ const Auth = () => {
                 </div>
 
                 <div className="w-full auth-section-6-blog-carousel-container" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
-                  <BlogCarousel limit={5} />
+                  <Suspense fallback={<div className="h-48 bg-[#2a2a2a] rounded-lg animate-pulse" />}>
+                    <BlogCarousel limit={5} />
+                  </Suspense>
                 </div>
               </div>
             </div>

@@ -3,7 +3,16 @@ import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
-import LoadingScreen from './components/LoadingScreen'
+
+// Lazy-load LoadingScreen to defer ui-vendor chunk (lottie-react)
+const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
+
+// Simple CSS-only loader as fallback while LoadingScreen chunk loads
+const SimpleLoader = () => (
+  <div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center">
+    <div className="w-12 h-12 border-3 border-[#EF0B72] border-t-transparent rounded-full animate-spin" />
+  </div>
+)
 
 // Lazy load all route components for code splitting
 const ProgressHub = lazy(() => import('./components/ProgressHub'))
@@ -32,7 +41,11 @@ function AuthRoute({ children }) {
 
   // Don't render anything until auth is initialized to prevent flicker
   if (!isInitialized) {
-    return <LoadingScreen showTimeoutMessage={false} />;
+    return (
+      <Suspense fallback={<SimpleLoader />}>
+        <LoadingScreen showTimeoutMessage={false} />
+      </Suspense>
+    );
   }
 
   // If user is authenticated, redirect to progress page
@@ -54,7 +67,7 @@ function App() {
     <BrowserRouter>
       <AnimationProvider>
         <AuthProvider>
-          <Suspense fallback={<LoadingScreen showTimeoutMessage={true} />}>
+          <Suspense fallback={<Suspense fallback={<SimpleLoader />}><LoadingScreen showTimeoutMessage={true} /></Suspense>}>
           <Routes>
             <Route path="/welcome" element={
               <AuthRoute>

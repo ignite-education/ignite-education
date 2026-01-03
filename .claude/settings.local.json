@@ -35,7 +35,10 @@
       "Bash(git branch:*)",
       "Bash(git merge:*)",
       "Bash(git stash:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(du -sh:*)",
+      "Bash(xargs du:*)",
+      "Bash(du:*)"
     ],
     "deny": [],
     "ask": []
