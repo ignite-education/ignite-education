@@ -2583,11 +2583,11 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-03%20at%2016.08.16.png"
                   alt="Ignite Education"
-                  style={{ height: '48px', width: 'auto' }}
+                  style={{ height: '34px', width: 'auto' }}
                 />
                 <div className="flex flex-col gap-1">
                   <span className="text-white font-semibold" style={{ fontSize: '14px' }}>Built in London, UK.</span>
-                  <span className="text-gray-400" style={{ fontSize: '14px' }}>Ignite Education AI Ltd.</span>
+                  <span className="text-white" style={{ fontSize: '14px' }}>Ignite Education AI Ltd.</span>
                 </div>
               </div>
 
@@ -2606,11 +2606,13 @@ const Auth = () => {
                   >
                     Store
                   </a>
+                  <span className="text-white" style={{ fontSize: '14px' }}>Feedback</span>
                 </div>
 
                 {/* Resources Column */}
                 <div className="flex flex-col gap-3">
                   <span className="text-white font-bold" style={{ fontSize: '16px' }}>Resources</span>
+                  <span className="text-white" style={{ fontSize: '14px' }}>Blog</span>
                   <a
                     href="/release-notes"
                     target="_blank"
@@ -2643,6 +2645,7 @@ const Auth = () => {
                 {/* Company Column */}
                 <div className="flex flex-col gap-3">
                   <span className="text-white font-bold" style={{ fontSize: '16px' }}>Company</span>
+                  <span className="text-white" style={{ fontSize: '14px' }}>About Us</span>
                   <a
                     href="https://www.linkedin.com/school/ignite-courses/"
                     target="_blank"
@@ -2652,6 +2655,7 @@ const Auth = () => {
                   >
                     LinkedIn
                   </a>
+                  <span className="text-white" style={{ fontSize: '14px' }}>Careers</span>
                 </div>
 
                 {/* Support Column */}
