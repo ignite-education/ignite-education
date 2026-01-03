@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
-import SEO from '../components/SEO';
+import SEO, { generateSpeakableSchema } from '../components/SEO';
 import LoadingScreen from '../components/LoadingScreen';
 import { Home, ChevronRight, Link2, Check, X } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
@@ -555,10 +555,16 @@ const CoursePage = () => {
 
   // Combine all structured data into an array for SEO component
   const getCombinedStructuredData = (courseData, courseCoaches) => {
+    const baseUrl = 'https://ignite.education';
     return [
       generateCourseStructuredData(courseData, courseCoaches),
       generateFAQStructuredData(COURSE_FAQS),
-      generateBreadcrumbStructuredData(courseData.title)
+      generateBreadcrumbStructuredData(courseData.title),
+      generateSpeakableSchema(
+        `${baseUrl}/courses/${courseSlug}`,
+        courseData.title,
+        ['.course-description', '.curriculum-section', 'h1', '.faq-section']
+      )
     ];
   };
 

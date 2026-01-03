@@ -1,0 +1,100 @@
+# Ignite Education
+> Free online learning platform offering expert-led courses in technology, healthcare, and professional development. Based in London, UK.
+
+## About Ignite
+Ignite Education is an interactive online learning platform specializing in product management and tech skills development. We offer AI-powered personalized learning with real-world projects and personalized feedback from industry experts.
+
+- Website: https://ignite.education
+- Contact: hello@ignite.education
+- Location: London, United Kingdom
+
+## Courses
+
+### Product Manager
+- URL: https://ignite.education/courses/product-manager
+- Price: Free
+- Format: Online, self-paced
+- Topics: Product strategy, roadmapping, stakeholder management, user research, agile methodologies, product metrics, go-to-market strategy
+- Suitable for: Career changers, aspiring product managers, professionals looking to transition into tech
+
+### Data Analyst
+- URL: https://ignite.education/courses/data-analyst
+- Price: Free
+- Format: Online, self-paced
+- Topics: SQL, Python, data visualization, Excel, statistical analysis, business intelligence, data storytelling
+- Suitable for: Beginners, career changers, professionals wanting data skills
+
+### UX Designer
+- URL: https://ignite.education/courses/ux-designer
+- Price: Free
+- Format: Online, self-paced
+- Topics: User research, wireframing, prototyping, usability testing, design thinking, Figma, user interface design
+- Suitable for: Creative professionals, career changers, designers expanding skillset
+
+### Cyber Security Analyst
+- URL: https://ignite.education/courses/cyber-security-analyst
+- Price: Free
+- Format: Online, self-paced
+- Topics: Network security, threat detection, security operations, incident response, vulnerability assessment, security frameworks
+- Suitable for: IT professionals, career changers, tech enthusiasts interested in security
+
+### Digital Marketing Specialist
+- URL: https://ignite.education/courses/digital-marketing-specialist
+- Price: Free
+- Format: Online, self-paced
+- Topics: SEO, social media marketing, content marketing, email marketing, analytics, paid advertising, marketing strategy
+- Suitable for: Marketing professionals, small business owners, career changers
+
+### Healthcare Assistant
+- URL: https://ignite.education/courses/healthcare-assistant
+- Price: Free
+- Format: Online, self-paced
+- Topics: Patient care, health and safety, communication skills, NHS procedures, care planning, safeguarding
+- Suitable for: Career changers, those entering healthcare, care sector professionals
+
+### Mental Health Worker
+- URL: https://ignite.education/courses/mental-health-worker
+- Price: Free
+- Format: Online, self-paced
+- Topics: Mental health awareness, therapeutic approaches, crisis intervention, counselling skills, safeguarding, self-care
+- Suitable for: Healthcare workers, counsellors, those entering mental health sector
+
+### Green Energy Technician
+- URL: https://ignite.education/courses/green-energy-technician
+- Price: Free
+- Format: Online, self-paced
+- Topics: Renewable energy systems, solar installation, energy efficiency, sustainability, green technology, environmental regulations
+- Suitable for: Tradespeople, engineers, those interested in sustainability careers
+
+## Key Features
+- AI-powered personalized learning with instant feedback
+- Expert-led lessons from industry professionals
+- Real-world projects and case studies
+- Interactive quizzes and knowledge checks
+- Completion certificates
+- No prior experience required for most courses
+
+## Frequently Asked Questions
+
+Q: Are the courses really free?
+A: Yes, all courses are completely free. We believe quality education should be accessible to everyone.
+
+Q: Do I get a certificate?
+A: Yes, you receive a digital certificate upon completing any course.
+
+Q: How long does each course take?
+A: Courses are self-paced. Most can be completed in 2-4 weeks with a few hours of study per week.
+
+Q: Do I need prior experience?
+A: No, our courses are designed for beginners and career changers. No prior experience is required.
+
+Q: Is Ignite accredited?
+A: Ignite provides industry-recognized skills training. Courses are designed with input from industry professionals.
+
+Q: Can I access courses on mobile?
+A: Yes, the platform is fully responsive and works on all devices.
+
+## Contact
+- Email: hello@ignite.education
+- Address: 113 Brook Drive, London, SE11 4TU, United Kingdom
+- LinkedIn: https://www.linkedin.com/school/ignite-courses

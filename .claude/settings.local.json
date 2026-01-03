@@ -38,7 +38,9 @@
       "Bash(git pull:*)",
       "Bash(du -sh:*)",
       "Bash(xargs du:*)",
-      "Bash(du:*)"
+      "Bash(du:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:seo:*)"
     ],
     "deny": [],
     "ask": []
