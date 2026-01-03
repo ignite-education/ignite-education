@@ -40,7 +40,8 @@
       "Bash(xargs du:*)",
       "Bash(du:*)",
       "Bash(npm install:*)",
-      "Bash(npm run build:seo:*)"
+      "Bash(npm run build:seo:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nRender Google Sign-In button inside container instead of floating overlay\n\n- Add renderButton\\(\\) function to useGoogleOneTap hook\n- Update GoogleOneTap component to use container mode\n- Disable floating One-Tap prompt \\(autoPrompt: false\\)\n- Google button now renders directly in the \"Start Learning Today\" box\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
     ],
     "deny": [],
     "ask": []

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -11,12 +11,14 @@ import useGoogleOneTap from '../hooks/useGoogleOneTap';
  * Displays in the sticky right column on desktop, replacing the curriculum image
  * After successful auth, auto-enrolls user in the course and redirects to /progress
  */
+// Container ID for Google One-Tap prompt
+const PROMPT_CONTAINER_ID = 'google-one-tap-container';
+
 const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
   const navigate = useNavigate();
   const { signInWithIdToken, signInWithOAuth } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState(null);
-  const buttonContainerRef = useRef(null);
 
   // Handle successful Google credential response
   const handleCredentialSuccess = useCallback(async (credential, rawNonce) => {
@@ -106,23 +108,14 @@ const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
     onError?.(err);
   }, [onError]);
 
-  // Use the One-Tap hook
-  const { isLoaded, error: hookError, renderButton } = useGoogleOneTap({
+  // Use the One-Tap hook with container ID for in-place rendering
+  const { isLoaded, error: hookError } = useGoogleOneTap({
     onSuccess: handleCredentialSuccess,
     onError: handleOneTapError,
     enabled: true,
-    autoPrompt: false, // Disable floating overlay, we render button in container
+    autoPrompt: true, // Show prompt automatically
+    promptParentId: PROMPT_CONTAINER_ID, // Render inside container instead of top-right corner
   });
-
-  // Render Google button inside container when loaded
-  useEffect(() => {
-    if (isLoaded && buttonContainerRef.current && !isLoading) {
-      renderButton(buttonContainerRef.current, {
-        width: 260,
-        theme: 'outline',
-      });
-    }
-  }, [isLoaded, renderButton, isLoading]);
 
   // Fallback to standard OAuth
   const handleOAuthFallback = async () => {
@@ -179,11 +172,11 @@ const GoogleOneTap = ({ courseSlug, onSuccess, onError }) => {
           </div>
         ) : (
           <div className="text-center">
-            {/* Google Sign-In button renders here */}
+            {/* Google One-Tap prompt renders here (personalized account selector) */}
             <p className="text-gray-700 mb-4">Enroll for free with Google</p>
-            <div ref={buttonContainerRef} className="flex justify-center mb-4" />
+            <div id={PROMPT_CONTAINER_ID} className="flex justify-center mb-4 min-h-[44px]" />
 
-            {/* Fallback button if Google button doesn't render */}
+            {/* Fallback button if One-Tap doesn't appear */}
             <button
               onClick={handleOAuthFallback}
               className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"

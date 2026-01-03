@@ -29,6 +29,7 @@ const useGoogleOneTap = ({
   onError,
   enabled = true,
   autoPrompt = true,
+  promptParentId = null, // DOM ID for container - renders prompt inside instead of top-right corner
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isPromptShown, setIsPromptShown] = useState(false);
@@ -88,7 +89,7 @@ const useGoogleOneTap = ({
       nonceRef.current = { raw: rawNonce, hashed: hashedNonce };
 
       // Initialize Google Identity Services
-      window.google.accounts.id.initialize({
+      const initOptions = {
         client_id: clientId,
         callback: (response) => {
           if (response.credential) {
@@ -104,7 +105,14 @@ const useGoogleOneTap = ({
         cancel_on_tap_outside: false,
         context: 'signup',
         itp_support: true, // Safari ITP compatibility
-      });
+      };
+
+      // If promptParentId is provided, render prompt in that container instead of top-right corner
+      if (promptParentId) {
+        initOptions.prompt_parent_id = promptParentId;
+      }
+
+      window.google.accounts.id.initialize(initOptions);
 
       initializedRef.current = true;
 
@@ -116,7 +124,7 @@ const useGoogleOneTap = ({
       setError(err);
       onError?.(err);
     }
-  }, [isLoaded, enabled, onSuccess, onError, autoPrompt]);
+  }, [isLoaded, enabled, onSuccess, onError, autoPrompt, promptParentId]);
 
   // Initialize when GIS loads
   useEffect(() => {
