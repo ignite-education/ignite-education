@@ -2607,7 +2607,15 @@ const Auth = () => {
                     >
                       Store
                     </a>
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Feedback</span>
+                    <a
+                      href="https://forms.gle/XsRJE8RKWxTTsMom8"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Feedback
+                    </a>
                   </div>
                 </div>
 
@@ -2660,7 +2668,15 @@ const Auth = () => {
                     >
                       LinkedIn
                     </a>
-                    <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Careers</span>
+                    <a
+                      href="https://www.linkedin.com/school/ignite-courses/jobs"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#EF0B72] transition"
+                      style={{ fontSize: '14px' }}
+                    >
+                      Careers
+                    </a>
                   </div>
                 </div>
 
