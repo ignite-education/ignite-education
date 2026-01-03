@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { getOptimizedImageUrl, generateSrcSet } from '../utils/imageUtils';
 
 /**
- * OptimizedImage - Responsive image component with Cloudflare Image Transformations
- * Provides srcset for responsive loading and automatic WebP/AVIF conversion
- * Falls back to original URL if CDN transformation fails
+ * OptimizedImage - Responsive image component with Supabase Image Transformations
+ * Provides srcset for responsive loading and automatic resizing
+ * Falls back to original URL if transformation fails
  */
 const OptimizedImage = ({
   src,
@@ -16,20 +16,20 @@ const OptimizedImage = ({
   fetchPriority,
   sizes = '100vw',
   widths = [320, 640, 960, 1280],
-  fit = 'cover',
-  quality = 85,
+  resize = 'cover',
+  quality = 80,
   ...props
 }) => {
   const [useFallback, setUseFallback] = useState(false);
 
-  // Generate optimized URLs via Cloudflare (or fallback to original)
-  const srcSet = useFallback ? undefined : generateSrcSet(src, widths, { fit, quality });
-  const defaultSrc = useFallback ? src : getOptimizedImageUrl(src, { width: widths[1], fit, quality });
+  // Generate optimized URLs via Supabase (or fallback to original)
+  const srcSet = useFallback ? '' : generateSrcSet(src, widths, { resize, quality });
+  const defaultSrc = useFallback ? src : getOptimizedImageUrl(src, { width: widths[1], resize, quality });
 
   return (
     <img
       src={defaultSrc}
-      srcSet={srcSet}
+      srcSet={srcSet || undefined}
       sizes={srcSet ? sizes : undefined}
       alt={alt}
       width={width}

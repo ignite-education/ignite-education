@@ -1,36 +1,43 @@
 /**
- * Image optimization utilities for Cloudflare Image Transformations
- * Uses Cloudflare's cdn-cgi/image endpoint for on-the-fly optimization
- * Automatically converts to WebP/AVIF based on browser support
+ * Image optimization utilities using Supabase Image Transformations
+ * Provides responsive images with automatic resizing
+ * https://supabase.com/docs/guides/storage/serving/image-transformations
  */
 
-const CF_TRANSFORM_BASE = 'https://ignite.education/cdn-cgi/image';
-
 /**
- * Generate an optimized image URL via Cloudflare Image Transformations
+ * Generate an optimized image URL via Supabase Image Transformations
  *
- * @param {string} originalUrl - Original image URL (e.g., Supabase storage)
+ * @param {string} originalUrl - Original Supabase storage URL
  * @param {Object} options - Transformation options
  * @param {number} options.width - Target width
  * @param {number} [options.height] - Target height (optional)
- * @param {string} [options.fit='cover'] - Fit mode: 'cover', 'contain', 'scale-down', 'crop', 'pad'
- * @param {number} [options.quality=85] - Quality 1-100
+ * @param {string} [options.resize='cover'] - Resize mode: 'cover', 'contain', 'fill'
+ * @param {number} [options.quality=80] - Quality 1-100
  * @returns {string} Optimized image URL
  */
-export function getOptimizedImageUrl(originalUrl, { width, height, fit = 'cover', quality = 85 } = {}) {
+export function getOptimizedImageUrl(originalUrl, { width, height, resize = 'cover', quality = 80 } = {}) {
   if (!originalUrl) return originalUrl;
 
-  // TODO: Re-enable once Cloudflare transformations are confirmed working
-  // Temporarily return original URL to debug
-  const USE_CDN = false;
+  // Only transform Supabase storage URLs
+  if (!originalUrl.includes('supabase.co/storage/v1/object/public/')) {
+    return originalUrl;
+  }
 
-  if (!USE_CDN) return originalUrl;
+  // Convert public URL to render URL with transformations
+  // From: .../storage/v1/object/public/bucket/path
+  // To:   .../storage/v1/render/image/public/bucket/path?width=X&resize=Y
+  const transformedUrl = originalUrl.replace(
+    '/storage/v1/object/public/',
+    '/storage/v1/render/image/public/'
+  );
 
-  // Build transformation parameters
-  const params = [`width=${width}`, `fit=${fit}`, `format=auto`, `quality=${quality}`];
-  if (height) params.push(`height=${height}`);
+  const params = new URLSearchParams();
+  if (width) params.set('width', width.toString());
+  if (height) params.set('height', height.toString());
+  params.set('resize', resize);
+  params.set('quality', quality.toString());
 
-  return `${CF_TRANSFORM_BASE}/${params.join(',')}/${originalUrl}`;
+  return `${transformedUrl}?${params.toString()}`;
 }
 
 /**
@@ -38,11 +45,16 @@ export function getOptimizedImageUrl(originalUrl, { width, height, fit = 'cover'
  *
  * @param {string} url - Original image URL
  * @param {number[]} [widths=[320, 640, 960, 1280]] - Array of widths for srcset
- * @param {Object} [options={}] - Additional options passed to getOptimizedImageUrl
- * @returns {string} srcSet string
+ * @param {Object} [options={}] - Additional options (resize, quality)
+ * @returns {string} srcSet string (empty if URL is not transformable)
  */
 export function generateSrcSet(url, widths = [320, 640, 960, 1280], options = {}) {
   if (!url) return '';
+
+  // Only generate srcSet for Supabase URLs that can be transformed
+  if (!url.includes('supabase.co/storage/v1/object/public/')) {
+    return '';
+  }
 
   return widths
     .map(w => `${getOptimizedImageUrl(url, { ...options, width: w })} ${w}w`)
