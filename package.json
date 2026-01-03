@@ -10,9 +10,10 @@
     "dev": "vite",
     "server": "node server.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
+    "inject-seo": "node scripts/inject-seo.js",
     "prerender": "node scripts/prerender.js",
-    "build": "npm run generate-sitemap && vite build && npm run prerender",
-    "build:no-prerender": "npm run generate-sitemap && vite build",
+    "build": "npm run generate-sitemap && vite build && npm run inject-seo",
+    "build:local": "npm run generate-sitemap && vite build && npm run prerender",
     "lint": "eslint .",
     "preview": "vite preview"
   },
