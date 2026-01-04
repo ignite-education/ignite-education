@@ -4,7 +4,7 @@ import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Sha
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, blockRedditPost, getBlockedRedditPosts, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, blockRedditPost, getBlockedRedditPosts, generateCertificate, getUserCertificates, getCoachesForCourse, updateUserCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
@@ -253,6 +253,41 @@ const ProgressHub = () => {
       setShowCongratsModal(true);
     }
   }, []);
+
+  // Handle pending course enrollment from OAuth redirect (from course page sign-in)
+  useEffect(() => {
+    const processPendingEnrollment = async () => {
+      const pendingCourse = sessionStorage.getItem('pendingEnrollmentCourse');
+      if (!pendingCourse || !authUser) return;
+
+      try {
+        console.log('[ProgressHub] Processing pending enrollment for course:', pendingCourse);
+
+        const firstName = authUser.user_metadata?.given_name ||
+                         authUser.user_metadata?.full_name?.split(' ')[0] || '';
+        const lastName = authUser.user_metadata?.family_name ||
+                        authUser.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '';
+
+        await updateUserCourse(authUser.id, pendingCourse, {
+          email: authUser.email,
+          firstName,
+          lastName
+        });
+
+        // Clear the pending enrollment flag
+        sessionStorage.removeItem('pendingEnrollmentCourse');
+        console.log('[ProgressHub] Successfully enrolled in course:', pendingCourse);
+      } catch (err) {
+        console.error('[ProgressHub] Failed to process pending enrollment:', err);
+        // Clear anyway to avoid retry loops
+        sessionStorage.removeItem('pendingEnrollmentCourse');
+      }
+    };
+
+    if (isInitialized && authUser) {
+      processPendingEnrollment();
+    }
+  }, [isInitialized, authUser]);
 
   // Refresh user session after successful payment
   useEffect(() => {
