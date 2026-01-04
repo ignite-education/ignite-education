@@ -3834,10 +3834,10 @@ scheduleNextRefresh();
 // Generate a certificate for a user when they complete a course
 app.post('/api/certificate/generate', async (req, res) => {
   try {
-    const { userId, courseName } = req.body;
+    const { userId, courseId } = req.body;
 
-    if (!userId || !courseName) {
-      return res.status(400).json({ error: 'userId and courseName are required' });
+    if (!userId || !courseId) {
+      return res.status(400).json({ error: 'userId and courseId are required' });
     }
 
     // Get user information
@@ -3859,7 +3859,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       // Add more course mappings as needed
     };
 
-    const courseDisplayName = courseNames[courseId] || courseName;
+    const courseDisplayName = courseNames[courseId] || courseId;
     const userName = `${userData.first_name} ${userData.last_name}`;
 
     // Generate a unique certificate number (format: IGN-YYYY-XXXXXX)
@@ -3872,7 +3872,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .select('*')
       .eq('user_id', userId)
-      .eq('course_name', courseName)
+      .eq('course_id', courseId)
       .single();
 
     if (existingCert) {
@@ -3888,10 +3888,10 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .insert({
         user_id: userId,
-        course_name: courseName,
+        course_id: courseId,
+        course_name: courseDisplayName,
         certificate_number: certificateNumber,
         user_name: userName,
-        course_name: courseName,
         issued_date: new Date().toISOString()
       })
       .select()
