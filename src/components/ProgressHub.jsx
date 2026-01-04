@@ -254,6 +254,46 @@ const ProgressHub = () => {
     }
   }, []);
 
+  // Handle waitlist signup from OAuth redirect (from coming_soon course page)
+  useEffect(() => {
+    const processWaitlistSignup = async () => {
+      const waitlistCourse = sessionStorage.getItem('pendingWaitlistCourse');
+      if (!waitlistCourse || !authUser) return;
+
+      try {
+        console.log('[ProgressHub] Processing waitlist signup for course:', waitlistCourse);
+
+        // Add user to course_requests table
+        const { error } = await supabase
+          .from('course_requests')
+          .upsert({
+            user_id: authUser.id,
+            course_name: waitlistCourse,
+            status: 'upcoming'
+          }, { onConflict: 'user_id,course_name' });
+
+        if (error) throw error;
+
+        // Clear the pending waitlist flag
+        sessionStorage.removeItem('pendingWaitlistCourse');
+        console.log('[ProgressHub] Successfully added to waitlist:', waitlistCourse);
+
+        // Redirect back to course page with success indicator
+        window.location.href = `/courses/${waitlistCourse}?waitlisted=true`;
+      } catch (err) {
+        console.error('[ProgressHub] Failed to process waitlist signup:', err);
+        // Clear anyway to avoid retry loops
+        sessionStorage.removeItem('pendingWaitlistCourse');
+        // Still redirect back but without success indicator
+        window.location.href = `/courses/${waitlistCourse}`;
+      }
+    };
+
+    if (isInitialized && authUser) {
+      processWaitlistSignup();
+    }
+  }, [isInitialized, authUser]);
+
   // Handle pending course enrollment from OAuth redirect (from course page sign-in)
   useEffect(() => {
     const processPendingEnrollment = async () => {

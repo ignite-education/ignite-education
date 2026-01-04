@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from '../components/SEO';
@@ -60,6 +60,7 @@ const throttle = (func, limit) => {
  */
 const CoursePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { courseSlug } = useParams();
   const { user } = useAuth();
 
@@ -89,9 +90,25 @@ const CoursePage = () => {
   const [interestSubmitting, setInterestSubmitting] = useState(false);
   const [interestSubmitted, setInterestSubmitted] = useState(false);
 
+  // Waitlist success notification state
+  const [showWaitlistSuccess, setShowWaitlistSuccess] = useState(false);
+
   // Refs
   const curriculumSectionRef = useRef(null);
   const whiteContentRef = useRef(null);
+
+  // Check for waitlist success on mount (after OAuth redirect)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('waitlisted') === 'true') {
+      setShowWaitlistSuccess(true);
+      // Clear the query param from URL without reload
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+      // Auto-hide after 5 seconds
+      setTimeout(() => setShowWaitlistSuccess(false), 5000);
+    }
+  }, [location.search]);
 
   // Track scroll progress for pink progress bar (throttled for performance)
   useEffect(() => {
@@ -694,6 +711,33 @@ const CoursePage = () => {
 
   return (
     <>
+      {/* Waitlist success notification toast */}
+      {showWaitlistSuccess && (
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100]"
+          style={{ animation: 'slideDown 0.3s ease-out' }}
+        >
+          <div className="bg-purple-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <span className="font-medium">You're on the waitlist! We'll email you when this course launches.</span>
+            <button
+              onClick={() => setShowWaitlistSuccess(false)}
+              className="ml-2 hover:opacity-80"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <style>{`
+            @keyframes slideDown {
+              from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+              to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
+
       <SEO
         title={`Become a ${course.title} | Ignite`}
         description={`Become a ${course.title} with Ignite's free, expert-led course. ${course.description}`}
@@ -842,12 +886,7 @@ const CoursePage = () => {
                         {!user ? (
                           <GoogleOneTap
                             courseSlug={courseSlug}
-                            onSuccess={() => {
-                              // Navigation handled in component
-                            }}
-                            onError={(error) => {
-                              console.error('[CoursePage] One-Tap error:', error);
-                            }}
+                            courseStatus={course.status}
                           />
                         ) : (
                           <OptimizedImage
