@@ -274,6 +274,12 @@ const ProgressHub = () => {
 
         if (error) throw error;
 
+        // Mark onboarding as complete so user can browse the site freely
+        await supabase
+          .from('users')
+          .update({ onboarding_completed: true })
+          .eq('id', authUser.id);
+
         // Clear the pending waitlist flag
         sessionStorage.removeItem('pendingWaitlistCourse');
         console.log('[ProgressHub] Successfully added to waitlist:', waitlistCourse);
