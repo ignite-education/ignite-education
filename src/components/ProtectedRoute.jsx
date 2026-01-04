@@ -200,6 +200,20 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (needsOnboarding) {
+    // Skip onboarding if there's a pending action that will redirect
+    // (waitlist signup or course enrollment from course page)
+    const hasPendingWaitlist = sessionStorage.getItem('pendingWaitlistCourse');
+    const hasPendingEnrollment = sessionStorage.getItem('pendingEnrollmentCourse');
+
+    if (hasPendingWaitlist || hasPendingEnrollment) {
+      console.log('🟣 [ProtectedRoute] ⏭️ Skipping onboarding - pending action will redirect:', {
+        waitlist: hasPendingWaitlist,
+        enrollment: hasPendingEnrollment
+      });
+      // Let children render (ProgressHub will handle the redirect)
+      return children;
+    }
+
     console.log('🟣 [ProtectedRoute] 📝 Showing Onboarding');
     return <Onboarding firstName={firstName || user.user_metadata?.first_name || 'there'} userId={user.id} />;
   }
