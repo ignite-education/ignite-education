@@ -34,6 +34,32 @@ export function normalizeTextForNarration(text) {
 }
 
 /**
+ * Normalize text for smart notes feature (explained sections).
+ * MUST match the inline normalization in renderTextWithHighlight exactly
+ * to ensure accurate highlighting of saved explanations.
+ *
+ * NOTE: Unlike normalizeTextForNarration, this does NOT remove bullet characters
+ * because renderTextWithHighlight keeps bullets for audio timestamp sync.
+ *
+ * @param {string} text - Raw text potentially containing formatting markers
+ * @returns {string} - Normalized text with single spaces between words
+ */
+export function normalizeTextForSmartNotes(text) {
+  if (!text) return '';
+  return text
+    // Step 1: Collapse all whitespace (newlines, tabs, multiple spaces) to single space
+    .replace(/\s+/g, ' ')
+    // Step 2: Remove markdown bold markers (**)
+    .replace(/\*\*/g, '')
+    // Step 3: Remove markdown underline markers (__)
+    .replace(/__/g, '')
+    // Step 4: Remove markdown italic markers (single * not adjacent to other *)
+    .replace(/(?<!\*)\*(?!\*)/g, '')
+    // Step 5: Final trim (NO bullet removal - must match renderTextWithHighlight)
+    .trim();
+}
+
+/**
  * Extract plain text from HTML content.
  *
  * CRITICAL: This function adds spaces before block-level elements to match

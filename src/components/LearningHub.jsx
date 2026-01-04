@@ -12,7 +12,7 @@ import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
 import LoadingScreen from './LoadingScreen';
 import { supabase } from '../lib/supabase';
-import { normalizeTextForNarration, splitIntoWords, convertCharacterToWordTimestamps } from '../utils/textNormalization';
+import { normalizeTextForNarration, normalizeTextForSmartNotes, splitIntoWords, convertCharacterToWordTimestamps } from '../utils/textNormalization';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -20,8 +20,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.on
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-// Alias for backward compatibility - uses shared normalizeTextForNarration
-const stripFormattingMarkers = normalizeTextForNarration;
+// Alias for smart notes - uses normalizeTextForSmartNotes to match renderTextWithHighlight
+const stripFormattingMarkers = normalizeTextForSmartNotes;
 
 // No offset - using raw ElevenLabs timestamps for perfect sync (matches BlogPostPage)
 const HIGHLIGHT_LAG_OFFSET = 0;
