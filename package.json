@@ -12,7 +12,7 @@
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "inject-seo": "node scripts/inject-seo.js",
     "prerender": "node scripts/prerender.js",
-    "build": "npm run generate-sitemap && vite build && npm run inject-seo",
+    "build": "npm run generate-sitemap && vite build && npm run inject-seo && cp dist/index.html dist/404.html",
     "build:local": "npm run generate-sitemap && vite build && npm run prerender",
     "lint": "eslint .",
     "preview": "vite preview"
