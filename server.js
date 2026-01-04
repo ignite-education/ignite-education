@@ -500,7 +500,7 @@ Your role:
     }));
 
     // Call Claude API - trying multiple models
-    let modelToUse = 'claude-haiku-4-5-20241022';
+    let modelToUse = 'claude-3-5-haiku-20241022';
 
     const message = await anthropic.messages.create({
       model: modelToUse,
@@ -709,7 +709,7 @@ Respond in JSON format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 512,
       system: systemPrompt,
       messages: [
@@ -865,7 +865,7 @@ Respond ONLY with valid JSON in this exact format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 2048,
       system: systemPrompt,
       messages: [
@@ -1163,7 +1163,7 @@ Respond ONLY with valid JSON in this exact format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 512,
       system: systemPrompt,
       messages: [
@@ -1303,7 +1303,7 @@ Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 8192,
       system: systemPrompt,
       messages: [
@@ -1398,7 +1398,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
     // Try up to 3 times to get a question under 55 characters
     while (attempts < maxAttempts) {
       const message = await anthropic.messages.create({
-        model: 'claude-haiku-4-5-20241022',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 100,
         system: systemPrompt,
         messages: [
@@ -2846,7 +2846,7 @@ app.post('/api/fetch-jobs', async (req, res) => {
     const searchQuery = course === 'Product Management' ? 'product manager' : course.toLowerCase();
 
     const message = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20241022',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 4096,
       messages: [{
         role: 'user',
