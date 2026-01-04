@@ -1871,7 +1871,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Each word is separated by a single space, so position = sum of (word lengths + spaces before)
       const textBeforeWord = words.slice(0, idx).join(' ') + (idx > 0 ? ' ' : '');
       const wordStartPos = textBeforeWord.length;
-      const wordEndPos = wordStartPos + word.length;
 
       // For explained section matching, we need to normalize the section text the same way
       explainedSections.forEach((section) => {
@@ -1879,8 +1878,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         const sectionStartPos = normalizedText.indexOf(normalizedSectionText);
         if (sectionStartPos !== -1) {
           const sectionEndPos = sectionStartPos + normalizedSectionText.length;
-          // Check if this word's position overlaps with the explained section's position
-          if (wordStartPos >= sectionStartPos && wordEndPos <= sectionEndPos) {
+          // Check if this word starts within the explained section's range
+          // Using wordStartPos < sectionEndPos (instead of wordEndPos <= sectionEndPos)
+          // to handle punctuation attached to words (e.g., "researchers," when saved text is "researchers")
+          if (wordStartPos >= sectionStartPos && wordStartPos < sectionEndPos) {
             isExplainedSection = true;
             explainedSectionId = section.id;
           }
