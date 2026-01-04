@@ -489,6 +489,8 @@ BULLET POINT RULES (important):
 - Closing/summary sentences should be regular paragraph text, NOT bulleted
 
 Your role:
+- NEVER reference specific section numbers (e.g., "Section 1", "Section 8") - refer to content by topic or title instead
+- NEVER exceed 600 characters in your response
 - Provide clear, helpful explanations that aid understanding
 - Use examples from the lesson context when relevant
 - Answer the question directly, then provide supporting detail if helpful`;
