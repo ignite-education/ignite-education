@@ -46,6 +46,16 @@ const routeMetadata = {
     description: 'Terms and conditions for using Ignite Education online learning platform.',
     keywords: 'terms of service, terms and conditions, Ignite Education',
   },
+  '/progress': {
+    title: 'Your Progress | Ignite Education',
+    description: 'Track your learning progress and continue your courses on Ignite Education.',
+    keywords: 'learning progress, course tracker, Ignite Education',
+  },
+  '/learning': {
+    title: 'Learning | Ignite Education',
+    description: 'Continue your learning journey with Ignite Education.',
+    keywords: 'online learning, courses, Ignite Education',
+  },
 };
 
 // Course-specific metadata template
@@ -150,6 +160,8 @@ async function getRoutesToInject() {
     '/welcome',
     '/privacy',
     '/terms',
+    '/progress',
+    '/learning',
   ];
 
   // Fetch all live courses
