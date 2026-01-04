@@ -13,7 +13,7 @@
       "destination": "https://ignite-education-api.onrender.com/sitemap.xml"
     },
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
