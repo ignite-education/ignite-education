@@ -12,7 +12,7 @@ const Footer = ({ className = '' }) => {
             style={{ height: '37px', width: 'auto' }}
           />
           <div className="flex flex-col gap-1">
-            <span className="text-white font-semibold" style={{ fontSize: '15px' }}>Built in London, UK.</span>
+            <span className="text-white font-medium" style={{ fontSize: '15px' }}>Built in London, UK.</span>
             <span className="text-white font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
           </div>
         </div>
@@ -21,7 +21,7 @@ const Footer = ({ className = '' }) => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 lg:gap-x-16 gap-y-10 lg:gap-16 w-full lg:w-auto lg:-mr-[5%]">
           {/* Product Column */}
           <div className="flex flex-col">
-            <span className="text-white font-semibold mb-4" style={{ fontSize: '18px' }}>Product</span>
+            <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Product</span>
             <div className="flex flex-col gap-2">
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Courses</span>
               <a
@@ -47,7 +47,7 @@ const Footer = ({ className = '' }) => {
 
           {/* Resources Column */}
           <div className="flex flex-col">
-            <span className="text-white font-semibold mb-4" style={{ fontSize: '18px' }}>Resources</span>
+            <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Resources</span>
             <div className="flex flex-col gap-2">
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
               <a
@@ -82,7 +82,7 @@ const Footer = ({ className = '' }) => {
 
           {/* Company Column */}
           <div className="flex flex-col">
-            <span className="text-white font-semibold mb-4" style={{ fontSize: '18px' }}>Company</span>
+            <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Company</span>
             <div className="flex flex-col gap-2">
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>About</span>
               <a
@@ -108,7 +108,7 @@ const Footer = ({ className = '' }) => {
 
           {/* Support Column */}
           <div className="flex flex-col">
-            <span className="text-white font-semibold mb-4" style={{ fontSize: '18px' }}>Support</span>
+            <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Support</span>
             <div className="flex flex-col gap-2">
               <a
                 href="mailto:hello@ignite.education"
