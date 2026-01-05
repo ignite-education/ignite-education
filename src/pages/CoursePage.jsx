@@ -942,6 +942,7 @@ const CoursePage = () => {
                                 height={80}
                                 widths={[80, 160, 240]}
                                 sizes="80px"
+                                resize="contain"
                               />
                             ) : (
                               <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
@@ -973,6 +974,7 @@ const CoursePage = () => {
                                 height={80}
                                 widths={[80, 160, 240]}
                                 sizes="80px"
+                                resize="contain"
                               />
                             ) : (
                               <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
