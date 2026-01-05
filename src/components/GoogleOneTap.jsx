@@ -51,7 +51,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
       </div>
 
       {/* Content */}
-      <div className="p-6 flex flex-col items-center justify-center min-h-[200px]">
+      <div className="px-6 py-3 flex flex-col items-center justify-center min-h-[200px]">
         {error ? (
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
@@ -123,7 +123,8 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
       {/* Footer */}
       <div className="px-6 pb-4">
         <p className="text-xs text-gray-400 text-center">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          By signing in, you agree to Ignite's<br />
+          <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">Privacy Policy</a>
         </p>
       </div>
     </div>
