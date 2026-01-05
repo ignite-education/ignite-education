@@ -51,7 +51,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
       </div>
 
       {/* Content */}
-      <div className="px-6 py-[5px] flex flex-col items-center justify-center min-h-[200px]">
+      <div className="px-6 py-[5px] flex flex-col items-center justify-center">
         {error ? (
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
