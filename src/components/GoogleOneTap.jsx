@@ -10,28 +10,26 @@ import { useAuth } from '../contexts/AuthContext';
  */
 const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
   const { signInWithOAuth } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProvider, setLoadingProvider] = useState(null);
   const [error, setError] = useState(null);
 
   const isComingSoon = courseStatus === 'coming_soon';
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
+  const handleSignIn = async (provider) => {
+    setLoadingProvider(provider);
     setError(null);
 
     try {
       if (isComingSoon) {
-        // Store course slug for waitlist signup (handled in ProgressHub)
         sessionStorage.setItem('pendingWaitlistCourse', courseSlug);
       } else {
-        // Store course slug for enrollment (handled in ProgressHub)
         sessionStorage.setItem('pendingEnrollmentCourse', courseSlug);
       }
-      await signInWithOAuth('google');
+      await signInWithOAuth(provider);
     } catch (err) {
       console.error('[GoogleOneTap] OAuth error:', err);
       setError(err.message || 'Sign in failed. Please try again.');
-      setIsLoading(false);
+      setLoadingProvider(null);
     }
   };
 
@@ -63,8 +61,8 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
             </div>
             <p className="text-gray-700 mb-4">{error}</p>
             <button
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
+              onClick={() => handleSignIn('google')}
+              disabled={loadingProvider}
               className={`px-4 py-2 text-white rounded-lg transition-colors disabled:opacity-50 ${
                 isComingSoon
                   ? 'bg-purple-600 hover:bg-purple-700'
@@ -75,18 +73,14 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
             </button>
           </div>
         ) : (
-          <div className="text-center w-full">
-            <p className="text-gray-700 mb-4">
-              {isComingSoon
-                ? "Sign up to get notified when we launch"
-                : 'Enroll for free with Google'}
-            </p>
+          <div className="w-full space-y-3">
+            {/* Google Sign In Button */}
             <button
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
+              onClick={() => handleSignIn('google')}
+              disabled={loadingProvider}
               className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
-              {isLoading ? (
+              {loadingProvider === 'google' ? (
                 <div className={`w-5 h-5 border-2 border-gray-300 rounded-full animate-spin ${
                   isComingSoon ? 'border-t-purple-600' : 'border-t-[#EF0B72]'
                 }`} />
@@ -100,6 +94,26 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
               )}
               <span className="text-gray-700 font-medium">
                 {isComingSoon ? 'Sign up with Google' : 'Continue with Google'}
+              </span>
+            </button>
+
+            {/* LinkedIn Sign In Button */}
+            <button
+              onClick={() => handleSignIn('linkedin_oidc')}
+              disabled={loadingProvider}
+              className="flex items-center justify-center gap-3 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {loadingProvider === 'linkedin_oidc' ? (
+                <div className={`w-5 h-5 border-2 border-gray-300 rounded-full animate-spin ${
+                  isComingSoon ? 'border-t-purple-600' : 'border-t-[#EF0B72]'
+                }`} />
+              ) : (
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="#0A66C2">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              )}
+              <span className="text-gray-700 font-medium">
+                {isComingSoon ? 'Sign up with LinkedIn' : 'Continue with LinkedIn'}
               </span>
             </button>
           </div>
