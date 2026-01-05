@@ -937,7 +937,7 @@ const CoursePage = () => {
                               <OptimizedImage
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
-                                className="w-20 h-20 rounded object-contain flex-shrink-0"
+                                className="w-20 h-20 rounded object-cover object-center flex-shrink-0"
                                 width={80}
                                 height={80}
                                 widths={[80, 160, 240]}
@@ -968,7 +968,7 @@ const CoursePage = () => {
                               <OptimizedImage
                                 src={coach.image_url}
                                 alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
-                                className="w-20 h-20 rounded object-contain flex-shrink-0"
+                                className="w-20 h-20 rounded object-cover object-center flex-shrink-0"
                                 width={80}
                                 height={80}
                                 widths={[80, 160, 240]}
