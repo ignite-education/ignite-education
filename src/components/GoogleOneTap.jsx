@@ -45,7 +45,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
         </h3>
         <p className="text-white/90 text-sm">
           {isComingSoon
-            ? "Be the first to know when this course launches"
+            ? "We'll email you when the course launches"
             : 'Sign in to enroll in this course'}
         </p>
       </div>
