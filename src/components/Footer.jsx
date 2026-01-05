@@ -12,8 +12,8 @@ const Footer = ({ className = '' }) => {
             style={{ height: '37px', width: 'auto' }}
           />
           <div className="flex flex-col gap-1">
-            <span className="text-white font-medium" style={{ fontSize: '15px' }}>Built in London, UK.</span>
-            <span className="text-white font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
+            <span className="text-white font-semibold" style={{ fontSize: '15px' }}>Built in London, UK.</span>
+            <span className="text-white font-extralight" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
           </div>
         </div>
 
