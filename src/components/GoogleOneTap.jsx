@@ -39,7 +39,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
       style={{ maxHeight: '500px' }}
     >
       {/* Header - different color/text for coming soon */}
-      <div className={`px-4 py-3 ${isComingSoon ? 'bg-purple-600' : 'bg-[#EF0B72]'}`}>
+      <div className={`px-4 py-3 text-center ${isComingSoon ? 'bg-purple-600' : 'bg-[#EF0B72]'}`}>
         <h3 className="text-white font-semibold text-lg">
           {isComingSoon ? 'Join the Waitlist' : 'Start Learning Today'}
         </h3>
@@ -51,7 +51,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live' }) => {
       </div>
 
       {/* Content */}
-      <div className="px-6 py-[5px] flex flex-col items-center justify-center">
+      <div className="px-6 pt-6 pb-3 flex flex-col items-center justify-center">
         {error ? (
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
