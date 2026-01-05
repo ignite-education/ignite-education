@@ -2686,11 +2686,11 @@ const Auth = () => {
               </button>
             </div>
 
-            {/* Footer */}
-            <Footer />
           </div>
         </div>
 
+        {/* Footer */}
+        <Footer />
       </div>{/* End of auth-sections-2-6-wrapper */}
     </div>
 
