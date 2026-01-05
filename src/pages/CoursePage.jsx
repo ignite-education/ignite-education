@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import Footer from '../components/Footer';
 
 // Lazy load below-fold components for better initial load
 const SocialShareButtons = lazy(() => import('../components/SocialShareButtons'));
@@ -1100,6 +1101,9 @@ const CoursePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
 
       {/* Become a Course Leader Modal */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, ChevronRight, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
+import Footer from '../components/Footer';
 import { getPublishedReleases, formatReleaseDate } from '../lib/releaseNotesApi';
 
 // Parse **text** markdown syntax for bold
@@ -128,6 +129,9 @@ const ReleaseNotes = () => {
           )}
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };

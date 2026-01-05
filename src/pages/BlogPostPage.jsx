@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause, Link2, Check } from 'lucide-react';
 import Lottie from 'lottie-react';
+import Footer from '../components/Footer';
 import { useAnimation } from '../contexts/AnimationContext';
 import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization';
 
@@ -908,6 +909,9 @@ const BlogPostPage = () => {
           </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </>
   );

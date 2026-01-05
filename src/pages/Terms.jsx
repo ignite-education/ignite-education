@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Home, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
+import Footer from '../components/Footer';
 
 const Terms = () => {
   return (
@@ -368,6 +369,9 @@ const Terms = () => {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
