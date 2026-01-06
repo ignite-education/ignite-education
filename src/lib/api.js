@@ -478,14 +478,15 @@ export async function getAllCourses() {
 export async function getCoursesByType() {
   const { data, error } = await supabase
     .from('courses')
-    .select('id, name, title, status, description, course_type, module_structure')
+    .select('*')
     .in('status', ['live', 'coming_soon'])
     .order('display_order', { ascending: true });
 
   if (error) throw error;
 
+  // Group by course_type, defaulting to 'specialism' if not set
   return {
-    specialism: (data || []).filter(c => c.course_type === 'specialism'),
+    specialism: (data || []).filter(c => !c.course_type || c.course_type === 'specialism'),
     skill: (data || []).filter(c => c.course_type === 'skill'),
     subject: (data || []).filter(c => c.course_type === 'subject')
   };
