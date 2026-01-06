@@ -25,9 +25,9 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
 
   return (
     <div className="flex flex-col">
-      <h2 className={`text-xl font-bold ${config.color} mb-2`}>{config.title}</h2>
+      <h2 className={`text-xl font-bold ${config.color} mb-2 text-center`}>{config.title}</h2>
       {showDescription && (
-        <p className="text-gray-500 text-sm mb-6 min-h-[40px]">{config.description}</p>
+        <p className="text-gray-500 text-sm mb-6 min-h-[40px] text-center">{config.description}</p>
       )}
       <div className="space-y-3">
         {displayCourses.map((course) => (

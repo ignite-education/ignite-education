@@ -1,6 +1,7 @@
 import React from 'react';
 import SEO from '../components/SEO';
 import CourseCatalog from '../components/CourseCatalog';
+import Footer from '../components/Footer';
 
 const CourseCatalogPage = () => {
   return (
@@ -11,6 +12,7 @@ const CourseCatalogPage = () => {
         url="https://ignite.education/courses"
       />
       <CourseCatalog variant="full" />
+      <Footer />
     </>
   );
 };

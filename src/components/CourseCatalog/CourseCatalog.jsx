@@ -75,12 +75,12 @@ const CourseCatalog = ({
           <div className="text-center mb-12">
             <Link to="/" className="inline-block mb-8">
               <img
-                src="/ignite-logo.svg"
+                src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
                 alt="Ignite Education"
                 className="h-16 mx-auto"
               />
             </Link>
-            <h1 className="text-4xl font-bold text-gray-900 mb-8">
+            <h1 className="text-4xl font-bold text-black mb-8">
               What do you want to learn?
             </h1>
           </div>
