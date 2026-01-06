@@ -9,7 +9,7 @@ const COURSE_TYPE_CONFIG = {
   },
   skill: {
     title: 'Skill',
-    description: 'Tangible skills that\nyou can apply immediately',
+    description: 'Tangible skills that\nyou can immediately apply',
     color: 'text-[#EF0B72]'
   },
   subject: {
