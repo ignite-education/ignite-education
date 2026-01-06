@@ -7,7 +7,7 @@ const CourseCard = ({ course }) => {
   return (
     <Link
       to={`/courses/${slug}`}
-      className="group block bg-[#F8F8F8] rounded-xl px-5 py-3.5"
+      className="group block bg-[#F8F8F8] rounded-xl px-5 py-3"
     >
       <div className="flex items-center justify-between">
         <span className="text-black font-semibold tracking-[-0.01em]" style={{ fontFamily: 'Geist, sans-serif' }}>{course.title}</span>

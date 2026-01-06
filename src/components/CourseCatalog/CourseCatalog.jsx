@@ -80,7 +80,7 @@ const CourseCatalog = ({
                 className="h-14 mx-auto"
               />
             </Link>
-            <h1 className="text-[36px] font-bold text-black mb-4 tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
+            <h1 className="text-[36px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
               What do you want to learn?
             </h1>
           </div>

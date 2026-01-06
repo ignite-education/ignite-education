@@ -2,7 +2,7 @@ import React from 'react';
 
 const CourseSearch = ({ value, onChange }) => {
   return (
-    <div className="w-full max-w-[634px] mx-auto">
+    <div className="w-full max-w-[660px] mx-auto">
       <input
         type="text"
         value={value}

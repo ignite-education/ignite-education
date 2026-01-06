@@ -25,7 +25,7 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
 
   return (
     <div className="flex flex-col">
-      <h2 className="text-xl font-bold text-[#EF0B72] mb-[0.4rem] text-center tracking-[-0.01em]" style={{ fontFamily: 'Geist, sans-serif' }}>{config.title}</h2>
+      <h2 className="text-[22px] font-bold text-[#EF0B72] mb-[0.4rem] text-center tracking-[-0.01em]" style={{ fontFamily: 'Geist, sans-serif' }}>{config.title}</h2>
       {showDescription && (
         <p className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line" style={{ fontFamily: 'Geist, sans-serif' }}>{config.description}</p>
       )}
