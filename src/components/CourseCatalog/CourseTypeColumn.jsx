@@ -4,17 +4,17 @@ import CourseCard from './CourseCard';
 const COURSE_TYPE_CONFIG = {
   specialism: {
     title: 'Specialism',
-    description: 'Comprehensive courses that enable you to enter a new career',
+    description: 'Comprehensive courses that\nenable you to enter a new career',
     color: 'text-[#EF0B72]'
   },
   skill: {
     title: 'Skill',
-    description: 'Tangible skills that you can apply immediately',
+    description: 'Tangible skills that\nyou can apply immediately',
     color: 'text-[#EF0B72]'
   },
   subject: {
     title: 'Subject',
-    description: 'In-depth studies to learn anything you want',
+    description: 'In-depth studies to\nlearn anything you want',
     color: 'text-[#EF0B72]'
   }
 };
@@ -27,7 +27,7 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
     <div className="flex flex-col">
       <h2 className="text-xl font-bold text-[#EF0B72] mb-2 text-center tracking-[-0.01em]" style={{ fontFamily: 'Geist, sans-serif' }}>{config.title}</h2>
       {showDescription && (
-        <p className="text-black text-sm mb-6 min-h-[40px] text-center font-light" style={{ fontFamily: 'Geist, sans-serif' }}>{config.description}</p>
+        <p className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line" style={{ fontFamily: 'Geist, sans-serif' }}>{config.description}</p>
       )}
       <div className="space-y-3">
         {displayCourses.map((course) => (
