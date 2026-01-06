@@ -68,7 +68,7 @@ const CourseCatalog = ({
   const isFeatured = variant === 'featured';
 
   return (
-    <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-16'}`}>
+    <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-12'}`}>
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
         {!isFeatured && (
