@@ -472,6 +472,26 @@ export async function getAllCourses() {
 }
 
 /**
+ * Get all courses grouped by course_type for the /courses catalog page
+ * @returns {Promise<Object>} Object with specialism, skill, subject arrays
+ */
+export async function getCoursesByType() {
+  const { data, error } = await supabase
+    .from('courses')
+    .select('id, name, title, status, description, course_type, module_structure')
+    .in('status', ['live', 'coming_soon'])
+    .order('display_order', { ascending: true });
+
+  if (error) throw error;
+
+  return {
+    specialism: (data || []).filter(c => c.course_type === 'specialism'),
+    skill: (data || []).filter(c => c.course_type === 'skill'),
+    subject: (data || []).filter(c => c.course_type === 'subject')
+  };
+}
+
+/**
  * Get course information by ID
  * @param {string} courseId - The course ID or name to fetch
  * @returns {Promise<Object>} Course object

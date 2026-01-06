@@ -34,6 +34,7 @@ const BlogManagement = lazy(() => import('./pages/BlogManagement'))
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'))
 const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
+const CourseCatalogPage = lazy(() => import('./pages/CourseCatalogPage'))
 
 // Component to redirect authenticated users away from auth pages
 function AuthRoute({ children }) {
@@ -116,6 +117,7 @@ function App() {
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/certificate/:certificateId" element={<Certificate />} />
+            <Route path="/courses" element={<CourseCatalogPage />} />
             <Route path="/courses/:courseSlug" element={<CoursePage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/admin/blog" element={
