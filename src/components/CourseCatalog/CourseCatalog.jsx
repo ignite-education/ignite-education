@@ -77,7 +77,7 @@ const CourseCatalog = ({
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
                 alt="Ignite Education"
-                className="h-16 mx-auto"
+                className="h-14 mx-auto"
               />
             </Link>
             <h1 className="text-4xl font-bold text-black mb-8">

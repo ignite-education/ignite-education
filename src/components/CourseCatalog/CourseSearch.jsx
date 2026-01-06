@@ -7,7 +7,7 @@ const CourseSearch = ({ value, onChange }) => {
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full bg-white border border-gray-200 rounded-xl px-6 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-transparent transition-all"
+        className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 focus:outline-none transition-all shadow-[0_0_0_4px_rgba(0,0,0,0.05)]"
       />
     </div>
   );

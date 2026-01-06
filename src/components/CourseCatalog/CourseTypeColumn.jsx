@@ -5,17 +5,17 @@ const COURSE_TYPE_CONFIG = {
   specialism: {
     title: 'Specialism',
     description: 'Comprehensive courses that enable you to enter a new career',
-    color: 'text-pink-500'
+    color: 'text-[#EF0B72]'
   },
   skill: {
     title: 'Skill',
     description: 'Tangible skills that you can apply immediately',
-    color: 'text-pink-500'
+    color: 'text-[#EF0B72]'
   },
   subject: {
     title: 'Subject',
     description: 'In-depth studies to learn anything you want',
-    color: 'text-pink-500'
+    color: 'text-[#EF0B72]'
   }
 };
 
@@ -27,7 +27,7 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
     <div className="flex flex-col">
       <h2 className={`text-xl font-bold ${config.color} mb-2 text-center`}>{config.title}</h2>
       {showDescription && (
-        <p className="text-gray-500 text-sm mb-6 min-h-[40px] text-center">{config.description}</p>
+        <p className="text-black text-sm mb-6 min-h-[40px] text-center">{config.description}</p>
       )}
       <div className="space-y-3">
         {displayCourses.map((course) => (
