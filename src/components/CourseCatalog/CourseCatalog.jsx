@@ -69,7 +69,7 @@ const CourseCatalog = ({
 
   return (
     <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-16'}`}>
-      <div className="max-w-6xl mx-auto px-6">
+      <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
         {!isFeatured && (
           <div className="text-center mb-6">
