@@ -25,7 +25,7 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
 
   return (
     <div className="flex flex-col">
-      <h2 className={`text-xl font-bold ${config.color} mb-2 text-center`}>{config.title}</h2>
+      <h2 className="text-xl font-bold text-[#EF0B72] mb-2 text-center tracking-[-0.01em]" style={{ fontFamily: 'Geist, sans-serif' }}>{config.title}</h2>
       {showDescription && (
         <p className="text-black text-sm mb-6 min-h-[40px] text-center">{config.description}</p>
       )}
@@ -33,11 +33,6 @@ const CourseTypeColumn = ({ type, courses, showDescription = true, maxCourses })
         {displayCourses.map((course) => (
           <CourseCard key={course.id} course={course} />
         ))}
-        {courses.length === 0 && (
-          <div className="bg-[#F0F0F2] rounded-xl px-5 py-4 text-gray-400 text-center">
-            No courses yet
-          </div>
-        )}
       </div>
     </div>
   );

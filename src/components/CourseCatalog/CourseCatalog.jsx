@@ -98,7 +98,7 @@ const CourseCatalog = ({
         )}
 
         {/* Course Columns */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
           <CourseTypeColumn
             type="specialism"
             courses={filteredSpecialism}
