@@ -88,7 +88,7 @@ const CourseCatalog = ({
 
         {/* Search */}
         {showSearch && !isFeatured && (
-          <div className="mb-12">
+          <div className="mb-8">
             <CourseSearch
               value={searchQuery}
               onChange={setSearchQuery}
