@@ -611,9 +611,9 @@ const CoursePage = () => {
         {/* Hero Section */}
         <div className="bg-white">
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
-            <div className="w-full" style={{ maxWidth: '762px' }}>
+            <div className="w-full" style={{ maxWidth: '700px' }}>
               {/* Category Tag */}
-              <span className="inline-block px-3 py-1 text-sm bg-[#EDEDED] rounded-sm mb-4 font-medium" style={{ letterSpacing: '-0.02em' }}>
+              <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm mb-4 font-medium" style={{ letterSpacing: '-0.02em' }}>
                 {course.category || 'Specialism'}
               </span>
 
