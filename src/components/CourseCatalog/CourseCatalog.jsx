@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getCoursesByType } from '../../lib/api';
+import { getCachedCourses, setCachedCourses } from '../../lib/courseCatalogCache';
 import CourseTypeColumn from './CourseTypeColumn';
 import CourseSearch from './CourseSearch';
 
@@ -20,10 +21,33 @@ const CourseCatalog = ({
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const refreshCoursesInBackground = async () => {
+      try {
+        const freshData = await getCoursesByType();
+        setCachedCourses(freshData);
+        setCoursesByType(freshData);
+      } catch (err) {
+        // Silent fail for background refresh
+      }
+    };
+
     const fetchCourses = async () => {
       try {
+        // Check cache first for instant load
+        const cachedData = getCachedCourses();
+
+        if (cachedData) {
+          setCoursesByType(cachedData);
+          setLoading(false);
+          // Refresh in background (stale-while-revalidate)
+          refreshCoursesInBackground();
+          return;
+        }
+
+        // No cache - fetch fresh data
         const data = await getCoursesByType();
         setCoursesByType(data);
+        setCachedCourses(data);
       } catch (err) {
         console.error('Error fetching courses:', err);
         setError('Failed to load courses');
@@ -49,10 +73,62 @@ const CourseCatalog = ({
   const filteredSkill = filterCourses(coursesByType.skill);
   const filteredSubject = filterCourses(coursesByType.subject);
 
+  const isFeatured = variant === 'featured';
+
+  // Skeleton card component for loading state
+  const SkeletonCard = () => (
+    <div className="bg-[#F8F8F8] rounded-xl px-5 py-3 animate-pulse">
+      <div className="flex items-center justify-between">
+        <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+        <div className="bg-white rounded-md w-[35px] h-[35px]"></div>
+      </div>
+    </div>
+  );
+
+  // Skeleton column component for loading state
+  const SkeletonColumn = () => (
+    <div className="flex flex-col">
+      <div className="h-7 bg-pink-200 rounded w-24 mx-auto mb-1 animate-pulse"></div>
+      {showDescriptions && (
+        <div className="mb-6 min-h-[40px] flex flex-col items-center gap-1">
+          <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
+          <div className="h-4 bg-gray-200 rounded w-36 animate-pulse"></div>
+        </div>
+      )}
+      <div className="space-y-3">
+        {[...Array(4)].map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-12 h-12 border-3 border-pink-500 border-t-transparent rounded-full animate-spin" />
+      <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-12'}`}>
+        <div className="max-w-[1267px] mx-auto px-6">
+          {/* Header skeleton */}
+          {!isFeatured && (
+            <div className="text-center mb-6">
+              <div className="h-14 w-14 bg-pink-100 rounded mx-auto mb-8 animate-pulse"></div>
+              <div className="h-9 bg-gray-200 rounded w-80 mx-auto mb-[6px] animate-pulse"></div>
+            </div>
+          )}
+
+          {/* Search skeleton */}
+          {showSearch && !isFeatured && (
+            <div className="mb-10">
+              <div className="h-12 bg-gray-100 rounded-lg w-full max-w-md mx-auto animate-pulse"></div>
+            </div>
+          )}
+
+          {/* Columns skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
+            <SkeletonColumn />
+            <SkeletonColumn />
+            <SkeletonColumn />
+          </div>
+        </div>
       </div>
     );
   }
@@ -64,8 +140,6 @@ const CourseCatalog = ({
       </div>
     );
   }
-
-  const isFeatured = variant === 'featured';
 
   return (
     <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-12'}`}>

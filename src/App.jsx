@@ -3,6 +3,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
+import { prefetchCourses } from './lib/courseCatalogCache'
 
 // Lazy-load LoadingScreen to defer ui-vendor chunk (lottie-react)
 const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
@@ -62,6 +63,14 @@ function App() {
   // Signal to prerenderer that the page is ready
   useEffect(() => {
     document.dispatchEvent(new Event('render-complete'));
+
+    // Prefetch course catalog data after initial load
+    // Uses requestIdleCallback for non-blocking prefetch
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => prefetchCourses());
+    } else {
+      setTimeout(() => prefetchCourses(), 1000);
+    }
   }, []);
 
   return (
