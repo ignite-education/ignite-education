@@ -618,7 +618,7 @@ const CoursePage = () => {
               </span>
 
               {/* Title */}
-              <h1 className="text-5xl font-bold text-black mb-4 leading-tight" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="text-5xl font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 {course.title}
               </h1>
 
@@ -642,7 +642,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                     </svg>
                   </div>
-                  <span className="text-sm text-black leading-tight">Certificate upon<br/>completion</span>
+                  <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Certificate upon<br/>completion</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
@@ -650,7 +650,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-black leading-tight">Built by<br/>industry experts</span>
+                  <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Built by<br/>industry experts</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
@@ -658,7 +658,7 @@ const CoursePage = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span className="text-sm text-black leading-tight">Self-paced<br/>learning</span>
+                  <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Self-paced<br/>learning</span>
                 </div>
               </div>
             </div>
@@ -678,14 +678,14 @@ const CoursePage = () => {
                         {course.module_structure.map((module, moduleIndex) => (
                           <div key={moduleIndex}>
                             {/* Module Title */}
-                            <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0' }}>
+                            <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}>
                               Module {moduleIndex + 1} - {module.name}
                             </h3>
 
                             {/* Module Description and Lessons */}
                             <div>
                               {/* Module Intro - uses stored description or falls back to generated */}
-                              <p className="text-gray-900 mb-3" style={{ fontSize: '15px' }}>
+                              <p className="text-gray-900 mb-3" style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>
                                 {module.description || generateModuleIntro(module)}
                               </p>
 
@@ -694,7 +694,7 @@ const CoursePage = () => {
                                 {(module.lessons || []).map((lesson, lessonIndex) => (
                                   <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
                                     <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                                    <span className="font-medium text-gray-900">{lesson.name}</span>
+                                    <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.01em' }}>{lesson.name}</span>
                                   </li>
                                 ))}
                               </ul>
