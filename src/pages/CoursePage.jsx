@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
@@ -13,9 +13,6 @@ import GoogleOneTap from '../components/GoogleOneTap';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
-
-// Lazy load below-fold components for better initial load
-const SocialShareButtons = lazy(() => import('../components/SocialShareButtons'));
 
 // Cache TTL: 1 hour
 const CACHE_TTL = 60 * 60 * 1000;
@@ -60,7 +57,6 @@ const CoursePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
-  const [copied, setCopied] = useState(false);
 
   // Become a course leader modal state
   const [showLeaderModal, setShowLeaderModal] = useState(false);
@@ -711,6 +707,7 @@ const CoursePage = () => {
                           <GoogleOneTap
                             courseSlug={courseSlug}
                             courseStatus={course.status}
+                            courseTitle={course.title}
                           />
                         ) : (
                           <OptimizedImage
@@ -889,18 +886,6 @@ const CoursePage = () => {
                   />
                 </div>
               )}
-
-              {/* Share Section */}
-              <div className="mt-6 pt-4">
-                <Suspense fallback={<div className="h-10" />}>
-                  <SocialShareButtons
-                    courseSlug={courseSlug}
-                    courseTitle={course.title}
-                    copied={copied}
-                    onCopy={() => setCopied(true)}
-                  />
-                </Suspense>
-              </div>
 
             </div>
           </div>
