@@ -661,11 +661,16 @@ const CoursePage = () => {
                   <span className="text-sm text-black leading-tight">Self-paced<br/>learning</span>
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Content below hero - original width */}
+          <div className="max-w-4xl mx-auto px-6 pb-12 flex justify-center">
+            <div className="w-full" style={{ maxWidth: '762px' }}>
               {/* Curriculum Section - Two Column Layout with expanded container */}
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
                 <div className="mb-8 lg:-mx-24" ref={curriculumSectionRef}>
-                  <h2 className="font-semibold text-gray-900 text-2xl mb-4">Curriculum</h2>
+                  <h2 className="font-bold text-gray-900 mb-4" style={{ fontSize: '26px', letterSpacing: '-0.02em' }}>Curriculum</h2>
                   <div className="flex gap-6 items-stretch">
                     {/* Left Column - Curriculum Content */}
                     <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
