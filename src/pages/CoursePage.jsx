@@ -613,7 +613,7 @@ const CoursePage = () => {
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '700px' }}>
               {/* Category Tag */}
-              <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm mb-4 font-medium" style={{ letterSpacing: '-0.02em' }}>
+              <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '10px' }}>
                 {course.category || 'Specialism'}
               </span>
 
@@ -623,12 +623,12 @@ const CoursePage = () => {
               </h1>
 
               {/* Tagline - Purple */}
-              <p className="text-xl text-[#7714E0] font-semibold mb-2 leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-xl text-[#7714E0] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em', marginBottom: '6px' }}>
                 {`Become a ${course.title} with Ignite's free, expert-led course.`}
               </p>
 
               {/* Description - max 2 sentences */}
-              <p className="text-black text-lg leading-relaxed mb-8 font-medium" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '25px' }}>
                 {getTwoSentences(course.description)}
               </p>
 
