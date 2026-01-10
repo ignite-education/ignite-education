@@ -19,8 +19,8 @@ const Navbar = () => {
             className="bg-contain bg-no-repeat bg-left"
             style={{
               backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png)',
-              height: '37px',
-              width: '37px'
+              height: '35px',
+              width: '35px'
             }}
           />
         </Link>
@@ -48,8 +48,8 @@ const Navbar = () => {
         ) : (
           <Link
             to="/welcome"
-            className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold rounded-lg transition-colors"
-            style={{ letterSpacing: '-0.02em' }}
+            className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+            style={{ letterSpacing: '-0.02em', borderRadius: '0.15rem' }}
           >
             Sign In
           </Link>
