@@ -182,7 +182,7 @@ const Auth = () => {
   // Typing animations using requestAnimationFrame hook
   // No space between lines - the space is handled by the line break in rendering
   const taglineText = "Upskill. Reskill.Get ready for what's next.";
-  const { displayText: typedTagline, isComplete: isTaglineTypingComplete } = useTypingAnimation(
+  const { displayText: typedTagline } = useTypingAnimation(
     taglineText,
     {
       charDelay: 90,
@@ -1160,19 +1160,11 @@ const Auth = () => {
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
     const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
 
-    const showCursorOnFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
-    const showCursorOnSecondLine = typedTagline.length > fullFirstLine.length && !isTaglineTypingComplete;
-
     return (
       <>
         {/* First line (white) */}
         <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
-          {showCursorOnFirstLine ? (
-            <span className="animate-blink font-thin">|</span>
-          ) : firstLineTypedLength === fullFirstLine.length && (
-            <span style={{ visibility: 'hidden' }}>|</span>
-          )}
         </span>
 
         {/* Second line (pink) - always present for height */}
@@ -1180,7 +1172,6 @@ const Auth = () => {
           {secondLineTypedLength > 0 ? (
             <>
               {fullSecondLine.substring(0, secondLineTypedLength)}
-              {showCursorOnSecondLine && <span className="animate-blink font-thin" style={{ color: '#EF0B72' }}>|</span>}
             </>
           ) : (
             <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
@@ -1560,7 +1551,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[0.95rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(103,103,103,0.25)]"
+              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[0.9rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(103,103,103,0.25)]"
             >
               <span className="truncate">Continue with Google</span>
               <img
@@ -1653,7 +1644,7 @@ const Auth = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLogin ? 'Sign In' : 'Sign Up'}
             </button>
@@ -2769,7 +2760,7 @@ const Auth = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Sending...' : 'Send Reset Link'}
                   </button>
