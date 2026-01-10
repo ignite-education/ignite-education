@@ -1659,54 +1659,54 @@ const Auth = () => {
             </button>
           </form>
 
-          {/* Terms and Privacy */}
-          <p className="text-xs text-black text-center mt-3">
-            By signing in, you agree to Ignite's<br />
-            <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Privacy Policy</a>
-          </p>
-        </div>
-
-        {/* Account Toggle */}
-        <div className="text-center" style={{ marginTop: '0.75rem' }}>
-          {isLogin ? (
-            <div className="flex items-center justify-center gap-4 auth-links">
+          {/* Account Toggle */}
+          <div className="text-center" style={{ marginTop: '0.5rem' }}>
+            {isLogin ? (
+              <div className="flex items-center justify-center gap-4 auth-links">
+                <button
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setError('');
+                  }}
+                  className="text-black hover:text-[#EF0B72] transition"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  Don't have an account?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowResetPassword(true);
+                    setResetEmail(email);
+                    setResetSuccess(false);
+                    setError('');
+                  }}
+                  className="text-black hover:text-[#EF0B72] transition"
+                  style={{ fontSize: '0.85em' }}
+                >
+                  Reset password
+                </button>
+              </div>
+            ) : (
               <button
                 onClick={() => {
                   setIsLogin(!isLogin);
                   setError('');
                 }}
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-black hover:text-[#EF0B72] transition"
                 style={{ fontSize: '0.85em' }}
               >
-                Don't have an account?
+                Already have an account?
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowResetPassword(true);
-                  setResetEmail(email);
-                  setResetSuccess(false);
-                  setError('');
-                }}
-                className="text-white hover:text-[#EF0B72] transition"
-                style={{ fontSize: '0.85em' }}
-              >
-                Reset password
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError('');
-              }}
-              className="text-white hover:text-[#EF0B72] transition"
-              style={{ fontSize: '0.85em' }}
-            >
-              Already have an account?
-            </button>
-          )}
+            )}
+          </div>
         </div>
+
+        {/* Terms and Privacy */}
+        <p className="text-xs text-white text-center mt-3">
+          By signing in, you agree to Ignite's<br />
+          <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Privacy Policy</a>
+        </p>
         </div>
 
         {/* Scroll Down Arrow */}
