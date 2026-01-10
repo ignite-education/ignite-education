@@ -373,6 +373,13 @@ const CoursePage = () => {
     return `Build comprehensive knowledge and practical skills in this essential professional domain. Develop expertise through hands-on learning and real-world application of key concepts.`;
   };
 
+  // Get first two sentences of description
+  const getTwoSentences = (description) => {
+    if (!description) return '';
+    const sentences = description.match(/[^.!?]*[.!?]+/g) || [description];
+    return sentences.slice(0, 2).join('').trim();
+  };
+
   // FAQ data for both display and structured data
   const COURSE_FAQS = [
     {
@@ -606,23 +613,23 @@ const CoursePage = () => {
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
               {/* Category Tag */}
-              <span className="inline-block px-3 py-1 text-sm border border-black rounded-sm mb-4">
+              <span className="inline-block px-3 py-1 text-sm bg-[#EDEDED] rounded-sm mb-4 font-medium" style={{ letterSpacing: '-0.02em' }}>
                 {course.category || 'Specialism'}
               </span>
 
               {/* Title */}
-              <h1 className="text-5xl font-bold text-black mb-4 leading-tight">
+              <h1 className="text-5xl font-bold text-black mb-4 leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 {course.title}
               </h1>
 
               {/* Tagline - Purple */}
-              <p className="text-xl text-[#7714E0] font-medium mb-4 leading-relaxed">
+              <p className="text-xl text-[#7714E0] font-semibold mb-4 leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
                 {`Become a ${course.title} with Ignite's free, expert-led course.`}
               </p>
 
-              {/* Description */}
-              <p className="text-black text-lg leading-relaxed mb-8">
-                {course.description}
+              {/* Description - max 2 sentences */}
+              <p className="text-black text-lg leading-relaxed mb-8 font-medium" style={{ letterSpacing: '-0.02em' }}>
+                {getTwoSentences(course.description)}
               </p>
 
               {/* Course Benefits */}
