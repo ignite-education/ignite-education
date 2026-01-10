@@ -1526,11 +1526,6 @@ const Auth = () => {
 
         <div className="w-full">
 
-        {/* Title above the box */}
-        <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
-        </h2>
-
         {/* Form Card */}
         <div
           className="bg-white text-black px-5 pt-4 pb-3 rounded-md auth-form-card"
@@ -1551,7 +1546,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('google')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[0.9rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_10px_rgba(103,103,103,0.25)]"
+              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)]"
             >
               <span className="truncate">Continue with Google</span>
               <img
@@ -1565,7 +1560,7 @@ const Auth = () => {
               type="button"
               onClick={() => handleOAuthSignIn('linkedin_oidc')}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[0.95rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn shadow-[0_0_10px_rgba(103,103,103,0.25)]"
+              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn shadow-[0_0_12px_rgba(103,103,103,0.25)]"
             >
               <span className="truncate">Continue with LinkedIn</span>
               <img
