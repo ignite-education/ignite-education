@@ -117,7 +117,6 @@ const welcomePageStructuredData = [
 ];
 
 // Lazy-load below-fold components for better initial page load
-const Onboarding = lazy(() => import('./Onboarding'));
 const BlogCarousel = lazy(() => import('./BlogCarousel'));
 
 const Auth = () => {
@@ -130,15 +129,8 @@ const Auth = () => {
     debounceTimeouts.current[key] = setTimeout(callback, delay);
   };
 
-  const [isLogin, setIsLogin] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
@@ -151,9 +143,6 @@ const Auth = () => {
   const [courses, setCourses] = useState([]);
   const [blurredCards, setBlurredCards] = useState([]);
   const [animateTestimonials, setAnimateTestimonials] = useState(false);
-  const [showResetPassword, setShowResetPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState('');
-  const [resetSuccess, setResetSuccess] = useState(false);
   const [currentTestimonialIndex, setCurrentTestimonialIndex] = useState(0);
   const [isTestimonialHovered, setIsTestimonialHovered] = useState(false);
   const [hoveredUseCase, setHoveredUseCase] = useState(null);
@@ -311,7 +300,7 @@ const Auth = () => {
     window.open('https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987', '_blank', 'noopener,noreferrer');
   };
 
-  const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
+  const { user, signInWithOAuth } = useAuth();
 
   // Debug: Check environment variable on mount
   useEffect(() => {
@@ -607,7 +596,7 @@ const Auth = () => {
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
-    if (!marketingSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!marketingSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -629,11 +618,11 @@ const Auth = () => {
         observer.unobserve(marketingSectionRef.current);
       }
     };
-  }, [isLogin, animateWords, selectedCourseModal]);
+  }, [false, animateWords, selectedCourseModal]);
 
   // Intersection observer to snap section 2 to top on desktop
   useEffect(() => {
-    if (isMobile || isLogin || hasSection2Snapped || selectedCourseModal) return;
+    if (isMobile || false || hasSection2Snapped || selectedCourseModal) return;
 
     let isAnimating = false;
     let animationId = null;
@@ -707,7 +696,7 @@ const Auth = () => {
       }
       if (animationId) cancelAnimationFrame(animationId);
     };
-  }, [isMobile, isLogin, hasSection2Snapped, selectedCourseModal]);
+  }, [isMobile, false, hasSection2Snapped, selectedCourseModal]);
 
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
@@ -918,7 +907,7 @@ const Auth = () => {
 
   // Intersection observer for courses section typing animation
   useEffect(() => {
-    if (!coursesSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!coursesSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -940,11 +929,11 @@ const Auth = () => {
         observer.unobserve(coursesSectionRef.current);
       }
     };
-  }, [isLogin, courseTitleTypingEnabled, selectedCourseModal]);
+  }, [false, courseTitleTypingEnabled, selectedCourseModal]);
 
   // Intersection observer for learning model section typing animation
   useEffect(() => {
-    if (!learningModelSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!learningModelSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -966,11 +955,11 @@ const Auth = () => {
         observer.unobserve(learningModelSectionRef.current);
       }
     };
-  }, [isLogin, learningTaglineTypingEnabled, selectedCourseModal]);
+  }, [false, learningTaglineTypingEnabled, selectedCourseModal]);
 
   // Intersection observer for testimonials section animation
   useEffect(() => {
-    if (!testimonialsSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!testimonialsSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -997,11 +986,11 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal, isMobile]);
+  }, [false, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal, isMobile]);
 
   // Intersection observer for merch section typing animation
   useEffect(() => {
-    if (!merchSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!merchSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1023,22 +1012,22 @@ const Auth = () => {
         observer.unobserve(merchSectionRef.current);
       }
     };
-  }, [isLogin, merchTypingEnabled, selectedCourseModal]);
+  }, [false, merchTypingEnabled, selectedCourseModal]);
 
   // Auto-rotate testimonials carousel
   useEffect(() => {
-    if (!animateTestimonials || !isTestimonialsHeadingTypingComplete || isTestimonialHovered || isLogin || selectedCourseModal) return;
+    if (!animateTestimonials || !isTestimonialsHeadingTypingComplete || isTestimonialHovered || false || selectedCourseModal) return;
 
     const interval = setInterval(() => {
       setCurrentTestimonialIndex((prev) => (prev + 1) % 5); // 5 testimonials total
     }, 6000); // Rotate every 6 seconds
 
     return () => clearInterval(interval);
-  }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, isLogin, selectedCourseModal]);
+  }, [animateTestimonials, isTestimonialsHeadingTypingComplete, isTestimonialHovered, false, selectedCourseModal]);
 
   // Intersection observer for Blog & FAQ section animation
   useEffect(() => {
-    if (!linkedInFAQSectionRef.current || isLogin || selectedCourseModal) return;
+    if (!linkedInFAQSectionRef.current || false || selectedCourseModal) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -1060,7 +1049,7 @@ const Auth = () => {
         observer.unobserve(linkedInFAQSectionRef.current);
       }
     };
-  }, [isLogin, selectedCourseModal, blogFaqTypingEnabled]);
+  }, [false, selectedCourseModal, blogFaqTypingEnabled]);
 
 
 
@@ -1407,28 +1396,6 @@ const Auth = () => {
     return result;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      if (isLogin) {
-        await signIn(email, password);
-        navigate('/progress');
-      } else {
-        const result = await signUp(email, password, firstName, lastName);
-        // Show onboarding for new signups
-        setNewUserId(result.user.id);
-        setShowOnboarding(true);
-        setLoading(false);
-      }
-    } catch (err) {
-      setError(err.message || 'An error occurred');
-      setLoading(false);
-    }
-  };
-
   const handleOAuthSignIn = async (provider) => {
     setError('');
     setLoading(true);
@@ -1441,39 +1408,12 @@ const Auth = () => {
     }
   };
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      console.log('Attempting to send password reset email to:', resetEmail);
-      const result = await resetPassword(resetEmail);
-      console.log('Password reset response:', result);
-      setResetSuccess(true);
-      setLoading(false);
-    } catch (err) {
-      console.error('Password reset error:', err);
-      setError(err.message || 'An error occurred sending reset email');
-      setLoading(false);
-    }
-  };
-
   const scrollToMarketing = () => {
     marketingSectionRef.current?.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     });
   };
-
-  // Show onboarding if user just signed up
-  if (showOnboarding) {
-    return (
-      <Suspense fallback={<div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#EF0B72] border-t-transparent rounded-full animate-spin" /></div>}>
-        <Onboarding firstName={firstName} userId={newUserId} />
-      </Suspense>
-    );
-  }
 
   return (
     <>
@@ -1537,7 +1477,7 @@ const Auth = () => {
 
         {/* Title above the box */}
         <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
+          {false ? 'Welcome Back' : 'Create Account'}
         </h2>
 
         {/* Form Card */}
@@ -1555,7 +1495,7 @@ const Auth = () => {
           )}
 
           {/* OAuth Buttons */}
-          <div className="space-y-2 mb-3">
+          <div className="space-y-2">
             <button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
@@ -1583,121 +1523,6 @@ const Auth = () => {
                 className="w-5 h-5 flex-shrink-0 object-contain"
               />
             </button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative" style={{ marginBottom: '0.625rem' }}>
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">First Name</label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="Alan"
-                  disabled={isLogin}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Last Name</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="Turing"
-                  disabled={isLogin}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="you@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLogin ? 'Sign In' : 'Sign Up'}
-            </button>
-          </form>
-
-          <div className="text-center" style={{ marginTop: '0.5rem' }}>
-            {isLogin ? (
-              <div className="flex items-center justify-center gap-4 auth-links">
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError('');
-                  }}
-                  className="text-white hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Don't have an account?
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowResetPassword(true);
-                    setResetEmail(email);
-                    setResetSuccess(false);
-                    setError('');
-                  }}
-                  className="text-white hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Reset password
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                }}
-                className="text-white hover:text-[#EF0B72] transition"
-                style={{ fontSize: '0.85em' }}
-              >
-                Already have an account?
-              </button>
-            )}
           </div>
         </div>
         </div>
@@ -2694,97 +2519,6 @@ const Auth = () => {
         <Footer />
       </div>{/* End of auth-sections-2-6-wrapper */}
     </div>
-
-    {/* Password Reset Modal */}
-    {showResetPassword && (
-      <div
-        className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
-        style={{
-          background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
-        }}
-        onClick={() => {
-          setShowResetPassword(false);
-          setResetSuccess(false);
-          setError('');
-        }}
-      >
-        <div className="relative">
-          <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-            Reset Password
-          </h2>
-
-          <div
-            className="bg-white relative"
-            style={{
-              width: '450px',
-              maxWidth: '90vw',
-              animation: 'scaleUp 0.2s ease-out',
-              padding: '2rem'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => {
-                setShowResetPassword(false);
-                setResetSuccess(false);
-                setError('');
-              }}
-              className="absolute top-4 right-4 text-gray-600 hover:text-black"
-            >
-              <X size={24} />
-            </button>
-
-            {!resetSuccess ? (
-              <>
-                <p className="text-gray-700 mb-4 text-sm">
-                  Enter your email address and we'll send you a link to reset your password.
-                </p>
-
-                {error && (
-                  <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm">
-                    {error}
-                  </div>
-                )}
-
-                <form onSubmit={handleResetPassword}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1 text-black">Email</label>
-                    <input
-                      type="email"
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                      className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {loading ? 'Sending...' : 'Send Reset Link'}
-                  </button>
-                </form>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-black mb-2">Check Your Email</h3>
-                <p className="text-gray-700 text-sm mb-4">
-                  We've sent a password reset link to <strong>{resetEmail}</strong>
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    )}
 
     {/* Course Details Modal */}
     {selectedCourse && (
