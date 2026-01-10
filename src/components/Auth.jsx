@@ -1172,12 +1172,9 @@ const Auth = () => {
 
         {/* Second line (pink) - always present for height */}
         <span style={{ display: 'block', color: '#EF0B72' }}>
-          {secondLineTypedLength > 0 ? (
-            <>
-              {fullSecondLine.substring(0, secondLineTypedLength)}
-            </>
-          ) : (
-            <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+          {fullSecondLine.substring(0, secondLineTypedLength)}
+          {secondLineTypedLength < fullSecondLine.length && (
+            <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
           )}
         </span>
       </>
