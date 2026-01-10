@@ -49,7 +49,7 @@ const Navbar = () => {
           <Link
             to="/welcome"
             className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-            style={{ letterSpacing: '-0.01em', borderRadius: '0.15rem' }}
+            style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem' }}
           >
             Sign In
           </Link>
