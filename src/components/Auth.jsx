@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ChevronDown, ChevronRight, Home, X } from 'lucide-react';
+import { ChevronRight, Home, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from './SEO';
@@ -1408,13 +1408,6 @@ const Auth = () => {
     }
   };
 
-  const scrollToMarketing = () => {
-    marketingSectionRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    });
-  };
-
   return (
     <>
       <SEO
@@ -1441,7 +1434,7 @@ const Auth = () => {
       >
       {/* First Section - Auth Form */}
       <div
-        className="min-h-screen flex items-center justify-center px-8 relative auth-section-1"
+        className="min-h-[60vh] flex items-center justify-center px-8 relative auth-section-1"
         style={{
           scrollSnapAlign: 'start',
           backgroundImage: !isMobile
@@ -1531,21 +1524,6 @@ const Auth = () => {
             <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Privacy Policy</a>
           </p>
         </div>
-        </div>
-
-        {/* Scroll Down Arrow */}
-        <div className="mt-8">
-          <button
-            onClick={scrollToMarketing}
-            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
-            style={{
-              animation: 'subtleBounce 2s infinite',
-              padding: '11px'
-            }}
-            aria-label="Scroll to learn more"
-          >
-            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-          </button>
         </div>
       </div>
       </div>
