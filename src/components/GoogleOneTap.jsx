@@ -133,9 +133,9 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) =
             {/* Copy Link Button */}
             <button
               onClick={handleCopyLink}
-              className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md transition-colors min-w-[85px] ${
+              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-colors w-[85px] ${
                 copied
-                  ? 'bg-green-50 text-green-600'
+                  ? 'bg-[#EDEDED] text-black'
                   : 'bg-[#EDEDED] text-black hover:bg-[#E0E0E0]'
               }`}
             >
