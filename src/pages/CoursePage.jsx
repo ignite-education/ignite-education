@@ -656,6 +656,17 @@ const CoursePage = () => {
                   <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Self-paced<br/>learning</span>
                 </div>
               </div>
+
+              {/* Mobile Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
+              {!user && (
+                <div className="lg:hidden">
+                  <GoogleOneTap
+                    courseSlug={courseSlug}
+                    courseStatus={course.status}
+                    courseTitle={course.title}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -874,17 +885,6 @@ const CoursePage = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Mobile Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
-              {!user && (
-                <div className="lg:hidden mt-8 mb-4">
-                  <GoogleOneTap
-                    courseSlug={courseSlug}
-                    courseStatus={course.status}
-                    courseTitle={course.title}
-                  />
-                </div>
-              )}
 
             </div>
           </div>
