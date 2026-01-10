@@ -32,11 +32,15 @@ const Navbar = () => {
               <img
                 src={profilePicture}
                 alt="Profile"
-                className="w-9 h-9 object-cover"
+                className="object-cover rounded-sm"
+                style={{ width: '37px', height: '37px' }}
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-9 h-9 bg-[#8200EA] flex items-center justify-center text-white font-medium">
+              <div
+                className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+                style={{ width: '37px', height: '37px' }}
+              >
                 {firstName?.charAt(0).toUpperCase() || '?'}
               </div>
             )}
