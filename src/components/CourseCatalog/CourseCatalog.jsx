@@ -146,7 +146,7 @@ const CourseCatalog = ({
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
         {!isFeatured && (
-          <div className="text-center mb-[18px]">
+          <div className="text-center mb-[15px]">
             <Link to="/" className="inline-block mb-8">
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
