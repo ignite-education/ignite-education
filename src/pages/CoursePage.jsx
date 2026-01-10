@@ -690,7 +690,7 @@ const CoursePage = () => {
               </span>
 
               {/* Title */}
-              <h1 className="text-5xl font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="text-[42px] font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 {course.title}
               </h1>
 
