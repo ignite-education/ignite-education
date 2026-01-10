@@ -890,27 +890,6 @@ const CoursePage = () => {
                 </div>
               )}
 
-              {/* Get Started / Register Interest CTA Button */}
-              <div className="mt-8 mb-8 text-left">
-                {course.status === 'coming_soon' ? (
-                  <button
-                    onClick={() => setShowInterestModal(true)}
-                    className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    Register Interest
-                  </button>
-                ) : (
-                  <a
-                    href="/welcome"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-                  >
-                    Get Started
-                  </a>
-                )}
-              </div>
-
               {/* Share Section */}
               <div className="mt-6 pt-4">
                 <Suspense fallback={<div className="h-10" />}>
