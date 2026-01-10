@@ -1585,12 +1585,6 @@ const Auth = () => {
             </button>
           </div>
 
-          {/* Terms and Privacy */}
-          <p className="text-xs text-gray-300 text-center mb-3">
-            By signing in, you agree to Ignite's<br />
-            <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Privacy Policy</a>
-          </p>
-
           {/* Divider */}
           <div className="relative" style={{ marginBottom: '0.625rem' }}>
             <div className="absolute inset-0 flex items-center">
@@ -1665,34 +1659,17 @@ const Auth = () => {
             </button>
           </form>
 
-          <div className="text-center" style={{ marginTop: '0.5rem' }}>
-            {isLogin ? (
-              <div className="flex items-center justify-center gap-4 auth-links">
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError('');
-                  }}
-                  className="text-white hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Don't have an account?
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowResetPassword(true);
-                    setResetEmail(email);
-                    setResetSuccess(false);
-                    setError('');
-                  }}
-                  className="text-white hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Reset password
-                </button>
-              </div>
-            ) : (
+          {/* Terms and Privacy */}
+          <p className="text-xs text-black text-center mt-3">
+            By signing in, you agree to Ignite's<br />
+            <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#EF0B72]">Privacy Policy</a>
+          </p>
+        </div>
+
+        {/* Account Toggle */}
+        <div className="text-center" style={{ marginTop: '0.75rem' }}>
+          {isLogin ? (
+            <div className="flex items-center justify-center gap-4 auth-links">
               <button
                 onClick={() => {
                   setIsLogin(!isLogin);
@@ -1701,10 +1678,34 @@ const Auth = () => {
                 className="text-white hover:text-[#EF0B72] transition"
                 style={{ fontSize: '0.85em' }}
               >
-                Already have an account?
+                Don't have an account?
               </button>
-            )}
-          </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowResetPassword(true);
+                  setResetEmail(email);
+                  setResetSuccess(false);
+                  setError('');
+                }}
+                className="text-white hover:text-[#EF0B72] transition"
+                style={{ fontSize: '0.85em' }}
+              >
+                Reset password
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
+              className="text-white hover:text-[#EF0B72] transition"
+              style={{ fontSize: '0.85em' }}
+            >
+              Already have an account?
+            </button>
+          )}
         </div>
         </div>
 
