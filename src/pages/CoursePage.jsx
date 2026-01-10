@@ -12,6 +12,7 @@ import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 
 // Lazy load below-fold components for better initial load
 const SocialShareButtons = lazy(() => import('../components/SocialShareButtons'));
@@ -661,25 +662,7 @@ const CoursePage = () => {
   if (error || !course) {
     return (
       <div className="min-h-screen bg-black">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="inline-block">
-              <div
-                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-                }}
-              />
-            </Link>
-            <Link
-              to="/welcome"
-              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
+        <Navbar />
 
         <div className="max-w-4xl mx-auto px-6 py-12">
           {/* Breadcrumb */}
@@ -750,23 +733,8 @@ const CoursePage = () => {
 
       <div className="min-h-screen bg-black">
         {/* Sticky Top Navigation Bar */}
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="inline-block">
-              <div
-                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-                }}
-              />
-            </Link>
-            <Link
-              to="/welcome"
-              className="px-4 py-2 bg-[#EF0B72] hover:bg-[#D10A64] text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {course?.status === 'coming_soon' ? 'Register Interest' : 'Get Started'}
-            </Link>
-          </div>
+        <div className="sticky top-0 z-50">
+          <Navbar />
           {/* Progress Bar - always render with fixed height to prevent CLS */}
           <div
             className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"

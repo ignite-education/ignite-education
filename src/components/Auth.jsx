@@ -1651,7 +1651,7 @@ const Auth = () => {
           </form>
 
           {/* Account Toggle */}
-          <div className="text-center" style={{ marginTop: '0.25rem' }}>
+          <div className="text-center" style={{ marginTop: '0.375rem' }}>
             {isLogin ? (
               <div className="flex items-center justify-center gap-4 auth-links">
                 <button
