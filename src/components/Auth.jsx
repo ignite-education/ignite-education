@@ -1524,6 +1524,12 @@ const Auth = () => {
               />
             </button>
           </div>
+
+          {/* Terms and Privacy */}
+          <p className="text-xs text-gray-300 text-center mt-3">
+            By signing in, you agree to Ignite's<br />
+            <a href="https://ignite.education/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Terms of Service</a> and <a href="https://ignite.education/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Privacy Policy</a>
+          </p>
         </div>
         </div>
 
