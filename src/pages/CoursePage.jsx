@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from '../components/SEO';
-import { X, ChevronRight } from 'lucide-react';
+import { X, ChevronRight, Star } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
 import { useAuth } from '../contexts/AuthContext';
@@ -70,6 +70,10 @@ const CoursePage = () => {
   // Waitlist success notification state
   const [showWaitlistSuccess, setShowWaitlistSuccess] = useState(false);
 
+  // Priority access state (from launch notification email)
+  const [hasPriorityAccess, setHasPriorityAccess] = useState(false);
+  const [priorityValidating, setPriorityValidating] = useState(false);
+
   // Refs
   const curriculumSectionRef = useRef(null);
 
@@ -85,6 +89,54 @@ const CoursePage = () => {
       setTimeout(() => setShowWaitlistSuccess(false), 5000);
     }
   }, [location.search]);
+
+  // Check for priority token from launch notification email
+  useEffect(() => {
+    const validatePriorityToken = async () => {
+      const params = new URLSearchParams(location.search);
+      const priorityToken = params.get('priority');
+
+      if (!priorityToken) {
+        // Check if we already have a stored priority token for this course
+        const storedToken = sessionStorage.getItem('priorityEnrollmentToken');
+        const storedCourse = sessionStorage.getItem('priorityEnrollmentCourse');
+        if (storedToken && storedCourse === courseSlug) {
+          setHasPriorityAccess(true);
+        }
+        return;
+      }
+
+      setPriorityValidating(true);
+
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+        const response = await fetch(`${API_URL}/api/validate-priority-token?token=${priorityToken}`);
+        const data = await response.json();
+
+        if (data.valid) {
+          // Store token and course for enrollment flow
+          sessionStorage.setItem('priorityEnrollmentToken', priorityToken);
+          sessionStorage.setItem('priorityEnrollmentCourse', courseSlug);
+          setHasPriorityAccess(true);
+
+          // Clear the query param from URL without reload
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, '', newUrl);
+        } else {
+          console.log('Priority token invalid:', data.error);
+          // Clear any stale stored tokens
+          sessionStorage.removeItem('priorityEnrollmentToken');
+          sessionStorage.removeItem('priorityEnrollmentCourse');
+        }
+      } catch (error) {
+        console.error('Error validating priority token:', error);
+      } finally {
+        setPriorityValidating(false);
+      }
+    };
+
+    validatePriorityToken();
+  }, [location.search, courseSlug]);
 
   // Convert URL slug to possible database name formats
   const slugToNameVariations = (slug) => {
@@ -574,6 +626,31 @@ const CoursePage = () => {
             <span className="font-medium">You're on the waitlist! We'll email you when this course launches.</span>
             <button
               onClick={() => setShowWaitlistSuccess(false)}
+              className="ml-2 hover:opacity-80"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <style>{`
+            @keyframes slideDown {
+              from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+              to { opacity: 1; transform: translateX(-50%) translateY(0); }
+            }
+          `}</style>
+        </div>
+      )}
+
+      {/* Priority access indicator */}
+      {hasPriorityAccess && !priorityValidating && (
+        <div
+          className="fixed top-4 left-1/2 -translate-x-1/2 z-[100]"
+          style={{ animation: 'slideDown 0.3s ease-out' }}
+        >
+          <div className="bg-gradient-to-r from-pink-600 to-purple-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <Star className="w-5 h-5 flex-shrink-0 fill-yellow-400 text-yellow-400" />
+            <span className="font-medium">Priority Access Activated! You're at the front of the line.</span>
+            <button
+              onClick={() => setHasPriorityAccess(false)}
               className="ml-2 hover:opacity-80"
             >
               <X className="w-4 h-4" />

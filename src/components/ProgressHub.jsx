@@ -323,6 +323,26 @@ const ProgressHub = () => {
         // Clear the pending enrollment flag
         sessionStorage.removeItem('pendingEnrollmentCourse');
         console.log('[ProgressHub] Successfully enrolled in course:', pendingCourse);
+
+        // Mark priority token as used if one exists
+        const priorityToken = sessionStorage.getItem('priorityEnrollmentToken');
+        const priorityCourse = sessionStorage.getItem('priorityEnrollmentCourse');
+        if (priorityToken && priorityCourse === pendingCourse) {
+          try {
+            const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+            await fetch(`${API_URL}/api/use-priority-token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: priorityToken })
+            });
+            console.log('[ProgressHub] Priority token marked as used');
+          } catch (tokenErr) {
+            console.error('[ProgressHub] Failed to mark priority token as used:', tokenErr);
+          }
+          // Clear priority token storage regardless of API success
+          sessionStorage.removeItem('priorityEnrollmentToken');
+          sessionStorage.removeItem('priorityEnrollmentCourse');
+        }
       } catch (err) {
         console.error('[ProgressHub] Failed to process pending enrollment:', err);
         // Clear anyway to avoid retry loops

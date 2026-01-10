@@ -20,7 +20,11 @@ import {
   Trash2,
   Edit3,
   Plus,
-  X
+  X,
+  Bell,
+  Send,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import {
   getUserAnalytics,
@@ -95,6 +99,13 @@ const AnalyticsDashboard = () => {
   const [managedCourses, setManagedCourses] = useState([]);
   const [editingCourse, setEditingCourse] = useState(null);
   const [courseEditForm, setCourseEditForm] = useState({});
+
+  // Course launch notifications
+  const [notifyModalOpen, setNotifyModalOpen] = useState(false);
+  const [notifyingCourse, setNotifyingCourse] = useState(null);
+  const [notifyWaitlistCount, setNotifyWaitlistCount] = useState(0);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+  const [notifyResults, setNotifyResults] = useState(null);
 
   useEffect(() => {
     loadAnalytics();
@@ -273,6 +284,91 @@ const AnalyticsDashboard = () => {
       console.error('Error deleting course:', error);
       alert('Failed to delete course');
     }
+  };
+
+  // Course launch notification handlers
+  const handleOpenNotifyModal = async (course) => {
+    setNotifyingCourse(course);
+    setNotifyResults(null);
+    setNotifyLoading(true);
+    setNotifyModalOpen(true);
+
+    try {
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token');
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+      const response = await fetch(`${API_URL}/api/waitlist-count/${encodeURIComponent(course.title || course.name)}`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch waitlist count');
+      }
+
+      const data = await response.json();
+      setNotifyWaitlistCount(data.count || 0);
+    } catch (error) {
+      console.error('Error fetching waitlist count:', error);
+      setNotifyWaitlistCount(0);
+    } finally {
+      setNotifyLoading(false);
+    }
+  };
+
+  const handleSendNotifications = async () => {
+    if (!notifyingCourse) return;
+
+    setNotifyLoading(true);
+    setNotifyResults(null);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error('No authentication token');
+      }
+
+      const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+      const response = await fetch(`${API_URL}/api/send-launch-notifications`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          courseName: notifyingCourse.title || notifyingCourse.name,
+          courseSlug: notifyingCourse.name,
+          expiryHours: 72
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send notifications');
+      }
+
+      const result = await response.json();
+      setNotifyResults(result);
+    } catch (error) {
+      console.error('Error sending notifications:', error);
+      setNotifyResults({
+        success: false,
+        error: error.message
+      });
+    } finally {
+      setNotifyLoading(false);
+    }
+  };
+
+  const handleCloseNotifyModal = () => {
+    setNotifyModalOpen(false);
+    setNotifyingCourse(null);
+    setNotifyResults(null);
+    setNotifyWaitlistCount(0);
   };
 
   const handleRoleChange = async (userId, newRole) => {
@@ -1192,6 +1288,15 @@ const AnalyticsDashboard = () => {
                                   <td className="px-6 py-4 text-sm text-gray-300 max-w-xs truncate">{course.description || 'No description'}</td>
                                   <td className="px-6 py-4">
                                     <div className="flex gap-2">
+                                      {course.status === 'live' && (
+                                        <button
+                                          onClick={() => handleOpenNotifyModal(course)}
+                                          className="p-2 text-pink-400 hover:bg-pink-900/20 rounded-lg transition"
+                                          title="Notify waitlisted users"
+                                        >
+                                          <Bell size={16} />
+                                        </button>
+                                      )}
                                       <button
                                         onClick={() => handleEditCourse(course)}
                                         className="p-2 text-blue-400 hover:bg-blue-900/20 rounded-lg transition"
@@ -1409,6 +1514,123 @@ const AnalyticsDashboard = () => {
               >
                 {loadingProgress ? 'Updating...' : 'Set Progress'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Course Launch Notification Modal */}
+      {notifyModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-xl border border-gray-800 w-full max-w-md overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                <Bell className="text-pink-500" size={20} />
+                Notify Waitlist
+              </h3>
+              <button
+                onClick={handleCloseNotifyModal}
+                className="p-1 text-gray-400 hover:text-white transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="px-6 py-4">
+              {notifyLoading && !notifyResults ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 border-2 border-pink-500 border-t-transparent rounded-full mx-auto mb-3" />
+                  <p className="text-gray-400">Loading...</p>
+                </div>
+              ) : notifyResults ? (
+                // Results view
+                <div className="text-center py-4">
+                  {notifyResults.success ? (
+                    <>
+                      <CheckCircle className="mx-auto text-green-500 mb-3" size={48} />
+                      <h4 className="text-xl font-semibold text-white mb-2">Notifications Sent!</h4>
+                      <div className="bg-gray-800 rounded-lg p-4 text-left">
+                        <div className="flex justify-between py-2 border-b border-gray-700">
+                          <span className="text-gray-400">Total Waitlisted</span>
+                          <span className="text-white font-medium">{notifyResults.summary?.totalWaitlisted || 0}</span>
+                        </div>
+                        <div className="flex justify-between py-2 border-b border-gray-700">
+                          <span className="text-gray-400">Emails Sent</span>
+                          <span className="text-green-400 font-medium">{notifyResults.summary?.notificationsSent || 0}</span>
+                        </div>
+                        <div className="flex justify-between py-2">
+                          <span className="text-gray-400">Failed</span>
+                          <span className={`font-medium ${notifyResults.summary?.failed > 0 ? 'text-red-400' : 'text-gray-400'}`}>
+                            {notifyResults.summary?.failed || 0}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <AlertCircle className="mx-auto text-red-500 mb-3" size={48} />
+                      <h4 className="text-xl font-semibold text-white mb-2">Error</h4>
+                      <p className="text-gray-400">{notifyResults.error || 'Failed to send notifications'}</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                // Confirmation view
+                <>
+                  <p className="text-gray-300 mb-4">
+                    Send launch notifications to all users who registered interest in{' '}
+                    <span className="text-pink-400 font-medium">{notifyingCourse?.title || notifyingCourse?.name}</span>?
+                  </p>
+                  <div className="bg-gray-800 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-pink-900/30 rounded-lg">
+                        <Users className="text-pink-400" size={20} />
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-400">Users to notify</p>
+                        <p className="text-2xl font-bold text-white">{notifyWaitlistCount}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 text-sm">
+                    <p className="text-blue-300">
+                      Each user will receive an email with a priority enrollment link that expires in 72 hours.
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-800 flex gap-3">
+              <button
+                onClick={handleCloseNotifyModal}
+                disabled={notifyLoading}
+                className="flex-1 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {notifyResults ? 'Close' : 'Cancel'}
+              </button>
+              {!notifyResults && (
+                <button
+                  onClick={handleSendNotifications}
+                  disabled={notifyLoading || notifyWaitlistCount === 0}
+                  className="flex-1 px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {notifyLoading ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={16} />
+                      Send Notifications
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

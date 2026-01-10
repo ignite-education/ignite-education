@@ -3097,6 +3097,17 @@ app.post('/api/send-email', async (req, res) => {
         }));
         break;
 
+      case 'course_launch':
+        subject = `${data.courseName} is now live! Your priority access link inside`;
+        const CourseLaunchEmail = (await import('./emails/templates/CourseLaunchEmail.js')).default;
+        htmlContent = await render(React.createElement(CourseLaunchEmail, {
+          firstName,
+          courseName: data.courseName,
+          priorityLink: data.priorityLink,
+          expiryHours: data.expiryHours || 72
+        }));
+        break;
+
       default:
         throw new Error(`Unknown email type: ${type}`);
     }
@@ -4445,6 +4456,249 @@ app.get('/sitemap.xml', async (req, res) => {
 
 // ============================================================================
 // END SITEMAP ENDPOINT
+// ============================================================================
+
+// ============================================================================
+// COURSE LAUNCH NOTIFICATIONS
+// ============================================================================
+
+// Send launch notifications to waitlisted users (admin only)
+app.post('/api/send-launch-notifications', verifyAdmin, async (req, res) => {
+  try {
+    const { courseName, courseSlug, expiryHours = 72 } = req.body;
+
+    if (!courseName || !courseSlug) {
+      return res.status(400).json({ error: 'courseName and courseSlug are required' });
+    }
+
+    console.log(`📣 Admin ${req.user.id} sending launch notifications for ${courseName}`);
+
+    // Get all unnotified waitlisted users for this course
+    const { data: waitlistedUsers, error: fetchError } = await supabase
+      .from('course_requests')
+      .select('id, user_id, course_name')
+      .eq('course_name', courseName)
+      .is('notified_at', null);
+
+    if (fetchError) {
+      console.error('Error fetching waitlisted users:', fetchError);
+      return res.status(500).json({ error: 'Failed to fetch waitlisted users' });
+    }
+
+    if (!waitlistedUsers || waitlistedUsers.length === 0) {
+      return res.json({
+        success: true,
+        summary: {
+          totalWaitlisted: 0,
+          notificationsSent: 0,
+          failed: 0
+        },
+        message: 'No unnotified users on the waitlist for this course'
+      });
+    }
+
+    console.log(`Found ${waitlistedUsers.length} unnotified users`);
+
+    const results = {
+      sent: [],
+      failed: []
+    };
+
+    // Process each user
+    for (const request of waitlistedUsers) {
+      try {
+        // Generate unique priority token
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+
+        // Store priority token in database
+        const { error: tokenError } = await supabase
+          .from('priority_tokens')
+          .upsert({
+            user_id: request.user_id,
+            course_name: courseName,
+            token: token,
+            expires_at: expiresAt.toISOString(),
+            used_at: null
+          }, {
+            onConflict: 'user_id,course_name'
+          });
+
+        if (tokenError) {
+          console.error(`Error storing token for user ${request.user_id}:`, tokenError);
+          results.failed.push({ userId: request.user_id, error: 'Failed to generate token' });
+          continue;
+        }
+
+        // Generate priority link
+        const priorityLink = `https://ignite.education/courses/${courseSlug}?priority=${token}`;
+
+        // Send email via internal API
+        const response = await fetch(`http://localhost:${PORT}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'course_launch',
+            userId: request.user_id,
+            data: {
+              courseName: courseName,
+              courseSlug: courseSlug,
+              priorityLink: priorityLink,
+              expiryHours: expiryHours
+            }
+          })
+        });
+
+        const emailResult = await response.json();
+
+        if (!emailResult.success && !emailResult.skipped) {
+          console.error(`Error sending email to user ${request.user_id}:`, emailResult.error);
+          results.failed.push({ userId: request.user_id, error: emailResult.error });
+          continue;
+        }
+
+        // Mark user as notified
+        const { error: updateError } = await supabase
+          .from('course_requests')
+          .update({ notified_at: new Date().toISOString() })
+          .eq('id', request.id);
+
+        if (updateError) {
+          console.error(`Error updating notified_at for user ${request.user_id}:`, updateError);
+        }
+
+        results.sent.push({ userId: request.user_id });
+        console.log(`✅ Notification sent to user ${request.user_id}`);
+
+      } catch (userError) {
+        console.error(`Error processing user ${request.user_id}:`, userError);
+        results.failed.push({ userId: request.user_id, error: userError.message });
+      }
+    }
+
+    console.log(`📣 Launch notifications complete: ${results.sent.length} sent, ${results.failed.length} failed`);
+
+    res.json({
+      success: true,
+      summary: {
+        totalWaitlisted: waitlistedUsers.length,
+        notificationsSent: results.sent.length,
+        failed: results.failed.length
+      },
+      details: results
+    });
+
+  } catch (error) {
+    console.error('Error sending launch notifications:', error);
+    res.status(500).json({
+      error: 'Failed to send launch notifications',
+      message: error.message
+    });
+  }
+});
+
+// Validate priority token
+app.get('/api/validate-priority-token', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ valid: false, error: 'Token is required' });
+    }
+
+    // Look up token in database
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('priority_tokens')
+      .select('user_id, course_name, expires_at, used_at')
+      .eq('token', token)
+      .single();
+
+    if (tokenError || !tokenData) {
+      return res.json({ valid: false, error: 'Token not found' });
+    }
+
+    // Check if token is expired
+    if (new Date(tokenData.expires_at) < new Date()) {
+      return res.json({ valid: false, error: 'Token has expired' });
+    }
+
+    // Check if token has already been used
+    if (tokenData.used_at) {
+      return res.json({ valid: false, error: 'Token has already been used' });
+    }
+
+    res.json({
+      valid: true,
+      userId: tokenData.user_id,
+      courseName: tokenData.course_name
+    });
+
+  } catch (error) {
+    console.error('Error validating priority token:', error);
+    res.status(500).json({ valid: false, error: 'Failed to validate token' });
+  }
+});
+
+// Mark priority token as used
+app.post('/api/use-priority-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'Token is required' });
+    }
+
+    // Update token to mark as used
+    const { data, error } = await supabase
+      .from('priority_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token)
+      .is('used_at', null)
+      .select();
+
+    if (error) {
+      console.error('Error marking token as used:', error);
+      return res.status(500).json({ success: false, error: 'Failed to mark token as used' });
+    }
+
+    if (!data || data.length === 0) {
+      return res.json({ success: false, error: 'Token not found or already used' });
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error using priority token:', error);
+    res.status(500).json({ success: false, error: 'Failed to use token' });
+  }
+});
+
+// Get waitlist count for a course (admin only)
+app.get('/api/waitlist-count/:courseName', verifyAdmin, async (req, res) => {
+  try {
+    const { courseName } = req.params;
+
+    const { count, error } = await supabase
+      .from('course_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('course_name', courseName)
+      .is('notified_at', null);
+
+    if (error) {
+      console.error('Error fetching waitlist count:', error);
+      return res.status(500).json({ error: 'Failed to fetch waitlist count' });
+    }
+
+    res.json({ count: count || 0 });
+
+  } catch (error) {
+    console.error('Error in waitlist count endpoint:', error);
+    res.status(500).json({ error: 'Failed to fetch waitlist count' });
+  }
+});
+
+// ============================================================================
+// END COURSE LAUNCH NOTIFICATIONS
 // ============================================================================
 
 app.listen(PORT, () => {
