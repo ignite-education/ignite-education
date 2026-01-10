@@ -32,11 +32,11 @@ const Navbar = () => {
               <img
                 src={profilePicture}
                 alt="Profile"
-                className="w-9 h-9 rounded-full object-cover"
+                className="w-9 h-9 object-cover"
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div className="w-9 h-9 rounded-full bg-[#7C3AED] flex items-center justify-center text-white font-medium">
+              <div className="w-9 h-9 bg-[#8200EA] flex items-center justify-center text-white font-medium">
                 {firstName?.charAt(0).toUpperCase() || '?'}
               </div>
             )}
@@ -44,7 +44,8 @@ const Navbar = () => {
         ) : (
           <Link
             to="/welcome"
-            className="px-5 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold rounded-lg transition-colors"
+            style={{ letterSpacing: '-0.02em' }}
           >
             Sign In
           </Link>
