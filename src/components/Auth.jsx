@@ -1162,9 +1162,12 @@ const Auth = () => {
 
     return (
       <>
-        {/* First line (white) */}
+        {/* First line (white) - reserve full width */}
         <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
+          {firstLineTypedLength < fullFirstLine.length && (
+            <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
+          )}
         </span>
 
         {/* Second line (pink) - always present for height */}
@@ -1646,7 +1649,7 @@ const Auth = () => {
           </form>
 
           {/* Account Toggle */}
-          <div className="text-center" style={{ marginTop: '0.375rem' }}>
+          <div className="text-center" style={{ marginTop: '0.5625rem' }}>
             {isLogin ? (
               <div className="flex items-center justify-center gap-4 auth-links">
                 <button
