@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from '../components/SEO';
-import { Home, ChevronRight, X } from 'lucide-react';
+import { X, ChevronRight } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
 import { useAuth } from '../contexts/AuthContext';
@@ -44,18 +44,6 @@ const setCachedData = (key, data) => {
   }
 };
 
-// Throttle utility for scroll performance
-const throttle = (func, limit) => {
-  let inThrottle;
-  return (...args) => {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
-};
-
 /**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
  * Dynamically fetches course data from Supabase
@@ -71,16 +59,8 @@ const CoursePage = () => {
   const [coaches, setCoaches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [typedTitle, setTypedTitle] = useState('');
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [copied, setCopied] = useState(false);
-
-  // Mobile detection for performance optimizations
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== 'undefined' && window.innerWidth < 768
-  );
 
   // Become a course leader modal state
   const [showLeaderModal, setShowLeaderModal] = useState(false);
@@ -97,7 +77,6 @@ const CoursePage = () => {
 
   // Refs
   const curriculumSectionRef = useRef(null);
-  const whiteContentRef = useRef(null);
 
   // Check for waitlist success on mount (after OAuth redirect)
   useEffect(() => {
@@ -111,57 +90,6 @@ const CoursePage = () => {
       setTimeout(() => setShowWaitlistSuccess(false), 5000);
     }
   }, [location.search]);
-
-  // Track scroll progress for pink progress bar (throttled for performance)
-  useEffect(() => {
-    const handleScroll = throttle(() => {
-      if (!whiteContentRef.current) return;
-
-      const navBarHeight = 58;
-      const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
-      const whiteContentHeight = whiteContentRef.current.offsetHeight;
-      const viewportHeight = window.innerHeight;
-
-      if (whiteContentTop > navBarHeight) {
-        setScrollProgress(0);
-        return;
-      }
-
-      const scrolledPast = navBarHeight - whiteContentTop;
-      const scrollableHeight = whiteContentHeight - viewportHeight + navBarHeight;
-
-      if (scrollableHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
-        setScrollProgress(progress);
-      }
-    }, 16); // ~60fps
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  // Set Safari theme color to black for this page
-  useEffect(() => {
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
-
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#000000');
-    }
-
-    const originalHtmlBg = document.documentElement.style.backgroundColor;
-    const originalBodyBg = document.body.style.backgroundColor;
-    document.documentElement.style.backgroundColor = '#000000';
-    document.body.style.backgroundColor = '#000000';
-
-    return () => {
-      if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', originalColor);
-      }
-      document.documentElement.style.backgroundColor = originalHtmlBg;
-      document.body.style.backgroundColor = originalBodyBg;
-    };
-  }, []);
 
   // Convert URL slug to possible database name formats
   const slugToNameVariations = (slug) => {
@@ -277,39 +205,6 @@ const CoursePage = () => {
       // Silent fail for background refresh
     }
   };
-
-  // Typing animation for title (75ms per character, 1 second delay)
-  // Skip animation on mobile for faster LCP
-  useEffect(() => {
-    if (!course) return;
-
-    // On mobile, show title immediately for faster LCP
-    if (isMobile) {
-      setTypedTitle(course.title);
-      setIsTypingComplete(true);
-      return;
-    }
-
-    // Desktop: animate the title
-    let currentIndex = 0;
-    const titleText = course.title;
-
-    const timeoutId = setTimeout(() => {
-      const typingInterval = setInterval(() => {
-        if (currentIndex <= titleText.length) {
-          setTypedTitle(titleText.substring(0, currentIndex));
-          currentIndex++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTypingComplete(true);
-        }
-      }, 75);
-
-      return () => clearInterval(typingInterval);
-    }, 1000);
-
-    return () => clearTimeout(timeoutId);
-  }, [course, isMobile]);
 
   // Helper function to generate AI-powered module intro based on lesson content
   const generateModuleIntro = (module) => {
@@ -478,26 +373,6 @@ const CoursePage = () => {
     return `Build comprehensive knowledge and practical skills in this essential professional domain. Develop expertise through hands-on learning and real-world application of key concepts.`;
   };
 
-  // Get first sentence of description for excerpt
-  const getDescriptionExcerpt = (description) => {
-    if (!description) return '';
-    const firstSentenceEnd = description.indexOf('. ');
-    if (firstSentenceEnd !== -1) {
-      return description.substring(0, firstSentenceEnd + 1);
-    }
-    return description;
-  };
-
-  // Get description without the first sentence (for main paragraph)
-  const getDescriptionWithoutFirstSentence = (description) => {
-    if (!description) return '';
-    const firstSentenceEnd = description.indexOf('. ');
-    if (firstSentenceEnd !== -1 && firstSentenceEnd < description.length - 2) {
-      return description.substring(firstSentenceEnd + 2).trim();
-    }
-    return description;
-  };
-
   // FAQ data for both display and structured data
   const COURSE_FAQS = [
     {
@@ -661,25 +536,14 @@ const CoursePage = () => {
   // Error/404 state
   if (error || !course) {
     return (
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white">
         <Navbar />
 
         <div className="max-w-4xl mx-auto px-6 py-12">
-          {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
-            <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
-              <Home className="w-4 h-4" />
-            </Link>
-            <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-            <Link to="/welcome" className="hover:text-[#EF0B72] transition-colors" style={{ color: '#F0F0F2' }}>Courses</Link>
-            <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-            <span style={{ color: '#F0F0F2' }}>Course Not Found</span>
-          </nav>
-
           <div className="flex items-center justify-center min-h-[60vh]">
             <div className="text-center">
-              <h1 className="text-4xl font-bold text-white mb-4">Course Not Found</h1>
-              <p className="text-gray-400 mb-6">The course you're looking for doesn't exist or is no longer available.</p>
+              <h1 className="text-4xl font-bold text-black mb-4">Course Not Found</h1>
+              <p className="text-gray-600 mb-6">The course you're looking for doesn't exist or is no longer available.</p>
               <button
                 onClick={() => navigate('/welcome')}
                 className="px-6 py-3 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-medium rounded-lg transition-colors"
@@ -731,56 +595,35 @@ const CoursePage = () => {
         structuredData={getCombinedStructuredData(course, coaches)}
       />
 
-      <div className="min-h-screen bg-black">
+      <div className="min-h-screen bg-white">
         {/* Sticky Top Navigation Bar */}
         <div className="sticky top-0 z-50">
           <Navbar />
-          {/* Progress Bar - always render with fixed height to prevent CLS */}
-          <div
-            className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
-            style={{ width: `${scrollProgress}%`, opacity: scrollProgress > 0 ? 1 : 0 }}
-          />
         </div>
 
-        {/* Hero Section with Black Background */}
-        <div className="bg-black">
+        {/* Hero Section */}
+        <div className="bg-white">
           <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
-              {/* Breadcrumb Navigation */}
-              <nav className="flex items-center gap-2 text-sm mb-7" style={{ color: '#F0F0F2' }}>
-                <Link to="/" className="hover:text-[#EF0B72] transition-colors flex items-center" style={{ color: '#F0F0F2' }}>
-                  <Home className="w-4 h-4" />
-                </Link>
-                <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-                <Link to="/welcome" className="hover:text-[#EF0B72] transition-colors" style={{ color: '#F0F0F2' }}>Courses</Link>
-                <ChevronRight className="w-4 h-4" style={{ color: '#F0F0F2' }} />
-                <span style={{ color: '#F0F0F2' }}>{course.title}</span>
-              </nav>
+              {/* Category Tag */}
+              <span className="inline-block px-3 py-1 text-sm border border-black rounded-sm mb-4">
+                {course.category || 'Specialism'}
+              </span>
 
-              {/* Title with typing animation */}
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left" style={{ minHeight: '4rem' }}>
-                {typedTitle}
+              {/* Title */}
+              <h1 className="text-5xl font-bold text-black mb-4 leading-tight">
+                {course.title}
               </h1>
 
-              {/* Subtitle/Excerpt - Ignite Pink */}
-              <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
-                {`Become a ${course.title} with Ignite's free, expert-led course. ${getDescriptionExcerpt(course.description)}`}
+              {/* Tagline - Purple */}
+              <p className="text-xl text-[#7714E0] font-medium mb-4 leading-relaxed">
+                {`Become a ${course.title} with Ignite's free, expert-led course.`}
               </p>
-            </div>
-          </div>
-        </div>
 
-        {/* White Content Section */}
-        <div className="bg-white" ref={whiteContentRef}>
-          <div className="max-w-4xl mx-auto px-6 py-12 flex justify-center">
-            <div className="w-full" style={{ maxWidth: '762px' }}>
-
-              {/* Full Course Description (without first sentence, which is shown in pink above) */}
-              <div className="mb-8">
-                <p className="text-black text-lg leading-relaxed">
-                  {getDescriptionWithoutFirstSentence(course.description)}
-                </p>
-              </div>
+              {/* Description */}
+              <p className="text-black text-lg leading-relaxed mb-8">
+                {course.description}
+              </p>
 
               {/* Course Benefits */}
               <div className="mb-8 grid grid-cols-3 gap-4">
