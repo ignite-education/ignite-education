@@ -670,7 +670,7 @@ const CoursePage = () => {
               {/* Curriculum Section - Two Column Layout with expanded container */}
               {course.module_structure && Array.isArray(course.module_structure) && course.module_structure.length > 0 && (
                 <div className="mb-8 lg:-mx-24" ref={curriculumSectionRef}>
-                  <h2 className="font-bold text-gray-900 mb-4" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Curriculum</h2>
+                  <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Curriculum</h2>
                   <div className="flex gap-6 items-stretch">
                     {/* Left Column - Curriculum Content */}
                     <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
@@ -733,7 +733,7 @@ const CoursePage = () => {
               {/* Feedback Section - only show for live courses */}
               {course.status !== 'coming_soon' && (
                 <div className="mt-9 mb-8">
-                  <h2 className="font-bold text-gray-900 mb-4" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Feedback</h2>
+                  <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Feedback</h2>
                   <div className="bg-[#F0F0F2] p-6 rounded-lg">
                     <p className="text-black text-lg font-medium">
                       "The {course.title} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community"
@@ -745,7 +745,7 @@ const CoursePage = () => {
               {/* Course Coaches Section */}
               {coaches.length > 0 && (
                 <div className="mt-9 mb-8">
-                  <h2 className="font-bold text-gray-900 mb-4" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Course Leaders</h2>
+                  <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>Course Leaders</h2>
                   <div className="flex flex-col gap-4">
                     {coaches.map((coach, index) => (
                       <div key={index} className="flex gap-4 items-start group cursor-pointer">
@@ -836,7 +836,7 @@ const CoursePage = () => {
 
               {/* FAQs Section */}
               <div className="mt-9 mb-8">
-                <h2 className="font-bold text-gray-900 mb-4" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>FAQs</h2>
+                <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>FAQs</h2>
                 <div className="space-y-3">
                   {COURSE_FAQS.map((faq, idx) => (
                     <div
