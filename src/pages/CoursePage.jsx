@@ -10,7 +10,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
-import GoogleSignInButton from '../components/GoogleSignInButton';
 import Footer from '../components/Footer';
 import Navbar from '../components/Navbar';
 
@@ -876,13 +875,13 @@ const CoursePage = () => {
                 </div>
               </div>
 
-              {/* Mobile Google Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
+              {/* Mobile Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
               {!user && (
                 <div className="lg:hidden mt-8 mb-4">
-                  <GoogleSignInButton
+                  <GoogleOneTap
                     courseSlug={courseSlug}
-                    variant="standard"
-                    className="w-full"
+                    courseStatus={course.status}
+                    courseTitle={course.title}
                   />
                 </div>
               )}
