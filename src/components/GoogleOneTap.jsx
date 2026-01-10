@@ -81,7 +81,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) =
           <button
             onClick={() => handleSignIn('google')}
             disabled={loadingProvider}
-            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_10px_rgba(103,103,103,0.25)]"
+            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
             style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
           >
             {loadingProvider === 'google' ? (
@@ -104,7 +104,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) =
           <button
             onClick={() => handleSignIn('linkedin_oidc')}
             disabled={loadingProvider}
-            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_10px_rgba(103,103,103,0.25)]"
+            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
             style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
           >
             {loadingProvider === 'linkedin_oidc' ? (

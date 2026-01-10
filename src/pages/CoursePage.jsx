@@ -682,7 +682,7 @@ const CoursePage = () => {
 
         {/* Hero Section */}
         <div className="bg-white">
-          <div className="max-w-4xl mx-auto px-6 pb-12 flex justify-center" style={{ paddingTop: '65px' }}>
+          <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center" style={{ paddingTop: '75px' }}>
             <div className="w-full" style={{ maxWidth: '700px' }}>
               {/* Category Tag */}
               <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '10px' }}>
