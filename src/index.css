@@ -336,7 +336,7 @@ body {
 /* Section 5 tablet/small desktop - stack vertically to prevent overlap */
 @media (min-width: 768px) and (max-width: 1200px) {
   .auth-section-1 {
-    height: 60vh;
+    height: 100dvh;
   }
 
   .auth-section-5-grid {
@@ -494,9 +494,9 @@ body {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    min-height: 60vh !important;
-    min-height: 60svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
-    height: 60svh !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
+    height: 100svh !important;
     overflow: visible !important;
     display: flex !important;
     align-items: center !important;

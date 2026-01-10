@@ -144,6 +144,74 @@ export const AuthProvider = ({ children }) => {
     fetchUserRole();
   }, [user]);
 
+  // Sign up with email and password
+  const signUp = async (email, password, firstName, lastName) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    // Create user record in public.users table (fallback if trigger doesn't exist)
+    if (data.user) {
+      try {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            id: data.user.id,
+            first_name: firstName,
+            last_name: lastName,
+            onboarding_completed: false,
+            role: 'student'
+          });
+
+        // Ignore conflict errors (user already exists from trigger)
+        if (insertError && !insertError.message.includes('duplicate key')) {
+          console.error('Error creating user record:', insertError);
+        }
+      } catch (err) {
+        console.error('Exception creating user record:', err);
+      }
+
+      // Note: Welcome email is now sent when user enrolls in a course (Onboarding.jsx)
+      // This ensures they only get an email after selecting a course
+
+      // Add user to Resend "General" audience (new users have no course yet)
+      if (RESEND_AUDIENCES.GENERAL) {
+        try {
+          await addContactToAudience(
+            { email, firstName, lastName },
+            RESEND_AUDIENCES.GENERAL
+          );
+          console.log('📋 New user added to General audience');
+        } catch (audienceErr) {
+          console.error('Failed to add user to Resend General audience:', audienceErr);
+          // Don't throw - audience sync failure shouldn't block signup
+        }
+      }
+    }
+
+    return data;
+  };
+
+  // Sign in with email and password
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) throw error;
+    return data;
+  };
+
   // Sign out
   const signOut = async () => {
     try {
@@ -237,6 +305,8 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     isInitialized,
+    signUp,
+    signIn,
     signOut,
     updateProfile,
     signInWithOAuth,

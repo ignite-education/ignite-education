@@ -1,25 +1,35 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import ProgressHub from './ProgressHub';
+import Onboarding from './Onboarding';
 import { ChevronDown } from 'lucide-react';
 
 // DESIGN TEST VERSION - This is a duplicate of Auth.jsx for testing design changes
 // The main Auth.jsx remains unchanged for production use
 
 const AuthDesign = () => {
+  const [isLogin, setIsLogin] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [activeCard, setActiveCard] = useState(0);
 
-  const { user, signInWithOAuth, signOut } = useAuth();
+  const { user, signIn, signUp, signInWithOAuth, signOut } = useAuth();
+  const navigate = useNavigate();
   const [hasLoggedOut, setHasLoggedOut] = useState(false);
 
   // Auto-logout on page load to allow testing the sign-up flow
   useEffect(() => {
     const logoutForTesting = async () => {
-      if (user && !hasLoggedOut) {
+      if (user && !hasLoggedOut && !showOnboarding) {
         // Clean up any hash fragments from OAuth redirect
         if (window.location.hash) {
           window.history.replaceState(null, '', window.location.pathname);
@@ -29,11 +39,11 @@ const AuthDesign = () => {
       }
     };
     logoutForTesting();
-  }, [user, signOut, hasLoggedOut]);
+  }, [user, signOut, hasLoggedOut, showOnboarding]);
 
   // Intersection observer for animating words when section comes into view
   useEffect(() => {
-    if (!marketingSectionRef.current) return;
+    if (!marketingSectionRef.current || isLogin) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -53,18 +63,40 @@ const AuthDesign = () => {
         observer.unobserve(marketingSectionRef.current);
       }
     };
-  }, [animateWords]);
+  }, [isLogin, animateWords]);
 
   // Auto-rotate through cards
   useEffect(() => {
-    if (!animateWords) return;
+    if (!animateWords || isLogin) return;
 
     const interval = setInterval(() => {
       setActiveCard((prev) => (prev + 1) % 3); // Rotate through 0, 1, 2
     }, 4000); // Change every 4 seconds
 
     return () => clearInterval(interval);
-  }, [animateWords]);
+  }, [animateWords, isLogin]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await signIn(email, password);
+        navigate('/progress');
+      } else {
+        const result = await signUp(email, password, firstName, lastName);
+        // Show onboarding for new signups
+        setNewUserId(result.user.id);
+        setShowOnboarding(true);
+        setLoading(false);
+      }
+    } catch (err) {
+      setError(err.message || 'An error occurred');
+      setLoading(false);
+    }
+  };
 
   const handleOAuthSignIn = async (provider) => {
     setError('');
@@ -84,6 +116,11 @@ const AuthDesign = () => {
       block: 'start'
     });
   };
+
+  // Show onboarding if user just signed up
+  if (showOnboarding) {
+    return <Onboarding firstName={firstName} userId={newUserId} />;
+  }
 
   return (
     <>
@@ -134,7 +171,7 @@ const AuthDesign = () => {
 
         {/* Title above the box */}
         <h2 className="text-sm sm:text-base md:text-lg font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-          Get Started
+          {isLogin ? 'Welcome Back' : 'Create Account'}
         </h2>
 
         {/* Form Card */}
@@ -153,7 +190,7 @@ const AuthDesign = () => {
           )}
 
           {/* OAuth Buttons */}
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
             <button
               type="button"
               onClick={() => handleOAuthSignIn('google')}
@@ -179,6 +216,93 @@ const AuthDesign = () => {
                 <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
               <span className="truncate">Continue with LinkedIn</span>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div className="relative" style={{ marginBottom: '0.625rem' }}>
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-xs sm:text-sm">
+              <span className="px-2 bg-white text-gray-500">Or continue with email</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-1.5 sm:gap-2">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">First Name</label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="John"
+                  disabled={isLogin}
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Last Name</label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  required={!isLogin}
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-lg"
+                  placeholder="Doe"
+                  disabled={isLogin}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  placeholder="you@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs sm:text-sm font-medium mb-0.5">Password</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full bg-gray-100 text-black px-3 py-1.5 sm:py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-pink-500 text-white rounded-xl px-4 py-1.5 sm:py-2 text-sm font-semibold hover:bg-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
+            </button>
+          </form>
+
+          <div className="text-center" style={{ marginTop: '0.5rem' }}>
+            <button
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError('');
+              }}
+              className="text-black hover:text-pink-500 transition"
+              style={{ fontSize: '0.85em' }}
+            >
+              {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
             </button>
           </div>
         </div>

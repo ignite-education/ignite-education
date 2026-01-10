@@ -45,7 +45,8 @@
       "Bash(git show:*)",
       "Bash(vercel ls:*)",
       "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd 404.html fallback for SPA routing on Vercel\n\nCopies index.html to 404.html after build so Vercel serves the React app\nfor all unmatched routes \\(certificate, auth, admin, etc.\\)\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
