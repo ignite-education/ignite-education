@@ -628,7 +628,7 @@ const CoursePage = () => {
               </p>
 
               {/* Description - max 2 sentences */}
-              <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '25px' }}>
+              <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}>
                 {getTwoSentences(course.description)}
               </p>
 
