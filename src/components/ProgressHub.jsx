@@ -10,6 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
+import Footer from './Footer';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -2574,7 +2575,9 @@ const ProgressHub = () => {
   }
 
   return (
-    <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      {/* Two-column layout wrapper */}
+      <div className="h-screen flex">
       {/* Left Sidebar - Fixed */}
       <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
@@ -3411,6 +3414,10 @@ const ProgressHub = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Post Creation Modal */}
       {showPostModal && (
