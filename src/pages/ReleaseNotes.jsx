@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, ChevronRight, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
 import Footer from '../components/Footer';
+import Navbar from '../components/Navbar';
 import { getPublishedReleases, formatReleaseDate } from '../lib/releaseNotesApi';
 
 // Parse **text** markdown syntax for bold
@@ -46,19 +47,7 @@ const ReleaseNotes = () => {
         url="https://ignite.education/release-notes"
       />
 
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-black">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
-          <Link to="/" className="inline-block">
-            <div
-              className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-              style={{
-                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-              }}
-            />
-          </Link>
-        </div>
-      </div>
+      <Navbar />
 
       {/* Hero Section (Black) */}
       <div className="bg-black">
