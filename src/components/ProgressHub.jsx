@@ -11,7 +11,6 @@ import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
 import Footer from './Footer';
-import Navbar from './Navbar';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -2577,13 +2576,10 @@ const ProgressHub = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-      {/* Navbar */}
-      <Navbar />
-
       {/* Two-column layout wrapper */}
-      <div className="flex-1 flex">
+      <div className="h-screen flex">
       {/* Left Sidebar - Fixed */}
-      <div className="bg-black flex flex-col overflow-hidden h-full" style={{ width: '650px', minWidth: '650px' }}>
+      <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
         <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
           <div className="flex items-center justify-between">
@@ -3135,7 +3131,7 @@ const ProgressHub = () => {
       </div>
 
       {/* Right Panel - Community Forum */}
-      <div className="flex-1 h-full flex flex-col overflow-hidden py-2 px-8">
+      <div className="flex-1 h-screen flex flex-col overflow-hidden py-2 px-8">
         <div className="w-full flex flex-col h-full" style={{ maxWidth: '739px', minWidth: '600px', margin: '0 auto' }}>
           {/* Static Header Section */}
           <div className="flex-shrink-0" style={{ paddingTop: '138px' }}>
