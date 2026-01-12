@@ -42,20 +42,16 @@ const setCachedData = (key, data) => {
 
 /**
  * Get the display label for course type tag
- * For subjects, use the category field; for other types, display formatted course_type
+ * Maps course_type to its formatted display name
  */
 const getCourseTypeLabel = (course) => {
   if (!course) return 'Course';
 
-  // For subjects, use the category field
-  if (course.course_type === 'subject') {
-    return course.category || 'Course';
-  }
-
-  // For other types, display the formatted course_type
+  // Map course_type to display label
   const typeLabels = {
     'specialism': 'Specialism',
-    'skill': 'Skill'
+    'skill': 'Skill',
+    'subject': 'Subject'
   };
 
   return typeLabels[course.course_type] || course.category || 'Course';
