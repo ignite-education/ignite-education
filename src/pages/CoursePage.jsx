@@ -41,6 +41,27 @@ const setCachedData = (key, data) => {
 };
 
 /**
+ * Get the display label for course type tag
+ * For subjects, use the category field; for other types, display formatted course_type
+ */
+const getCourseTypeLabel = (course) => {
+  if (!course) return 'Course';
+
+  // For subjects, use the category field
+  if (course.course_type === 'subject') {
+    return course.category || 'Course';
+  }
+
+  // For other types, display the formatted course_type
+  const typeLabels = {
+    'specialism': 'Specialism',
+    'skill': 'Skill'
+  };
+
+  return typeLabels[course.course_type] || course.category || 'Course';
+};
+
+/**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
  * Dynamically fetches course data from Supabase
  */
@@ -686,7 +707,7 @@ const CoursePage = () => {
             <div className="w-full" style={{ maxWidth: '700px' }}>
               {/* Category Tag */}
               <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '10px' }}>
-                {course.category || 'Specialism'}
+                {getCourseTypeLabel(course)}
               </span>
 
               {/* Title */}
