@@ -58,6 +58,21 @@ const getCourseTypeLabel = (course) => {
 };
 
 /**
+ * Get the dynamic tagline based on course type
+ */
+const getCourseTagline = (course) => {
+  if (!course || !course.title) return "Learn with Ignite's free, expert-led course.";
+
+  const taglineTemplates = {
+    'specialism': `Become a ${course.title} with Ignite's free, expert-led course.`,
+    'skill': `Upskill at ${course.title} with Ignite's free, expert-led course.`,
+    'subject': `Learn ${course.title} with Ignite's free, expert-led course.`
+  };
+
+  return taglineTemplates[course.course_type] || `Become a ${course.title} with Ignite's free, expert-led course.`;
+};
+
+/**
  * CoursePage - SEO-optimized standalone landing pages for individual courses
  * Dynamically fetches course data from Supabase
  */
@@ -713,7 +728,7 @@ const CoursePage = () => {
 
               {/* Tagline - Purple */}
               <p className="text-xl text-[#7714E0] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em', marginBottom: '6px' }}>
-                {`Become a ${course.title} with Ignite's free, expert-led course.`}
+                {getCourseTagline(course)}
               </p>
 
               {/* Description - max 2 sentences */}
