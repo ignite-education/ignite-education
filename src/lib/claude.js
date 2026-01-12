@@ -7,7 +7,15 @@
  * @returns {Promise<string>} Generated description (max 250 chars)
  */
 export async function generateCourseDescription(courseTitle, courseType, modules) {
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  // Only allow on production, not localhost
+  const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+  if (isLocalhost) {
+    throw new Error('AI description generation is only available on the live site');
+  }
+
+  // Use production origin
+  const apiUrl = window.location.origin;
 
   try {
     const response = await fetch(`${apiUrl}/api/generate-course-description`, {
