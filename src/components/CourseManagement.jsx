@@ -344,7 +344,7 @@ const CourseManagement = () => {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-pink-500 text-black rounded-lg hover:bg-pink-600 transition"
         >
           <Plus size={20} />
           Add New Course
@@ -497,7 +497,20 @@ const CourseManagement = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, structure_type: 'modules_and_lessons' })}
+                    onClick={() => {
+                      // When switching to modules_and_lessons, ensure proper structure
+                      if (formData.structure_type === 'lessons_only') {
+                        // Flatten all lessons into one module
+                        const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                        setFormData({
+                          ...formData,
+                          structure_type: 'modules_and_lessons',
+                          modules: allLessons.length > 0 ? [{ name: '', lessons: allLessons }] : [{ name: '', lessons: [{ name: '' }] }]
+                        });
+                      } else {
+                        setFormData({ ...formData, structure_type: 'modules_and_lessons' });
+                      }
+                    }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
                       formData.structure_type === 'modules_and_lessons'
                         ? 'border-pink-500 bg-pink-50 text-pink-700'
@@ -509,7 +522,19 @@ const CourseManagement = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, structure_type: 'lessons_only' })}
+                    onClick={() => {
+                      // When switching to lessons_only, flatten all lessons
+                      if (formData.structure_type === 'modules_and_lessons') {
+                        const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                        setFormData({
+                          ...formData,
+                          structure_type: 'lessons_only',
+                          modules: [{ name: 'Default Module', lessons: allLessons.length > 0 ? allLessons : [{ name: '' }] }]
+                        });
+                      } else {
+                        setFormData({ ...formData, structure_type: 'lessons_only' });
+                      }
+                    }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
                       formData.structure_type === 'lessons_only'
                         ? 'border-pink-500 bg-pink-50 text-pink-700'
@@ -521,95 +546,144 @@ const CourseManagement = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  This affects how content is displayed on course pages. You can still create modules internally regardless of this setting.
+                  This affects how content is displayed on course pages.
                 </p>
               </div>
 
-              {/* Modules Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
-                {formData.modules.map((module, moduleIndex) => (
-                  <div key={moduleIndex} className="mb-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                    {/* Module Header */}
-                    <div className="flex gap-3 mb-3">
-                      <input
-                        type="text"
-                        value={module.name}
-                        onChange={(e) => {
-                          const newModules = [...formData.modules];
-                          newModules[moduleIndex].name = e.target.value;
-                          setFormData({ ...formData, modules: newModules });
-                        }}
-                        placeholder={`Module ${moduleIndex + 1} name`}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 font-medium"
-                      />
-                      {formData.modules.length > 1 && (
-                        <button
-                          onClick={() => {
-                            const newModules = formData.modules.filter((_, i) => i !== moduleIndex);
+              {/* Conditional rendering based on structure type */}
+              {formData.structure_type === 'lessons_only' ? (
+                // Lessons Only Mode
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
+                  <div className="space-y-2">
+                    {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
+                      <div key={lessonIndex} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={lesson.name}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons[lessonIndex].name = e.target.value;
                             setFormData({ ...formData, modules: newModules });
                           }}
-                          className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
-                          title="Remove module"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Lessons for this module */}
-                    <div className="ml-4 space-y-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Lessons</label>
-                      {module.lessons.map((lesson, lessonIndex) => (
-                        <div key={lessonIndex} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={lesson.name}
-                            onChange={(e) => {
+                          placeholder={`Lesson ${lessonIndex + 1} name`}
+                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                        />
+                        {formData.modules[0].lessons.length > 1 && (
+                          <button
+                            onClick={() => {
                               const newModules = [...formData.modules];
-                              newModules[moduleIndex].lessons[lessonIndex].name = e.target.value;
+                              newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
                               setFormData({ ...formData, modules: newModules });
                             }}
-                            placeholder={`Lesson ${lessonIndex + 1} name`}
-                            className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
-                          />
-                          {module.lessons.length > 1 && (
-                            <button
-                              onClick={() => {
+                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Remove lesson"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const newModules = [...formData.modules];
+                        newModules[0].lessons.push({ name: '' });
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
+                    >
+                      <Plus size={16} />
+                      Add Lesson
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Modules & Lessons Mode
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
+                  {formData.modules.map((module, moduleIndex) => (
+                    <div key={moduleIndex} className="mb-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      {/* Module Header */}
+                      <div className="flex gap-3 mb-3">
+                        <input
+                          type="text"
+                          value={module.name}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[moduleIndex].name = e.target.value;
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          placeholder={`Module ${moduleIndex + 1} name`}
+                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 font-medium"
+                        />
+                        {formData.modules.length > 1 && (
+                          <button
+                            onClick={() => {
+                              const newModules = formData.modules.filter((_, i) => i !== moduleIndex);
+                              setFormData({ ...formData, modules: newModules });
+                            }}
+                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Remove module"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Lessons for this module */}
+                      <div className="ml-4 space-y-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Lessons</label>
+                        {module.lessons.map((lesson, lessonIndex) => (
+                          <div key={lessonIndex} className="flex gap-2">
+                            <input
+                              type="text"
+                              value={lesson.name}
+                              onChange={(e) => {
                                 const newModules = [...formData.modules];
-                                newModules[moduleIndex].lessons = newModules[moduleIndex].lessons.filter((_, i) => i !== lessonIndex);
+                                newModules[moduleIndex].lessons[lessonIndex].name = e.target.value;
                                 setFormData({ ...formData, modules: newModules });
                               }}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Remove lesson"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => {
-                          const newModules = [...formData.modules];
-                          newModules[moduleIndex].lessons.push({ name: '' });
-                          setFormData({ ...formData, modules: newModules });
-                        }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
-                      >
-                        <Plus size={16} />
-                        Add Lesson
-                      </button>
+                              placeholder={`Lesson ${lessonIndex + 1} name`}
+                              className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
+                            />
+                            {module.lessons.length > 1 && (
+                              <button
+                                onClick={() => {
+                                  const newModules = [...formData.modules];
+                                  newModules[moduleIndex].lessons = newModules[moduleIndex].lessons.filter((_, i) => i !== lessonIndex);
+                                  setFormData({ ...formData, modules: newModules });
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                title="Remove lesson"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const newModules = [...formData.modules];
+                            newModules[moduleIndex].lessons.push({ name: '' });
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
+                        >
+                          <Plus size={16} />
+                          Add Lesson
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: [{ name: '' }] }] })}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  Add Another Module
-                </button>
-              </div>
+                  ))}
+                  <button
+                    onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: [{ name: '' }] }] })}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
+                  >
+                    <Plus size={16} />
+                    Add Another Module
+                  </button>
+                </div>
+              )}
 
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -738,7 +812,7 @@ const CourseManagement = () => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={closeModals}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-900"
               >
                 Cancel
               </button>
@@ -826,7 +900,20 @@ const CourseManagement = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, structure_type: 'modules_and_lessons' })}
+                    onClick={() => {
+                      // When switching to modules_and_lessons, ensure proper structure
+                      if (formData.structure_type === 'lessons_only') {
+                        // Flatten all lessons into one module
+                        const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                        setFormData({
+                          ...formData,
+                          structure_type: 'modules_and_lessons',
+                          modules: allLessons.length > 0 ? [{ name: '', lessons: allLessons }] : [{ name: '', lessons: [{ name: '' }] }]
+                        });
+                      } else {
+                        setFormData({ ...formData, structure_type: 'modules_and_lessons' });
+                      }
+                    }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
                       formData.structure_type === 'modules_and_lessons'
                         ? 'border-pink-500 bg-pink-50 text-pink-700'
@@ -838,7 +925,19 @@ const CourseManagement = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, structure_type: 'lessons_only' })}
+                    onClick={() => {
+                      // When switching to lessons_only, flatten all lessons
+                      if (formData.structure_type === 'modules_and_lessons') {
+                        const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                        setFormData({
+                          ...formData,
+                          structure_type: 'lessons_only',
+                          modules: [{ name: 'Default Module', lessons: allLessons.length > 0 ? allLessons : [{ name: '' }] }]
+                        });
+                      } else {
+                        setFormData({ ...formData, structure_type: 'lessons_only' });
+                      }
+                    }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
                       formData.structure_type === 'lessons_only'
                         ? 'border-pink-500 bg-pink-50 text-pink-700'
@@ -850,95 +949,144 @@ const CourseManagement = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  This affects how content is displayed on course pages. You can still create modules internally regardless of this setting.
+                  This affects how content is displayed on course pages.
                 </p>
               </div>
 
-              {/* Modules Section */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
-                {formData.modules.map((module, moduleIndex) => (
-                  <div key={moduleIndex} className="mb-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                    {/* Module Header */}
-                    <div className="flex gap-3 mb-3">
-                      <input
-                        type="text"
-                        value={module.name}
-                        onChange={(e) => {
-                          const newModules = [...formData.modules];
-                          newModules[moduleIndex].name = e.target.value;
-                          setFormData({ ...formData, modules: newModules });
-                        }}
-                        placeholder={`Module ${moduleIndex + 1} name`}
-                        className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 font-medium"
-                      />
-                      {formData.modules.length > 1 && (
-                        <button
-                          onClick={() => {
-                            const newModules = formData.modules.filter((_, i) => i !== moduleIndex);
+              {/* Conditional rendering based on structure type */}
+              {formData.structure_type === 'lessons_only' ? (
+                // Lessons Only Mode
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
+                  <div className="space-y-2">
+                    {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
+                      <div key={lessonIndex} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={lesson.name}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons[lessonIndex].name = e.target.value;
                             setFormData({ ...formData, modules: newModules });
                           }}
-                          className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
-                          title="Remove module"
-                        >
-                          <Trash2 size={20} />
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Lessons for this module */}
-                    <div className="ml-4 space-y-2">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Lessons</label>
-                      {module.lessons.map((lesson, lessonIndex) => (
-                        <div key={lessonIndex} className="flex gap-2">
-                          <input
-                            type="text"
-                            value={lesson.name}
-                            onChange={(e) => {
+                          placeholder={`Lesson ${lessonIndex + 1} name`}
+                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                        />
+                        {formData.modules[0].lessons.length > 1 && (
+                          <button
+                            onClick={() => {
                               const newModules = [...formData.modules];
-                              newModules[moduleIndex].lessons[lessonIndex].name = e.target.value;
+                              newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
                               setFormData({ ...formData, modules: newModules });
                             }}
-                            placeholder={`Lesson ${lessonIndex + 1} name`}
-                            className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
-                          />
-                          {module.lessons.length > 1 && (
-                            <button
-                              onClick={() => {
+                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Remove lesson"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => {
+                        const newModules = [...formData.modules];
+                        newModules[0].lessons.push({ name: '' });
+                        setFormData({ ...formData, modules: newModules });
+                      }}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
+                    >
+                      <Plus size={16} />
+                      Add Lesson
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                // Modules & Lessons Mode
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Modules & Lessons</label>
+                  {formData.modules.map((module, moduleIndex) => (
+                    <div key={moduleIndex} className="mb-4 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                      {/* Module Header */}
+                      <div className="flex gap-3 mb-3">
+                        <input
+                          type="text"
+                          value={module.name}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[moduleIndex].name = e.target.value;
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          placeholder={`Module ${moduleIndex + 1} name`}
+                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 font-medium"
+                        />
+                        {formData.modules.length > 1 && (
+                          <button
+                            onClick={() => {
+                              const newModules = formData.modules.filter((_, i) => i !== moduleIndex);
+                              setFormData({ ...formData, modules: newModules });
+                            }}
+                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                            title="Remove module"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Lessons for this module */}
+                      <div className="ml-4 space-y-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Lessons</label>
+                        {module.lessons.map((lesson, lessonIndex) => (
+                          <div key={lessonIndex} className="flex gap-2">
+                            <input
+                              type="text"
+                              value={lesson.name}
+                              onChange={(e) => {
                                 const newModules = [...formData.modules];
-                                newModules[moduleIndex].lessons = newModules[moduleIndex].lessons.filter((_, i) => i !== lessonIndex);
+                                newModules[moduleIndex].lessons[lessonIndex].name = e.target.value;
                                 setFormData({ ...formData, modules: newModules });
                               }}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                              title="Remove lesson"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                      <button
-                        onClick={() => {
-                          const newModules = [...formData.modules];
-                          newModules[moduleIndex].lessons.push({ name: '' });
-                          setFormData({ ...formData, modules: newModules });
-                        }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
-                      >
-                        <Plus size={16} />
-                        Add Lesson
-                      </button>
+                              placeholder={`Lesson ${lessonIndex + 1} name`}
+                              className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
+                            />
+                            {module.lessons.length > 1 && (
+                              <button
+                                onClick={() => {
+                                  const newModules = [...formData.modules];
+                                  newModules[moduleIndex].lessons = newModules[moduleIndex].lessons.filter((_, i) => i !== lessonIndex);
+                                  setFormData({ ...formData, modules: newModules });
+                                }}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                title="Remove lesson"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const newModules = [...formData.modules];
+                            newModules[moduleIndex].lessons.push({ name: '' });
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
+                        >
+                          <Plus size={16} />
+                          Add Lesson
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-                <button
-                  onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: [{ name: '' }] }] })}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
-                >
-                  <Plus size={16} />
-                  Add Another Module
-                </button>
-              </div>
+                  ))}
+                  <button
+                    onClick={() => setFormData({ ...formData, modules: [...formData.modules, { name: '', lessons: [{ name: '' }] }] })}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-medium"
+                  >
+                    <Plus size={16} />
+                    Add Another Module
+                  </button>
+                </div>
+              )}
 
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -1067,7 +1215,7 @@ const CourseManagement = () => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={closeModals}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition"
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition text-gray-900"
               >
                 Cancel
               </button>
