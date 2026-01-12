@@ -1,17 +1,6 @@
--- Migration: Add course_type and structure_type fields to courses table
--- This enables course categorization and content display mode configuration
-
--- Add course_type field (standardizes category usage)
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS course_type TEXT
-  DEFAULT 'specialism'
-  CHECK (course_type IN ('specialism', 'skill', 'subject'));
-
--- Migrate existing category data to course_type
-UPDATE courses
-SET course_type = LOWER(category)
-WHERE course_type IS NULL
-  AND category IS NOT NULL
-  AND LOWER(category) IN ('specialism', 'skill', 'subject');
+-- Migration: Add structure_type field to courses table
+-- Note: course_type field already exists in the database
+-- This migration only adds the content display mode field
 
 -- Add structure_type field for content display mode
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS structure_type TEXT
@@ -23,7 +12,7 @@ UPDATE courses
 SET structure_type = 'modules_and_lessons'
 WHERE structure_type IS NULL;
 
--- Add indexes for query performance
+-- Add indexes for query performance (course_type index may already exist)
 CREATE INDEX IF NOT EXISTS idx_courses_course_type ON courses(course_type);
 CREATE INDEX IF NOT EXISTS idx_courses_structure_type ON courses(structure_type);
 
