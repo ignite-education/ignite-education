@@ -4701,6 +4701,80 @@ app.get('/api/waitlist-count/:courseName', verifyAdmin, async (req, res) => {
 // END COURSE LAUNCH NOTIFICATIONS
 // ============================================================================
 
+// ============================================================================
+// COURSE DESCRIPTION GENERATION
+// ============================================================================
+
+app.post('/api/generate-course-description', async (req, res) => {
+  try {
+    const { courseTitle, courseType, modules } = req.body;
+
+    // Validate inputs
+    if (!courseTitle || !courseType || !modules || !Array.isArray(modules)) {
+      return res.status(400).json({ error: 'Invalid request: courseTitle, courseType, and modules are required' });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    // Build prompt from course structure
+    const modulesList = modules.map((module, idx) => {
+      const lessonsList = (module.lessons || []).map(l => `  - ${l.name}`).join('\n');
+      return `Module ${idx + 1}: ${module.name}\n${lessonsList}`;
+    }).join('\n\n');
+
+    const typeContext = {
+      'specialism': 'This is a career-focused course designed to prepare learners for a specific profession.',
+      'skill': 'This is a skill-building course focused on developing a particular ability or competency.',
+      'subject': 'This is an academic subject course covering theoretical and practical knowledge in a topic area.'
+    };
+
+    const prompt = `Generate a compelling course description for "${courseTitle}".
+
+${typeContext[courseType] || typeContext['specialism']}
+
+Course Structure:
+${modulesList}
+
+Requirements:
+- Maximum 250 characters (strict limit)
+- Focus on learning outcomes and benefits
+- Professional and engaging tone
+- No marketing fluff, be specific and practical
+- Mention key skills or knowledge areas covered
+
+Return ONLY the description text, no other commentary.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 150,
+      temperature: 0.7,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    let description = message.content[0].text.trim();
+
+    // Ensure under 250 characters
+    if (description.length > 250) {
+      description = description.substring(0, 247) + '...';
+    }
+
+    res.json({ description });
+
+  } catch (error) {
+    console.error('Error generating course description:', error);
+    res.status(500).json({ error: 'Failed to generate description. Please try again.' });
+  }
+});
+
+// ============================================================================
+// END COURSE DESCRIPTION GENERATION
+// ============================================================================
+
 app.listen(PORT, () => {
   console.log(`🤖 Claude chat server running on http://localhost:${PORT}`);
   console.log(`✅ API Key configured: ${process.env.ANTHROPIC_API_KEY ? 'Yes' : 'No'}`);
