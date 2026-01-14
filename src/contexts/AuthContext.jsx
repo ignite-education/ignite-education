@@ -247,11 +247,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Sign in with OAuth (Google, LinkedIn, etc.)
-  const signInWithOAuth = async (provider) => {
+  const signInWithOAuth = async (provider, redirectTo = '/progress') => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
-        redirectTo: `${window.location.origin}/progress`,
+        redirectTo: `${window.location.origin}${redirectTo}`,
       }
     });
 

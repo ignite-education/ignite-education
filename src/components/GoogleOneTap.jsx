@@ -221,7 +221,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                 </button>
 
                 <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
-                  {isSaved ? 'Course saved to your account' : 'We\'ll save this course for you to start later'}
+                  {isSaved ? 'Course saved to your account' : 'We\'ll save this course to start later'}
                 </p>
               </div>
             </>

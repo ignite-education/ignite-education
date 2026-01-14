@@ -22,6 +22,7 @@ const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
 const Auth = lazy(() => import('./components/Auth'))
 const AuthDesign = lazy(() => import('./components/AuthDesign'))
+const SignIn = lazy(() => import('./components/SignIn'))
 const ResetPassword = lazy(() => import('./components/ResetPassword'))
 const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
@@ -87,6 +88,11 @@ function App() {
             <Route path="/auth-design" element={
               <AuthRoute>
                 <AuthDesign />
+              </AuthRoute>
+            } />
+            <Route path="/sign-in" element={
+              <AuthRoute>
+                <SignIn />
               </AuthRoute>
             } />
             <Route path="/reset-password" element={<ResetPassword />} />
