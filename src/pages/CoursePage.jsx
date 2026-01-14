@@ -766,16 +766,16 @@ const CoursePage = () => {
                 </div>
               </div>
 
-              {/* Mobile Sign-In for logged-out users (hidden on desktop where One-Tap shows) */}
-              {!user && (
-                <div className="lg:hidden">
-                  <GoogleOneTap
-                    courseSlug={courseSlug}
-                    courseStatus={course.status}
-                    courseTitle={course.title}
-                  />
-                </div>
-              )}
+              {/* Mobile Sign-In or Save Button (hidden on desktop where One-Tap shows) */}
+              <div className="lg:hidden">
+                <GoogleOneTap
+                  courseSlug={courseSlug}
+                  courseStatus={course.status}
+                  courseTitle={course.title}
+                  user={user}
+                  firstName={user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0]}
+                />
+              </div>
             </div>
           </div>
 
@@ -819,27 +819,16 @@ const CoursePage = () => {
                       </div>
                     </div>
 
-                    {/* Right Column - Sticky Google One-Tap or Image (hidden on narrow viewports) */}
+                    {/* Right Column - Sticky Google One-Tap (hidden on narrow viewports) */}
                     <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
                       <div className="sticky top-24">
-                        {!user ? (
-                          <GoogleOneTap
-                            courseSlug={courseSlug}
-                            courseStatus={course.status}
-                            courseTitle={course.title}
-                          />
-                        ) : (
-                          <OptimizedImage
-                            src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
-                            alt="Course curriculum illustration"
-                            className="w-full rounded-lg object-cover"
-                            style={{ maxHeight: '500px' }}
-                            width={315}
-                            height={500}
-                            widths={[315, 630]}
-                            sizes="315px"
-                          />
-                        )}
+                        <GoogleOneTap
+                          courseSlug={courseSlug}
+                          courseStatus={course.status}
+                          courseTitle={course.title}
+                          user={user}
+                          firstName={user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0]}
+                        />
                       </div>
                     </div>
                   </div>

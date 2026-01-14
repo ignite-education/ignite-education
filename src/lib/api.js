@@ -1362,6 +1362,88 @@ export async function updateUserCourse(userId, courseId, userInfo = null) {
 }
 
 /**
+ * Save a course to user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug (e.g., 'product-manager')
+ * @returns {Promise<Object>} Created saved course object
+ */
+export async function saveCourseForLater(userId, courseSlug) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .insert({
+      user_id: userId,
+      course_id: courseSlug
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // If duplicate (user already saved this course), return existing record
+    if (error.code === '23505') {
+      const { data: existing } = await supabase
+        .from('saved_courses')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('course_id', courseSlug)
+        .single();
+      return existing;
+    }
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Remove a course from user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug
+ * @returns {Promise<void>}
+ */
+export async function removeSavedCourse(userId, courseSlug) {
+  const { error } = await supabase
+    .from('saved_courses')
+    .delete()
+    .eq('user_id', userId)
+    .eq('course_id', courseSlug);
+
+  if (error) throw error;
+}
+
+/**
+ * Get all courses saved by a user
+ * @param {string} userId - The user's ID
+ * @returns {Promise<Array>} Array of saved course slugs
+ */
+export async function getSavedCourses(userId) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .select('course_id, saved_at')
+    .eq('user_id', userId)
+    .order('saved_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Check if a specific course is in user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug
+ * @returns {Promise<boolean>} True if course is saved
+ */
+export async function isCourseInWishlist(userId, courseSlug) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('course_id', courseSlug)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+}
+
+/**
  * Sync user to course completion audience
  * Called when a user completes a course
  * @param {string} courseId - The completed course ID

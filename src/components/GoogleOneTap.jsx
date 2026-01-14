@@ -1,19 +1,24 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { saveCourseForLater, removeSavedCourse, isCourseInWishlist } from '../lib/api';
 
 /**
  * Google Sign-In component for course pages
  * Shows "Continue with Google" and "Continue with LinkedIn" buttons using OAuth redirect flow
+ * For authenticated users, shows "Add to [FirstName]'s Account" button to save course to wishlist
  * Also includes share buttons for the course
  *
  * For live courses: Stores courseSlug for enrollment in ProgressHub
  * For coming_soon courses: Stores courseSlug for waitlist signup in ProgressHub
  */
-const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) => {
+const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', user = null, firstName = null }) => {
   const { signInWithOAuth } = useAuth();
   const [loadingProvider, setLoadingProvider] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   const isComingSoon = courseStatus === 'coming_soon';
   const shareUrl = `https://ignite.education/courses/${courseSlug}`;
@@ -58,6 +63,49 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) =
     window.open(`https://substack.com/note?url=${encodeURIComponent(shareUrl)}`, '_blank');
   };
 
+  // Check if course is saved on mount
+  useEffect(() => {
+    const checkSaveStatus = async () => {
+      if (!user) {
+        setCheckingStatus(false);
+        return;
+      }
+
+      try {
+        setCheckingStatus(true);
+        const saved = await isCourseInWishlist(user.id, courseSlug);
+        setIsSaved(saved);
+      } catch (err) {
+        console.error('Error checking save status:', err);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    checkSaveStatus();
+  }, [user, courseSlug]);
+
+  // Toggle save/remove course from wishlist
+  const handleSaveToggle = async () => {
+    if (!user) return;
+
+    setIsSaving(true);
+    try {
+      if (isSaved) {
+        await removeSavedCourse(user.id, courseSlug);
+        setIsSaved(false);
+      } else {
+        await saveCourseForLater(user.id, courseSlug);
+        setIsSaved(true);
+      }
+    } catch (err) {
+      console.error('Error toggling save status:', err);
+      setError('Failed to save course. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="w-full">
       {error ? (
@@ -77,56 +125,100 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '' }) =
         </div>
       ) : (
         <div className="w-full">
-          {/* Google Sign In Button */}
-          <button
-            onClick={() => handleSignIn('google')}
-            disabled={loadingProvider}
-            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
-            style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-          >
-            {loadingProvider === 'google' ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-            ) : (
-              <>
-                <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                  Continue with Google
-                </span>
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
-                  alt="Google"
-                  className="w-5 h-5 flex-shrink-0"
-                />
-              </>
-            )}
-          </button>
+          {!user ? (
+            <>
+              {/* Google Sign In Button */}
+              <button
+                onClick={() => handleSignIn('google')}
+                disabled={loadingProvider}
+                className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+              >
+                {loadingProvider === 'google' ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Continue with Google
+                    </span>
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
+                      alt="Google"
+                      className="w-5 h-5 flex-shrink-0"
+                    />
+                  </>
+                )}
+              </button>
 
-          {/* LinkedIn Sign In Button */}
-          <button
-            onClick={() => handleSignIn('linkedin_oidc')}
-            disabled={loadingProvider}
-            className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
-            style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-          >
-            {loadingProvider === 'linkedin_oidc' ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-            ) : (
-              <>
-                <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                  Continue with LinkedIn
-                </span>
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
-                  alt="LinkedIn"
-                  className="w-5 h-5 flex-shrink-0"
-                />
-              </>
-            )}
-          </button>
+              {/* LinkedIn Sign In Button */}
+              <button
+                onClick={() => handleSignIn('linkedin_oidc')}
+                disabled={loadingProvider}
+                className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+              >
+                {loadingProvider === 'linkedin_oidc' ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Continue with LinkedIn
+                    </span>
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
+                      alt="LinkedIn"
+                      className="w-5 h-5 flex-shrink-0"
+                    />
+                  </>
+                )}
+              </button>
 
-          {/* Dynamic Status Text */}
-          <p className="text-center text-black text-sm font-light mb-4" style={{ letterSpacing: '-0.02em' }}>
-            {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
-          </p>
+              {/* Dynamic Status Text */}
+              <p className="text-center text-black text-sm font-light mb-4" style={{ letterSpacing: '-0.02em' }}>
+                {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
+              </p>
+            </>
+          ) : (
+            <>
+              {/* Save to Account Button for authenticated users */}
+              <div className="w-[90%] mx-auto mb-4">
+                <button
+                  onClick={handleSaveToggle}
+                  disabled={isSaving || checkingStatus}
+                  className={`w-full px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                    isSaved
+                      ? 'bg-gray-200 text-black hover:bg-gray-300'
+                      : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {checkingStatus ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Loading...
+                    </span>
+                  ) : isSaving ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      {isSaved ? 'Removing...' : 'Saving...'}
+                    </span>
+                  ) : isSaved ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      Saved to {firstName || 'your'} account
+                    </span>
+                  ) : (
+                    `Add to ${firstName || 'your'} account`
+                  )}
+                </button>
+
+                <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
+                  {isSaved ? 'Course saved to your account' : 'Save this course for later'}
+                </p>
+              </div>
+            </>
+          )}
 
           {/* Share Buttons Row */}
           <div className="flex items-center justify-center gap-2">
