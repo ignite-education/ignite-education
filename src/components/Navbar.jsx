@@ -33,13 +33,13 @@ const Navbar = () => {
                 src={profilePicture}
                 alt="Profile"
                 className="object-cover rounded-sm"
-                style={{ width: '37px', height: '37px' }}
+                style={{ width: '39px', height: '39px' }}
                 referrerPolicy="no-referrer"
               />
             ) : (
               <div
                 className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
-                style={{ width: '37px', height: '37px' }}
+                style={{ width: '39px', height: '39px' }}
               >
                 {firstName?.charAt(0).toUpperCase() || '?'}
               </div>
