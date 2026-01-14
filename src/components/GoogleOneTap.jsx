@@ -185,36 +185,43 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                 <button
                   onClick={handleSaveToggle}
                   disabled={isSaving || checkingStatus}
-                  className={`w-full px-4 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                  className={`w-full px-4 rounded-lg transition-all duration-200 ${
                     isSaved
                       ? 'bg-gray-200 text-black hover:bg-gray-300'
                       : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
                   } disabled:opacity-50 disabled:cursor-not-allowed`}
+                  style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
                 >
                   {checkingStatus ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Loading...
+                      <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
                     </span>
                   ) : isSaving ? (
                     <span className="flex items-center justify-center gap-2">
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      {isSaved ? 'Removing...' : 'Saving...'}
+                      <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                        {isSaved ? 'Removing...' : 'Saving...'}
+                      </span>
                     </span>
                   ) : isSaved ? (
                     <span className="flex items-center justify-center gap-2">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                       </svg>
-                      Saved to {firstName || 'your'} account
+                      <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                        Saved to {firstName || 'your'}'s account
+                      </span>
                     </span>
                   ) : (
-                    `Add to ${firstName || 'your'} account`
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Add to {firstName || 'your'}'s account
+                    </span>
                   )}
                 </button>
 
                 <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
-                  {isSaved ? 'Course saved to your account' : 'Save this course for later'}
+                  {isSaved ? 'Course saved to your account' : 'We\'ll save this course for you to start later'}
                 </p>
               </div>
             </>
