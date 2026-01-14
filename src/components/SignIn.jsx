@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { X } from 'lucide-react';
 import SEO from './SEO';
+import Footer from './Footer';
 import useTypingAnimation from '../hooks/useTypingAnimation';
 
 const SignIn = () => {
@@ -136,7 +137,7 @@ const SignIn = () => {
       />
 
       <div
-        className="fixed inset-0 animate-fadeIn"
+        className="fixed inset-0 animate-fadeIn overflow-y-auto"
         style={{
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
@@ -347,6 +348,9 @@ const SignIn = () => {
             </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
 
       {/* Password Reset Modal */}
