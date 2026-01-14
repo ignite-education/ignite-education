@@ -181,7 +181,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
           ) : (
             <>
               {/* Save to Account Button for authenticated users */}
-              <div className="w-[90%] mx-auto mb-4">
+              <div className="w-[80%] mx-auto mb-4">
                 <button
                   onClick={handleSaveToggle}
                   disabled={isSaving || checkingStatus}
@@ -210,12 +210,12 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                       </svg>
                       <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                        Saved to {firstName || 'your'}'s account
+                        Saved to {firstName || 'your'}'s Account
                       </span>
                     </span>
                   ) : (
                     <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                      Add to {firstName || 'your'}'s account
+                      Add to {firstName || 'your'}'s Account
                     </span>
                   )}
                 </button>
