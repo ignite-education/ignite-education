@@ -1,0 +1,45 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+
+/**
+ * CoursesNavbar - Custom navbar for the /courses page
+ * - Not signed in: Returns null (no navbar)
+ * - Signed in: Translucent blur background with user image only (no logo)
+ */
+const CoursesNavbar = () => {
+  const { user, profilePicture, firstName } = useAuth();
+
+  // Don't render navbar if user is not signed in
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="sticky top-0 z-50 bg-white/70 backdrop-blur-md">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-end">
+        {/* User profile image/initial on the right */}
+        <Link to="/progress" className="inline-block">
+          {profilePicture ? (
+            <img
+              src={profilePicture}
+              alt="Profile"
+              className="object-cover rounded-sm"
+              style={{ width: '37px', height: '37px' }}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div
+              className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+              style={{ width: '37px', height: '37px' }}
+            >
+              {firstName?.charAt(0).toUpperCase() || '?'}
+            </div>
+          )}
+        </Link>
+      </div>
+    </div>
+  );
+};
+
+export default CoursesNavbar;
