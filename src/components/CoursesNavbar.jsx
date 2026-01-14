@@ -16,7 +16,7 @@ const CoursesNavbar = () => {
   }
 
   return (
-    <div className="sticky top-0 z-50 bg-white/70 backdrop-blur-md">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white/70 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-end">
         {/* User profile image/initial on the right */}
         <Link to="/progress" className="inline-block">
