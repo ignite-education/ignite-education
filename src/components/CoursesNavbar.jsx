@@ -19,7 +19,7 @@ const CoursesNavbar = () => {
     <div className="fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-end">
         {/* User profile image/initial on the right with translucent blur border */}
-        <div className="p-1.5 rounded-md bg-white/30 hover:bg-white/10 backdrop-blur-md transition-colors">
+        <div className="p-1.5 rounded-md bg-white/30 backdrop-blur-md">
           <Link to="/progress" className="inline-block">
             {profilePicture ? (
               <img
