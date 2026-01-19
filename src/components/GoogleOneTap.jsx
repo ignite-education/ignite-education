@@ -185,7 +185,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                 <button
                   onClick={handleSaveToggle}
                   disabled={isSaving || checkingStatus}
-                  className={`w-full px-4 rounded-lg transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.325)] ${
+                  className={`w-full px-4 rounded-lg transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
                     isSaved
                       ? 'bg-gray-200 text-black hover:bg-gray-300'
                       : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
