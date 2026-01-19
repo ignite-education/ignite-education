@@ -103,9 +103,9 @@ const CoursesNavbar = () => {
             <div
               className="absolute right-0 animate-scaleUp origin-top-right"
               style={{
-                top: '-12px',
+                top: '0',
                 width: '280px',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#F8F8F8',
                 borderRadius: '16px',
                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
                 padding: '20px',
