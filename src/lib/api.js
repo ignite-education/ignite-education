@@ -479,16 +479,25 @@ export async function getCoursesByType() {
   const { data, error } = await supabase
     .from('courses')
     .select('*')
-    .in('status', ['live', 'coming_soon'])
-    .order('display_order', { ascending: true });
+    .in('status', ['live', 'coming_soon']);
 
   if (error) throw error;
 
-  // Group by course_type, defaulting to 'specialism' if not set
+  // Sort courses: live first (alphabetically), then coming_soon (alphabetically)
+  const sortCourses = (courses) => {
+    return courses.sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status === 'live' ? -1 : 1;
+      }
+      return a.title.localeCompare(b.title);
+    });
+  };
+
+  // Group by course_type, defaulting to 'specialism' if not set, then sort
   return {
-    specialism: (data || []).filter(c => !c.course_type || c.course_type === 'specialism'),
-    skill: (data || []).filter(c => c.course_type === 'skill'),
-    subject: (data || []).filter(c => c.course_type === 'subject')
+    specialism: sortCourses((data || []).filter(c => !c.course_type || c.course_type === 'specialism')),
+    skill: sortCourses((data || []).filter(c => c.course_type === 'skill')),
+    subject: sortCourses((data || []).filter(c => c.course_type === 'subject'))
   };
 }
 
