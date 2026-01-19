@@ -135,9 +135,9 @@ const CoursesNavbar = () => {
               )}
 
               {/* Greeting */}
-              <div className="mb-5">
-                <span style={{ color: '#000000', fontSize: '24px', fontStyle: 'italic' }}>Hello, </span>
-                <span style={{ color: '#8200EA', fontSize: '24px', fontWeight: '600' }}>
+              <div className="mb-5" style={{ fontFamily: 'Geist, sans-serif', fontSize: '24px', fontWeight: '600', letterSpacing: '-0.01em' }}>
+                <span style={{ color: '#000000' }}>Hello, </span>
+                <span style={{ color: '#8200EA' }}>
                   {firstName || 'User'}
                 </span>
               </div>
@@ -148,7 +148,7 @@ const CoursesNavbar = () => {
                   to="/progress"
                   className="block py-3 px-4 transition-colors hover:bg-gray-200"
                   style={{
-                    backgroundColor: '#F5F5F5',
+                    backgroundColor: '#FFFFFF',
                     borderRadius: '8px',
                     color: '#000000',
                     fontSize: '14px',
@@ -161,7 +161,7 @@ const CoursesNavbar = () => {
                   to="/courses"
                   className="block py-3 px-4 transition-colors hover:bg-gray-200"
                   style={{
-                    backgroundColor: '#F5F5F5',
+                    backgroundColor: '#FFFFFF',
                     borderRadius: '8px',
                     color: '#000000',
                     fontSize: '14px',
@@ -173,7 +173,7 @@ const CoursesNavbar = () => {
                 <button
                   className="block w-full text-left py-3 px-4 transition-colors cursor-not-allowed"
                   style={{
-                    backgroundColor: '#F5F5F5',
+                    backgroundColor: '#FFFFFF',
                     borderRadius: '8px',
                     color: '#000000',
                     fontSize: '14px',
