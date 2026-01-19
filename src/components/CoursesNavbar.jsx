@@ -17,7 +17,7 @@ const CoursesNavbar = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50">
-      <div className="px-4 py-4 flex items-center justify-end">
+      <div className="px-5 py-5 flex items-center justify-end">
         <Link to="/progress" className="inline-block">
           {profilePicture ? (
             <img
