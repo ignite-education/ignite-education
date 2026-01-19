@@ -78,8 +78,8 @@ const CoursesNavbar = () => {
           onMouseEnter={handleAvatarMouseEnter}
           onMouseLeave={handleAvatarMouseLeave}
         >
-          {/* Avatar */}
-          <div className="cursor-pointer">
+          {/* Avatar - stays on top of popup */}
+          <div className="cursor-pointer relative z-10">
             {profilePicture ? (
               <img
                 src={profilePicture}
@@ -98,25 +98,30 @@ const CoursesNavbar = () => {
             )}
           </div>
 
-          {/* Profile Popup */}
+          {/* Profile Popup - expands from behind avatar */}
           {showProfilePopup && (
             <div
-              className="absolute top-full right-0 mt-2 z-50 animate-scaleUp"
+              className="absolute right-0 animate-scaleUp origin-top-right"
               style={{
+                top: '-12px',
                 width: '280px',
                 backgroundColor: '#FFFFFF',
                 borderRadius: '16px',
                 boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
                 padding: '20px',
+                paddingTop: '75px',
+                zIndex: -1,
               }}
               onMouseEnter={handlePopupMouseEnter}
               onMouseLeave={handlePopupMouseLeave}
             >
-              {/* Joined Badge */}
+              {/* Joined Badge - positioned at top left */}
               {user?.created_at && (
                 <div
-                  className="inline-block mb-4"
+                  className="absolute"
                   style={{
+                    top: '20px',
+                    left: '20px',
                     backgroundColor: '#8200EA',
                     color: '#FFFFFF',
                     padding: '6px 14px',
@@ -129,37 +134,8 @@ const CoursesNavbar = () => {
                 </div>
               )}
 
-              {/* Profile Picture (larger) */}
-              <div className="flex justify-end mb-4" style={{ marginTop: '-60px' }}>
-                {profilePicture ? (
-                  <img
-                    src={profilePicture}
-                    alt="Profile"
-                    className="object-cover"
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '12px',
-                    }}
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div
-                    className="flex items-center justify-center text-white font-semibold text-2xl"
-                    style={{
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '12px',
-                      backgroundColor: '#8200EA',
-                    }}
-                  >
-                    {firstName?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                )}
-              </div>
-
               {/* Greeting */}
-              <div className="mb-5" style={{ marginTop: '8px' }}>
+              <div className="mb-5">
                 <span style={{ color: '#000000', fontSize: '24px', fontStyle: 'italic' }}>Hello, </span>
                 <span style={{ color: '#8200EA', fontSize: '24px', fontWeight: '600' }}>
                   {firstName || 'User'}
