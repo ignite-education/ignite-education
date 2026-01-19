@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SEO from '../components/SEO';
 import CourseCatalog from '../components/CourseCatalog';
 import CoursesNavbar from '../components/CoursesNavbar';
 import Footer from '../components/Footer';
 
 const CourseCatalogPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <SEO
