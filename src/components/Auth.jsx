@@ -7,6 +7,7 @@ import { getCoachesForCourse } from '../lib/api';
 import SEO, { generateSpeakableSchema } from './SEO';
 import useTypingAnimation from '../hooks/useTypingAnimation';
 import Footer from './Footer';
+import Navbar from './Navbar';
 
 // Structured data for welcome page SEO (static for prerendering)
 const welcomePageStructuredData = [
@@ -1714,6 +1715,11 @@ const Auth = () => {
 
       {/* Wrapper for sections 2-6 on mobile - single snap target */}
       <div className="auth-sections-2-6-wrapper">
+
+      {/* Sticky Navbar - appears at section 2 */}
+      <div className="sticky top-0 z-50">
+        <Navbar />
+      </div>
 
       {/* Second Section - Education Philosophy */}
         <div
