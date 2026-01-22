@@ -1573,7 +1573,7 @@ const Auth = () => {
               bottom: 0,
               left: 0,
               right: 0,
-              height: '80px',
+              height: '60px',
               background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
               pointerEvents: 'none',
               zIndex: 10
