@@ -1662,14 +1662,13 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : '6rem', marginBottom: isMobile ? '0rem' : '1rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
+                  <p className="text-lg max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black', marginBottom: 0 }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
                     alt="Trustpilot"
-                    className="mt-4"
-                    style={{ maxWidth: '200px', height: 'auto' }}
+                    style={{ maxWidth: '200px', height: 'auto', marginTop: '5px' }}
                     loading="lazy"
                   />
                 </div>
