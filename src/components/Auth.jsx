@@ -1726,7 +1726,7 @@ const Auth = () => {
         >
           <div className="max-w-4xl w-full text-white">
             <div className="w-full max-w-3xl mx-auto px-4">
-              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block auth-education-heading" style={{ minHeight: isMobile ? undefined : '240px' }}>
+              <h2 className="text-5xl font-bold leading-tight text-center w-full inline-block auth-education-heading" style={{ minHeight: isMobile ? undefined : '240px' }}>
                 <span style={{ display: 'inline', whiteSpace: 'normal' }}>
                   {renderTypedEducation()}
                 </span>
