@@ -12,7 +12,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50 bg-black">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto p-5 flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
           <div
@@ -47,7 +47,7 @@ const Navbar = () => {
           </Link>
         ) : (
           <Link
-            to="/welcome"
+            to="/sign-in"
             className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
             style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem' }}
           >
