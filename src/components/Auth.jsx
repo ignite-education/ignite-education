@@ -1618,21 +1618,21 @@ const Auth = () => {
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
-                <div className="grid grid-cols-3 gap-8 text-center auth-promises-list">
+                <div className="grid grid-cols-3 gap-8 text-center auth-promises-list" style={{ width: '120%', marginLeft: '-10%' }}>
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
                       <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="text-xl font-bold text-white mb-4">Built by Industry Experts</div>
+                        <div className="text-xl font-bold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>Built by Industry Experts</div>
                         <div className="text-base text-white font-normal">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
                       </div>
 
                       <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="text-xl font-bold text-white mb-4">Ignite is Free</div>
+                        <div className="text-xl font-bold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>Ignite is Free</div>
                         <div className="text-base text-white font-normal">All of our courses are free. Always have been and always will be.</div>
                       </div>
 
                       <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="text-xl font-bold text-white mb-4">No Educational Prerequisite</div>
+                        <div className="text-xl font-bold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>No Educational Prerequisite</div>
                         <div className="text-base text-white font-normal">You don't need any experience to study. Our curricula is built for all backgrounds.</div>
                       </div>
                     </>
