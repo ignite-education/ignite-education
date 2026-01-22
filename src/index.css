@@ -336,7 +336,8 @@ body {
 /* Section 5 tablet/small desktop - stack vertically to prevent overlap */
 @media (min-width: 768px) and (max-width: 1200px) {
   .auth-section-1 {
-    height: 100dvh;
+    height: 75vh;
+    min-height: 600px;
   }
 
   .auth-section-5-grid {
@@ -494,9 +495,8 @@ body {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    min-height: 100vh !important;
-    min-height: 100svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
-    height: 100svh !important;
+    height: 75vh !important;
+    min-height: 500px !important;
     overflow: visible !important;
     display: flex !important;
     align-items: center !important;
@@ -1313,6 +1313,25 @@ body {
     display: none !important;
   }
 
+}
+
+/* Custom scrollbar for course catalog in welcome section */
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #EF0B72;
+  border-radius: 4px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #D50A65;
 }
 
 /* Respect users' reduced motion preferences for accessibility */

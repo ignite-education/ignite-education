@@ -14,8 +14,8 @@ const Navbar = ({ backgroundColor = 'black' }) => {
     <div
       className="sticky top-0 z-50"
       style={{
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)'
+        backdropFilter: 'blur(7px)',
+        WebkitBackdropFilter: 'blur(7px)'
       }}
     >
       <div className="px-10 py-5 flex items-center justify-between">

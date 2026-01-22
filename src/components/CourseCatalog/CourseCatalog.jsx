@@ -74,6 +74,7 @@ const CourseCatalog = ({
   const filteredSubject = filterCourses(coursesByType.subject);
 
   const isFeatured = variant === 'featured';
+  const isWelcome = variant === 'welcome';
 
   // Skeleton card component for loading state
   const SkeletonCard = () => (
@@ -105,7 +106,7 @@ const CourseCatalog = ({
 
   if (loading) {
     return (
-      <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-12'}`}>
+      <div className={`bg-white ${isFeatured || isWelcome ? 'py-0' : 'min-h-screen py-12'}`}>
         <div className="max-w-[1267px] mx-auto px-6">
           {/* Header skeleton */}
           {!isFeatured && (
@@ -142,10 +143,10 @@ const CourseCatalog = ({
   }
 
   return (
-    <div className={`bg-white ${isFeatured ? 'py-12' : 'min-h-screen py-12'}`}>
+    <div className={`bg-white ${isFeatured || isWelcome ? 'py-0' : 'min-h-screen py-12'}`}>
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
-        {!isFeatured && (
+        {!isFeatured && !isWelcome && (
           <div className="text-center mb-[15px]">
             <Link to="/" className="inline-block mb-8">
               <img
@@ -167,6 +168,7 @@ const CourseCatalog = ({
               value={searchQuery}
               onChange={setSearchQuery}
               placeholder="Search courses..."
+              autoFocus={!isWelcome}
             />
           </div>
         )}
@@ -177,19 +179,19 @@ const CourseCatalog = ({
             type="specialism"
             courses={filteredSpecialism}
             showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
           />
           <CourseTypeColumn
             type="skill"
             courses={filteredSkill}
             showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
           />
           <CourseTypeColumn
             type="subject"
             courses={filteredSubject}
             showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
           />
         </div>
 
