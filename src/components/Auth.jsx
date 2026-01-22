@@ -1668,7 +1668,7 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
                     alt="Trustpilot"
-                    style={{ maxWidth: '200px', height: 'auto', marginTop: '5px' }}
+                    style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
                     loading="lazy"
                   />
                 </div>
