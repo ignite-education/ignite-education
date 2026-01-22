@@ -1117,7 +1117,7 @@ const Auth = () => {
     const words = ['accessible', 'personalised', 'integrated'];
     const fullText = isMobile
       ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
-      : 'Education should be \naccessible, personalised and integrated for everyone.';
+      : 'Education should be \naccessible, personalised \nand integrated for everyone.';
 
     // Show full text immediately (no animation)
     const text = fullText;
@@ -1618,43 +1618,22 @@ const Auth = () => {
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
-                <div className="space-y-3 text-left auth-promises-list">
+                <div className="grid grid-cols-3 gap-8 text-center auth-promises-list">
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
-                          <div className="text-base text-white auth-promise-subtext">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-bold text-white mb-4">Built by Industry Experts</div>
+                        <div className="text-base text-white font-normal">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">Ignite is Free</div>
-                          <div className="text-base text-white auth-promise-subtext">All of our courses are free. Always have been and always will be.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-bold text-white mb-4">Ignite is Free</div>
+                        <div className="text-base text-white font-normal">All of our courses are free. Always have been and always will be.</div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
-                          <div className="text-base text-white auth-promise-subtext">You don't need any experience to study. Our curricula is built for all backgrounds.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-bold text-white mb-4">No Educational Prerequisite</div>
+                        <div className="text-base text-white font-normal">You don't need any experience to study. Our curricula is built for all backgrounds.</div>
                       </div>
                     </>
                   )}
