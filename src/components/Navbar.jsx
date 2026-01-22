@@ -12,7 +12,7 @@ const Navbar = () => {
 
   return (
     <div className="sticky top-0 z-50 bg-black">
-      <div className="p-5 flex items-center justify-between">
+      <div className="px-10 py-5 flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
           <div
