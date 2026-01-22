@@ -721,6 +721,9 @@ const Auth = () => {
       { ref: linkedInFAQSectionRef, section: 6 },
     ];
 
+    // Navbar height is approximately 73px (20px padding top + 33px logo + 20px padding bottom)
+    const navbarHeight = 73;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -730,7 +733,11 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.5, root: authScrollContainerRef.current }
+      {
+        threshold: 0,
+        root: authScrollContainerRef.current,
+        rootMargin: `-${navbarHeight}px 0px 0px 0px`
+      }
     );
 
     sectionRefs.forEach(({ ref }) => {
