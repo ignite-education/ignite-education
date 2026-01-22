@@ -1540,7 +1540,7 @@ const Auth = () => {
         className="flex items-center justify-center px-8 relative auth-section-1"
         style={{
           scrollSnapAlign: 'start',
-          height: isSection1Expanded ? 'auto' : '75vh',
+          height: isSection1Expanded ? 'auto' : '80vh',
           minHeight: isSection1Expanded ? 'auto' : '600px',
           backgroundColor: '#fff',
           position: 'relative',
@@ -1584,7 +1584,7 @@ const Auth = () => {
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setIsSection1Expanded(!isSection1Expanded)}
-          className="absolute bottom-4 right-4 px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+          className="absolute bottom-4 right-10 px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
           style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20 }}
         >
           {isSection1Expanded ? 'Collapse' : 'Expand'}
