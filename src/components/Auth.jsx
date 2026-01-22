@@ -1665,6 +1665,13 @@ const Auth = () => {
                   <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
+                    alt="Trustpilot"
+                    className="mt-4"
+                    style={{ maxWidth: '200px', height: 'auto' }}
+                    loading="lazy"
+                  />
                 </div>
               </div>
 
