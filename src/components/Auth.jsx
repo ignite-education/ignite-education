@@ -162,6 +162,7 @@ const Auth = () => {
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [testimonialMouseStart, setTestimonialMouseStart] = useState(null);
   const [hasSection2Snapped, setHasSection2Snapped] = useState(false);
+  const [currentSection, setCurrentSection] = useState(2);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const [typedModalTitle, setTypedModalTitle] = useState('');
@@ -710,6 +711,35 @@ const Auth = () => {
     };
   }, [isMobile, isLogin, hasSection2Snapped, selectedCourseModal]);
 
+  // Track current visible section for navbar background color
+  useEffect(() => {
+    const sectionRefs = [
+      { ref: marketingSectionRef, section: 2 },
+      { ref: coursesSectionRef, section: 3 },
+      { ref: learningModelSectionRef, section: 4 },
+      { ref: testimonialsSectionRef, section: 5 },
+      { ref: linkedInFAQSectionRef, section: 6 },
+    ];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const section = sectionRefs.find(s => s.ref.current === entry.target);
+            if (section) setCurrentSection(section.section);
+          }
+        });
+      },
+      { threshold: 0.5, root: authScrollContainerRef.current }
+    );
+
+    sectionRefs.forEach(({ ref }) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
     const fetchCourses = async () => {
@@ -1063,7 +1093,12 @@ const Auth = () => {
     };
   }, [isLogin, selectedCourseModal, blogFaqTypingEnabled]);
 
-
+  // Get navbar background color based on current section
+  const getNavbarBackground = () => {
+    if (isMobile) return 'black';
+    if (currentSection === 3 || currentSection === 5) return 'white';
+    return 'black';
+  };
 
 
 
@@ -1718,7 +1753,7 @@ const Auth = () => {
 
       {/* Sticky Navbar - appears at section 2 */}
       <div className="sticky top-0 z-50">
-        <Navbar />
+        <Navbar backgroundColor={getNavbarBackground()} />
       </div>
 
       {/* Second Section - Education Philosophy */}

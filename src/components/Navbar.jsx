@@ -7,11 +7,23 @@ import { useAuth } from '../contexts/AuthContext';
  * - Unsigned user: Logo + Sign In button
  * - Signed in user: Logo + Profile picture (or first initial)
  */
-const Navbar = () => {
+const Navbar = ({ backgroundColor = 'black' }) => {
   const { user, profilePicture, firstName } = useAuth();
 
+  // Convert color to rgba with 30% opacity
+  const bgColor = backgroundColor === 'white'
+    ? 'rgba(255, 255, 255, 0.3)'
+    : 'rgba(0, 0, 0, 0.3)';
+
   return (
-    <div className="sticky top-0 z-50 bg-black">
+    <div
+      className="sticky top-0 z-50"
+      style={{
+        backgroundColor: bgColor,
+        backdropFilter: 'blur(5px)',
+        WebkitBackdropFilter: 'blur(5px)'
+      }}
+    >
       <div className="px-10 py-5 flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
