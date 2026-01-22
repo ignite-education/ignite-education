@@ -38,28 +38,6 @@ const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement
 const NotFound = lazy(() => import('./components/NotFound'))
 const CourseCatalogPage = lazy(() => import('./pages/CourseCatalogPage'))
 
-// Component to redirect authenticated users away from auth pages
-function AuthRoute({ children }) {
-  const { user, isInitialized } = useAuth();
-
-  // Don't render anything until auth is initialized to prevent flicker
-  if (!isInitialized) {
-    return (
-      <Suspense fallback={<SimpleLoader />}>
-        <LoadingScreen showTimeoutMessage={false} />
-      </Suspense>
-    );
-  }
-
-  // If user is authenticated, redirect to progress page
-  if (user) {
-    return <Navigate to="/progress" replace />;
-  }
-
-  // User is not authenticated, show the auth page
-  return children;
-}
-
 function App() {
   // Signal to prerenderer that the page is ready
   useEffect(() => {
@@ -80,21 +58,9 @@ function App() {
         <AuthProvider>
           <Suspense fallback={<Suspense fallback={<SimpleLoader />}><LoadingScreen showTimeoutMessage={true} /></Suspense>}>
           <Routes>
-            <Route path="/welcome" element={
-              <AuthRoute>
-                <Auth />
-              </AuthRoute>
-            } />
-            <Route path="/auth-design" element={
-              <AuthRoute>
-                <AuthDesign />
-              </AuthRoute>
-            } />
-            <Route path="/sign-in" element={
-              <AuthRoute>
-                <SignIn />
-              </AuthRoute>
-            } />
+            <Route path="/welcome" element={<Auth />} />
+            <Route path="/auth-design" element={<AuthDesign />} />
+            <Route path="/sign-in" element={<SignIn />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
