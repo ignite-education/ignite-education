@@ -1552,7 +1552,7 @@ const Auth = () => {
           <div
             className="flex-1"
             style={{
-              paddingTop: '2rem',
+              paddingTop: '3rem',
               paddingBottom: '1rem',
               overflow: isSection1Expanded ? 'visible' : 'hidden'
             }}
