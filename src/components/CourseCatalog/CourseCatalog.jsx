@@ -110,7 +110,7 @@ const CourseCatalog = ({
         <div className="max-w-[1267px] mx-auto px-6">
           {/* Header skeleton */}
           {!isFeatured && (
-            <div className="text-center mb-6">
+            <div className="text-center mb-[15px]">
               <div className="h-14 w-14 bg-pink-100 rounded mx-auto mb-8 animate-pulse"></div>
               <div className="h-9 bg-gray-200 rounded w-80 mx-auto mb-[6px] animate-pulse"></div>
             </div>
@@ -146,7 +146,7 @@ const CourseCatalog = ({
     <div className={`bg-white ${isFeatured || isWelcome ? 'py-0' : 'min-h-screen py-12'}`}>
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
-        {!isFeatured && !isWelcome && (
+        {!isFeatured && (
           <div className="text-center mb-[15px]">
             <Link to="/" className="inline-block mb-8">
               <img
@@ -167,7 +167,7 @@ const CourseCatalog = ({
             <CourseSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search courses..."
+              placeholder={isWelcome ? "" : "Search courses..."}
               autoFocus={!isWelcome}
             />
           </div>

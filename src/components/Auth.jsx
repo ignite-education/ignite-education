@@ -1564,21 +1564,6 @@ const Auth = () => {
               showDescriptions={false}
             />
           </div>
-
-          {/* Scroll Down Arrow */}
-          <div className="pb-4 flex justify-center">
-            <button
-              onClick={scrollToMarketing}
-              className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg border border-gray-200"
-              style={{
-                animation: 'subtleBounce 2s infinite',
-                padding: '11px'
-              }}
-              aria-label="Scroll to learn more"
-            >
-              <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-            </button>
-          </div>
         </div>
       </div>
 
