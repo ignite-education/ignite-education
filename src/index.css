@@ -336,8 +336,7 @@ body {
 /* Section 5 tablet/small desktop - stack vertically to prevent overlap */
 @media (min-width: 768px) and (max-width: 1200px) {
   .auth-section-1 {
-    height: 75vh;
-    min-height: 600px;
+    /* Height controlled by inline styles for expand/collapse functionality */
   }
 
   .auth-section-5-grid {
@@ -495,8 +494,6 @@ body {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    height: 75vh !important;
-    min-height: 500px !important;
     overflow: visible !important;
     display: flex !important;
     align-items: center !important;

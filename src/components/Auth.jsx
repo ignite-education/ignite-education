@@ -173,6 +173,7 @@ const Auth = () => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
   const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
+  const [isSection1Expanded, setIsSection1Expanded] = useState(false);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -1539,8 +1540,8 @@ const Auth = () => {
         className="flex items-center justify-center px-8 relative auth-section-1"
         style={{
           scrollSnapAlign: 'start',
-          height: '75vh',
-          minHeight: '600px',
+          height: isSection1Expanded ? 'auto' : '75vh',
+          minHeight: isSection1Expanded ? 'auto' : '600px',
           backgroundColor: '#fff',
           position: 'relative',
           overflow: 'hidden'
@@ -1549,10 +1550,11 @@ const Auth = () => {
         <div className="relative w-full h-full flex flex-col" style={{ maxWidth: '1267px' }}>
           {/* Course Catalog Content */}
           <div
-            className="flex-1 overflow-y-auto"
+            className="flex-1"
             style={{
               paddingTop: '2rem',
               paddingBottom: '1rem',
+              overflowY: isSection1Expanded ? 'visible' : 'auto',
               scrollbarWidth: 'thin',
               scrollbarColor: '#EF0B72 #f0f0f0'
             }}
@@ -1565,19 +1567,30 @@ const Auth = () => {
           </div>
         </div>
 
-        {/* Bottom gradient fade */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '20px',
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))',
-            pointerEvents: 'none',
-            zIndex: 10
-          }}
-        />
+        {/* Bottom gradient fade - only show when not expanded */}
+        {!isSection1Expanded && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '20px',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))',
+              pointerEvents: 'none',
+              zIndex: 10
+            }}
+          />
+        )}
+
+        {/* Expand/Collapse Button */}
+        <button
+          onClick={() => setIsSection1Expanded(!isSection1Expanded)}
+          className="absolute bottom-4 right-4 bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition"
+          style={{ zIndex: 20 }}
+        >
+          {isSection1Expanded ? 'Collapse' : 'Expand'}
+        </button>
       </div>
 
       {/* Wrapper for sections 2-6 on mobile - single snap target */}
