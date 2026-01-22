@@ -10,16 +10,10 @@ import { useAuth } from '../contexts/AuthContext';
 const Navbar = ({ backgroundColor = 'black' }) => {
   const { user, profilePicture, firstName } = useAuth();
 
-  // Convert color to rgba with 50% opacity
-  const bgColor = backgroundColor === 'white'
-    ? 'rgba(255, 255, 255, 0.5)'
-    : 'rgba(0, 0, 0, 0.5)';
-
   return (
     <div
       className="sticky top-0 z-50"
       style={{
-        backgroundColor: bgColor,
         backdropFilter: 'blur(5px)',
         WebkitBackdropFilter: 'blur(5px)'
       }}
