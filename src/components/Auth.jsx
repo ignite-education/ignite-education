@@ -1554,9 +1554,7 @@ const Auth = () => {
             style={{
               paddingTop: '2rem',
               paddingBottom: '1rem',
-              overflowY: isSection1Expanded ? 'visible' : 'auto',
-              scrollbarWidth: 'thin',
-              scrollbarColor: '#EF0B72 #f0f0f0'
+              overflow: isSection1Expanded ? 'visible' : 'hidden'
             }}
           >
             <CourseCatalog
@@ -1586,8 +1584,8 @@ const Auth = () => {
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setIsSection1Expanded(!isSection1Expanded)}
-          className="absolute bottom-4 right-4 bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition"
-          style={{ zIndex: 20 }}
+          className="absolute bottom-4 right-4 px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20 }}
         >
           {isSection1Expanded ? 'Collapse' : 'Expand'}
         </button>
