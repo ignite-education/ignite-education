@@ -179,19 +179,19 @@ const CourseCatalog = ({
             type="specialism"
             courses={filteredSpecialism}
             showDescription={showDescriptions}
-            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
           />
           <CourseTypeColumn
             type="skill"
             courses={filteredSkill}
             showDescription={showDescriptions}
-            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
           />
           <CourseTypeColumn
             type="subject"
             courses={filteredSubject}
             showDescription={showDescriptions}
-            maxCourses={isFeatured || isWelcome ? (maxCoursesPerColumn || 3) : undefined}
+            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
           />
         </div>
 

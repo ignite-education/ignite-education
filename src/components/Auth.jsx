@@ -1559,9 +1559,8 @@ const Auth = () => {
           >
             <CourseCatalog
               variant="welcome"
-              maxCoursesPerColumn={3}
               showSearch={true}
-              showDescriptions={false}
+              showDescriptions={true}
             />
           </div>
         </div>
