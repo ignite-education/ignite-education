@@ -1564,6 +1564,20 @@ const Auth = () => {
             />
           </div>
         </div>
+
+        {/* Bottom gradient fade */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '20px',
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1))',
+            pointerEvents: 'none',
+            zIndex: 10
+          }}
+        />
       </div>
 
       {/* Wrapper for sections 2-6 on mobile - single snap target */}
