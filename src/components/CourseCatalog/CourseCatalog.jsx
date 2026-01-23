@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getCoursesByType } from '../../lib/api';
 import { getCachedCourses, setCachedCourses } from '../../lib/courseCatalogCache';
 import CourseTypeColumn from './CourseTypeColumn';
 import CourseSearch from './CourseSearch';
+import Lottie from 'lottie-react';
+import { useAnimation } from '../../contexts/AnimationContext';
 
 const CourseCatalog = ({
   variant = 'full',
@@ -19,6 +21,9 @@ const CourseCatalog = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { lottieData } = useAnimation();
+  const [shouldPlayAnimation, setShouldPlayAnimation] = useState(false);
+  const lottieRef = useRef(null);
 
   useEffect(() => {
     const refreshCoursesInBackground = async () => {
@@ -58,6 +63,22 @@ const CourseCatalog = ({
 
     fetchCourses();
   }, []);
+
+  useEffect(() => {
+    if (isFeatured) return;
+
+    const timer = setTimeout(() => {
+      setShouldPlayAnimation(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [isFeatured]);
+
+  useEffect(() => {
+    if (shouldPlayAnimation && lottieRef.current) {
+      lottieRef.current.play();
+    }
+  }, [shouldPlayAnimation]);
 
   const filterCourses = (courses) => {
     if (!searchQuery.trim()) return courses;
@@ -149,11 +170,25 @@ const CourseCatalog = ({
         {!isFeatured && (
           <div className="text-center mb-[15px]">
             <Link to="/" className="inline-block mb-8">
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
-                alt="Ignite Education"
-                className="h-14 mx-auto"
-              />
+              {shouldPlayAnimation && lottieData ? (
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={lottieData}
+                  loop={false}
+                  autoplay={false}
+                  style={{
+                    width: 56,
+                    height: 56,
+                    margin: '0 auto'
+                  }}
+                />
+              ) : (
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
+                  alt="Ignite Education"
+                  className="h-14 mx-auto"
+                />
+              )}
             </Link>
             <h1 className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
               What do you want to learn?
