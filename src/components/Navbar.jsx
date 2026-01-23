@@ -26,8 +26,8 @@ const Navbar = ({ backgroundColor = 'black' }) => {
             className="bg-contain bg-no-repeat bg-left"
             style={{
               backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
-              height: '33px',
-              width: '33px'
+              height: '99px',
+              width: '99px'
             }}
           />
         </Link>
