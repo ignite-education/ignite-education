@@ -174,7 +174,7 @@ const CourseCatalog = ({
                 <Lottie
                   lottieRef={lottieRef}
                   animationData={lottieData}
-                  loop={2}
+                  loop={false}
                   autoplay={false}
                   style={{
                     width: 80,
