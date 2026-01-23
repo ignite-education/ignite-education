@@ -1540,7 +1540,7 @@ const Auth = () => {
         className="flex items-center justify-center px-8 relative auth-section-1"
         style={{
           scrollSnapAlign: 'start',
-          height: isSection1Expanded ? 'auto' : '80vh',
+          height: isSection1Expanded ? 'auto' : '85vh',
           minHeight: isSection1Expanded ? 'auto' : '600px',
           backgroundColor: '#fff',
           position: 'relative',

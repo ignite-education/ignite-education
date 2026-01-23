@@ -14,6 +14,7 @@ const Navbar = ({ backgroundColor = 'black' }) => {
     <div
       className="sticky top-0 z-50"
       style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
         backdropFilter: 'blur(7px)',
         WebkitBackdropFilter: 'blur(7px)'
       }}
@@ -24,7 +25,7 @@ const Navbar = ({ backgroundColor = 'black' }) => {
           <div
             className="bg-contain bg-no-repeat bg-left"
             style={{
-              backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png)',
+              backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6.png)',
               height: '33px',
               width: '33px'
             }}
