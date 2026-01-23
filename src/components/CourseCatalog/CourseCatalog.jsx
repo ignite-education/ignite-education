@@ -177,17 +177,13 @@ const CourseCatalog = ({
                   loop={false}
                   autoplay={false}
                   style={{
-                    width: 56,
-                    height: 56,
+                    width: 73,
+                    height: 73,
                     margin: '0 auto'
                   }}
                 />
               ) : (
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
-                  alt="Ignite Education"
-                  className="h-14 mx-auto"
-                />
+                <div style={{ width: 73, height: 73, margin: '0 auto' }} />
               )}
             </Link>
             <h1 className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
