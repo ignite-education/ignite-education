@@ -14,9 +14,13 @@ const Navbar = ({ backgroundColor = 'black' }) => {
     <div
       className="sticky top-0 z-50"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.35)',
-        backdropFilter: 'blur(7px)',
-        WebkitBackdropFilter: 'blur(7px)'
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(20px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+        backgroundImage: 'linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(255, 255, 255, 0.1) 100%)',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
       }}
     >
       <div className="px-10 py-[15px] flex items-center justify-between">
