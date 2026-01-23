@@ -14,7 +14,7 @@ const Navbar = ({ backgroundColor = 'black' }) => {
     <div
       className="sticky top-0 z-50"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        backgroundColor: 'rgba(0, 0, 0, 0.35)',
         backdropFilter: 'blur(7px)',
         WebkitBackdropFilter: 'blur(7px)'
       }}
