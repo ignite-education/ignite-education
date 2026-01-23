@@ -25,6 +25,9 @@ const CourseCatalog = ({
   const [shouldPlayAnimation, setShouldPlayAnimation] = useState(false);
   const lottieRef = useRef(null);
 
+  const isFeatured = variant === 'featured';
+  const isWelcome = variant === 'welcome';
+
   useEffect(() => {
     const refreshCoursesInBackground = async () => {
       try {
@@ -93,9 +96,6 @@ const CourseCatalog = ({
   const filteredSpecialism = filterCourses(coursesByType.specialism);
   const filteredSkill = filterCourses(coursesByType.skill);
   const filteredSubject = filterCourses(coursesByType.subject);
-
-  const isFeatured = variant === 'featured';
-  const isWelcome = variant === 'welcome';
 
   // Skeleton card component for loading state
   const SkeletonCard = () => (
