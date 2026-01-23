@@ -19,7 +19,7 @@ const Navbar = ({ backgroundColor = 'black' }) => {
         WebkitBackdropFilter: 'blur(7px)'
       }}
     >
-      <div className="px-10 py-5 flex items-center justify-between">
+      <div className="px-10 py-2.5 flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
           <img
