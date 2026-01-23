@@ -186,7 +186,7 @@ const CourseCatalog = ({
                 <div style={{ width: 80, height: 80, margin: '0 auto' }} />
               )}
             </Link>
-            <h1 className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
+            <h1 className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif', marginTop: '-12px' }}>
               What do you want to learn?
             </h1>
           </div>
