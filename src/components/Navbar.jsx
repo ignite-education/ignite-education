@@ -22,11 +22,11 @@ const Navbar = ({ backgroundColor = 'black' }) => {
       <div className="px-10 py-5 flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
-          <div
-            className="bg-contain bg-no-repeat bg-left"
+          <img
+            src="https://auth.ignite.education/storage/v1/object/public/assets/ignitelogowhite.png"
+            alt="Ignite Education"
             style={{
-              backgroundImage: 'url(https://auth.ignite.education/storage/v1/object/public/assets/ignitelogowhite.png)',
-              height: '99px',
+              height: 'auto',
               width: '99px'
             }}
           />
