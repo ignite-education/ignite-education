@@ -170,7 +170,7 @@ const CourseCatalog = ({
         {!isFeatured && (
           <div className="text-center mb-[15px]">
             <Link to="/" className="inline-block mb-8">
-              {shouldPlayAnimation && lottieData ? (
+              {lottieData ? (
                 <Lottie
                   lottieRef={lottieRef}
                   animationData={lottieData}
@@ -183,11 +183,7 @@ const CourseCatalog = ({
                   }}
                 />
               ) : (
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
-                  alt="Ignite Education"
-                  style={{ width: 80, height: 80, margin: '0 auto' }}
-                />
+                <div style={{ width: 80, height: 80, margin: '0 auto' }} />
               )}
             </Link>
             <h1 className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]" style={{ fontFamily: 'Geist, sans-serif' }}>
