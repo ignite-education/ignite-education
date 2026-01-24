@@ -1780,7 +1780,7 @@ const Auth = () => {
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
               <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
-                <div className="grid grid-cols-3 gap-8 text-center auth-promises-list" style={{ width: '120%', marginLeft: '-10%' }}>
+                <div className="grid grid-cols-3 text-center auth-promises-list" style={{ width: '120%', marginLeft: '-10%', gap: '2.6rem' }}>
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
                       <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
