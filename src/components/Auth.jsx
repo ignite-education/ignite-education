@@ -175,6 +175,7 @@ const Auth = () => {
   const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
   const [isSection1Expanded, setIsSection1Expanded] = useState(false);
   const [logoClipPercentage, setLogoClipPercentage] = useState(0);
+  const [invertLogoLayers, setInvertLogoLayers] = useState(false);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -756,7 +757,7 @@ const Auth = () => {
 
   // Calculate logo clip percentage based on scroll position and section backgrounds
   const calculateLogoClip = useCallback(() => {
-    if (!authScrollContainerRef.current) return 0;
+    if (!authScrollContainerRef.current) return { clipPercent: 0, invertLayers: false };
 
     const navbarHeight = 73;
 
@@ -812,6 +813,13 @@ const Auth = () => {
       }
     }
 
+    // Determine if we need to invert the layer order (for WHITE→BLACK transitions)
+    // The default layer order (black on top, white on base) works for BLACK→WHITE
+    // but needs to be inverted for WHITE→BLACK to show black on top, white on bottom
+    const invertLayers = nextSectionColor !== null &&
+                         currentSectionColor === 'white' &&
+                         nextSectionColor === 'black';
+
     // Calculate clip percentage
     let clipPercent;
     if (nextSectionColor === null) {
@@ -819,15 +827,14 @@ const Auth = () => {
       clipPercent = currentSectionColor === 'white' ? 0 : 100;
     } else {
       // Transitioning between sections
-      // With corrected clipPath: logoClipPercentage=X shows WHITE logo on top X%, BLACK logo on bottom (100-X)%
       // transitionProgress = how much of navbar (from bottom) is in the next section
       if (currentSectionColor === 'black' && nextSectionColor === 'white') {
-        // Top (1-transitionProgress)% in BLACK bg → needs WHITE logo
-        // Bottom transitionProgress% in WHITE bg → needs BLACK logo
+        // BLACK→WHITE: standard layer order (black on top, white on base)
+        // Result: top shows white, bottom shows black
         clipPercent = (1 - transitionProgress) * 100;
       } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
-        // Top (1-transitionProgress)% in WHITE bg → needs BLACK logo
-        // Bottom transitionProgress% in BLACK bg → needs WHITE logo
+        // WHITE→BLACK: inverted layer order (white on top, black on base)
+        // Result: top shows black, bottom shows white
         clipPercent = (1 - transitionProgress) * 100;
       } else {
         // Same color transition - invert for contrast
@@ -835,7 +842,10 @@ const Auth = () => {
       }
     }
 
-    return Math.max(0, Math.min(100, clipPercent));
+    return {
+      clipPercent: Math.max(0, Math.min(100, clipPercent)),
+      invertLayers
+    };
   }, [isMobile]);
 
   // Scroll event handler with RAF for logo split-color effect
@@ -848,8 +858,9 @@ const Auth = () => {
     const handleScroll = () => {
       if (!ticking) {
         rafId = requestAnimationFrame(() => {
-          const newClipPercent = calculateLogoClip();
-          setLogoClipPercentage(newClipPercent);
+          const { clipPercent, invertLayers } = calculateLogoClip();
+          setLogoClipPercentage(clipPercent);
+          setInvertLogoLayers(invertLayers);
           ticking = false;
         });
         ticking = true;
@@ -1715,7 +1726,7 @@ const Auth = () => {
 
       {/* Sticky Navbar - appears at section 2 */}
       <div className="sticky top-0 z-50">
-        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} />
+        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} invertLayers={invertLogoLayers} />
       </div>
 
       {/* Second Section - Education Philosophy */}

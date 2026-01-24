@@ -7,8 +7,9 @@ import { useAuth } from '../contexts/AuthContext';
  * - Unsigned user: Logo + Sign In button
  * - Signed in user: Logo + Profile picture (or first initial)
  * @param {number} logoClipPercentage - Percentage (0-100) of black logo to show from top (for split-color effect)
+ * @param {boolean} invertLayers - Whether to invert layer order (white on top, black on base) for WHITE→BLACK transitions
  */
-const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100 }) => {
+const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100, invertLayers = false }) => {
   const { user, profilePicture, firstName } = useAuth();
 
   return (
@@ -19,33 +20,69 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100 }) => {
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
           <div className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
-            {/* Black logo - clips from top based on percentage */}
-            <img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
-              alt="Ignite Education"
-              className="logo-layer"
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '99px',
-                height: 'auto',
-                clipPath: `inset(${logoClipPercentage}% 0 0 0)`
-              }}
-            />
-            {/* White logo - clips from bottom based on percentage */}
-            <img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
-              alt=""
-              aria-hidden="true"
-              className="logo-layer"
-              style={{
-                position: 'relative',
-                width: '99px',
-                height: 'auto',
-                clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
-              }}
-            />
+            {!invertLayers ? (
+              <>
+                {/* Standard order for BLACK→WHITE transitions */}
+                {/* Black logo - clips from top, shows bottom portion */}
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
+                  alt="Ignite Education"
+                  className="logo-layer"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '99px',
+                    height: 'auto',
+                    clipPath: `inset(${logoClipPercentage}% 0 0 0)`
+                  }}
+                />
+                {/* White logo - clips from bottom, shows top portion */}
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
+                  alt=""
+                  aria-hidden="true"
+                  className="logo-layer"
+                  style={{
+                    position: 'relative',
+                    width: '99px',
+                    height: 'auto',
+                    clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                {/* Inverted order for WHITE→BLACK transitions */}
+                {/* White logo - clips from top, shows bottom portion */}
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
+                  alt="Ignite Education"
+                  className="logo-layer"
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '99px',
+                    height: 'auto',
+                    clipPath: `inset(${logoClipPercentage}% 0 0 0)`
+                  }}
+                />
+                {/* Black logo - clips from bottom, shows top portion */}
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
+                  alt=""
+                  aria-hidden="true"
+                  className="logo-layer"
+                  style={{
+                    position: 'relative',
+                    width: '99px',
+                    height: 'auto',
+                    clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
+                  }}
+                />
+              </>
+            )}
           </div>
         </Link>
 
