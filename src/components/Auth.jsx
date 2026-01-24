@@ -815,8 +815,8 @@ const Auth = () => {
     // Calculate clip percentage
     let clipPercent;
     if (nextSectionColor === null) {
-      // Fully within one section
-      clipPercent = currentSectionColor === 'white' ? 100 : 0;
+      // Fully within one section - invert for contrast
+      clipPercent = currentSectionColor === 'white' ? 0 : 100;
     } else {
       // Transitioning between sections
       // With corrected clipPath: logoClipPercentage=X shows WHITE logo on top X%, BLACK logo on bottom (100-X)%
@@ -830,8 +830,8 @@ const Auth = () => {
         // Bottom transitionProgress% in BLACK bg → needs WHITE logo
         clipPercent = transitionProgress * 100;
       } else {
-        // Same color transition
-        clipPercent = currentSectionColor === 'white' ? 100 : 0;
+        // Same color transition - invert for contrast
+        clipPercent = currentSectionColor === 'white' ? 0 : 100;
       }
     }
 
