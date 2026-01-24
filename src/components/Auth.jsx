@@ -824,7 +824,7 @@ const Auth = () => {
       if (currentSectionColor === 'black' && nextSectionColor === 'white') {
         // Top (1-transitionProgress)% in BLACK bg → needs WHITE logo
         // Bottom transitionProgress% in WHITE bg → needs BLACK logo
-        clipPercent = transitionProgress * 100;
+        clipPercent = (1 - transitionProgress) * 100;
       } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
         // Top (1-transitionProgress)% in WHITE bg → needs BLACK logo
         // Bottom transitionProgress% in BLACK bg → needs WHITE logo
