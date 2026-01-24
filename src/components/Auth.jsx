@@ -811,10 +811,11 @@ const Auth = () => {
       clipPercent = currentSectionColor === 'white' ? 100 : 0;
     } else {
       // Transitioning between sections
+      // FIXED: Swapped formulas to align logo split with section boundary
       if (currentSectionColor === 'black' && nextSectionColor === 'white') {
-        clipPercent = 100 - (transitionProgress * 100);
-      } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
         clipPercent = transitionProgress * 100;
+      } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
+        clipPercent = 100 - (transitionProgress * 100);
       } else {
         // Same color transition
         clipPercent = currentSectionColor === 'white' ? 100 : 0;
