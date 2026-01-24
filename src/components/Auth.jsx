@@ -174,6 +174,7 @@ const Auth = () => {
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
   const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
   const [isSection1Expanded, setIsSection1Expanded] = useState(false);
+  const [logoClipPercentage, setLogoClipPercentage] = useState(0);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -317,8 +318,12 @@ const Auth = () => {
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
 
-  // Debug: Check environment variable on mount
+  // Preload logo images for instant switching
   useEffect(() => {
+    const blackLogo = new Image();
+    const whiteLogo = new Image();
+    blackLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png";
+    whiteLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png";
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -748,6 +753,106 @@ const Auth = () => {
 
     return () => observer.disconnect();
   }, []);
+
+  // Calculate logo clip percentage based on scroll position and section backgrounds
+  const calculateLogoClip = useCallback(() => {
+    if (!authScrollContainerRef.current) return 0;
+
+    const navbarHeight = 73;
+    const scrollTop = authScrollContainerRef.current.scrollTop;
+
+    // Section mapping with responsive backgrounds
+    const sectionBoundaries = [
+      { color: 'white', ref: null }, // Section 1 (default, no ref needed)
+      { color: 'black', ref: marketingSectionRef },
+      { color: isMobile ? 'black' : 'white', ref: coursesSectionRef },
+      { color: 'black', ref: learningModelSectionRef },
+      { color: isMobile ? 'black' : 'white', ref: testimonialsSectionRef },
+      { color: 'white', ref: merchSectionRef },
+      { color: 'black', ref: linkedInFAQSectionRef }
+    ];
+
+    let currentSectionColor = 'white';
+    let nextSectionColor = null;
+    let transitionProgress = 0;
+
+    // Find which section(s) the navbar overlaps
+    for (let i = 0; i < sectionBoundaries.length; i++) {
+      const section = sectionBoundaries[i];
+      if (!section.ref?.current) continue;
+
+      const rect = section.ref.current.getBoundingClientRect();
+      const sectionTop = scrollTop + rect.top;
+      const sectionBottom = sectionTop + rect.height;
+      const navbarTop = scrollTop;
+      const navbarBottom = scrollTop + navbarHeight;
+
+      if (navbarBottom >= sectionTop && navbarTop <= sectionBottom) {
+        if (navbarTop < sectionTop) {
+          // Navbar spans two sections
+          const overlapHeight = navbarBottom - sectionTop;
+          transitionProgress = overlapHeight / navbarHeight;
+          currentSectionColor = i > 0 ? sectionBoundaries[i-1].color : 'white';
+          nextSectionColor = section.color;
+          break;
+        } else {
+          // Navbar fully within section
+          currentSectionColor = section.color;
+          nextSectionColor = null;
+          break;
+        }
+      }
+    }
+
+    // Calculate clip percentage
+    let clipPercent;
+    if (nextSectionColor === null) {
+      // Fully within one section
+      clipPercent = currentSectionColor === 'white' ? 100 : 0;
+    } else {
+      // Transitioning between sections
+      if (currentSectionColor === 'black' && nextSectionColor === 'white') {
+        clipPercent = 100 - (transitionProgress * 100);
+      } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
+        clipPercent = transitionProgress * 100;
+      } else {
+        // Same color transition
+        clipPercent = currentSectionColor === 'white' ? 100 : 0;
+      }
+    }
+
+    return Math.max(0, Math.min(100, clipPercent));
+  }, [isMobile]);
+
+  // Scroll event handler with RAF for logo split-color effect
+  useEffect(() => {
+    if (!authScrollContainerRef.current || isLogin || selectedCourseModal) return;
+
+    let rafId = null;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(() => {
+          const newClipPercent = calculateLogoClip();
+          setLogoClipPercentage(newClipPercent);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const scrollContainer = authScrollContainerRef.current;
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Calculate initial position
+    handleScroll();
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [calculateLogoClip, isLogin, selectedCourseModal]);
 
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
@@ -1585,7 +1690,7 @@ const Auth = () => {
         <button
           onClick={() => setIsSection1Expanded(!isSection1Expanded)}
           className="absolute bottom-4 right-10 px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20 }}
+          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20, width: '100px' }}
         >
           {isSection1Expanded ? 'Collapse' : 'Expand'}
         </button>
@@ -1596,7 +1701,7 @@ const Auth = () => {
 
       {/* Sticky Navbar - appears at section 2 */}
       <div className="sticky top-0 z-50">
-        <Navbar backgroundColor={getNavbarBackground()} />
+        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} />
       </div>
 
       {/* Second Section - Education Philosophy */}

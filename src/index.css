@@ -1352,3 +1352,16 @@ body {
     transform: none !important;
   }
 }
+
+/* Logo split-color effect performance optimizations */
+.logo-container {
+  will-change: clip-path;
+  contain: layout style paint;
+}
+
+.logo-layer {
+  will-change: clip-path;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+}
