@@ -1690,7 +1690,7 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'none' : 'y proximity',
+          scrollSnapType: 'none',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           overflowX: 'hidden',
@@ -1701,7 +1701,6 @@ const Auth = () => {
       <div
         className="flex items-center justify-center px-8 relative auth-section-1"
         style={{
-          scrollSnapAlign: 'start',
           height: isSection1Expanded ? 'auto' : '85vh',
           minHeight: isSection1Expanded ? 'auto' : '600px',
           backgroundColor: '#fff',

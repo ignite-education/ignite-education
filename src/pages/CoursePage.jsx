@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
 import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
+import CoursePageNavbar from '../components/CoursePageNavbar';
 
 // Cache TTL: 1 hour
 const CACHE_TTL = 60 * 60 * 1000;
@@ -709,7 +709,7 @@ const CoursePage = () => {
       <div className="min-h-screen bg-white">
         {/* Sticky Top Navigation Bar */}
         <div className="sticky top-0 z-50">
-          <Navbar />
+          <CoursePageNavbar />
         </div>
 
         {/* Hero Section */}
