@@ -606,6 +606,7 @@ body {
   }
 
   .auth-promises-list {
+    grid-template-columns: 1fr !important;
     gap: 1rem !important;
     width: 100% !important;
     max-width: 100% !important;

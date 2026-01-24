@@ -24,6 +24,7 @@ const CourseCatalog = ({
   const { lottieData } = useAnimation();
   const [shouldPlayAnimation, setShouldPlayAnimation] = useState(false);
   const lottieRef = useRef(null);
+  const loopCountRef = useRef(0);
 
   const isFeatured = variant === 'featured';
   const isWelcome = variant === 'welcome';
@@ -174,8 +175,14 @@ const CourseCatalog = ({
                 <Lottie
                   lottieRef={lottieRef}
                   animationData={lottieData}
-                  loop={false}
+                  loop={true}
                   autoplay={false}
+                  onLoopComplete={() => {
+                    loopCountRef.current += 1;
+                    if (loopCountRef.current >= 2 && lottieRef.current) {
+                      lottieRef.current.stop();
+                    }
+                  }}
                   style={{
                     width: 80,
                     height: 80,
