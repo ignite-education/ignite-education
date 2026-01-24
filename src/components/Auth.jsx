@@ -815,7 +815,12 @@ const Auth = () => {
             // Section boundary is below logo - logo fully in old section
             transitionProgress = 0;
           }
-          currentSectionColor = i > 0 ? sectionBoundaries[i-1].color : 'white';
+          // If previous section has no ref (like section 1), use default 'black' instead of its color
+          if (i > 0 && sectionBoundaries[i-1].ref) {
+            currentSectionColor = sectionBoundaries[i-1].color;
+          } else {
+            currentSectionColor = 'black'; // Default when coming from section 1 (no ref)
+          }
           nextSectionColor = section.color;
           break;
         } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
