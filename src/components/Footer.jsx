@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 const Footer = ({ className = '' }) => {
   return (
     <footer className={`bg-black pb-8 ${className}`}>
-      <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-10 py-8" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-10 py-8">
         {/* Left Side - Logo & Company Info */}
         <div className="flex flex-col items-start gap-6">
           <img
