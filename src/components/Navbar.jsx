@@ -35,7 +35,7 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100 }) => {
                 left: 0,
                 width: '99px',
                 height: 'auto',
-                clipPath: `inset(0% 0 ${100 - logoClipPercentage}% 0)`
+                clipPath: `inset(${logoClipPercentage}% 0 0 0)`
               }}
             />
             {/* White logo - clips from bottom based on percentage */}
@@ -48,7 +48,7 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100 }) => {
                 position: 'relative',
                 width: '99px',
                 height: 'auto',
-                clipPath: `inset(${logoClipPercentage}% 0 0% 0)`
+                clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
               }}
             />
           </div>

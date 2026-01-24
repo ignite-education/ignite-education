@@ -759,7 +759,6 @@ const Auth = () => {
     if (!authScrollContainerRef.current) return 0;
 
     const navbarHeight = 73;
-    const scrollTop = authScrollContainerRef.current.scrollTop;
 
     // Section mapping with responsive backgrounds
     const sectionBoundaries = [
@@ -782,23 +781,32 @@ const Auth = () => {
       if (!section.ref?.current) continue;
 
       const rect = section.ref.current.getBoundingClientRect();
-      const sectionTop = scrollTop + rect.top;
-      const sectionBottom = sectionTop + rect.height;
-      const navbarTop = scrollTop;
-      const navbarBottom = scrollTop + navbarHeight;
+      const sectionTop = rect.top; // viewport coordinate
+      const sectionBottom = rect.bottom; // viewport coordinate
+      const navbarTop = 0; // navbar always at viewport top
+      const navbarBottom = navbarHeight; // 73px from viewport top
 
-      if (navbarBottom >= sectionTop && navbarTop <= sectionBottom) {
-        if (navbarTop < sectionTop) {
-          // Navbar spans two sections
-          const overlapHeight = navbarBottom - sectionTop;
-          transitionProgress = overlapHeight / navbarHeight;
+      // Check if section overlaps navbar in viewport (0-73px range)
+      if (sectionBottom > navbarTop && sectionTop < navbarBottom) {
+        // Section is behind navbar - determine if it's fully covering or partial
+        if (sectionTop <= navbarTop && sectionBottom >= navbarBottom) {
+          // Navbar fully within this section
+          currentSectionColor = section.color;
+          nextSectionColor = null;
+          break;
+        } else if (sectionTop > navbarTop && sectionTop < navbarBottom) {
+          // Section boundary is within navbar - transitioning from previous to this
+          transitionProgress = (navbarBottom - sectionTop) / navbarHeight;
           currentSectionColor = i > 0 ? sectionBoundaries[i-1].color : 'white';
           nextSectionColor = section.color;
           break;
-        } else {
-          // Navbar fully within section
+        } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
+          // Section exiting from top - transitioning from this to next
+          transitionProgress = sectionBottom / navbarHeight;
           currentSectionColor = section.color;
-          nextSectionColor = null;
+          if (i < sectionBoundaries.length - 1) {
+            nextSectionColor = sectionBoundaries[i + 1].color;
+          }
           break;
         }
       }
@@ -811,11 +819,16 @@ const Auth = () => {
       clipPercent = currentSectionColor === 'white' ? 100 : 0;
     } else {
       // Transitioning between sections
-      // FIXED: Swapped formulas to align logo split with section boundary
+      // With corrected clipPath: logoClipPercentage=X shows WHITE logo on top X%, BLACK logo on bottom (100-X)%
+      // transitionProgress = how much of navbar (from bottom) is in the next section
       if (currentSectionColor === 'black' && nextSectionColor === 'white') {
-        clipPercent = transitionProgress * 100;
+        // Top (1-transitionProgress)% in BLACK bg → needs WHITE logo
+        // Bottom transitionProgress% in WHITE bg → needs BLACK logo
+        clipPercent = (1 - transitionProgress) * 100;
       } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
-        clipPercent = 100 - (transitionProgress * 100);
+        // Top (1-transitionProgress)% in WHITE bg → needs BLACK logo
+        // Bottom transitionProgress% in BLACK bg → needs WHITE logo
+        clipPercent = transitionProgress * 100;
       } else {
         // Same color transition
         clipPercent = currentSectionColor === 'white' ? 100 : 0;
