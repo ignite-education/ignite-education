@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 const Footer = ({ className = '' }) => {
   return (
     <footer className={`bg-black pb-8 ${className}`}>
-      <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-8 lg:px-16 py-8" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <div className="flex flex-col lg:flex-row items-start lg:justify-between gap-10 lg:gap-0 px-10 py-8" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
         {/* Left Side - Logo & Company Info */}
-        <div className="flex flex-col items-start gap-6 pl-10">
+        <div className="flex flex-col items-start gap-6">
           <img
             src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
             alt="Ignite Education"
