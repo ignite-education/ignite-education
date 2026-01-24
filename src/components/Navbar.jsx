@@ -8,8 +8,9 @@ import { useAuth } from '../contexts/AuthContext';
  * - Signed in user: Logo + Profile picture (or first initial)
  * @param {number} logoClipPercentage - Percentage (0-100) of black logo to show from top (for split-color effect)
  * @param {boolean} invertLayers - Whether to invert layer order (white on top, black on base) for WHITE→BLACK transitions
+ * @param {React.RefObject} logoContainerRef - Ref to the logo container for position tracking
  */
-const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100, invertLayers = false }) => {
+const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100, invertLayers = false, logoContainerRef = null }) => {
   const { user, profilePicture, firstName } = useAuth();
 
   return (
@@ -19,7 +20,7 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100, invertLay
       <div className="px-10 py-[15px] flex items-center justify-between">
         {/* Logo - links to home */}
         <Link to="/" className="inline-block">
-          <div className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
+          <div ref={logoContainerRef} className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
             {!invertLayers ? (
               <>
                 {/* Standard order for BLACK→WHITE transitions */}

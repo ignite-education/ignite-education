@@ -142,6 +142,7 @@ const Auth = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
+  const logoContainerRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const coursesSectionRef = useRef(null);
@@ -757,9 +758,15 @@ const Auth = () => {
 
   // Calculate logo clip percentage based on scroll position and section backgrounds
   const calculateLogoClip = useCallback(() => {
-    if (!authScrollContainerRef.current) return { clipPercent: 0, invertLayers: false };
+    if (!authScrollContainerRef.current || !logoContainerRef.current) return { clipPercent: 0, invertLayers: false };
 
     const navbarHeight = 73;
+
+    // Get logo's actual vertical position in viewport
+    const logoRect = logoContainerRef.current.getBoundingClientRect();
+    const logoTop = logoRect.top;
+    const logoBottom = logoRect.bottom;
+    const logoHeight = logoRect.height;
 
     // Section mapping with responsive backgrounds
     const sectionBoundaries = [
@@ -797,13 +804,33 @@ const Auth = () => {
           break;
         } else if (sectionTop > navbarTop && sectionTop < navbarBottom) {
           // Section boundary is within navbar - transitioning from previous to this
-          transitionProgress = (navbarBottom - sectionTop) / navbarHeight;
+          // Calculate progress based on where section boundary intersects the LOGO (not navbar)
+          if (sectionTop >= logoTop && sectionTop <= logoBottom) {
+            // Section boundary is within logo bounds
+            transitionProgress = (logoBottom - sectionTop) / logoHeight;
+          } else if (sectionTop < logoTop) {
+            // Section boundary is above logo - logo fully in new section
+            transitionProgress = 1;
+          } else {
+            // Section boundary is below logo - logo fully in old section
+            transitionProgress = 0;
+          }
           currentSectionColor = i > 0 ? sectionBoundaries[i-1].color : 'white';
           nextSectionColor = section.color;
           break;
         } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
           // Section exiting from top - transitioning from this to next
-          transitionProgress = 1 - (sectionBottom / navbarHeight);
+          // Calculate progress based on where section boundary intersects the LOGO
+          if (sectionBottom >= logoTop && sectionBottom <= logoBottom) {
+            // Section boundary is within logo bounds
+            transitionProgress = 1 - (sectionBottom - logoTop) / logoHeight;
+          } else if (sectionBottom > logoBottom) {
+            // Section boundary is below logo - logo fully in old section
+            transitionProgress = 0;
+          } else {
+            // Section boundary is above logo - logo fully in new section
+            transitionProgress = 1;
+          }
           currentSectionColor = section.color;
           if (i < sectionBoundaries.length - 1) {
             nextSectionColor = sectionBoundaries[i + 1].color;
@@ -1726,7 +1753,7 @@ const Auth = () => {
 
       {/* Sticky Navbar - appears at section 2 */}
       <div className="sticky top-0 z-50">
-        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} invertLayers={invertLogoLayers} />
+        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} invertLayers={invertLogoLayers} logoContainerRef={logoContainerRef} />
       </div>
 
       {/* Second Section - Education Philosophy */}
