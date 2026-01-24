@@ -779,7 +779,7 @@ const Auth = () => {
       { color: 'black', ref: linkedInFAQSectionRef }
     ];
 
-    let currentSectionColor = 'white';
+    let currentSectionColor = 'black'; // Default to black (section 2) when no sections overlap (i.e., in section 1)
     let nextSectionColor = null;
     let transitionProgress = 0;
 
