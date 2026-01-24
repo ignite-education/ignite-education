@@ -175,7 +175,7 @@ const Auth = () => {
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
   const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
   const [isSection1Expanded, setIsSection1Expanded] = useState(false);
-  const [logoClipPercentage, setLogoClipPercentage] = useState(0);
+  const [logoClipPercentage, setLogoClipPercentage] = useState(100); // Initialize to 100 for white logo on section 2's black background
   const [invertLogoLayers, setInvertLogoLayers] = useState(false);
 
   // Typing animation enable flags (triggered by intersection observers)
@@ -758,7 +758,7 @@ const Auth = () => {
 
   // Calculate logo clip percentage based on scroll position and section backgrounds
   const calculateLogoClip = useCallback(() => {
-    if (!authScrollContainerRef.current || !logoContainerRef.current) return { clipPercent: 0, invertLayers: false };
+    if (!authScrollContainerRef.current || !logoContainerRef.current) return { clipPercent: 100, invertLayers: false }; // Default to white logo for section 2's black background
 
     const navbarHeight = 73;
 
