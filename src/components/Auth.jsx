@@ -802,7 +802,7 @@ const Auth = () => {
           break;
         } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
           // Section exiting from top - transitioning from this to next
-          transitionProgress = sectionBottom / navbarHeight;
+          transitionProgress = 1 - (sectionBottom / navbarHeight);
           currentSectionColor = section.color;
           if (i < sectionBoundaries.length - 1) {
             nextSectionColor = sectionBoundaries[i + 1].color;
