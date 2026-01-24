@@ -14,11 +14,6 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100 }) => {
   return (
     <div
       className="sticky top-0 z-50"
-      style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.25)',
-        backdropFilter: 'blur(7px)',
-        WebkitBackdropFilter: 'blur(7px)'
-      }}
     >
       <div className="px-10 py-[15px] flex items-center justify-between">
         {/* Logo - links to home */}
