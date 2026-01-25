@@ -96,6 +96,24 @@ const Footer = ({ className = '' }) => {
                 LinkedIn
               </a>
               <a
+                href="https://www.reddit.com/user/ignite-education/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                Reddit
+              </a>
+              <a
+                href="https://x.com/ignite_courses"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                X
+              </a>
+              <a
                 href="https://www.linkedin.com/school/ignite-courses/jobs"
                 target="_blank"
                 rel="noopener noreferrer"

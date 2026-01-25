@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, ChevronRight, ExternalLink } from 'lucide-react';
 import SEO from '../components/SEO';
 import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
+import CoursePageNavbar from '../components/CoursePageNavbar';
 import { getPublishedReleases, formatReleaseDate } from '../lib/releaseNotesApi';
 
 // Parse **text** markdown syntax for bold
@@ -47,7 +47,7 @@ const ReleaseNotes = () => {
         url="https://ignite.education/release-notes"
       />
 
-      <Navbar />
+      <CoursePageNavbar />
 
       {/* Hero Section (Black) */}
       <div className="bg-black">
