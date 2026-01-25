@@ -1715,7 +1715,7 @@ const Auth = () => {
             className="flex-1"
             style={{
               paddingTop: '2.25rem',
-              paddingBottom: '1rem',
+              paddingBottom: isSection1Expanded ? '2rem' : '1rem',
               overflow: isSection1Expanded ? 'visible' : 'hidden'
             }}
           >
@@ -1735,7 +1735,7 @@ const Auth = () => {
               bottom: 0,
               left: 0,
               right: 0,
-              height: '60px',
+              height: '50px',
               background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
               pointerEvents: 'none',
               zIndex: 10
@@ -1747,7 +1747,7 @@ const Auth = () => {
         <button
           onClick={() => setIsSection1Expanded(!isSection1Expanded)}
           className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center"
-          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20, width: '80px' }}
+          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20, width: '85px' }}
         >
           {isSection1Expanded ? 'Collapse' : 'Expand'}
         </button>
