@@ -28,7 +28,6 @@ const BlogPostPage = () => {
   const [error, setError] = useState(null);
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
   // Narration state
@@ -50,36 +49,6 @@ const BlogPostPage = () => {
   useEffect(() => {
     fetchPost();
   }, [slug]);
-
-  // Track scroll progress - starts when white content passes bottom of nav bar (~58px)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!whiteContentRef.current) return;
-
-      const navBarHeight = 58; // Height of sticky nav bar
-      const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
-      const whiteContentHeight = whiteContentRef.current.offsetHeight;
-      const viewportHeight = window.innerHeight;
-
-      // Only start progress when white content passes below the nav bar
-      if (whiteContentTop > navBarHeight) {
-        setScrollProgress(0);
-        return;
-      }
-
-      // Calculate progress based on how much of white content has scrolled past the nav bar
-      const scrolledPast = navBarHeight - whiteContentTop;
-      const scrollableHeight = whiteContentHeight - viewportHeight + navBarHeight;
-
-      if (scrollableHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
-        setScrollProgress(progress);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const fetchPost = async () => {
     try {
@@ -652,13 +621,6 @@ const BlogPostPage = () => {
       <div className="min-h-screen bg-black">
         {/* Sticky Top Navigation Bar */}
         <CoursePageNavbar />
-        {/* Progress Bar - only shows pink line when scrolling */}
-        {scrollProgress > 0 && (
-          <div
-            className="fixed left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out z-50"
-            style={{ width: `${scrollProgress}%`, top: '71px' }}
-          />
-        )}
 
         {/* Hero Section with Black Background */}
         <div className="bg-black">
