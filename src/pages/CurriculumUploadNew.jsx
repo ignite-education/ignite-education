@@ -705,7 +705,7 @@ const CurriculumUploadNew = () => {
       const { error } = await supabase
         .from('courses')
         .delete()
-        .eq('id', courseId);
+        .eq('name', courseId);
 
       if (error) throw error;
       alert('Course deleted successfully!');
