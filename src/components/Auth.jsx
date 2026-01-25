@@ -2535,7 +2535,7 @@ const Auth = () => {
             </div>
 
             {/* Images Container - full width, evenly distributed */}
-            <div style={{ width: '100%', paddingLeft: isTablet ? '1rem' : '2rem', paddingRight: isTablet ? '1rem' : '2rem' }} className="auth-section-merch-grid">
+            <div style={{ width: '100%', paddingLeft: isTablet ? '1rem' : 'calc(40px + 99px)', paddingRight: isTablet ? '1rem' : 'calc(40px + 85px)' }} className="auth-section-merch-grid">
               <div
                 className={(isMobile || isTablet) ? "grid grid-cols-2 gap-4" : "flex justify-between items-center"}
                 style={{ width: '100%', maxWidth: isTablet ? '36rem' : 'none', margin: isTablet ? '0 auto' : undefined }}
