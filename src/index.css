@@ -1299,7 +1299,7 @@ body {
   }
 
   .auth-section-6-get-started {
-    padding-bottom: 3rem !important;
+    padding-bottom: 1rem;
   }
 
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */
