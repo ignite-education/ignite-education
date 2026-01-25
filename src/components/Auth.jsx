@@ -919,7 +919,7 @@ const Auth = () => {
           .from('courses')
           .select('*')
           .in('status', ['live', 'coming_soon'])
-          .eq('tag', 'specialism')
+          .eq('course_type', 'specialism')
           .order('display_order', { ascending: true });
 
         if (coursesError) throw coursesError;
@@ -1746,7 +1746,7 @@ const Auth = () => {
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setIsSection1Expanded(!isSection1Expanded)}
-          className="absolute bottom-4 right-10 px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+          className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center"
           style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20, width: '80px' }}
         >
           {isSection1Expanded ? 'Collapse' : 'Expand'}
