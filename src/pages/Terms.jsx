@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Home, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
 import Footer from '../components/Footer';
-import Navbar from '../components/Navbar';
+import CoursePageNavbar from '../components/CoursePageNavbar';
 
 const Terms = () => {
   return (
@@ -15,7 +15,7 @@ const Terms = () => {
         url="https://ignite.education/terms"
       />
 
-      <Navbar />
+      <CoursePageNavbar />
 
       {/* Hero Section (Black) */}
       <div className="bg-black">

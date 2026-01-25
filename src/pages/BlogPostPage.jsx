@@ -6,6 +6,7 @@ import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause, Link2, Check } from 'lucide-react';
 import Lottie from 'lottie-react';
 import Footer from '../components/Footer';
+import CoursePageNavbar from '../components/CoursePageNavbar';
 import { useAnimation } from '../contexts/AnimationContext';
 import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization';
 
@@ -649,34 +650,15 @@ const BlogPostPage = () => {
       />
 
       <div className="min-h-screen bg-black">
-        {/* Sticky Top Navigation Bar with Progress Indicator */}
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="inline-block">
-              <div
-                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-                }}
-              />
-            </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-base font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '30px', height: '30px' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
-          </div>
-          {/* Progress Bar - only shows pink line when scrolling */}
-          {scrollProgress > 0 && (
-            <div
-              className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
-              style={{ width: `${scrollProgress}%` }}
-            />
-          )}
-        </div>
+        {/* Sticky Top Navigation Bar */}
+        <CoursePageNavbar />
+        {/* Progress Bar - only shows pink line when scrolling */}
+        {scrollProgress > 0 && (
+          <div
+            className="fixed left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out z-50"
+            style={{ width: `${scrollProgress}%`, top: '71px' }}
+          />
+        )}
 
         {/* Hero Section with Black Background */}
         <div className="bg-black">
