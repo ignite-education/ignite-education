@@ -111,7 +111,7 @@ const Navbar = ({ backgroundColor = 'black', logoClipPercentage = 100, invertLay
           <Link
             to="/sign-in"
             className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-            style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '100px', display: 'inline-block', textAlign: 'center' }}
+            style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '80px', display: 'inline-block', textAlign: 'center' }}
           >
             Sign In
           </Link>
