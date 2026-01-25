@@ -288,7 +288,7 @@ const CourseManagement = () => {
       const { error } = await supabase
         .from('courses')
         .delete()
-        .eq('name', courseName);
+        .eq('name', courseId);
 
       if (error) throw error;
 
