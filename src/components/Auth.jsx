@@ -1809,7 +1809,7 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className={`min-h-screen flex ${isMobile ? 'items-center' : 'items-start'} justify-center px-8 relative auth-section-3`}
+          className={`min-h-screen flex ${isMobile ? 'items-center' : 'items-start'} justify-center px-10 relative auth-section-3`}
           style={{
             background: isMobile ? 'black' : 'white',
             scrollSnapAlign: 'none'
@@ -1817,7 +1817,7 @@ const Auth = () => {
         >
           <div className="max-w-7xl w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-12 px-4 max-w-7xl mx-auto items-center auth-section-3-grid" style={{ overflowX: 'clip' }}>
+            <div className="grid grid-cols-2 gap-12 max-w-7xl mx-auto items-center auth-section-3-grid" style={{ overflowX: 'clip' }}>
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '2rem', paddingRight: '1rem' }}>
                 <div className="flex flex-col items-start">
@@ -1837,7 +1837,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative auth-section-3-right" style={{ marginLeft: '0', overflow: 'visible' }}>
+              <div className="relative auth-section-3-right" style={{ marginLeft: '0', overflow: 'hidden' }}>
                 <div
                   ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-visible auth-course-cards-scroll"
