@@ -1817,7 +1817,7 @@ const Auth = () => {
         >
           <div className="max-w-6xl w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid" style={{ overflowX: 'clip' }}>
+            <div className="grid grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid">
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '2rem', paddingRight: '1rem' }}>
                 <div className="flex flex-col items-start">
