@@ -1815,9 +1815,9 @@ const Auth = () => {
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="max-w-[1200px] w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
+          <div className="max-w-6xl w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-12 max-w-[1200px] mx-auto items-center auth-section-3-grid" style={{ overflowX: 'clip' }}>
+            <div className="grid grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid" style={{ overflowX: 'clip' }}>
               {/* Left Column - Description */}
               <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '2rem', paddingRight: '1rem' }}>
                 <div className="flex flex-col items-start">
@@ -1837,7 +1837,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative auth-section-3-right" style={{ marginLeft: '0', overflow: 'hidden' }}>
+              <div className="relative auth-section-3-right" style={{ marginLeft: '0', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-visible auth-course-cards-scroll"
