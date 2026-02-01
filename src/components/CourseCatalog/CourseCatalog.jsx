@@ -205,7 +205,7 @@ const CourseCatalog = ({
             <CourseSearch
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder={isWelcome ? "" : "Search courses..."}
+              placeholder=""
               autoFocus={true}
             />
           </div>
