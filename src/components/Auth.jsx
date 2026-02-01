@@ -1980,8 +1980,8 @@ const Auth = () => {
               transform: 'translateX(-50%)',
               zIndex: 10,
               width: '100%',
-              maxWidth: '80rem',
-              paddingLeft: 'calc(1rem + 52.8px)',
+              maxWidth: '72rem',
+              paddingLeft: '2rem',
               paddingRight: '1rem',
               pointerEvents: 'none'
             }}>
