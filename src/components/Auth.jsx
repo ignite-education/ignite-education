@@ -1815,7 +1815,7 @@ const Auth = () => {
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="max-w-6xl w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
+          <div className="w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid">
               {/* Left Column - Description */}
