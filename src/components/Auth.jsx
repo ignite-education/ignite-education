@@ -1819,7 +1819,7 @@ const Auth = () => {
             {/* Two Column Layout */}
             <div className="grid grid-cols-2 gap-12 px-4 max-w-7xl mx-auto items-center auth-section-3-grid">
               {/* Left Column - Description */}
-              <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
+              <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '2rem', paddingRight: '1rem' }}>
                 <div className="flex flex-col items-start">
                   <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : '6rem', marginBottom: isMobile ? '0rem' : '1rem' }}>
                     {renderTypedCoursesTitle()}
@@ -1837,7 +1837,7 @@ const Auth = () => {
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative auth-section-3-right" style={{ marginLeft: '-50px', overflow: 'visible' }}>
+              <div className="relative auth-section-3-right" style={{ marginLeft: '0', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-visible auth-course-cards-scroll"
