@@ -2132,7 +2132,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate%20v2.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png"
                     alt="Get certified to take on your next role"
                     loading="lazy"
                     decoding="async"
