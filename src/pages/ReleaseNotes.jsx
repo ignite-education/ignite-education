@@ -39,7 +39,7 @@ const ReleaseNotes = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <SEO
         title="Release Notes"
         description="View the latest updates, features, and improvements to Ignite Education. Stay informed about new releases and enhancements to our learning platform."
@@ -66,7 +66,7 @@ const ReleaseNotes = () => {
       </div>
 
       {/* White Content Section */}
-      <div className="bg-white">
+      <div className="bg-white flex-grow">
         <div className="max-w-4xl mx-auto px-6 py-12">
           {loading ? (
             <div className="flex justify-center items-center py-12">
