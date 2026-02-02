@@ -2139,9 +2139,9 @@ const Auth = () => {
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
-                      aspectRatio: isMobile ? undefined : '4/3',
+                      aspectRatio: '1/1',
                       borderRadius: '0.5rem',
-                      objectFit: isMobile ? 'contain' : 'cover',
+                      objectFit: 'contain',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
