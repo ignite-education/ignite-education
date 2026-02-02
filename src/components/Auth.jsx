@@ -2131,20 +2131,32 @@ const Auth = () => {
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
                     </p>
                   </div>
-                  <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png"
-                    alt="Get certified to take on your next role"
-                    loading="lazy"
-                    decoding="async"
+                  <div
                     style={{
                       width: isMobile ? '75vw' : '100%',
-                      height: isMobile ? 'auto' : undefined,
-                      aspectRatio: '1/1',
-                      borderRadius: '0.5rem',
-                      objectFit: 'contain',
-                      margin: isMobile ? '0 auto' : undefined
+                      margin: isMobile ? '0 auto' : undefined,
+                      padding: '1rem',
+                      borderRadius: '1rem',
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      WebkitBackdropFilter: 'blur(10px)',
+                      boxShadow: '0 0 20px rgba(255, 255, 255, 0.15)'
                     }}
-                  />
+                  >
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png"
+                      alt="Get certified to take on your next role"
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        aspectRatio: '1/1',
+                        borderRadius: '0.5rem',
+                        objectFit: 'contain'
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
