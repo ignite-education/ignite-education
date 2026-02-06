@@ -115,6 +115,7 @@ const CoursePage = () => {
     course?.title || '',
     {
       charDelay: 75,
+      startDelay: 1000,
       enabled: !!course?.title
     }
   );
