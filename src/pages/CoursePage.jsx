@@ -7,6 +7,7 @@ import { X, ChevronRight, Star } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
 import { useAuth } from '../contexts/AuthContext';
+import useTypingAnimation from '../hooks/useTypingAnimation';
 
 import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
@@ -89,10 +90,6 @@ const CoursePage = () => {
   const [error, setError] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
 
-  // Typing animation state
-  const [displayedTitle, setDisplayedTitle] = useState('');
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
-
   // Become a course leader modal state
   const [showLeaderModal, setShowLeaderModal] = useState(false);
   const [leaderForm, setLeaderForm] = useState({ name: '', email: '', linkedin: '' });
@@ -113,6 +110,15 @@ const CoursePage = () => {
   // Refs
   const curriculumSectionRef = useRef(null);
 
+  // Typing animation for course title using shared hook
+  const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
+    course?.title || '',
+    {
+      charDelay: 75,
+      enabled: !!course?.title
+    }
+  );
+
   // Check for waitlist success on mount (after OAuth redirect)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -125,27 +131,6 @@ const CoursePage = () => {
       setTimeout(() => setShowWaitlistSuccess(false), 5000);
     }
   }, [location.search]);
-
-  // Typing animation for course title
-  useEffect(() => {
-    if (course?.title) {
-      setDisplayedTitle('');
-      setIsTypingComplete(false);
-      let index = 0;
-      const title = course.title;
-      const typingInterval = setInterval(() => {
-        if (index < title.length) {
-          setDisplayedTitle(title.slice(0, index + 1));
-          index++;
-        } else {
-          setIsTypingComplete(true);
-          clearInterval(typingInterval);
-        }
-      }, 50);
-
-      return () => clearInterval(typingInterval);
-    }
-  }, [course?.title]);
 
   // Check for priority token from launch notification email
   useEffect(() => {
@@ -750,7 +735,10 @@ const CoursePage = () => {
               <h1 className="text-[38px] font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 {displayedTitle}
                 {!isTypingComplete && (
-                  <span className="animate-pulse">|</span>
+                  <>
+                    <span className="animate-pulse">|</span>
+                    <span style={{ visibility: 'hidden' }}>{course.title.substring(displayedTitle.length)}</span>
+                  </>
                 )}
               </h1>
 
