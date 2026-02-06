@@ -733,7 +733,12 @@ const CoursePage = () => {
 
               {/* Title */}
               <h1 className="text-[38px] font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
-                {displayedTitle}
+                <span style={{ display: 'inline-block', textAlign: 'left' }}>
+                  {displayedTitle}
+                  {!isTypingComplete && (
+                    <span style={{ opacity: 0 }}>{course.title.substring(displayedTitle.length)}</span>
+                  )}
+                </span>
               </h1>
 
               {/* Tagline - Purple */}
