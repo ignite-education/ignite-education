@@ -89,6 +89,10 @@ const CoursePage = () => {
   const [error, setError] = useState(null);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
 
+  // Typing animation state
+  const [displayedTitle, setDisplayedTitle] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
+
   // Become a course leader modal state
   const [showLeaderModal, setShowLeaderModal] = useState(false);
   const [leaderForm, setLeaderForm] = useState({ name: '', email: '', linkedin: '' });
@@ -121,6 +125,27 @@ const CoursePage = () => {
       setTimeout(() => setShowWaitlistSuccess(false), 5000);
     }
   }, [location.search]);
+
+  // Typing animation for course title
+  useEffect(() => {
+    if (course?.title) {
+      setDisplayedTitle('');
+      setIsTypingComplete(false);
+      let index = 0;
+      const title = course.title;
+      const typingInterval = setInterval(() => {
+        if (index < title.length) {
+          setDisplayedTitle(title.slice(0, index + 1));
+          index++;
+        } else {
+          setIsTypingComplete(true);
+          clearInterval(typingInterval);
+        }
+      }, 50);
+
+      return () => clearInterval(typingInterval);
+    }
+  }, [course?.title]);
 
   // Check for priority token from launch notification email
   useEffect(() => {
@@ -723,7 +748,10 @@ const CoursePage = () => {
 
               {/* Title */}
               <h1 className="text-[38px] font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
-                {course.title}
+                {displayedTitle}
+                {!isTypingComplete && (
+                  <span className="animate-pulse">|</span>
+                )}
               </h1>
 
               {/* Tagline - Purple */}
