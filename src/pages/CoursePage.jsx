@@ -733,7 +733,7 @@ const CoursePage = () => {
               </span>
 
               {/* Title */}
-              <h1 className="text-[38px] font-bold text-black mb-5 leading-tight" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="text-[38px] font-bold text-black mb-[15px] leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 <span style={{ display: 'inline-block', textAlign: 'left' }}>
                   {displayedTitle}
                   {!isTypingComplete && (
