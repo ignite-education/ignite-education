@@ -179,7 +179,7 @@ const CourseCatalog = ({
                   autoplay={false}
                   onLoopComplete={() => {
                     loopCountRef.current += 1;
-                    if (loopCountRef.current >= 2 && lottieRef.current) {
+                    if (loopCountRef.current >= 3 && lottieRef.current) {
                       lottieRef.current.stop();
                     }
                   }}
