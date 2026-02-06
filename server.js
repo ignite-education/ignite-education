@@ -3146,6 +3146,11 @@ app.post('/api/send-email', async (req, res) => {
       html: finalHtml,
     };
 
+    // Add Trustpilot BCC for welcome emails
+    if (type === 'welcome') {
+      emailOptions.bcc = 'ignite.education+768155c8df@invite.trustpilot.com';
+    }
+
     // Add List-Unsubscribe headers for marketing emails (RFC 8058 compliant)
     if (isMarketingEmail) {
       emailOptions.headers = {
