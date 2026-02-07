@@ -472,6 +472,36 @@ export async function getAllCourses() {
 }
 
 /**
+ * Get all courses grouped by course_type for the /courses catalog page
+ * @returns {Promise<Object>} Object with specialism, skill, subject arrays
+ */
+export async function getCoursesByType() {
+  const { data, error } = await supabase
+    .from('courses')
+    .select('*')
+    .in('status', ['live', 'coming_soon']);
+
+  if (error) throw error;
+
+  // Sort courses: live first (alphabetically), then coming_soon (alphabetically)
+  const sortCourses = (courses) => {
+    return courses.sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status === 'live' ? -1 : 1;
+      }
+      return a.title.localeCompare(b.title);
+    });
+  };
+
+  // Group by course_type, defaulting to 'specialism' if not set, then sort
+  return {
+    specialism: sortCourses((data || []).filter(c => !c.course_type || c.course_type === 'specialism')),
+    skill: sortCourses((data || []).filter(c => c.course_type === 'skill')),
+    subject: sortCourses((data || []).filter(c => c.course_type === 'subject'))
+  };
+}
+
+/**
  * Get course information by ID
  * @param {string} courseId - The course ID or name to fetch
  * @returns {Promise<Object>} Course object
@@ -1341,6 +1371,88 @@ export async function updateUserCourse(userId, courseId, userInfo = null) {
 }
 
 /**
+ * Save a course to user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug (e.g., 'product-manager')
+ * @returns {Promise<Object>} Created saved course object
+ */
+export async function saveCourseForLater(userId, courseSlug) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .insert({
+      user_id: userId,
+      course_id: courseSlug
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // If duplicate (user already saved this course), return existing record
+    if (error.code === '23505') {
+      const { data: existing } = await supabase
+        .from('saved_courses')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('course_id', courseSlug)
+        .single();
+      return existing;
+    }
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Remove a course from user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug
+ * @returns {Promise<void>}
+ */
+export async function removeSavedCourse(userId, courseSlug) {
+  const { error } = await supabase
+    .from('saved_courses')
+    .delete()
+    .eq('user_id', userId)
+    .eq('course_id', courseSlug);
+
+  if (error) throw error;
+}
+
+/**
+ * Get all courses saved by a user
+ * @param {string} userId - The user's ID
+ * @returns {Promise<Array>} Array of saved course slugs
+ */
+export async function getSavedCourses(userId) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .select('course_id, saved_at')
+    .eq('user_id', userId)
+    .order('saved_at', { ascending: false });
+
+  if (error) throw error;
+  return data || [];
+}
+
+/**
+ * Check if a specific course is in user's wishlist
+ * @param {string} userId - The user's ID
+ * @param {string} courseSlug - The course slug
+ * @returns {Promise<boolean>} True if course is saved
+ */
+export async function isCourseInWishlist(userId, courseSlug) {
+  const { data, error } = await supabase
+    .from('saved_courses')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('course_id', courseSlug)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
+}
+
+/**
  * Sync user to course completion audience
  * Called when a user completes a course
  * @param {string} courseId - The completed course ID
@@ -1425,14 +1537,22 @@ export async function getCourseRequestAnalytics() {
 
 /**
  * Get all coaches for a specific course
- * @param {string} courseId - The course ID
+ * @param {string} courseIdOrSlug - The course ID/name or slug (e.g., "Product Manager" or "product-manager")
  * @returns {Promise<Array>} Array of coach objects
  */
-export async function getCoachesForCourse(courseId) {
+export async function getCoachesForCourse(courseIdOrSlug) {
+  // Generate possible name variations from slug
+  const slug = courseIdOrSlug.toLowerCase();
+  const nameVariations = [
+    courseIdOrSlug, // Original (could be course name)
+    slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '), // Title Case
+    slug.replace(/-/g, ' '), // lowercase with spaces
+  ];
+
   const { data, error } = await supabase
     .from('coaches')
     .select('*')
-    .eq('course_id', courseId)
+    .in('course_id', nameVariations)
     .eq('is_active', true)
     .order('display_order', { ascending: true });
 

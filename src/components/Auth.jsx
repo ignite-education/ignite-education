@@ -1,111 +1,126 @@
-import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useMemo, useCallback, Suspense, lazy } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import Onboarding from './Onboarding';
 import { ChevronDown, ChevronRight, Home, X } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getCoachesForCourse } from '../lib/api';
-import SEO from './SEO';
-import BlogCarousel from './BlogCarousel';
+import SEO, { generateSpeakableSchema } from './SEO';
+import useTypingAnimation from '../hooks/useTypingAnimation';
+import Footer from './Footer';
+import Navbar from './Navbar';
+import CourseCatalog from './CourseCatalog/CourseCatalog';
 
-// Custom hook for typing animations using requestAnimationFrame
-// This prevents Chrome's timer throttling issues that cause glitchy animations
-const useTypingAnimation = (fullText, config = {}) => {
-  const {
-    charDelay = 75,
-    startDelay = 0,
-    pausePoints = [],
-    enabled = true,
-    onComplete = null
-  } = config;
-
-  const [displayText, setDisplayText] = useState('');
-  const [isComplete, setIsComplete] = useState(false);
-  const animationRef = useRef(null);
-  const stateRef = useRef({
-    startTime: null,
-    currentIndex: 0,
-    totalPauseTime: 0,
-    activePauseEnd: 0
-  });
-
-  useEffect(() => {
-    if (!enabled || !fullText) {
-      return;
-    }
-
-    // Reset state when enabled or text changes
-    stateRef.current = {
-      startTime: null,
-      currentIndex: 0,
-      totalPauseTime: 0,
-      activePauseEnd: 0
-    };
-    setDisplayText('');
-    setIsComplete(false);
-
-    const animate = (timestamp) => {
-      const state = stateRef.current;
-
-      if (!state.startTime) {
-        state.startTime = timestamp;
-      }
-
-      const elapsed = timestamp - state.startTime;
-
-      // Handle start delay
-      if (elapsed < startDelay) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      // Handle active pause
-      if (state.activePauseEnd > 0 && timestamp < state.activePauseEnd) {
-        animationRef.current = requestAnimationFrame(animate);
-        return;
-      }
-
-      // Calculate target index based on elapsed time minus pauses
-      const typingElapsed = elapsed - startDelay - state.totalPauseTime;
-      const targetIndex = Math.min(
-        Math.floor(typingElapsed / charDelay),
-        fullText.length
-      );
-
-      // Update if we've advanced
-      if (targetIndex > state.currentIndex) {
-        state.currentIndex = targetIndex;
-        setDisplayText(fullText.substring(0, targetIndex));
-
-        // Check for pause point at this position
-        const pausePoint = pausePoints.find(p => p.after === targetIndex);
-        if (pausePoint) {
-          state.activePauseEnd = timestamp + pausePoint.duration;
-          state.totalPauseTime += pausePoint.duration;
+// Structured data for welcome page SEO (static for prerendering)
+const welcomePageStructuredData = [
+  // ItemList - Available courses
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Free Online Courses at Ignite Education",
+    "description": "Expert-led courses in tech and professional skills",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "item": {
+          "@type": "Course",
+          "name": "Product Manager",
+          "description": "Learn product management from industry experts with real-world projects",
+          "url": "https://ignite.education/courses/product-manager",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "item": {
+          "@type": "Course",
+          "name": "Data Analyst",
+          "description": "Master data analysis skills with hands-on projects and AI-powered feedback",
+          "url": "https://ignite.education/courses/data-analyst",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "item": {
+          "@type": "Course",
+          "name": "Cyber Security Analyst",
+          "description": "Build cybersecurity expertise with practical training and expert guidance",
+          "url": "https://ignite.education/courses/cyber-security-analyst",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
+        }
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "item": {
+          "@type": "Course",
+          "name": "Digital Marketing Specialist",
+          "description": "Learn digital marketing strategies from industry professionals",
+          "url": "https://ignite.education/courses/digital-marketing-specialist",
+          "provider": { "@type": "Organization", "name": "Ignite Education" }
         }
       }
-
-      // Check if complete
-      if (state.currentIndex >= fullText.length) {
-        setIsComplete(true);
-        if (onComplete) onComplete();
-        return;
+    ]
+  },
+  // FAQPage - Common questions
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are Ignite courses really free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! All Ignite courses are completely free. We believe education should be accessible to everyone. You can access all course content, AI-powered lessons, and earn a certificate at no cost."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does it take to complete a course?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Course duration varies, but most courses can be completed in 4-8 weeks learning at your own pace. Each course is broken into bite-sized lessons that fit around your schedule."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I get a certificate after completing a course?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Upon completing a course, you'll receive a verified digital certificate that you can share on LinkedIn and add to your CV."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What makes Ignite different from other online learning platforms?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Ignite uses AI-powered personalised learning with real-world projects, expert-led content, and interactive lessons. Our courses are designed by industry professionals and include hands-on projects that build your portfolio."
+        }
       }
+    ]
+  },
+  // WebPage with Speakable for voice search
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Welcome to Ignite Education",
+    "description": "Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.",
+    "url": "https://ignite.education/welcome",
+    "speakable": {
+      "@type": "SpeakableSpecification",
+      "cssSelector": [".hero-text", "h1", ".course-description", ".testimonial-text"]
+    }
+  }
+];
 
-      animationRef.current = requestAnimationFrame(animate);
-    };
-
-    animationRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [fullText, charDelay, startDelay, JSON.stringify(pausePoints), enabled]);
-
-  return { displayText, isComplete };
-};
+// Lazy-load below-fold components for better initial page load
+const Onboarding = lazy(() => import('./Onboarding'));
+const BlogCarousel = lazy(() => import('./BlogCarousel'));
 
 const Auth = () => {
   // Debounce helper to prevent rapid state updates
@@ -127,6 +142,7 @@ const Auth = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
+  const logoContainerRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
   const [selectedCourseModal, setSelectedCourseModal] = useState(null);
   const coursesSectionRef = useRef(null);
@@ -148,6 +164,7 @@ const Auth = () => {
   const [testimonialTouchStart, setTestimonialTouchStart] = useState(null);
   const [testimonialMouseStart, setTestimonialMouseStart] = useState(null);
   const [hasSection2Snapped, setHasSection2Snapped] = useState(false);
+  const [currentSection, setCurrentSection] = useState(2);
   const [expandedFAQ, setExpandedFAQ] = useState(0);
   const [typedCourseDescription, setTypedCourseDescription] = useState('');
   const [typedModalTitle, setTypedModalTitle] = useState('');
@@ -157,6 +174,9 @@ const Auth = () => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [isTablet, setIsTablet] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerWidth <= 1200);
   const [isSection6SingleColumn, setIsSection6SingleColumn] = useState(() => typeof window !== 'undefined' && window.innerWidth < 870);
+  const [isSection1Expanded, setIsSection1Expanded] = useState(false);
+  const [logoClipPercentage, setLogoClipPercentage] = useState(100); // Initialize to 100 for white logo on section 2's black background
+  const [invertLogoLayers, setInvertLogoLayers] = useState(false);
 
   // Typing animation enable flags (triggered by intersection observers)
   const [taglineTypingEnabled, setTaglineTypingEnabled] = useState(false);
@@ -169,7 +189,7 @@ const Auth = () => {
   // Typing animations using requestAnimationFrame hook
   // No space between lines - the space is handled by the line break in rendering
   const taglineText = "Upskill. Reskill.Get ready for what's next.";
-  const { displayText: typedTagline, isComplete: isTaglineTypingComplete } = useTypingAnimation(
+  const { displayText: typedTagline } = useTypingAnimation(
     taglineText,
     {
       charDelay: 90,
@@ -215,17 +235,19 @@ const Auth = () => {
     testimonialsHeadingText,
     {
       charDelay: 75,
-      startDelay: 500,
+      startDelay: 0,
       pausePoints: [
         { after: 23, duration: 700 },  // After "Ignite is for everyone."
-        { after: 37, duration: 500 },  // After "The curious,"
-        { after: 52, duration: 500 }   // After "the committed,"
+        { after: 37, duration: 700 },  // After "The curious,"
+        { after: 52, duration: 700 }   // After "the committed,"
       ],
       enabled: testimonialsTypingEnabled
     }
   );
 
-  const merchHeadingText = 'Big dreams. Universal fit.';
+  const merchHeadingTextDesktop = 'Big dreams. Universal fit.';
+  const merchHeadingTextMobile = 'Big dreams.\nUniversal fit.';
+  const merchHeadingText = isMobile ? merchHeadingTextMobile : merchHeadingTextDesktop;
   const { displayText: typedMerchHeading } = useTypingAnimation(
     merchHeadingText,
     {
@@ -241,13 +263,13 @@ const Auth = () => {
   // Helper to render merch heading with pink "Universal fit."
   const renderTypedMerchHeading = () => {
     const text = typedMerchHeading;
-    const splitIndex = 12; // After "Big dreams. "
+    const splitIndex = isMobile ? 11 : 12; // After "Big dreams." (mobile has \n, desktop has space)
     const firstPart = text.slice(0, splitIndex);
     const secondPart = text.slice(splitIndex);
     return (
       <>
-        <span className="text-black">{firstPart}</span>
-        <span style={{ color: '#EF0B72' }}>{secondPart}</span>
+        <span className="text-black" style={{ whiteSpace: 'pre-wrap' }}>{firstPart}</span>
+        <span style={{ color: '#EF0B72', whiteSpace: 'pre-wrap' }}>{secondPart}</span>
       </>
     );
   };
@@ -298,8 +320,12 @@ const Auth = () => {
 
   const { user, signIn, signUp, signInWithOAuth, resetPassword } = useAuth();
 
-  // Debug: Check environment variable on mount
+  // Preload logo images for instant switching
   useEffect(() => {
+    const blackLogo = new Image();
+    const whiteLogo = new Image();
+    blackLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png";
+    whiteLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png";
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -567,15 +593,22 @@ const Auth = () => {
     };
   }, []);
 
-  // Track mobile and tablet viewport for conditional rendering
+  // Track mobile and tablet viewport for conditional rendering (debounced for performance)
   useEffect(() => {
+    let resizeTimeout;
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
-      setIsSection6SingleColumn(window.innerWidth < 870);
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        setIsMobile(window.innerWidth < 768);
+        setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200);
+        setIsSection6SingleColumn(window.innerWidth < 870);
+      }, 100);
     };
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Start tagline typing animation on mount
@@ -687,6 +720,197 @@ const Auth = () => {
     };
   }, [isMobile, isLogin, hasSection2Snapped, selectedCourseModal]);
 
+  // Track current visible section for navbar background color
+  useEffect(() => {
+    const sectionRefs = [
+      { ref: marketingSectionRef, section: 2 },
+      { ref: coursesSectionRef, section: 3 },
+      { ref: learningModelSectionRef, section: 4 },
+      { ref: testimonialsSectionRef, section: 5 },
+      { ref: linkedInFAQSectionRef, section: 6 },
+    ];
+
+    // Navbar height is approximately 73px (20px padding top + 33px logo + 20px padding bottom)
+    const navbarHeight = 73;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const section = sectionRefs.find(s => s.ref.current === entry.target);
+            if (section) setCurrentSection(section.section);
+          }
+        });
+      },
+      {
+        threshold: 0,
+        root: authScrollContainerRef.current,
+        rootMargin: `-${navbarHeight}px 0px 0px 0px`
+      }
+    );
+
+    sectionRefs.forEach(({ ref }) => {
+      if (ref.current) observer.observe(ref.current);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Calculate logo clip percentage based on scroll position and section backgrounds
+  const calculateLogoClip = useCallback(() => {
+    if (!authScrollContainerRef.current || !logoContainerRef.current) return { clipPercent: 100, invertLayers: false }; // Default to white logo for section 2's black background
+
+    const navbarHeight = 73;
+
+    // Get logo's actual vertical position in viewport
+    const logoRect = logoContainerRef.current.getBoundingClientRect();
+    const logoTop = logoRect.top;
+    const logoBottom = logoRect.bottom;
+    const logoHeight = logoRect.height;
+
+    // Section mapping with responsive backgrounds
+    const sectionBoundaries = [
+      { color: 'white', ref: null }, // Section 1 (default, no ref needed)
+      { color: 'black', ref: marketingSectionRef },
+      { color: isMobile ? 'black' : 'white', ref: coursesSectionRef },
+      { color: 'black', ref: learningModelSectionRef },
+      { color: isMobile ? 'black' : 'white', ref: testimonialsSectionRef },
+      { color: 'white', ref: merchSectionRef },
+      { color: 'black', ref: linkedInFAQSectionRef }
+    ];
+
+    let currentSectionColor = 'black'; // Default to black (section 2) when no sections overlap (i.e., in section 1)
+    let nextSectionColor = null;
+    let transitionProgress = 0;
+
+    // Find which section(s) the navbar overlaps
+    for (let i = 0; i < sectionBoundaries.length; i++) {
+      const section = sectionBoundaries[i];
+      if (!section.ref?.current) continue;
+
+      const rect = section.ref.current.getBoundingClientRect();
+      const sectionTop = rect.top; // viewport coordinate
+      const sectionBottom = rect.bottom; // viewport coordinate
+      const navbarTop = 0; // navbar always at viewport top
+      const navbarBottom = navbarHeight; // 73px from viewport top
+
+      // Check if section overlaps navbar in viewport (0-73px range)
+      if (sectionBottom > navbarTop && sectionTop < navbarBottom) {
+        // Section is behind navbar - determine if it's fully covering or partial
+        if (sectionTop <= navbarTop && sectionBottom >= navbarBottom) {
+          // Navbar fully within this section
+          currentSectionColor = section.color;
+          nextSectionColor = null;
+          break;
+        } else if (sectionTop > navbarTop && sectionTop < navbarBottom) {
+          // Section boundary is within navbar - transitioning from previous to this
+          // Calculate progress based on where section boundary intersects the LOGO (not navbar)
+          if (sectionTop >= logoTop && sectionTop <= logoBottom) {
+            // Section boundary is within logo bounds
+            transitionProgress = (logoBottom - sectionTop) / logoHeight;
+          } else if (sectionTop < logoTop) {
+            // Section boundary is above logo - logo fully in new section
+            transitionProgress = 1;
+          } else {
+            // Section boundary is below logo - logo fully in old section
+            transitionProgress = 0;
+          }
+          // If previous section has no ref (like section 1), use default 'black' instead of its color
+          if (i > 0 && sectionBoundaries[i-1].ref) {
+            currentSectionColor = sectionBoundaries[i-1].color;
+          } else {
+            currentSectionColor = 'black'; // Default when coming from section 1 (no ref)
+          }
+          nextSectionColor = section.color;
+          break;
+        } else if (sectionTop <= navbarTop && sectionBottom < navbarBottom) {
+          // Section exiting from top - transitioning from this to next
+          // Calculate progress based on where section boundary intersects the LOGO
+          if (sectionBottom >= logoTop && sectionBottom <= logoBottom) {
+            // Section boundary is within logo bounds
+            transitionProgress = 1 - (sectionBottom - logoTop) / logoHeight;
+          } else if (sectionBottom > logoBottom) {
+            // Section boundary is below logo - logo fully in old section
+            transitionProgress = 0;
+          } else {
+            // Section boundary is above logo - logo fully in new section
+            transitionProgress = 1;
+          }
+          currentSectionColor = section.color;
+          if (i < sectionBoundaries.length - 1) {
+            nextSectionColor = sectionBoundaries[i + 1].color;
+          }
+          break;
+        }
+      }
+    }
+
+    // Determine if we need to invert the layer order (for WHITE→BLACK transitions)
+    // The default layer order (black on top, white on base) works for BLACK→WHITE
+    // but needs to be inverted for WHITE→BLACK to show black on top, white on bottom
+    const invertLayers = nextSectionColor !== null &&
+                         currentSectionColor === 'white' &&
+                         nextSectionColor === 'black';
+
+    // Calculate clip percentage
+    let clipPercent;
+    if (nextSectionColor === null) {
+      // Fully within one section - invert for contrast
+      clipPercent = currentSectionColor === 'white' ? 0 : 100;
+    } else {
+      // Transitioning between sections
+      // transitionProgress = how much of navbar (from bottom) is in the next section
+      if (currentSectionColor === 'black' && nextSectionColor === 'white') {
+        // BLACK→WHITE: standard layer order (black on top, white on base)
+        // Result: top shows white, bottom shows black
+        clipPercent = (1 - transitionProgress) * 100;
+      } else if (currentSectionColor === 'white' && nextSectionColor === 'black') {
+        // WHITE→BLACK: inverted layer order (white on top, black on base)
+        // Result: top shows black, bottom shows white
+        clipPercent = (1 - transitionProgress) * 100;
+      } else {
+        // Same color transition - invert for contrast
+        clipPercent = currentSectionColor === 'white' ? 0 : 100;
+      }
+    }
+
+    return {
+      clipPercent: Math.max(0, Math.min(100, clipPercent)),
+      invertLayers
+    };
+  }, [isMobile]);
+
+  // Scroll event handler with RAF for logo split-color effect
+  useEffect(() => {
+    if (!authScrollContainerRef.current || isLogin || selectedCourseModal) return;
+
+    let rafId = null;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        rafId = requestAnimationFrame(() => {
+          const { clipPercent, invertLayers } = calculateLogoClip();
+          setLogoClipPercentage(clipPercent);
+          setInvertLogoLayers(invertLayers);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    const scrollContainer = authScrollContainerRef.current;
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Calculate initial position
+    handleScroll();
+
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [calculateLogoClip, isLogin, selectedCourseModal]);
+
   // Fetch courses from Supabase and preload coach data
   useEffect(() => {
     const fetchCourses = async () => {
@@ -695,6 +919,7 @@ const Auth = () => {
           .from('courses')
           .select('*')
           .in('status', ['live', 'coming_soon'])
+          .eq('course_type', 'specialism')
           .order('display_order', { ascending: true });
 
         if (coursesError) throw coursesError;
@@ -862,13 +1087,21 @@ const Auth = () => {
     // Initial check
     updateCardBlur();
 
-    // Listen to scroll events
+    // Debounced resize handler for performance
+    let resizeTimeout;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateCardBlur, 100);
+    };
+
+    // Listen to scroll events (immediate) and resize events (debounced)
     scrollContainer.addEventListener('scroll', updateCardBlur);
-    window.addEventListener('resize', updateCardBlur);
+    window.addEventListener('resize', debouncedResize);
 
     return () => {
+      clearTimeout(resizeTimeout);
       scrollContainer.removeEventListener('scroll', updateCardBlur);
-      window.removeEventListener('resize', updateCardBlur);
+      window.removeEventListener('resize', debouncedResize);
     };
   }, [courses]);
 
@@ -957,7 +1190,7 @@ const Auth = () => {
           }
         });
       },
-      { threshold: 0.2, rootMargin: '-100px 0px -100px 0px' }
+      { threshold: isMobile ? 0.1 : 0.2, rootMargin: isMobile ? '0px' : '-100px 0px -100px 0px' }
     );
 
     observer.observe(testimonialsSectionRef.current);
@@ -967,7 +1200,7 @@ const Auth = () => {
         observer.unobserve(testimonialsSectionRef.current);
       }
     };
-  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal]);
+  }, [isLogin, animateTestimonials, testimonialsTypingEnabled, selectedCourseModal, isMobile]);
 
   // Intersection observer for merch section typing animation
   useEffect(() => {
@@ -1032,7 +1265,12 @@ const Auth = () => {
     };
   }, [isLogin, selectedCourseModal, blogFaqTypingEnabled]);
 
-
+  // Get navbar background color based on current section
+  const getNavbarBackground = () => {
+    if (isMobile) return 'black';
+    if (currentSection === 3 || currentSection === 5) return 'white';
+    return 'black';
+  };
 
 
 
@@ -1042,7 +1280,7 @@ const Auth = () => {
     const words = ['accessible', 'personalised', 'integrated'];
     const fullText = isMobile
       ? 'Education should\nbe accessible,\npersonalised and\nintegrated for\neveryone.'
-      : 'Education should be \naccessible, personalised and integrated for everyone.';
+      : 'Education should be \naccessible, personalised \nand integrated for everyone.';
 
     // Show full text immediately (no animation)
     const text = fullText;
@@ -1130,30 +1368,21 @@ const Auth = () => {
     const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length);
     const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0;
 
-    const showCursorOnFirstLine = typedTagline.length <= fullFirstLine.length && !isTaglineTypingComplete;
-    const showCursorOnSecondLine = typedTagline.length > fullFirstLine.length && !isTaglineTypingComplete;
-
     return (
       <>
-        {/* First line (white) */}
+        {/* First line (white) - reserve full width */}
         <span style={{ display: 'block', color: 'white' }}>
           {fullFirstLine.substring(0, firstLineTypedLength)}
-          {showCursorOnFirstLine ? (
-            <span className="animate-blink font-thin">|</span>
-          ) : firstLineTypedLength === fullFirstLine.length && (
-            <span style={{ visibility: 'hidden' }}>|</span>
+          {firstLineTypedLength < fullFirstLine.length && (
+            <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
           )}
         </span>
 
         {/* Second line (pink) - always present for height */}
         <span style={{ display: 'block', color: '#EF0B72' }}>
-          {secondLineTypedLength > 0 ? (
-            <>
-              {fullSecondLine.substring(0, secondLineTypedLength)}
-              {showCursorOnSecondLine && <span className="animate-blink font-thin" style={{ color: '#EF0B72' }}>|</span>}
-            </>
-          ) : (
-            <span style={{ visibility: 'hidden' }}>{fullSecondLine}</span>
+          {fullSecondLine.substring(0, secondLineTypedLength)}
+          {secondLineTypedLength < fullSecondLine.length && (
+            <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
           )}
         </span>
       </>
@@ -1374,12 +1603,6 @@ const Auth = () => {
       }
     }
 
-    if (!isTestimonialsHeadingTypingComplete && isMobile) {
-      result.push(
-        <span key="cursor" className="animate-blink font-thin" style={{ color: '#F0F0F2' }}>|</span>
-      );
-    }
-
     return result;
   };
 
@@ -1444,7 +1667,11 @@ const Auth = () => {
 
   // Show onboarding if user just signed up
   if (showOnboarding) {
-    return <Onboarding firstName={firstName} userId={newUserId} />;
+    return (
+      <Suspense fallback={<div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#EF0B72] border-t-transparent rounded-full animate-spin" /></div>}>
+        <Onboarding firstName={firstName} userId={newUserId} />
+      </Suspense>
+    );
   }
 
   return (
@@ -1452,8 +1679,9 @@ const Auth = () => {
       <SEO
         title="Ignite | Welcome"
         description="Transform your career with Ignite's interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback."
-        keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development"
+        keywords="product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development, free online courses, tech career, professional development"
         url="https://ignite.education/welcome"
+        structuredData={welcomePageStructuredData}
       />
       {/* Auth Scrollable Container */}
       <div
@@ -1463,234 +1691,75 @@ const Auth = () => {
           animation: 'fadeIn 0.2s ease-out',
           zIndex: 50,
           scrollBehavior: 'smooth',
-          scrollSnapType: isMobile ? 'none' : 'y proximity',
+          scrollSnapType: 'none',
           overflow: selectedCourseModal ? 'hidden' : 'auto',
           pointerEvents: selectedCourseModal ? 'none' : 'auto',
           overflowX: 'hidden',
           backgroundColor: '#000'
         }}
       >
-      {/* First Section - Auth Form */}
+      {/* First Section - Course Catalog */}
       <div
-        className="min-h-screen flex items-center justify-center px-8 relative auth-section-1"
+        className="flex items-center justify-center px-8 relative auth-section-1"
         style={{
-          scrollSnapAlign: 'start',
-          backgroundImage: !isMobile
-            ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)'
-            : 'url(https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20design%20%281%29.png)',
-          backgroundSize: isMobile ? '100% 100%' : 'auto 97%',
-          backgroundPosition: isMobile ? 'center center' : 'left center',
-          backgroundRepeat: 'no-repeat',
-          backgroundColor: '#000'
+          height: isSection1Expanded ? 'auto' : '85vh',
+          minHeight: isSection1Expanded ? 'auto' : '600px',
+          backgroundColor: '#fff',
+          position: 'relative',
+          overflow: 'hidden'
         }}
       >
-      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
-        {/* Logo */}
-        <img
-          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
-          alt="Ignite Education"
-          className="auth-logo object-contain"
-          style={{
-            width: '120px',
-            height: '40px',
-            marginBottom: '0.5rem'
-          }}
-        />
-
-        {/* Tagline - on both sign in and create account pages */}
-        <div className="auth-tagline" style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
-          <h1 className="text-xl font-semibold text-white px-2" style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}>
-            {renderTypedTagline()}
-          </h1>
-        </div>
-
-        <div className="w-full">
-
-        {/* Title above the box */}
-        <h2 className="text-lg font-semibold text-white pl-1 auth-form-title" style={{ marginBottom: '0.15rem' }}>
-          {isLogin ? 'Welcome Back' : 'Create Account'}
-        </h2>
-
-        {/* Form Card */}
-        <div
-          className="bg-white text-black px-5 py-4 rounded-md auth-form-card"
-          style={{
-            animation: 'scaleUp 0.2s ease-out'
-          }}
-        >
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          {/* OAuth Buttons */}
-          <div className="space-y-2 mb-3">
-            <button
-              type="button"
-              onClick={() => handleOAuthSignIn('google')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-black rounded-lg px-3 py-2 text-sm hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              <span className="truncate">Continue with Google</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleOAuthSignIn('linkedin_oidc')}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-lg px-3 py-2 text-sm hover:bg-[#006097] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed auth-linkedin-btn"
-            >
-              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-              <span className="truncate">Continue with LinkedIn</span>
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative" style={{ marginBottom: '0.625rem' }}>
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-            <div className={`grid grid-cols-2 gap-2 transition-all duration-200 ${isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'}`}>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">First Name</label>
-                <input
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="John"
-                  disabled={isLogin}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Last Name</label>
-                <input
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required={!isLogin}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="Doe"
-                  disabled={isLogin}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 auth-form-grid-stack">
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="you@example.com"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-0.5">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLogin ? 'Sign In' : 'Sign Up'}
-            </button>
-          </form>
-
-          <div className="text-center" style={{ marginTop: '0.5rem' }}>
-            {isLogin ? (
-              <div className="flex items-center justify-center gap-4 auth-links">
-                <button
-                  onClick={() => {
-                    setIsLogin(!isLogin);
-                    setError('');
-                  }}
-                  className="text-black hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Don't have an account?
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowResetPassword(true);
-                    setResetEmail(email);
-                    setResetSuccess(false);
-                    setError('');
-                  }}
-                  className="text-black hover:text-[#EF0B72] transition"
-                  style={{ fontSize: '0.85em' }}
-                >
-                  Reset password
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                }}
-                className="text-black hover:text-[#EF0B72] transition"
-                style={{ fontSize: '0.85em' }}
-              >
-                Already have an account?
-              </button>
-            )}
-          </div>
-        </div>
-        </div>
-
-        {/* Scroll Down Arrow */}
-        <div className="mt-8">
-          <button
-            onClick={scrollToMarketing}
-            className="bg-white hover:bg-gray-100 transition shadow-lg group rounded-lg"
+        <div className="relative w-full h-full flex flex-col" style={{ maxWidth: '1267px' }}>
+          {/* Course Catalog Content */}
+          <div
+            className="flex-1"
             style={{
-              animation: 'subtleBounce 2s infinite',
-              padding: '11px'
+              paddingTop: '2.25rem',
+              paddingBottom: isSection1Expanded ? '2rem' : '1rem',
+              overflow: isSection1Expanded ? 'visible' : 'hidden'
             }}
-            aria-label="Scroll to learn more"
           >
-            <ChevronDown size={24} className="text-black group-hover:text-[#EF0B72] transition" />
-          </button>
+            <CourseCatalog
+              variant="welcome"
+              showSearch={true}
+              showDescriptions={true}
+            />
+          </div>
         </div>
-      </div>
+
+        {/* Bottom gradient fade - only show when not expanded */}
+        {!isSection1Expanded && (
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '50px',
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
+              pointerEvents: 'none',
+              zIndex: 10
+            }}
+          />
+        )}
+
+        {/* Expand/Collapse Button */}
+        <button
+          onClick={() => setIsSection1Expanded(!isSection1Expanded)}
+          className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center"
+          style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', zIndex: 20, width: '85px' }}
+        >
+          {isSection1Expanded ? 'Collapse' : 'Expand'}
+        </button>
       </div>
 
       {/* Wrapper for sections 2-6 on mobile - single snap target */}
       <div className="auth-sections-2-6-wrapper">
+
+      {/* Sticky Navbar - appears at section 2 */}
+      <div className="sticky top-0 z-50">
+        <Navbar backgroundColor={getNavbarBackground()} logoClipPercentage={logoClipPercentage} invertLayers={invertLogoLayers} logoContainerRef={logoContainerRef} />
+      </div>
 
       {/* Second Section - Education Philosophy */}
         <div
@@ -1703,51 +1772,30 @@ const Auth = () => {
         >
           <div className="max-w-4xl w-full text-white">
             <div className="w-full max-w-3xl mx-auto px-4">
-              <h2 className="text-5xl font-bold leading-tight text-left w-full inline-block auth-education-heading" style={{ minHeight: isMobile ? undefined : '240px' }}>
+              <h2 className="text-5xl font-bold leading-tight text-center w-full inline-block auth-education-heading" style={{ minHeight: isMobile ? undefined : '240px' }}>
                 <span style={{ display: 'inline', whiteSpace: 'normal' }}>
                   {renderTypedEducation()}
                 </span>
               </h2>
 
               {/* Feature bullets - fade in after typing completes - reserve space */}
-              <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '7.526px' }}>
-                <div className="space-y-3 text-left auth-promises-list">
+              <div className="w-full auth-features-container" style={{ minHeight: isMobile ? undefined : '280px', marginTop: '2rem' }}>
+                <div className="grid grid-cols-3 text-center auth-promises-list" style={{ width: '120%', marginLeft: '-10%', gap: '4rem' }}>
                   {(isEducationTypingComplete || isMobile) && animateWords && (
                     <>
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">Built by Industry Experts</div>
-                          <div className="text-base text-white auth-promise-subtext">Our courses are built with industry experts to ensure you get the latest area expertise.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>Built by Industry Experts</div>
+                        <div className="text-base text-white font-normal">Our courses are built with<br />industry experts to ensure you<br />get the latest area expertise.</div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '3s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">Ignite is Free</div>
-                          <div className="text-base text-white auth-promise-subtext">All of our courses are completely free. We're funded by limited ads, not your finances.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>Ignite is Free</div>
+                        <div className="text-base text-white font-normal">All of our courses are<br />free. Always have been<br />and always will be.</div>
                       </div>
 
-                      <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
-                        <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <div className="leading-snug font-light">
-                          <div className="text-lg font-semibold text-white">No Educational Prerequisite</div>
-                          <div className="text-base text-white auth-promise-subtext">You don't need any experience to study. Our curricula is built for all backgrounds.</div>
-                        </div>
+                      <div className="flex flex-col items-center" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}>
+                        <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>No Educational Prerequisite</div>
+                        <div className="text-base text-white font-normal">You don't need any experience<br />to study. Our curricula is built<br />for all backgrounds.</div>
                       </div>
                     </>
                   )}
@@ -1761,29 +1809,35 @@ const Auth = () => {
       {/* Third Section - Courses */}
         <div
           ref={coursesSectionRef}
-          className={`min-h-screen flex ${isMobile ? 'items-center' : 'items-start'} justify-center px-8 relative auth-section-3`}
+          className={`min-h-screen flex ${isMobile ? 'items-center' : 'items-start'} justify-center px-10 relative auth-section-3`}
           style={{
             background: isMobile ? 'black' : 'white',
             scrollSnapAlign: 'none'
           }}
         >
-          <div className="max-w-7xl w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
+          <div className="w-full text-white" style={{ marginTop: isMobile ? '0' : '0' }}>
             {/* Two Column Layout */}
-            <div className="grid grid-cols-2 gap-12 px-4 w-full items-center auth-section-3-grid">
+            <div className="grid grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid">
               {/* Left Column - Description */}
-              <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '52.8px', paddingRight: '48px' }}>
+              <div className="flex items-center justify-center auth-section-3-left" style={{ paddingLeft: '2rem', paddingRight: '1rem' }}>
                 <div className="flex flex-col items-start">
                   <h3 className="font-bold text-white text-left auth-section-3-title" style={{ fontSize: '2.5rem', lineHeight: '1.2', minHeight: isMobile ? '120px' : '6rem', marginBottom: isMobile ? '0rem' : '1rem' }}>
                     {renderTypedCoursesTitle()}
                   </h3>
-                  <p className="text-lg mb-6 max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black' }}>
+                  <p className="text-lg max-w-2xl text-left auth-section-3-description" style={{ lineHeight: '1.425', color: isMobile ? 'white' : 'black', marginBottom: 0 }}>
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
+                    alt="Trustpilot"
+                    style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
+                    loading="lazy"
+                  />
                 </div>
               </div>
 
               {/* Right Column - Swipeable 2x2 Course Grid */}
-              <div className="relative auth-section-3-right" style={{ marginLeft: '-50px', overflow: 'visible' }}>
+              <div className="relative auth-section-3-right" style={{ marginLeft: '0', marginRight: '-50px', overflow: 'visible' }}>
                 <div
                   ref={courseCardsScrollRef}
                   className="overflow-x-auto overflow-y-visible auth-course-cards-scroll"
@@ -1926,8 +1980,8 @@ const Auth = () => {
               transform: 'translateX(-50%)',
               zIndex: 10,
               width: '100%',
-              maxWidth: '80rem',
-              paddingLeft: 'calc(1rem + 52.8px)',
+              maxWidth: '72rem',
+              paddingLeft: '2rem',
               paddingRight: '1rem',
               pointerEvents: 'none'
             }}>
@@ -1984,6 +2038,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/AI%20v7.png"
                     alt="Levelling up learning with smart AI integration"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2014,6 +2070,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v7.png"
                     alt="Personalised support from industry professionals"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2044,6 +2102,8 @@ const Auth = () => {
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v8.png"
                     alt="Connect with the global community"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
@@ -2065,21 +2125,23 @@ const Auth = () => {
                 }}>
                   <div>
                     <h4 className="font-semibold text-white leading-tight" style={{ fontSize: isMobile ? '1.5rem' : '1.75rem', marginBottom: '0.5rem' }}>
-                      Get certified to {isMobile && <br />}<span style={{ color: '#FFFFFF' }}>take on your next role</span>
+                      Get certified to take<br /><span style={{ color: '#FFFFFF' }}>on your next role</span>
                     </h4>
                     <p className="text-white" style={{ fontSize: '1.1rem', marginBottom: isMobile ? '1rem' : '0' }}>
                       Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate%20v2.png"
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png"
                     alt="Get certified to take on your next role"
+                    loading="lazy"
+                    decoding="async"
                     style={{
                       width: isMobile ? '75vw' : '100%',
                       height: isMobile ? 'auto' : undefined,
-                      aspectRatio: isMobile ? undefined : '4/3',
+                      aspectRatio: '1/1',
                       borderRadius: '0.5rem',
-                      objectFit: isMobile ? 'contain' : 'cover',
+                      objectFit: 'contain',
                       margin: isMobile ? '0 auto' : undefined
                     }}
                   />
@@ -2117,17 +2179,7 @@ const Auth = () => {
                 </span>
                 {/* Actual typed content */}
                 <span style={{ position: 'relative' }}>
-                  {isMobile ? (
-                    <>
-                      <span className="text-black">Ignite is for everyone.</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>The curious,</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>the committed,</span>
-                      <br />
-                      <span style={{ color: '#EF0B72' }}>the ambitious.</span>
-                    </>
-                  ) : renderTypedTestimonialsHeading()}
+                  {renderTypedTestimonialsHeading()}
                 </span>
               </h3>
             </div>
@@ -2180,32 +2232,32 @@ const Auth = () => {
                   <div className="relative">
                     {[
                       {
-                        quote: "I was completely lost about my career direction. Ignite helped me identify my strengths and understand the paths I could take. Crazy considering it's free.",
-                        name: "Amelia Chen",
-                        role: "Junior Designer",
+                        quote: "I was pretty lost with my career direction. I joined Ignite, and it helped me identify my strengths and understand different paths I could take. Crazy considering it's free.",
+                        name: "Amelia C",
+                        role: "Jr Product Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
                       },
                       {
-                        quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
-                        name: "Sarah Matthews",
+                        quote: "Ignite gave me the confidence to explore a new career. Best decision I've made.",
+                        name: "Sarah M",
                         role: "Product Marketing Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
                       },
                       {
-                        quote: "University teaches theory, but Ignite taught me how to actually succeed in the workplace. Wish I'd found this sooner!",
-                        name: "James Patel",
-                        role: "University Student",
+                        quote: "I needed something more than my degree to get into Product Management, so I started the Ignite course. I wish I'd found this sooner!",
+                        name: "James P",
+                        role: "Student",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
                       },
                       {
-                        quote: "Taking a career break left me feeling out of touch. Following the course and using the neat AI features allowed me learn at my own pace. I'm now really enjoying my new role.",
-                        name: "Rebecca Thompson",
-                        role: "Former Teacher",
+                        quote: "Taking a career break left me feeling out of touch. So, I joined Ignite and the neat AI features allowed me learn at my own pace.",
+                        name: "Rebecca T",
+                        role: "Programme Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
                       },
                       {
                         quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
-                        name: "David Morrison",
+                        name: "David M",
                         role: "Sr Product Manager",
                         avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
                       }
@@ -2233,54 +2285,67 @@ const Auth = () => {
                             <span style={{ fontWeight: 'bold' }}>"</span>{testimonial.quote}<span style={{ fontWeight: 'bold' }}>"</span>
                           </p>
                         </div>
-                        {/* Avatar positioned on bottom edge */}
-                        <div
-                          className="auth-testimonial-avatar w-24 h-24 rounded flex-shrink-0"
-                          style={{
-                            position: 'absolute',
-                            bottom: '-2.5rem',
-                            left: '2.75rem',
-                            backgroundImage: `url(${testimonial.avatar})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center'
-                          }}
-                        ></div>
                         {/* Name and role positioned at bottom edge */}
                         <div
-                          className="auth-testimonial-info"
                           style={{
                             position: 'absolute',
                             bottom: '0.75rem',
-                            left: '9.6875rem',
-                            lineHeight: '1.2'
+                            left: '1.5rem',
+                            right: '1.5rem',
+                            display: 'flex',
+                            justifyContent: 'center'
                           }}
                         >
-                          <div className="font-semibold text-black">{testimonial.name}</div>
-                          <div className="auth-testimonial-role text-sm text-gray-600">{testimonial.role}</div>
+                          <div
+                            className="auth-testimonial-info"
+                            style={{
+                              width: '80%',
+                              lineHeight: '1.2'
+                            }}
+                          >
+                            <div className="font-semibold text-black">{testimonial.name}</div>
+                            <div className="auth-testimonial-role text-sm text-gray-600">{testimonial.role}</div>
+                          </div>
                         </div>
                       </div>
                     ))}
-                  </div>
-                  
-                  {/* Carousel Indicators */}
-                  <div className="auth-testimonial-indicators flex justify-start gap-2" style={{ width: '36rem', marginTop: '1rem', marginLeft: '1.25rem', paddingLeft: isMobile ? '0' : '9.6875rem' }}>
-                    {[0, 1, 2, 3, 4].map((idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setCurrentTestimonialIndex(idx)}
-                        className={`transition-all duration-300 ${
-                          currentTestimonialIndex === idx
-                            ? 'bg-[#EF0B72]'
-                            : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
-                        }`}
-                        style={{
-                          width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
-                          height: '0.625rem',
-                          borderRadius: '0.125rem'
-                        }}
-                        aria-label={`Go to testimonial ${idx + 1}`}
-                      />
-                    ))}
+
+                    {/* Carousel Indicators */}
+                    <div
+                      className="auth-testimonial-card"
+                      style={{
+                        marginTop: '1rem',
+                        padding: isMobile ? '0' : '0 1.5rem',
+                        boxSizing: 'border-box',
+                        backgroundColor: 'transparent',
+                        height: 'auto',
+                        display: 'flex',
+                        justifyContent: isMobile ? 'flex-start' : 'center'
+                      }}
+                    >
+                      <div
+                        className="auth-testimonial-indicators flex justify-start gap-2"
+                        style={{ width: isMobile ? 'auto' : '80%' }}
+                      >
+                        {[0, 1, 2, 3, 4].map((idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => setCurrentTestimonialIndex(idx)}
+                            className={`transition-all duration-300 ${
+                              currentTestimonialIndex === idx
+                                ? 'bg-[#EF0B72]'
+                                : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
+                            }`}
+                            style={{
+                              width: currentTestimonialIndex === idx ? '2rem' : '0.625rem',
+                              height: '0.625rem',
+                              borderRadius: '0.125rem'
+                            }}
+                            aria-label={`Go to testimonial ${idx + 1}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -2454,8 +2519,8 @@ const Auth = () => {
                   fontSize: '2.5rem',
                   lineHeight: '1.2',
                   marginTop: '1rem',
-                  marginBottom: '1rem',
-                  minHeight: '3rem'
+                  marginBottom: isMobile ? '0.6rem' : '1rem',
+                  minHeight: isMobile ? '5rem' : '3rem'
                 }}
               >
                 {renderTypedMerchHeading()}
@@ -2465,13 +2530,12 @@ const Auth = () => {
                 color: 'black',
                 marginBottom: '1.5rem'
               }}>
-                Discover official Ignite merchandise. All profit supports<br />
-                education and social mobility projects across the UK.
+                Discover official Ignite merchandise. All profit supports education and social mobility projects across the UK.
               </p>
             </div>
 
             {/* Images Container - full width, evenly distributed */}
-            <div style={{ width: '100%', paddingLeft: isTablet ? '1rem' : '2rem', paddingRight: isTablet ? '1rem' : '2rem' }} className="auth-section-merch-grid">
+            <div style={{ width: '100%', paddingLeft: isTablet ? '1rem' : 'calc(40px + 99px)', paddingRight: isTablet ? '1rem' : 'calc(40px + 85px)' }} className="auth-section-merch-grid">
               <div
                 className={(isMobile || isTablet) ? "grid grid-cols-2 gap-4" : "flex justify-between items-center"}
                 style={{ width: '100%', maxWidth: isTablet ? '36rem' : 'none', margin: isTablet ? '0 auto' : undefined }}
@@ -2479,6 +2543,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                   alt="Tote bag"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenToteBag}
@@ -2486,6 +2552,8 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                   alt="Black Mug"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenMug}
@@ -2493,22 +2561,28 @@ const Auth = () => {
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                   alt="Notebook"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenNotebook}
                 />
-                {!isTablet && (
+                {!isTablet && !isMobile && (
                   <img
                     src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
                     alt="Quote Tote"
+                    loading="lazy"
+                    decoding="async"
                     className="object-cover rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
-                    style={{ height: isMobile ? '200px' : '250px', width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? '100%' : '18%' }}
+                    style={{ height: '250px', width: 'auto', maxWidth: '18%' }}
                     onClick={handleOpenQuoteTote}
                   />
                 )}
                 <img
                   src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                   alt="Sweatshirt"
+                  loading="lazy"
+                  decoding="async"
                   className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
                   style={{ height: (isMobile || isTablet) ? 'auto' : '250px', width: (isMobile || isTablet) ? '100%' : 'auto', maxWidth: (isMobile || isTablet) ? '100%' : '18%' }}
                   onClick={handleOpenSweatshirt}
@@ -2611,8 +2685,10 @@ const Auth = () => {
                   <h3 className="font-bold text-white text-left auth-section-6-blog-title" style={{ fontSize: '2rem', lineHeight: '1.2', minHeight: '2.4rem', paddingTop: isMobile ? '60px' : '0', marginBottom: '0.5rem' }}>{typedBlogHeading}</h3>
                 </div>
 
-                <div className="w-full" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
-                  <BlogCarousel limit={5} />
+                <div className="w-full auth-section-6-blog-carousel-container" style={{ maxWidth: '30.8rem', width: '85%', margin: '0 auto' }}>
+                  <Suspense fallback={<div className="h-48 bg-[#2a2a2a] rounded-lg animate-pulse" />}>
+                    <BlogCarousel limit={5} />
+                  </Suspense>
                 </div>
               </div>
             </div>
@@ -2635,55 +2711,11 @@ const Auth = () => {
               </button>
             </div>
 
-            {/* Footer Links */}
-            <div className="flex justify-center gap-8 px-4" style={{ paddingBottom: '0.5rem' }}>
-              <a
-                href="mailto:hello@ignite.education"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Contact
-              </a>
-              <a
-                href="https://shop.ignite.education"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Store
-              </a>
-              <a
-                href="https://www.linkedin.com/school/ignite-courses/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                LinkedIn
-              </a>
-              <a
-                href="/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Privacy
-              </a>
-              <a
-                href="/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition font-semibold"
-                style={{ fontSize: '14px' }}
-              >
-                Terms
-              </a>
-            </div>
           </div>
         </div>
 
+        {/* Footer */}
+        <Footer />
       </div>{/* End of auth-sections-2-6-wrapper */}
     </div>
 
@@ -2754,7 +2786,7 @@ const Auth = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-sm font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? 'Sending...' : 'Send Reset Link'}
                   </button>

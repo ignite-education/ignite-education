@@ -13,7 +13,9 @@ export default defineConfig({
           'supabase-vendor': ['@supabase/supabase-js'],
           'stripe-vendor': ['@stripe/stripe-js', 'stripe'],
           'ai-vendor': ['@anthropic-ai/sdk'],
-          'ui-vendor': ['lottie-react', 'react-calendly'],
+          // Split ui-vendor for better lazy loading - lottie only needed for LoadingScreen
+          'lottie': ['lottie-react'],
+          'calendly': ['react-calendly'],
           'icons': ['lucide-react'],
           // Note: cors and express are server-side only, not bundled in frontend
         },

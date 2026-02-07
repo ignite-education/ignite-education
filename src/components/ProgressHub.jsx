@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Mail, Linkedin, ChevronLeft, ChevronRight, MessageSquare, Share2, ThumbsUp, ThumbsDown, MoreHorizontal, X, Lock, FileEdit, User, Inbox, CheckCircle } from 'lucide-react';
 import { InlineWidget } from "react-calendly";
 import { loadStripe } from '@stripe/stripe-js';
 import Lottie from 'lottie-react';
-import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, blockRedditPost, getBlockedRedditPosts, generateCertificate, getUserCertificates, getCoachesForCourse } from '../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getRedditPosts, getCompletedLessons, likePost, unlikePost, getUserLikedPosts, createComment, getMultiplePostsComments, getRedditComments, createCommunityPost, deleteCommunityPost, blockRedditPost, getBlockedRedditPosts, generateCertificate, getUserCertificates, getCoachesForCourse, updateUserCourse } from '../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, clearRedditTokens, voteOnReddit, commentOnReddit, getUserRedditPosts, getUserRedditComments, SUBREDDIT_FLAIRS } from '../lib/reddit';
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
+import Footer from './Footer';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -46,6 +47,48 @@ const CalendlyLoadingSpinner = () => {
   );
 };
 
+// Mobile Block Screen Component
+const MobileBlockScreen = ({ onSignOut }) => {
+  const handleGoBack = async () => {
+    await onSignOut();
+    window.location.href = 'https://ignite.education';
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col justify-center bg-black text-white px-8 relative">
+      <div
+        className="absolute top-6 left-8"
+        style={{
+          backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          width: '120px',
+          height: '40px'
+        }}
+      />
+      <p
+        className="font-semibold"
+        style={{ fontSize: '2.5rem', lineHeight: '1.2', color: '#EF0B72' }}
+      >
+        Learning looks<br />better on a laptop.
+      </p>
+      <p
+        className="mt-4"
+        style={{ fontSize: '1.1rem', lineHeight: '1.5' }}
+      >
+        We're building the mobile version of Ignite. In the meantime, please re-visit us on a tablet or computer.
+      </p>
+      <button
+        onClick={handleGoBack}
+        className="mt-6 px-6 py-3 bg-white text-black font-semibold rounded-lg text-center"
+        style={{ width: 'fit-content' }}
+      >
+        Go back
+      </button>
+    </div>
+  );
+};
+
 const ProgressHub = () => {
   // IMMEDIATE LOGGING - runs before anything else
   console.log('🚀 ProgressHub component loading');
@@ -55,9 +98,10 @@ const ProgressHub = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { firstName, user: authUser, isAdFree, signOut, updateProfile } = useAuth();
+  const { firstName, user: authUser, isAdFree, signOut, updateProfile, isInitialized } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [user, setUser] = useState({ firstName: firstName || 'User', lastName: 'Smith', enrolledCourse: 'Product Management', progress: 40 });
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
@@ -115,6 +159,7 @@ const ProgressHub = () => {
   const [isMouseDown, setIsMouseDown] = useState(false);
   const postsScrollRef = useRef(null);
   const [settingsTab, setSettingsTab] = useState('account'); // 'account', 'preferences', 'danger'
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [settingsForm, setSettingsForm] = useState({
     firstName: '',
     lastName: '',
@@ -135,6 +180,7 @@ const ProgressHub = () => {
   const [snappedCardIndex, setSnappedCardIndex] = useState(0);
   const [isCarouselReady, setIsCarouselReady] = useState(false);
   const hasInitializedScrollRef = useRef(false);
+  const hasInitialDataFetchRef = useRef(false); // Track if initial fetchData has run
   const [enableSmoothScroll, setEnableSmoothScroll] = useState(false);
   const [containerWidth, setContainerWidth] = useState(0);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
@@ -148,6 +194,10 @@ const ProgressHub = () => {
   const [myPostHoverTimer, setMyPostHoverTimer] = useState(null);
   const [userCertificate, setUserCertificate] = useState(null);
   const [certificateGenerated, setCertificateGenerated] = useState(false);
+
+  // First lesson congratulations modal state
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
+  const [isClosingCongratsModal, setIsClosingCongratsModal] = useState(false);
 
   // Payment modal state variables
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -163,6 +213,15 @@ const ProgressHub = () => {
     if (window.location.hash) {
       window.history.replaceState(null, '', window.location.pathname);
     }
+  }, []);
+
+  // Track viewport size for mobile blocking
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Set Safari theme color to black for this page
@@ -188,6 +247,115 @@ const ProgressHub = () => {
     };
   }, []);
 
+  // Check for first lesson congratulations flag on mount
+  useEffect(() => {
+    const shouldShowCongrats = localStorage.getItem('showFirstLessonCongrats');
+    if (shouldShowCongrats === 'true') {
+      setShowCongratsModal(true);
+    }
+  }, []);
+
+  // Handle waitlist signup from OAuth redirect (from coming_soon course page)
+  useEffect(() => {
+    const processWaitlistSignup = async () => {
+      const waitlistCourse = sessionStorage.getItem('pendingWaitlistCourse');
+      if (!waitlistCourse || !authUser) return;
+
+      try {
+        console.log('[ProgressHub] Processing waitlist signup for course:', waitlistCourse);
+
+        // Add user to course_requests table
+        const { error } = await supabase
+          .from('course_requests')
+          .upsert({
+            user_id: authUser.id,
+            course_name: waitlistCourse,
+            status: 'upcoming'
+          }, { onConflict: 'user_id,course_name' });
+
+        if (error) throw error;
+
+        // Mark onboarding as complete so user can browse the site freely
+        await supabase
+          .from('users')
+          .update({ onboarding_completed: true })
+          .eq('id', authUser.id);
+
+        // Clear the pending waitlist flag
+        sessionStorage.removeItem('pendingWaitlistCourse');
+        console.log('[ProgressHub] Successfully added to waitlist:', waitlistCourse);
+
+        // Redirect back to course page with success indicator
+        window.location.href = `/courses/${waitlistCourse}?waitlisted=true`;
+      } catch (err) {
+        console.error('[ProgressHub] Failed to process waitlist signup:', err);
+        // Clear anyway to avoid retry loops
+        sessionStorage.removeItem('pendingWaitlistCourse');
+        // Still redirect back but without success indicator
+        window.location.href = `/courses/${waitlistCourse}`;
+      }
+    };
+
+    if (isInitialized && authUser) {
+      processWaitlistSignup();
+    }
+  }, [isInitialized, authUser]);
+
+  // Handle pending course enrollment from OAuth redirect (from course page sign-in)
+  useEffect(() => {
+    const processPendingEnrollment = async () => {
+      const pendingCourse = sessionStorage.getItem('pendingEnrollmentCourse');
+      if (!pendingCourse || !authUser) return;
+
+      try {
+        console.log('[ProgressHub] Processing pending enrollment for course:', pendingCourse);
+
+        const firstName = authUser.user_metadata?.given_name ||
+                         authUser.user_metadata?.full_name?.split(' ')[0] || '';
+        const lastName = authUser.user_metadata?.family_name ||
+                        authUser.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '';
+
+        await updateUserCourse(authUser.id, pendingCourse, {
+          email: authUser.email,
+          firstName,
+          lastName
+        });
+
+        // Clear the pending enrollment flag
+        sessionStorage.removeItem('pendingEnrollmentCourse');
+        console.log('[ProgressHub] Successfully enrolled in course:', pendingCourse);
+
+        // Mark priority token as used if one exists
+        const priorityToken = sessionStorage.getItem('priorityEnrollmentToken');
+        const priorityCourse = sessionStorage.getItem('priorityEnrollmentCourse');
+        if (priorityToken && priorityCourse === pendingCourse) {
+          try {
+            const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+            await fetch(`${API_URL}/api/use-priority-token`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: priorityToken })
+            });
+            console.log('[ProgressHub] Priority token marked as used');
+          } catch (tokenErr) {
+            console.error('[ProgressHub] Failed to mark priority token as used:', tokenErr);
+          }
+          // Clear priority token storage regardless of API success
+          sessionStorage.removeItem('priorityEnrollmentToken');
+          sessionStorage.removeItem('priorityEnrollmentCourse');
+        }
+      } catch (err) {
+        console.error('[ProgressHub] Failed to process pending enrollment:', err);
+        // Clear anyway to avoid retry loops
+        sessionStorage.removeItem('pendingEnrollmentCourse');
+      }
+    };
+
+    if (isInitialized && authUser) {
+      processPendingEnrollment();
+    }
+  }, [isInitialized, authUser]);
+
   // Refresh user session after successful payment
   useEffect(() => {
     const refreshUserSession = async () => {
@@ -209,43 +377,17 @@ const ProgressHub = () => {
         console.log('⏰ Timestamp:', new Date().toISOString());
         console.log('🔑 Session ID:', hasSessionId);
         console.log('🏁 Pending refresh:', hasPendingRefresh);
-        console.log('⏳ Waiting 3 seconds for webhook to process...');
 
-        // Wait 3 seconds to ensure webhook has time to update user metadata
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Clear the localStorage flag immediately to prevent repeated triggers
+        localStorage.removeItem('pendingPaymentRefresh');
 
-        console.log('🔄 Calling supabase.auth.refreshSession()...');
+        // Remove the query parameters to prevent repeated refreshes
+        window.history.replaceState({}, '', window.location.pathname);
 
-        try {
-          const { data, error } = await supabase.auth.refreshSession();
-
-          if (error) {
-            console.error('❌ Session refresh FAILED');
-            console.error('❌ Error:', error.message);
-            console.error('❌ Error details:', JSON.stringify(error, null, 2));
-            return;
-          }
-
-          console.log('✅ Session refreshed successfully');
-          console.log('👤 User data:', JSON.stringify(data.session?.user, null, 2));
-          console.log('📦 User metadata:', JSON.stringify(data.session?.user?.user_metadata, null, 2));
-          console.log('🎯 is_ad_free value:', data.session?.user?.user_metadata?.is_ad_free);
-
-          // Clear the localStorage flag to prevent repeated refreshes
-          localStorage.removeItem('pendingPaymentRefresh');
-
-          // Remove the query parameters to prevent repeated refreshes
-          window.history.replaceState({}, '', window.location.pathname);
-
-          // Note: No page reload needed - the auth context will automatically update
-          // when the session is refreshed, causing components to re-render with new user data
-          console.log('✅ Payment processed successfully without page reload');
-
-        } catch (err) {
-          console.error('❌ Exception during session refresh');
-          console.error('❌ Error:', err.message);
-          console.error('❌ Stack:', err.stack);
-        }
+        // DO NOT call supabase.auth.refreshSession() - it hangs with the hybrid storage adapter
+        // Instead, just let the page load normally. The user metadata will be fetched fresh
+        // from the database when needed. If we need to force a session update, do a page reload.
+        console.log('✅ Payment flag cleared. User metadata will be fetched from database.');
       }
     };
 
@@ -288,7 +430,7 @@ const ProgressHub = () => {
     };
 
     fetchUserRole();
-  }, [authUser]);
+  }, [authUser?.id]);
 
   // Check Reddit authentication status
   useEffect(() => {
@@ -337,27 +479,49 @@ const ProgressHub = () => {
     checkRedditAuth();
   }, []);
 
-  // Fetch data from Supabase
+  // Fetch data from Supabase - wait for auth to be initialized first
   useEffect(() => {
+    console.log('🔵 [ProgressHub] fetchData useEffect triggered');
+    console.log('🔵 [ProgressHub] isInitialized:', isInitialized);
+    console.log('🔵 [ProgressHub] authUser:', authUser?.id ?? 'null');
+
+    if (!isInitialized) {
+      console.log('🔵 [ProgressHub] ⏳ Waiting for auth to initialize...');
+      return; // Wait for auth to be ready before fetching
+    }
+
+    console.log('🔵 [ProgressHub] ✅ Auth initialized, calling fetchData...');
+
     let isMounted = true;
 
     const loadData = async () => {
+      console.log('🔵 [ProgressHub] loadData called, isMounted:', isMounted);
       if (isMounted) {
         await fetchData();
+        hasInitialDataFetchRef.current = true; // Mark that initial fetch is done
+        console.log('🔵 [ProgressHub] fetchData completed');
       }
     };
 
     loadData();
 
     return () => {
+      console.log('🔵 [ProgressHub] useEffect cleanup, setting isMounted=false');
       isMounted = false;
     };
-  }, []);
+  }, [isInitialized]);
 
-  // Refetch completed lessons when returning to ProgressHub
+  // Refetch completed lessons only when RETURNING to ProgressHub (not on initial mount)
+  // The initial fetch is handled by fetchData above
   useEffect(() => {
+    // Skip on initial mount - fetchData already handles the first load
+    if (!hasInitialDataFetchRef.current) {
+      console.log('🔄 [ProgressHub] Skipping refetch - initial data fetch not yet complete');
+      return;
+    }
+
     const refetchCompletedLessons = async () => {
-      console.log('🔄 ProgressHub useEffect triggered - Location:', location.pathname);
+      console.log('🔄 ProgressHub refetch triggered - Location:', location.pathname);
       if (!authUser) {
         console.log('❌ No authUser, skipping refetch');
         return;
@@ -379,7 +543,7 @@ const ProgressHub = () => {
         }
       }
 
-      console.log('🔄 Fetching completed lessons for userId:', userId);
+      console.log('🔄 Refetching completed lessons for userId:', userId);
 
       try {
         const completedLessonsData = await getCompletedLessons(userId, courseId);
@@ -392,7 +556,7 @@ const ProgressHub = () => {
     };
 
     refetchCompletedLessons();
-  }, [location.pathname, location.search, authUser?.id]);
+  }, [location.pathname]); // Removed location.search - only pathname changes matter
 
   // Update user state when firstName from auth changes
   useEffect(() => {
@@ -489,26 +653,43 @@ const ProgressHub = () => {
 
 
   const fetchData = async () => {
+    console.log('🟢 [fetchData] ========== STARTING fetchData ==========');
+    console.log('🟢 [fetchData] Timestamp:', new Date().toISOString());
+    console.log('🟢 [fetchData] authUser?.id:', authUser?.id ?? 'null');
+
     try {
-      console.log('🔄 Starting fetchData...');
+      const userId = authUser?.id;
+      if (!userId) {
+        console.log('🟢 [fetchData] No userId, setting loading=false and returning');
+        setLoading(false);
+        return;
+      }
+
+      console.log('🟢 [fetchData] userId:', userId);
 
       // Fetch user's enrolled course from database
-      const userId = authUser?.id;
       let courseId = 'product-manager'; // Default fallback
       let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
+        console.log('🟢 [fetchData] Starting users table query...');
+        const queryStartTime = Date.now();
+
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('enrolled_course')
           .eq('id', userId)
           .single();
 
-        if (userData?.enrolled_course) {
+        console.log('🟢 [fetchData] Users query completed in', Date.now() - queryStartTime, 'ms');
+
+        if (userError) {
+          console.error('🔴 [fetchData] User query error:', userError.message);
+        } else if (userData?.enrolled_course) {
           courseId = userData.enrolled_course;
-          console.log('✅ User enrolled in course:', courseId);
+          console.log('🟢 [fetchData] Got enrolled_course:', courseId);
         } else {
-          console.log('⚠️ No enrolled_course found, using default:', courseId);
+          console.log('🟡 [fetchData] No enrolled_course found, using default:', courseId);
         }
       }
 
@@ -910,8 +1091,7 @@ const ProgressHub = () => {
 
       // Post to Reddit using the post subreddit
       console.log('📤 Posting to Reddit...');
-      const contextLine = `\n\nFor context, I'm on the ${user.enrolledCourse} course at [Ignite](https://ignite.education).`;
-      const redditContent = newPost.content + contextLine;
+      const redditContent = newPost.content;
 
       // Use postChannel if available, fallback to channel
       const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
@@ -1198,8 +1378,8 @@ const ProgressHub = () => {
     return isLessonCompleted(prevModuleNum, prevLessonNum);
   };
 
-  // Helper function to calculate total number of lessons in the course
-  const getTotalLessonsCount = () => {
+  // Memoized lesson count calculations to prevent recalculation on every render
+  const totalLessonsCount = useMemo(() => {
     let totalCount = 0;
     Object.keys(groupedLessons).forEach(moduleKey => {
       const moduleData = groupedLessons[moduleKey];
@@ -1207,44 +1387,59 @@ const ProgressHub = () => {
       totalCount += lessonKeys.length;
     });
     return totalCount;
-  };
+  }, [groupedLessons]);
 
-  // Helper function to calculate how many lessons have been completed
-  const getCompletedLessonsCount = () => {
-    // Use the actual completedLessons array from the database
+  const completedLessonsCount = useMemo(() => {
     return completedLessons.length;
-  };
+  }, [completedLessons]);
 
-  // Calculate progress percentage
-  const calculateProgressPercentage = () => {
-    const totalLessons = getTotalLessonsCount();
-    if (totalLessons === 0) return 0;
+  const calculatedProgressPercentage = useMemo(() => {
+    if (totalLessonsCount === 0) return 0;
+    return Math.round((completedLessonsCount / totalLessonsCount) * 100);
+  }, [completedLessonsCount, totalLessonsCount]);
 
-    const completedLessons = getCompletedLessonsCount();
-    return Math.round((completedLessons / totalLessons) * 100);
-  };
+  // Legacy function wrappers for backwards compatibility with existing code
+  const getTotalLessonsCount = () => totalLessonsCount;
+  const getCompletedLessonsCount = () => completedLessonsCount;
+  const calculateProgressPercentage = () => calculatedProgressPercentage;
 
-  // Helper function to get ALL lessons (including completed, current, and upcoming)
-  const getAllLessonsForCarousel = () => {
-    if (lessonsMetadata.length === 0) return [];
+  // Only call getAllLessonsForCarousel if we have data
+  const hasLessonData = Object.keys(groupedLessons).length > 0;
+
+  // Memoize upcomingLessons to prevent infinite re-render loop
+  // (the scroll useEffect depends on this array)
+  const upcomingLessons = useMemo(() => {
+    if (!hasLessonData || lessonsMetadata.length === 0) return [];
 
     // Return all lessons sorted by module and lesson number
-    return lessonsMetadata.sort((a, b) => {
+    return [...lessonsMetadata].sort((a, b) => {
       if (a.module_number !== b.module_number) {
         return a.module_number - b.module_number;
       }
       return a.lesson_number - b.lesson_number;
     });
-  };
-
-  // Only call getAllLessonsForCarousel if we have data
-  const hasLessonData = Object.keys(groupedLessons).length > 0;
-  const upcomingLessons = hasLessonData ? getAllLessonsForCarousel() : [];
-  const progressPercentage = hasLessonData ? calculateProgressPercentage() : user.progress;
+  }, [hasLessonData, lessonsMetadata]);
+  const progressPercentage = hasLessonData ? calculatedProgressPercentage : user.progress;
 
   // Settings Modal Handlers
   const handleOpenSettings = async () => {
-    // Fetch available courses from database (only live courses)
+    // Show modal immediately for responsive feel
+    setShowSettingsModal(true);
+    setSettingsTab('account');
+
+    // Set initial form with current user data (synchronous)
+    setSettingsForm({
+      firstName: authUser?.user_metadata?.first_name || '',
+      lastName: authUser?.user_metadata?.last_name || '',
+      email: authUser?.email || '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
+      selectedCourse: 'product-manager',
+      marketingEmails: authUser?.user_metadata?.marketing_emails !== false
+    });
+
+    // Then fetch additional data in background
     try {
       const { data: coursesData, error } = await supabase
         .from('courses')
@@ -1260,32 +1455,24 @@ const ProgressHub = () => {
     }
 
     // Fetch user's current enrolled course
-    let userEnrolledCourse = 'product-manager';
     if (authUser?.id) {
-      const { data: userData } = await supabase
-        .from('users')
-        .select('enrolled_course')
-        .eq('id', authUser.id)
-        .single();
+      try {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', authUser.id)
+          .single();
 
-      if (userData?.enrolled_course) {
-        userEnrolledCourse = userData.enrolled_course;
+        if (userData?.enrolled_course) {
+          setSettingsForm(prev => ({
+            ...prev,
+            selectedCourse: userData.enrolled_course
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching enrolled course:', error);
       }
     }
-
-    // Populate form with current user data
-    setSettingsForm({
-      firstName: authUser?.user_metadata?.first_name || '',
-      lastName: authUser?.user_metadata?.last_name || '',
-      email: authUser?.email || '',
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-      selectedCourse: userEnrolledCourse,
-      marketingEmails: authUser?.user_metadata?.marketing_emails !== false
-    });
-    setShowSettingsModal(true);
-    setSettingsTab('account');
   };
 
   const handleCloseSettings = () => {
@@ -1294,6 +1481,23 @@ const ProgressHub = () => {
       setShowSettingsModal(false);
       setIsClosingSettingsModal(false);
     }, 200);
+  };
+
+  const handleCloseCongratsModal = () => {
+    setIsClosingCongratsModal(true);
+    setTimeout(() => {
+      setShowCongratsModal(false);
+      setIsClosingCongratsModal(false);
+      // Clear the localStorage flag so it doesn't show again
+      localStorage.removeItem('showFirstLessonCongrats');
+    }, 200);
+  };
+
+  const handleAddToLinkedIn = () => {
+    const encodedCourseName = encodeURIComponent(user.enrolledCourse);
+    const linkedInUrl = `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodedCourseName}&organizationId=106869661&certUrl=https://ignite.education`;
+    window.open(linkedInUrl, '_blank');
+    handleCloseCongratsModal();
   };
 
   const handleManageSubscription = async () => {
@@ -1484,11 +1688,14 @@ const ProgressHub = () => {
   };
 
   const handleLogout = async () => {
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
       await signOut();
       navigate('/auth');
     } catch (error) {
       console.error('Error logging out:', error);
+      setIsLoggingOut(false);
       alert('Failed to log out');
     }
   };
@@ -2360,11 +2567,17 @@ const ProgressHub = () => {
   };
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
+  }
+
+  if (isMobile) {
+    return <MobileBlockScreen onSignOut={signOut} />;
   }
 
   return (
-    <div className="h-screen bg-black text-white flex" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      {/* Two-column layout wrapper */}
+      <div className="h-screen flex">
       {/* Left Sidebar - Fixed */}
       <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
         {/* Header */}
@@ -2411,7 +2624,7 @@ const ProgressHub = () => {
                         href={`/certificate/${userCertificate.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-pink-500 hover:text-pink-400 font-medium"
+                        className="text-[#EF0B72] hover:text-pink-400 font-medium"
                       >
                         View your certificate.
                       </a>
@@ -2902,13 +3115,13 @@ const ProgressHub = () => {
                 <button className="hover:text-[#EF0B72] transition" onClick={handleOpenSettings}>Settings</button>
                 <button
                   className="hover:text-[#EF0B72] transition"
-                  onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.firstName} ${user.lastName}&body=My Ignite Account is ${user.email}`}
+                  onClick={() => window.location.href = `mailto:support@ignite.education?subject=Support Request: ${user.email}`}
                 >
                   Support
                 </button>
                 <button
                   className="hover:text-[#EF0B72] transition"
-                  onClick={() => window.location.href = `mailto:feedback@ignite.education?subject=Feedback: ${user.firstName} ${user.lastName}`}
+                  onClick={() => window.open('https://forms.gle/NCMHA7Qd1Cqi1pUC6', '_blank')}
                 >
                   Feedback
                 </button>
@@ -3064,10 +3277,9 @@ const ProgressHub = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs text-white">{post.author}</span>
+                            <h3 className="font-bold text-sm text-white">{post.title}</h3>
                             <span className="text-xs text-white">• {post.time}</span>
                           </div>
-                          <h3 className="font-bold mb-1 text-sm text-white">{post.title}</h3>
                           <p className={`text-xs text-white leading-relaxed mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`}>{post.content}</p>
                           <div className="flex items-center gap-4 text-xs text-white">
                             <div className="flex items-center gap-1.5">
@@ -3126,11 +3338,7 @@ const ProgressHub = () => {
                           {/* Comment Input - Only show if Reddit is authenticated */}
                           {postComments[post.id] !== 'AUTH_REQUIRED' && (
                             <div className="flex gap-2 mb-4">
-                              <div className={`w-6 h-6 ${post.avatar} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}>
-                                {user.firstName.charAt(0).toUpperCase()}
-                              </div>
-                              <div className="flex-1 flex gap-2">
-                                <input
+                              <input
                                   type="text"
                                   value={commentInputs[post.id] || ''}
                                   onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
@@ -3142,14 +3350,13 @@ const ProgressHub = () => {
                                   placeholder="Add a comment..."
                                   className="flex-1 bg-white text-black text-xs px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-gray-500"
                                 />
-                                <button
-                                  onClick={() => handleSubmitComment(post.id)}
-                                  className="text-white text-xs px-3 py-2 rounded-lg transition font-semibold hover:opacity-90"
-                                  style={{ backgroundColor: '#EF0B72' }}
-                                >
-                                  Post
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleSubmitComment(post.id)}
+                                className="text-white text-xs px-3 py-2 rounded-lg transition font-semibold hover:opacity-90"
+                                style={{ backgroundColor: '#EF0B72' }}
+                              >
+                                Post
+                              </button>
                             </div>
                           )}
 
@@ -3162,7 +3369,7 @@ const ProgressHub = () => {
 
                           {/* Scrollable comments area - max 3 visible */}
                           <div
-                            className="space-y-3 overflow-y-auto"
+                            className="space-y-3 overflow-y-auto overflow-x-hidden"
                             style={{
                               maxHeight: postComments[post.id] === 'AUTH_REQUIRED' ? '60px' : '200px', // Reduce height for auth required
                               scrollbarWidth: 'thin',
@@ -3184,39 +3391,15 @@ const ProgressHub = () => {
                               postComments[post.id].map((comment) => {
                                 // Handle both Reddit comments and user comments
                                 const commentAuthor = comment.author || comment.user_metadata?.first_name || 'User';
-                                const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500', 'bg-blue-600', 'bg-green-600', 'bg-red-600'];
-                                const avatarColor = comment.user_id
-                                  ? avatarColors[comment.user_id.charCodeAt(0) % avatarColors.length]
-                                  : avatarColors[commentAuthor.charCodeAt(0) % avatarColors.length];
                                 const timeAgo = getTimeAgo(comment.created_at);
 
                                 return (
-                                  <div key={comment.id} className="flex gap-2">
-                                    {comment.author_icon ? (
-                                      <img
-                                        src={comment.author_icon}
-                                        alt={commentAuthor}
-                                        className="w-6 h-6 rounded-lg flex-shrink-0 object-cover"
-                                        onError={(e) => {
-                                          // Fallback to colored circle if image fails to load
-                                          e.target.style.display = 'none';
-                                          e.target.nextSibling.style.display = 'flex';
-                                        }}
-                                      />
-                                    ) : null}
-                                    <div
-                                      className={`w-6 h-6 ${avatarColor} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0`}
-                                      style={{ display: comment.author_icon ? 'none' : 'flex' }}
-                                    >
-                                      {commentAuthor.charAt(0).toUpperCase()}
+                                  <div key={comment.id}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs text-white font-semibold">{commentAuthor}</span>
+                                      <span className="text-xs text-white">• {timeAgo}</span>
                                     </div>
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs text-white">u/{commentAuthor}</span>
-                                        <span className="text-xs text-white">• {timeAgo}</span>
-                                      </div>
-                                      <p className="text-xs text-gray-300">{comment.content}</p>
-                                    </div>
+                                    <p className="text-xs text-white break-words">{comment.content}</p>
                                   </div>
                                 );
                               })
@@ -3231,6 +3414,10 @@ const ProgressHub = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Footer */}
+      <Footer />
 
       {/* Post Creation Modal */}
       {showPostModal && (
@@ -3656,6 +3843,74 @@ const ProgressHub = () => {
         </div>
       )}
 
+      {/* First Lesson Congratulations Modal */}
+      {showCongratsModal && (
+        <div
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm animate-fadeIn"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingCongratsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
+          onClick={handleCloseCongratsModal}
+        >
+          <div className="relative w-full px-4" style={{ maxWidth: '632.5px' }}>
+            {/* Modal Card - Entire card is clickable */}
+            <div
+              className="bg-white text-black relative cursor-pointer hover:opacity-95 transition"
+              style={{
+                animation: isClosingCongratsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                padding: '2rem',
+                position: 'relative',
+                zIndex: 9999
+              }}
+              onClick={handleAddToLinkedIn}
+            >
+              {/* Close button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseCongratsModal();
+                }}
+                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Content */}
+              <div className="text-center">
+                <p className="text-black font-semibold" style={{ fontSize: '1.3rem', marginBottom: '0.5rem', paddingTop: '15px' }}>
+                  Congratulations, {user.firstName}!
+                </p>
+                <p className="text-black mb-6">
+                  Celebrate completing your first lesson by adding the course to LinkedIn.<br />
+                  Profiles with certifications get 6x more profile views than those without.
+                </p>
+
+                {/* Add to LinkedIn Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToLinkedIn();
+                  }}
+                  className="w-full text-white font-semibold py-3 px-6 rounded-lg transition flex items-center justify-center gap-2"
+                  style={{ backgroundColor: '#EF0B72' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D90A65'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#EF0B72'}
+                >
+                  Add to
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Linkedin-logo-white-png-wordmark-icon-horizontal-900x233.png"
+                    alt="LinkedIn"
+                    style={{ height: '18px', marginLeft: '-2px' }}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Settings Modal */}
       {showSettingsModal && (
         <div
@@ -3928,7 +4183,8 @@ const ProgressHub = () => {
                     <p className="text-sm text-gray-700 mb-3">Sign out of your account on this device.</p>
                     <button
                       onClick={handleLogout}
-                      className="px-5 py-1.5 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition"
+                      disabled={isLoggingOut}
+                      className="px-5 py-1.5 bg-yellow-500 text-white font-semibold text-sm rounded-lg hover:bg-yellow-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Log Out
                     </button>
@@ -4269,14 +4525,25 @@ const ProgressHub = () => {
                 </button>
               )}
 
-              {/* Design Test Link - Only for Admins */}
+              {/* Blog Management - Only for Admins */}
               {userRole === 'admin' && (
                 <button
-                  onClick={() => navigate('/auth-design')}
+                  onClick={() => navigate('/admin/blog')}
                   className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
                 >
                   <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
-                  <span className="text-sm font-medium">Auth Design Test</span>
+                  <span className="text-sm font-medium">Blog Management</span>
+                </button>
+              )}
+
+              {/* Release Notes Management - Only for Admins */}
+              {userRole === 'admin' && (
+                <button
+                  onClick={() => navigate('/admin/release-notes')}
+                  className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
+                >
+                  <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
+                  <span className="text-sm font-medium">Release Notes</span>
                 </button>
               )}
             </div>

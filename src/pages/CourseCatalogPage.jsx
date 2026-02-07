@@ -1,0 +1,26 @@
+import React, { useEffect } from 'react';
+import SEO from '../components/SEO';
+import CourseCatalog from '../components/CourseCatalog';
+import CoursesNavbar from '../components/CoursesNavbar';
+import Footer from '../components/Footer';
+
+const CourseCatalogPage = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  return (
+    <>
+      <SEO
+        title="Courses | Ignite Education"
+        description="Explore free courses in Product Management, Cybersecurity, Data Analysis, and more. Find your specialism, skill, or subject to start learning today."
+        url="https://ignite.education/courses"
+      />
+      <CoursesNavbar />
+      <CourseCatalog variant="full" />
+      <Footer />
+    </>
+  );
+};
+
+export default CourseCatalogPage;

@@ -180,7 +180,7 @@ export default function Certificate() {
               <>
                 <button
                   onClick={handleShare}
-                  className="px-6 py-2 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-base"
+                  className="px-6 py-2 bg-[#EF0B72] hover:bg-[#d00a66] text-white font-medium rounded-lg transition-colors flex items-center gap-2 text-base"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
@@ -257,7 +257,7 @@ export default function Certificate() {
               </p>
 
               {/* User Name */}
-              <h2 className="text-3xl font-semibold mt-[7px] mb-2 mr-[-10px]  text-[#ec4899]">
+              <h2 className="text-3xl font-semibold mt-[7px] mb-2 mr-[-10px]  text-[#EF0B72]">
                 {certificate.user_name}
               </h2>
 
@@ -269,7 +269,7 @@ export default function Certificate() {
               </p>
 
               {/* Awarded By */}
-              <div className="mb-12">
+              <div className="mb-4">
                 <p className="text-sm text-gray-600 mb-1">Awarded by</p>
                 <p className="text-base font-semibold text-black">
                   Max Shillam, Founder of Ignite

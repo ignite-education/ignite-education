@@ -10,6 +10,7 @@ const CoursesDashboard = () => {
   const [newCourse, setNewCourse] = useState({
     title: '',
     status: 'requested',
+    course_type: 'skill',
     modules: '',
     lessons: 0,
     description: ''
@@ -88,6 +89,7 @@ const CoursesDashboard = () => {
           title: newCourse.title,
           name: newCourse.title, // Also set name for compatibility
           status: newCourse.status,
+          course_type: newCourse.course_type,
           modules: newCourse.modules,
           lessons: newCourse.lessons,
           description: newCourse.description,
@@ -102,6 +104,7 @@ const CoursesDashboard = () => {
       setNewCourse({
         title: '',
         status: 'requested',
+        course_type: 'skill',
         modules: '',
         lessons: 0,
         description: ''
@@ -383,17 +386,32 @@ const CoursesDashboard = () => {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">Status</label>
-                  <select
-                    value={newCourse.status}
-                    onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
-                  >
-                    <option value="live">Available</option>
-                    <option value="coming_soon">Coming Soon</option>
-                    <option value="requested">Requested</option>
-                  </select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Status</label>
+                    <select
+                      value={newCourse.status}
+                      onChange={(e) => setNewCourse({ ...newCourse, status: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    >
+                      <option value="live">Available</option>
+                      <option value="coming_soon">Coming Soon</option>
+                      <option value="requested">Requested</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Course Type</label>
+                    <select
+                      value={newCourse.course_type}
+                      onChange={(e) => setNewCourse({ ...newCourse, course_type: e.target.value })}
+                      className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-pink-500"
+                    >
+                      <option value="specialism">Specialism</option>
+                      <option value="skill">Skill</option>
+                      <option value="subject">Subject</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

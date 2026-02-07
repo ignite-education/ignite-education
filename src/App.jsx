@@ -3,7 +3,17 @@ import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
-import LoadingScreen from './components/LoadingScreen'
+import { prefetchCourses } from './lib/courseCatalogCache'
+
+// Lazy-load LoadingScreen to defer ui-vendor chunk (lottie-react)
+const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
+
+// Simple CSS-only loader as fallback while LoadingScreen chunk loads
+const SimpleLoader = () => (
+  <div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center">
+    <div className="w-12 h-12 border-3 border-[#EF0B72] border-t-transparent rounded-full animate-spin" />
+  </div>
+)
 
 // Lazy load all route components for code splitting
 const ProgressHub = lazy(() => import('./components/ProgressHub'))
@@ -12,6 +22,7 @@ const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
 const Auth = lazy(() => import('./components/Auth'))
 const AuthDesign = lazy(() => import('./components/AuthDesign'))
+const SignIn = lazy(() => import('./components/SignIn'))
 const ResetPassword = lazy(() => import('./components/ResetPassword'))
 const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
@@ -22,51 +33,38 @@ const Certificate = lazy(() => import('./components/Certificate'))
 const CoursePage = lazy(() => import('./pages/CoursePage'))
 const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const BlogManagement = lazy(() => import('./pages/BlogManagement'))
+const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'))
+const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
-
-// Component to redirect authenticated users away from auth pages
-function AuthRoute({ children }) {
-  const { user, isInitialized } = useAuth();
-
-  // Don't render anything until auth is initialized to prevent flicker
-  if (!isInitialized) {
-    return <LoadingScreen showTimeoutMessage={false} />;
-  }
-
-  // If user is authenticated, redirect to progress page
-  if (user) {
-    return <Navigate to="/progress" replace />;
-  }
-
-  // User is not authenticated, show the auth page
-  return children;
-}
+const CourseCatalogPage = lazy(() => import('./pages/CourseCatalogPage'))
 
 function App() {
   // Signal to prerenderer that the page is ready
   useEffect(() => {
     document.dispatchEvent(new Event('render-complete'));
+
+    // Prefetch course catalog data after initial load
+    // Uses requestIdleCallback for non-blocking prefetch
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(() => prefetchCourses());
+    } else {
+      setTimeout(() => prefetchCourses(), 1000);
+    }
   }, []);
 
   return (
     <BrowserRouter>
       <AnimationProvider>
         <AuthProvider>
-          <Suspense fallback={<LoadingScreen showTimeoutMessage={true} />}>
+          <Suspense fallback={<Suspense fallback={<SimpleLoader />}><LoadingScreen showTimeoutMessage={true} /></Suspense>}>
           <Routes>
-            <Route path="/welcome" element={
-              <AuthRoute>
-                <Auth />
-              </AuthRoute>
-            } />
-            <Route path="/auth-design" element={
-              <AuthRoute>
-                <AuthDesign />
-              </AuthRoute>
-            } />
+            <Route path="/welcome" element={<Auth />} />
+            <Route path="/auth-design" element={<AuthDesign />} />
+            <Route path="/sign-in" element={<SignIn />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/release-notes" element={<ReleaseNotes />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <ProgressHub />
@@ -100,11 +98,17 @@ function App() {
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
             <Route path="/certificate/:certificateId" element={<Certificate />} />
+            <Route path="/courses" element={<CourseCatalogPage />} />
             <Route path="/courses/:courseSlug" element={<CoursePage />} />
             <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/admin/blog" element={
               <ProtectedRoute>
                 <BlogManagement />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/release-notes" element={
+              <ProtectedRoute>
+                <ReleaseNotesManagement />
               </ProtectedRoute>
             } />
             <Route path="*" element={<NotFound />} />

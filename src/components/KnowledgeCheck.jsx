@@ -5,7 +5,7 @@ import { logKnowledgeCheck } from '../lib/api';
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsContext, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
+const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, lessonName, moduleNum, lessonNum, userId, firstName, userRole, nextLessonName, isFirstLesson, courseName }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -18,16 +18,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
   const [displayedText, setDisplayedText] = useState('');
   const [pendingTypingIndex, setPendingTypingIndex] = useState(null);
   const chatContainerRef = useRef(null);
-  const lastUserScrollTime = useRef(0);
   const pendingFinalScoreRef = useRef(null);
   const pendingNextQuestionRef = useRef(null);
   const textareaRef = useRef(null);
   const hasCalledOnPassRef = useRef(false);
 
-  // Dynamic question count and pass threshold based on whether it's the first lesson
-  const TOTAL_QUESTIONS = isFirstLesson ? 3 : 5;
-  const PASS_THRESHOLD = isFirstLesson ? 2 : 4;
-  const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 2;
+  // All lessons have 3 questions: 1 recall from prior lessons, 2 from current lesson
+  // First lesson has no prior content to recall from, so all 3 are from current lesson
+  const TOTAL_QUESTIONS = 3;
+  const PASS_THRESHOLD = 2;
+  const NUM_PRIOR_QUESTIONS = isFirstLesson ? 0 : 1;
 
   useEffect(() => {
     if (isOpen && currentQuestionIndex === 0 && chatMessages.length === 0) {
@@ -56,9 +56,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         if (isFirstLesson) {
           messageText = `${greetingText}.\n\nI'll now ask you three questions, which you should answer in natural language as if you were talking to a person. Make sure your answers are sufficiently detailed. You will need to answer two or more correctly to pass. If you close this window, you will need to restart.\n\n**Ready to begin?**`;
         } else {
-          const courseNameText = courseName || "course";
-          const lessonNameText = lessonName || "this lesson";
-          messageText = `${greetingText}.\n\nI'll now ask you five questions, which you should answer in natural language as if you were talking to a person. The first two questions are from previous ${courseNameText} content, followed by three questions from ${lessonNameText}. You need to answer four or more correctly to pass.\n\n**Ready to begin?**`;
+          const lessonNameTextForMsg = lessonName || "this lesson";
+          messageText = `${greetingText}.\n\nI'll now ask you three questions, which you should answer in natural language as if you were talking to a person. The first question reviews previous content, followed by two questions from ${lessonNameTextForMsg}. You need to answer two or more correctly to pass.\n\n**Ready to begin?**`;
         }
 
         setChatMessages([{
@@ -71,25 +70,13 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
     }
   }, [isOpen, firstName, lessonName, isFirstLesson, courseName, TOTAL_QUESTIONS, PASS_THRESHOLD]);
 
-  // Handle chat scroll to track user scroll time
-  const handleChatScroll = () => {
-    lastUserScrollTime.current = Date.now();
-  };
-
   useEffect(() => {
     if (chatContainerRef.current) {
-      // Skip auto-scroll if user scrolled recently (within 150ms)
-      if (Date.now() - lastUserScrollTime.current < 150) {
-        return;
-      }
-
-      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
-      const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
-
-      // Only auto-scroll if user is already near the bottom
-      if (isAtBottom) {
-        chatContainerRef.current.scrollTop = scrollHeight;
-      }
+      // Always scroll to bottom when messages change or during typing
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
     }
   }, [chatMessages, displayedText]);
 
@@ -234,14 +221,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lessonContext,
-          priorLessonsContext,
+          courseId,
+          moduleNumber: moduleNum,
+          lessonNumber: lessonNum,
           questionNumber: questionNum,
           totalQuestions: TOTAL_QUESTIONS,
-          previousQA: currentAnswers,
+          previousQA: currentAnswers.map(qa => ({
+            question: qa.question,
+            questionId: qa.questionId
+          })),
           isAboutPriorLessons,
-          numPriorQuestions: NUM_PRIOR_QUESTIONS,
-          useBritishEnglish: true,
         }),
       });
 
@@ -255,7 +244,19 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
             type: 'assistant',
             text: `${questionNum}. ${data.question}`,
             isComplete: false,
-            isQuestion: true
+            isQuestion: true,
+            questionId: data.questionId
+          }];
+        });
+      } else if (data.needsGeneration) {
+        // Questions not yet generated for this lesson
+        setChatMessages(prev => {
+          const newMessageIndex = prev.length;
+          setPendingTypingIndex(newMessageIndex);
+          return [...prev, {
+            type: 'assistant',
+            text: 'Knowledge check questions are still being prepared for this lesson. Please try again in a moment or contact support if this persists.',
+            isComplete: false
           }];
         });
       } else {
@@ -268,7 +269,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         setPendingTypingIndex(newMessageIndex);
         return [...prev, {
           type: 'assistant',
-          text: 'Sorry, I encountered an error getting the next question. Please try again! 😊',
+          text: 'Sorry, I encountered an error getting the next question. Please try again!',
           isComplete: false
         }];
       });
@@ -296,8 +297,11 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
       const data = await response.json();
 
       if (data.success) {
+        // Get the last question message to extract questionId
+        const lastQuestionMessage = chatMessages[chatMessages.length - 1];
         const newAnswer = {
-          question: chatMessages[chatMessages.length - 1].text,
+          question: lastQuestionMessage.text,
+          questionId: lastQuestionMessage.questionId,
           answer: userAnswer,
           isCorrect: data.isCorrect,
           feedback: data.feedback,
@@ -407,6 +411,16 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
         }];
       }
     });
+
+    // Force scroll to bottom after result message appears so user can see it fully
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTo({
+          top: chatContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      }
+    }, 100);
   };
 
   const autoResizeTextarea = () => {
@@ -555,29 +569,15 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
           {/* Chat messages */}
           <div
             ref={chatContainerRef}
-            onScroll={handleChatScroll}
             className="flex-1 overflow-y-auto px-8 py-8 hide-scrollbar"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <div className="flex flex-col min-h-full justify-end">
-            {chatMessages.map((msg, idx) => {
-              // Calculate spacing: more space around user messages for visual separation
-              const isUserMessage = msg.type === 'user';
-              const prevIsAssistant = idx > 0 && chatMessages[idx - 1]?.type === 'assistant';
-              const nextIsAssistant = idx < chatMessages.length - 1 && chatMessages[idx + 1]?.type === 'assistant';
-
-              // Add top margin when user message follows assistant message
-              const marginTop = isUserMessage && prevIsAssistant ? '1rem' : '0';
-              // Add bottom margin when user message precedes assistant message
-              const marginBottom = idx < chatMessages.length - 1
-                ? (isUserMessage && nextIsAssistant ? '1rem' : '0.5rem')
-                : '0';
-
-              return (
+            {chatMessages.map((msg, idx) => (
               <div
                 key={idx}
                 className={msg.type === 'user' ? 'flex justify-end' : ''}
-                style={{ marginTop, marginBottom }}
+                style={{ marginBottom: idx < chatMessages.length - 1 ? '0.75rem' : '0' }}
               >
                 {msg.type === 'assistant' ? (
                   msg.isPassed ? (
@@ -594,10 +594,10 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#22c55e' }}>
                           <Check size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
                         </div>
-                        <span className="font-medium mt-1">You scored {msg.score}</span>
+                        <span className="font-semibold mt-1">You scored {msg.score}</span>
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
-                        <p className="font-medium">{msg.congratsLine1}</p>
+                        <p className="font-semibold">{msg.congratsLine1}</p>
                         <p style={{ marginTop: '2px' }}>{msg.congratsLine2}</p>
                         <p style={{ marginTop: '2px' }}>{msg.congratsLine3}</p>
                       </div>
@@ -616,17 +616,17 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         <div className="w-5 h-5 rounded flex items-center justify-center" style={{ backgroundColor: '#f97316' }}>
                           <X size={14} strokeWidth={3} style={{ color: '#f3f4f6' }} />
                         </div>
-                        <span className="font-medium mt-1">You scored {msg.score}</span>
+                        <span className="font-semibold mt-1">You scored {msg.score}</span>
                       </div>
                       <div className="flex flex-col justify-center" style={{ width: '65%' }}>
-                        <p className="font-medium">{msg.failedLine1}</p>
+                        <p className="font-semibold">{msg.failedLine1}</p>
                         <p style={{ marginTop: '2px' }}>{msg.failedLine2}</p>
                         <p style={{ marginTop: '2px' }}>{msg.failedLine3}</p>
                       </div>
                     </div>
                   ) : (
                     // Regular assistant message
-                    <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-medium' : ''}`} style={{
+                    <div className={`p-3 text-black text-sm leading-snug inline-block max-w-[95%] ${msg.isQuestion ? 'font-semibold' : ''}`} style={{
                       borderRadius: '8px',
                       backgroundColor: '#f3f4f6',
                       animation: 'slideUp 0.25s ease-out forwards'
@@ -659,11 +659,13 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
 
                               if (boldEnd === -1) {
                                 // No closing ** yet (typing in progress) - render as bold without the **
-                                result.push(<strong key={key++} className="font-medium">{afterStart}</strong>);
+                                // Strip trailing * to avoid flash when typing the closing **
+                                const textToShow = afterStart.endsWith('*') ? afterStart.slice(0, -1) : afterStart;
+                                result.push(<strong key={key++} className="font-semibold">{textToShow}</strong>);
                                 break;
                               } else {
                                 // Complete bold section
-                                result.push(<strong key={key++} className="font-medium">{afterStart.substring(0, boldEnd)}</strong>);
+                                result.push(<strong key={key++} className="font-semibold">{afterStart.substring(0, boldEnd)}</strong>);
                                 remaining = afterStart.substring(boldEnd + 2);
                               }
                             }
@@ -679,7 +681,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                         })}
                         {/* Show bold suffix instantly when message is complete */}
                         {msg.boldSuffix && msg.isComplete && (
-                          <p className="mt-3 font-medium">{msg.boldSuffix}</p>
+                          <p className="mt-3 font-semibold">{msg.boldSuffix}</p>
                         )}
                       </div>
                     </div>
@@ -694,8 +696,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                   </div>
                 )}
               </div>
-              );
-            })}
+            ))}
 
             {isEvaluating && (
               <div style={{ marginTop: '1rem' }}>
@@ -741,7 +742,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 <button
                   type="submit"
                   disabled={isEvaluating || !chatInput.trim()}
-                  className="w-full text-white px-4 py-2 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full text-white px-4 py-2 font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                   onMouseEnter={(e) => !isEvaluating && chatInput.trim() && (e.currentTarget.style.backgroundColor = '#6610C7')}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}
@@ -754,7 +755,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 {score >= PASS_THRESHOLD ? (
                   <button
                     onClick={handleProceed}
-                    className="w-full text-white px-4 py-2 font-medium transition"
+                    className="w-full text-white px-4 py-2 font-semibold transition"
                     style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#EF0B72' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#D90A65'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
@@ -764,7 +765,7 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, priorLessonsCo
                 ) : (
                   <button
                     onClick={handleClose}
-                    className="w-full text-white px-4 py-2 font-medium transition"
+                    className="w-full text-white px-4 py-2 font-semibold transition"
                     style={{ borderRadius: '1rem', fontSize: '0.85rem', backgroundColor: '#7714E0' }}
                     onMouseEnter={(e) => e.target.style.backgroundColor = '#6610C7'}
                     onMouseLeave={(e) => e.target.style.backgroundColor = '#7714E0'}

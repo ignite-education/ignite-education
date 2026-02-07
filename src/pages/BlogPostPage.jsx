@@ -1,14 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getPostBySlug, formatDate } from '../lib/blogApi';
 import { supabase } from '../lib/supabase';
 import SEO, { generateBlogPostStructuredData } from '../components/SEO';
 import { Home, ChevronRight, Volume2, Pause, Link2, Check } from 'lucide-react';
 import Lottie from 'lottie-react';
+import Footer from '../components/Footer';
+import CoursePageNavbar from '../components/CoursePageNavbar';
 import { useAnimation } from '../contexts/AnimationContext';
+import { extractTextFromHtml, splitIntoWords } from '../utils/textNormalization';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+
+// No offset - using raw ElevenLabs timestamps for debugging
+const HIGHLIGHT_LAG_OFFSET = 0;
+
+// Debug mode - set to true to see detailed logging
+const DEBUG_NARRATION = true;
 
 const BlogPostPage = () => {
   const { slug } = useParams();
@@ -19,7 +28,6 @@ const BlogPostPage = () => {
   const [error, setError] = useState(null);
   const [typedTitle, setTypedTitle] = useState('');
   const [isTypingComplete, setIsTypingComplete] = useState(false);
-  const [scrollProgress, setScrollProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
   // Narration state
@@ -35,40 +43,12 @@ const BlogPostPage = () => {
   const articleRef = useRef(null);
   const headerWordIndicesRef = useRef([]); // Tracks word indices where headers start
   const lastScrolledHeaderRef = useRef(-1); // Tracks which header we last scrolled to
+  const contentContainerRef = useRef(null); // For direct DOM highlight manipulation
+  const currentHighlightRef = useRef(null); // Track currently highlighted element
 
   useEffect(() => {
     fetchPost();
   }, [slug]);
-
-  // Track scroll progress - starts when white content passes bottom of nav bar (~58px)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!whiteContentRef.current) return;
-
-      const navBarHeight = 58; // Height of sticky nav bar
-      const whiteContentTop = whiteContentRef.current.getBoundingClientRect().top;
-      const whiteContentHeight = whiteContentRef.current.offsetHeight;
-      const viewportHeight = window.innerHeight;
-
-      // Only start progress when white content passes below the nav bar
-      if (whiteContentTop > navBarHeight) {
-        setScrollProgress(0);
-        return;
-      }
-
-      // Calculate progress based on how much of white content has scrolled past the nav bar
-      const scrolledPast = navBarHeight - whiteContentTop;
-      const scrollableHeight = whiteContentHeight - viewportHeight + navBarHeight;
-
-      if (scrollableHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (scrolledPast / scrollableHeight) * 100));
-        setScrollProgress(progress);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const fetchPost = async () => {
     try {
@@ -114,21 +94,17 @@ const BlogPostPage = () => {
     return () => {};
   }, [post]);
 
-  // Extract plain text from HTML content and split into words
-  const extractTextFromHtml = (html) => {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return div.textContent || div.innerText || '';
-  };
-
   // Parse content into words when post loads and build header word index map
+  // IMPORTANT: Uses shared extractTextFromHtml and splitIntoWords from textNormalization.js
+  // to ensure word counting matches the backend's word timestamp generation
   useEffect(() => {
     if (post?.content) {
       const plainText = extractTextFromHtml(post.content);
-      const words = plainText.split(/(\s+)/).filter(word => word.trim().length > 0);
+      const words = splitIntoWords(plainText);
       setContentWords(words);
 
       // Build a map of word indices where headers (h2, h3) start
+      // Note: We need to use the same normalized text extraction for consistency
       const div = document.createElement('div');
       div.innerHTML = post.content;
       const headerIndices = [];
@@ -137,7 +113,9 @@ const BlogPostPage = () => {
       const walkNodes = (node) => {
         if (node.nodeType === Node.TEXT_NODE) {
           const text = node.textContent;
-          const nodeWords = text.split(/(\s+)/).filter(w => w.trim().length > 0);
+          // Use same normalization: collapse whitespace, split on space
+          const normalizedText = text.replace(/\s+/g, ' ').trim();
+          const nodeWords = normalizedText.split(' ').filter(w => w.length > 0);
           wordIndex += nodeWords.length;
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           const tagName = node.tagName.toLowerCase();
@@ -253,7 +231,7 @@ const BlogPostPage = () => {
     }
   };
 
-  // Handle read aloud functionality
+  // Handle read aloud functionality - only works with pre-generated audio
   const handleReadAloud = async () => {
     // If already reading, stop
     if (isReading) {
@@ -264,62 +242,89 @@ const BlogPostPage = () => {
       if (wordTimerRef.current) {
         cancelAnimationFrame(wordTimerRef.current);
       }
+      // Clear DOM highlight
+      if (currentHighlightRef.current) {
+        currentHighlightRef.current.style.backgroundColor = '';
+        currentHighlightRef.current.style.padding = '';
+        currentHighlightRef.current.style.margin = '';
+        currentHighlightRef.current.style.borderRadius = '';
+        currentHighlightRef.current = null;
+      }
       setIsReading(false);
       setCurrentWordIndex(-1);
       lastScrolledHeaderRef.current = -1; // Reset scroll tracker
       return;
     }
 
+    // Only proceed if pre-generated audio exists
+    if (!preGeneratedAudio?.audio_url) return;
+
     // Reset scroll tracker when starting fresh
     lastScrolledHeaderRef.current = -1;
 
-    if (!post?.content) return;
+    // Reset render debug flag so we log each playback session
+    window._renderDebugLogged = false;
 
     try {
       setIsReading(true);
 
-      let audioUrl;
-      let shouldRevokeUrl = false;
+      const audioUrl = preGeneratedAudio.audio_url;
 
-      // Check if pre-generated audio is available
-      if (preGeneratedAudio?.audio_url) {
-        // Use pre-generated audio
-        audioUrl = preGeneratedAudio.audio_url;
+      // Use pre-generated word timestamps if available
+      if (preGeneratedAudio.word_timestamps) {
+        wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
 
-        // Use pre-generated word timestamps if available
-        if (preGeneratedAudio.word_timestamps) {
-          wordTimestampsRef.current = preGeneratedAudio.word_timestamps;
-        }
-      } else {
-        // Fall back to live TTS API
-        const plainText = extractTextFromHtml(post.content);
+        if (DEBUG_NARRATION) {
+          console.log('═══════════════════════════════════════════════════');
+          console.log('📊 NARRATION DEBUG - Full Word Comparison');
+          console.log('═══════════════════════════════════════════════════');
+          console.log('Backend word count:', preGeneratedAudio.word_timestamps.length);
+          console.log('Frontend word count:', contentWords.length);
+          console.log('Difference:', preGeneratedAudio.word_timestamps.length - contentWords.length);
 
-        const response = await fetch(`${API_URL}/api/text-to-speech-timestamps`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: plainText, voiceGender: 'male' })
-        });
+          // Compare ALL words and find first divergence
+          const maxLen = Math.max(preGeneratedAudio.word_timestamps.length, contentWords.length);
+          let firstMismatchIndex = -1;
+          let mismatchCount = 0;
 
-        if (!response.ok) {
-          throw new Error('Failed to generate speech');
-        }
+          console.log('\n📝 Full word-by-word comparison (ALL words with timestamps):');
+          for (let i = 0; i < maxLen; i++) {
+            const ts = preGeneratedAudio.word_timestamps[i];
+            const backendWord = ts?.word || '(none)';
+            const frontendWord = contentWords[i] || '(none)';
+            const match = backendWord === frontendWord;
+            const timing = ts ? `${ts.start.toFixed(3)}s - ${ts.end.toFixed(3)}s` : 'no timing';
 
-        const data = await response.json();
+            if (!match) {
+              mismatchCount++;
+              if (firstMismatchIndex === -1) {
+                firstMismatchIndex = i;
+              }
+              console.log(`  [${i}] "${backendWord}" vs "${frontendWord}" | ${timing} ✗ MISMATCH`);
+            } else {
+              // Log ALL words, not just mismatches
+              console.log(`  [${i}] "${backendWord}" | ${timing} ✓`);
+            }
+          }
 
-        // Convert base64 audio to blob
-        const audioData = atob(data.audio_base64);
-        const arrayBuffer = new ArrayBuffer(audioData.length);
-        const view = new Uint8Array(arrayBuffer);
-        for (let i = 0; i < audioData.length; i++) {
-          view[i] = audioData.charCodeAt(i);
-        }
-        const audioBlob = new Blob([arrayBuffer], { type: 'audio/mpeg' });
-        audioUrl = URL.createObjectURL(audioBlob);
-        shouldRevokeUrl = true;
+          console.log('\n📊 Summary:');
+          console.log(`  Total mismatches: ${mismatchCount}`);
+          console.log(`  First mismatch at index: ${firstMismatchIndex}`);
 
-        // Store word timestamps
-        if (data.word_timestamps) {
-          wordTimestampsRef.current = data.word_timestamps;
+          if (firstMismatchIndex >= 0) {
+            console.log('\n🔍 Context around first mismatch (5 words before and after):');
+            const start = Math.max(0, firstMismatchIndex - 5);
+            const end = Math.min(maxLen, firstMismatchIndex + 6);
+            for (let i = start; i < end; i++) {
+              const backendWord = preGeneratedAudio.word_timestamps[i]?.word || '(none)';
+              const frontendWord = contentWords[i] || '(none)';
+              const match = backendWord === frontendWord ? '✓' : '✗';
+              const marker = i === firstMismatchIndex ? ' <<< FIRST MISMATCH' : '';
+              console.log(`  [${i}] Backend: "${backendWord}" | Frontend: "${frontendWord}" ${match}${marker}`);
+            }
+          }
+
+          console.log('═══════════════════════════════════════════════════\n');
         }
       }
 
@@ -330,18 +335,12 @@ const BlogPostPage = () => {
       audio.onended = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        if (shouldRevokeUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
         audioRef.current = null;
       };
 
       audio.onerror = () => {
         setIsReading(false);
         setCurrentWordIndex(-1);
-        if (shouldRevokeUrl) {
-          URL.revokeObjectURL(audioUrl);
-        }
         audioRef.current = null;
       };
 
@@ -349,8 +348,7 @@ const BlogPostPage = () => {
 
       // Start word highlighting
       const startWordHighlighting = () => {
-        setCurrentWordIndex(0);
-        let lastHighlightedWord = 0;
+        let lastHighlightedWord = -1;
 
         const updateHighlight = () => {
           if (!audio || audio.paused || audio.ended) {
@@ -362,24 +360,86 @@ const BlogPostPage = () => {
 
           for (let i = 0; i < wordTimestampsRef.current.length; i++) {
             const timestamp = wordTimestampsRef.current[i];
-            if (currentTime >= timestamp.start && currentTime < timestamp.end) {
+            // Highlight if current time is within this word's time range
+            if (currentTime >= (timestamp.start + HIGHLIGHT_LAG_OFFSET) && currentTime < timestamp.end) {
               wordToHighlight = i;
               break;
             }
-            if (currentTime >= timestamp.end && i < wordTimestampsRef.current.length - 1) {
+            // If we're past this word but before the next word starts, keep highlighting this word
+            // This prevents flickering in gaps between words
+            if (i < wordTimestampsRef.current.length - 1) {
               const nextTimestamp = wordTimestampsRef.current[i + 1];
-              if (currentTime < nextTimestamp.start) {
+              if (currentTime >= timestamp.end && currentTime < (nextTimestamp.start + HIGHLIGHT_LAG_OFFSET)) {
                 wordToHighlight = i;
                 break;
               }
             }
           }
 
+          // Only update if the word has changed
           if (wordToHighlight !== lastHighlightedWord) {
+            // Debug: Log word transitions (reduced logging for performance)
+            if (DEBUG_NARRATION) {
+              const ts = wordTimestampsRef.current[wordToHighlight];
+              const jump = wordToHighlight - lastHighlightedWord;
+
+              // Always log if there's an anomaly (skip or backwards jump)
+              // Skip logging for the initial transition from -1 to 0
+              if (jump !== 1 && lastHighlightedWord !== -1) {
+                console.warn(`⚠️ JUMP DETECTED: ${lastHighlightedWord} → ${wordToHighlight} (jump of ${jump}) at audio=${currentTime.toFixed(3)}s`);
+              }
+
+              // Log every 50th word to reduce console spam
+              if (wordToHighlight % 50 === 0) {
+                console.log(`🎯 Word ${wordToHighlight}: audio=${currentTime.toFixed(3)}s | timestamp=${ts?.start.toFixed(3)}-${ts?.end.toFixed(3)}s | "${ts?.word}"`);
+              }
+            }
+
             lastHighlightedWord = wordToHighlight;
-            setCurrentWordIndex(wordToHighlight);
+
+            // DIRECT DOM MANIPULATION - bypass React state for faster updates
+            // Clear previous highlight
+            if (currentHighlightRef.current) {
+              currentHighlightRef.current.style.backgroundColor = '';
+              currentHighlightRef.current.style.padding = '';
+              currentHighlightRef.current.style.margin = '';
+              currentHighlightRef.current.style.borderRadius = '';
+            }
+
+            // Find and highlight new word directly in DOM
+            if (contentContainerRef.current) {
+              const wordSpan = contentContainerRef.current.querySelector(`[data-word-index="${wordToHighlight}"]`);
+              // Only highlight if word exists and is not marked to skip (e.g., H2 headers)
+              if (wordSpan && !wordSpan.hasAttribute('data-skip-highlight')) {
+                wordSpan.style.backgroundColor = '#fde7f4';
+                wordSpan.style.padding = '2px';
+                wordSpan.style.margin = '-2px';
+                wordSpan.style.borderRadius = '2px';
+                currentHighlightRef.current = wordSpan;
+              } else {
+                // Word is skipped (H2) - clear any previous highlight but don't set a new one
+                currentHighlightRef.current = null;
+              }
+            }
+
             // Check if we've reached a header and should scroll
+            // (No React state updates here - we use direct DOM manipulation only)
             checkAndScrollToHeader(wordToHighlight);
+          }
+
+          // If we're past all words, clear highlighting
+          if (currentTime >= wordTimestampsRef.current[wordTimestampsRef.current.length - 1].end) {
+            // Clear DOM highlight
+            if (currentHighlightRef.current) {
+              currentHighlightRef.current.style.backgroundColor = '';
+              currentHighlightRef.current.style.padding = '';
+              currentHighlightRef.current.style.margin = '';
+              currentHighlightRef.current.style.borderRadius = '';
+              currentHighlightRef.current = null;
+            }
+            setCurrentWordIndex(-1);
+            wordTimerRef.current = null;
+            return;
           }
 
           wordTimerRef.current = requestAnimationFrame(updateHighlight);
@@ -388,11 +448,17 @@ const BlogPostPage = () => {
         wordTimerRef.current = requestAnimationFrame(updateHighlight);
       };
 
-      if (audio.duration && !isNaN(audio.duration)) {
-        startWordHighlighting();
-      } else {
-        audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
-      }
+      // Wait for DOM to be painted with word spans before starting highlighting
+      // Using double RAF to ensure React has committed the render
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (audio.duration && !isNaN(audio.duration)) {
+            startWordHighlighting();
+          } else {
+            audio.addEventListener('loadedmetadata', startWordHighlighting, { once: true });
+          }
+        });
+      });
 
     } catch (error) {
       console.error('Error reading aloud:', error);
@@ -401,40 +467,48 @@ const BlogPostPage = () => {
     }
   };
 
-  // Render content with word highlighting
-  const renderContentWithHighlighting = (html) => {
-    if (!isReading || currentWordIndex < 0) {
-      return <div dangerouslySetInnerHTML={{ __html: html }} />;
-    }
+  // Memoize the processed HTML with word spans - only recompute when content or isReading changes
+  // IMPORTANT: Word counting here MUST match the backend's word timestamp generation
+  // which uses normalized text (collapsed whitespace, split on single space)
+  const processedContentHtml = useMemo(() => {
+    if (!post?.content) return null;
 
-    // Parse the HTML and wrap words with highlighting
+    // When not reading, return null to indicate we should use raw HTML
+    if (!isReading) return null;
+
+    // Parse the HTML and wrap each word in a span with data-word-index
     const div = document.createElement('div');
-    div.innerHTML = html;
+    div.innerHTML = post.content;
 
     let wordCounter = 0;
 
     const processNode = (node, insideH2 = false) => {
       if (node.nodeType === Node.TEXT_NODE) {
         const text = node.textContent;
-        const words = text.split(/(\s+)/);
+        // Use same normalization as backend: collapse whitespace, split on space
+        const normalizedText = text.replace(/\s+/g, ' ');
+        const words = normalizedText.split(' ');
         const span = document.createElement('span');
 
-        words.forEach((word) => {
-          if (word.trim().length > 0) {
+        words.forEach((word, idx) => {
+          if (word.length > 0) {
             const wordSpan = document.createElement('span');
             wordSpan.textContent = word;
-            // Don't highlight words inside h2 headings
-            if (wordCounter === currentWordIndex && !insideH2) {
-              wordSpan.style.backgroundColor = '#fde7f4';
-              wordSpan.style.padding = '2px';
-              wordSpan.style.margin = '-2px';
-              wordSpan.style.borderRadius = '2px';
-              wordSpan.style.transition = 'background-color 100ms';
+            // All words get data-word-index to match backend timestamps
+            // H2 words also get data-skip-highlight so we don't highlight them
+            wordSpan.setAttribute('data-word-index', wordCounter.toString());
+            if (insideH2) {
+              wordSpan.setAttribute('data-skip-highlight', 'true');
             }
-            span.appendChild(wordSpan);
             wordCounter++;
-          } else {
-            span.appendChild(document.createTextNode(word));
+            span.appendChild(wordSpan);
+            // Add space after word (except for last word if original didn't have trailing space)
+            if (idx < words.length - 1) {
+              span.appendChild(document.createTextNode(' '));
+            }
+          } else if (idx === 0 && normalizedText.startsWith(' ')) {
+            // Preserve leading whitespace
+            span.appendChild(document.createTextNode(' '));
           }
         });
 
@@ -457,7 +531,30 @@ const BlogPostPage = () => {
       processedDiv.appendChild(processNode(child));
     });
 
-    return <div dangerouslySetInnerHTML={{ __html: processedDiv.innerHTML }} />;
+    // Log word count comparison once per playback session
+    if (DEBUG_NARRATION) {
+      console.log('═══════════════════════════════════════════════════');
+      console.log('🎨 RENDER: Content prepared with', wordCounter, 'word spans');
+      console.log('   Expected:', contentWords.length, 'words');
+      console.log('   Using DIRECT DOM MANIPULATION for highlighting');
+      console.log('═══════════════════════════════════════════════════');
+    }
+
+    return processedDiv.innerHTML;
+  }, [post?.content, isReading, contentWords.length]);
+
+  // Simple render function that uses the memoized content
+  const renderContentWithHighlighting = () => {
+    if (processedContentHtml) {
+      return (
+        <div
+          ref={contentContainerRef}
+          dangerouslySetInnerHTML={{ __html: processedContentHtml }}
+        />
+      );
+    }
+    // Not reading - render raw HTML
+    return <div dangerouslySetInnerHTML={{ __html: post?.content || '' }} />;
   };
 
   if (loading) {
@@ -522,34 +619,8 @@ const BlogPostPage = () => {
       />
 
       <div className="min-h-screen bg-black">
-        {/* Sticky Top Navigation Bar with Progress Indicator */}
-        <div className="sticky top-0 z-50 bg-black">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="inline-block">
-              <div
-                className="w-32 h-10 bg-contain bg-no-repeat bg-left"
-                style={{
-                  backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)'
-                }}
-              />
-            </Link>
-            <a href="https://ignite.education" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 group">
-              <span className="text-white text-sm font-medium">Discover</span>
-              <div className="bg-white rounded-md flex items-center justify-center" style={{ width: '25px', height: '25px' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-              </div>
-            </a>
-          </div>
-          {/* Progress Bar - only shows pink line when scrolling */}
-          {scrollProgress > 0 && (
-            <div
-              className="absolute bottom-0 left-0 h-1 bg-[#EF0B72] transition-all duration-150 ease-out"
-              style={{ width: `${scrollProgress}%` }}
-            />
-          )}
-        </div>
+        {/* Sticky Top Navigation Bar */}
+        <CoursePageNavbar />
 
         {/* Hero Section with Black Background */}
         <div className="bg-black">
@@ -567,10 +638,17 @@ const BlogPostPage = () => {
               </nav>
 
               {/* Title with typing animation - Left aligned */}
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
-                {typedTitle}
-                {!isTypingComplete && <span className="animate-pulse text-white" style={{ fontWeight: 300 }}>|</span>}
-              </h1>
+              {/* Container reserves space using invisible full title */}
+              <div className="relative">
+                {/* Invisible full title to reserve space */}
+                <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left invisible" aria-hidden="true">
+                  {post.title}
+                </h1>
+                {/* Visible typed title overlaid on top */}
+                <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left absolute top-0 left-0 right-0">
+                  {typedTitle}
+                </h1>
+              </div>
 
               {/* Subtitle/Excerpt - Left aligned - Ignite Pink */}
               <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">
@@ -603,36 +681,36 @@ const BlogPostPage = () => {
 
           {/* Main White Content */}
           <div className="bg-white">
-          {/* Speaker Button and Listen Duration */}
-          <div className="max-w-4xl mx-auto px-6 py-4 flex justify-center">
-            <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
-              <button
-                onClick={handleReadAloud}
-                className="rounded-lg flex items-center justify-center transition text-white"
-                style={{
-                  backgroundColor: isReading ? '#D10A64' : '#EF0B72',
-                  width: '34px',
-                  height: '34px'
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
-                title={isReading ? 'Pause narration' : 'Listen to article'}
-              >
-                {isReading ? (
-                  <Pause size={15} className="text-white" fill="white" />
-                ) : (
-                  <Volume2 size={15} className="text-white" />
-                )}
-              </button>
-              <span style={{ fontSize: '1.05rem', fontWeight: 300, color: '#000000' }}>
-                {preGeneratedAudio?.duration_seconds
-                  ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute narration`
-                  : contentWords.length > 0
-                    ? `${Math.ceil(contentWords.length / 150)} minute narration`
+          {/* Speaker Button and Listen Duration - Only show if pre-generated audio exists */}
+          {preGeneratedAudio?.audio_url && (
+            <div className="max-w-4xl mx-auto px-6 pt-4 flex justify-center">
+              <div className="flex items-center gap-3 w-full" style={{ maxWidth: '762px' }}>
+                <button
+                  onClick={handleReadAloud}
+                  className="rounded-lg flex items-center justify-center transition text-white"
+                  style={{
+                    backgroundColor: isReading ? '#D10A64' : '#EF0B72',
+                    width: '34px',
+                    height: '34px'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#D10A64'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isReading ? '#D10A64' : '#EF0B72'; }}
+                  title={isReading ? 'Pause narration' : 'Listen to article'}
+                >
+                  {isReading ? (
+                    <Pause size={15} className="text-white" fill="white" />
+                  ) : (
+                    <Volume2 size={15} className="text-white" />
+                  )}
+                </button>
+                <span style={{ fontSize: '1.05rem', fontWeight: 300, color: '#000000' }}>
+                  {preGeneratedAudio.duration_seconds
+                    ? `${Math.ceil(preGeneratedAudio.duration_seconds / 60)} minute narration`
                     : ''}
-              </span>
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="max-w-4xl mx-auto px-6 pb-16 flex justify-center">
             <article ref={articleRef} className="w-full" style={{ maxWidth: '762px' }}>
@@ -643,7 +721,7 @@ const BlogPostPage = () => {
                   color: '#000000',
                   fontSize: '18px',
                   lineHeight: '1.8',
-                  textAlign: 'justify'
+                  textAlign: 'left'
                 }}
               >
                 <style>{`
@@ -656,8 +734,8 @@ const BlogPostPage = () => {
                     border-radius: 0.2rem;
                     max-width: 750px;
                     width: fit-content;
-                    margin-top: 3rem;
-                    margin-bottom: 0.5rem;
+                    margin-top: 2rem;
+                    margin-bottom: 1rem;
                     text-align: left;
                   }
                   .prose h3 {
@@ -665,17 +743,18 @@ const BlogPostPage = () => {
                     font-size: 1.25rem;
                     font-weight: 700;
                     margin-top: 2rem;
-                    margin-bottom: 0.5rem;
+                    margin-bottom: 1rem;
                     text-align: left;
                   }
                   .prose p {
                     color: #000000;
-                    margin-bottom: 1.5rem;
-                    text-align: justify;
+                    margin-top: 0;
+                    margin-bottom: 1rem;
+                    text-align: left;
                   }
                   .prose ul, .prose ol {
-                    margin-top: 1.5rem;
-                    margin-bottom: 1.5rem;
+                    margin-top: 1rem;
+                    margin-bottom: 1rem;
                     padding-left: 1.5rem;
                   }
                   .prose li {
@@ -687,14 +766,12 @@ const BlogPostPage = () => {
                     font-weight: 600;
                   }
                   .prose a {
-                    color: #EF0B72;
-                    text-decoration: none;
-                    border-bottom: 1px solid #EF0B72;
+                    color: #000000;
+                    text-decoration: underline;
                     transition: all 0.2s;
                   }
                   .prose a:hover {
-                    color: #D10A64;
-                    border-bottom-color: #D10A64;
+                    color: #EF0B72;
                   }
                   .prose blockquote {
                     border-left: 4px solid #EF0B72;
@@ -702,8 +779,12 @@ const BlogPostPage = () => {
                     font-style: italic;
                     color: #000000;
                   }
+                  .prose .blog-line-break {
+                    display: block;
+                    height: 0.5em;
+                  }
                 `}</style>
-                {renderContentWithHighlighting(post.content)}
+                {renderContentWithHighlighting()}
               </div>
 
               {/* Share Section */}
@@ -716,7 +797,6 @@ const BlogPostPage = () => {
                       const shareUrl = `https://ignite.education/blog/${post.slug}`;
                       navigator.clipboard.writeText(shareUrl);
                       setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
                     }}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors"
                     style={{
@@ -773,6 +853,9 @@ const BlogPostPage = () => {
           </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <Footer />
       </div>
     </>
   );

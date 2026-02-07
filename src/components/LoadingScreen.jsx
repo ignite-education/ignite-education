@@ -2,19 +2,20 @@ import React from 'react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../contexts/AnimationContext';
 
-const LoadingScreen = ({ message = null, showTimeoutMessage = false, timeoutDuration = 15000 }) => {
+const LoadingScreen = ({ message = null, autoRefresh = false, autoRefreshDelay = 30000 }) => {
   const { lottieData, isLoading: animationLoading } = useAnimation();
-  const [showTimeout, setShowTimeout] = React.useState(false);
 
+  // Auto-refresh effect - if loading takes too long, refresh the page
   React.useEffect(() => {
-    if (showTimeoutMessage) {
+    if (autoRefresh) {
       const timer = setTimeout(() => {
-        setShowTimeout(true);
-      }, timeoutDuration);
+        console.log('⏱️ LoadingScreen timeout - auto-refreshing page');
+        window.location.reload();
+      }, autoRefreshDelay);
 
       return () => clearTimeout(timer);
     }
-  }, [showTimeoutMessage, timeoutDuration]);
+  }, [autoRefresh, autoRefreshDelay]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
@@ -59,16 +60,6 @@ const LoadingScreen = ({ message = null, showTimeoutMessage = false, timeoutDura
         </p>
       )}
 
-      {showTimeout && (
-        <div className="mt-4 p-4 bg-gray-900 border border-gray-700 rounded-lg max-w-md text-center">
-          <p className="text-white font-medium mb-2">
-            This is taking longer than expected...
-          </p>
-          <p className="text-gray-400 text-sm">
-            Please check your internet connection. If the problem persists, try refreshing the page.
-          </p>
-        </div>
-      )}
     </div>
   );
 };

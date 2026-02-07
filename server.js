@@ -47,6 +47,48 @@ let resend = null;
 const linkedInCache = new NodeCache({ stdTTL: 24 * 60 * 60 }); // 24 hours in seconds
 const LINKEDIN_CACHE_KEY = 'linkedin_posts';
 
+// ============================================================================
+// EMAIL UNSUBSCRIBE HELPERS
+// ============================================================================
+
+// Secret key for signing unsubscribe tokens (use env var in production)
+const UNSUBSCRIBE_SECRET = process.env.UNSUBSCRIBE_SECRET || crypto.randomBytes(32).toString('hex');
+
+// Generate a secure unsubscribe token for a user
+function generateUnsubscribeToken(userId) {
+  const payload = {
+    userId,
+    exp: Date.now() + (365 * 24 * 60 * 60 * 1000) // 1 year expiry
+  };
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET).update(data).digest('base64url');
+  return `${data}.${signature}`;
+}
+
+// Verify and decode an unsubscribe token
+function verifyUnsubscribeToken(token) {
+  try {
+    const [data, signature] = token.split('.');
+    const expectedSignature = crypto.createHmac('sha256', UNSUBSCRIBE_SECRET).update(data).digest('base64url');
+    if (signature !== expectedSignature) {
+      return null;
+    }
+    const payload = JSON.parse(Buffer.from(data, 'base64url').toString());
+    if (payload.exp < Date.now()) {
+      return null; // Token expired
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// Define which email types are marketing (respect preference) vs transactional (always send)
+const MARKETING_EMAIL_TYPES = ['inactivity_reminder', 'promotional'];
+
+// Base URL for the API (use env var in production)
+const API_BASE_URL = process.env.API_BASE_URL || 'https://ignite.education';
+
 app.use(cors());
 
 // Stripe webhook endpoint MUST come before express.json() to receive raw body for signature verification
@@ -411,8 +453,8 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
   res.json({ received: true });
 });
 
-// Parse JSON for all other routes
-app.use(express.json());
+// Parse JSON for all other routes (increased limit for large lesson contexts in Knowledge Check)
+app.use(express.json({ limit: '5mb' }));
 
 // Chat endpoint
 app.post('/api/chat', async (req, res) => {
@@ -447,6 +489,8 @@ BULLET POINT RULES (important):
 - Closing/summary sentences should be regular paragraph text, NOT bulleted
 
 Your role:
+- NEVER reference specific section numbers (e.g., "Section 1", "Section 8") - refer to content by topic or title instead
+- NEVER exceed 600 characters in your response
 - Provide clear, helpful explanations that aid understanding
 - Use examples from the lesson context when relevant
 - Answer the question directly, then provide supporting detail if helpful`;
@@ -458,7 +502,7 @@ Your role:
     }));
 
     // Call Claude API - trying multiple models
-    let modelToUse = 'claude-3-haiku-20240307'; // Most basic, should be available
+    let modelToUse = 'claude-3-5-haiku-20241022';
 
     const message = await anthropic.messages.create({
       model: modelToUse,
@@ -521,80 +565,100 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Claude chat server is running' });
 });
 
-// Knowledge Check - Generate question
+// Knowledge Check - Get a random question from the pre-generated question bank
 app.post('/api/knowledge-check/question', async (req, res) => {
   try {
-    const { lessonContext, priorLessonsContext, questionNumber, totalQuestions, previousQA, isAboutPriorLessons, numPriorQuestions, useBritishEnglish } = req.body;
+    const {
+      courseId,
+      moduleNumber,
+      lessonNumber,
+      questionNumber,
+      totalQuestions,
+      previousQA,
+      isAboutPriorLessons
+    } = req.body;
 
-    // Build a list of previously asked questions to avoid repetition
-    const previousQuestions = previousQA?.map(qa => qa.question).join('\n') || 'None yet';
+    // Get IDs of previously asked questions to avoid repetition
+    const askedQuestionIds = previousQA?.map(qa => qa.questionId).filter(Boolean) || [];
 
-    // Determine which content to use for question generation
-    const contentToUse = isAboutPriorLessons ? priorLessonsContext : lessonContext;
-    const contentLabel = isAboutPriorLessons ? 'Prior Lessons Content' : 'Current Lesson Content';
-    
-    // Build the context section
-    let contextSection = `${contentLabel}:
-${contentToUse}`;
-    
-    // If we have prior lessons and this is about the current lesson, include a note
-    if (!isAboutPriorLessons && priorLessonsContext && priorLessonsContext.trim()) {
-      contextSection += `\n\nNote: The student has completed prior lessons, but this question should focus ONLY on the current lesson content above.`;
+    let questions;
+    let error;
+
+    if (isAboutPriorLessons) {
+      // For recall questions: fetch from ALL prior lessons (before current)
+      // Query: (module < current) OR (module = current AND lesson < current)
+      const { data, error: queryError } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .or(`module_number.lt.${moduleNumber},and(module_number.eq.${moduleNumber},lesson_number.lt.${lessonNumber})`);
+
+      questions = data;
+      error = queryError;
+    } else {
+      // For current lesson questions: fetch from current lesson only
+      const { data, error: queryError } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber);
+
+      questions = data;
+      error = queryError;
     }
 
-    // For prior lesson questions, add instruction to pick from different lessons
-    const priorLessonInstruction = isAboutPriorLessons
-      ? `- IMPORTANT: The prior lessons content contains MULTIPLE lessons separated by "========". You MUST randomly select a lesson from ANYWHERE in the content - do NOT always pick from the first lesson. Spread your questions across different lessons.
-- This question should test recall and understanding from lessons completed BEFORE the current lesson
-- If this is prior question 2, pick from a DIFFERENT lesson than prior question 1`
-      : '- Focus exclusively on the current lesson content';
+    if (error) {
+      console.error('Database error fetching questions:', error);
+      throw new Error('Failed to fetch questions from database');
+    }
 
-    // British English instruction
-    const languageInstruction = useBritishEnglish
-      ? `- IMPORTANT: Use British English spelling throughout (e.g., 'prioritise' not 'prioritize', 'organisation' not 'organization', 'colour' not 'color', 'analyse' not 'analyze')`
-      : '';
+    // Filter out already asked questions
+    const availableQuestions = (questions || []).filter(q => !askedQuestionIds.includes(q.id));
 
-    const systemPrompt = `You are Will, an AI tutor conducting a knowledge check for a student. You need to generate question ${questionNumber} of ${totalQuestions}.
+    if (availableQuestions.length === 0) {
+      // No questions available - either none generated or all have been asked
+      console.log(`⚠️ No available questions for ${courseId} M${moduleNumber}L${lessonNumber} (isAboutPriorLessons: ${isAboutPriorLessons})`);
+      return res.status(404).json({
+        success: false,
+        error: 'No questions available',
+        needsGeneration: true
+      });
+    }
 
-${contextSection}
+    // Progressive difficulty for 3-question knowledge checks:
+    // Question 1 (recall from prior lessons) → Medium
+    // Question 2 (current lesson) → Easy
+    // Question 3 (current lesson) → Medium
+    const targetDifficulty = questionNumber === 2 ? 'easy' : 'medium';
 
-Previously Asked Questions:
-${previousQuestions}
+    // Filter by target difficulty first
+    let filteredByDifficulty = availableQuestions.filter(q => q.difficulty === targetDifficulty);
 
-Your task:
-- Generate ONE clear, specific question that tests the student's understanding of the ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'}
-- The question should be open-ended (not multiple choice)
-- Vary the difficulty - some questions should be straightforward recall, others should require deeper understanding or application
-- DO NOT repeat any previously asked questions
-- Make sure the question can be answered based on the content provided
-- Keep the question concise and clear
-- Be friendly and encouraging in your tone
-${priorLessonInstruction}
-${languageInstruction}
+    // Fallback: if no questions of target difficulty available, use any available question
+    if (filteredByDifficulty.length === 0) {
+      console.log(`⚠️ No ${targetDifficulty} questions available, falling back to any difficulty`);
+      filteredByDifficulty = availableQuestions;
+    }
 
-Generate ONLY the question, nothing else.`;
+    // Pick a random question from the filtered set
+    const randomIndex = Math.floor(Math.random() * filteredByDifficulty.length);
+    const selectedQuestion = filteredByDifficulty[randomIndex];
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 256,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: `Generate question ${questionNumber} of ${totalQuestions} for this knowledge check.`
-        }
-      ],
-    });
-
-    const question = message.content[0].text;
+    console.log(`✅ Selected ${selectedQuestion.difficulty} question ${questionNumber}/${totalQuestions} for ${courseId} M${moduleNumber}L${lessonNumber} (from ${isAboutPriorLessons ? 'prior lessons' : 'current lesson'})`);
 
     res.json({
       success: true,
-      question: question
+      question: selectedQuestion.question_text,
+      questionId: selectedQuestion.id,
+      difficulty: selectedQuestion.difficulty,
+      // Include source info for recall questions
+      sourceModule: selectedQuestion.module_number,
+      sourceLesson: selectedQuestion.lesson_number
     });
 
   } catch (error) {
-    console.error('Error generating question:', error);
+    console.error('Error fetching question:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -647,7 +711,7 @@ Respond in JSON format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 512,
       system: systemPrompt,
       messages: [
@@ -690,6 +754,466 @@ Respond in JSON format:
 
   } catch (error) {
     console.error('Error evaluating answer:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// ============================================================================
+// KNOWLEDGE CHECK QUESTION BANK - Pre-generated questions stored in database
+// ============================================================================
+
+// Generate and store knowledge check questions for a lesson (admin endpoint)
+app.post('/api/admin/generate-lesson-questions', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber, forceRegenerate = false } = req.body;
+
+    console.log(`📝 Generating knowledge check questions for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    // 1. Fetch lesson sections
+    const { data: sections, error: sectionsError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (sectionsError || !sections || sections.length === 0) {
+      console.error('❌ No lesson content found:', sectionsError);
+      return res.status(404).json({ success: false, error: 'No lesson content found' });
+    }
+
+    // 2. Extract lesson text for question generation
+    const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
+    const lessonText = sections
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    if (!lessonText.trim()) {
+      return res.status(400).json({ success: false, error: 'No text content found in lesson' });
+    }
+
+    const contentHash = crypto.createHash('sha256').update(lessonText).digest('hex');
+
+    // 3. Check if questions already exist with same hash (skip if unchanged)
+    if (!forceRegenerate) {
+      const { data: existing } = await supabase
+        .from('lesson_questions')
+        .select('id, content_hash')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .limit(1);
+
+      if (existing && existing.length > 0 && existing[0].content_hash === contentHash) {
+        console.log('⏭️  Questions already exist and content unchanged, skipping');
+        return res.json({
+          success: true,
+          message: 'Questions already exist and content unchanged',
+          skipped: true
+        });
+      }
+    }
+
+    // 4. Generate 10 questions using Claude
+    const systemPrompt = `You are Will, an AI tutor creating knowledge check questions for a lesson.
+
+LANGUAGE REQUIREMENT:
+- Use BRITISH ENGLISH spelling throughout
+- Examples: "organise" not "organize", "colour" not "color", "analyse" not "analyze", "behaviour" not "behavior"
+
+Your task:
+Generate EXACTLY 10 open-ended knowledge check questions based on this lesson content.
+
+REQUIREMENTS:
+1. Generate exactly 10 questions - no more, no less
+2. Questions should be open-ended (NOT multiple choice)
+3. Questions should test understanding, not just recall
+4. Vary difficulty: 3 easy, 7 medium (no hard questions)
+5. Questions should be answerable from the lesson content alone
+6. Be friendly and encouraging in tone
+7. Each question should be clear and specific
+8. Cover the full breadth of the lesson content
+
+Lesson Name: ${lessonName}
+
+Lesson Content:
+${lessonText}
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "questions": [
+    {"text": "Question 1 here?", "difficulty": "easy"},
+    {"text": "Question 2 here?", "difficulty": "easy"},
+    {"text": "Question 3 here?", "difficulty": "easy"},
+    {"text": "Question 4 here?", "difficulty": "medium"},
+    {"text": "Question 5 here?", "difficulty": "medium"},
+    {"text": "Question 6 here?", "difficulty": "medium"},
+    {"text": "Question 7 here?", "difficulty": "medium"},
+    {"text": "Question 8 here?", "difficulty": "medium"},
+    {"text": "Question 9 here?", "difficulty": "medium"},
+    {"text": "Question 10 here?", "difficulty": "medium"}
+  ]
+}`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 2048,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: 'Generate exactly 10 knowledge check questions in JSON format.'
+        }
+      ],
+    });
+
+    const responseText = message.content[0].text;
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Claude response');
+    }
+
+    const questionsData = JSON.parse(jsonMatch[0]);
+    const questions = questionsData.questions || [];
+
+    if (questions.length === 0) {
+      throw new Error('No questions generated');
+    }
+
+    console.log(`✅ Generated ${questions.length} questions`);
+
+    // 5. Delete existing questions for this lesson
+    const { error: deleteError } = await supabase
+      .from('lesson_questions')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber);
+
+    if (deleteError) {
+      console.warn('Warning: Could not delete existing questions:', deleteError);
+    }
+
+    // 6. Insert new questions
+    const questionsToInsert = questions.map(q => ({
+      course_id: courseId,
+      module_number: moduleNumber,
+      lesson_number: lessonNumber,
+      question_text: q.text,
+      difficulty: q.difficulty || 'medium',
+      content_hash: contentHash
+    }));
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('lesson_questions')
+      .insert(questionsToInsert)
+      .select();
+
+    if (insertError) {
+      throw new Error(`Failed to save questions: ${insertError.message}`);
+    }
+
+    console.log(`💾 Saved ${inserted.length} questions to database`);
+
+    res.json({
+      success: true,
+      questionCount: inserted.length,
+      contentHash
+    });
+
+  } catch (error) {
+    console.error('Error generating questions:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Check question status for a lesson (admin endpoint)
+app.get('/api/admin/lesson-questions-status/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+    const moduleNum = parseInt(module);
+    const lessonNum = parseInt(lesson);
+
+    // Get current content hash from lesson
+    const { data: sections } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum)
+      .order('section_number', { ascending: true });
+
+    const lessonText = (sections || [])
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    const currentHash = lessonText.trim() ? crypto.createHash('sha256').update(lessonText).digest('hex') : null;
+
+    // Check existing questions
+    const { data: questions, error } = await supabase
+      .from('lesson_questions')
+      .select('id, content_hash, created_at')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum);
+
+    const hasQuestions = !error && questions && questions.length > 0;
+    const questionHash = questions?.[0]?.content_hash || null;
+    const needsRegeneration = hasQuestions ? (questionHash !== currentHash) : true;
+
+    res.json({
+      hasQuestions,
+      questionCount: questions?.length || 0,
+      contentHash: currentHash,
+      questionHash,
+      needsRegeneration,
+      lastGenerated: questions?.[0]?.created_at || null
+    });
+  } catch (error) {
+    console.error('Error checking question status:', error);
+    res.status(500).json({ error: 'Failed to check question status' });
+  }
+});
+
+// Update a single question (admin endpoint)
+app.put('/api/admin/lesson-questions/:questionId', async (req, res) => {
+  try {
+    const { questionId } = req.params;
+    const { question_text, difficulty } = req.body;
+
+    if (!question_text || !question_text.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Question text is required'
+      });
+    }
+
+    // Validate difficulty if provided
+    const validDifficulties = ['easy', 'medium', 'hard'];
+    if (difficulty && !validDifficulties.includes(difficulty)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid difficulty. Must be: easy, medium, or hard'
+      });
+    }
+
+    const updateData = {
+      question_text: question_text.trim(),
+      updated_at: new Date().toISOString()
+    };
+
+    if (difficulty) {
+      updateData.difficulty = difficulty;
+    }
+
+    const { data, error } = await supabase
+      .from('lesson_questions')
+      .update(updateData)
+      .eq('id', questionId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to update question: ${error.message}`);
+    }
+
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        error: 'Question not found'
+      });
+    }
+
+    console.log(`✏️ Updated question ${questionId}`);
+
+    res.json({
+      success: true,
+      question: data
+    });
+
+  } catch (error) {
+    console.error('Error updating question:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Delete a question (admin endpoint)
+app.delete('/api/admin/lesson-questions/:questionId', async (req, res) => {
+  try {
+    const { questionId } = req.params;
+
+    const { error } = await supabase
+      .from('lesson_questions')
+      .delete()
+      .eq('id', questionId);
+
+    if (error) {
+      throw new Error(`Failed to delete question: ${error.message}`);
+    }
+
+    console.log(`🗑️ Deleted question ${questionId}`);
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error deleting question:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Generate a single replacement question for a lesson (admin endpoint)
+app.post('/api/admin/generate-single-question', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber, difficulty, existingQuestions } = req.body;
+
+    // 1. Fetch lesson content
+    const { data: sections, error: fetchError } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .order('section_number', { ascending: true });
+
+    if (fetchError) {
+      throw new Error(`Failed to fetch lesson: ${fetchError.message}`);
+    }
+
+    if (!sections || sections.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Lesson not found'
+      });
+    }
+
+    const lessonName = sections[0]?.lesson_name || 'Unknown Lesson';
+    const lessonText = sections
+      .filter(s => s.content_type === 'paragraph' || s.content_type === 'heading')
+      .map(s => {
+        if (s.content_type === 'heading') {
+          return s.content?.text || s.title || '';
+        }
+        return s.content?.text || (typeof s.content === 'string' ? s.content : '') || '';
+      })
+      .filter(text => text.trim().length > 0)
+      .join('\n\n');
+
+    if (!lessonText.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'No lesson content found'
+      });
+    }
+
+    // 2. Generate a single question using Claude
+    const existingQuestionsText = (existingQuestions || []).join('\n- ');
+
+    const systemPrompt = `You are Will, an AI tutor creating a knowledge check question for a lesson.
+
+LANGUAGE REQUIREMENT:
+- Use BRITISH ENGLISH spelling throughout
+
+Your task:
+Generate exactly ONE ${difficulty || 'medium'} difficulty open-ended question based on this lesson content.
+
+REQUIREMENTS:
+1. Generate exactly 1 question - no more, no less
+2. The question should be open-ended (NOT multiple choice)
+3. The question should test understanding, not just recall
+4. The question should be answerable from the lesson content alone
+5. Be friendly and encouraging in tone
+6. The question should be clear and specific
+7. IMPORTANT: The question must be DIFFERENT from these existing questions:
+${existingQuestionsText ? `- ${existingQuestionsText}` : '(none)'}
+
+Lesson Name: ${lessonName}
+
+Lesson Content:
+${lessonText}
+
+Respond ONLY with valid JSON in this exact format:
+{
+  "question": "Your question here?",
+  "difficulty": "${difficulty || 'medium'}"
+}`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 512,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: 'Generate exactly 1 unique knowledge check question in JSON format.'
+        }
+      ],
+    });
+
+    const responseText = message.content[0].text;
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error('No valid JSON found in Claude response');
+    }
+
+    const questionData = JSON.parse(jsonMatch[0]);
+
+    // 3. Get content hash for the question
+    const contentHash = crypto.createHash('sha256').update(lessonText).digest('hex');
+
+    // 4. Save to database
+    const { data: inserted, error: insertError } = await supabase
+      .from('lesson_questions')
+      .insert({
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        question_text: questionData.question,
+        difficulty: questionData.difficulty || difficulty || 'medium',
+        content_hash: contentHash
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      throw new Error(`Failed to save question: ${insertError.message}`);
+    }
+
+    console.log(`✨ Generated new ${inserted.difficulty} question for ${courseId} M${moduleNumber}L${lessonNumber}`);
+
+    res.json({
+      success: true,
+      question: inserted
+    });
+
+  } catch (error) {
+    console.error('Error generating single question:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -781,7 +1305,7 @@ Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 8192,
       system: systemPrompt,
       messages: [
@@ -876,7 +1400,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
     // Try up to 3 times to get a question under 55 characters
     while (attempts < maxAttempts) {
       const message = await anthropic.messages.create({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-haiku-20241022',
         max_tokens: 100,
         system: systemPrompt,
         messages: [
@@ -1218,6 +1742,10 @@ const extractLessonText = (lessonName, sections) => {
       text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
       text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
       text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
+      // Strip bullet characters at line start to match frontend word count
+      // Frontend renders bullets as separate elements, not as part of word spans
+      text = text.replace(/^[•–—]\s*/gm, ''); // Remove bullet chars at line start (not hyphens)
+      text = text.replace(/\n-\s+/g, '\n'); // Remove dash bullets at line start
       textParts.push(text);
     } else if (section.content_type === 'list' && section.content?.items) {
       textParts.push(section.content.items.join('. '));
@@ -1312,7 +1840,7 @@ const chunkText = (text, maxChars = 4800) => {
 };
 
 // GET /api/lesson-audio/:courseId/:module/:lesson - Get pre-generated audio
-// Returns per-section audio for sequential playback with perfect word highlighting
+// Returns single audio file with word timestamps for perfect highlighting
 app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
   try {
     const { courseId, module, lesson } = req.params;
@@ -1329,8 +1857,20 @@ app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
       return res.status(404).json({ error: 'Audio not found for this lesson' });
     }
 
-    // Return per-section audio if available, otherwise fall back to old format
-    if (data.section_audio) {
+    // NEW FORMAT: Single audio file with word timestamps (like blog audio)
+    if (data.audio_url && data.word_timestamps) {
+      res.json({
+        audio_url: data.audio_url,
+        word_timestamps: data.word_timestamps,
+        title_word_count: data.title_word_count || 0,
+        full_text: data.full_text,
+        duration_seconds: data.duration_seconds,
+        content_hash: data.content_hash,
+        created_at: data.created_at
+      });
+    }
+    // LEGACY: Per-section audio format (backward compatibility)
+    else if (data.section_audio) {
       res.json({
         section_audio: data.section_audio,
         full_text: data.full_text,
@@ -1339,7 +1879,7 @@ app.get('/api/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
         created_at: data.created_at
       });
     } else {
-      // Legacy format for backwards compatibility
+      // Very old legacy format
       res.json({
         audio_base64: data.audio_base64,
         alignment_data: data.alignment_data,
@@ -1409,13 +1949,57 @@ app.get('/api/admin/lesson-audio-status/:courseId/:module/:lesson', async (req, 
   }
 });
 
+// DELETE /api/admin/lesson-audio/:courseId/:module/:lesson - Delete lesson audio (database + storage)
+app.delete('/api/admin/lesson-audio/:courseId/:module/:lesson', async (req, res) => {
+  try {
+    const { courseId, module, lesson } = req.params;
+    const moduleNum = parseInt(module);
+    const lessonNum = parseInt(lesson);
+
+    console.log(`🗑️ Deleting audio for ${courseId} M${moduleNum}L${lessonNum}`);
+
+    // 1. Delete from lesson_audio table
+    const { error: dbError } = await supabase
+      .from('lesson_audio')
+      .delete()
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNum)
+      .eq('lesson_number', lessonNum);
+
+    if (dbError) {
+      console.error('Error deleting from database:', dbError);
+      return res.status(500).json({ error: 'Failed to delete from database', message: dbError.message });
+    }
+
+    // 2. Delete from storage
+    const storagePath = `${courseId}/${moduleNum}/${lessonNum}/full.mp3`;
+    const { error: storageError } = await supabase.storage
+      .from('lesson-audio')
+      .remove([storagePath]);
+
+    if (storageError) {
+      console.warn('Warning: Could not delete from storage (may not exist):', storageError.message);
+    }
+
+    console.log(`✅ Deleted audio for ${courseId} M${moduleNum}L${lessonNum}`);
+    res.json({
+      success: true,
+      message: `Deleted audio for ${courseId} module ${moduleNum} lesson ${lessonNum}`,
+      deletedPath: storagePath
+    });
+  } catch (error) {
+    console.error('Error deleting lesson audio:', error);
+    res.status(500).json({ error: 'Failed to delete lesson audio', message: error.message });
+  }
+});
+
 // POST /api/admin/generate-lesson-audio - Generate audio for a lesson
 // NEW: Generates per-section audio for perfect word highlighting sync
 app.post('/api/admin/generate-lesson-audio', async (req, res) => {
   try {
     const { courseId, moduleNumber, lessonNumber, forceRegenerate = false, voiceGender = 'male' } = req.body;
 
-    console.log(`🎤 Generating per-section lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`🎤 Generating single-file lesson audio for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     // 1. Fetch lesson sections
     const { data: sections, error: sectionsError } = await supabase
@@ -1434,25 +2018,31 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(404).json({ error: 'No sections found for this lesson' });
     }
 
-    // 2. Extract full text for hash calculation
+    // 2. Extract full text for TTS and hash calculation
+    // Normalize text same as frontend: collapse whitespace, join with spaces
     const lessonName = sections[0]?.lesson_name || `Module ${moduleNumber}, Lesson ${lessonNumber}`;
     const fullText = extractLessonText(lessonName, sections);
-    const contentHash = crypto.createHash('sha256').update(fullText).digest('hex');
 
-    console.log(`📝 Lesson text: ${fullText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+    // Normalize the full text to match frontend word splitting
+    const normalizedText = fullText.replace(/\s+/g, ' ').trim();
+    const contentHash = crypto.createHash('sha256').update(normalizedText).digest('hex');
 
-    // 3. Check if audio already exists with same hash
+    console.log(`📝 Lesson text: ${normalizedText.length} characters, hash: ${contentHash.substring(0, 12)}...`);
+    console.log(`📝 Word count: ${normalizedText.split(' ').filter(w => w.length > 0).length} words`);
+
+    // 3. Check if audio already exists with same hash (check for new single-file format)
     if (!forceRegenerate) {
       const { data: existing } = await supabase
         .from('lesson_audio')
-        .select('id, content_hash, section_audio')
+        .select('id, content_hash, audio_url, word_timestamps')
         .eq('course_id', courseId)
         .eq('module_number', moduleNumber)
         .eq('lesson_number', lessonNumber)
         .single();
 
-      if (existing && existing.content_hash === contentHash && existing.section_audio) {
-        console.log('✅ Per-section audio already exists with same hash, skipping regeneration');
+      // Check for new single-file format (audio_url + word_timestamps)
+      if (existing && existing.content_hash === contentHash && existing.audio_url && existing.word_timestamps) {
+        console.log('✅ Single-file audio already exists with same hash, skipping regeneration');
         return res.json({
           success: true,
           skipped: true,
@@ -1470,179 +2060,140 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       voiceId = process.env.ELEVENLABS_VOICE_ID || 'Xb7hH8MSUJpSbSDYk0k2'; // Alice - British female
     }
 
-    // 5. Generate audio for each section and upload to Supabase Storage
-    const sectionAudioMetadata = []; // Store metadata only (no base64)
-    let totalDuration = 0;
-    let totalCharacters = 0;
+    // 5. Generate single audio file for entire lesson (like blog audio)
+    console.log(`🎵 Generating audio for entire lesson: "${lessonName.substring(0, 50)}..."`);
 
-    // Storage path prefix for this lesson
-    const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}`;
-
-    // Helper to extract text from section (same logic as extractLessonText but per-section)
-    const extractSectionText = (section) => {
-      if (section.content_type === 'heading' && section.content?.text) {
-        return section.content.text;
-      } else if (section.content_type === 'paragraph' && section.content?.text) {
-        let text = section.content.text;
-        text = text.replace(/\*\*(.*?)\*\*/g, '$1'); // Remove bold
-        text = text.replace(/\*(.*?)\*/g, '$1'); // Remove italic
-        text = text.replace(/\[(.*?)\]\(.*?\)/g, '$1'); // Remove links, keep text
-        return text;
-      } else if (section.content_type === 'list' && section.content?.items) {
-        return section.content.items.join('. ');
+    const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
+      text: normalizedText,
+      model_id: 'eleven_multilingual_v2',
+      output_format: 'mp3_44100_128',
+      voice_settings: {
+        stability: 0.5,
+        similarity_boost: 0.75,
+        style: 0.0,
+        use_speaker_boost: true
       }
-      return '';
-    };
-
-    // Helper to upload audio to Storage
-    const uploadAudioToStorage = async (audioBase64, fileName) => {
-      const audioBuffer = Buffer.from(audioBase64, 'base64');
-      const filePath = `${storagePath}/${fileName}`;
-
-      console.log(`  📤 Uploading ${filePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
-
-      const { data, error } = await supabase.storage
-        .from('lesson-audio')
-        .upload(filePath, audioBuffer, {
-          contentType: 'audio/mpeg',
-          upsert: true
-        });
-
-      if (error) {
-        console.error(`  ❌ Upload failed for ${filePath}:`, error);
-        throw error;
-      }
-
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from('lesson-audio')
-        .getPublicUrl(filePath);
-
-      console.log(`  ✅ Uploaded ${filePath}`);
-      return urlData.publicUrl;
-    };
-
-    // Generate audio for lesson title (section_index = -1)
-    console.log(`🎵 Generating title audio: "${lessonName.substring(0, 50)}..."`);
-    try {
-      const titleResponse = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
-        text: lessonName,
-        model_id: 'eleven_multilingual_v2',
-        output_format: 'mp3_44100_128',
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true
-        }
-      });
-
-      const titleEndTimes = titleResponse.alignment?.characterEndTimesSeconds || [];
-      const titleDuration = titleEndTimes.length > 0 ? titleEndTimes[titleEndTimes.length - 1] : 0;
-
-      // Upload to Storage
-      const audioUrl = await uploadAudioToStorage(titleResponse.audioBase64, 'title.mp3');
-
-      sectionAudioMetadata.push({
-        section_index: -1,
-        text: lessonName,
-        word_count: lessonName.match(/\S+/g)?.length || 0,
-        audio_url: audioUrl,
-        alignment: titleResponse.alignment ? {
-          characters: titleResponse.alignment.characters,
-          character_start_times_seconds: titleResponse.alignment.characterStartTimesSeconds,
-          character_end_times_seconds: titleResponse.alignment.characterEndTimesSeconds
-        } : null,
-        duration_seconds: titleDuration
-      });
-
-      totalDuration += titleDuration;
-      totalCharacters += lessonName.length;
-      console.log(`✅ Title audio: ${titleDuration.toFixed(2)}s`);
-    } catch (err) {
-      console.error('Error generating title audio:', err);
-      // Continue without title audio
-    }
-
-    // Generate audio for each content section
-    for (let i = 0; i < sections.length; i++) {
-      const section = sections[i];
-      const sectionText = extractSectionText(section);
-
-      if (!sectionText || sectionText.length === 0) {
-        console.log(`⏭️ Skipping empty section ${i}`);
-        continue;
-      }
-
-      console.log(`🎵 Generating section ${i} audio (${section.content_type}): "${sectionText.substring(0, 50)}..."`);
-
-      try {
-        const response = await elevenlabs.textToSpeech.convertWithTimestamps(voiceId, {
-          text: sectionText,
-          model_id: 'eleven_multilingual_v2',
-          output_format: 'mp3_44100_128',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.0,
-            use_speaker_boost: true
-          }
-        });
-
-        const sectionEndTimes = response.alignment?.characterEndTimesSeconds || [];
-        const sectionDuration = sectionEndTimes.length > 0 ? sectionEndTimes[sectionEndTimes.length - 1] : 0;
-
-        // Upload to Storage
-        const audioUrl = await uploadAudioToStorage(response.audioBase64, `section_${i}.mp3`);
-
-        sectionAudioMetadata.push({
-          section_index: i,
-          text: sectionText,
-          word_count: sectionText.match(/\S+/g)?.length || 0,
-          audio_url: audioUrl,
-          alignment: response.alignment ? {
-            characters: response.alignment.characters,
-            character_start_times_seconds: response.alignment.characterStartTimesSeconds,
-            character_end_times_seconds: response.alignment.characterEndTimesSeconds
-          } : null,
-          duration_seconds: sectionDuration
-        });
-
-        totalDuration += sectionDuration;
-        totalCharacters += sectionText.length;
-        console.log(`✅ Section ${i} audio: ${sectionDuration.toFixed(2)}s`);
-      } catch (err) {
-        console.error(`Error generating section ${i} audio:`, err);
-        // Continue with next section
-      }
-    }
-
-    console.log(`✅ All section audio generated and uploaded: ${sectionAudioMetadata.length} sections, ${totalDuration.toFixed(2)}s total`);
-
-    // Debug: Log section audio metadata structure
-    console.log('📊 Section audio metadata:');
-    sectionAudioMetadata.forEach((s, idx) => {
-      console.log(`  [${idx}] section_index=${s.section_index}, text_length=${s.text?.length}, has_url=${!!s.audio_url}, has_alignment=${!!s.alignment}, duration=${s.duration_seconds?.toFixed(2)}s`);
     });
 
-    // 6. Store metadata in database (no base64, just URLs and alignment)
+    // Debug: Log response structure to verify SDK format
+    console.log('📊 ElevenLabs response keys:', Object.keys(response || {}));
+
+    if (!response || !response.audioBase64) {
+      console.error('❌ ElevenLabs response missing audioBase64:', response);
+      return res.status(500).json({ error: 'ElevenLabs returned empty audio response' });
+    }
+
+    const endTimes = response.alignment?.characterEndTimesSeconds || [];
+    const duration = endTimes.length > 0 ? endTimes[endTimes.length - 1] : 0;
+
+    // 6. Upload single audio file to Storage
+    const audioBuffer = Buffer.from(response.audioBase64, 'base64');
+    const storagePath = `${courseId}/${moduleNumber}/${lessonNumber}/full.mp3`;
+
+    console.log(`📤 Uploading ${storagePath} (${(audioBuffer.length / 1024).toFixed(1)} KB)...`);
+
+    const { error: uploadError } = await supabase.storage
+      .from('lesson-audio')
+      .upload(storagePath, audioBuffer, {
+        contentType: 'audio/mpeg',
+        upsert: true
+      });
+
+    if (uploadError) {
+      console.error('❌ Upload failed:', uploadError);
+      return res.status(500).json({ error: 'Failed to upload audio', message: uploadError.message });
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from('lesson-audio')
+      .getPublicUrl(storagePath);
+
+    const audioUrl = urlData.publicUrl;
+    console.log(`✅ Uploaded to ${audioUrl}`);
+
+    // 7. Convert character timestamps to word timestamps (like blog audio)
+    // IMPORTANT: Matches frontend word splitting exactly
+    const wordTimestamps = [];
+    if (response.alignment) {
+      const chars = response.alignment.characters;
+      const startTimes = response.alignment.characterStartTimesSeconds;
+      const endTimesArr = response.alignment.characterEndTimesSeconds;
+
+      let currentWord = '';
+      let wordStart = null;
+      let wordEnd = null;
+      let wordIndex = 0;
+
+      for (let i = 0; i < chars.length; i++) {
+        const char = chars[i];
+        // Since text is pre-normalized, only space is a word boundary
+        const isSpace = char === ' ';
+
+        if (isSpace) {
+          // End of a word - save it if we have one
+          if (currentWord.length > 0 && wordStart !== null) {
+            wordTimestamps.push({
+              word: currentWord,
+              start: wordStart,
+              end: wordEnd,
+              index: wordIndex
+            });
+            wordIndex++;
+            currentWord = '';
+            wordStart = null;
+            wordEnd = null;
+          }
+        } else {
+          // Part of a word
+          if (wordStart === null) {
+            wordStart = startTimes[i];
+          }
+          wordEnd = endTimesArr[i];
+          currentWord += char;
+        }
+      }
+
+      // Don't forget the last word if text doesn't end with space
+      if (currentWord.length > 0 && wordStart !== null) {
+        wordTimestamps.push({
+          word: currentWord,
+          start: wordStart,
+          end: wordEnd,
+          index: wordIndex
+        });
+      }
+    }
+
+    console.log(`📊 Generated ${wordTimestamps.length} word timestamps`);
+
+    // 8. Calculate title word count for frontend skip-highlight
+    const titleWords = lessonName.replace(/\s+/g, ' ').trim().split(' ').filter(w => w.length > 0);
+    const titleWordCount = titleWords.length;
+    console.log(`📊 Title has ${titleWordCount} words (indices 0-${titleWordCount - 1} should skip highlight)`);
+
+    // 9. Store metadata in database (new single-file format)
     const upsertData = {
       course_id: courseId,
       module_number: moduleNumber,
       lesson_number: lessonNumber,
       content_hash: contentHash,
       lesson_name: lessonName,
-      full_text: fullText,
-      section_audio: sectionAudioMetadata, // Now contains URLs instead of base64
+      full_text: normalizedText,
+      audio_url: audioUrl,
+      word_timestamps: wordTimestamps,
+      title_word_count: titleWordCount, // Frontend uses this to skip highlighting title words
       voice_gender: voiceGender,
       voice_id: voiceId,
-      duration_seconds: totalDuration,
-      character_count: totalCharacters,
+      duration_seconds: duration,
+      character_count: normalizedText.length,
+      // Clear old per-section data
+      section_audio: null,
       updated_at: new Date().toISOString()
     };
 
     console.log('💾 Storing lesson audio metadata in database...');
-    console.log(`  section_audio JSON size: ${JSON.stringify(upsertData.section_audio).length} chars`);
+    console.log(`  word_timestamps count: ${wordTimestamps.length}`);
 
     const { data: insertedAudio, error: insertError } = await supabase
       .from('lesson_audio')
@@ -1661,7 +2212,7 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
       return res.status(500).json({ error: 'Failed to store lesson audio', message: insertError.message });
     }
 
-    console.log(`💾 Per-section audio metadata stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
+    console.log(`💾 Single-file audio metadata stored successfully for ${courseId} M${moduleNumber}L${lessonNumber}`);
 
     res.json({
       success: true,
@@ -1670,16 +2221,23 @@ app.post('/api/admin/generate-lesson-audio', async (req, res) => {
         course_id: courseId,
         module_number: moduleNumber,
         lesson_number: lessonNumber,
-        section_count: sectionAudioMetadata.length,
-        duration_seconds: totalDuration,
-        character_count: totalCharacters,
+        audio_url: audioUrl,
+        word_count: wordTimestamps.length,
+        title_word_count: titleWordCount,
+        duration_seconds: duration,
+        character_count: normalizedText.length,
         content_hash: contentHash,
         created_at: insertedAudio.created_at
       }
     });
   } catch (error) {
-    console.error('Error generating lesson audio:', error);
-    res.status(500).json({ error: 'Failed to generate lesson audio', message: error.message });
+    console.error('❌ Error generating lesson audio:', error);
+    console.error('  Stack:', error.stack);
+    res.status(500).json({
+      error: 'Failed to generate lesson audio',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -1713,24 +2271,38 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     }
 
     // 2. Extract plain text from HTML content
+    // IMPORTANT: This must match the frontend's textNormalization.js extractTextFromHtml
+    // The key fix is adding spaces BEFORE block-level elements to match browser textContent behavior
+    // Without this, text from adjacent blocks gets joined: "<p>Hello</p><p>World</p>" -> "HelloWorld"
     const extractTextFromHtml = (html) => {
       if (!html) return '';
-      // Remove HTML tags but keep text
       let text = html
-        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '') // Remove scripts
-        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '') // Remove styles
-        .replace(/<br\s*\/?>/gi, ' ') // Replace br with space
-        .replace(/<\/p>/gi, '\n\n') // Add newlines after paragraphs
-        .replace(/<\/h[1-6]>/gi, '\n\n') // Add newlines after headings
-        .replace(/<li>/gi, '\n• ') // Add bullet for list items
-        .replace(/<[^>]+>/g, '') // Remove remaining HTML tags
-        .replace(/&nbsp;/g, ' ') // Replace nbsp
-        .replace(/&amp;/g, '&') // Replace amp
+        // Remove script and style tags entirely (including content)
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        // CRITICAL: Replace blog-line-break spans with a space (they represent line breaks in text)
+        // Without the space, words on either side get joined: "ever.<br>There's" -> "ever.There's"
+        .replace(/<span class="blog-line-break"><\/span>/gi, ' ')
+        // CRITICAL FIX: Add space BEFORE block-level elements to match browser textContent behavior
+        // This prevents words from being joined across block boundaries
+        .replace(/<(p|div|br|h[1-6]|li|tr|td|th|blockquote|pre|hr)[^>]*>/gi, ' ')
+        // Remove all remaining HTML tags
+        .replace(/<[^>]+>/g, '')
+        // Decode common HTML entities
+        .replace(/&nbsp;/g, ' ')
+        .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"')
         .replace(/&#39;/g, "'")
-        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/&rsquo;/g, "'")
+        .replace(/&lsquo;/g, "'")
+        .replace(/&rdquo;/g, '"')
+        .replace(/&ldquo;/g, '"')
+        .replace(/&mdash;/g, '—')
+        .replace(/&ndash;/g, '–')
+        // Collapse all whitespace to single spaces and trim
+        .replace(/\s+/g, ' ')
         .trim();
       return text;
     };
@@ -1812,6 +2384,8 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
     console.log(`✅ Uploaded to ${audioUrl}`);
 
     // 7. Convert character timestamps to word timestamps for highlighting
+    // IMPORTANT: Since text is pre-normalized to single spaces, we only split on space character
+    // This matches the frontend's splitIntoWords() which uses text.split(' ')
     const wordTimestamps = [];
     if (response.alignment) {
       const chars = response.alignment.characters;
@@ -1819,34 +2393,40 @@ app.post('/api/admin/generate-blog-audio', async (req, res) => {
       const endTimesArr = response.alignment.characterEndTimesSeconds;
 
       let currentWord = '';
-      let wordStart = 0;
-      let wordEnd = 0;
+      let wordStart = null;
+      let wordEnd = null;
 
       for (let i = 0; i < chars.length; i++) {
         const char = chars[i];
-        if (char === ' ' || char === '\n') {
-          if (currentWord.trim()) {
+        // Since text is pre-normalized, only space is a word boundary
+        const isSpace = char === ' ';
+
+        if (isSpace) {
+          // End of a word - save it if we have one
+          if (currentWord.length > 0 && wordStart !== null) {
             wordTimestamps.push({
-              word: currentWord.trim(),
+              word: currentWord,
               start: wordStart,
               end: wordEnd
             });
+            currentWord = '';
+            wordStart = null;
+            wordEnd = null;
           }
-          currentWord = '';
-          wordStart = endTimesArr[i];
         } else {
-          if (!currentWord) {
+          // Part of a word
+          if (wordStart === null) {
             wordStart = startTimes[i];
           }
-          currentWord += char;
           wordEnd = endTimesArr[i];
+          currentWord += char;
         }
       }
 
-      // Don't forget the last word
-      if (currentWord.trim()) {
+      // Don't forget the last word if text doesn't end with space
+      if (currentWord.length > 0 && wordStart !== null) {
         wordTimestamps.push({
-          word: currentWord.trim(),
+          word: currentWord,
           start: wordStart,
           end: wordEnd
         });
@@ -2268,7 +2848,7 @@ app.post('/api/fetch-jobs', async (req, res) => {
     const searchQuery = course === 'Product Management' ? 'product manager' : course.toLowerCase();
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 4096,
       messages: [{
         role: 'user',
@@ -2441,6 +3021,19 @@ app.post('/api/send-email', async (req, res) => {
     const userEmail = authUser.email;
     const firstName = user?.first_name || 'there';
 
+    // Check if this is a marketing email and if user has unsubscribed
+    const isMarketingEmail = MARKETING_EMAIL_TYPES.includes(type);
+    const marketingEmailsEnabled = authUser.user_metadata?.marketing_emails !== false;
+
+    if (isMarketingEmail && !marketingEmailsEnabled) {
+      console.log(`📧 Skipping ${type} email - user ${userId} has unsubscribed from marketing emails`);
+      return res.json({
+        success: true,
+        message: 'User has unsubscribed from marketing emails',
+        skipped: true
+      });
+    }
+
     // Prepare email based on type
     let subject, htmlContent;
 
@@ -2504,6 +3097,17 @@ app.post('/api/send-email', async (req, res) => {
         }));
         break;
 
+      case 'course_launch':
+        subject = `${data.courseName} is now live! Your priority access link inside`;
+        const CourseLaunchEmail = (await import('./emails/templates/CourseLaunchEmail.js')).default;
+        htmlContent = await render(React.createElement(CourseLaunchEmail, {
+          firstName,
+          courseName: data.courseName,
+          priorityLink: data.priorityLink,
+          expiryHours: data.expiryHours || 72
+        }));
+        break;
+
       default:
         throw new Error(`Unknown email type: ${type}`);
     }
@@ -2524,12 +3128,38 @@ app.post('/api/send-email', async (req, res) => {
       resend = new Resend(process.env.RESEND_API_KEY);
     }
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
+    // Generate unsubscribe token and URL for this user
+    const unsubscribeToken = generateUnsubscribeToken(userId);
+    const unsubscribeUrl = `${API_BASE_URL}/api/unsubscribe?token=${unsubscribeToken}`;
+
+    // Replace placeholder unsubscribe URL with the tokenized URL
+    const finalHtml = htmlContent.replace(
+      /https:\/\/ignite\.education\/unsubscribe/g,
+      unsubscribeUrl
+    );
+
+    // Build email options
+    const emailOptions = {
       from: 'Ignite <hello@ignite.education>',
       to: userEmail,
       subject,
-      html: htmlContent,
-    });
+      html: finalHtml,
+    };
+
+    // Add Trustpilot BCC for welcome emails
+    if (type === 'welcome') {
+      emailOptions.bcc = 'ignite.education+768155c8df@invite.trustpilot.com';
+    }
+
+    // Add List-Unsubscribe headers for marketing emails (RFC 8058 compliant)
+    if (isMarketingEmail) {
+      emailOptions.headers = {
+        'List-Unsubscribe': `<${unsubscribeUrl}>`,
+        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+      };
+    }
+
+    const { data: emailData, error: emailError } = await resend.emails.send(emailOptions);
 
     if (emailError) {
       console.error('❌ Resend error:', emailError);
@@ -2545,6 +3175,129 @@ app.post('/api/send-email', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// ============================================================================
+// EMAIL UNSUBSCRIBE ENDPOINTS
+// ============================================================================
+
+// Unsubscribe endpoint - handles both GET (email link) and POST (one-click)
+app.get('/api/unsubscribe', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Unsubscribe Error</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Invalid Link</h1>
+            <p>This unsubscribe link is invalid or missing a token.</p>
+          </body>
+        </html>
+      `);
+    }
+
+    const payload = verifyUnsubscribeToken(token);
+    if (!payload) {
+      return res.status(400).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Link Expired</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Link Expired</h1>
+            <p>This unsubscribe link has expired. Please update your email preferences in your account settings.</p>
+            <a href="https://ignite.education" style="color: #ef0b72;">Go to Ignite</a>
+          </body>
+        </html>
+      `);
+    }
+
+    // Update user's marketing_emails preference to false
+    const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
+      user_metadata: { marketing_emails: false }
+    });
+
+    if (error) {
+      console.error('❌ Failed to unsubscribe user:', error);
+      return res.status(500).send(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Error</title></head>
+          <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center;">
+            <h1>Something went wrong</h1>
+            <p>We couldn't process your unsubscribe request. Please try again or contact support.</p>
+          </body>
+        </html>
+      `);
+    }
+
+    console.log(`✅ User ${payload.userId} unsubscribed from marketing emails`);
+
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Unsubscribed</title>
+          <style>
+            body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; text-align: center; padding: 20px; }
+            h1 { color: #1a1a1a; }
+            p { color: #525252; line-height: 1.6; }
+            .success { color: #10b981; font-size: 48px; margin-bottom: 20px; }
+            a { color: #ef0b72; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+          </style>
+        </head>
+        <body>
+          <div class="success">✓</div>
+          <h1>You've been unsubscribed</h1>
+          <p>You will no longer receive marketing emails from Ignite.</p>
+          <p>You will still receive important account and course-related emails.</p>
+          <p style="margin-top: 30px;">
+            <a href="https://ignite.education">Return to Ignite</a>
+          </p>
+        </body>
+      </html>
+    `);
+
+  } catch (error) {
+    console.error('❌ Unsubscribe error:', error);
+    res.status(500).send('An error occurred');
+  }
+});
+
+// POST endpoint for RFC 8058 one-click unsubscribe
+app.post('/api/unsubscribe', express.urlencoded({ extended: true }), async (req, res) => {
+  try {
+    const token = req.query.token || req.body.token;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Missing token' });
+    }
+
+    const payload = verifyUnsubscribeToken(token);
+    if (!payload) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+
+    // Update user's marketing_emails preference to false
+    const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
+      user_metadata: { marketing_emails: false }
+    });
+
+    if (error) {
+      console.error('❌ Failed to unsubscribe user:', error);
+      return res.status(500).json({ error: 'Failed to unsubscribe' });
+    }
+
+    console.log(`✅ User ${payload.userId} unsubscribed via one-click`);
+    res.status(200).json({ success: true });
+
+  } catch (error) {
+    console.error('❌ One-click unsubscribe error:', error);
+    res.status(500).json({ error: 'An error occurred' });
   }
 });
 
@@ -3099,10 +3852,10 @@ scheduleNextRefresh();
 // Generate a certificate for a user when they complete a course
 app.post('/api/certificate/generate', async (req, res) => {
   try {
-    const { userId, courseName } = req.body;
+    const { userId, courseId } = req.body;
 
-    if (!userId || !courseName) {
-      return res.status(400).json({ error: 'userId and courseName are required' });
+    if (!userId || !courseId) {
+      return res.status(400).json({ error: 'userId and courseId are required' });
     }
 
     // Get user information
@@ -3124,7 +3877,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       // Add more course mappings as needed
     };
 
-    const courseDisplayName = courseNames[courseId] || courseName;
+    const courseDisplayName = courseNames[courseId] || courseId;
     const userName = `${userData.first_name} ${userData.last_name}`;
 
     // Generate a unique certificate number (format: IGN-YYYY-XXXXXX)
@@ -3137,7 +3890,7 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .select('*')
       .eq('user_id', userId)
-      .eq('course_name', courseName)
+      .eq('course_id', courseId)
       .single();
 
     if (existingCert) {
@@ -3153,10 +3906,10 @@ app.post('/api/certificate/generate', async (req, res) => {
       .from('certificates')
       .insert({
         user_id: userId,
-        course_name: courseName,
+        course_id: courseId,
+        course_name: courseDisplayName,
         certificate_number: certificateNumber,
         user_name: userName,
-        course_name: courseName,
         issued_date: new Date().toISOString()
       })
       .select()
@@ -3708,6 +4461,323 @@ app.get('/sitemap.xml', async (req, res) => {
 
 // ============================================================================
 // END SITEMAP ENDPOINT
+// ============================================================================
+
+// ============================================================================
+// COURSE LAUNCH NOTIFICATIONS
+// ============================================================================
+
+// Send launch notifications to waitlisted users (admin only)
+app.post('/api/send-launch-notifications', verifyAdmin, async (req, res) => {
+  try {
+    const { courseName, courseSlug, expiryHours = 72 } = req.body;
+
+    if (!courseName || !courseSlug) {
+      return res.status(400).json({ error: 'courseName and courseSlug are required' });
+    }
+
+    console.log(`📣 Admin ${req.user.id} sending launch notifications for ${courseName}`);
+
+    // Get all unnotified waitlisted users for this course
+    const { data: waitlistedUsers, error: fetchError } = await supabase
+      .from('course_requests')
+      .select('id, user_id, course_name')
+      .eq('course_name', courseName)
+      .is('notified_at', null);
+
+    if (fetchError) {
+      console.error('Error fetching waitlisted users:', fetchError);
+      return res.status(500).json({ error: 'Failed to fetch waitlisted users' });
+    }
+
+    if (!waitlistedUsers || waitlistedUsers.length === 0) {
+      return res.json({
+        success: true,
+        summary: {
+          totalWaitlisted: 0,
+          notificationsSent: 0,
+          failed: 0
+        },
+        message: 'No unnotified users on the waitlist for this course'
+      });
+    }
+
+    console.log(`Found ${waitlistedUsers.length} unnotified users`);
+
+    const results = {
+      sent: [],
+      failed: []
+    };
+
+    // Process each user
+    for (const request of waitlistedUsers) {
+      try {
+        // Generate unique priority token
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiresAt = new Date(Date.now() + expiryHours * 60 * 60 * 1000);
+
+        // Store priority token in database
+        const { error: tokenError } = await supabase
+          .from('priority_tokens')
+          .upsert({
+            user_id: request.user_id,
+            course_name: courseName,
+            token: token,
+            expires_at: expiresAt.toISOString(),
+            used_at: null
+          }, {
+            onConflict: 'user_id,course_name'
+          });
+
+        if (tokenError) {
+          console.error(`Error storing token for user ${request.user_id}:`, tokenError);
+          results.failed.push({ userId: request.user_id, error: 'Failed to generate token' });
+          continue;
+        }
+
+        // Generate priority link
+        const priorityLink = `https://ignite.education/courses/${courseSlug}?priority=${token}`;
+
+        // Send email via internal API
+        const response = await fetch(`http://localhost:${PORT}/api/send-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'course_launch',
+            userId: request.user_id,
+            data: {
+              courseName: courseName,
+              courseSlug: courseSlug,
+              priorityLink: priorityLink,
+              expiryHours: expiryHours
+            }
+          })
+        });
+
+        const emailResult = await response.json();
+
+        if (!emailResult.success && !emailResult.skipped) {
+          console.error(`Error sending email to user ${request.user_id}:`, emailResult.error);
+          results.failed.push({ userId: request.user_id, error: emailResult.error });
+          continue;
+        }
+
+        // Mark user as notified
+        const { error: updateError } = await supabase
+          .from('course_requests')
+          .update({ notified_at: new Date().toISOString() })
+          .eq('id', request.id);
+
+        if (updateError) {
+          console.error(`Error updating notified_at for user ${request.user_id}:`, updateError);
+        }
+
+        results.sent.push({ userId: request.user_id });
+        console.log(`✅ Notification sent to user ${request.user_id}`);
+
+      } catch (userError) {
+        console.error(`Error processing user ${request.user_id}:`, userError);
+        results.failed.push({ userId: request.user_id, error: userError.message });
+      }
+    }
+
+    console.log(`📣 Launch notifications complete: ${results.sent.length} sent, ${results.failed.length} failed`);
+
+    res.json({
+      success: true,
+      summary: {
+        totalWaitlisted: waitlistedUsers.length,
+        notificationsSent: results.sent.length,
+        failed: results.failed.length
+      },
+      details: results
+    });
+
+  } catch (error) {
+    console.error('Error sending launch notifications:', error);
+    res.status(500).json({
+      error: 'Failed to send launch notifications',
+      message: error.message
+    });
+  }
+});
+
+// Validate priority token
+app.get('/api/validate-priority-token', async (req, res) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ valid: false, error: 'Token is required' });
+    }
+
+    // Look up token in database
+    const { data: tokenData, error: tokenError } = await supabase
+      .from('priority_tokens')
+      .select('user_id, course_name, expires_at, used_at')
+      .eq('token', token)
+      .single();
+
+    if (tokenError || !tokenData) {
+      return res.json({ valid: false, error: 'Token not found' });
+    }
+
+    // Check if token is expired
+    if (new Date(tokenData.expires_at) < new Date()) {
+      return res.json({ valid: false, error: 'Token has expired' });
+    }
+
+    // Check if token has already been used
+    if (tokenData.used_at) {
+      return res.json({ valid: false, error: 'Token has already been used' });
+    }
+
+    res.json({
+      valid: true,
+      userId: tokenData.user_id,
+      courseName: tokenData.course_name
+    });
+
+  } catch (error) {
+    console.error('Error validating priority token:', error);
+    res.status(500).json({ valid: false, error: 'Failed to validate token' });
+  }
+});
+
+// Mark priority token as used
+app.post('/api/use-priority-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'Token is required' });
+    }
+
+    // Update token to mark as used
+    const { data, error } = await supabase
+      .from('priority_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('token', token)
+      .is('used_at', null)
+      .select();
+
+    if (error) {
+      console.error('Error marking token as used:', error);
+      return res.status(500).json({ success: false, error: 'Failed to mark token as used' });
+    }
+
+    if (!data || data.length === 0) {
+      return res.json({ success: false, error: 'Token not found or already used' });
+    }
+
+    res.json({ success: true });
+
+  } catch (error) {
+    console.error('Error using priority token:', error);
+    res.status(500).json({ success: false, error: 'Failed to use token' });
+  }
+});
+
+// Get waitlist count for a course (admin only)
+app.get('/api/waitlist-count/:courseName', verifyAdmin, async (req, res) => {
+  try {
+    const { courseName } = req.params;
+
+    const { count, error } = await supabase
+      .from('course_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('course_name', courseName)
+      .is('notified_at', null);
+
+    if (error) {
+      console.error('Error fetching waitlist count:', error);
+      return res.status(500).json({ error: 'Failed to fetch waitlist count' });
+    }
+
+    res.json({ count: count || 0 });
+
+  } catch (error) {
+    console.error('Error in waitlist count endpoint:', error);
+    res.status(500).json({ error: 'Failed to fetch waitlist count' });
+  }
+});
+
+// ============================================================================
+// END COURSE LAUNCH NOTIFICATIONS
+// ============================================================================
+
+// ============================================================================
+// COURSE DESCRIPTION GENERATION
+// ============================================================================
+
+app.post('/api/generate-course-description', async (req, res) => {
+  try {
+    const { courseTitle, courseType, modules } = req.body;
+
+    // Validate inputs
+    if (!courseTitle || !courseType || !modules || !Array.isArray(modules)) {
+      return res.status(400).json({ error: 'Invalid request: courseTitle, courseType, and modules are required' });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    // Build prompt from course structure
+    const modulesList = modules.map((module, idx) => {
+      const lessonsList = (module.lessons || []).map(l => `  - ${l.name}`).join('\n');
+      return `Module ${idx + 1}: ${module.name}\n${lessonsList}`;
+    }).join('\n\n');
+
+    const typeContext = {
+      'specialism': 'This is a career-focused course designed to prepare learners for a specific profession.',
+      'skill': 'This is a skill-building course focused on developing a particular ability or competency.',
+      'subject': 'This is an academic subject course covering theoretical and practical knowledge in a topic area.'
+    };
+
+    const prompt = `Generate a compelling course description for "${courseTitle}".
+
+${typeContext[courseType] || typeContext['specialism']}
+
+Course Structure:
+${modulesList}
+
+Requirements:
+- Maximum 250 characters (strict limit)
+- Focus on learning outcomes and benefits
+- Professional and engaging tone
+- No marketing fluff, be specific and practical
+- Mention key skills or knowledge areas covered
+
+Return ONLY the description text, no other commentary.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 150,
+      temperature: 0.7,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    let description = message.content[0].text.trim();
+
+    // Ensure under 250 characters
+    if (description.length > 250) {
+      description = description.substring(0, 247) + '...';
+    }
+
+    res.json({ description });
+
+  } catch (error) {
+    console.error('Error generating course description:', error);
+    res.status(500).json({ error: 'Failed to generate description. Please try again.' });
+  }
+});
+
+// ============================================================================
+// END COURSE DESCRIPTION GENERATION
 // ============================================================================
 
 app.listen(PORT, () => {

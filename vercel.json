@@ -8,15 +8,17 @@
     }
   ],
   "rewrites": [
-    {
-      "source": "/sitemap.xml",
-      "destination": "https://ignite-education-api.onrender.com/sitemap.xml"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/sitemap.xml", "destination": "https://ignite-education-api.onrender.com/sitemap.xml" },
+    { "source": "/progress", "destination": "/index.html" },
+    { "source": "/learning", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/auth/:path*", "destination": "/index.html" },
+    { "source": "/certificate/:path*", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
+  "trailingSlash": false,
+  "cleanUrls": true,
   "headers": [
     {
       "source": "/(.*)",

@@ -36,6 +36,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
+    // Use default localStorage - custom hybrid adapter broke Promise resolution
   },
   global: {
     headers: {

@@ -109,6 +109,26 @@ export default SEO;
  * @param {string} url - Full URL of the blog post
  * @returns {Object} Schema.org BlogPosting structured data
  */
+/**
+ * Generate Speakable schema for voice search optimization
+ * @param {string} url - Full URL of the page
+ * @param {string} title - Page title
+ * @param {Array<string>} cssSelectors - CSS selectors for speakable content
+ * @returns {Object} Schema.org WebPage with SpeakableSpecification
+ */
+export const generateSpeakableSchema = (url, title, cssSelectors = ['.course-summary', '.course-description', 'h1', '.hero-text']) => {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: title,
+    speakable: {
+      '@type': 'SpeakableSpecification',
+      cssSelector: cssSelectors,
+    },
+    url: url,
+  };
+};
+
 export const generateBlogPostStructuredData = (post, url) => {
   const baseUrl = 'https://ignite.education';
   const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;

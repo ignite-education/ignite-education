@@ -53,6 +53,16 @@ const CurriculumUploadNew = () => {
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  // Knowledge check questions state
+  const [questionStatus, setQuestionStatus] = useState(null);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [showQuestions, setShowQuestions] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+  const [editingQuestionText, setEditingQuestionText] = useState('');
+  const [editingQuestionDifficulty, setEditingQuestionDifficulty] = useState('medium');
+  const [isSavingQuestion, setIsSavingQuestion] = useState(false);
+
   // Audio generation state
   const [audioStatus, setAudioStatus] = useState(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -165,6 +175,8 @@ const CurriculumUploadNew = () => {
       loadLessonContent(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
       loadFlashcards(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
       checkAudioStatus(); // Check if audio exists for this lesson
+      checkQuestionStatus(selectedCourseId, selectedModuleNumber, selectedLessonNumber); // Check if questions exist
+      loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber); // Load existing questions
     }
   }, [selectedCourseId, selectedModuleNumber, selectedLessonNumber]);
 
@@ -411,6 +423,209 @@ const CurriculumUploadNew = () => {
     }
   };
 
+  // Check question status for current lesson
+  const checkQuestionStatus = async (courseId, moduleNumber, lessonNumber) => {
+    try {
+      const response = await fetch(
+        `${API_URL}/api/admin/lesson-questions-status/${courseId}/${moduleNumber}/${lessonNumber}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setQuestionStatus(data);
+      } else {
+        setQuestionStatus(null);
+      }
+    } catch (error) {
+      console.error('Error checking question status:', error);
+      setQuestionStatus(null);
+    }
+  };
+
+  // Load generated questions for current lesson
+  const loadQuestions = async (courseId, moduleNumber, lessonNumber) => {
+    try {
+      const { data, error } = await supabase
+        .from('lesson_questions')
+        .select('*')
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .order('created_at');
+
+      if (error) {
+        console.error('Error loading questions:', error);
+        setGeneratedQuestions([]);
+        return;
+      }
+
+      setGeneratedQuestions(data || []);
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      setGeneratedQuestions([]);
+    }
+  };
+
+  // Generate knowledge check questions for current lesson
+  const handleGenerateQuestions = async () => {
+    if (!selectedCourseId || !selectedModuleNumber || !selectedLessonNumber) {
+      alert('Please select a course, module, and lesson first');
+      return;
+    }
+
+    setIsGeneratingQuestions(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/generate-lesson-questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: selectedCourseId,
+          moduleNumber: selectedModuleNumber,
+          lessonNumber: selectedLessonNumber,
+          forceRegenerate: true
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        alert(`Successfully generated ${data.questionCount} knowledge check questions!`);
+        await checkQuestionStatus(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+        await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+      } else {
+        alert(`Failed to generate questions: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error generating questions:', error);
+      alert(`Error generating questions: ${error.message}`);
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
+  };
+
+  const startEditingQuestion = (question) => {
+    setEditingQuestionId(question.id);
+    setEditingQuestionText(question.question_text);
+    setEditingQuestionDifficulty(question.difficulty || 'medium');
+  };
+
+  const cancelEditingQuestion = () => {
+    setEditingQuestionId(null);
+    setEditingQuestionText('');
+    setEditingQuestionDifficulty('medium');
+  };
+
+  const saveEditedQuestion = async () => {
+    if (!editingQuestionId || !editingQuestionText.trim()) return;
+
+    setIsSavingQuestion(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/lesson-questions/${editingQuestionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question_text: editingQuestionText,
+          difficulty: editingQuestionDifficulty
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Update the question in local state
+        setGeneratedQuestions(prev =>
+          prev.map(q => q.id === editingQuestionId ? data.question : q)
+        );
+        cancelEditingQuestion();
+      } else {
+        alert(`Failed to save question: ${data.error || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error('Error saving question:', error);
+      alert(`Error saving question: ${error.message}`);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
+
+  const deleteAndRegenerateQuestion = async (questionToDelete) => {
+    if (!confirm('Delete this question and generate a new one?')) return;
+
+    setIsSavingQuestion(true);
+    try {
+      // 1. Delete the question
+      const deleteResponse = await fetch(`${API_URL}/api/admin/lesson-questions/${questionToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!deleteResponse.ok) {
+        const data = await deleteResponse.json();
+        throw new Error(data.error || 'Failed to delete question');
+      }
+
+      // 2. Generate a new question with the same difficulty
+      const existingQuestions = generatedQuestions
+        .filter(q => q.id !== questionToDelete.id)
+        .map(q => q.question_text);
+
+      const generateResponse = await fetch(`${API_URL}/api/admin/generate-single-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseId: selectedCourseId,
+          moduleNumber: selectedModuleNumber,
+          lessonNumber: selectedLessonNumber,
+          difficulty: questionToDelete.difficulty,
+          existingQuestions
+        })
+      });
+
+      const generateData = await generateResponse.json();
+
+      if (generateResponse.ok && generateData.success) {
+        // Update local state: remove old question, add new one
+        setGeneratedQuestions(prev => {
+          const filtered = prev.filter(q => q.id !== questionToDelete.id);
+          return [...filtered, generateData.question];
+        });
+      } else {
+        // Question was deleted but regeneration failed - reload questions
+        alert(`Question deleted but failed to generate new one: ${generateData.error || 'Unknown error'}`);
+        await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+      }
+    } catch (error) {
+      console.error('Error deleting/regenerating question:', error);
+      alert(`Error: ${error.message}`);
+      // Reload questions to ensure consistent state
+      await loadQuestions(selectedCourseId, selectedModuleNumber, selectedLessonNumber);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
+
+  const deleteQuestion = async (questionToDelete) => {
+    if (!confirm('Delete this question? This cannot be undone.')) return;
+
+    setIsSavingQuestion(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/lesson-questions/${questionToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete question');
+      }
+
+      // Remove from local state
+      setGeneratedQuestions(prev => prev.filter(q => q.id !== questionToDelete.id));
+    } catch (error) {
+      console.error('Error deleting question:', error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsSavingQuestion(false);
+    }
+  };
+
   // Course management
   const saveCourse = async () => {
     if (!selectedCourseId.trim() || !courseName.trim()) {
@@ -490,7 +705,7 @@ const CurriculumUploadNew = () => {
       const { error } = await supabase
         .from('courses')
         .delete()
-        .eq('id', courseId);
+        .eq('name', courseId);
 
       if (error) throw error;
       alert('Course deleted successfully!');
@@ -2388,6 +2603,164 @@ ${contentBlocks.map((block, index) => {
                     )}
                   </div>
                 )}
+
+                {/* Knowledge Check Questions Section */}
+                <div className="mt-6 pt-6 border-t border-gray-700">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">Knowledge Check Questions</h3>
+                      {questionStatus ? (
+                        <p className="text-sm text-gray-400 mt-1">
+                          {questionStatus.hasQuestions
+                            ? `${questionStatus.questionCount} questions generated`
+                            : 'No questions generated yet'}
+                          {questionStatus.needsRegeneration && questionStatus.hasQuestions && (
+                            <span className="text-orange-400 ml-2">(Content changed - regenerate recommended)</span>
+                          )}
+                        </p>
+                      ) : (
+                        <p className="text-sm text-gray-500 mt-1">Loading status...</p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleGenerateQuestions}
+                    disabled={isGeneratingQuestions}
+                    className="w-full py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    {isGeneratingQuestions ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Generating 10 Questions...
+                      </>
+                    ) : (
+                      <>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                        </svg>
+                        Generate 10 Questions
+                      </>
+                    )}
+                  </button>
+                  <p className="text-sm text-gray-400 text-center mt-2">
+                    Generate knowledge check questions after saving your lesson content
+                  </p>
+
+                  {/* Questions Display */}
+                  {generatedQuestions.length > 0 && (
+                    <div className="mt-6 border-t border-gray-700 pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-white">
+                          Generated Questions ({generatedQuestions.length})
+                        </h3>
+                        <button
+                          onClick={() => setShowQuestions(!showQuestions)}
+                          className="text-sm text-purple-400 hover:text-purple-300 font-medium transition"
+                        >
+                          {showQuestions ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+
+                      {showQuestions && (
+                        <div className="space-y-3">
+                          {generatedQuestions.map((question, index) => (
+                            <div
+                              key={question.id}
+                              className="bg-gray-800 border border-gray-700 rounded-lg p-4 hover:bg-gray-750 transition"
+                            >
+                              {editingQuestionId === question.id ? (
+                                /* Editing mode */
+                                <div className="space-y-3">
+                                  <div className="flex items-start gap-3">
+                                    <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                      {index + 1}
+                                    </div>
+                                    <textarea
+                                      value={editingQuestionText}
+                                      onChange={(e) => setEditingQuestionText(e.target.value)}
+                                      className="flex-1 bg-gray-700 border border-gray-600 rounded-lg p-3 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                                      rows={3}
+                                      autoFocus
+                                    />
+                                  </div>
+                                  <div className="flex items-center justify-between pl-11">
+                                    <select
+                                      value={editingQuestionDifficulty}
+                                      onChange={(e) => setEditingQuestionDifficulty(e.target.value)}
+                                      className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-200 focus:ring-2 focus:ring-purple-500"
+                                    >
+                                      <option value="easy">Easy</option>
+                                      <option value="medium">Medium</option>
+                                    </select>
+                                    <div className="flex gap-2">
+                                      <button
+                                        onClick={cancelEditingQuestion}
+                                        className="px-3 py-1.5 text-sm text-gray-400 hover:text-gray-200 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Cancel
+                                      </button>
+                                      <button
+                                        onClick={saveEditedQuestion}
+                                        disabled={isSavingQuestion || !editingQuestionText.trim()}
+                                        className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
+                                      >
+                                        {isSavingQuestion ? 'Saving...' : 'Save'}
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* Display mode */
+                                <div className="flex items-start gap-3">
+                                  <div className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
+                                    {index + 1}
+                                  </div>
+                                  <div className="flex-1">
+                                    <p className="text-gray-200">{question.question_text}</p>
+                                    <div className="flex items-center gap-3 mt-2">
+                                      <span className={`inline-block px-2 py-0.5 text-xs rounded-full ${
+                                        question.difficulty === 'easy' ? 'bg-green-900 text-green-300' :
+                                        question.difficulty === 'hard' ? 'bg-red-900 text-red-300' :
+                                        'bg-yellow-900 text-yellow-300'
+                                      }`}>
+                                        {question.difficulty}
+                                      </span>
+                                      <button
+                                        onClick={() => startEditingQuestion(question)}
+                                        className="text-xs text-purple-400 hover:text-purple-300 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        onClick={() => deleteAndRegenerateQuestion(question)}
+                                        className="text-xs text-blue-400 hover:text-blue-300 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Regenerate
+                                      </button>
+                                      <button
+                                        onClick={() => deleteQuestion(question)}
+                                        className="text-xs text-red-400 hover:text-red-300 transition"
+                                        disabled={isSavingQuestion}
+                                      >
+                                        Delete
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

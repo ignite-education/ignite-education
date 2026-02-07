@@ -19,6 +19,18 @@ body {
   font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* iOS Safari safe area support */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .auth-scroll-container {
+    /* Extend beyond safe area boundaries */
+    top: calc(-1 * env(safe-area-inset-top)) !important;
+    bottom: calc(-1 * env(safe-area-inset-bottom)) !important;
+    /* Add padding so content stays within safe area */
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+  }
+}
+
 /* Custom text selection color - Ignite pink */
 ::selection {
   background-color: #FDE7F4;
@@ -244,7 +256,7 @@ body {
   .auth-section-2 {
     min-height: auto;
     height: 40rem;
-    padding-top: 6rem;
+    padding-top: 16rem;
     padding-bottom: 6rem;
   }
 
@@ -261,6 +273,7 @@ body {
     height: auto;
     padding-top: 15rem;
     padding-bottom: 6rem;
+    contain: layout paint;
   }
 
   .auth-section-5 {
@@ -268,6 +281,7 @@ body {
     height: auto;
     padding-top: 6rem;
     padding-bottom: 6rem;
+    contain: layout paint;
   }
 
   .auth-section-6 {
@@ -275,6 +289,7 @@ body {
     height: auto;
     padding-top: 5rem;
     padding-bottom: 2rem;
+    contain: layout paint;
   }
 
   /* Allow course card shadows to extend beyond container while keeping horizontal scroll */
@@ -320,6 +335,10 @@ body {
 
 /* Section 5 tablet/small desktop - stack vertically to prevent overlap */
 @media (min-width: 768px) and (max-width: 1200px) {
+  .auth-section-1 {
+    /* Height controlled by inline styles for expand/collapse functionality */
+  }
+
   .auth-section-5-grid {
     padding-left: 2rem !important;
     padding-right: 2rem !important;
@@ -343,7 +362,7 @@ body {
   .auth-testimonial-indicators {
     width: 100% !important;
     max-width: 36rem !important;
-    padding-left: 9.2rem !important;
+    padding-left: 3.6rem !important;
     justify-content: flex-start !important;
   }
 
@@ -451,10 +470,16 @@ body {
   .auth-scroll-container {
     min-width: unset !important;
     overflow-x: hidden !important;
-    background: #000 !important;
-    top: 0 !important;
-    padding-top: 0 !important;
     scroll-snap-type: none !important;
+    /* Extend into safe areas on iOS - position beyond safe area, add padding for content */
+    top: calc(-1 * env(safe-area-inset-top, 0px)) !important;
+    bottom: calc(-1 * env(safe-area-inset-bottom, 0px)) !important;
+    left: calc(-1 * env(safe-area-inset-left, 0px)) !important;
+    right: calc(-1 * env(safe-area-inset-right, 0px)) !important;
+    padding-top: env(safe-area-inset-top, 0px) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
   }
 
   /* Wrapper for sections 2-6 - no snap on mobile */
@@ -469,9 +494,6 @@ body {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    min-height: 100vh !important;
-    min-height: 100svh !important;  /* Small viewport height - uses smallest possible viewport (Chrome-friendly) */
-    height: 100svh !important;
     overflow: visible !important;
     display: flex !important;
     align-items: center !important;
@@ -584,6 +606,7 @@ body {
   }
 
   .auth-promises-list {
+    grid-template-columns: 1fr !important;
     gap: 1rem !important;
     width: 100% !important;
     max-width: 100% !important;
@@ -806,7 +829,7 @@ body {
   }
 
   .auth-course-modal-title {
-    font-size: 1.5rem !important;
+    font-size: 1.8rem !important;
     margin-top: 0.75rem !important;
     margin-bottom: 0.75rem !important;
   }
@@ -959,6 +982,10 @@ body {
     margin-top: 1rem !important;
   }
 
+  .auth-section-4-feature img {
+    width: 90vw !important;
+  }
+
   /* Section 5 - Testimonials & Use Cases (match Section 4 padding) */
   .auth-section-5 {
     min-height: auto !important;
@@ -1073,9 +1100,11 @@ body {
   }
 
   .auth-testimonial-info {
-    left: 7rem !important;
+    left: 0 !important;
+    right: 0 !important;
     bottom: 0.75rem !important;
     font-size: 0.8rem !important;
+    text-align: center !important;
   }
 
   .auth-testimonial-role {
@@ -1083,13 +1112,21 @@ body {
   }
 
   .auth-testimonial-indicators {
-    width: calc(100% - 7rem) !important;
-    max-width: calc(100% - 7rem) !important;
-    margin-top: 0.75rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 0.225rem !important;
     margin-left: 0 !important;
-    padding-left: 7rem !important;
+    padding-left: 0 !important;
     margin-bottom: 2rem !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
+  }
+
+  /* Override card styles for indicators container */
+  .auth-testimonial-card:has(.auth-testimonial-indicators) {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    background-color: transparent !important;
   }
 
   .auth-testimonial-indicators button.bg-white {
@@ -1154,19 +1191,29 @@ body {
   .auth-section-merch {
     padding-top: 3rem !important;
     padding-bottom: 3rem !important;
-    padding-left: 2rem !important;
-    padding-right: 2rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 
   .auth-section-merch-title-container {
     width: 100% !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
     margin: 0 !important;
   }
 
   .auth-section-merch-title {
     font-size: 2rem !important;
+  }
+
+  .auth-section-merch-grid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+
+  .auth-section-merch-grid img {
+    transform: scale(1.15);
+    transform-origin: center;
   }
 
   /* Section 6 - LinkedIn & FAQs */
@@ -1211,11 +1258,19 @@ body {
   .auth-section-6-blog-title-container {
     min-height: 2.5rem !important;
     padding-top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
 
   .auth-section-6-blog-title {
     min-height: 2.5rem !important;
     padding-top: 0 !important;
+  }
+
+  .auth-section-6-blog-carousel-container {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
   }
 
   /* Section 6 - FAQ title container reserves space for typing animation */
@@ -1235,8 +1290,16 @@ body {
     font-size: 1.3rem !important;
   }
 
+  .blog-card-image-container {
+    height: 271px !important;
+  }
+
+  .min-h-\[500px\] {
+    min-height: 400px !important;
+  }
+
   .auth-section-6-get-started {
-    padding-bottom: 3rem !important;
+    padding-bottom: 1rem;
   }
 
   /* Hide down arrows on sections 2-5 for mobile (keep only section 1 arrow) */
@@ -1248,6 +1311,25 @@ body {
     display: none !important;
   }
 
+}
+
+/* Custom scrollbar for course catalog in welcome section */
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar {
+  width: 8px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #EF0B72;
+  border-radius: 4px;
+}
+
+.auth-section-1 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #D50A65;
 }
 
 /* Respect users' reduced motion preferences for accessibility */
@@ -1270,4 +1352,17 @@ body {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* Logo split-color effect performance optimizations */
+.logo-container {
+  will-change: clip-path;
+  contain: layout style paint;
+}
+
+.logo-layer {
+  will-change: clip-path;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
 }
