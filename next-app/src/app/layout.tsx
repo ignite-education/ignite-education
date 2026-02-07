@@ -27,9 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Version indicator for deployment verification */}
+        <meta name="generator" content="Next.js (Ignite v2)" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* NEXTJS-VERSION: 2.0.0 - Deployed 2025-02-07 */}
         {children}
       </body>
     </html>
