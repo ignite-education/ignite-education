@@ -48,7 +48,8 @@
       "Bash(git log:*)",
       "Bash(git restore:*)",
       "Bash(psql:*)",
-      "WebFetch(domain:auth.ignite.education)"
+      "WebFetch(domain:auth.ignite.education)",
+      "Bash(npx create-next-app:*)"
     ],
     "deny": [],
     "ask": []
