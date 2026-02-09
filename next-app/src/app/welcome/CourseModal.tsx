@@ -162,11 +162,11 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
   // Dynamic tagline based on course type (split into two lines)
   const title = course.title || course.name
   const taglineLines: Record<string, [string, string]> = {
-    specialism: [`Become a ${title}`, `with Ignite's free, expert-led course.`],
-    skill: [`Upskill at ${title}`, `with Ignite's free, expert-led course.`],
-    subject: [`Learn ${title}`, `with Ignite's free, expert-led course.`]
+    specialism: [`Become a ${title} with`, `Ignite's free, expert-led course.`],
+    skill: [`Upskill at ${title} with`, `Ignite's free, expert-led course.`],
+    subject: [`Learn ${title} with`, `Ignite's free, expert-led course.`]
   }
-  const [taglineLine1, taglineLine2] = taglineLines[course.course_type || ''] || [`Become a ${title}`, `with Ignite's free, expert-led course.`]
+  const [taglineLine1, taglineLine2] = taglineLines[course.course_type || ''] || [`Become a ${title} with`, `Ignite's free, expert-led course.`]
 
   // First 2 sentences of description (matches course page's getTwoSentences)
   const description = course.description || ''
@@ -208,7 +208,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </span>
 
             {/* Course Title */}
-            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em', marginBottom: '15px', lineHeight: 'tight' }}>
+            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em', marginBottom: '10px', lineHeight: 'tight' }}>
               <span style={{ display: 'inline-block', textAlign: 'left' }}>
                 {typedTitle}
                 {typedTitle.length < (course.title || course.name).length && (
@@ -228,7 +228,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             <div>
               {/* Description - first 2 sentences (matches course page) */}
               {twoSentences && (
-                <div className="text-black leading-relaxed mb-6 text-center" style={{ maxWidth: '100%' }}>
+                <div className="text-black leading-relaxed mb-6 text-center mx-auto" style={{ maxWidth: '85%' }}>
                   <span style={{ fontWeight: 400, fontSize: '15px' }}>
                     {twoSentences}{' '}
                     <a
