@@ -130,17 +130,22 @@ function generateModuleIntro(module: Module): string {
 export default function CourseModal({ course, coaches, onClose }: CourseModalProps) {
   const [typedTitle, setTypedTitle] = useState('')
 
-  // Typing animation for modal title
+  // Typing animation for modal title (matches Vite: 75ms/char, 1s start delay)
   useEffect(() => {
     const title = course.title || course.name
-    let i = 0
+    let currentIndex = 0
     setTypedTitle('')
-    const interval = setInterval(() => {
-      i++
-      setTypedTitle(title.substring(0, i))
-      if (i >= title.length) clearInterval(interval)
-    }, 40)
-    return () => clearInterval(interval)
+
+    const typeNextChar = () => {
+      if (currentIndex < title.length) {
+        currentIndex++
+        setTypedTitle(title.substring(0, currentIndex))
+        setTimeout(typeNextChar, 75)
+      }
+    }
+
+    const startTimeout = setTimeout(typeNextChar, 1000)
+    return () => clearTimeout(startTimeout)
   }, [course.title, course.name])
 
   // Lock body scroll while modal is open
@@ -179,9 +184,9 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
           onClick={(e) => e.stopPropagation()}
         >
           {/* Black Header */}
-          <div className="bg-black relative" style={{ paddingTop: '3rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+          <div className="bg-black relative text-center" style={{ paddingTop: '3rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
             {/* Breadcrumb */}
-            <nav className="flex items-center gap-2 mb-4" style={{ color: '#F0F0F2', fontSize: '0.79rem' }}>
+            <nav className="flex items-center justify-center gap-2 mb-4" style={{ color: '#F0F0F2', fontSize: '0.79rem' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
               <span>Courses</span>
@@ -192,7 +197,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             {/* Course Title */}
             <h2 className="font-semibold text-white mb-4" style={{ fontSize: '2.3rem', position: 'relative' }}>
               <span style={{ visibility: 'hidden' }}>{course.title}</span>
-              <span style={{ position: 'absolute', left: 0, top: 0 }}>{typedTitle}</span>
+              <span style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>{typedTitle}</span>
             </h2>
 
             {/* Excerpt */}
