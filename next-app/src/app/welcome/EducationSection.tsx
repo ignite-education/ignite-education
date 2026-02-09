@@ -1,47 +1,69 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function EducationSection() {
   const [showFeatures, setShowFeatures] = useState(false)
+  const sectionRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
-    // Show features after a short delay
-    const timer = setTimeout(() => setShowFeatures(true), 500)
-    return () => clearTimeout(timer)
+    const section = sectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShowFeatures(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
   }, [])
 
-  // Render the heading with pink highlighted words
+  // Render the heading with pink highlighted words and explicit line breaks
   const renderHeading = () => {
-    const words = ['accessible', 'personalised', 'integrated']
-    const text = 'Education should be accessible, personalised and integrated for everyone.'
+    // Line break structure matches Vite original
+    const lines = [
+      { text: 'Education should be ', highlights: [] as string[] },
+      { text: 'accessible, personalised ', highlights: ['accessible', 'personalised'] },
+      { text: 'and integrated for everyone.', highlights: ['integrated'] }
+    ]
 
-    // Split and highlight
-    let result: React.ReactNode[] = []
-    let lastIndex = 0
+    return lines.map((line, lineIdx) => {
+      let result: React.ReactNode[] = []
+      let remaining = line.text
 
-    words.forEach((word, i) => {
-      const start = text.indexOf(word, lastIndex)
-      if (start > lastIndex) {
-        result.push(<span key={`text-${i}`}>{text.slice(lastIndex, start)}</span>)
+      for (const word of line.highlights) {
+        const start = remaining.indexOf(word)
+        if (start > 0) {
+          result.push(<span key={`${lineIdx}-pre-${word}`}>{remaining.slice(0, start)}</span>)
+        }
+        result.push(
+          <span key={`${lineIdx}-${word}`} className="text-[#EF0B72]">{word}</span>
+        )
+        remaining = remaining.slice(start + word.length)
       }
-      result.push(
-        <span key={word} className="text-[#EF0B72]">
-          {word}
+
+      if (remaining) {
+        result.push(<span key={`${lineIdx}-end`}>{remaining}</span>)
+      }
+
+      return (
+        <span key={lineIdx}>
+          {lineIdx > 0 && <br />}
+          {result}
         </span>
       )
-      lastIndex = start + word.length
     })
-
-    if (lastIndex < text.length) {
-      result.push(<span key="end">{text.slice(lastIndex)}</span>)
-    }
-
-    return result
   }
 
   return (
     <section
+      ref={sectionRef}
       className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
       style={{ background: 'black' }}
     >
@@ -69,8 +91,8 @@ export default function EducationSection() {
               {showFeatures && (
                 <>
                   <div
-                    className="flex flex-col items-center animate-fadeIn"
-                    style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}
+                    className="flex flex-col items-center"
+                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}
                   >
                     <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
                       Built by Industry Experts
@@ -85,8 +107,8 @@ export default function EducationSection() {
                   </div>
 
                   <div
-                    className="flex flex-col items-center animate-fadeIn"
-                    style={{ animationDelay: '0.6s', animationFillMode: 'forwards' }}
+                    className="flex flex-col items-center"
+                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}
                   >
                     <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
                       Ignite is Free
@@ -101,8 +123,8 @@ export default function EducationSection() {
                   </div>
 
                   <div
-                    className="flex flex-col items-center animate-fadeIn"
-                    style={{ animationDelay: '0.9s', animationFillMode: 'forwards' }}
+                    className="flex flex-col items-center"
+                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}
                   >
                     <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
                       No Educational Prerequisite

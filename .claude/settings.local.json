@@ -48,8 +48,7 @@
       "Bash(psql:*)",
       "WebFetch(domain:auth.ignite.education)",
       "Bash(npx create-next-app:*)",
-      "WebFetch(domain:stackshare.io)",
-      "Bash(npx next:*)"
+      "Bash(git cherry-pick:*)"
     ],
     "deny": [],
     "ask": []
