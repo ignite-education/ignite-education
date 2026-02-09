@@ -35,6 +35,19 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const [phase, setPhase] = useState<'sign-in' | 'thank-you'>(initialPhase)
   const [userName, setUserName] = useState(initialUserName || '')
   const googleBtnRef = useRef<HTMLDivElement>(null)
+  const modalRef = useRef<HTMLDivElement>(null)
+  const [lockedSize, setLockedSize] = useState<{ width: number; height: number } | null>(null)
+
+  const lockAndTransition = (firstName: string) => {
+    if (modalRef.current) {
+      setLockedSize({
+        width: modalRef.current.offsetWidth,
+        height: modalRef.current.offsetHeight,
+      })
+    }
+    setUserName(firstName)
+    setPhase('thank-you')
+  }
 
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
@@ -47,8 +60,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
       const firstName = await insertCourseRequest(courseName)
       if (firstName) {
-        setUserName(firstName)
-        setPhase('thank-you')
+        lockAndTransition(firstName)
       }
     } catch (err) {
       console.error('Google sign-in failed:', err)
@@ -106,8 +118,16 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       onClick={handleClose}
     >
       <div
+        ref={modalRef}
         className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
-        style={{ width: 'fit-content', minWidth: '575px', maxWidth: '90vw', padding: '3.3rem 2.75rem 2.75rem', borderRadius: '6px' }}
+        style={{
+          width: lockedSize ? `${lockedSize.width}px` : 'fit-content',
+          height: lockedSize ? `${lockedSize.height}px` : 'auto',
+          minWidth: lockedSize ? undefined : '575px',
+          maxWidth: '90vw',
+          padding: '3.3rem 2.75rem 2.75rem',
+          borderRadius: '6px',
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -137,8 +157,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               {/* Google personalized button (rendered by Google's GIS) */}
               <div
                 ref={googleBtnRef}
-                className="flex justify-center rounded"
-                style={{ boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+                className="mx-auto rounded"
+                style={{ width: '380px', maxWidth: '100%', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
               />
 
               <button
@@ -165,13 +185,13 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <div className="mt-12 flex flex-col items-center">
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '38px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#22C55E" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-black text-center text-[1.1rem] font-semibold tracking-[-0.01em] leading-tight"
+              className="text-black text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
               Thank you, {userName}.<br />We&rsquo;ll be in touch soon.
