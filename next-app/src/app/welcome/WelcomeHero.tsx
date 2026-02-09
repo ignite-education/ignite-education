@@ -39,7 +39,7 @@ function CourseCard({ course }: { course: Course }) {
       <div className="flex items-center justify-between">
         <span
           className="text-black font-semibold tracking-[-0.01em]"
-          style={{ fontFamily: 'Geist, sans-serif' }}
+          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           {course.title || course.name}
         </span>
@@ -82,14 +82,14 @@ function CourseTypeColumn({
     <div className="flex flex-col">
       <h2
         className="text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em]"
-        style={{ fontFamily: 'Geist, sans-serif' }}
+        style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
       >
         {config.title}
       </h2>
       {showDescription && (
         <p
           className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line"
-          style={{ fontFamily: 'Geist, sans-serif' }}
+          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           {config.description}
         </p>
@@ -206,7 +206,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
           </Link>
           <h1
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
-            style={{ fontFamily: 'Geist, sans-serif', marginTop: '-12px' }}
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
             What do you want to learn?
           </h1>
