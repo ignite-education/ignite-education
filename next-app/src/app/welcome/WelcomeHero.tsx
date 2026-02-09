@@ -184,7 +184,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         }}
       >
         {/* Header with Logo */}
-        <div className="text-center mb-[13.5px]">
+        <div className="text-center mb-[7px]">
           <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
             {lottieData ? (
               <Lottie
