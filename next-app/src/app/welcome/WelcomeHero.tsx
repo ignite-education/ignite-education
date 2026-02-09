@@ -252,8 +252,9 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
     <section
       className="relative bg-white auth-section-1"
       style={{
-        height: isExpanded ? 'auto' : '85vh',
-        minHeight: isExpanded ? 'auto' : '600px',
+        height: isExpanded ? 'auto' : noResults ? '65vh' : '85vh',
+        minHeight: isExpanded ? 'auto' : noResults ? '400px' : '600px',
+        transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden'
       }}
     >

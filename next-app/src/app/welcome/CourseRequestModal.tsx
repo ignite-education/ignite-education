@@ -84,7 +84,7 @@ export default function CourseRequestModal({ courseName, onClose }: CourseReques
 
         {/* Heading */}
         <p
-          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em] mb-1"
+          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em] mb-4"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           Thank you.
@@ -98,13 +98,13 @@ export default function CourseRequestModal({ courseName, onClose }: CourseReques
         </h3>
 
         {/* Sign-in buttons */}
-        <div className="space-y-2 mt-8">
+        <div className="space-y-2 mt-12">
           {/* Google personalized button (rendered by Google's GIS) */}
           <div ref={googleBtnRef} className="flex justify-center" />
 
           <a
             href="/sign-in"
-            className="mx-auto flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded-xl px-3 py-2 text-sm hover:bg-[#006097] transition font-medium"
+            className="mx-auto flex items-center justify-center gap-2 bg-[#0077B5] text-white rounded px-3 py-2 text-sm hover:bg-[#006097] transition font-medium"
             style={{ width: '380px', maxWidth: '100%' }}
           >
             <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
