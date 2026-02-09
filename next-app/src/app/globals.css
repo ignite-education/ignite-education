@@ -159,6 +159,17 @@ body {
   contain: layout style paint;
 }
 
+/* Section 4 - Learning Model: clear the overlapping image from Section 3 */
+@media (min-width: 768px) {
+  .auth-section-4 {
+    min-height: auto;
+    height: auto;
+    padding-top: 15rem;
+    padding-bottom: 6rem;
+    contain: layout paint;
+  }
+}
+
 /* Course carousel edge gradient overlays (desktop) */
 @media (min-width: 768px) {
   .auth-section-3-right {
