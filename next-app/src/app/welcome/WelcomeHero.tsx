@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import Lottie from 'lottie-react'
+import type { LottieRefCurrentProps } from 'lottie-react'
 
 interface Course {
   id: string
@@ -110,30 +112,15 @@ function CourseSearch({
   onChange: (value: string) => void
 }) {
   return (
-    <div className="relative w-full max-w-md mx-auto">
+    <div className="w-full max-w-[660px] mx-auto">
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search courses..."
         autoFocus
-        className="w-full bg-gray-100 text-black px-4 py-3 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 placeholder-gray-400"
-        style={{ fontFamily: 'Geist, sans-serif' }}
+        className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all shadow-[0_0_10px_rgba(103,103,103,0.5)] hover:shadow-[0_0_10px_rgba(103,103,103,0.7)]"
       />
-      <svg
-        className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.35-4.35" />
-      </svg>
     </div>
   )
 }
@@ -141,6 +128,25 @@ function CourseSearch({
 export default function WelcomeHero({ coursesByType, courseTypeConfig }: WelcomeHeroProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const loopCountRef = useRef(0)
+
+  useEffect(() => {
+    fetch('/icon-animation.json')
+      .then(res => res.json())
+      .then(data => setLottieData(data))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (lottieData && lottieRef.current) {
+      const timer = setTimeout(() => {
+        lottieRef.current?.play()
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+  }, [lottieData])
 
   // Filter courses based on search
   const filterCourses = (courses: Course[]) => {
@@ -177,12 +183,23 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         {/* Header with Logo */}
         <div className="text-center mb-[13.5px]">
           <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
-            {/* Static logo - Lottie would be loaded client-side */}
-            <img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/logo_circle.png"
-              alt="Ignite Education"
-              style={{ width: 80, height: 80, margin: '0 auto' }}
-            />
+            {lottieData ? (
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={lottieData}
+                loop={true}
+                autoplay={false}
+                onLoopComplete={() => {
+                  loopCountRef.current += 1
+                  if (loopCountRef.current >= 3 && lottieRef.current) {
+                    lottieRef.current.stop()
+                  }
+                }}
+                style={{ width: 80, height: 80, margin: '0 auto' }}
+              />
+            ) : (
+              <div style={{ width: 80, height: 80, margin: '0 auto' }} />
+            )}
           </Link>
           <h1
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
