@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 interface WelcomeScrollManagerProps {
   educationSection: React.ReactNode
   coursesSection: React.ReactNode
+  learningModelSection: React.ReactNode
   testimonialsSection: React.ReactNode
   faqSection: React.ReactNode
   footer: React.ReactNode
@@ -14,6 +15,7 @@ interface WelcomeScrollManagerProps {
 export default function WelcomeScrollManager({
   educationSection,
   coursesSection,
+  learningModelSection,
   testimonialsSection,
   faqSection,
   footer
@@ -24,6 +26,7 @@ export default function WelcomeScrollManager({
   const logoContainerRef = useRef<HTMLDivElement>(null)
   const educationRef = useRef<HTMLDivElement>(null)
   const coursesRef = useRef<HTMLDivElement>(null)
+  const learningModelRef = useRef<HTMLDivElement>(null)
   const testimonialsRef = useRef<HTMLDivElement>(null)
   const faqRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
@@ -44,6 +47,7 @@ export default function WelcomeScrollManager({
       { color: 'white', ref: null },               // Hero (default)
       { color: 'black', ref: educationRef },        // Education
       { color: 'white', ref: coursesRef },           // Courses
+      { color: 'black', ref: learningModelRef },      // Learning Model
       { color: 'white', ref: testimonialsRef },      // Testimonials
       { color: 'black', ref: faqRef },               // FAQ
       { color: 'black', ref: footerRef }             // Footer
@@ -177,6 +181,9 @@ export default function WelcomeScrollManager({
       </div>
       <div ref={coursesRef}>
         {coursesSection}
+      </div>
+      <div ref={learningModelRef}>
+        {learningModelSection}
       </div>
       <div ref={testimonialsRef}>
         {testimonialsSection}

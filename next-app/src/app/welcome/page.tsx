@@ -4,6 +4,7 @@ import Footer from '@/components/Footer'
 import WelcomeHero from './WelcomeHero'
 import EducationSection from './EducationSection'
 import CoursesSection from './CoursesSection'
+import LearningModelSection from './LearningModelSection'
 import TestimonialsSection from './TestimonialsSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
@@ -179,6 +180,7 @@ export default async function WelcomePage() {
         <WelcomeScrollManager
           educationSection={<EducationSection />}
           coursesSection={<CoursesSection courses={courses || []} />}
+          learningModelSection={<LearningModelSection />}
           testimonialsSection={<TestimonialsSection />}
           faqSection={<FAQSection faqs={faqs} />}
           footer={<Footer />}
