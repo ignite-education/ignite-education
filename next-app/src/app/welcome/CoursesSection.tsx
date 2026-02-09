@@ -2,17 +2,37 @@
 
 import { useState, useEffect, useRef } from 'react'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
+import CourseModal from './CourseModal'
+
+interface Lesson {
+  name: string
+}
+
+interface Module {
+  name: string
+  lessons?: Lesson[]
+}
+
+interface Coach {
+  name: string
+  position?: string
+  description?: string
+  image_url?: string
+  linkedin_url?: string
+}
 
 interface Course {
   name: string
   title?: string
   description?: string
   module_names?: string
+  module_structure?: Module[]
   status: string
 }
 
 interface CoursesSectionProps {
   courses: Course[]
+  coaches: Record<string, Coach[]>
 }
 
 // Course Card for Section 3 - 2x2 grid style
@@ -92,10 +112,11 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
   )
 }
 
-export default function CoursesSection({ courses }: CoursesSectionProps) {
+export default function CoursesSection({ courses, coaches }: CoursesSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
 
   const { displayText: typedText, isComplete } = useTypingAnimation(
     'The best courses.\nFor the best students.',
@@ -171,6 +192,7 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
   }
 
   return (
+  <>
     <section
       ref={sectionRef}
       className="flex items-start justify-center px-10 relative auth-section-3"
@@ -248,10 +270,7 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
                         <CourseCard
                           key={course.name}
                           course={course}
-                          onClick={() => {
-                            // Navigate to course page
-                            window.location.href = `/courses/${course.name.toLowerCase().replace(/\s+/g, '-')}`
-                          }}
+                          onClick={() => setSelectedCourse(course)}
                         />
                       ))}
                     </div>
@@ -309,5 +328,14 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
         />
       </div>
     </section>
+
+    {selectedCourse && (
+      <CourseModal
+        course={selectedCourse}
+        coaches={coaches[selectedCourse.name] || []}
+        onClose={() => setSelectedCourse(null)}
+      />
+    )}
+  </>
   )
 }

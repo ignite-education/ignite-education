@@ -152,6 +152,25 @@ export default async function WelcomePage() {
       : ''
   }))
 
+  // Fetch coaches for all specialism courses
+  const coachesMap: Record<string, Array<{ name: string; position?: string; description?: string; image_url?: string; linkedin_url?: string }>> = {}
+  const specialismCourses = courses.filter((c: Course) => !c.course_type || c.course_type === 'specialism')
+  for (const course of specialismCourses) {
+    const slug = course.name.toLowerCase()
+    const nameVariations = [
+      course.name,
+      slug.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+      slug.replace(/-/g, ' ')
+    ]
+    const { data: coachData } = await supabase
+      .from('coaches')
+      .select('*')
+      .in('course_id', nameVariations)
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    coachesMap[course.name] = coachData || []
+  }
+
   // Sort courses: live first (alphabetically), then coming_soon (alphabetically)
   const sortCourses = (coursesToSort: Course[]) => {
     return coursesToSort.sort((a, b) => {
@@ -189,7 +208,7 @@ export default async function WelcomePage() {
         {/* Wrapper for sections 2-6 with sticky navbar + dynamic logo color */}
         <WelcomeScrollManager
           educationSection={<EducationSection />}
-          coursesSection={<CoursesSection courses={courses || []} />}
+          coursesSection={<CoursesSection courses={coursesByType.specialism} coaches={coachesMap} />}
           learningModelSection={<LearningModelSection />}
           testimonialsSection={<TestimonialsSection />}
           faqSection={<FAQSection faqs={faqs} />}
