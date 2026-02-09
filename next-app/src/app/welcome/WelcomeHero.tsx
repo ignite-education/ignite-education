@@ -136,7 +136,7 @@ function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer group"
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-[#F8F8F8] rounded-lg px-3 py-1.5 cursor-pointer group"
         style={{
           opacity: showRequestButton ? 1 : 0,
           transform: showRequestButton
@@ -154,11 +154,11 @@ function CourseSearch({
         </span>
         <div
           className="bg-white rounded-md flex items-center justify-center"
-          style={{ width: '35px', height: '35px', boxShadow: '0 0 6px rgba(103,103,103,0.15)' }}
+          style={{ width: '28px', height: '28px' }}
         >
           <svg
-            width="21"
-            height="21"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
