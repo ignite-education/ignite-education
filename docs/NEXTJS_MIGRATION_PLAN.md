@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is ~15% complete. The `/welcome` page is well-implemented in Next.js with proper SSR, structured data, and Supabase integration.
+**Current Status:** Migration is ~20% complete. Session 1 (staging setup) is done. The `/welcome` page is deployed at https://next.ignite.education with SSR, structured data, Supabase integration, and Lottie animation. Section 1 (Hero) design tweaks are complete; sections 2-5 still need design review.
 
 ---
 
@@ -173,7 +173,7 @@ ignite.education (Vercel)
 ├── /learning          → Vite SPA (ProtectedRoute)
 └── /admin/*           → Vite SPA (ProtectedRoute)
 
-dev.ignite.education (Vercel - Staging)
+next.ignite.education (Vercel - Staging)
 └── All routes         → Next.js (testing)
 ```
 
@@ -181,28 +181,41 @@ dev.ignite.education (Vercel - Staging)
 
 ## Step-by-Step Implementation Guide
 
-### Session 1: Staging Environment Setup (1-2 hours)
+### Session 1: Staging Environment Setup (1-2 hours) — COMPLETED
 
-**Objective:** Get dev.ignite.education working with the Next.js app
+**Objective:** Get Next.js app deployed to a staging URL
 
-**Tasks:**
-1. [ ] Create new Vercel project for Next.js app
-   - Connect to repo, set root directory to `next-app`
-   - Add environment variables from `.env.local`
+**Staging URL:** https://next.ignite.education
 
-2. [ ] Configure custom domain
-   - Add `dev.ignite.education` as custom domain
-   - Update DNS records (CNAME to Vercel)
+**Completed Tasks:**
+1. [x] Create new Vercel project for Next.js app
+   - Project name: `ignite-education-next`
+   - Connected to repo, root directory set to `next-app`
+   - Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_API_URL`
+   - Deploys from `main` branch
 
-3. [ ] Verify deployment
-   - Check dev.ignite.education/welcome renders
-   - Verify Supabase connection works
-   - Check structured data in page source
+2. [x] Configure custom domain
+   - Added `next.ignite.education` as custom domain (note: `dev.ignite.education` was already in use)
+   - Domain managed via Vercel, auto-configured DNS + SSL
 
-**Verification:**
-- Visit https://dev.ignite.education/welcome
-- View page source - should see SSR HTML content
-- Test: Google Rich Results Test on the page
+3. [x] Verify deployment
+   - https://next.ignite.education/welcome renders with SSR
+   - Supabase connection works (courses load)
+   - Structured data present in page source
+
+4. [x] Code changes for deployment
+   - Added `/` → `/welcome` redirect in `next.config.ts`
+   - Set `turbopack.root` to fix version conflict with root-level `next@16.0.10` (from `@react-email/preview-server`)
+   - Replaced default Next.js starter `page.tsx` with redirect fallback
+   - Added `NEXT_PUBLIC_API_URL` to `.env.local.example`
+
+5. [x] Design tweaks — Section 1 (Hero) only
+   - Fixed broken logo: replaced static image with Lottie animation (`lottie-react`)
+   - Fixed search bar styling: white bg, rounded-xl, box shadow, pink caret, 660px max width, no placeholder, no search icon
+   - Fixed container padding: moved from `px-8` on section to `px-6` on inner container to match original card widths
+   - Reduced heading-to-search gap
+   - Fixed font loading: replaced inline `fontFamily: 'Geist'` with `var(--font-geist-sans)` to match `next/font` loaded font
+   - Remaining sections (Education, Courses, Testimonials, FAQ, Footer) still need design review
 
 ---
 
