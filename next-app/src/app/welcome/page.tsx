@@ -131,16 +131,26 @@ interface Course {
   status: string
   course_type?: string
   display_order?: number
+  module_structure?: Array<{ name: string }>
+  module_names?: string
 }
 
 export default async function WelcomePage() {
   // Fetch courses from Supabase at build time
   const supabase = await createClient()
 
-  const { data: courses } = await supabase
+  const { data: rawCourses } = await supabase
     .from('courses')
     .select('*')
     .in('status', ['live', 'coming_soon'])
+
+  // Extract module_names from module_structure (matches Vite logic)
+  const courses = (rawCourses || []).map((course: Course) => ({
+    ...course,
+    module_names: course.module_structure && Array.isArray(course.module_structure)
+      ? course.module_structure.map(m => m.name).join(', ')
+      : ''
+  }))
 
   // Sort courses: live first (alphabetically), then coming_soon (alphabetically)
   const sortCourses = (coursesToSort: Course[]) => {

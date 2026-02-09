@@ -62,7 +62,7 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
             <div className="pb-8 auth-course-card-modules">
               <p className="text-xs text-black font-semibold mb-1">Modules:</p>
               <ul className="text-xs text-black space-y-0.5">
-                {course.module_names.split(', ').slice(0, 5).map((moduleName, idx) => (
+                {course.module_names.split(', ').slice(0, (course.title || course.name).length > 25 ? 4 : 5).map((moduleName, idx) => (
                   <li key={idx} className="flex items-start">
                     <span className="mr-1.5">•</span>
                     <span className="line-clamp-1">{moduleName}</span>
