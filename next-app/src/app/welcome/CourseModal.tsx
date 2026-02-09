@@ -218,7 +218,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </h2>
 
             {/* Dynamic Tagline */}
-            <p className="text-xl text-[#EF0B72] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+            <p className="text-[#EF0B72] font-medium leading-relaxed" style={{ fontSize: '1rem', letterSpacing: '-0.02em' }}>
               {taglineLine1}<br />{taglineLine2}
             </p>
           </div>
