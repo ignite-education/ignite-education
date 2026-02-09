@@ -338,8 +338,8 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         </div>
       </div>
 
-      {/* Bottom gradient fade - only show when not expanded */}
-      {!isExpanded && (
+      {/* Bottom gradient fade - only show when not expanded and 3+ rows */}
+      {!isExpanded && maxRows >= 3 && (
         <div
           className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
           style={{
@@ -348,14 +348,14 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         />
       )}
 
-      {/* Expand/Collapse Button */}
-      <button
+      {/* Expand/Collapse Button - only show when 3+ rows */}
+      {maxRows >= 3 && <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center z-20"
         style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px' }}
       >
         {isExpanded ? 'Collapse' : 'Expand'}
-      </button>
+      </button>}
       {showRequestModal && (
         <CourseRequestModal
           courseName={requestedQuery}

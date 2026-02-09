@@ -68,7 +68,7 @@ export default function CourseRequestModal({ courseName, onClose }: CourseReques
     >
       <div
         className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
-        style={{ width: '506px', maxWidth: '90vw', padding: '3.3rem 2.75rem 2.75rem', borderRadius: '6px' }}
+        style={{ width: 'fit-content', minWidth: '506px', maxWidth: '90vw', padding: '3.3rem 2.75rem 2.75rem', borderRadius: '6px' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -83,18 +83,12 @@ export default function CourseRequestModal({ courseName, onClose }: CourseReques
         </button>
 
         {/* Heading */}
-        <p
-          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em] mb-4"
-          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-        >
-          Thank you.
-        </p>
         <h3
           className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
-          We&rsquo;ve added <span className="text-[#EF0B72]">{courseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
-          <br />to our upcoming course list.
+          <span className="whitespace-nowrap">We&rsquo;ve added <span className="text-[#EF0B72]">{courseName.replace(/\b\w/g, c => c.toUpperCase())}</span></span>
+          <br /><span className="whitespace-nowrap">to our upcoming course list.</span>
         </h3>
 
         {/* Sign-in buttons */}
