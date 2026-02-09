@@ -40,6 +40,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
       const supabase = createClient()
+      console.log('[CourseRequest] Starting Google sign-in...')
       const { data, error: authError } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: credential,
@@ -47,9 +48,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       })
 
       if (authError || !data.user) {
-        console.error('Google sign-in failed:', authError)
+        console.error('[CourseRequest] Google sign-in failed:', authError)
         return
       }
+      console.log('[CourseRequest] Signed in as:', data.user.id, data.user.email)
 
       const { error: insertError } = await supabase.from('course_requests').insert({
         user_id: data.user.id,
@@ -57,13 +59,15 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         status: 'requested',
       })
 
-      if (insertError && !insertError.message.includes('duplicate')) {
-        console.error('Course request insert failed:', insertError)
+      if (insertError) {
+        console.error('[CourseRequest] Insert failed:', insertError.message, insertError.code, insertError)
+      } else {
+        console.log('[CourseRequest] Insert succeeded for:', courseName)
       }
 
       lockAndTransition(extractFirstName(data.user))
     } catch (err) {
-      console.error('Google sign-in failed:', err)
+      console.error('[CourseRequest] Unexpected error:', err)
     }
   }, [courseName])
 

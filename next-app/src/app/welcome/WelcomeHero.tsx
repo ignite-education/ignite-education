@@ -230,8 +230,13 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
     if (!pendingCourse) return
 
     const supabase = createClient()
+    console.log('[LinkedIn callback] Checking auth for pending course:', pendingCourse)
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return
+      if (!user) {
+        console.log('[LinkedIn callback] No authenticated user found')
+        return
+      }
+      console.log('[LinkedIn callback] Authenticated as:', user.id, user.email)
 
       // User is authenticated and has a pending course request
       sessionStorage.removeItem('pendingCourseRequest')
@@ -247,8 +252,10 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         course_name: pendingCourse,
         status: 'requested',
       }).then(({ error }) => {
-        if (error && !error.message.includes('duplicate')) {
-          console.error('Course request insert failed:', error)
+        if (error) {
+          console.error('[LinkedIn callback] Insert failed:', error.message, error.code, error)
+        } else {
+          console.log('[LinkedIn callback] Insert succeeded for:', pendingCourse)
         }
         setRequestedQuery(pendingCourse)
         setModalPhase('thank-you')
