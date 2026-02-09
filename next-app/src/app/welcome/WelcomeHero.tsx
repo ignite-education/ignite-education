@@ -122,7 +122,7 @@ function CourseSearch({
       className="w-full max-w-[660px] mx-auto relative"
       onMouseEnter={() => {
         const input = document.querySelector<HTMLInputElement>('.course-search-input')
-        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)'
+        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)'
       }}
       onMouseLeave={() => {
         const input = document.querySelector<HTMLInputElement>('.course-search-input')
@@ -322,7 +322,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
                     lottieRef.current.pause()
                     setTimeout(() => {
                       lottieRef.current?.goToAndPlay(0)
-                    }, 3000)
+                    }, 4000)
                   }
                 }}
                 style={{ width: 80, height: 80, margin: '0 auto' }}

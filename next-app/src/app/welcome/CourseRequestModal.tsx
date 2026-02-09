@@ -188,7 +188,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginBottom: '-2.75rem', marginTop: '-15px' }}>
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginBottom: '-2.75rem', marginTop: '-20px' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#2B8A1A" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#2B8A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
