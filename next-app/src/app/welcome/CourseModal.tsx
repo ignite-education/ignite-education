@@ -224,9 +224,18 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             <div>
               {/* Description - first 2 sentences (matches course page) */}
               {twoSentences && (
-                <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}>
-                  {twoSentences}
-                </p>
+                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%' }}>
+                  <span style={{ fontWeight: 400, fontSize: '15px' }}>
+                    {twoSentences}{' '}
+                    <a
+                      href={`/courses/${courseSlug}`}
+                      className="font-medium text-black hover:text-[#EF0B72] transition-colors"
+                      style={{ fontSize: '15px', textDecoration: 'none', marginLeft: '0.3rem' }}
+                    >
+                      Learn more &gt;
+                    </a>
+                  </span>
+                </div>
               )}
 
               {/* Benefits */}
