@@ -56,7 +56,6 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       const { error: insertError } = await supabase.from('course_requests').insert({
         user_id: data.user.id,
         course_name: courseName,
-        status: 'requested',
       })
 
       if (insertError) {
