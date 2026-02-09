@@ -173,8 +173,8 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
   return (
     <section
       ref={sectionRef}
-      className="min-h-screen flex items-start justify-center px-10 relative auth-section-3"
-      style={{ background: 'white', overflow: 'visible' }}
+      className="flex items-start justify-center px-10 relative auth-section-3"
+      style={{ background: 'white', overflow: 'visible', paddingTop: '3rem', paddingBottom: '3rem' }}
     >
       <div className="w-full text-white">
         {/* Two Column Layout */}
