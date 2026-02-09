@@ -354,3 +354,36 @@ body {
     height: auto !important;
   }
 }
+
+/* Section Merch - Big dreams. Universal fit. */
+@media (min-width: 768px) and (max-width: 1200px) {
+  .auth-section-merch {
+    padding-top: 3rem !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .auth-section-merch {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .auth-section-merch-title-container {
+    width: 100% !important;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    margin: 0 !important;
+  }
+  .auth-section-merch-title {
+    font-size: 2rem !important;
+  }
+  .auth-section-merch-grid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  .auth-section-merch-grid img {
+    transform: scale(1.15);
+    transform-origin: center;
+  }
+}

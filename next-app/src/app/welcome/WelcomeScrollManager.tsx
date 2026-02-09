@@ -8,6 +8,7 @@ interface WelcomeScrollManagerProps {
   coursesSection: React.ReactNode
   learningModelSection: React.ReactNode
   testimonialsSection: React.ReactNode
+  merchSection: React.ReactNode
   faqSection: React.ReactNode
   footer: React.ReactNode
 }
@@ -17,6 +18,7 @@ export default function WelcomeScrollManager({
   coursesSection,
   learningModelSection,
   testimonialsSection,
+  merchSection,
   faqSection,
   footer
 }: WelcomeScrollManagerProps) {
@@ -28,6 +30,7 @@ export default function WelcomeScrollManager({
   const coursesRef = useRef<HTMLDivElement>(null)
   const learningModelRef = useRef<HTMLDivElement>(null)
   const testimonialsRef = useRef<HTMLDivElement>(null)
+  const merchRef = useRef<HTMLDivElement>(null)
   const faqRef = useRef<HTMLDivElement>(null)
   const footerRef = useRef<HTMLDivElement>(null)
 
@@ -49,6 +52,7 @@ export default function WelcomeScrollManager({
       { color: 'white', ref: coursesRef },           // Courses
       { color: 'black', ref: learningModelRef },      // Learning Model
       { color: 'white', ref: testimonialsRef },      // Testimonials
+      { color: 'white', ref: merchRef },              // Merchandise
       { color: 'black', ref: faqRef },               // FAQ
       { color: 'black', ref: footerRef }             // Footer
     ]
@@ -187,6 +191,9 @@ export default function WelcomeScrollManager({
       </div>
       <div ref={testimonialsRef}>
         {testimonialsSection}
+      </div>
+      <div ref={merchRef}>
+        {merchSection}
       </div>
       <div ref={faqRef}>
         {faqSection}

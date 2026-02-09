@@ -6,6 +6,7 @@ import EducationSection from './EducationSection'
 import CoursesSection from './CoursesSection'
 import LearningModelSection from './LearningModelSection'
 import TestimonialsSection from './TestimonialsSection'
+import MerchSection from './MerchSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
 
@@ -218,6 +219,7 @@ export default async function WelcomePage() {
           coursesSection={<CoursesSection courses={coursesByType.specialism} coaches={coachesMap} />}
           learningModelSection={<LearningModelSection />}
           testimonialsSection={<TestimonialsSection />}
+          merchSection={<MerchSection />}
           faqSection={<FAQSection faqs={faqs} />}
           footer={<Footer />}
         />
