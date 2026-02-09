@@ -159,14 +159,14 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
   const typeLabels: Record<string, string> = { specialism: 'Specialism', skill: 'Skill', subject: 'Subject' }
   const courseTypeLabel = typeLabels[course.course_type || ''] || 'Course'
 
-  // Dynamic tagline based on course type
+  // Dynamic tagline based on course type (split into two lines)
   const title = course.title || course.name
-  const taglineTemplates: Record<string, string> = {
-    specialism: `Become a ${title} with Ignite's free, expert-led course.`,
-    skill: `Upskill at ${title} with Ignite's free, expert-led course.`,
-    subject: `Learn ${title} with Ignite's free, expert-led course.`
+  const taglineLines: Record<string, [string, string]> = {
+    specialism: [`Become a ${title}`, `with Ignite's free, expert-led course.`],
+    skill: [`Upskill at ${title}`, `with Ignite's free, expert-led course.`],
+    subject: [`Learn ${title}`, `with Ignite's free, expert-led course.`]
   }
-  const courseTagline = taglineTemplates[course.course_type || ''] || `Become a ${title} with Ignite's free, expert-led course.`
+  const [taglineLine1, taglineLine2] = taglineLines[course.course_type || ''] || [`Become a ${title}`, `with Ignite's free, expert-led course.`]
 
   // First 2 sentences of description (matches course page's getTwoSentences)
   const description = course.description || ''
@@ -208,14 +208,18 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </span>
 
             {/* Course Title */}
-            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', position: 'relative', letterSpacing: '-0.02em', marginBottom: '15px', lineHeight: 'tight' }}>
-              <span style={{ visibility: 'hidden' }}>{course.title}</span>
-              <span style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>{typedTitle}</span>
+            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em', marginBottom: '15px', lineHeight: 'tight' }}>
+              <span style={{ display: 'inline-block', textAlign: 'left' }}>
+                {typedTitle}
+                {typedTitle.length < (course.title || course.name).length && (
+                  <span style={{ opacity: 0 }}>{(course.title || course.name).substring(typedTitle.length)}</span>
+                )}
+              </span>
             </h2>
 
             {/* Dynamic Tagline */}
             <p className="text-xl text-[#EF0B72] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
-              {courseTagline}
+              {taglineLine1}<br />{taglineLine2}
             </p>
           </div>
 
@@ -224,7 +228,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             <div>
               {/* Description - first 2 sentences (matches course page) */}
               {twoSentences && (
-                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%' }}>
+                <div className="text-black leading-relaxed mb-6 text-center" style={{ maxWidth: '100%' }}>
                   <span style={{ fontWeight: 400, fontSize: '15px' }}>
                     {twoSentences}{' '}
                     <a
