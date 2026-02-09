@@ -133,6 +133,12 @@ function CourseSearch({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' && showRequestButton) {
+            e.preventDefault()
+            onRequestClick()
+          }
+        }}
         placeholder=""
         autoFocus
         className="course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
@@ -248,12 +254,16 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
     && filteredSkill.length === 0
     && filteredSubject.length === 0
 
+  const maxRows = Math.max(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)
+  const sectionHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
+  const sectionMinHeight = maxRows >= 3 ? '600px' : maxRows === 2 ? '500px' : maxRows === 1 ? '400px' : '350px'
+
   return (
     <section
       className="relative bg-white auth-section-1"
       style={{
-        height: isExpanded ? 'auto' : noResults ? '65vh' : '85vh',
-        minHeight: isExpanded ? 'auto' : noResults ? '400px' : '600px',
+        height: isExpanded ? 'auto' : sectionHeight,
+        minHeight: isExpanded ? 'auto' : sectionMinHeight,
         transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden'
       }}
