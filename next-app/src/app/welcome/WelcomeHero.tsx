@@ -126,7 +126,7 @@ function CourseSearch({
       }}
       onMouseLeave={() => {
         const input = document.querySelector<HTMLInputElement>('.course-search-input')
-        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.5)'
+        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)'
       }}
     >
       <input
@@ -143,7 +143,7 @@ function CourseSearch({
         autoFocus
         className="course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
         style={{
-          boxShadow: '0 0 10px rgba(103,103,103,0.5)',
+          boxShadow: '0 0 10px rgba(103,103,103,0.6)',
           paddingRight: showRequestButton ? '160px' : '24px',
         }}
       />
@@ -318,8 +318,11 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
                 autoplay={false}
                 onLoopComplete={() => {
                   loopCountRef.current += 1
-                  if (loopCountRef.current >= 3 && lottieRef.current) {
-                    lottieRef.current.stop()
+                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                    lottieRef.current.pause()
+                    setTimeout(() => {
+                      lottieRef.current?.goToAndPlay(0)
+                    }, 3000)
                   }
                 }}
                 style={{ width: 80, height: 80, margin: '0 auto' }}
