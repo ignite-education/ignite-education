@@ -167,9 +167,7 @@ export default function TestimonialsSection() {
       className="auth-section-5 flex items-start justify-center px-8"
       style={{
         background: isMobile ? 'black' : 'white',
-        scrollSnapAlign: 'none',
-        paddingTop: '5rem',
-        paddingBottom: '0'
+        scrollSnapAlign: 'none'
       }}
     >
       <div className="auth-section-5-content w-full text-left">
