@@ -196,7 +196,8 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestedQuery, setRequestedQuery] = useState('')
-  const [isRequesting, setIsRequesting] = useState(false)
+  const [modalPhase, setModalPhase] = useState<'sign-in' | 'thank-you'>('sign-in')
+  const [modalUserName, setModalUserName] = useState('')
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
 
@@ -216,22 +217,43 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
     }
   }, [lottieData])
 
-  const handleRequestCourse = async () => {
-    if (isRequesting) return
-    setIsRequesting(true)
-    try {
-      const supabase = createClient()
-      await supabase.from('course_requests').insert({
-        search_query: searchQuery.trim(),
-      })
-      setRequestedQuery(searchQuery.trim())
-      setShowRequestModal(true)
-    } catch (error) {
-      console.error('Failed to submit course request:', error)
-    } finally {
-      setIsRequesting(false)
-    }
+  const handleRequestCourse = () => {
+    setRequestedQuery(searchQuery.trim())
+    setModalPhase('sign-in')
+    setModalUserName('')
+    setShowRequestModal(true)
   }
+
+  // LinkedIn OAuth callback detection
+  useEffect(() => {
+    const pendingCourse = sessionStorage.getItem('pendingCourseRequest')
+    if (!pendingCourse) return
+
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+
+      // User is authenticated and has a pending course request
+      sessionStorage.removeItem('pendingCourseRequest')
+
+      const firstName = user.user_metadata?.full_name?.split(' ')[0]
+        || user.user_metadata?.name?.split(' ')[0]
+        || user.email?.split('@')[0]
+        || 'there'
+
+      // Insert the course request with user_id
+      supabase.from('course_requests').upsert({
+        user_id: user.id,
+        course_name: pendingCourse,
+        status: 'requested',
+      }, { onConflict: 'user_id,course_name' }).then(() => {
+        setRequestedQuery(pendingCourse)
+        setModalPhase('thank-you')
+        setModalUserName(firstName)
+        setShowRequestModal(true)
+      })
+    })
+  }, [])
 
   // Filter courses based on search
   const filterCourses = (courses: Course[]) => {
@@ -338,28 +360,37 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         </div>
       </div>
 
-      {/* Bottom gradient fade - only show when not expanded and 3+ rows */}
-      {!isExpanded && maxRows >= 3 && (
-        <div
-          className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
-          }}
-        />
-      )}
+      {/* Bottom gradient fade - fades in/out based on row count */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
+          opacity: !isExpanded && maxRows >= 3 ? 1 : 0,
+          transition: 'opacity 0.3s ease',
+        }}
+      />
 
-      {/* Expand/Collapse Button - only show when 3+ rows */}
-      {maxRows >= 3 && <button
+      {/* Expand/Collapse Button - fades in/out based on row count */}
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center z-20"
-        style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px' }}
+        style={{
+          letterSpacing: '-0.01em',
+          borderRadius: '0.25rem',
+          width: '85px',
+          opacity: maxRows >= 3 ? 1 : 0,
+          pointerEvents: maxRows >= 3 ? 'auto' : 'none',
+          transition: 'opacity 0.3s ease',
+        }}
       >
         {isExpanded ? 'Collapse' : 'Expand'}
-      </button>}
+      </button>
       {showRequestModal && (
         <CourseRequestModal
           courseName={requestedQuery}
           onClose={() => { setShowRequestModal(false); setSearchQuery('') }}
+          initialPhase={modalPhase}
+          initialUserName={modalUserName}
         />
       )}
     </section>

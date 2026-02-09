@@ -49,7 +49,8 @@
       "WebFetch(domain:auth.ignite.education)",
       "Bash(npx create-next-app:*)",
       "Bash(git cherry-pick:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npx next build:*)"
     ],
     "deny": [],
     "ask": []
