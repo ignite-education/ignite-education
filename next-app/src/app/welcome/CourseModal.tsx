@@ -24,6 +24,7 @@ interface Course {
   title?: string
   description?: string
   status: string
+  course_type?: string
   module_structure?: Module[]
 }
 
@@ -154,10 +155,22 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
     return () => { document.body.style.overflow = '' }
   }, [])
 
+  // Course type tag label
+  const typeLabels: Record<string, string> = { specialism: 'Specialism', skill: 'Skill', subject: 'Subject' }
+  const courseTypeLabel = typeLabels[course.course_type || ''] || 'Course'
+
+  // Dynamic tagline based on course type
+  const title = course.title || course.name
+  const taglineTemplates: Record<string, string> = {
+    specialism: `Become a ${title} with Ignite's free, expert-led course.`,
+    skill: `Upskill at ${title} with Ignite's free, expert-led course.`,
+    subject: `Learn ${title} with Ignite's free, expert-led course.`
+  }
+  const courseTagline = taglineTemplates[course.course_type || ''] || `Become a ${title} with Ignite's free, expert-led course.`
+
   const description = course.description || ''
   const firstSentenceEnd = description.indexOf('. ')
-  const excerpt = firstSentenceEnd !== -1 ? description.substring(0, firstSentenceEnd + 1) : description
-  const restDescription = firstSentenceEnd !== -1 ? description.substring(firstSentenceEnd + 1).trim() : ''
+  const restDescription = firstSentenceEnd !== -1 ? description.substring(firstSentenceEnd + 2).trim() : ''
   const courseSlug = course.name?.toLowerCase().replace(/\s+/g, '-')
 
   return (
@@ -185,24 +198,23 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
         >
           {/* Black Header */}
           <div className="bg-black relative text-center" style={{ paddingTop: '3rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
-            {/* Breadcrumb */}
-            <nav className="flex items-center justify-center gap-2 mb-4" style={{ color: '#F0F0F2', fontSize: '0.79rem' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-              <span>Courses</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
-              <span>{course.title}</span>
-            </nav>
+            {/* Course Type Tag */}
+            <span
+              className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium text-black"
+              style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+            >
+              {courseTypeLabel}
+            </span>
 
             {/* Course Title */}
-            <h2 className="font-semibold text-white mb-4" style={{ fontSize: '2.3rem', position: 'relative' }}>
+            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', position: 'relative', letterSpacing: '-0.02em', marginBottom: '15px', lineHeight: 'tight' }}>
               <span style={{ visibility: 'hidden' }}>{course.title}</span>
               <span style={{ position: 'absolute', left: '50%', top: 0, transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>{typedTitle}</span>
             </h2>
 
-            {/* Excerpt */}
-            <p className="text-[#EF0B72]" style={{ fontSize: '1.1rem', lineHeight: '1.5' }}>
-              {excerpt}
+            {/* Dynamic Tagline */}
+            <p className="text-xl text-[#7714E0] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+              {courseTagline}
             </p>
           </div>
 

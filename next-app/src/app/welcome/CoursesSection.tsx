@@ -28,6 +28,7 @@ interface Course {
   module_names?: string
   module_structure?: Module[]
   status: string
+  course_type?: string
 }
 
 interface CoursesSectionProps {
