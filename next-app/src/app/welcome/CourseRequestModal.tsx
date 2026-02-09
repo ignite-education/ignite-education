@@ -119,7 +119,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     >
       <div
         ref={modalRef}
-        className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
+        className={`relative bg-white flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
           width: lockedSize ? `${lockedSize.width}px` : 'fit-content',
           height: lockedSize ? `${lockedSize.height}px` : 'auto',
@@ -157,8 +157,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               {/* Google personalized button (rendered by Google's GIS) */}
               <div
                 ref={googleBtnRef}
-                className="mx-auto rounded"
-                style={{ width: '380px', maxWidth: '100%', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+                className="mx-auto rounded overflow-hidden"
+                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
               />
 
               <button
@@ -185,7 +185,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '38px' }}>
+          <div className="flex-1 flex flex-col items-center justify-center">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#22C55E" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -194,7 +194,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-black text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}.<br />We&rsquo;ll be in touch soon.
+              Thank you, {userName}<br /><span className="font-medium">We&rsquo;ll be in touch soon</span>
             </p>
           </div>
         )}
