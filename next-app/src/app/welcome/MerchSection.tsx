@@ -5,11 +5,6 @@ import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 const merchItems = [
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp',
-    alt: 'Tote bag',
-    url: 'https://shop.ignite.education/products/tote-bag-1?variant=53677278495051'
-  },
-  {
     src: 'https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp',
     alt: 'Black Mug',
     url: 'https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611'
