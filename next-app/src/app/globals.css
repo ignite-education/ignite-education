@@ -201,3 +201,156 @@ body {
   transform: translateZ(0);
   -webkit-font-smoothing: antialiased;
 }
+
+/* Section 5 - Testimonials & Use Cases: desktop base */
+@media (min-width: 768px) {
+  .auth-section-5 {
+    min-height: auto;
+    height: auto;
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+    contain: layout paint;
+  }
+}
+
+/* Section 5 - Tablet */
+@media (min-width: 768px) and (max-width: 1200px) {
+  .auth-section-5-grid {
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+  }
+  .auth-section-5-grid > div {
+    grid-template-columns: 1fr !important;
+    gap: 4rem !important;
+  }
+  .auth-testimonial-container {
+    width: 100% !important;
+    align-items: center !important;
+  }
+  .auth-testimonial-card {
+    width: 100% !important;
+    max-width: 36rem !important;
+  }
+  .auth-testimonial-indicators {
+    width: 100% !important;
+    max-width: 36rem !important;
+    padding-left: 3.6rem !important;
+    justify-content: flex-start !important;
+  }
+  .auth-usecase-container {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .auth-usecase-grid {
+    width: 100% !important;
+    max-width: 36rem !important;
+    height: auto !important;
+  }
+}
+
+/* Section 5 - Mobile */
+@media (max-width: 767px) {
+  .auth-section-5 {
+    min-height: auto !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 3rem !important;
+    padding-bottom: 0 !important;
+  }
+  .auth-section-5-content {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .auth-section-5-title-container {
+    width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
+  }
+  .auth-section-5-title {
+    font-size: 2rem !important;
+    text-align: left !important;
+    width: 100% !important;
+    min-height: 10rem !important;
+  }
+  .auth-section-5-title-text {
+    color: #000000 !important;
+  }
+  .auth-section-5-grid {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+  .auth-section-5-grid > div {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .auth-testimonial-container {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .auth-testimonial-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 14rem !important;
+    min-height: 14rem !important;
+    max-height: 14rem !important;
+    padding: 1rem !important;
+  }
+  .auth-testimonial-quote {
+    font-size: 1.1rem !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 5 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    max-width: 95% !important;
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .auth-testimonial-quote-wrapper {
+    margin-top: 0.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+  .auth-testimonial-info {
+    font-size: 0.8rem !important;
+    text-align: center !important;
+  }
+  .auth-testimonial-role {
+    color: #000000 !important;
+  }
+  .auth-testimonial-indicators {
+    width: 100% !important;
+    margin-top: 0.225rem !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    margin-bottom: 2rem !important;
+    justify-content: center !important;
+  }
+  .auth-testimonial-card:has(.auth-testimonial-indicators) {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    background-color: transparent !important;
+  }
+  .auth-testimonial-indicators button.bg-white {
+    background-color: #F0F0F2 !important;
+  }
+  .auth-usecase-container {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-shrink: 0 !important;
+  }
+  .auth-usecase-grid {
+    width: 100% !important;
+    height: auto !important;
+  }
+}
