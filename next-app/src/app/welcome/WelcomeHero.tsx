@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
+import { createClient } from '@/lib/supabase/client'
+import CourseRequestModal from './CourseRequestModal'
 
 interface Course {
   id: string
@@ -103,16 +105,20 @@ function CourseTypeColumn({
   )
 }
 
-// Search component - matches original exactly
+// Search component with Request button for no-results state
 function CourseSearch({
   value,
-  onChange
+  onChange,
+  showRequestButton,
+  onRequestClick,
 }: {
   value: string
   onChange: (value: string) => void
+  showRequestButton: boolean
+  onRequestClick: () => void
 }) {
   return (
-    <div className="w-full max-w-[660px] mx-auto">
+    <div className="w-full max-w-[660px] mx-auto relative">
       <input
         type="text"
         value={value}
@@ -120,10 +126,51 @@ function CourseSearch({
         placeholder=""
         autoFocus
         className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
-        style={{ boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+        style={{
+          boxShadow: '0 0 10px rgba(103,103,103,0.5)',
+          paddingRight: showRequestButton ? '160px' : '24px',
+        }}
         onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)'}
         onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.5)'}
       />
+      <button
+        type="button"
+        onClick={onRequestClick}
+        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 cursor-pointer group"
+        style={{
+          opacity: showRequestButton ? 1 : 0,
+          transform: showRequestButton
+            ? 'translateY(-50%) scale(1)'
+            : 'translateY(-50%) scale(0.9)',
+          pointerEvents: showRequestButton ? 'auto' : 'none',
+          transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        <span
+          className="text-black font-semibold text-sm tracking-[-0.01em]"
+          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+        >
+          Request
+        </span>
+        <div
+          className="bg-white rounded-md flex items-center justify-center"
+          style={{ width: '35px', height: '35px', boxShadow: '0 0 6px rgba(103,103,103,0.15)' }}
+        >
+          <svg
+            width="21"
+            height="21"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-[#D8D8D8] group-hover:text-[#EF0B72] transition-colors"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </div>
+      </button>
     </div>
   )
 }
@@ -132,6 +179,9 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
   const [isExpanded, setIsExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestedQuery, setRequestedQuery] = useState('')
+  const [isRequesting, setIsRequesting] = useState(false)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
 
@@ -151,6 +201,23 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
     }
   }, [lottieData])
 
+  const handleRequestCourse = async () => {
+    if (isRequesting) return
+    setIsRequesting(true)
+    try {
+      const supabase = createClient()
+      await supabase.from('course_requests').insert({
+        search_query: searchQuery.trim(),
+      })
+      setRequestedQuery(searchQuery.trim())
+      setShowRequestModal(true)
+    } catch (error) {
+      console.error('Failed to submit course request:', error)
+    } finally {
+      setIsRequesting(false)
+    }
+  }
+
   // Filter courses based on search
   const filterCourses = (courses: Course[]) => {
     if (!searchQuery.trim()) return courses
@@ -165,6 +232,12 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
   const filteredSpecialism = filterCourses(coursesByType.specialism)
   const filteredSkill = filterCourses(coursesByType.skill)
   const filteredSubject = filterCourses(coursesByType.subject)
+
+  const hasSearchQuery = searchQuery.trim().length > 0
+  const noResults = hasSearchQuery
+    && filteredSpecialism.length === 0
+    && filteredSkill.length === 0
+    && filteredSubject.length === 0
 
   return (
     <section
@@ -214,7 +287,12 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
 
         {/* Search */}
         <div className="mb-10">
-          <CourseSearch value={searchQuery} onChange={setSearchQuery} />
+          <CourseSearch
+            value={searchQuery}
+            onChange={setSearchQuery}
+            showRequestButton={noResults}
+            onRequestClick={handleRequestCourse}
+          />
         </div>
 
         {/* Course Columns - 3 column grid */}
@@ -258,6 +336,12 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
       >
         {isExpanded ? 'Collapse' : 'Expand'}
       </button>
+      {showRequestModal && (
+        <CourseRequestModal
+          courseName={requestedQuery}
+          onClose={() => setShowRequestModal(false)}
+        />
+      )}
     </section>
   )
 }
