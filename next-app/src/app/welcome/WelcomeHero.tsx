@@ -168,7 +168,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
 
   return (
     <section
-      className="relative px-8 bg-white auth-section-1"
+      className="relative bg-white auth-section-1"
       style={{
         height: isExpanded ? 'auto' : '85vh',
         minHeight: isExpanded ? 'auto' : '600px',
@@ -176,7 +176,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
       }}
     >
       <div
-        className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto"
+        className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto px-6"
         style={{
           paddingTop: '2.25rem',
           paddingBottom: isExpanded ? '2rem' : '1rem',
