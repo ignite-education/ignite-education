@@ -168,9 +168,10 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
   }
   const courseTagline = taglineTemplates[course.course_type || ''] || `Become a ${title} with Ignite's free, expert-led course.`
 
+  // First 2 sentences of description (matches course page's getTwoSentences)
   const description = course.description || ''
-  const firstSentenceEnd = description.indexOf('. ')
-  const restDescription = firstSentenceEnd !== -1 ? description.substring(firstSentenceEnd + 2).trim() : ''
+  const sentences = description.match(/[^.!?]*[.!?]+/g) || [description]
+  const twoSentences = sentences.slice(0, 2).join('').trim()
   const courseSlug = course.name?.toLowerCase().replace(/\s+/g, '-')
 
   return (
@@ -221,20 +222,11 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
           {/* White Content */}
           <div className="bg-white px-8" style={{ paddingTop: '1.5rem', paddingBottom: '1.25rem' }}>
             <div>
-              {/* Rest of description */}
-              {restDescription && (
-                <div className="text-black leading-relaxed mb-6" style={{ maxWidth: '100%' }}>
-                  <span style={{ fontWeight: 400, fontSize: '15px' }}>
-                    {restDescription}{' '}
-                    <a
-                      href={`/courses/${courseSlug}`}
-                      className="font-medium text-black hover:text-[#EF0B72] transition-colors"
-                      style={{ fontSize: '15px', textDecoration: 'none', marginLeft: '0.3rem' }}
-                    >
-                      Learn more &gt;
-                    </a>
-                  </span>
-                </div>
+              {/* Description - first 2 sentences (matches course page) */}
+              {twoSentences && (
+                <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}>
+                  {twoSentences}
+                </p>
               )}
 
               {/* Benefits */}
