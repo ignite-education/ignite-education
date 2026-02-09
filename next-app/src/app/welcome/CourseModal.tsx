@@ -201,7 +201,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
           <div className="bg-black relative text-center" style={{ paddingTop: '2.4rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
             {/* Course Type Tag */}
             <span
-              className="inline-block px-2 py-1 text-sm bg-white rounded-sm font-medium text-gray-400"
+              className="inline-block px-2 py-1 text-sm bg-white rounded-sm font-medium text-gray-600"
               style={{ letterSpacing: '-0.02em', marginBottom: '24px' }}
             >
               {courseTypeLabel}
@@ -230,15 +230,16 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
               {twoSentences && (
                 <div className="text-black leading-relaxed mb-6 text-center mx-auto" style={{ maxWidth: '90%' }}>
                   <span style={{ fontWeight: 400, fontSize: '15px' }}>
-                    {twoSentences}{' '}
-                    <a
-                      href={`/courses/${courseSlug}`}
-                      className="font-medium text-black hover:text-[#EF0B72] transition-colors"
-                      style={{ fontSize: '15px', textDecoration: 'none', marginLeft: '0.3rem' }}
-                    >
-                      Learn more &gt;
-                    </a>
+                    {twoSentences}
                   </span>
+                  <br />
+                  <a
+                    href={`/courses/${courseSlug}`}
+                    className="font-medium text-black hover:text-[#EF0B72] transition-colors"
+                    style={{ fontSize: '15px', textDecoration: 'none' }}
+                  >
+                    Learn more &gt;
+                  </a>
                 </div>
               )}
 
