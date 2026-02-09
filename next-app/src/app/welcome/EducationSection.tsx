@@ -82,7 +82,7 @@ export default function EducationSection() {
           {/* Feature bullets */}
           <div
             className="w-full auth-features-container"
-            style={{ minHeight: '280px', marginTop: '2rem' }}
+            style={{ minHeight: '196px', marginTop: '2rem' }}
           >
             <div
               className="grid grid-cols-1 md:grid-cols-3 text-center auth-promises-list"
