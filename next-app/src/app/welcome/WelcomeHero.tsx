@@ -117,9 +117,12 @@ function CourseSearch({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search courses..."
+        placeholder=""
         autoFocus
-        className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all shadow-[0_0_10px_rgba(103,103,103,0.5)] hover:shadow-[0_0_10px_rgba(103,103,103,0.7)]"
+        className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
+        style={{ boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)'}
+        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.5)'}
       />
     </div>
   )
