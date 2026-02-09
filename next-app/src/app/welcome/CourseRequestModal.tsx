@@ -11,23 +11,11 @@ interface CourseRequestModalProps {
   initialUserName?: string
 }
 
-async function insertCourseRequest(courseName: string) {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  await supabase.from('course_requests').upsert({
-    user_id: user.id,
-    course_name: courseName,
-    status: 'requested',
-  }, { onConflict: 'user_id,course_name' })
-
-  const firstName = user.user_metadata?.full_name?.split(' ')[0]
+function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
+  return user.user_metadata?.full_name?.split(' ')[0]
     || user.user_metadata?.name?.split(' ')[0]
     || user.email?.split('@')[0]
     || 'there'
-
-  return firstName as string
 }
 
 export default function CourseRequestModal({ courseName, onClose, initialPhase = 'sign-in', initialUserName }: CourseRequestModalProps) {
@@ -52,16 +40,28 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
       const supabase = createClient()
-      await supabase.auth.signInWithIdToken({
+      const { data, error: authError } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: credential,
         nonce: nonce,
       })
 
-      const firstName = await insertCourseRequest(courseName)
-      if (firstName) {
-        lockAndTransition(firstName)
+      if (authError || !data.user) {
+        console.error('Google sign-in failed:', authError)
+        return
       }
+
+      const { error: insertError } = await supabase.from('course_requests').insert({
+        user_id: data.user.id,
+        course_name: courseName,
+        status: 'requested',
+      })
+
+      if (insertError && !insertError.message.includes('duplicate')) {
+        console.error('Course request insert failed:', insertError)
+      }
+
+      lockAndTransition(extractFirstName(data.user))
     } catch (err) {
       console.error('Google sign-in failed:', err)
     }
@@ -158,13 +158,13 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               <div
                 ref={googleBtnRef}
                 className="mx-auto rounded overflow-hidden"
-                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
               />
 
               <button
                 onClick={handleLinkedInClick}
                 className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
-                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
               >
                 <span className="flex-1 text-center">Continue with LinkedIn</span>
                 <div className="flex items-center justify-center bg-white/20" style={{ width: '40px', height: '40px', borderRadius: '0 4px 4px 0' }}>
@@ -185,7 +185,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginBottom: '-2.75rem' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#22C55E" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

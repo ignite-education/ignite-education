@@ -242,11 +242,14 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
         || 'there'
 
       // Insert the course request with user_id
-      supabase.from('course_requests').upsert({
+      supabase.from('course_requests').insert({
         user_id: user.id,
         course_name: pendingCourse,
         status: 'requested',
-      }, { onConflict: 'user_id,course_name' }).then(() => {
+      }).then(({ error }) => {
+        if (error && !error.message.includes('duplicate')) {
+          console.error('Course request insert failed:', error)
+        }
         setRequestedQuery(pendingCourse)
         setModalPhase('thank-you')
         setModalUserName(firstName)
