@@ -148,9 +148,8 @@ export default function LearningModelSection() {
                   style={{
                     width: '100%',
                     height: 'auto',
-                    aspectRatio: feature.aspectRatio,
+                    ...(feature.aspectRatio !== '1/1' ? { aspectRatio: feature.aspectRatio, objectFit: 'cover' as const } : {}),
                     borderRadius: '0.5rem',
-                    objectFit: feature.aspectRatio === '1/1' ? 'contain' : 'cover',
                     ...(feature.aspectRatio === '1/1' ? { boxShadow: '0 0 40px 10px rgba(255, 255, 255, 0.15)' } : {})
                   }}
                 />
