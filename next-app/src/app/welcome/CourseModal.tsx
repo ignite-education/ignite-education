@@ -130,6 +130,12 @@ function generateModuleIntro(module: Module): string {
 
 export default function CourseModal({ course, coaches, onClose }: CourseModalProps) {
   const [typedTitle, setTypedTitle] = useState('')
+  const [closing, setClosing] = useState(false)
+
+  const handleClose = () => {
+    setClosing(true)
+    setTimeout(onClose, 300)
+  }
 
   // Typing animation for modal title (matches Vite: 75ms/char, 1s start delay)
   useEffect(() => {
@@ -176,14 +182,14 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center backdrop-blur-sm animate-fadeIn"
-      style={{ background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.3))', zIndex: 9999 }}
-      onClick={onClose}
+      className={`fixed inset-0 flex items-center justify-center ${closing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
+      style={{ backdropFilter: 'blur(2.4px)', WebkitBackdropFilter: 'blur(2.4px)', background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.3))', zIndex: 9999 }}
+      onClick={handleClose}
     >
       <div className="relative auth-course-modal-container">
         {/* Close button */}
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute text-white hover:text-gray-300 z-10"
           style={{ top: '-2rem', right: '0' }}
         >
@@ -193,7 +199,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
         </button>
 
         <div
-          className="relative flex flex-col animate-scaleUp auth-course-modal overflow-y-auto"
+          className={`relative flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'} auth-course-modal overflow-y-auto`}
           style={{ width: '720px', height: '70vh', borderRadius: '6px', scrollbarWidth: 'none' }}
           onClick={(e) => e.stopPropagation()}
         >
