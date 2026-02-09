@@ -107,7 +107,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     >
       <div
         className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
-        style={{ width: 'fit-content', minWidth: '506px', maxWidth: '90vw', padding: '3.3rem 2.75rem 2.75rem', borderRadius: '6px' }}
+        style={{ width: 'fit-content', minWidth: '575px', maxWidth: '90vw', padding: '3.3rem 2.75rem 2.75rem', borderRadius: '6px' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
@@ -127,20 +127,24 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           <span className="whitespace-nowrap">We&rsquo;ve added <span className="text-[#EF0B72]">{courseName.replace(/\b\w/g, c => c.toUpperCase())}</span></span>
-          <br /><span className="whitespace-nowrap">to our upcoming course list.</span>
+          <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
 
         {phase === 'sign-in' ? (
           <>
             {/* Sign-in buttons */}
-            <div className="space-y-2 mt-12">
+            <div className="space-y-2" style={{ marginTop: '38px' }}>
               {/* Google personalized button (rendered by Google's GIS) */}
-              <div ref={googleBtnRef} className="flex justify-center" />
+              <div
+                ref={googleBtnRef}
+                className="flex justify-center rounded"
+                style={{ boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
+              />
 
               <button
                 onClick={handleLinkedInClick}
                 className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
-                style={{ width: '380px', maxWidth: '100%', height: '40px' }}
+                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.5)' }}
               >
                 <span className="flex-1 text-center">Continue with LinkedIn</span>
                 <div className="flex items-center justify-center bg-white/20" style={{ width: '40px', height: '40px', borderRadius: '0 4px 4px 0' }}>
@@ -161,12 +165,18 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <p
-            className="text-black text-center mt-12 text-[1.65rem] font-bold tracking-[-0.02em] leading-tight"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-          >
-            Thank you, {userName}.<br />We&rsquo;ll be in touch soon.
-          </p>
+          <div className="mt-12 flex flex-col items-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
+              <circle cx="12" cy="12" r="11" stroke="#22C55E" strokeWidth="2" />
+              <path d="M7 12.5l3 3 7-7" stroke="#22C55E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <p
+              className="text-black text-center text-[1.1rem] font-semibold tracking-[-0.01em] leading-tight"
+              style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+            >
+              Thank you, {userName}.<br />We&rsquo;ll be in touch soon.
+            </p>
+          </div>
         )}
       </div>
     </div>
