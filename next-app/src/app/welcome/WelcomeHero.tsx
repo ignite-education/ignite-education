@@ -136,12 +136,13 @@ function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-[#F8F8F8] rounded-lg px-3 py-1.5 cursor-pointer group"
+        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#F8F8F8] rounded-lg px-3 cursor-pointer group"
         style={{
+          height: 'fit-content',
+          paddingTop: '6px',
+          paddingBottom: '6px',
           opacity: showRequestButton ? 1 : 0,
-          transform: showRequestButton
-            ? 'translateY(-50%) scale(1)'
-            : 'translateY(-50%) scale(0.9)',
+          transform: showRequestButton ? 'scale(1)' : 'scale(0.9)',
           pointerEvents: showRequestButton ? 'auto' : 'none',
           transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
@@ -339,7 +340,7 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
       {showRequestModal && (
         <CourseRequestModal
           courseName={requestedQuery}
-          onClose={() => setShowRequestModal(false)}
+          onClose={() => { setShowRequestModal(false); setSearchQuery('') }}
         />
       )}
     </section>
