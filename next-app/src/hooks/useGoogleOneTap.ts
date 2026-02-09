@@ -64,9 +64,9 @@ export default function useGoogleOneTap({
   autoPrompt = false,
 }: GoogleOneTapOptions) {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const [error, setError] = useState<Error | null>(null)
   const nonceRef = useRef<{ raw: string | null; hashed: string | null }>({ raw: null, hashed: null })
-  const initializedRef = useRef(false)
 
   useEffect(() => {
     if (!enabled) return
@@ -99,7 +99,7 @@ export default function useGoogleOneTap({
   }, [enabled])
 
   const initialize = useCallback(async () => {
-    if (!isLoaded || !enabled || initializedRef.current) return
+    if (!isLoaded || !enabled || isInitialized) return
 
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
     if (!clientId) {
@@ -129,7 +129,7 @@ export default function useGoogleOneTap({
         itp_support: true,
       })
 
-      initializedRef.current = true
+      setIsInitialized(true)
 
       if (autoPrompt) {
         window.google!.accounts.id.prompt()
@@ -139,14 +139,14 @@ export default function useGoogleOneTap({
       setError(error)
       onError?.(error)
     }
-  }, [isLoaded, enabled, onSuccess, onError, autoPrompt])
+  }, [isLoaded, isInitialized, enabled, onSuccess, onError, autoPrompt])
 
   useEffect(() => {
     initialize()
   }, [initialize])
 
   const renderButton = useCallback((containerElement: HTMLElement | null, options: RenderButtonOptions = {}) => {
-    if (!isLoaded || !initializedRef.current || !containerElement) return
+    if (!isLoaded || !isInitialized || !containerElement) return
 
     window.google!.accounts.id.renderButton(containerElement, {
       type: 'standard',
@@ -157,7 +157,7 @@ export default function useGoogleOneTap({
       width: 280,
       ...options,
     })
-  }, [isLoaded])
+  }, [isLoaded, isInitialized])
 
   useEffect(() => {
     return () => {
@@ -169,7 +169,7 @@ export default function useGoogleOneTap({
 
   return {
     isLoaded,
-    isInitialized: initializedRef.current,
+    isInitialized,
     error,
     renderButton,
   }
