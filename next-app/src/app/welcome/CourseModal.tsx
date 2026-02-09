@@ -177,7 +177,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
   return (
     <div
       className="fixed inset-0 flex items-center justify-center backdrop-blur-sm animate-fadeIn"
-      style={{ zIndex: 9999 }}
+      style={{ background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.3))', zIndex: 9999 }}
       onClick={onClose}
     >
       <div className="relative auth-course-modal-container">
