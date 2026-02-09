@@ -1,16 +1,17 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type RefObject } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 interface NavbarProps {
   logoClipPercentage?: number
   invertLayers?: boolean
+  logoContainerRef?: RefObject<HTMLDivElement | null>
 }
 
-export default function Navbar({ logoClipPercentage = 100, invertLayers = false }: NavbarProps) {
+export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -46,11 +47,11 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false 
   }, [])
 
   return (
-    <div className="sticky top-0 z-50">
+    <div>
       <div className="px-10 py-[15px] flex items-center justify-between">
         {/* Logo - links to home */}
         <Link href="/" className="inline-block">
-          <div className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
+          <div ref={logoContainerRef} className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
             {!invertLayers ? (
               <>
                 {/* Standard order for BLACK->WHITE transitions */}

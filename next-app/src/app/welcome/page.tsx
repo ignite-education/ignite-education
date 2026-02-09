@@ -6,7 +6,7 @@ import EducationSection from './EducationSection'
 import CoursesSection from './CoursesSection'
 import TestimonialsSection from './TestimonialsSection'
 import FAQSection from './FAQSection'
-import Navbar from '@/components/Navbar'
+import WelcomeScrollManager from './WelcomeScrollManager'
 
 export const metadata: Metadata = {
   title: 'Welcome',
@@ -175,28 +175,14 @@ export default async function WelcomePage() {
           courseTypeConfig={COURSE_TYPE_CONFIG}
         />
 
-        {/* Wrapper for sections 2-6 with sticky navbar */}
-        <div>
-          {/* Sticky Navbar */}
-          <div className="sticky top-0 z-50 bg-black">
-            <Navbar />
-          </div>
-
-          {/* Section 2: Education Philosophy */}
-          <EducationSection />
-
-          {/* Section 3: Courses Grid */}
-          <CoursesSection courses={courses || []} />
-
-          {/* Section 4: Testimonials & Use Cases */}
-          <TestimonialsSection />
-
-          {/* Section 5: FAQs & Blog */}
-          <FAQSection faqs={faqs} />
-
-          {/* Footer */}
-          <Footer />
-        </div>
+        {/* Wrapper for sections 2-6 with sticky navbar + dynamic logo color */}
+        <WelcomeScrollManager
+          educationSection={<EducationSection />}
+          coursesSection={<CoursesSection courses={courses || []} />}
+          testimonialsSection={<TestimonialsSection />}
+          faqSection={<FAQSection faqs={faqs} />}
+          footer={<Footer />}
+        />
       </main>
     </>
   )
