@@ -197,11 +197,11 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
           onClick={(e) => e.stopPropagation()}
         >
           {/* Black Header */}
-          <div className="bg-black relative text-center" style={{ paddingTop: '3rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+          <div className="bg-black relative text-center" style={{ paddingTop: '2.4rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
             {/* Course Type Tag */}
             <span
               className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium text-black"
-              style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+              style={{ letterSpacing: '-0.02em', marginBottom: '24px' }}
             >
               {courseTypeLabel}
             </span>
@@ -213,7 +213,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </h2>
 
             {/* Dynamic Tagline */}
-            <p className="text-xl text-[#7714E0] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
+            <p className="text-xl text-[#EF0B72] font-semibold leading-relaxed" style={{ letterSpacing: '-0.02em' }}>
               {courseTagline}
             </p>
           </div>
