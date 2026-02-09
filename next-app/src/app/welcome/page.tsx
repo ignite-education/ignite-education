@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 import Footer from '@/components/Footer'
 import WelcomeHero from './WelcomeHero'
 import EducationSection from './EducationSection'
@@ -8,6 +8,8 @@ import LearningModelSection from './LearningModelSection'
 import TestimonialsSection from './TestimonialsSection'
 import FAQSection from './FAQSection'
 import WelcomeScrollManager from './WelcomeScrollManager'
+
+export const revalidate = 3600 // Revalidate at most once per hour
 
 export const metadata: Metadata = {
   title: 'Welcome',
@@ -136,8 +138,11 @@ interface Course {
 }
 
 export default async function WelcomePage() {
-  // Fetch courses from Supabase at build time
-  const supabase = await createClient()
+  // Use a cookie-less Supabase client for public data (enables ISR static generation)
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   const { data: rawCourses } = await supabase
     .from('courses')
@@ -152,23 +157,25 @@ export default async function WelcomePage() {
       : ''
   }))
 
-  // Fetch coaches for all specialism courses
-  const coachesMap: Record<string, Array<{ name: string; position?: string; description?: string; image_url?: string; linkedin_url?: string }>> = {}
+  // Fetch all active coaches in a single query, then group by course
   const specialismCourses = courses.filter((c: Course) => !c.course_type || c.course_type === 'specialism')
+  const { data: allCoaches } = await supabase
+    .from('coaches')
+    .select('*')
+    .eq('is_active', true)
+    .order('display_order', { ascending: true })
+
+  const coachesMap: Record<string, Array<{ name: string; position?: string; description?: string; image_url?: string; linkedin_url?: string }>> = {}
   for (const course of specialismCourses) {
     const slug = course.name.toLowerCase()
     const nameVariations = [
-      course.name,
-      slug.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+      course.name.toLowerCase(),
+      slug.split('-').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ').toLowerCase(),
       slug.replace(/-/g, ' ')
     ]
-    const { data: coachData } = await supabase
-      .from('coaches')
-      .select('*')
-      .in('course_id', nameVariations)
-      .eq('is_active', true)
-      .order('display_order', { ascending: true })
-    coachesMap[course.name] = coachData || []
+    coachesMap[course.name] = (allCoaches || []).filter(
+      (coach: { course_id?: string }) => nameVariations.includes(coach.course_id?.toLowerCase() ?? '')
+    )
   }
 
   // Sort courses: live first (alphabetically), then coming_soon (alphabetically)

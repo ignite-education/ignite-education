@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 const features = [
@@ -138,13 +139,15 @@ export default function LearningModelSection() {
                     {feature.description}
                   </p>
                 </div>
-                <img
+                <Image
                   src={feature.image}
                   alt={feature.alt}
+                  width={600}
+                  height={feature.aspectRatio === '1/1' ? 600 : 450}
                   loading="lazy"
-                  decoding="async"
                   style={{
                     width: '100%',
+                    height: 'auto',
                     aspectRatio: feature.aspectRatio,
                     borderRadius: '0.5rem',
                     objectFit: feature.aspectRatio === '1/1' ? 'contain' : 'cover'

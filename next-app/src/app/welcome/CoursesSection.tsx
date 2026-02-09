@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
 import CourseModal from './CourseModal'
 
@@ -228,11 +229,13 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 Because of this, our course content is comprehensive, relevant and
                 in-demand by employers.
               </p>
-              <img
+              <Image
                 src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
                 alt="Trustpilot"
-                style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
+                width={200}
+                height={40}
                 loading="lazy"
+                style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
               />
             </div>
           </div>
@@ -318,14 +321,14 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
           pointerEvents: 'none'
         }}
       >
-        <img
+        <Image
           src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
           alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
           className="rounded-lg auth-section-3-image"
-          style={{ width: '35.7%', maxWidth: '446px', transform: 'translateY(50%)' }}
-          loading="lazy"
           width={1400}
           height={900}
+          loading="lazy"
+          style={{ width: '35.7%', maxWidth: '446px', height: 'auto', transform: 'translateY(50%)' }}
         />
       </div>
     </section>
