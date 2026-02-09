@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 interface Course {
   name: string
@@ -93,6 +94,75 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
 
 export default function CoursesSection({ courses }: CoursesSectionProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const sectionRef = useRef<HTMLElement>(null)
+  const [typingEnabled, setTypingEnabled] = useState(false)
+
+  const { displayText: typedText, isComplete } = useTypingAnimation(
+    'The best courses.\nFor the best students.',
+    {
+      charDelay: 75,
+      startDelay: 1000,
+      pausePoints: [{ after: 17, duration: 1000 }],
+      enabled: typingEnabled
+    }
+  )
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setTypingEnabled(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.3 }
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [])
+
+  const renderTypedTitle = () => {
+    const firstLineLength = 'The best courses.'.length
+    const result: React.ReactNode[] = []
+
+    for (let i = 0; i < typedText.length; i++) {
+      if (typedText[i] === '\n') {
+        result.push(<br key={`br-${i}`} />)
+        continue
+      }
+
+      const isSecondLine = i > firstLineLength
+      let end = typedText.length
+      for (let j = i; j < typedText.length; j++) {
+        if (typedText[j] === '\n') {
+          end = j
+          break
+        }
+      }
+
+      const chunk = typedText.substring(i, end)
+      if (chunk) {
+        result.push(
+          <span key={`${isSecondLine ? 'pink' : 'black'}-${i}`} style={{ color: isSecondLine ? '#EF0B72' : 'black' }}>
+            {chunk}
+          </span>
+        )
+        i = end - 1
+      }
+    }
+
+    if (!isComplete) {
+      result.push(
+        <span key="cursor" className="animate-blink font-thin" style={{ color: 'white' }}>|</span>
+      )
+    }
+
+    return result
+  }
 
   // Group courses into pages of 4
   const pages: Course[][] = []
@@ -102,8 +172,9 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
 
   return (
     <section
+      ref={sectionRef}
       className="min-h-screen flex items-start justify-center px-10 relative auth-section-3"
-      style={{ background: 'white' }}
+      style={{ background: 'white', overflow: 'visible' }}
     >
       <div className="w-full text-white">
         {/* Two Column Layout */}
@@ -124,9 +195,7 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
                   color: 'black'
                 }}
               >
-                <span className="text-black">The best courses.</span>
-                <br />
-                <span className="text-[#EF0B72]">For the best students.</span>
+                {renderTypedTitle()}
               </h3>
               <p
                 className="text-lg max-w-2xl text-left auth-section-3-description"
@@ -211,6 +280,33 @@ export default function CoursesSection({ courses }: CoursesSectionProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Desktop image - positioned to overlap sections 3 and 4 */}
+      <div
+        className="hidden md:block"
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 10,
+          width: '100%',
+          maxWidth: '72rem',
+          paddingLeft: '2rem',
+          paddingRight: '1rem',
+          pointerEvents: 'none'
+        }}
+      >
+        <img
+          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+          alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
+          className="rounded-lg auth-section-3-image"
+          style={{ width: '35.7%', maxWidth: '446px', transform: 'translateY(50%)' }}
+          loading="lazy"
+          width={1400}
+          height={900}
+        />
       </div>
     </section>
   )
