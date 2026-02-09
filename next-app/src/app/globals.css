@@ -135,6 +135,31 @@ body {
   contain: layout style paint;
 }
 
+/* Course carousel edge gradient overlays (desktop) */
+@media (min-width: 768px) {
+  .auth-section-3-right {
+    position: relative;
+  }
+  .auth-section-3-right::before,
+  .auth-section-3-right::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .auth-section-3-right::before {
+    left: 0;
+    background: linear-gradient(to right, white 0%, transparent 100%);
+  }
+  .auth-section-3-right::after {
+    right: 0;
+    background: linear-gradient(to left, white 0%, transparent 100%);
+  }
+}
+
 .logo-layer {
   will-change: clip-path;
   backface-visibility: hidden;

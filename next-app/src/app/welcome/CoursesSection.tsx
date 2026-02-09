@@ -119,6 +119,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+  const [blurredCards, setBlurredCards] = useState<number[]>([])
 
   const { displayText: typedText, isComplete } = useTypingAnimation(
     'The best courses.\nFor the best students.',
@@ -147,6 +148,57 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     observer.observe(section)
     return () => observer.disconnect()
   }, [])
+
+  // Detect card visibility for blur effect on course grid
+  useEffect(() => {
+    const scrollContainer = scrollRef.current
+    if (!scrollContainer || courses.length === 0) return
+
+    const updateCardBlur = () => {
+      const cards = scrollContainer.querySelectorAll('[data-course-card]')
+      const newBlurredCards: number[] = []
+      const containerRect = scrollContainer.getBoundingClientRect()
+      const containerLeft = containerRect.left
+      const isMobile = window.innerWidth < 768
+      const viewportWidth = window.innerWidth
+
+      cards.forEach((card, globalIndex) => {
+        const cardRect = card.getBoundingClientRect()
+        const cardLeft = cardRect.left
+
+        if (isMobile) {
+          const halfViewport = viewportWidth / 2
+          if (cardLeft > halfViewport) {
+            newBlurredCards.push(globalIndex)
+          }
+        } else {
+          const relativeLeft = cardLeft - containerLeft
+          if (relativeLeft > 520) {
+            newBlurredCards.push(globalIndex)
+          }
+        }
+      })
+
+      setBlurredCards(newBlurredCards)
+    }
+
+    updateCardBlur()
+
+    let resizeTimeout: ReturnType<typeof setTimeout>
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(updateCardBlur, 100)
+    }
+
+    scrollContainer.addEventListener('scroll', updateCardBlur)
+    window.addEventListener('resize', debouncedResize)
+
+    return () => {
+      clearTimeout(resizeTimeout)
+      scrollContainer.removeEventListener('scroll', updateCardBlur)
+      window.removeEventListener('resize', debouncedResize)
+    }
+  }, [courses])
 
   const renderTypedTitle = () => {
     const firstLineLength = 'The best courses.'.length
@@ -270,13 +322,25 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                         overflow: 'visible'
                       }}
                     >
-                      {pageCourses.map((course) => (
-                        <CourseCard
-                          key={course.name}
-                          course={course}
-                          onClick={() => setSelectedCourse(course)}
-                        />
-                      ))}
+                      {pageCourses.map((course, localIndex) => {
+                        const globalIndex = pageIndex * 4 + localIndex
+                        const isBlurred = blurredCards.includes(globalIndex)
+                        return (
+                          <div
+                            key={course.name}
+                            data-course-card
+                            style={{
+                              filter: isBlurred ? 'blur(1px) brightness(0.95)' : 'none',
+                              transition: 'filter 200ms ease-out'
+                            }}
+                          >
+                            <CourseCard
+                              course={course}
+                              onClick={() => setSelectedCourse(course)}
+                            />
+                          </div>
+                        )
+                      })}
                     </div>
                   ))
                 ) : (
