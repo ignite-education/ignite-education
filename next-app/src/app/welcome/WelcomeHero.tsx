@@ -118,20 +118,28 @@ function CourseSearch({
   onRequestClick: () => void
 }) {
   return (
-    <div className="w-full max-w-[660px] mx-auto relative">
+    <div
+      className="w-full max-w-[660px] mx-auto relative"
+      onMouseEnter={() => {
+        const input = document.querySelector<HTMLInputElement>('.course-search-input')
+        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)'
+      }}
+      onMouseLeave={() => {
+        const input = document.querySelector<HTMLInputElement>('.course-search-input')
+        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.5)'
+      }}
+    >
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder=""
         autoFocus
-        className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
+        className="course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
         style={{
           boxShadow: '0 0 10px rgba(103,103,103,0.5)',
           paddingRight: showRequestButton ? '160px' : '24px',
         }}
-        onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)'}
-        onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.5)'}
       />
       <button
         type="button"

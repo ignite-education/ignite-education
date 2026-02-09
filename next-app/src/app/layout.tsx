@@ -30,6 +30,8 @@ export default function RootLayout({
       <head>
         {/* Version indicator for deployment verification */}
         <meta name="generator" content="Next.js (Ignite v2)" />
+        {/* Google Identity Services (for One Tap / personalized sign-in button) */}
+        <script src="https://accounts.google.com/gsi/client" async defer />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
