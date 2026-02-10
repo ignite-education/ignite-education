@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is ~20% complete. Session 1 (staging setup + welcome page design) is done. The `/welcome` page is deployed at https://next.ignite.education with SSR, structured data, Supabase integration, and Lottie animation. All sections designed and reviewed. Blog carousel in FAQ section is a placeholder pending blog page migration. Next up: Session 2 (Course Detail Pages).
+**Current Status:** Migration is ~50% complete. Sessions 1-4 are done. The `/welcome`, `/courses`, `/courses/[courseSlug]`, and `/blog/[slug]` pages are deployed at https://next.ignite.education with SSR, ISR, structured data, Supabase integration, audio narration, and Lottie animation. Blog carousel wired up in welcome page FAQ section. Next up: Session 5 (Static Pages).
 
 ---
 
@@ -84,9 +84,9 @@
 | Route | Current Location | SEO Value | Status |
 |-------|------------------|-----------|--------|
 | `/welcome` | `src/components/Auth.jsx` | High | **DONE** in Next.js |
-| `/courses/:slug` | `src/pages/CoursePage.jsx` | Very High | Pending |
-| `/courses` | `src/pages/CourseCatalogPage.jsx` | High | Pending |
-| `/blog/:slug` | `src/pages/BlogPostPage.jsx` | High | Pending |
+| `/courses/:slug` | `src/pages/CoursePage.jsx` | Very High | **DONE** in Next.js |
+| `/courses` | `src/pages/CourseCatalogPage.jsx` | High | **DONE** in Next.js |
+| `/blog/:slug` | `src/pages/BlogPostPage.jsx` | High | **DONE** in Next.js |
 | `/privacy` | `src/pages/Privacy.jsx` | Medium | Pending |
 | `/terms` | `src/pages/Terms.jsx` | Medium | Pending |
 | `/release-notes` | `src/pages/ReleaseNotes.jsx` | Low | Pending |
@@ -140,8 +140,8 @@ ignite-education/
 ├── next-app/               # Next.js app (migration target)
 │   ├── src/app/           # App Router pages
 │   │   ├── welcome/       # ✓ Completed
-│   │   ├── courses/       # To be created
-│   │   └── blog/          # To be created
+│   │   ├── courses/       # ✓ Completed
+│   │   └── blog/          # ✓ Completed
 │   ├── src/components/    # Shared components
 │   └── src/lib/supabase/  # SSR auth configured
 ├── server.js              # Express backend (unchanged)
@@ -224,78 +224,51 @@ next.ignite.education (Vercel - Staging)
 
 ---
 
-### Session 2: Course Detail Pages (2-3 hours)
+### Session 2: Course Detail Pages (2-3 hours) — COMPLETED
 
 **Objective:** Create `/courses/[courseSlug]` with full SEO
 
-**Files to Create:**
-```
-next-app/src/app/courses/[courseSlug]/
-├── page.tsx              # Main page component
-├── loading.tsx           # Loading state
-└── generateMetadata.ts   # Dynamic SEO
-```
-
-**Tasks:**
-1. [ ] Create dynamic route structure
-2. [ ] Port SEO logic from `src/pages/CoursePage.jsx`
+**Completed Tasks:**
+1. [x] Create dynamic route structure
+2. [x] Port SEO logic from `src/pages/CoursePage.jsx`
    - generateMetadata for title, description, OG tags
    - Structured data: Course, FAQ, Breadcrumb schemas
-3. [ ] Create server component for data fetching
-4. [ ] Add generateStaticParams for pre-rendering known courses
-5. [ ] Implement ISR with revalidate: 3600
-
-**Key Reference Files:**
-- `src/pages/CoursePage.jsx` (1239 lines) - Original component
-- `src/seo/routeMetadata.js` - SEO metadata patterns
-- `src/utils/courseStructuredData.js` - Schema generators
-
-**Verification:**
-- Test all course slugs render correctly
-- Verify structured data with Schema.org validator
-- Check OG tags with social sharing debuggers
+3. [x] Create server component for data fetching
+4. [x] Add generateStaticParams for pre-rendering known courses
+5. [x] Implement ISR with revalidate: 3600
 
 ---
 
-### Session 3: Course Catalog Page (1-2 hours)
+### Session 3: Course Catalog Page (1-2 hours) — COMPLETED
 
 **Objective:** Create `/courses` index page
 
-**Files to Create:**
-```
-next-app/src/app/courses/
-└── page.tsx              # Catalog listing
-```
-
-**Tasks:**
-1. [ ] Create courses index page
-2. [ ] Fetch all courses with SSR
-3. [ ] Add filtering/sorting (client-side)
-4. [ ] Port course card components
-5. [ ] Add structured data (ItemList schema)
-
-**Reference:** `src/pages/CourseCatalogPage.jsx`
+**Completed Tasks:**
+1. [x] Create courses index page with ISR
+2. [x] Fetch all courses with SSR via shared `getCoursesByType()`
+3. [x] Add filtering/sorting (client-side)
+4. [x] Extract shared components (`CourseTypeColumn`, `CourseSearch`) from WelcomeHero
+5. [x] Add structured data (ItemList schema)
+6. [x] LinkedIn OAuth callback handling
+7. [x] Course request modal integration
 
 ---
 
-### Session 4: Blog Pages (2-3 hours)
+### Session 4: Blog Pages (2-3 hours) — COMPLETED
 
 **Objective:** Create `/blog/[slug]` with article SEO
 
-**Files to Create:**
-```
-next-app/src/app/blog/[slug]/
-├── page.tsx
-└── loading.tsx
-```
-
-**Tasks:**
-1. [ ] Create dynamic blog route
-2. [ ] Port BlogPosting structured data
-3. [ ] Handle audio narration (client component)
-4. [ ] Add generateStaticParams for published posts
-
-**Reference:** `src/pages/BlogPostPage.jsx` (865 lines)
+**Completed Tasks:**
+1. [x] Create dynamic blog route (`next-app/src/app/blog/[slug]/page.tsx`)
+2. [x] Port BlogPosting + Breadcrumb + Speakable structured data
+3. [x] Handle audio narration (client component with word-level highlighting)
+4. [x] Add generateStaticParams for published posts
+5. [x] Create blog data layer (`blogData.ts`), types (`blog.ts`), text normalization (`textNormalization.ts`)
+6. [x] Port share buttons (LinkedIn, X/Twitter, Facebook, Copy link)
+7. [x] Create loading skeleton and not-found page
+8. [x] YouTube embed support for featured_video
+9. [x] Wire up blog carousel in welcome page FAQ section (`BlogCard.tsx`, `BlogCarousel.tsx`)
+10. [x] Typing animation for title (reusing `useTypingAnimation` hook)
 
 ---
 

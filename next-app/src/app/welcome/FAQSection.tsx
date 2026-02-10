@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import type { BlogPost } from '@/types/blog'
+import BlogCarousel from '@/components/BlogCarousel'
 
 interface FAQ {
   question: string
@@ -9,9 +11,10 @@ interface FAQ {
 
 interface FAQSectionProps {
   faqs: FAQ[]
+  posts?: BlogPost[]
 }
 
-export default function FAQSection({ faqs }: FAQSectionProps) {
+export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
   const [expandedFAQ, setExpandedFAQ] = useState(0)
 
   return (
@@ -68,15 +71,19 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
             </div>
           </div>
 
-          {/* Blog Column Placeholder */}
+          {/* Blog Column */}
           <div className="order-2 md:order-1 flex flex-col items-end justify-center md:pl-8">
             <div className="w-full md:w-[85%] md:max-w-[30.8rem] mx-auto">
               <h3 className="font-bold text-white text-left text-3xl mb-2">
                 Latest from Ignite
               </h3>
-              <div className="h-48 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-400">
-                Blog posts will appear here
-              </div>
+              {posts.length > 0 ? (
+                <BlogCarousel posts={posts} />
+              ) : (
+                <div className="h-48 bg-zinc-800 rounded-lg flex items-center justify-center text-zinc-400">
+                  Updates coming soon...
+                </div>
+              )}
             </div>
           </div>
         </div>

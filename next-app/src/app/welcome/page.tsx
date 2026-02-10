@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
 import { getCoursesByType } from '@/lib/courseData'
+import { getRecentPosts } from '@/lib/blogData'
 import Footer from '@/components/Footer'
 import WelcomeHero from './WelcomeHero'
 import EducationSection from './EducationSection'
@@ -111,7 +112,10 @@ function generateStructuredData(coursesByType: { specialism: Array<{ name: strin
 }
 
 export default async function WelcomePage() {
-  const coursesByType = await getCoursesByType()
+  const [coursesByType, recentPosts] = await Promise.all([
+    getCoursesByType(),
+    getRecentPosts(5),
+  ])
 
   // Fetch all active coaches in a single query, then group by course (welcome-page specific)
   const supabase = createClient(
@@ -159,7 +163,7 @@ export default async function WelcomePage() {
           learningModelSection={<LearningModelSection />}
           testimonialsSection={<TestimonialsSection />}
           merchSection={<MerchSection />}
-          faqSection={<FAQSection faqs={faqs} />}
+          faqSection={<FAQSection faqs={faqs} posts={recentPosts} />}
           footer={<Footer />}
         />
       </main>

@@ -1,4 +1,5 @@
 import type { Course, Coach, FAQ } from '@/types/course'
+import type { BlogPost } from '@/types/blog'
 
 const BASE_URL = 'https://ignite.education'
 
@@ -153,6 +154,57 @@ export function generateItemListStructuredData(
         'inLanguage': 'en-GB',
       },
     })),
+  }
+}
+
+/**
+ * Generate BlogPosting schema.org structured data
+ */
+export function generateBlogPostStructuredData(post: BlogPost, postSlug: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    'headline': post.meta_title || post.title,
+    'description': post.meta_description || post.excerpt,
+    'image': post.og_image || post.featured_image || `${BASE_URL}/og-image.png`,
+    'datePublished': post.published_at,
+    'dateModified': post.updated_at,
+    'author': {
+      '@type': 'Person',
+      'name': post.author_name || 'Ignite Team',
+      ...(post.author_role && { 'jobTitle': post.author_role }),
+      ...(post.author_avatar && { 'image': post.author_avatar }),
+    },
+    'publisher': {
+      '@type': 'Organization',
+      'name': 'Ignite Education',
+      'url': BASE_URL,
+      'logo': {
+        '@type': 'ImageObject',
+        'url': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png',
+      },
+    },
+    'mainEntityOfPage': {
+      '@type': 'WebPage',
+      '@id': `${BASE_URL}/blog/${postSlug}`,
+    },
+    'url': `${BASE_URL}/blog/${postSlug}`,
+    'inLanguage': 'en-GB',
+  }
+}
+
+/**
+ * Generate Breadcrumb schema.org structured data for blog posts
+ */
+export function generateBlogBreadcrumbStructuredData(postTitle: string, postSlug: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Posts', 'item': `${BASE_URL}/blog` },
+      { '@type': 'ListItem', 'position': 3, 'name': postTitle, 'item': `${BASE_URL}/blog/${postSlug}` },
+    ],
   }
 }
 
