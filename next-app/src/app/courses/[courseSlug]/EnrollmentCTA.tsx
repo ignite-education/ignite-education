@@ -47,13 +47,13 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       .from('saved_courses')
       .select('id')
       .eq('user_id', userId)
-      .eq('course_slug', courseSlug)
+      .eq('course_id', courseSlug)
       .maybeSingle()
 
     if (!existing) {
       await supabase
         .from('saved_courses')
-        .insert({ user_id: userId, course_slug: courseSlug })
+        .insert({ user_id: userId, course_id: courseSlug })
     }
     setIsSaved(true)
   }, [courseSlug])
@@ -166,7 +166,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .from('saved_courses')
           .select('id')
           .eq('user_id', user.id)
-          .eq('course_slug', courseSlug)
+          .eq('course_id', courseSlug)
           .maybeSingle()
         setIsSaved(!!data)
         setCheckingStatus(false)
@@ -199,12 +199,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .from('saved_courses')
           .delete()
           .eq('user_id', user.id)
-          .eq('course_slug', courseSlug)
+          .eq('course_id', courseSlug)
         setIsSaved(false)
       } else {
         await supabase
           .from('saved_courses')
-          .insert({ user_id: user.id, course_slug: courseSlug })
+          .insert({ user_id: user.id, course_id: courseSlug })
         setIsSaved(true)
       }
     } catch (err) {
