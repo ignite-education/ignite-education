@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `Become a ${course.title}`
-  const shortDesc = `Become a ${course.title} with Ignite's free, expert-led course.`
+  const shortDesc = `Become a ${course.title} with Ignite's free, expert-built course`
   const description = course.description
     ? `${shortDesc} ${course.description}`.slice(0, 160)
     : shortDesc

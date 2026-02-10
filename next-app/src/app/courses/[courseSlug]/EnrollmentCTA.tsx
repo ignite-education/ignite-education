@@ -98,7 +98,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   useEffect(() => {
     if (!user && !googleHint && isLoaded && googleBtnRef.current) {
       renderButton(googleBtnRef.current, {
-        width: 380,
         theme: 'outline',
         size: 'large',
         shape: 'rectangular',
@@ -256,7 +255,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                   <button
                     onClick={handlePersonalizedGoogleClick}
                     className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                    style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
                   >
                     {/* Avatar */}
                     <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
@@ -311,7 +310,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 <div
                   ref={googleBtnRef}
                   className="mx-auto rounded overflow-hidden"
-                  style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                  style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
                 />
               )}
 
@@ -319,7 +318,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               <button
                 onClick={handleLinkedInClick}
                 className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
-                style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
               >
                 <span className="flex-1 text-center">Continue with LinkedIn</span>
                 <div className="flex items-center justify-center bg-white/20" style={{ width: '40px', height: '40px', borderRadius: '0 4px 4px 0' }}>
@@ -331,7 +330,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
             </div>
 
             {/* Status Text */}
-            <p className="text-center text-black text-sm font-light mb-4" style={{ letterSpacing: '-0.02em' }}>
+            <p className="text-center text-black text-sm font-normal mb-4" style={{ letterSpacing: '-0.02em' }}>
               {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
             </p>
           </>

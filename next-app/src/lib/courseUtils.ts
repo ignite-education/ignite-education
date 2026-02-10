@@ -30,15 +30,15 @@ export function getCourseTypeLabel(course: Course): string {
  * Get the dynamic tagline based on course type
  */
 export function getCourseTagline(course: Course): string {
-  if (!course?.title) return "Learn with Ignite's free, expert-led course."
+  if (!course?.title) return "Learn with Ignite's free, expert-built course"
 
   const taglineTemplates: Record<string, string> = {
-    'specialism': `Become a ${course.title} with Ignite's free, expert-led course.`,
-    'skill': `Upskill at ${course.title} with Ignite's free, expert-led course.`,
-    'subject': `Learn ${course.title} with Ignite's free, expert-led course.`,
+    'specialism': `Become a ${course.title} with Ignite's free, expert-built course`,
+    'skill': `Upskill at ${course.title} with Ignite's free, expert-built course`,
+    'subject': `Learn ${course.title} with Ignite's free, expert-built course`,
   }
 
-  return taglineTemplates[course.course_type] || `Become a ${course.title} with Ignite's free, expert-led course.`
+  return taglineTemplates[course.course_type] || `Become a ${course.title} with Ignite's free, expert-built course`
 }
 
 /**
