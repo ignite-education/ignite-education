@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
+import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
 import CourseRequestModal from './CourseRequestModal'
 
 interface Course {
@@ -15,182 +16,15 @@ interface Course {
   status: string
 }
 
-interface CourseTypeConfig {
-  title: string
-  description: string
-}
-
 interface WelcomeHeroProps {
   coursesByType: {
     specialism: Course[]
     skill: Course[]
     subject: Course[]
   }
-  courseTypeConfig: Record<string, CourseTypeConfig>
 }
 
-// Course Card component - matches original exactly
-function CourseCard({ course }: { course: Course }) {
-  const slug = course.name?.toLowerCase().replace(/\s+/g, '-') || course.title?.toLowerCase().replace(/\s+/g, '-')
-
-  return (
-    <Link
-      href={`/courses/${slug}`}
-      className="group block bg-[#F8F8F8] rounded-xl px-5 py-3"
-    >
-      <div className="flex items-center justify-between">
-        <span
-          className="text-black font-semibold tracking-[-0.01em]"
-          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-        >
-          {course.title || course.name}
-        </span>
-        <div
-          className="bg-white rounded-md flex items-center justify-center"
-          style={{ width: '35px', height: '35px' }}
-        >
-          <svg
-            width="21"
-            height="21"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-[#D8D8D8] group-hover:text-[#EF0B72] transition-colors"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </div>
-      </div>
-    </Link>
-  )
-}
-
-// Course Type Column component - matches original exactly
-function CourseTypeColumn({
-  type,
-  courses,
-  config,
-  showDescription = true
-}: {
-  type: string
-  courses: Course[]
-  config: CourseTypeConfig
-  showDescription?: boolean
-}) {
-  return (
-    <div className="flex flex-col">
-      <h2
-        className="text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em]"
-        style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-      >
-        {config.title}
-      </h2>
-      {showDescription && (
-        <p
-          className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line"
-          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-        >
-          {config.description}
-        </p>
-      )}
-      <div className="space-y-3">
-        {courses.map((course) => (
-          <CourseCard key={course.id || course.name} course={course} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-// Search component with Request button for no-results state
-function CourseSearch({
-  value,
-  onChange,
-  showRequestButton,
-  onRequestClick,
-}: {
-  value: string
-  onChange: (value: string) => void
-  showRequestButton: boolean
-  onRequestClick: () => void
-}) {
-  return (
-    <div
-      className="w-full max-w-[660px] mx-auto relative"
-      onMouseEnter={() => {
-        const input = document.querySelector<HTMLInputElement>('.course-search-input')
-        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)'
-      }}
-      onMouseLeave={() => {
-        const input = document.querySelector<HTMLInputElement>('.course-search-input')
-        if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)'
-      }}
-    >
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && showRequestButton) {
-            e.preventDefault()
-            onRequestClick()
-          }
-        }}
-        placeholder=""
-        autoFocus
-        className="course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
-        style={{
-          boxShadow: '0 0 10px rgba(103,103,103,0.6)',
-          paddingRight: showRequestButton ? '160px' : '24px',
-        }}
-      />
-      <button
-        type="button"
-        onClick={onRequestClick}
-        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#F8F8F8] rounded-lg px-3 cursor-pointer group"
-        style={{
-          height: 'fit-content',
-          paddingTop: '6px',
-          paddingBottom: '6px',
-          opacity: showRequestButton ? 1 : 0,
-          transform: showRequestButton ? 'scale(1)' : 'scale(0.9)',
-          pointerEvents: showRequestButton ? 'auto' : 'none',
-          transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-        }}
-      >
-        <span
-          className="text-black font-semibold text-sm tracking-[-0.01em]"
-          style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-        >
-          Request
-        </span>
-        <div
-          className="bg-white rounded-md flex items-center justify-center"
-          style={{ width: '28px', height: '28px' }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-[#D8D8D8] group-hover:text-[#EF0B72] transition-colors"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
-        </div>
-      </button>
-    </div>
-  )
-}
-
-export default function WelcomeHero({ coursesByType, courseTypeConfig }: WelcomeHeroProps) {
+export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
@@ -351,24 +185,9 @@ export default function WelcomeHero({ coursesByType, courseTypeConfig }: Welcome
 
         {/* Course Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <CourseTypeColumn
-            type="specialism"
-            courses={filteredSpecialism}
-            config={courseTypeConfig.specialism}
-            showDescription={true}
-          />
-          <CourseTypeColumn
-            type="skill"
-            courses={filteredSkill}
-            config={courseTypeConfig.skill}
-            showDescription={true}
-          />
-          <CourseTypeColumn
-            type="subject"
-            courses={filteredSubject}
-            config={courseTypeConfig.subject}
-            showDescription={true}
-          />
+          <CourseTypeColumn type="specialism" courses={filteredSpecialism} />
+          <CourseTypeColumn type="skill" courses={filteredSkill} />
+          <CourseTypeColumn type="subject" courses={filteredSubject} />
         </div>
       </div>
 

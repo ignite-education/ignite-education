@@ -118,6 +118,45 @@ export function generateBreadcrumbStructuredData(courseTitle: string, courseSlug
 }
 
 /**
+ * Generate ItemList schema.org structured data for course catalog
+ */
+export function generateItemListStructuredData(
+  coursesByType: { specialism: Array<{ name: string; title?: string; description?: string }>; skill: Array<{ name: string; title?: string; description?: string }>; subject: Array<{ name: string; title?: string; description?: string }> }
+) {
+  const allCourses = [
+    ...coursesByType.specialism,
+    ...coursesByType.skill,
+    ...coursesByType.subject,
+  ]
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    'name': 'Free Online Courses at Ignite Education',
+    'description': 'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
+    'url': `${BASE_URL}/courses`,
+    'numberOfItems': allCourses.length,
+    'itemListElement': allCourses.map((course, index) => ({
+      '@type': 'ListItem',
+      'position': index + 1,
+      'item': {
+        '@type': 'Course',
+        'name': course.title || course.name,
+        'description': course.description || `Learn ${course.title || course.name} from industry experts`,
+        'url': `${BASE_URL}/courses/${course.name?.toLowerCase().replace(/\s+/g, '-')}`,
+        'provider': {
+          '@type': 'EducationalOrganization',
+          'name': 'Ignite Education',
+          'url': BASE_URL,
+        },
+        'isAccessibleForFree': true,
+        'inLanguage': 'en-GB',
+      },
+    })),
+  }
+}
+
+/**
  * Generate Speakable schema.org structured data for voice search
  */
 export function generateSpeakableSchema(

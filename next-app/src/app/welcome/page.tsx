@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { createClient } from '@supabase/supabase-js'
+import { getCoursesByType } from '@/lib/courseData'
 import Footer from '@/components/Footer'
 import WelcomeHero from './WelcomeHero'
 import EducationSection from './EducationSection'
@@ -58,24 +59,8 @@ const faqs = [
   }
 ]
 
-// Course type configuration
-const COURSE_TYPE_CONFIG = {
-  specialism: {
-    title: 'Specialism',
-    description: 'Comprehensive courses that\nenable you to enter a new career'
-  },
-  skill: {
-    title: 'Skill',
-    description: 'Tangible skills that\nyou can immediately apply'
-  },
-  subject: {
-    title: 'Subject',
-    description: 'In-depth studies to\nlearn anything you want'
-  }
-}
-
 // Structured data for SEO
-function generateStructuredData(coursesByType: Record<string, Array<{ name: string; title?: string; description?: string }>>) {
+function generateStructuredData(coursesByType: { specialism: Array<{ name: string; title?: string; description?: string }>; skill: Array<{ name: string; title?: string; description?: string }>; subject: Array<{ name: string; title?: string; description?: string }> }) {
   const allCourses = [...(coursesByType.specialism || []), ...(coursesByType.skill || []), ...(coursesByType.subject || [])]
 
   return [
@@ -125,41 +110,15 @@ function generateStructuredData(coursesByType: Record<string, Array<{ name: stri
   ]
 }
 
-interface Course {
-  id: string
-  name: string
-  title?: string
-  description?: string
-  image_url?: string
-  status: string
-  course_type?: string
-  display_order?: number
-  module_structure?: Array<{ name: string }>
-  module_names?: string
-}
-
 export default async function WelcomePage() {
-  // Use a cookie-less Supabase client for public data (enables ISR static generation)
+  const coursesByType = await getCoursesByType()
+
+  // Fetch all active coaches in a single query, then group by course (welcome-page specific)
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  const { data: rawCourses } = await supabase
-    .from('courses')
-    .select('*')
-    .in('status', ['live', 'coming_soon'])
-
-  // Extract module_names from module_structure (matches Vite logic)
-  const courses = (rawCourses || []).map((course: Course) => ({
-    ...course,
-    module_names: course.module_structure && Array.isArray(course.module_structure)
-      ? course.module_structure.map(m => m.name).join(', ')
-      : ''
-  }))
-
-  // Fetch all active coaches in a single query, then group by course
-  const specialismCourses = courses.filter((c: Course) => !c.course_type || c.course_type === 'specialism')
   const { data: allCoaches } = await supabase
     .from('coaches')
     .select('*')
@@ -167,7 +126,7 @@ export default async function WelcomePage() {
     .order('display_order', { ascending: true })
 
   const coachesMap: Record<string, Array<{ name: string; position?: string; description?: string; image_url?: string; linkedin_url?: string }>> = {}
-  for (const course of specialismCourses) {
+  for (const course of coursesByType.specialism) {
     const slug = course.name.toLowerCase()
     const nameVariations = [
       course.name.toLowerCase(),
@@ -177,23 +136,6 @@ export default async function WelcomePage() {
     coachesMap[course.name] = (allCoaches || []).filter(
       (coach: { course_id?: string }) => nameVariations.includes(coach.course_id?.toLowerCase() ?? '')
     )
-  }
-
-  // Sort courses: live first (alphabetically), then coming_soon (alphabetically)
-  const sortCourses = (coursesToSort: Course[]) => {
-    return coursesToSort.sort((a, b) => {
-      if (a.status !== b.status) {
-        return a.status === 'live' ? -1 : 1
-      }
-      return (a.title || a.name).localeCompare(b.title || b.name)
-    })
-  }
-
-  // Group by course_type
-  const coursesByType = {
-    specialism: sortCourses((courses || []).filter((c: Course) => !c.course_type || c.course_type === 'specialism')),
-    skill: sortCourses((courses || []).filter((c: Course) => c.course_type === 'skill')),
-    subject: sortCourses((courses || []).filter((c: Course) => c.course_type === 'subject'))
   }
 
   const structuredData = generateStructuredData(coursesByType)
@@ -208,10 +150,7 @@ export default async function WelcomePage() {
 
       <main className="bg-black min-h-screen">
         {/* Section 1: Course Catalog */}
-        <WelcomeHero
-          coursesByType={coursesByType}
-          courseTypeConfig={COURSE_TYPE_CONFIG}
-        />
+        <WelcomeHero coursesByType={coursesByType} />
 
         {/* Wrapper for sections 2-6 with sticky navbar + dynamic logo color */}
         <WelcomeScrollManager

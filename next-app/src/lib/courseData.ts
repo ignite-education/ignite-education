@@ -75,3 +75,39 @@ export async function getAllCourseSlugs(): Promise<string[]> {
 
   return data?.map((c: { name: string }) => c.name.toLowerCase().replace(/\s+/g, '-')) || []
 }
+
+export interface CoursesByType {
+  specialism: Course[]
+  skill: Course[]
+  subject: Course[]
+}
+
+/**
+ * Fetch all active courses grouped by type (specialism, skill, subject).
+ * Sorts each group: live first (alphabetically), then coming_soon (alphabetically).
+ */
+export async function getCoursesByType(): Promise<CoursesByType> {
+  const supabase = getSupabase()
+
+  const { data: rawCourses } = await supabase
+    .from('courses')
+    .select('*')
+    .in('status', ['live', 'coming_soon'])
+
+  const courses = (rawCourses || []) as Course[]
+
+  const sortCourses = (coursesToSort: Course[]) => {
+    return [...coursesToSort].sort((a, b) => {
+      if (a.status !== b.status) {
+        return a.status === 'live' ? -1 : 1
+      }
+      return (a.title || a.name).localeCompare(b.title || b.name)
+    })
+  }
+
+  return {
+    specialism: sortCourses(courses.filter(c => !c.course_type || c.course_type === 'specialism')),
+    skill: sortCourses(courses.filter(c => c.course_type === 'skill')),
+    subject: sortCourses(courses.filter(c => c.course_type === 'subject')),
+  }
+}
