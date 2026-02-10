@@ -50,7 +50,7 @@ export default function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB] rounded-lg px-3 cursor-pointer group"
+        className="absolute right-1 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB] rounded-lg px-3 cursor-pointer group"
         style={{
           height: 'fit-content',
           paddingTop: '6px',
@@ -62,7 +62,7 @@ export default function CourseSearch({
         }}
       >
         <span
-          className="text-white font-semibold text-sm tracking-[-0.01em]"
+          className="text-black font-semibold text-sm tracking-[-0.01em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           Request
