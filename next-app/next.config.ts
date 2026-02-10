@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
         hostname: 'auth.ignite.education',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'yjvdakdghkfnlhdpbocg.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   async redirects() {
