@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: 'Sign In',
   description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',
   keywords: 'sign in, login, ignite education, online courses, free courses',
+  alternates: {
+    canonical: 'https://ignite.education/sign-in',
+  },
   openGraph: {
     title: 'Sign In | Ignite Education',
     description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',

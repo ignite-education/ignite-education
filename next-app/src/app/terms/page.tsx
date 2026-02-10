@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Terms of Service',
   description: "Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines for our online learning platform.",
   keywords: 'terms of service, terms and conditions, user agreement, course enrollment, refund policy, Ignite Education terms',
+  alternates: {
+    canonical: 'https://ignite.education/terms',
+  },
   openGraph: {
     title: 'Terms of Service | Ignite Education',
     description: "Read Ignite Education's Terms of Service. Learn about course enrollment, payment terms, refund policy, and user conduct guidelines.",

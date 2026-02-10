@@ -12,6 +12,9 @@ export const metadata: Metadata = {
   title: 'Release Notes',
   description: 'View the latest updates, features, and improvements to Ignite Education. Stay informed about new releases and enhancements to our learning platform.',
   keywords: 'release notes, updates, changelog, new features, Ignite Education updates',
+  alternates: {
+    canonical: 'https://ignite.education/release-notes',
+  },
   openGraph: {
     title: 'Release Notes | Ignite Education',
     description: 'View the latest updates, features, and improvements to Ignite Education.',

@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws.',
   keywords: 'privacy policy, data protection, GDPR, UK data privacy, personal information, Ignite Education privacy',
+  alternates: {
+    canonical: 'https://ignite.education/privacy',
+  },
   openGraph: {
     title: 'Privacy Policy | Ignite Education',
     description: 'Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws.',

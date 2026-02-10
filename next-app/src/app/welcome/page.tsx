@@ -18,17 +18,22 @@ export const metadata: Metadata = {
   title: 'Welcome',
   description: 'Transform your career with Ignite\'s interactive courses in Product Management, Cyber Security, Data Analysis, and UX Design. Learn from industry experts with AI-powered lessons, real-world projects, and personalized feedback.',
   keywords: 'product management course, cyber security training, data analyst course, UX design course, online learning, AI-powered education, tech skills, career development, free online courses, tech career, professional development',
+  alternates: {
+    canonical: 'https://ignite.education/welcome',
+  },
   openGraph: {
     title: 'Welcome to Ignite Education',
     description: 'Transform your career with free, expert-led courses in Product Management, Cyber Security, Data Analysis, and more.',
     url: 'https://ignite.education/welcome',
     siteName: 'Ignite Education',
+    images: [{ url: 'https://ignite.education/og-image.png' }],
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Welcome to Ignite Education',
     description: 'Transform your career with free, expert-led courses.',
+    images: ['https://ignite.education/og-image.png'],
   },
 }
 

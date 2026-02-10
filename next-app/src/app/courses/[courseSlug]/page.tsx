@@ -74,8 +74,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Course Not Found' }
   }
 
-  const title = `Become a ${course.title} | Ignite`
-  const description = `Become a ${course.title} with Ignite's free, expert-led course. ${course.description}`
+  const title = `Become a ${course.title}`
+  const shortDesc = `Become a ${course.title} with Ignite's free, expert-led course.`
+  const description = course.description
+    ? `${shortDesc} ${course.description}`.slice(0, 160)
+    : shortDesc
   const url = `https://ignite.education/courses/${courseSlug}`
   const ogImage = course.og_image || course.image_url || 'https://ignite.education/og-image.png'
 
@@ -83,8 +86,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title,
     description,
     keywords: generateCourseKeywords(course.title),
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
-      title,
+      title: `${title} | Ignite Education`,
       description,
       url,
       siteName: 'Ignite Education',
@@ -93,7 +99,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: `${title} | Ignite Education`,
       description,
       images: [ogImage],
     },

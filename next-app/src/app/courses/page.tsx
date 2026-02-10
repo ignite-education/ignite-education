@@ -15,12 +15,16 @@ export const metadata: Metadata = {
     'Explore free courses in Product Management, Cybersecurity, Data Analysis, and more. Find your specialism, skill, or subject and start learning today with Ignite Education.',
   keywords:
     'free online courses, product management course, cybersecurity course, data analysis course, career courses uk, free courses with certificate, ignite education, online learning',
+  alternates: {
+    canonical: `${BASE_URL}/courses`,
+  },
   openGraph: {
     title: 'Courses | Ignite Education',
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
     url: `${BASE_URL}/courses`,
     siteName: 'Ignite Education',
+    images: [{ url: `${BASE_URL}/og-image.png` }],
     type: 'website',
   },
   twitter: {
@@ -28,6 +32,7 @@ export const metadata: Metadata = {
     title: 'Courses | Ignite Education',
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
+    images: [`${BASE_URL}/og-image.png`],
   },
 }
 

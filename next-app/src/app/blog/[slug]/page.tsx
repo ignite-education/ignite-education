@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Post Not Found' }
   }
 
-  const title = post.meta_title || `${post.title} | Ignite Blog`
+  const title = post.meta_title || post.title
   const description = post.meta_description || post.excerpt?.slice(0, 155)
   const url = `https://ignite.education/blog/${slug}`
   const ogImage = post.og_image || post.featured_image || 'https://ignite.education/og-image.png'
@@ -37,8 +37,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
-      title,
+      title: `${post.title} | Ignite Education`,
       description,
       url,
       siteName: 'Ignite Education',
@@ -50,7 +53,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     },
     twitter: {
       card: 'summary_large_image',
-      title,
+      title: `${post.title} | Ignite Education`,
       description,
       images: [ogImage],
     },
