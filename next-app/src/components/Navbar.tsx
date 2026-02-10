@@ -9,9 +9,10 @@ interface NavbarProps {
   logoClipPercentage?: number
   invertLayers?: boolean
   logoContainerRef?: RefObject<HTMLDivElement | null>
+  variant?: 'default' | 'black'
 }
 
-export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef }: NavbarProps) {
+export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default' }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -47,7 +48,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   }, [])
 
   return (
-    <div>
+    <div className={variant === 'black' ? 'bg-black' : ''}>
       <div className="px-10 py-[15px] flex items-center justify-between">
         {/* Logo - links to home */}
         <Link href="/" className="inline-block">

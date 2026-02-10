@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import type { User } from '@supabase/supabase-js'
 import ShareButtons from './ShareButtons'
 
 interface EnrollmentCTAProps {
@@ -12,13 +13,86 @@ interface EnrollmentCTAProps {
 }
 
 export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }: EnrollmentCTAProps) {
+  const [user, setUser] = useState<User | null>(null)
+  const [firstName, setFirstName] = useState<string | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(true)
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [showInterestModal, setShowInterestModal] = useState(false)
   const [interestEmail, setInterestEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleEnroll = () => {
-    window.location.href = `https://ignite.education/progress?enroll=${courseSlug}`
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
+        // Check if course is saved
+        supabase
+          .from('saved_courses')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('course_slug', courseSlug)
+          .maybeSingle()
+          .then(({ data }) => {
+            setIsSaved(!!data)
+            setCheckingStatus(false)
+          })
+      } else {
+        setCheckingStatus(false)
+      }
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      if (session?.user) {
+        setFirstName(session.user.user_metadata?.first_name || session.user.user_metadata?.name?.split(' ')[0])
+      } else {
+        setFirstName(null)
+        setIsSaved(false)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [courseSlug])
+
+  const handleSignIn = (provider: string) => {
+    setLoadingProvider(provider)
+
+    // Store enrollment intent then redirect to Vite app sign-in
+    const intent = isComingSoon ? 'pendingWaitlistCourse' : 'pendingEnrollmentCourse'
+    const redirectUrl = `https://ignite.education/sign-in?provider=${provider}&${intent}=${courseSlug}`
+    window.location.href = redirectUrl
+  }
+
+  const handleSaveToggle = async () => {
+    if (!user) return
+    setIsSaving(true)
+
+    try {
+      const supabase = createClient()
+      if (isSaved) {
+        await supabase
+          .from('saved_courses')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('course_slug', courseSlug)
+        setIsSaved(false)
+      } else {
+        await supabase
+          .from('saved_courses')
+          .insert({ user_id: user.id, course_slug: courseSlug })
+        setIsSaved(true)
+      }
+    } catch (err) {
+      console.error('Error toggling save status:', err)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleRegisterInterest = async (e: React.FormEvent) => {
@@ -29,10 +103,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       const supabase = createClient()
       const { error } = await supabase
         .from('course_requests')
-        .insert({
-          email: interestEmail,
-          course_name: courseSlug,
-        })
+        .insert({ email: interestEmail, course_name: courseSlug })
 
       if (error && error.code !== '23505') {
         console.error('Error registering interest:', error)
@@ -56,31 +127,114 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
   return (
     <>
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">
-          {isComingSoon ? 'Coming Soon' : 'Ready to start?'}
-        </h3>
+      <div className="w-full">
+        {!user ? (
+          <>
+            {/* Google Sign In Button */}
+            <button
+              onClick={() => handleSignIn('google')}
+              disabled={!!loadingProvider}
+              className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+            >
+              {loadingProvider === 'google' ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    Continue with Google
+                  </span>
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
+                    alt="Google"
+                    className="w-5 h-5 flex-shrink-0"
+                  />
+                </>
+              )}
+            </button>
 
-        {isComingSoon ? (
-          <button
-            onClick={() => setShowInterestModal(true)}
-            className="w-full py-3 bg-[#8200EA] hover:bg-[#7000C9] text-white font-semibold rounded-lg transition-colors mb-4"
-          >
-            Notify Me
-          </button>
+            {/* LinkedIn Sign In Button */}
+            <button
+              onClick={() => handleSignIn('linkedin_oidc')}
+              disabled={!!loadingProvider}
+              className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+            >
+              {loadingProvider === 'linkedin_oidc' ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    Continue with LinkedIn
+                  </span>
+                  <img
+                    src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
+                    alt="LinkedIn"
+                    className="w-5 h-5 flex-shrink-0"
+                  />
+                </>
+              )}
+            </button>
+
+            {/* Status Text */}
+            <p className="text-center text-black text-sm font-light mb-4" style={{ letterSpacing: '-0.02em' }}>
+              {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
+            </p>
+          </>
         ) : (
-          <button
-            onClick={handleEnroll}
-            className="w-full py-3 bg-[#8200EA] hover:bg-[#7000C9] text-white font-semibold rounded-lg transition-colors mb-4"
-          >
-            Start Learning
-          </button>
+          <>
+            {/* Save to Account Button for authenticated users */}
+            <div className="w-[80%] mx-auto mb-4">
+              <button
+                onClick={handleSaveToggle}
+                disabled={isSaving || checkingStatus}
+                className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                  isSaved
+                    ? 'bg-gray-200 text-black hover:bg-gray-300'
+                    : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+              >
+                {checkingStatus ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                  </span>
+                ) : isSaving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                      {isSaved ? 'Removing...' : 'Saving...'}
+                    </span>
+                  </span>
+                ) : isSaved ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Saved to {firstName || 'your'}&apos;s Account
+                    </span>
+                  </span>
+                ) : (
+                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    Add to {firstName || 'your'}&apos;s Account
+                  </span>
+                )}
+              </button>
+
+              <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
+                {isSaved ? 'Course saved to your account' : "We'll save this course to start later"}
+              </p>
+            </div>
+          </>
         )}
 
+        {/* Share Buttons Row */}
         <ShareButtons courseSlug={courseSlug} courseTitle={courseTitle} />
       </div>
 
-      {/* Register Interest Modal */}
+      {/* Register Interest Modal (for coming_soon courses) */}
       {showInterestModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
