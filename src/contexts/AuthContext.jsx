@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
 
     // Set up auth state listener FIRST (before getSession)
     // This ensures we catch OAuth callbacks that may fire before getSession resolves
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isSubscribed) return;
 
       console.log('[AuthContext] onAuthStateChange:', event, session?.user?.id ?? 'no user');
@@ -58,15 +58,15 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Update last_active_at on sign in
+      // IMPORTANT: fire-and-forget — do NOT await inside onAuthStateChange
+      // Awaiting a DB call here can deadlock the Supabase client's auth lock
       if (event === 'SIGNED_IN' && session?.user?.id) {
-        try {
-          await supabase
-            .from('users')
-            .update({ last_active_at: new Date().toISOString() })
-            .eq('id', session.user.id);
-        } catch (err) {
-          console.error('Failed to update last_active_at:', err);
-        }
+        supabase
+          .from('users')
+          .update({ last_active_at: new Date().toISOString() })
+          .eq('id', session.user.id)
+          .then(() => console.log('[AuthContext] last_active_at updated'))
+          .catch(err => console.error('Failed to update last_active_at:', err));
       }
     });
 
@@ -85,11 +85,19 @@ export const AuthProvider = ({ children }) => {
     }, 30000);
 
     // Try getSession as backup (may hang on some browsers/conditions)
-    console.log('[AuthContext] Calling getSession...');
+    const getSessionStart = Date.now();
+    console.log('[AuthContext] Calling getSession at', new Date().toISOString());
+
+    // Intermediate check — log if getSession hasn't resolved after 5s
+    const earlyCheck = setTimeout(() => {
+      console.warn(`[AuthContext] getSession still pending after 5s (${Date.now() - getSessionStart}ms)`);
+    }, 5000);
+
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
+        clearTimeout(earlyCheck);
         if (!isSubscribed) return;
-        console.log('[AuthContext] getSession resolved:', session?.user?.id ?? 'no user');
+        console.log(`[AuthContext] getSession resolved in ${Date.now() - getSessionStart}ms:`, session?.user?.id ?? 'no user');
         clearTimeout(loadingTimeout);
 
         // Only use getSession result if listener hasn't already initialized
@@ -101,9 +109,10 @@ export const AuthProvider = ({ children }) => {
         }
       })
       .catch((error) => {
+        clearTimeout(earlyCheck);
         if (!isSubscribed) return;
         clearTimeout(loadingTimeout);
-        console.error('[AuthContext] Error getting session:', error);
+        console.error(`[AuthContext] getSession error after ${Date.now() - getSessionStart}ms:`, error);
 
         // Use listener session if available, otherwise no user
         if (sessionFromListener?.user) {

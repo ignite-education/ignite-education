@@ -47,6 +47,19 @@ const ProtectedRoute = ({ children }) => {
         // Continue to database check
       }
 
+      // Diagnostic: raw fetch test to check Supabase network reachability
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+      const diagStart = Date.now();
+      console.log('[ProtectedRoute Diag] Starting raw fetch test...');
+      fetch(`${supabaseUrl}/rest/v1/users?select=id&limit=1`, {
+        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+      }).then(r => {
+        console.log(`[ProtectedRoute Diag] Raw fetch: ${r.status} in ${Date.now() - diagStart}ms`);
+      }).catch(e => {
+        console.error(`[ProtectedRoute Diag] Raw fetch FAILED in ${Date.now() - diagStart}ms:`, e.message);
+      });
+
       // Retry logic wrapper
       let lastError = null;
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -63,6 +76,8 @@ const ProtectedRoute = ({ children }) => {
           });
 
           // Check if user has completed onboarding with timeout
+          console.log(`[ProtectedRoute] Starting Supabase client query (attempt ${attempt + 1})...`);
+          const queryStart = Date.now();
           const onboardingPromise = supabase
             .from('users')
             .select('onboarding_completed, enrolled_course, seniority_level')
