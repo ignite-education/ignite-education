@@ -50,7 +50,7 @@ export default function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[rgba(103,103,103,0.48)] rounded-lg px-3 cursor-pointer group"
+        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB] rounded-lg px-3 cursor-pointer group"
         style={{
           height: 'fit-content',
           paddingTop: '6px',
@@ -80,7 +80,7 @@ export default function CourseSearch({
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[#D8D8D8] group-hover:text-[#EF0B72] transition-colors"
+            className="text-[#EBEBEB] group-hover:text-[#EF0B72] transition-colors"
           >
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
