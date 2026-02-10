@@ -209,6 +209,20 @@ export function generateBlogBreadcrumbStructuredData(postTitle: string, postSlug
 }
 
 /**
+ * Generate Breadcrumb schema.org structured data for static pages (e.g. Privacy, Terms)
+ */
+export function generateStaticPageBreadcrumb(pageName: string, pagePath: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 2, 'name': pageName, 'item': `${BASE_URL}${pagePath}` },
+    ],
+  }
+}
+
+/**
  * Generate Speakable schema.org structured data for voice search
  */
 export function generateSpeakableSchema(

@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is ~50% complete. Sessions 1-4 are done. The `/welcome`, `/courses`, `/courses/[courseSlug]`, and `/blog/[slug]` pages are deployed at https://next.ignite.education with SSR, ISR, structured data, Supabase integration, audio narration, and Lottie animation. Blog carousel wired up in welcome page FAQ section. Next up: Session 5 (Static Pages).
+**Current Status:** Migration is ~60% complete. Sessions 1-5 are done. The `/welcome`, `/courses`, `/courses/[courseSlug]`, `/blog/[slug]`, `/privacy`, `/terms`, and `/release-notes` pages are deployed at https://next.ignite.education with SSR, ISR, structured data, Supabase integration, audio narration, and Lottie animation. Blog carousel wired up in welcome page FAQ section. Next up: Session 6 (Auth Entry Points).
 
 ---
 
@@ -141,7 +141,10 @@ ignite-education/
 │   ├── src/app/           # App Router pages
 │   │   ├── welcome/       # ✓ Completed
 │   │   ├── courses/       # ✓ Completed
-│   │   └── blog/          # ✓ Completed
+│   │   ├── blog/          # ✓ Completed
+│   │   ├── privacy/       # ✓ Completed
+│   │   ├── terms/         # ✓ Completed
+│   │   └── release-notes/ # ✓ Completed
 │   ├── src/components/    # Shared components
 │   └── src/lib/supabase/  # SSR auth configured
 ├── server.js              # Express backend (unchanged)
@@ -272,21 +275,28 @@ next.ignite.education (Vercel - Staging)
 
 ---
 
-### Session 5: Static Pages (1 hour)
+### Session 5: Static Pages (1 hour) — COMPLETED
 
 **Objective:** Create Privacy, Terms, Release Notes
 
-**Files to Create:**
-```
-next-app/src/app/privacy/page.tsx
-next-app/src/app/terms/page.tsx
-next-app/src/app/release-notes/page.tsx
-```
-
-**Tasks:**
-1. [ ] Create static pages (simple port)
-2. [ ] Add appropriate metadata
-3. [ ] Reuse shared components (Footer, Navbar)
+**Completed Tasks:**
+1. [x] Create Privacy Policy page (`next-app/src/app/privacy/page.tsx`)
+   - Server component with static metadata (title, description, OG tags, Twitter card)
+   - BreadcrumbList structured data
+   - All 15 sections ported from `src/pages/Privacy.jsx`
+2. [x] Create Terms of Service page (`next-app/src/app/terms/page.tsx`)
+   - Server component with static metadata
+   - BreadcrumbList structured data
+   - All 20 sections ported from `src/pages/Terms.jsx`
+   - Cross-links to Privacy Policy page
+3. [x] Create Release Notes page (`next-app/src/app/release-notes/page.tsx`)
+   - Server component with ISR (revalidate: 3600)
+   - Supabase data layer (`next-app/src/lib/releaseNotesData.ts`)
+   - TypeScript types (`next-app/src/types/releaseNotes.ts`)
+   - Bold markdown parsing, version badges, blog post links
+   - BreadcrumbList structured data
+4. [x] Add `generateStaticPageBreadcrumb()` helper to `structuredData.ts`
+5. [x] Reuse shared components (Navbar with variant="black", Footer)
 
 ---
 
