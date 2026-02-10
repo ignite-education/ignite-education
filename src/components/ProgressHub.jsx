@@ -11,6 +11,7 @@ import { useAnimation } from '../contexts/AnimationContext';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
 import Footer from './Footer';
+import CoursePageNavbar from './CoursePageNavbar';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -2576,6 +2577,7 @@ const ProgressHub = () => {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <CoursePageNavbar />
       {/* Two-column layout wrapper */}
       <div className="h-screen flex">
       {/* Left Sidebar - Fixed */}
