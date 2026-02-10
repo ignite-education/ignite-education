@@ -14,6 +14,7 @@
     { "source": "/admin/:path*", "destination": "/index.html" },
     { "source": "/auth/:path*", "destination": "/index.html" },
     { "source": "/certificate/:path*", "destination": "https://next.ignite.education/certificate/:path*" },
+    { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" },
     { "source": "/reset-password", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
