@@ -33,39 +33,22 @@ const ProtectedRoute = ({ children }) => {
 
           // Use cache if it's for the current user and not expired
           if (userId === user.id && age < CACHE_DURATION) {
-            console.log('[ProtectedRoute] Using cached onboarding status:', { needsOnboarding: cachedNeedsOnboarding, ageSeconds: Math.floor(age / 1000) });
             setNeedsOnboarding(cachedNeedsOnboarding);
             setOnboardingLoading(false);
             return;
           } else {
-            console.log('[ProtectedRoute] Cache expired or user mismatch, fetching fresh data');
             sessionStorage.removeItem(ONBOARDING_CACHE_KEY);
           }
         }
-      } catch (cacheError) {
-        console.warn('[ProtectedRoute] Error reading cache:', cacheError);
+      } catch {
         // Continue to database check
       }
-
-      // Diagnostic: raw fetch test to check Supabase network reachability
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      const diagStart = Date.now();
-      console.log('[ProtectedRoute Diag] Starting raw fetch test...');
-      fetch(`${supabaseUrl}/rest/v1/users?select=id&limit=1`, {
-        headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-      }).then(r => {
-        console.log(`[ProtectedRoute Diag] Raw fetch: ${r.status} in ${Date.now() - diagStart}ms`);
-      }).catch(e => {
-        console.error(`[ProtectedRoute Diag] Raw fetch FAILED in ${Date.now() - diagStart}ms:`, e.message);
-      });
 
       // Retry logic wrapper
       let lastError = null;
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
           if (attempt > 0) {
-            console.log(`[ProtectedRoute] Retry attempt ${attempt} of ${MAX_RETRIES}`);
             // Wait before retry (exponential backoff)
             await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           }
@@ -76,8 +59,6 @@ const ProtectedRoute = ({ children }) => {
           });
 
           // Check if user has completed onboarding with timeout
-          console.log(`[ProtectedRoute] Starting Supabase client query (attempt ${attempt + 1})...`);
-          const queryStart = Date.now();
           const onboardingPromise = supabase
             .from('users')
             .select('onboarding_completed, enrolled_course, seniority_level')
@@ -86,20 +67,10 @@ const ProtectedRoute = ({ children }) => {
 
           const { data, error } = await Promise.race([onboardingPromise, timeoutPromise]);
 
-          console.log('[ProtectedRoute] Onboarding check result:', {
-            data,
-            error,
-            userId: user.id,
-            attempt: attempt + 1
-          });
-
           if (error) {
-            console.error(`[ProtectedRoute] Database error on attempt ${attempt + 1}:`, error);
+            console.error('[ProtectedRoute] Database error:', error);
             lastError = error;
-            // Try again unless it's the last attempt
-            if (attempt < MAX_RETRIES) {
-              continue;
-            }
+            if (attempt < MAX_RETRIES) continue;
             // On last attempt with error, assume they need onboarding (safe fallback)
             setNeedsOnboarding(true);
             cacheOnboardingStatus(user.id, true);
@@ -107,13 +78,6 @@ const ProtectedRoute = ({ children }) => {
             // User record exists - check if onboarding is completed
             const completed = data.onboarding_completed === true;
             const hasEnrolledCourse = Boolean(data.enrolled_course);
-
-            console.log('[ProtectedRoute] Onboarding status:', {
-              completed,
-              hasEnrolledCourse,
-              enrolledCourse: data.enrolled_course,
-              seniorityLevel: data.seniority_level
-            });
 
             // Only show onboarding if BOTH conditions are true:
             // 1. onboarding_completed is not true AND
@@ -124,9 +88,6 @@ const ProtectedRoute = ({ children }) => {
             cacheOnboardingStatus(user.id, needsOnboardingValue);
           } else {
             // No user record found - this is a new user who needs onboarding
-            console.log('[ProtectedRoute] No user record found, creating one and showing onboarding');
-
-            // Try to create the user record from OAuth metadata
             const metadata = user.user_metadata || {};
             const firstName = metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '';
             const lastName = metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '';
@@ -139,7 +100,6 @@ const ProtectedRoute = ({ children }) => {
                 onboarding_completed: false,
                 role: 'student'
               });
-              console.log('[ProtectedRoute] Created new user record');
             } catch (insertError) {
               // Ignore duplicate key errors (user might have been created by trigger)
               if (!insertError.message?.includes('duplicate key')) {
@@ -154,16 +114,11 @@ const ProtectedRoute = ({ children }) => {
           // Success! Break out of retry loop
           break;
         } catch (err) {
-          console.error(`[ProtectedRoute] Exception on attempt ${attempt + 1}:`, err);
           lastError = err;
-
-          // Try again unless it's the last attempt
-          if (attempt < MAX_RETRIES) {
-            continue;
-          }
+          if (attempt < MAX_RETRIES) continue;
 
           // On last attempt with exception, default to showing onboarding (safe fallback)
-          console.error('[ProtectedRoute] All retry attempts failed, defaulting to show onboarding');
+          console.error('[ProtectedRoute] All retry attempts failed:', err);
           setNeedsOnboarding(true);
           cacheOnboardingStatus(user.id, true);
         }
@@ -178,15 +133,12 @@ const ProtectedRoute = ({ children }) => {
   // Helper function to cache onboarding status
   const cacheOnboardingStatus = (userId, needsOnboarding) => {
     try {
-      const cacheData = {
+      sessionStorage.setItem(ONBOARDING_CACHE_KEY, JSON.stringify({
         userId,
         needsOnboarding,
         timestamp: Date.now()
-      };
-      sessionStorage.setItem(ONBOARDING_CACHE_KEY, JSON.stringify(cacheData));
-      console.log('[ProtectedRoute] Cached onboarding status:', cacheData);
-    } catch (cacheError) {
-      console.warn('[ProtectedRoute] Failed to cache onboarding status:', cacheError);
+      }));
+    } catch {
       // Non-critical error, continue
     }
   };

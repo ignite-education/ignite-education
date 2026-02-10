@@ -23,13 +23,10 @@ export const AuthProvider = ({ children }) => {
     let sessionFromListener = null;
     let hasInitialized = false;
 
-    console.log('[AuthContext] Starting auth initialization...');
-
     // Helper to safely initialize (prevents double initialization)
-    const safeInitialize = (session, source) => {
+    const safeInitialize = (session) => {
       if (!isSubscribed || hasInitialized) return;
       hasInitialized = true;
-      console.log(`[AuthContext] Initializing from ${source}:`, session?.user?.id ?? 'no user');
       setUser(session?.user ?? null);
       setLoading(false);
       setIsInitialized(true);
@@ -40,12 +37,11 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isSubscribed) return;
 
-      console.log('[AuthContext] onAuthStateChange:', event, session?.user?.id ?? 'no user');
       sessionFromListener = session;
 
       // If we get a session from the listener, use it immediately
       if (session?.user) {
-        safeInitialize(session, 'onAuthStateChange');
+        safeInitialize(session);
       }
 
       // Always update user state on auth changes (for logout, token refresh, etc.)
@@ -65,7 +61,6 @@ export const AuthProvider = ({ children }) => {
           .from('users')
           .update({ last_active_at: new Date().toISOString() })
           .eq('id', session.user.id)
-          .then(() => console.log('[AuthContext] last_active_at updated'))
           .catch(err => console.error('Failed to update last_active_at:', err));
       }
     });
@@ -73,52 +68,35 @@ export const AuthProvider = ({ children }) => {
     // Timeout handler - use session from listener if available
     const loadingTimeout = setTimeout(() => {
       if (!isSubscribed) return;
-      console.warn('[AuthContext] Auth session check timed out after 30 seconds');
-      console.log('[AuthContext] Session from listener at timeout:', sessionFromListener?.user?.id ?? 'no user');
-
-      // Check if onAuthStateChange already gave us a session
       if (sessionFromListener?.user) {
-        safeInitialize(sessionFromListener, 'timeout-with-listener-session');
+        safeInitialize(sessionFromListener);
       } else {
-        safeInitialize(null, 'timeout-no-session');
+        safeInitialize(null);
       }
     }, 30000);
 
     // Try getSession as backup (may hang on some browsers/conditions)
-    const getSessionStart = Date.now();
-    console.log('[AuthContext] Calling getSession at', new Date().toISOString());
-
-    // Intermediate check — log if getSession hasn't resolved after 5s
-    const earlyCheck = setTimeout(() => {
-      console.warn(`[AuthContext] getSession still pending after 5s (${Date.now() - getSessionStart}ms)`);
-    }, 5000);
-
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
-        clearTimeout(earlyCheck);
         if (!isSubscribed) return;
-        console.log(`[AuthContext] getSession resolved in ${Date.now() - getSessionStart}ms:`, session?.user?.id ?? 'no user');
         clearTimeout(loadingTimeout);
 
         // Only use getSession result if listener hasn't already initialized
         if (!sessionFromListener?.user) {
-          safeInitialize(session, 'getSession');
+          safeInitialize(session);
         } else {
-          // Listener already handled it, just mark as initialized
-          safeInitialize(sessionFromListener, 'getSession-with-listener-session');
+          safeInitialize(sessionFromListener);
         }
       })
-      .catch((error) => {
-        clearTimeout(earlyCheck);
+      .catch(() => {
         if (!isSubscribed) return;
         clearTimeout(loadingTimeout);
-        console.error(`[AuthContext] getSession error after ${Date.now() - getSessionStart}ms:`, error);
 
         // Use listener session if available, otherwise no user
         if (sessionFromListener?.user) {
-          safeInitialize(sessionFromListener, 'getSession-error-with-listener-session');
+          safeInitialize(sessionFromListener);
         } else {
-          safeInitialize(null, 'getSession-error');
+          safeInitialize(null);
         }
       });
 
