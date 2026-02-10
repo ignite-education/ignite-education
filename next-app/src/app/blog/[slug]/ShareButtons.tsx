@@ -22,7 +22,7 @@ export default function ShareButtons({ slug, title }: ShareButtonsProps) {
 
   return (
     <div className="mt-6 pt-4">
-      <p className="text-sm font-medium text-gray-600 mb-4">Share this article</p>
+      <p className="text-sm font-medium text-black mb-4">Share this article</p>
       <div className="flex items-center gap-3">
         {/* Copy URL Button */}
         <button

@@ -128,9 +128,6 @@ export default function BlogPostClient({ post, audioData }: BlogPostClientProps)
               </h1>
               <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left absolute top-0 left-0 right-0">
                 {typedTitle}
-                {!isTypingComplete && (
-                  <span className="animate-blink" style={{ borderRight: '2px solid white', marginLeft: '2px' }}>&nbsp;</span>
-                )}
               </h1>
             </div>
 
