@@ -155,47 +155,14 @@ function injectMetaTags(html, meta, route) {
 }
 
 async function getRoutesToInject() {
+  // Only inject SEO for Vite SPA routes.
+  // Migrated routes (/welcome, /courses, /blog, /privacy, /terms, etc.)
+  // are served by Next.js via Vercel rewrites — no prerendered files needed.
   const routes = [
     '/',
-    '/welcome',
-    '/privacy',
-    '/terms',
     '/progress',
     '/learning',
   ];
-
-  // Fetch all live courses
-  const { data: courses, error: coursesError } = await supabase
-    .from('courses')
-    .select('name, description, status')
-    .in('status', ['live', 'coming_soon']);
-
-  if (coursesError) {
-    console.error('Error fetching courses:', coursesError);
-  } else {
-    console.log(`Found ${courses?.length || 0} courses`);
-    courses?.forEach(course => {
-      const slug = course.name.toLowerCase().replace(/\s+/g, '-');
-      routes.push(`/courses/${slug}`);
-      routeMetadata[`/courses/${slug}`] = getCourseMetadata(course);
-    });
-  }
-
-  // Fetch all published blog posts
-  const { data: posts, error: postsError } = await supabase
-    .from('blog_posts')
-    .select('slug, title, meta_description, excerpt')
-    .eq('status', 'published');
-
-  if (postsError) {
-    console.error('Error fetching blog posts:', postsError);
-  } else {
-    console.log(`Found ${posts?.length || 0} blog posts`);
-    posts?.forEach(post => {
-      routes.push(`/blog/${post.slug}`);
-      routeMetadata[`/blog/${post.slug}`] = getBlogMetadata(post);
-    });
-  }
 
   return routes;
 }
