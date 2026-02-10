@@ -86,7 +86,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
       options: {
-        redirectTo: `${window.location.origin}/welcome`,
+        redirectTo: window.location.href,
       },
     })
   }, [courseName])
@@ -120,7 +120,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/welcome`,
+          redirectTo: window.location.href,
           queryParams: googleHint?.email ? { login_hint: googleHint.email } : undefined,
         },
       })

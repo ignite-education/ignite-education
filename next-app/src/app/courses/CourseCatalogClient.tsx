@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
+import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
 import CourseRequestModal from '@/app/welcome/CourseRequestModal'
 import type { CoursesByType } from '@/lib/courseData'
@@ -17,6 +18,8 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestedQuery, setRequestedQuery] = useState('')
+  const [modalPhase, setModalPhase] = useState<'sign-in' | 'thank-you'>('sign-in')
+  const [modalUserName, setModalUserName] = useState('')
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
 
@@ -40,8 +43,38 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
 
   const handleRequestCourse = () => {
     setRequestedQuery(searchQuery.trim())
+    setModalPhase('sign-in')
+    setModalUserName('')
     setShowRequestModal(true)
   }
+
+  // LinkedIn OAuth callback detection
+  useEffect(() => {
+    const pendingCourse = sessionStorage.getItem('pendingCourseRequest')
+    if (!pendingCourse) return
+
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+
+      sessionStorage.removeItem('pendingCourseRequest')
+
+      const firstName = user.user_metadata?.full_name?.split(' ')[0]
+        || user.user_metadata?.name?.split(' ')[0]
+        || user.email?.split('@')[0]
+        || 'there'
+
+      supabase.from('course_requests').insert({
+        user_id: user.id,
+        course_name: pendingCourse,
+      }).then(() => {
+        setRequestedQuery(pendingCourse)
+        setModalPhase('thank-you')
+        setModalUserName(firstName)
+        setShowRequestModal(true)
+      })
+    })
+  }, [])
 
   const filterCourses = (courses: typeof coursesByType.specialism) => {
     if (!searchQuery.trim()) return courses
@@ -120,6 +153,8 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
         <CourseRequestModal
           courseName={requestedQuery}
           onClose={() => { setShowRequestModal(false); setSearchQuery('') }}
+          initialPhase={modalPhase}
+          initialUserName={modalUserName}
         />
       )}
     </div>
