@@ -82,7 +82,7 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
         </div>
 
         {/* Get Started Button */}
-        <div className="flex justify-center px-4 pb-8">
+        <div className="flex justify-center px-4">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"

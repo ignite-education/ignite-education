@@ -10,15 +10,15 @@ const merchItems = [
     url: 'https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611'
   },
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg',
-    alt: 'Notebook',
-    url: 'https://shop.ignite.education/products/notebook?variant=53241113084235'
-  },
-  {
     src: 'https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp',
     alt: 'Quote Tote',
     url: 'https://shop.ignite.education/products/copy-of-empowering-quote-organic-cotton-tote-bag-eco-friendly-shopper-sustainable-gift-motivational-bag-reusable-grocery-tote-1?variant=53677328367947',
     desktopOnly: true
+  },
+  {
+    src: 'https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg',
+    alt: 'Notebook',
+    url: 'https://shop.ignite.education/products/notebook?variant=53241113084235'
   },
   {
     src: 'https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp',
@@ -100,7 +100,7 @@ export default function MerchSection() {
       style={{
         background: 'white',
         scrollSnapAlign: 'none',
-        paddingTop: '7rem',
+        paddingTop: '5rem',
         paddingBottom: '5rem'
       }}
     >
@@ -124,7 +124,7 @@ export default function MerchSection() {
             color: 'black',
             marginBottom: '1.5rem'
           }}>
-            Discover official Ignite merchandise. All profit supports education and social mobility projects across the UK.
+            Discover official Ignite merchandise, with all profit supporting education and social mobility projects across the UK.
           </p>
         </div>
 
