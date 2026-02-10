@@ -319,7 +319,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               {/* LinkedIn Sign In Button */}
               <button
                 onClick={handleLinkedInClick}
-                className="mx-auto flex items-center justify-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-semibold cursor-pointer"
+                className="mx-auto flex items-center justify-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
                 style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
               >
                 Continue with LinkedIn
