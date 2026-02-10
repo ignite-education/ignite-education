@@ -319,7 +319,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               {/* LinkedIn Sign In Button */}
               <button
                 onClick={handleLinkedInClick}
-                className="mx-auto flex items-center justify-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
+                className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
                 style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
               >
                 Continue with LinkedIn
@@ -373,7 +373,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 )}
               </button>
 
-              <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-center text-black text-sm font-normal mt-3" style={{ letterSpacing: '-0.02em' }}>
                 {isSaved ? 'Course saved to your account' : "We'll save this course to start later"}
               </p>
             </div>

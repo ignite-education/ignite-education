@@ -218,14 +218,9 @@ export default function SignInForm() {
                     type="button"
                     onClick={() => handleOAuthSignIn('linkedin_oidc')}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+                    className="w-full flex items-center justify-center bg-[#0a66c2] text-white rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-[#084d93] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)]"
                   >
-                    <span className="truncate">Continue with LinkedIn</span>
-                    <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
-                      alt="LinkedIn"
-                      className="w-5 h-5 flex-shrink-0 object-contain"
-                    />
+                    Continue with LinkedIn
                   </button>
                 </div>
 
