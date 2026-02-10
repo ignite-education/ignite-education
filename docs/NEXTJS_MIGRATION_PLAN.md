@@ -338,9 +338,20 @@ next.ignite.education (Vercel - Staging)
 **Objective:** Create `/certificate/[id]` for social sharing
 
 **Tasks:**
-1. [ ] Create certificate route
-2. [ ] Generate OG image for sharing
-3. [ ] Add certificate verification display
+1. [x] Create certificate route (`next-app/src/app/certificate/[id]/page.tsx`)
+   - Server component with ISR (1h), dynamic metadata (OG title/description/image)
+   - Client component for Share (LinkedIn) + Download PDF (jsPDF + html2canvas)
+   - Certificate visual replicated pixel-for-pixel from Vite version
+   - Type definition (`next-app/src/types/certificate.ts`)
+   - Data layer with direct Supabase query (`next-app/src/lib/certificateData.ts`)
+2. [x] Generate OG image for sharing (`next-app/src/app/certificate/[id]/opengraph-image.tsx`)
+   - Dynamic `ImageResponse` (1200x630) replicating certificate design
+   - Left panel (black): IGNITE branding + course name + "Certification"
+   - Right panel (white): user name (pink), achievement, awarded by, cert number, date
+3. [x] Add certificate verification display
+   - Verification badge below the certificate visual
+   - Shows certificate number + issue date with green checkmark
+   - EducationalOccupationalCredential structured data + breadcrumb (`next-app/src/lib/structuredData.ts`)
 
 ---
 

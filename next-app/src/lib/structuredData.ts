@@ -1,5 +1,6 @@
 import type { Course, Coach, FAQ } from '@/types/course'
 import type { BlogPost } from '@/types/blog'
+import type { Certificate } from '@/types/certificate'
 
 const BASE_URL = 'https://ignite.education'
 
@@ -239,5 +240,47 @@ export function generateSpeakableSchema(
       'cssSelector': cssSelectors,
     },
     'url': url,
+  }
+}
+
+/**
+ * Generate EducationalOccupationalCredential schema.org structured data
+ */
+export function generateCertificateStructuredData(certificate: Certificate) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'EducationalOccupationalCredential',
+    'credentialCategory': 'Certificate of Completion',
+    'name': `${certificate.course_name} Certificate`,
+    'description': `Verified certificate of completion for the ${certificate.course_name} course from Ignite Education, awarded to ${certificate.user_name}.`,
+    'recognizedBy': {
+      '@type': 'EducationalOrganization',
+      'name': 'Ignite Education',
+      'url': BASE_URL,
+    },
+    'dateCreated': certificate.issued_date,
+    'identifier': {
+      '@type': 'PropertyValue',
+      'propertyID': 'Certificate Number',
+      'value': certificate.certificate_number,
+    },
+    'url': `${BASE_URL}/certificate/${certificate.id}`,
+  }
+}
+
+/**
+ * Generate Breadcrumb schema.org structured data for certificate pages
+ */
+export function generateCertificateBreadcrumbStructuredData(
+  userName: string,
+  certificateId: string
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 2, 'name': `${userName}'s Certificate`, 'item': `${BASE_URL}/certificate/${certificateId}` },
+    ],
   }
 }
