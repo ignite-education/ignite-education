@@ -1,3 +1,5 @@
+import Image from 'next/image'
+
 interface FeedbackSectionProps {
   courseTitle: string
 }
@@ -8,13 +10,13 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Feedback
       </h2>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/images/trustpilot-logo.svg"
+      <Image
+        src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
         alt="Trustpilot"
         width={160}
         height={39}
         className="mb-3"
+        style={{ maxWidth: '160px', height: 'auto' }}
       />
       <div className="bg-[#F0F0F2] p-6 rounded-lg">
         <p className="text-black text-lg font-medium">
