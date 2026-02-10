@@ -19,7 +19,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
     >
       <div className="px-10 py-[15px] flex items-center justify-between">
         {/* Logo - links to home */}
-        <Link to="/welcome" className="inline-block">
+        <a href="/welcome" className="inline-block">
           <div ref={logoContainerRef} className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
             {!invertLayers ? (
               <>
@@ -85,7 +85,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
               </>
             )}
           </div>
-        </Link>
+        </a>
 
         {/* Right side - Sign In button or Profile */}
         {user ? (
