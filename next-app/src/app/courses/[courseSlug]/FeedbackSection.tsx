@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 interface FeedbackSectionProps {
   courseTitle: string
 }
@@ -10,7 +8,8 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Feedback
       </h2>
-      <Image
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
         src="/images/trustpilot-logo.svg"
         alt="Trustpilot"
         width={160}
