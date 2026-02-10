@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -28,15 +28,11 @@ if (
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+// Use createBrowserClient from @supabase/ssr so the Vite SPA shares
+// cookie-based auth storage with the Next.js app (both on ignite.education)
+export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   db: {
     schema: 'public',
-  },
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    // Use default localStorage - custom hybrid adapter broke Promise resolution
   },
   global: {
     headers: {
@@ -45,3 +41,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
   },
 })
+
+// One-time cleanup: remove stale Supabase auth tokens from localStorage.
+// The Vite SPA now uses cookie-based storage via @supabase/ssr.
+if (typeof window !== 'undefined') {
+  try {
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('sb-') && (key.endsWith('-auth-token') || key.includes('-auth-token.'))) {
+        localStorage.removeItem(key)
+      }
+    })
+  } catch {
+    // Ignore localStorage errors (private browsing, etc.)
+  }
+}

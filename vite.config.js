@@ -10,7 +10,7 @@ export default defineConfig({
         manualChunks: {
           // Vendor chunks - separate large libraries
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'supabase-vendor': ['@supabase/supabase-js'],
+          'supabase-vendor': ['@supabase/supabase-js', '@supabase/ssr'],
           'stripe-vendor': ['@stripe/stripe-js', 'stripe'],
           'ai-vendor': ['@anthropic-ai/sdk'],
           // Split ui-vendor for better lazy loading - lottie only needed for LoadingScreen
@@ -33,6 +33,7 @@ export default defineConfig({
       'react-dom',
       'react-router-dom',
       '@supabase/supabase-js',
+      '@supabase/ssr',
     ],
     exclude: [
       '@anthropic-ai/sdk',

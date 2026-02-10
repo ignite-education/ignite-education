@@ -224,10 +224,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        // If there's an auth session error, clear local storage manually
         if (error.message?.includes('Auth session missing') || error.status === 403) {
-          console.log('Session already invalid, clearing local storage...');
-          localStorage.clear();
+          console.log('Session already invalid, clearing auth state...');
+          clearSupabaseCookies();
           sessionStorage.clear();
           window.location.href = '/';
           return;
@@ -235,12 +234,21 @@ export const AuthProvider = ({ children }) => {
         throw error;
       }
     } catch (err) {
-      // If logout fails, force clear and redirect
       console.error('Error during logout:', err);
-      localStorage.clear();
+      clearSupabaseCookies();
       sessionStorage.clear();
       window.location.href = '/';
     }
+  };
+
+  // Clear Supabase auth cookies as a fallback when signOut fails
+  const clearSupabaseCookies = () => {
+    document.cookie.split(';').forEach(cookie => {
+      const name = cookie.split('=')[0].trim();
+      if (name.startsWith('sb-')) {
+        document.cookie = `${name}=; path=/; max-age=0`;
+      }
+    });
   };
 
   // Update user profile
@@ -258,7 +266,7 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: provider,
       options: {
-        redirectTo: `${window.location.origin}/progress`,
+        redirectTo: `${window.location.origin}/auth/callback?next=/progress`,
       }
     });
 
