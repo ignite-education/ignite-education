@@ -51,7 +51,10 @@
       "WebFetch(domain:stackshare.io)",
       "Bash(npx next:*)",
       "WebFetch(domain:ignite.education)",
-      "Bash(git cherry-pick:*)"
+      "Bash(git cherry-pick:*)",
+      "Bash(git status:*)",
+      "Bash(npx vite build:*)",
+      "Bash(md5:*)"
     ],
     "deny": [],
     "ask": []

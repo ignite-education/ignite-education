@@ -94,7 +94,12 @@ export async function getCoursesByType(): Promise<CoursesByType> {
     .select('*')
     .in('status', ['live', 'coming_soon'])
 
-  const courses = (rawCourses || []) as Course[]
+  const courses = (rawCourses || []).map(c => ({
+    ...c,
+    module_names: Array.isArray(c.module_structure)
+      ? c.module_structure.map((m: { name: string }) => m.name).join(', ')
+      : '',
+  })) as Course[]
 
   const sortCourses = (coursesToSort: Course[]) => {
     return [...coursesToSort].sort((a, b) => {

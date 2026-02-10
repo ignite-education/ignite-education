@@ -5,6 +5,11 @@
       "has": [{ "type": "host", "value": "www.ignite.education" }],
       "destination": "https://ignite.education/$1",
       "permanent": true
+    },
+    {
+      "source": "/",
+      "destination": "/welcome",
+      "permanent": false
     }
   ],
   "rewrites": [
