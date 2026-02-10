@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import ShareButtons from './ShareButtons'
 
@@ -12,36 +13,128 @@ interface EnrollmentCTAProps {
   isComingSoon: boolean
 }
 
+function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
+  return user.user_metadata?.first_name
+    || user.user_metadata?.full_name?.split(' ')[0]
+    || user.user_metadata?.name?.split(' ')[0]
+    || user.email?.split('@')[0]
+    || 'your'
+}
+
 export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }: EnrollmentCTAProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
-  const [loadingProvider, setLoadingProvider] = useState<string | null>(null)
   const [showInterestModal, setShowInterestModal] = useState(false)
   const [interestEmail, setInterestEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const googleBtnRef = useRef<HTMLDivElement>(null)
 
+  // Save course for a given user
+  const saveCourseForUser = useCallback(async (userId: string) => {
+    const supabase = createClient()
+    const { data: existing } = await supabase
+      .from('saved_courses')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_slug', courseSlug)
+      .maybeSingle()
+
+    if (!existing) {
+      await supabase
+        .from('saved_courses')
+        .insert({ user_id: userId, course_slug: courseSlug })
+    }
+    setIsSaved(true)
+  }, [courseSlug])
+
+  // Handle Google sign-in success (direct, no redirect)
+  const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
+    try {
+      const supabase = createClient()
+      const { data, error: authError } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential,
+        nonce: nonce,
+      })
+
+      if (authError || !data.user) {
+        console.error('[EnrollmentCTA] Google sign-in failed:', authError)
+        return
+      }
+
+      setUser(data.user)
+      setFirstName(extractFirstName(data.user))
+      setCheckingStatus(false)
+
+      // Auto-save the course
+      await saveCourseForUser(data.user.id)
+    } catch (err) {
+      console.error('[EnrollmentCTA] Unexpected error:', err)
+    }
+  }, [saveCourseForUser])
+
+  const { isLoaded, renderButton } = useGoogleOneTap({
+    onSuccess: handleGoogleSuccess,
+    enabled: !user,
+    autoPrompt: false,
+  })
+
+  // Render Google personalized button when ready
+  useEffect(() => {
+    if (!user && isLoaded && googleBtnRef.current) {
+      renderButton(googleBtnRef.current, {
+        width: 380,
+        theme: 'outline',
+        size: 'large',
+        shape: 'rectangular',
+        text: 'continue_with',
+      })
+    }
+  }, [user, isLoaded, renderButton])
+
+  // Handle LinkedIn sign-in (OAuth redirect)
+  const handleLinkedInClick = useCallback(async () => {
+    sessionStorage.setItem('pendingSaveCourse', courseSlug)
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: window.location.href,
+      },
+    })
+  }, [courseSlug])
+
+  // Initial auth check + LinkedIn callback detection
   useEffect(() => {
     const supabase = createClient()
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user)
       if (user) {
-        setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
-        // Check if course is saved
-        supabase
+        setFirstName(extractFirstName(user))
+
+        // Check for pending LinkedIn save
+        const pendingSlug = sessionStorage.getItem('pendingSaveCourse')
+        if (pendingSlug === courseSlug) {
+          sessionStorage.removeItem('pendingSaveCourse')
+          await saveCourseForUser(user.id)
+          setCheckingStatus(false)
+          return
+        }
+
+        // Check if course is already saved
+        const { data } = await supabase
           .from('saved_courses')
           .select('id')
           .eq('user_id', user.id)
           .eq('course_slug', courseSlug)
           .maybeSingle()
-          .then(({ data }) => {
-            setIsSaved(!!data)
-            setCheckingStatus(false)
-          })
+        setIsSaved(!!data)
+        setCheckingStatus(false)
       } else {
         setCheckingStatus(false)
       }
@@ -50,7 +143,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        setFirstName(session.user.user_metadata?.first_name || session.user.user_metadata?.name?.split(' ')[0])
+        setFirstName(extractFirstName(session.user))
       } else {
         setFirstName(null)
         setIsSaved(false)
@@ -58,16 +151,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     })
 
     return () => subscription.unsubscribe()
-  }, [courseSlug])
-
-  const handleSignIn = (provider: string) => {
-    setLoadingProvider(provider)
-
-    // Store enrollment intent then redirect to Vite app sign-in
-    const intent = isComingSoon ? 'pendingWaitlistCourse' : 'pendingEnrollmentCourse'
-    const redirectUrl = `https://ignite.education/sign-in?provider=${provider}&${intent}=${courseSlug}`
-    window.location.href = redirectUrl
-  }
+  }, [courseSlug, saveCourseForUser])
 
   const handleSaveToggle = async () => {
     if (!user) return
@@ -130,51 +214,29 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       <div className="w-full">
         {!user ? (
           <>
-            {/* Google Sign In Button */}
-            <button
-              onClick={() => handleSignIn('google')}
-              disabled={!!loadingProvider}
-              className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-3 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
-              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-            >
-              {loadingProvider === 'google' ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                    Continue with Google
-                  </span>
-                  <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
-                    alt="Google"
-                    className="w-5 h-5 flex-shrink-0"
-                  />
-                </>
-              )}
-            </button>
+            {/* Sign-in buttons */}
+            <div className="space-y-2 w-[90%] mx-auto mb-3">
+              {/* Google personalized button (rendered by Google's GIS) */}
+              <div
+                ref={googleBtnRef}
+                className="mx-auto rounded overflow-hidden"
+                style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              />
 
-            {/* LinkedIn Sign In Button */}
-            <button
-              onClick={() => handleSignIn('linkedin_oidc')}
-              disabled={!!loadingProvider}
-              className="flex items-center justify-center gap-2 w-[90%] mx-auto px-4 bg-white rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50 mb-4 shadow-[0_0_12px_rgba(103,103,103,0.25)]"
-              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-            >
-              {loadingProvider === 'linkedin_oidc' ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span className="text-[1rem] text-black font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                    Continue with LinkedIn
-                  </span>
-                  <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
-                    alt="LinkedIn"
-                    className="w-5 h-5 flex-shrink-0"
-                  />
-                </>
-              )}
-            </button>
+              {/* LinkedIn Sign In Button */}
+              <button
+                onClick={handleLinkedInClick}
+                className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
+                style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              >
+                <span className="flex-1 text-center">Continue with LinkedIn</span>
+                <div className="flex items-center justify-center bg-white/20" style={{ width: '40px', height: '40px', borderRadius: '0 4px 4px 0' }}>
+                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
 
             {/* Status Text */}
             <p className="text-center text-black text-sm font-light mb-4" style={{ letterSpacing: '-0.02em' }}>
