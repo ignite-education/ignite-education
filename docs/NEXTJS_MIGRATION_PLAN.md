@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is ~20% complete. Session 1 (staging setup) is done. The `/welcome` page is deployed at https://next.ignite.education with SSR, structured data, Supabase integration, and Lottie animation. Section 1 (Hero) design tweaks are complete; sections 2-5 still need design review.
+**Current Status:** Migration is ~20% complete. Session 1 (staging setup + welcome page design) is done. The `/welcome` page is deployed at https://next.ignite.education with SSR, structured data, Supabase integration, and Lottie animation. All sections designed and reviewed. Blog carousel in FAQ section is a placeholder pending blog page migration. Next up: Session 2 (Course Detail Pages).
 
 ---
 
@@ -215,7 +215,12 @@ next.ignite.education (Vercel - Staging)
    - Fixed container padding: moved from `px-8` on section to `px-6` on inner container to match original card widths
    - Reduced heading-to-search gap
    - Fixed font loading: replaced inline `fontFamily: 'Geist'` with `var(--font-geist-sans)` to match `next/font` loaded font
-   - Remaining sections (Education, Courses, Testimonials, FAQ, Footer) still need design review
+
+6. [x] Design tweaks — Sections 2-7 + Footer
+   - Footer: updated "Ignite Education AI Ltd." font weight to 300 (light)
+   - Merch section: updated subtitle copy, reordered images (Mug, Tote, Notebook, Sweatshirt), reduced top gap to 6rem
+   - FAQ section: removed bottom padding under Get Started button
+   - Blog carousel: left as placeholder pending blog page migration (Session 4)
 
 ---
 
