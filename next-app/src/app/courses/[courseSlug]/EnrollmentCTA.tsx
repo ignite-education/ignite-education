@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
+import { saveGoogleProfileHint, getGoogleProfileHint, clearGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import ShareButtons from './ShareButtons'
 
@@ -31,7 +32,13 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [interestEmail, setInterestEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
   const googleBtnRef = useRef<HTMLDivElement>(null)
+
+  // Check for stored Google profile on mount
+  useEffect(() => {
+    setGoogleHint(getGoogleProfileHint())
+  }, [])
 
   // Save course for a given user
   const saveCourseForUser = useCallback(async (userId: string) => {
@@ -66,6 +73,9 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         return
       }
 
+      // Save Google profile for future personalization (Safari etc.)
+      saveGoogleProfileHint(data.user)
+
       setUser(data.user)
       setFirstName(extractFirstName(data.user))
       setCheckingStatus(false)
@@ -77,15 +87,16 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     }
   }, [saveCourseForUser])
 
-  const { isLoaded, renderButton } = useGoogleOneTap({
+  const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
     enabled: !user,
     autoPrompt: false,
+    loginHint: googleHint?.email,
   })
 
-  // Render Google personalized button when ready
+  // Render Google GIS button when ready (only for first-time users without stored profile)
   useEffect(() => {
-    if (!user && isLoaded && googleBtnRef.current) {
+    if (!user && !googleHint && isLoaded && googleBtnRef.current) {
       renderButton(googleBtnRef.current, {
         width: 380,
         theme: 'outline',
@@ -94,7 +105,30 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         text: 'continue_with',
       })
     }
-  }, [user, isLoaded, renderButton])
+  }, [user, googleHint, isLoaded, renderButton])
+
+  // Handle custom personalized Google button click
+  const handlePersonalizedGoogleClick = useCallback(() => {
+    // Try One Tap prompt first (works on Chrome)
+    triggerPrompt(() => {
+      // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
+      sessionStorage.setItem('pendingSaveCourse', courseSlug)
+      const supabase = createClient()
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href,
+          queryParams: googleHint?.email ? { login_hint: googleHint.email } : undefined,
+        },
+      })
+    })
+  }, [triggerPrompt, courseSlug, googleHint])
+
+  // Handle "Not [Name]?" — clear stored profile, show standard GIS button
+  const handleClearGoogleHint = useCallback(() => {
+    clearGoogleProfileHint()
+    setGoogleHint(null)
+  }, [])
 
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
@@ -108,7 +142,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     })
   }, [courseSlug])
 
-  // Initial auth check + LinkedIn callback detection
+  // Initial auth check + OAuth callback detection
   useEffect(() => {
     const supabase = createClient()
 
@@ -117,7 +151,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       if (user) {
         setFirstName(extractFirstName(user))
 
-        // Check for pending LinkedIn save
+        // Check for pending save (LinkedIn or Google OAuth redirect)
         const pendingSlug = sessionStorage.getItem('pendingSaveCourse')
         if (pendingSlug === courseSlug) {
           sessionStorage.removeItem('pendingSaveCourse')
@@ -216,12 +250,70 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           <>
             {/* Sign-in buttons */}
             <div className="space-y-2 w-[90%] mx-auto mb-3">
-              {/* Google personalized button (rendered by Google's GIS) */}
-              <div
-                ref={googleBtnRef}
-                className="mx-auto rounded overflow-hidden"
-                style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-              />
+              {googleHint ? (
+                <>
+                  {/* Custom personalized Google button (for returning users) */}
+                  <button
+                    onClick={handlePersonalizedGoogleClick}
+                    className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+                    style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                  >
+                    {/* Avatar */}
+                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                      {googleHint.avatar ? (
+                        <img
+                          src={googleHint.avatar}
+                          alt=""
+                          className="rounded-full"
+                          style={{ width: '24px', height: '24px' }}
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div
+                          className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
+                          style={{ width: '24px', height: '24px' }}
+                        >
+                          {googleHint.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    {/* Name and email */}
+                    <div className="flex-1 text-left min-w-0 pr-1">
+                      <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
+                        Continue as {googleHint.name}
+                      </span>
+                      <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
+                        {googleHint.email}
+                      </span>
+                    </div>
+                    {/* Google logo */}
+                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                      <svg width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                      </svg>
+                    </div>
+                  </button>
+                  {/* "Not [Name]?" link */}
+                  <p className="text-center">
+                    <button
+                      onClick={handleClearGoogleHint}
+                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      Not {googleHint.name}?
+                    </button>
+                  </p>
+                </>
+              ) : (
+                /* Standard GIS button (for first-time users) */
+                <div
+                  ref={googleBtnRef}
+                  className="mx-auto rounded overflow-hidden"
+                  style={{ width: '100%', maxWidth: '380px', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                />
+              )}
 
               {/* LinkedIn Sign In Button */}
               <button

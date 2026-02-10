@@ -16,6 +16,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
+  const [authLoaded, setAuthLoaded] = useState(false)
 
   useEffect(() => {
     const supabase = createClient()
@@ -24,11 +25,11 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       if (user) {
-        // Get profile picture from user metadata or identities
         const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture
         setProfilePicture(avatarUrl)
         setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
       }
+      setAuthLoaded(true)
     })
 
     // Listen for auth changes
@@ -119,35 +120,39 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
           </div>
         </Link>
 
-        {/* Right side - Sign In button or Profile */}
-        {user ? (
-          <Link href="/progress" className="inline-block">
-            {profilePicture ? (
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className="object-cover rounded-sm"
-                style={{ width: '41px', height: '41px' }}
-                referrerPolicy="no-referrer"
-              />
+        {/* Right side - Sign In button or Profile (invisible placeholder until auth loads) */}
+        <div style={{ width: '85px', height: '41px' }} className="flex items-center justify-end">
+          {authLoaded && (
+            user ? (
+              <Link href="/progress" className="inline-block">
+                {profilePicture ? (
+                  <img
+                    src={profilePicture}
+                    alt="Profile"
+                    className="object-cover rounded-sm"
+                    style={{ width: '41px', height: '41px' }}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div
+                    className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+                    style={{ width: '41px', height: '41px' }}
+                  >
+                    {firstName?.charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
+              </Link>
             ) : (
-              <div
-                className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
-                style={{ width: '41px', height: '41px' }}
+              <Link
+                href="/sign-in"
+                className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+                style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', display: 'inline-block', textAlign: 'center' }}
               >
-                {firstName?.charAt(0).toUpperCase() || '?'}
-              </div>
-            )}
-          </Link>
-        ) : (
-          <Link
-            href="/sign-in"
-            className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-            style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', display: 'inline-block', textAlign: 'center' }}
-          >
-            Sign In
-          </Link>
-        )}
+                Sign In
+              </Link>
+            )
+          )}
+        </div>
       </div>
     </div>
   )

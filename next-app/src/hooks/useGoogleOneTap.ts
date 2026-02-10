@@ -31,6 +31,7 @@ interface GoogleOneTapOptions {
   onError?: (error: Error) => void
   enabled?: boolean
   autoPrompt?: boolean
+  loginHint?: string
 }
 
 interface RenderButtonOptions {
@@ -62,6 +63,7 @@ export default function useGoogleOneTap({
   onError,
   enabled = true,
   autoPrompt = false,
+  loginHint,
 }: GoogleOneTapOptions) {
   const [isLoaded, setIsLoaded] = useState(false)
   const [isInitialized, setIsInitialized] = useState(false)
@@ -127,6 +129,7 @@ export default function useGoogleOneTap({
         cancel_on_tap_outside: false,
         context: 'signup',
         itp_support: true,
+        ...(loginHint ? { login_hint: loginHint } : {}),
       })
 
       setIsInitialized(true)
@@ -139,7 +142,7 @@ export default function useGoogleOneTap({
       setError(error)
       onError?.(error)
     }
-  }, [isLoaded, isInitialized, enabled, onSuccess, onError, autoPrompt])
+  }, [isLoaded, isInitialized, enabled, onSuccess, onError, autoPrompt, loginHint])
 
   useEffect(() => {
     initialize()
@@ -167,10 +170,23 @@ export default function useGoogleOneTap({
     }
   }, [])
 
+  const triggerPrompt = useCallback((onBlocked?: () => void) => {
+    if (!isLoaded || !isInitialized) {
+      onBlocked?.()
+      return
+    }
+    window.google!.accounts.id.prompt((notification: GooglePromptNotification) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        onBlocked?.()
+      }
+    })
+  }, [isLoaded, isInitialized])
+
   return {
     isLoaded,
     isInitialized,
     error,
     renderButton,
+    triggerPrompt,
   }
 }
