@@ -50,7 +50,7 @@ export default function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#676767] rounded-lg px-3 cursor-pointer group"
+        className="absolute right-1.5 top-0 bottom-0 my-auto flex items-center gap-2 bg-[rgba(103,103,103,0.6)] rounded-lg px-3 cursor-pointer group"
         style={{
           height: 'fit-content',
           paddingTop: '6px',
