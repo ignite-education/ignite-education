@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Footer = ({ className = '' }) => {
   return (
@@ -24,7 +23,7 @@ const Footer = ({ className = '' }) => {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Product</span>
             <div className="flex flex-col gap-2">
-              <Link to="/courses" className="text-white hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</Link>
+              <a href="/courses" className="text-white hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</a>
               <a
                 href="https://shop.ignite.education"
                 target="_blank"

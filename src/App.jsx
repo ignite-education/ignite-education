@@ -1,9 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
-import { prefetchCourses } from './lib/courseCatalogCache'
 
 // Lazy-load LoadingScreen to defer ui-vendor chunk (lottie-react)
 const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
@@ -20,36 +19,18 @@ const ProgressHub = lazy(() => import('./components/ProgressHub'))
 const RedditCallback = lazy(() => import('./components/RedditCallback'))
 const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
-const Auth = lazy(() => import('./components/Auth'))
-const AuthDesign = lazy(() => import('./components/AuthDesign'))
-const SignIn = lazy(() => import('./components/SignIn'))
-const ResetPassword = lazy(() => import('./components/ResetPassword'))
 const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
 const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
-const Privacy = lazy(() => import('./pages/Privacy'))
-const Terms = lazy(() => import('./pages/Terms'))
-const Certificate = lazy(() => import('./components/Certificate'))
-const CoursePage = lazy(() => import('./pages/CoursePage'))
-const BlogPostPage = lazy(() => import('./pages/BlogPostPage'))
 const BlogManagement = lazy(() => import('./pages/BlogManagement'))
-const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'))
 const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
 const NotFound = lazy(() => import('./components/NotFound'))
-const CourseCatalogPage = lazy(() => import('./pages/CourseCatalogPage'))
 
 function App() {
   // Signal to prerenderer that the page is ready
   useEffect(() => {
     document.dispatchEvent(new Event('render-complete'));
 
-    // Prefetch course catalog data after initial load
-    // Uses requestIdleCallback for non-blocking prefetch
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => prefetchCourses());
-    } else {
-      setTimeout(() => prefetchCourses(), 1000);
-    }
   }, []);
 
   return (
@@ -58,13 +39,6 @@ function App() {
         <AuthProvider>
           <Suspense fallback={<Suspense fallback={<SimpleLoader />}><LoadingScreen showTimeoutMessage={true} /></Suspense>}>
           <Routes>
-            <Route path="/welcome" element={<Auth />} />
-            <Route path="/auth-design" element={<AuthDesign />} />
-            <Route path="/sign-in" element={<SignIn />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/release-notes" element={<ReleaseNotes />} />
             <Route path="/" element={
               <ProtectedRoute>
                 <ProgressHub />
@@ -97,10 +71,6 @@ function App() {
             } />
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
-            <Route path="/certificate/:certificateId" element={<Certificate />} />
-            <Route path="/courses" element={<CourseCatalogPage />} />
-            <Route path="/courses/:courseSlug" element={<CoursePage />} />
-            <Route path="/blog/:slug" element={<BlogPostPage />} />
             <Route path="/admin/blog" element={
               <ProtectedRoute>
                 <BlogManagement />

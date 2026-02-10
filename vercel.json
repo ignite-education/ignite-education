@@ -7,30 +7,28 @@
       "permanent": true
     }
   ],
-  "rewrites": {
-    "beforeFiles": [
-      { "source": "/sitemap.xml", "destination": "https://ignite-education-api.onrender.com/sitemap.xml" },
-      { "source": "/welcome", "destination": "https://next.ignite.education/welcome" },
-      { "source": "/courses", "destination": "https://next.ignite.education/courses" },
-      { "source": "/courses/:slug", "destination": "https://next.ignite.education/courses/:slug" },
-      { "source": "/blog/:slug", "destination": "https://next.ignite.education/blog/:slug" },
-      { "source": "/privacy", "destination": "https://next.ignite.education/privacy" },
-      { "source": "/terms", "destination": "https://next.ignite.education/terms" },
-      { "source": "/release-notes", "destination": "https://next.ignite.education/release-notes" },
-      { "source": "/sign-in", "destination": "https://next.ignite.education/sign-in" },
-      { "source": "/reset-password", "destination": "https://next.ignite.education/reset-password" },
-      { "source": "/auth/callback", "destination": "https://next.ignite.education/auth/callback" },
-      { "source": "/certificate/:path*", "destination": "https://next.ignite.education/certificate/:path*" },
-      { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" }
-    ],
-    "afterFiles": [
-      { "source": "/progress", "destination": "/index.html" },
-      { "source": "/learning", "destination": "/index.html" },
-      { "source": "/admin/:path*", "destination": "/index.html" },
-      { "source": "/auth/:path*", "destination": "/index.html" },
-      { "source": "/(.*)", "destination": "/index.html" }
-    ]
-  },
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://ignite-education-api.onrender.com/sitemap.xml" },
+
+    { "source": "/welcome", "destination": "https://next.ignite.education/welcome" },
+    { "source": "/courses", "destination": "https://next.ignite.education/courses" },
+    { "source": "/courses/:slug", "destination": "https://next.ignite.education/courses/:slug" },
+    { "source": "/blog/:slug", "destination": "https://next.ignite.education/blog/:slug" },
+    { "source": "/privacy", "destination": "https://next.ignite.education/privacy" },
+    { "source": "/terms", "destination": "https://next.ignite.education/terms" },
+    { "source": "/release-notes", "destination": "https://next.ignite.education/release-notes" },
+    { "source": "/sign-in", "destination": "https://next.ignite.education/sign-in" },
+    { "source": "/reset-password", "destination": "https://next.ignite.education/reset-password" },
+    { "source": "/auth/callback", "destination": "https://next.ignite.education/auth/callback" },
+    { "source": "/certificate/:path*", "destination": "https://next.ignite.education/certificate/:path*" },
+    { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" },
+
+    { "source": "/progress", "destination": "/index.html" },
+    { "source": "/learning", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/auth/:path*", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
   "trailingSlash": false,
   "cleanUrls": true,
   "headers": [

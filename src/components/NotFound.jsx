@@ -35,7 +35,7 @@ const NotFound = () => {
       <div className="w-full bg-black border-b border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
-            onClick={() => navigate('/welcome')}
+            onClick={() => window.location.href = '/welcome'}
             className="flex items-center hover:opacity-80 transition-opacity"
           >
             <img
@@ -71,7 +71,7 @@ const NotFound = () => {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button
-              onClick={() => navigate('/welcome')}
+              onClick={() => window.location.href = '/welcome'}
               className="px-8 py-3 bg-[#ec4899] hover:bg-[#db2777] text-white font-medium rounded-lg transition-colors"
             >
               Go to Homepage
@@ -93,7 +93,7 @@ const NotFound = () => {
               {suggestedCourses.map((course, index) => (
                 <button
                   key={index}
-                  onClick={() => navigate(course.path)}
+                  onClick={() => window.location.href = course.path}
                   className="p-6 bg-gray-900 hover:bg-gray-800 rounded-lg transition-all hover:scale-105 text-left"
                 >
                   <h4 className="text-[#ec4899] font-semibold mb-2">{course.title}</h4>
@@ -110,11 +110,11 @@ const NotFound = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
           <p>© 2025 Ignite Education. All rights reserved.</p>
           <div className="mt-2 space-x-4">
-            <button onClick={() => navigate('/privacy')} className="hover:text-white transition-colors">
+            <button onClick={() => window.location.href = '/privacy'} className="hover:text-white transition-colors">
               Privacy Policy
             </button>
             <span>•</span>
-            <button onClick={() => navigate('/terms')} className="hover:text-white transition-colors">
+            <button onClick={() => window.location.href = '/terms'} className="hover:text-white transition-colors">
               Terms of Service
             </button>
           </div>

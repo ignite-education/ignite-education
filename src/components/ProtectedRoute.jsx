@@ -1,4 +1,3 @@
-import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
@@ -183,7 +182,8 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    return <Navigate to="/welcome" replace />;
+    window.location.href = '/welcome';
+    return null;
   }
 
   if (needsOnboarding) {
