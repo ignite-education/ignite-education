@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is ~60% complete. Sessions 1-5 are done. The `/welcome`, `/courses`, `/courses/[courseSlug]`, `/blog/[slug]`, `/privacy`, `/terms`, and `/release-notes` pages are deployed at https://next.ignite.education with SSR, ISR, structured data, Supabase integration, audio narration, and Lottie animation. Blog carousel wired up in welcome page FAQ section. Next up: Session 6 (Auth Entry Points).
+**Current Status:** Migration is ~70% complete. Sessions 1-6 are done. The `/welcome`, `/courses`, `/courses/[courseSlug]`, `/blog/[slug]`, `/privacy`, `/terms`, `/release-notes`, `/sign-in`, and `/reset-password` pages are deployed at https://next.ignite.education with SSR, ISR, structured data, Supabase integration, audio narration, and Lottie animation. Auth entry points include OAuth (Google, LinkedIn OIDC), email/password sign-in/sign-up, and password reset. Next up: Session 7 (Certificate Sharing).
 
 ---
 
@@ -87,12 +87,12 @@
 | `/courses/:slug` | `src/pages/CoursePage.jsx` | Very High | **DONE** in Next.js |
 | `/courses` | `src/pages/CourseCatalogPage.jsx` | High | **DONE** in Next.js |
 | `/blog/:slug` | `src/pages/BlogPostPage.jsx` | High | **DONE** in Next.js |
-| `/privacy` | `src/pages/Privacy.jsx` | Medium | Pending |
-| `/terms` | `src/pages/Terms.jsx` | Medium | Pending |
-| `/release-notes` | `src/pages/ReleaseNotes.jsx` | Low | Pending |
+| `/privacy` | `src/pages/Privacy.jsx` | Medium | **DONE** in Next.js |
+| `/terms` | `src/pages/Terms.jsx` | Medium | **DONE** in Next.js |
+| `/release-notes` | `src/pages/ReleaseNotes.jsx` | Low | **DONE** in Next.js |
 | `/certificate/:id` | `src/components/Certificate.jsx` | Medium | Pending |
-| `/sign-in` | `src/components/SignIn.jsx` | Medium | Pending |
-| `/reset-password` | `src/components/ResetPassword.jsx` | Low | Pending |
+| `/sign-in` | `src/components/SignIn.jsx` | Medium | **DONE** in Next.js |
+| `/reset-password` | `src/components/ResetPassword.jsx` | Low | **DONE** in Next.js |
 
 ---
 
@@ -144,7 +144,10 @@ ignite-education/
 │   │   ├── blog/          # ✓ Completed
 │   │   ├── privacy/       # ✓ Completed
 │   │   ├── terms/         # ✓ Completed
-│   │   └── release-notes/ # ✓ Completed
+│   │   ├── release-notes/ # ✓ Completed
+│   │   ├── sign-in/       # ✓ Completed
+│   │   ├── reset-password/# ✓ Completed
+│   │   └── auth/callback/ # ✓ Completed (OAuth route handler)
 │   ├── src/components/    # Shared components
 │   └── src/lib/supabase/  # SSR auth configured
 ├── server.js              # Express backend (unchanged)
@@ -300,15 +303,33 @@ next.ignite.education (Vercel - Staging)
 
 ---
 
-### Session 6: Auth Entry Points (1-2 hours)
+### Session 6: Auth Entry Points (1-2 hours) — COMPLETED
 
 **Objective:** Create `/sign-in` and `/reset-password`
 
-**Tasks:**
-1. [ ] Create sign-in page with SSR shell
-2. [ ] Create reset-password page
-3. [ ] Handle OAuth redirects
-4. [ ] Redirect authenticated users to Vite app
+**Completed Tasks:**
+1. [x] Create auth utility module (`next-app/src/lib/auth.ts`)
+   - `createUserRecord()` for inserting into `public.users` table on sign-up
+   - `addToResendAudience()` for adding new users to Resend General audience via backend API
+2. [x] Create OAuth callback route handler (`next-app/src/app/auth/callback/route.ts`)
+   - Exchanges PKCE code for session via `exchangeCodeForSession()`
+   - Supports `?next=` param for post-auth redirect (defaults to `/courses`)
+3. [x] Create sign-in page with SSR shell (`next-app/src/app/sign-in/page.tsx`)
+   - Server-side auth check: redirects authenticated users to `/courses`
+   - Full SEO metadata (title, description, OG tags, Twitter card)
+4. [x] Create sign-in form client component (`next-app/src/app/sign-in/SignInForm.tsx`)
+   - Combined sign-in / sign-up form with toggle
+   - OAuth: Google and LinkedIn OIDC via Supabase
+   - Email/password: sign-in and sign-up with user record creation
+   - Password reset modal (inline)
+   - Typing animation tagline, background images, Footer
+5. [x] Create reset-password page (`next-app/src/app/reset-password/page.tsx`)
+   - Minimal metadata, noindex/nofollow
+6. [x] Create reset-password form (`next-app/src/app/reset-password/ResetPasswordForm.tsx`)
+   - Four states: loading, invalid token, success (auto-redirect), active form
+   - Token validation via `supabase.auth.getSession()`
+   - Password update via `supabase.auth.updateUser()`
+7. [x] Add `NEXT_PUBLIC_RESEND_AUDIENCE_GENERAL` and `NEXT_PUBLIC_API_URL` env vars
 
 ---
 
