@@ -32,18 +32,16 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
 
   return (
     <section
-      className="bg-white px-12"
+      className="bg-white px-12 pt-12"
       style={{
         height: '75vh',
         minHeight: '500px',
-        display: 'flex',
-        alignItems: 'center',
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
-      <div className="flex w-full gap-16 items-center">
+      <div className="flex w-full gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
-        <div className="flex flex-col">
+        <div className="flex flex-col" style={{ width: '50%', flexShrink: 0 }}>
           {/* Lottie Logo */}
           <div style={{ marginBottom: '24px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -72,7 +70,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <div style={{ marginBottom: '16px' }}>
             {profilePicture ? (
               <img
-                src={profilePicture}
+                src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
                 className="rounded-lg object-cover"
                 style={{ width: '100px', height: '100px' }}
@@ -88,9 +86,9 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           </div>
 
           {/* Greeting */}
-          <h1 className="font-semibold text-black" style={{ fontSize: '34px', lineHeight: '1.2' }}>
+          <h1 className="font-bold text-black" style={{ fontSize: '2.5rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
-            <span style={{ color: '#EF0B72' }}>
+            <span>
               {typedName}
               {!isTypingComplete && <span className="animate-blink font-light">|</span>}
             </span>
@@ -98,7 +96,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         </div>
 
         {/* Right Column: Progress Summary + Stats */}
-        <div className="flex flex-col flex-1 justify-center">
+        <div className="flex flex-col justify-center" style={{ width: '50%', flexShrink: 0 }}>
           {/* Progress Summary */}
           <p className="text-black font-semibold" style={{ fontSize: '18px', marginBottom: '6px' }}>
             You're <span>{progressPercentage}%</span> through the {courseTitle} course.
