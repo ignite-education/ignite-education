@@ -8,7 +8,7 @@ const CommunityForumCard = ({ courseName, courseReddit }) => {
 
   return (
     <div style={{ marginTop: '4px', minHeight: '120px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '19px', marginBottom: '-2px' }}>Community Forum</h2>
+      <h2 className="font-semibold text-white" style={{ fontSize: '2rem', letterSpacing: '-1%', marginBottom: '-2px' }}>Community Forum</h2>
       <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '6px' }}>
         Discover discussions, ask questions and engage with the {courseReddit?.channel || 'r/ProductManagement'} community.
       </p>

@@ -133,7 +133,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
 
   return (
     <div className="relative" style={{ marginTop: '3px', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '19px', marginBottom: '0.05rem', position: 'relative', height: '1.5em' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: '2rem', letterSpacing: '-1%', marginBottom: '0.05rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
