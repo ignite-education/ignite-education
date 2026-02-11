@@ -20,6 +20,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         alt="Trustpilot"
         width={192}
         height={47}
+        unoptimized
         className="mt-3"
         style={{ maxWidth: '192px', height: 'auto' }}
       />
