@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createUserRecord, addToResendAudience } from '@/lib/auth'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -19,9 +20,20 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Check enrollment status to decide redirect destination
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // Ensure user record exists (idempotent — ignores duplicate key errors)
+        const metadata = user.user_metadata || {}
+        const firstName = metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || ''
+        const lastName = metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || ''
+        await createUserRecord(supabase, user, firstName, lastName)
+
+        // Add to Resend audience (non-blocking, safe for returning users)
+        if (user.email) {
+          addToResendAudience(user.email, firstName, lastName)
+        }
+
+        // Check enrollment status to decide redirect destination
         const { data } = await supabase
           .from('users')
           .select('enrolled_course')

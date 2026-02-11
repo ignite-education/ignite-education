@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import { createClient } from '@/lib/supabase/client'
-import { saveGoogleProfileHint, getGoogleProfileHint, clearGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
+import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 
 interface CourseRequestModalProps {
   courseName: string
@@ -127,11 +127,6 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     })
   }, [triggerPrompt, courseName, googleHint])
 
-  const handleClearGoogleHint = useCallback(() => {
-    clearGoogleProfileHint()
-    setGoogleHint(null)
-  }, [])
-
   const handleClose = () => {
     setClosing(true)
     setTimeout(onClose, 300)
@@ -236,15 +231,6 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       </svg>
                     </div>
                   </button>
-                  {/* "Not [Name]?" link */}
-                  <p className="text-center">
-                    <button
-                      onClick={handleClearGoogleHint}
-                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      Not {googleHint.name}?
-                    </button>
-                  </p>
                 </>
               ) : (
                 /* Standard GIS button (for first-time users) */

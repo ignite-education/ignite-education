@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
-import { saveGoogleProfileHint, getGoogleProfileHint, clearGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
+import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import ShareButtons from './ShareButtons'
 
@@ -76,14 +76,33 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
     // Only set enrolled_course for live courses
     if (!isComingSoon) {
-      await supabase
+      // Ensure user record exists before updating
+      const { data: existing } = await supabase
         .from('users')
-        .update({
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle()
+
+      if (!existing) {
+        const metadata = authUser.user_metadata || {}
+        await supabase.from('users').insert({
+          id: userId,
+          first_name: metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || '',
+          last_name: metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || '',
           enrolled_course: courseSlug,
           onboarding_completed: true,
-          updated_at: new Date().toISOString(),
+          role: 'student',
         })
-        .eq('id', userId)
+      } else {
+        await supabase
+          .from('users')
+          .update({
+            enrolled_course: courseSlug,
+            onboarding_completed: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', userId)
+      }
 
       // Send welcome email (non-blocking)
       fetch(`${API_URL}/api/send-email`, {
@@ -196,12 +215,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     })
   }, [triggerPrompt, courseSlug, googleHint])
 
-  // Handle "Not [Name]?" — clear stored profile, show standard GIS button
-  const handleClearGoogleHint = useCallback(() => {
-    clearGoogleProfileHint()
-    setGoogleHint(null)
-  }, [])
-
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
     sessionStorage.setItem('pendingEnrollCourse', courseSlug)
@@ -276,7 +289,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .from('users')
           .select('enrolled_course')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (userData?.enrolled_course === courseSlug) {
           alert('This is your current course. Switch to a different course in Settings first.')
@@ -302,9 +315,23 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
             .from('users')
             .select('enrolled_course')
             .eq('id', user.id)
-            .single()
+            .maybeSingle()
 
-          if (!userData?.enrolled_course) {
+          if (!userData) {
+            // No user record — create one, then enroll
+            const metadata = user.user_metadata || {}
+            const fn = metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || ''
+            const ln = metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || ''
+            await supabase.from('users').insert({
+              id: user.id,
+              first_name: fn,
+              last_name: ln,
+              enrolled_course: courseSlug,
+              onboarding_completed: true,
+              role: 'student',
+            })
+            sessionStorage.removeItem('enrollment_status_cache')
+          } else if (!userData.enrolled_course) {
             await supabase
               .from('users')
               .update({
@@ -313,6 +340,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 updated_at: new Date().toISOString(),
               })
               .eq('id', user.id)
+            sessionStorage.removeItem('enrollment_status_cache')
           }
         }
       }
@@ -406,15 +434,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                       </svg>
                     </div>
                   </button>
-                  {/* "Not [Name]?" link */}
-                  <p className="text-center">
-                    <button
-                      onClick={handleClearGoogleHint}
-                      className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      Not {googleHint.name}?
-                    </button>
-                  </p>
                 </>
               ) : (
                 /* Standard GIS button (for first-time users) */
