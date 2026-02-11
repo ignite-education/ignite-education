@@ -104,7 +104,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Joined Tag */}
           {formatJoinDate(joinedAt) && (
             <span
-              className="inline-block px-[8px] py-[3px] text-xs text-black bg-[#F8F8F8] rounded-[4px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
+              className="inline-block px-[8px] py-[3px] text-xs text-black bg-[#F8F8F8] rounded-[4px] font-medium"
               style={{ letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
             >
               {formatJoinDate(joinedAt)}
@@ -114,7 +114,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
 
         {/* Right Column: Progress Summary + Stats */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
-          <div style={{ maxWidth: '420px' }}>
+          <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               You're <span>{progressPercentage}%</span> through the {courseTitle} course.
@@ -127,17 +127,18 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center gap-10">
+            <div className="flex items-center justify-between">
               {[
                 { label: "You're in the top", value: '15% of learners' },
                 { label: "You're a late", value: 'night learner' },
                 { label: '134 learners', value: 'in the UK' },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center">
-                  <p className="text-black font-semibold" style={{ fontSize: '14px', lineHeight: '1.3' }}>
+                <div key={idx} className="text-center flex flex-col items-center">
+                  <div className="bg-[#F8F8F8] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                  <p className="text-black font-medium" style={{ fontSize: '14px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
-                  <p className="text-black font-semibold" style={{ fontSize: '14px', lineHeight: '1.3' }}>
+                  <p className="text-black font-medium" style={{ fontSize: '14px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.value}
                   </p>
                 </div>
