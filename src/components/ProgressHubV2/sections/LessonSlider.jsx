@@ -30,7 +30,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
     const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
     const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
     const isCurrent = upcomingLessons.indexOf(lesson) === firstIncompleteIndex;
-    return (isCompleted || isCurrent) ? 390 : 346.06;
+    return (isCompleted || isCurrent) ? 400 : 346.06;
   }, [upcomingLessons, isLessonCompleted]);
 
   // Scroll handlers
@@ -176,16 +176,16 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         <div
           className="flex gap-4"
           style={{
-            minHeight: '100px',
-            height: '100px',
-            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 390 - 16)}px` : '0px'
+            minHeight: '7rem',
+            height: '7rem',
+            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 400 - 16)}px` : '0px'
           }}
         >
           {upcomingLessons.length > 0 ? (
             upcomingLessons.map((lesson, index) => {
               const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
               const isCurrentLesson = index === firstIncompleteIndex;
-              const cardWidth = (isCompleted || isCurrentLesson) ? 390 : 346.06;
+              const cardWidth = (isCompleted || isCurrentLesson) ? 400 : 346.06;
 
               return (
                 <div
@@ -201,7 +201,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingLeft: '14px',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
-                    height: '90px',
+                    height: '7rem',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always'
                   }}
