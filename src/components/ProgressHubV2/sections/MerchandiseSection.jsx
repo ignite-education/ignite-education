@@ -26,9 +26,9 @@ const PRODUCTS = [
 const MerchandiseSection = () => {
   return (
     <section className="bg-white px-12 py-8">
-      <h2 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em', marginBottom: '2px' }}>Merchandise</h2>
-      <p className="text-black font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '12px' }}>
-        All profit supports education projects across the UK.
+      <h2 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em', marginBottom: '2rem' }}>Merchandise</h2>
+      <p className="text-black font-light" style={{ fontSize: '18px', lineHeight: '1.6', letterSpacing: '-0.01em', marginBottom: '12px' }}>
+        Discover official Ignite merchandise, with all profit supporting education and social mobility projects across the UK.
       </p>
       <div className="flex justify-between items-center gap-3" style={{ height: '240px' }}>
         {PRODUCTS.map((product) => (
