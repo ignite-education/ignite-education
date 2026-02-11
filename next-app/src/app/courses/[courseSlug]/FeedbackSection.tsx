@@ -16,11 +16,10 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         </p>
       </div>
       <Image
-        src="/images/trustpilot-logo.svg"
+        src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
         alt="Trustpilot"
-        width={192}
-        height={47}
-        unoptimized
+        width={576}
+        height={144}
         className="mt-3"
         style={{ maxWidth: '192px', height: 'auto' }}
       />
