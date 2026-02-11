@@ -57,15 +57,15 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
 
   return (
     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div className="flex items-center gap-3" style={{ marginBottom: '2px', flexShrink: 0 }}>
+      <div className="flex items-center" style={{ marginBottom: '2px', flexShrink: 0 }}>
         <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%' }}>Community Forum</h2>
         <button
           onClick={handleOpenForum}
-          className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
-          style={{ width: '38.4px', height: '38.4px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+          className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group ml-auto"
+          style={{ width: '32.6px', height: '32.6px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
           title="Create a post"
         >
-          <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+          <FileEdit size={17} className="text-black group-hover:text-pink-500 transition-colors" />
         </button>
       </div>
 
@@ -107,9 +107,9 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
                     {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-sm text-white truncate">{post.title}</h3>
-                      <span className="text-xs text-white/70 flex-shrink-0">{getTimeAgo(post.created_at)}</span>
+                    <div className="flex items-start gap-2 mb-1">
+                      <h3 className="font-bold text-sm text-white">{post.title}</h3>
+                      <span className="text-xs text-white/70 flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
                     <p className={`text-xs text-white/90 leading-relaxed mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`}>
                       {post.content}
