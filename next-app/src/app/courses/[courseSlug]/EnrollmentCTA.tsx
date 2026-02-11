@@ -468,7 +468,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 disabled={isSaving || checkingStatus}
                 className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
                   checkingStatus
-                    ? 'bg-[#4A4A4A] text-white'
+                    ? 'bg-[#9E9E9E] text-white'
                     : isSaved
                     ? 'bg-[#009600] text-white hover:bg-[#007D00]'
                     : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
@@ -503,7 +503,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 )}
               </button>
 
-              <p className="text-center text-black text-sm font-normal mt-3" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
                 {!checkingStatus && (isSaved ? 'Course saved to your account' : "We'll save this course to start later")}
               </p>
             </div>

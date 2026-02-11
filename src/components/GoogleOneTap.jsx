@@ -187,7 +187,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                   disabled={isSaving || checkingStatus}
                   className={`w-full px-4 rounded-lg transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
                     checkingStatus
-                      ? 'bg-[#4A4A4A] text-white'
+                      ? 'bg-[#9E9E9E] text-white'
                       : isSaved
                       ? 'bg-gray-200 text-black hover:bg-gray-300'
                       : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
@@ -222,7 +222,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                   )}
                 </button>
 
-                <p className="text-center text-black text-sm font-light mt-3" style={{ letterSpacing: '-0.02em' }}>
+                <p className="text-center text-black text-sm font-light mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
                   {!checkingStatus && (isSaved ? 'Course saved to your account' : 'We\'ll save this course to start later')}
                 </p>
               </div>
@@ -234,16 +234,16 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
             {/* Copy Link Button */}
             <button
               onClick={handleCopyLink}
-              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-md transition-colors w-[85px] ${
+              className={`flex items-center justify-center gap-1.5 h-[30px] rounded-md transition-colors w-[85px] ${
                 copied
-                  ? 'bg-green-50 text-black'
+                  ? 'bg-[#009600] text-white'
                   : 'bg-[#EDEDED] text-black hover:bg-[#E0E0E0]'
               }`}
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
-              <span className="text-xs font-medium">{copied ? 'Copied!' : 'Copy link'}</span>
+              <span className="text-xs font-medium">{copied ? 'Copied' : 'Copy link'}</span>
             </button>
 
             {/* LinkedIn Share */}
