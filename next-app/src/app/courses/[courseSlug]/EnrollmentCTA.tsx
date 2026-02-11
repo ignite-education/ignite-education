@@ -8,6 +8,15 @@ import { saveGoogleProfileHint, getGoogleProfileHint, clearGoogleProfileHint, ty
 import type { User } from '@supabase/supabase-js'
 import ShareButtons from './ShareButtons'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
+const RESEND_AUDIENCE_GENERAL = process.env.NEXT_PUBLIC_RESEND_AUDIENCE_GENERAL || ''
+const RESEND_AUDIENCE_PM_FREE = process.env.NEXT_PUBLIC_RESEND_AUDIENCE_PM_FREE || ''
+
+// Map course slugs to their Resend audience IDs
+const COURSE_TO_AUDIENCE: Record<string, string> = {
+  'product-manager': RESEND_AUDIENCE_PM_FREE,
+}
+
 interface EnrollmentCTAProps {
   courseSlug: string
   courseTitle: string
@@ -58,6 +67,63 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     setIsSaved(true)
   }, [courseSlug])
 
+  // Enroll user in a course: save + set enrolled_course + welcome email + audience sync
+  const enrollUserInCourse = useCallback(async (userId: string, authUser: User) => {
+    const supabase = createClient()
+
+    // Always save to saved_courses
+    await saveCourseForUser(userId)
+
+    // Only set enrolled_course for live courses
+    if (!isComingSoon) {
+      await supabase
+        .from('users')
+        .update({
+          enrolled_course: courseSlug,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', userId)
+
+      // Send welcome email (non-blocking)
+      fetch(`${API_URL}/api/send-email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'welcome',
+          userId,
+          data: { courseName: courseTitle },
+        }),
+      }).catch(err => console.error('[EnrollmentCTA] Welcome email failed:', err))
+
+      // Audience sync: move from General → course-specific (non-blocking)
+      const courseAudienceId = COURSE_TO_AUDIENCE[courseSlug]
+      if (courseAudienceId && authUser.email) {
+        const contactInfo = {
+          email: authUser.email,
+          firstName: authUser.user_metadata?.first_name || authUser.user_metadata?.full_name?.split(' ')[0] || '',
+          lastName: authUser.user_metadata?.last_name || authUser.user_metadata?.full_name?.split(' ')[1] || '',
+        }
+
+        // Remove from General audience
+        if (RESEND_AUDIENCE_GENERAL) {
+          fetch(`${API_URL}/api/resend/remove-contact`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: contactInfo.email, audienceId: RESEND_AUDIENCE_GENERAL }),
+          }).catch(err => console.error('[EnrollmentCTA] Remove from General failed:', err))
+        }
+
+        // Add to course-specific audience
+        fetch(`${API_URL}/api/resend/add-contact`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...contactInfo, audienceId: courseAudienceId }),
+        }).catch(err => console.error('[EnrollmentCTA] Add to course audience failed:', err))
+      }
+    }
+  }, [courseSlug, courseTitle, isComingSoon, saveCourseForUser])
+
   // Handle Google sign-in success (direct, no redirect)
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
@@ -80,12 +146,17 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       setFirstName(extractFirstName(data.user))
       setCheckingStatus(false)
 
-      // Auto-save the course
-      await saveCourseForUser(data.user.id)
+      // Auto-enroll in the course
+      await enrollUserInCourse(data.user.id, data.user)
+
+      // Redirect to progress hub for live courses
+      if (!isComingSoon) {
+        window.location.href = '/progress'
+      }
     } catch (err) {
       console.error('[EnrollmentCTA] Unexpected error:', err)
     }
-  }, [saveCourseForUser])
+  }, [enrollUserInCourse, isComingSoon])
 
   const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
@@ -113,7 +184,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     // Try One Tap prompt first (works on Chrome)
     triggerPrompt(() => {
       // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
-      sessionStorage.setItem('pendingSaveCourse', courseSlug)
+      sessionStorage.setItem('pendingEnrollCourse', courseSlug)
       const supabase = createClient()
       supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -133,7 +204,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
-    sessionStorage.setItem('pendingSaveCourse', courseSlug)
+    sessionStorage.setItem('pendingEnrollCourse', courseSlug)
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
@@ -152,12 +223,17 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       if (user) {
         setFirstName(extractFirstName(user))
 
-        // Check for pending save (LinkedIn or Google OAuth redirect)
-        const pendingSlug = sessionStorage.getItem('pendingSaveCourse')
+        // Check for pending enrollment (LinkedIn or Google OAuth redirect)
+        const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
         if (pendingSlug === courseSlug) {
-          sessionStorage.removeItem('pendingSaveCourse')
-          await saveCourseForUser(user.id)
+          sessionStorage.removeItem('pendingEnrollCourse')
+          await enrollUserInCourse(user.id, user)
           setCheckingStatus(false)
+
+          // Redirect to progress hub for live courses
+          if (!isComingSoon) {
+            window.location.href = '/progress'
+          }
           return
         }
 
@@ -186,7 +262,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     })
 
     return () => subscription.unsubscribe()
-  }, [courseSlug, saveCourseForUser])
+  }, [courseSlug, enrollUserInCourse, isComingSoon])
 
   const handleSaveToggle = async () => {
     if (!user) return
@@ -195,6 +271,18 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     try {
       const supabase = createClient()
       if (isSaved) {
+        // Check if this is the user's currently enrolled course
+        const { data: userData } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', user.id)
+          .single()
+
+        if (userData?.enrolled_course === courseSlug) {
+          alert('This is your current course. Switch to a different course in Settings first.')
+          return
+        }
+
         await supabase
           .from('saved_courses')
           .delete()
@@ -202,10 +290,31 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .eq('course_id', courseSlug)
         setIsSaved(false)
       } else {
+        // Save the course
         await supabase
           .from('saved_courses')
           .insert({ user_id: user.id, course_id: courseSlug })
         setIsSaved(true)
+
+        // Auto-enroll if user has no enrolled course and this is a live course
+        if (!isComingSoon) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('enrolled_course')
+            .eq('id', user.id)
+            .single()
+
+          if (!userData?.enrolled_course) {
+            await supabase
+              .from('users')
+              .update({
+                enrolled_course: courseSlug,
+                onboarding_completed: true,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', user.id)
+          }
+        }
       }
     } catch (err) {
       console.error('Error toggling save status:', err)
@@ -340,7 +449,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 disabled={isSaving || checkingStatus}
                 className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
                   isSaved
-                    ? 'bg-[#008000] text-white hover:bg-[#006B00]'
+                    ? 'bg-[#009600] text-white hover:bg-[#007D00]'
                     : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}

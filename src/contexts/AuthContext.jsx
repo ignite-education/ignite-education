@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [enrolledCourse, setEnrolledCourse] = useState(null);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -118,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('role')
+          .select('role, enrolled_course')
           .eq('id', user.id)
           .single();
 
@@ -129,6 +130,7 @@ export const AuthProvider = ({ children }) => {
 
         if (data) {
           setUserRole(data.role);
+          setEnrolledCourse(data.enrolled_course || null);
         }
       } catch (err) {
         console.error('Exception fetching user role:', err);
@@ -307,7 +309,8 @@ export const AuthProvider = ({ children }) => {
     isAdFree: user?.user_metadata?.is_ad_free || false,
     profilePicture: user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
     userRole,
-  }), [user, loading, isInitialized, userRole]);
+    enrolledCourse,
+  }), [user, loading, isInitialized, userRole, enrolledCourse]);
 
   return (
     <AuthContext.Provider value={value}>

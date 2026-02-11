@@ -669,7 +669,7 @@ const ProgressHub = () => {
       console.log('🟢 [fetchData] userId:', userId);
 
       // Fetch user's enrolled course from database
-      let courseId = 'product-manager'; // Default fallback
+      let courseId = null;
       let fetchedCourseData = null; // Store course data for later use
 
       if (userId) {
@@ -690,8 +690,16 @@ const ProgressHub = () => {
           courseId = userData.enrolled_course;
           console.log('🟢 [fetchData] Got enrolled_course:', courseId);
         } else {
-          console.log('🟡 [fetchData] No enrolled_course found, using default:', courseId);
+          console.log('🟡 [fetchData] No enrolled_course found, redirecting to /courses');
+          window.location.href = '/courses';
+          return;
         }
+      }
+
+      if (!courseId) {
+        console.log('🟡 [fetchData] No courseId, redirecting to /courses');
+        window.location.href = '/courses';
+        return;
       }
 
       // Fetch course data including tutor information
@@ -1436,42 +1444,55 @@ const ProgressHub = () => {
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-      selectedCourse: 'product-manager',
+      selectedCourse: '',
       marketingEmails: authUser?.user_metadata?.marketing_emails !== false
     });
 
-    // Then fetch additional data in background
-    try {
-      const { data: coursesData, error } = await supabase
-        .from('courses')
-        .select('name, title, status')
-        .eq('status', 'live')
-        .order('display_order', { ascending: true });
-
-      if (!error && coursesData) {
-        setAvailableCourses(coursesData);
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-    }
-
-    // Fetch user's current enrolled course
+    // Fetch user's saved courses and current enrolled course
     if (authUser?.id) {
       try {
+        // Get user's enrolled course
         const { data: userData } = await supabase
           .from('users')
           .select('enrolled_course')
           .eq('id', authUser.id)
           .single();
 
-        if (userData?.enrolled_course) {
+        const enrolledSlug = userData?.enrolled_course || '';
+
+        if (enrolledSlug) {
           setSettingsForm(prev => ({
             ...prev,
-            selectedCourse: userData.enrolled_course
+            selectedCourse: enrolledSlug
           }));
         }
+
+        // Get user's saved courses
+        const { data: savedData } = await supabase
+          .from('saved_courses')
+          .select('course_id')
+          .eq('user_id', authUser.id);
+
+        const savedSlugs = savedData?.map(sc => sc.course_id) || [];
+
+        // Ensure enrolled course is included even if not in saved_courses
+        if (enrolledSlug && !savedSlugs.includes(enrolledSlug)) {
+          savedSlugs.push(enrolledSlug);
+        }
+
+        if (savedSlugs.length > 0) {
+          const { data: coursesData, error } = await supabase
+            .from('courses')
+            .select('name, title, status')
+            .in('name', savedSlugs)
+            .order('display_order', { ascending: true });
+
+          if (!error && coursesData) {
+            setAvailableCourses(coursesData);
+          }
+        }
       } catch (error) {
-        console.error('Error fetching enrolled course:', error);
+        console.error('Error fetching courses:', error);
       }
     }
   };
@@ -1665,6 +1686,13 @@ const ProgressHub = () => {
   const handleUpdatePreferences = async (e) => {
     e.preventDefault();
     try {
+      // Validate selected course is not coming_soon
+      const selectedCourseData = availableCourses.find(c => c.name === settingsForm.selectedCourse);
+      if (selectedCourseData?.status === 'coming_soon') {
+        alert('This course is not yet available. Please select a live course.');
+        return;
+      }
+
       // Update marketing email preferences
       await updateProfile({
         marketing_emails: settingsForm.marketingEmails
@@ -1679,6 +1707,9 @@ const ProgressHub = () => {
 
         if (courseError) throw courseError;
       }
+
+      // Clear enrollment cache so ProtectedRoute re-checks
+      try { sessionStorage.removeItem('enrollment_status_cache'); } catch {}
 
       // Auto-refresh page to reflect changes
       window.location.reload();
@@ -4131,12 +4162,12 @@ const ProgressHub = () => {
                       >
                         {availableCourses.length > 0 ? (
                           availableCourses.map((course) => (
-                            <option key={course.name} value={course.name}>
-                              {course.title || course.name}
+                            <option key={course.name} value={course.name} disabled={course.status === 'coming_soon'}>
+                              {course.title || course.name}{course.status === 'coming_soon' ? ' (Coming Soon)' : ''}
                             </option>
                           ))
                         ) : (
-                          <option value="product-manager">Product Manager</option>
+                          <option value="" disabled>No courses saved</option>
                         )}
                       </select>
                       <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
@@ -4145,7 +4176,10 @@ const ProgressHub = () => {
                         </svg>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Switch between available courses</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Switch between your saved courses.{' '}
+                      <a href="/courses" className="text-purple-600 hover:text-purple-700 underline">Browse all courses</a>
+                    </p>
                   </div>
 
                   <div className="border-t border-gray-200 pt-4 mt-4">

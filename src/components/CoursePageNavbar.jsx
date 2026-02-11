@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
  * @param {React.RefObject} logoContainerRef - Ref to the logo container for position tracking
  */
 const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logoContainerRef = null }) => {
-  const { user, profilePicture, firstName } = useAuth();
+  const { user, profilePicture, firstName, enrolledCourse } = useAuth();
 
   return (
     <div
@@ -89,24 +89,45 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
 
         {/* Right side - Sign In button or Profile */}
         {user ? (
-          <Link to="/progress" className="inline-block">
-            {profilePicture ? (
-              <img
-                src={profilePicture}
-                alt="Profile"
-                className="object-cover rounded-sm"
-                style={{ width: '41px', height: '41px' }}
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <div
-                className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
-                style={{ width: '41px', height: '41px' }}
-              >
-                {firstName?.charAt(0).toUpperCase() || '?'}
-              </div>
-            )}
-          </Link>
+          enrolledCourse ? (
+            <Link to="/progress" className="inline-block">
+              {profilePicture ? (
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="object-cover rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div
+                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                >
+                  {firstName?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <a href="/courses" className="inline-block">
+              {profilePicture ? (
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="object-cover rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div
+                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                >
+                  {firstName?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+            </a>
+          )
         ) : (
           <Link
             to="/sign-in"

@@ -119,7 +119,7 @@ const welcomePageStructuredData = [
 ];
 
 // Lazy-load below-fold components for better initial page load
-const Onboarding = lazy(() => import('./Onboarding'));
+// Onboarding removed — new users are redirected to /courses instead
 const BlogCarousel = lazy(() => import('./BlogCarousel'));
 
 const Auth = () => {
@@ -139,8 +139,6 @@ const Auth = () => {
   const [lastName, setLastName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [newUserId, setNewUserId] = useState(null);
   const marketingSectionRef = useRef(null);
   const logoContainerRef = useRef(null);
   const [animateWords, setAnimateWords] = useState(false);
@@ -1616,11 +1614,9 @@ const Auth = () => {
         await signIn(email, password);
         navigate('/progress');
       } else {
-        const result = await signUp(email, password, firstName, lastName);
-        // Show onboarding for new signups
-        setNewUserId(result.user.id);
-        setShowOnboarding(true);
-        setLoading(false);
+        await signUp(email, password, firstName, lastName);
+        // Redirect new users to course catalog
+        window.location.href = '/courses';
       }
     } catch (err) {
       setError(err.message || 'An error occurred');
@@ -1664,15 +1660,6 @@ const Auth = () => {
       block: 'start'
     });
   };
-
-  // Show onboarding if user just signed up
-  if (showOnboarding) {
-    return (
-      <Suspense fallback={<div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[#EF0B72] border-t-transparent rounded-full animate-spin" /></div>}>
-        <Onboarding firstName={firstName} userId={newUserId} />
-      </Suspense>
-    );
-  }
 
   return (
     <>
