@@ -114,7 +114,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
 
         {/* Right Column: Progress Summary + Stats */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
-          <div style={{ maxWidth: '550px' }}>
+          <div style={{ maxWidth: '400px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               You're <span>{progressPercentage}%</span> through the {courseTitle} course.
@@ -127,7 +127,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center" style={{ gap: '36px' }}>
               {[
                 { label: "You're in the top", value: '15% of learners' },
                 { label: "You're a late", value: 'night learner' },
