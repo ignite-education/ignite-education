@@ -10,7 +10,14 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
-const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle }) => {
+const formatJoinDate = (dateStr) => {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `Joined ${months[date.getMonth()]}-${String(date.getFullYear()).slice(-2)}`;
+};
+
+const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -32,10 +39,11 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
 
   return (
     <section
-      className="bg-white px-12 pt-12"
+      className="bg-white"
       style={{
         height: '70vh',
         minHeight: '500px',
+        padding: '40px 40px 0 40px',
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
@@ -43,7 +51,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ width: '50%', flexShrink: 0 }}>
           {/* Lottie Logo */}
-          <div style={{ marginBottom: '24px' }}>
+          <div style={{ marginBottom: '35px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -59,10 +67,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                     }, 4000);
                   }
                 }}
-                style={{ width: 68, height: 68 }}
+                style={{ width: 61, height: 61 }}
               />
             ) : (
-              <div style={{ width: 68, height: 68 }} />
+              <div style={{ width: 61, height: 61 }} />
             )}
           </div>
 
@@ -90,9 +98,18 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName}
-              {!isTypingComplete && <span className="animate-blink font-light">|</span>}
             </span>
           </h1>
+
+          {/* Joined Tag */}
+          {formatJoinDate(joinedAt) && (
+            <span
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F8F8F8] rounded-[6px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
+              style={{ letterSpacing: '-0.02em', marginTop: '16px' }}
+            >
+              {formatJoinDate(joinedAt)}
+            </span>
+          )}
         </div>
 
         {/* Right Column: Progress Summary + Stats */}

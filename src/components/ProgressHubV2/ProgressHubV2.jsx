@@ -126,6 +126,7 @@ const ProgressHubV2 = () => {
         profilePicture={profilePicture}
         progressPercentage={progressPercentage}
         courseTitle={courseTitle}
+        joinedAt={authUser?.created_at}
       />
 
       {/* Section 2: Course Details */}
