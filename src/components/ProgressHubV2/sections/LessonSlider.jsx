@@ -1,6 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Measure text width using Canvas API to dynamically size cards
+const getTextWidth = (() => {
+  let canvas;
+  return (text, fontSizePx, fontWeight = 'normal') => {
+    if (!canvas) canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight} ${fontSizePx}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    return ctx.measureText(text).width;
+  };
+})();
+
 const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, isLessonAccessible, currentModule, currentLesson }) => {
   const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
@@ -30,7 +41,19 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
     const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
     const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
     const isCurrent = upcomingLessons.indexOf(lesson) === firstIncompleteIndex;
-    return (isCompleted || isCurrent) ? 416 : 368;
+    if (!isCompleted && !isCurrent) return 368;
+
+    // Measure content width to expand card if needed
+    const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
+    const titleWidth = getTextWidth(titleText, 16, '600');
+    const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
+    const maxBulletWidth = bulletPoints.length > 0
+      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
+      : 0;
+    const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
+    // paddingLeft(1.2rem≈19.2) + gap-3(12) + button(48) + buttonMarginRight(10) + paddingRight(5.618) + buffer
+    const neededWidth = Math.ceil(maxContentWidth + 100);
+    return Math.max(416, neededWidth);
   }, [upcomingLessons, isLessonCompleted]);
 
   // Scroll handlers
@@ -185,7 +208,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
             upcomingLessons.map((lesson, index) => {
               const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
               const isCurrentLesson = index === firstIncompleteIndex;
-              const cardWidth = (isCompleted || isCurrentLesson) ? 416 : 368;
+              const cardWidth = getCardWidth(lesson);
 
               return (
                 <div
@@ -198,7 +221,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingTop: '5.618px',
                     paddingRight: '5.618px',
                     paddingBottom: '5.618px',
-                    paddingLeft: '1rem',
+                    paddingLeft: '1.2rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
                     height: '7rem',
