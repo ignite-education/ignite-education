@@ -16,7 +16,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         </p>
       </div>
       <Image
-        src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
+        src="/images/trustpilot-logo.svg"
         alt="Trustpilot"
         width={192}
         height={47}

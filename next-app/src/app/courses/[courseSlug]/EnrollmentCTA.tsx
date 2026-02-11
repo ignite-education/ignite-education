@@ -340,7 +340,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 disabled={isSaving || checkingStatus}
                 className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
                   isSaved
-                    ? 'bg-gray-200 text-black hover:bg-gray-300'
+                    ? 'bg-[#008000] text-white hover:bg-[#006B00]'
                     : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
