@@ -51,7 +51,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo */}
-          <div style={{ marginBottom: '45px' }}>
+          <div style={{ marginBottom: '55px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -75,7 +75,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           </div>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '40px', marginLeft: '6px' }}>
+          <div style={{ marginBottom: '30px', marginLeft: '6px' }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
@@ -105,7 +105,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {formatJoinDate(joinedAt) && (
             <span
               className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-medium"
-              style={{ fontSize: '14px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
+              style={{ fontSize: '12px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
             >
               {formatJoinDate(joinedAt)}
             </span>
@@ -119,7 +119,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               You're <span>{progressPercentage}%</span> through the {courseTitle} course.
             </p>
-            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em' }}>
+            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em', fontWeight: 300 }}>
               Overall, you're scoring great. You're average so far
               is 73%, with particular strengths in Design Thinking
               and Prototyping Tools. Your next lesson is Agile Methodologies.
@@ -127,7 +127,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-evenly">
+            <div className="flex items-center justify-between">
               {[
                 { label: "You're in the top", value: '15% of learners' },
                 { label: "You're a late", value: 'night learner' },
