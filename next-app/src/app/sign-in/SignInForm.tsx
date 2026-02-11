@@ -113,6 +113,8 @@ export default function SignInForm() {
     }
   }
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+
   const handleOAuthSignIn = async (provider: 'google' | 'linkedin_oidc') => {
     setError('')
     setLoading(true)
@@ -121,7 +123,7 @@ export default function SignInForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/courses`,
+          redirectTo: `${siteUrl}/auth/callback?next=/courses`,
         },
       })
       if (error) throw error
@@ -139,7 +141,7 @@ export default function SignInForm() {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `${siteUrl}/reset-password`,
       })
       if (error) throw error
       setResetSuccess(true)

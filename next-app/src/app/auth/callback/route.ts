@@ -6,13 +6,13 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/courses'
 
-  // Use x-forwarded-host to get the user-facing origin (ignite.education),
-  // not the actual server origin (next.ignite.education)
+  // Use explicit site URL to ensure redirects go to the public-facing domain
+  // (ignite.education), not the Next.js server origin (next.ignite.education)
   const forwardedHost = request.headers.get('x-forwarded-host')
   const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
-  const origin = forwardedHost
-    ? `${forwardedProto}://${forwardedHost}`
-    : new URL(request.url).origin
+  const origin = process.env.NEXT_PUBLIC_SITE_URL
+    || (forwardedHost ? `${forwardedProto}://${forwardedHost}` : null)
+    || new URL(request.url).origin
 
   if (code) {
     const supabase = await createClient()

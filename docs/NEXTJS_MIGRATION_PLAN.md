@@ -10,7 +10,7 @@
 
 **Recommended Approach:** Hybrid migration - Next.js serves public pages with server-side rendering while Vite continues to serve authenticated app pages.
 
-**Current Status:** Migration is COMPLETE. All 9 sessions are done. Public pages (welcome, courses, blog, privacy, terms, release-notes, sign-in, reset-password, certificate) are live on Next.js at next.ignite.education, routed from ignite.education via Vercel rewrites. Authenticated pages (progress, learning, admin) remain on Vite SPA. SEO validation passed (184/184 checks) with canonical URLs, structured data, OG tags, and Twitter cards on all pages.
+**Current Status:** Migration is COMPLETE. All 9 sessions are done. Public pages (welcome, courses, blog, privacy, terms, release-notes, sign-in, reset-password, certificate) are served via Next.js, routed from ignite.education via Vercel rewrites. Authenticated pages (progress, learning, admin) remain on Vite SPA. SEO validation passed (184/184 checks) with canonical URLs, structured data, OG tags, and Twitter cards on all pages.
 
 ---
 
@@ -179,8 +179,7 @@ ignite.education (Vercel)
 ├── /learning          → Vite SPA (ProtectedRoute)
 └── /admin/*           → Vite SPA (ProtectedRoute)
 
-next.ignite.education (Vercel - Staging)
-└── All routes         → Next.js (testing)
+Internal: Next.js deployment (proxied via Vercel rewrites — not accessed directly)
 ```
 
 ---
@@ -191,8 +190,6 @@ next.ignite.education (Vercel - Staging)
 
 **Objective:** Get Next.js app deployed to a staging URL
 
-**Staging URL:** https://next.ignite.education
-
 **Completed Tasks:**
 1. [x] Create new Vercel project for Next.js app
    - Project name: `ignite-education-next`
@@ -201,11 +198,11 @@ next.ignite.education (Vercel - Staging)
    - Deploys from `main` branch
 
 2. [x] Configure custom domain
-   - Added `next.ignite.education` as custom domain (note: `dev.ignite.education` was already in use)
+   - Added custom domain for Next.js Vercel project (proxied via rewrites from ignite.education)
    - Domain managed via Vercel, auto-configured DNS + SSL
 
 3. [x] Verify deployment
-   - https://next.ignite.education/welcome renders with SSR
+   - https://ignite.education/welcome renders with SSR via Next.js
    - Supabase connection works (courses load)
    - Structured data present in page source
 
@@ -360,8 +357,8 @@ next.ignite.education (Vercel - Staging)
 **Objective:** Configure Vercel to route traffic correctly
 
 **Completed Tasks:**
-1. [x] Updated production `vercel.json` with rewrites to `next.ignite.education`
-2. [x] All public routes routed from `ignite.education` → `next.ignite.education`
+1. [x] Updated production `vercel.json` with rewrites to Next.js deployment
+2. [x] All public routes routed from `ignite.education` → Next.js via Vercel rewrites
 3. [x] Auth callback (`/auth/callback`) routed to Next.js for OAuth PKCE
 4. [x] `_next` assets properly routed for Next.js static files
 5. [x] Authenticated routes (`/progress`, `/learning`, `/admin/*`) remain on Vite SPA
