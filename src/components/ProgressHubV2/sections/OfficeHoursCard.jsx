@@ -127,34 +127,16 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
             <div className="flex gap-2.5 w-full items-center">
               {/* Single coach layout */}
               {coaches && coaches.length === 1 ? (
-                <div className="flex-1 flex gap-4 items-center">
-                  {coaches[0].linkedin_url ? (
-                    <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" className="flex gap-4 items-center flex-1 group">
-                      {coaches[0].image_url ? (
-                        <img src={coaches[0].image_url} alt={coaches[0].name} className="w-16 h-16 rounded object-cover flex-shrink-0" style={{ marginLeft: '3px' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                      ) : (
-                        <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" style={{ marginLeft: '3px' }} />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%', opacity: 0.85 }}>{coaches[0].description}</p>}
-                      </div>
-                    </a>
+                <div className="flex-1 flex flex-col items-center text-center" style={{ padding: '1rem 0' }}>
+                  {coaches[0].image_url ? (
+                    <img src={coaches[0].image_url} alt={coaches[0].name} className="rounded-lg object-cover" style={{ width: '10rem', height: '10rem', border: '3px solid rgba(135, 206, 250, 0.6)' }} onError={(e) => { e.target.style.display = 'none'; }} />
                   ) : (
-                    <div className="flex gap-4 items-center flex-1">
-                      {coaches[0].image_url ? (
-                        <img src={coaches[0].image_url} alt={coaches[0].name} className="w-16 h-16 rounded object-cover flex-shrink-0" style={{ marginLeft: '3px' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                      ) : (
-                        <div className="w-16 h-16 rounded bg-white/10 flex-shrink-0" style={{ marginLeft: '3px' }} />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%', opacity: 0.85 }}>{coaches[0].description}</p>}
-                      </div>
-                    </div>
+                    <div className="rounded-lg bg-white/10" style={{ width: '10rem', height: '10rem', border: '3px solid rgba(135, 206, 250, 0.6)' }} />
                   )}
+                  <p className="text-white font-medium" style={{ fontSize: '1.1rem', marginTop: '0.75rem', marginBottom: '0.5rem' }}>Available</p>
+                  <div className="bg-white rounded-lg" style={{ padding: '0.5rem 1.25rem' }}>
+                    <p className="text-black font-semibold" style={{ fontSize: '1.1rem' }}>Tomorrow at 4PM</p>
+                  </div>
                 </div>
               ) : (
                 /* Multi-coach layout */
@@ -169,9 +151,9 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         {coach && coach.linkedin_url ? (
                           <a href={coach.linkedin_url} target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center cursor-pointer">
                             {coach.image_url ? (
-                              <img src={coach.image_url} alt={coach.name} className="w-[50.4px] h-[50.4px] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
+                              <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
                             ) : (
-                              <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                              <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                             )}
                             <span className="font-semibold text-white block truncate w-full" style={{ fontSize: '1rem', lineHeight: '1.2' }}>{coach.name}</span>
                             {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
@@ -181,16 +163,16 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                             {coach ? (
                               <>
                                 {coach.image_url ? (
-                                  <img src={coach.image_url} alt={coach.name} className="w-[50.4px] h-[50.4px] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
+                                  <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
                                 ) : (
-                                  <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                  <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                                 )}
                                 <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '1rem', lineHeight: '1.2' }}>{coach.name}</h3>
                                 {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                               </>
                             ) : (
                               <>
-                                <div className="w-[50.4px] h-[50.4px] rounded bg-white/10 mb-1" />
+                                <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                                 <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
                                 <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
                               </>

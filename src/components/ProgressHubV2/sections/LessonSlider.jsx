@@ -221,7 +221,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingTop: '5.618px',
                     paddingRight: '5.618px',
                     paddingBottom: '5.618px',
-                    paddingLeft: '1.2rem',
+                    paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
                     height: '7rem',
@@ -248,8 +248,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-purple-100" style={{ fontSize: '0.9rem', letterSpacing: '-1%', lineHeight: '1.2' }}>
-                          <span className="mt-0.5 text-purple-200">•</span>
+                        <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.9rem', letterSpacing: '-1%', lineHeight: '1.2' }}>
+                          <span className="mt-0.5 text-white">•</span>
                           <span>{bulletPoint}</span>
                         </li>
                       ))}
