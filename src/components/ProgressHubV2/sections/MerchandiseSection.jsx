@@ -25,12 +25,12 @@ const PRODUCTS = [
 
 const MerchandiseSection = () => {
   return (
-    <section className="px-12 py-8" style={{ background: '#111' }}>
-      <h2 className="font-bold text-white" style={{ fontSize: '28px', marginBottom: '2px' }}>Merchandise</h2>
-      <p className="text-white font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '12px' }}>
+    <section className="bg-white px-12 py-8">
+      <h2 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em', marginBottom: '2px' }}>Merchandise</h2>
+      <p className="text-black font-light" style={{ letterSpacing: '0.011em', fontSize: '14px', marginBottom: '12px' }}>
         All profit supports education projects across the UK.
       </p>
-      <div className="bg-white rounded-lg flex justify-between items-center gap-3" style={{ padding: '14px 18px', height: '120px' }}>
+      <div className="flex justify-between items-center gap-3" style={{ height: '240px' }}>
         {PRODUCTS.map((product) => (
           <img
             key={product.alt}

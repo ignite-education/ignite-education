@@ -75,7 +75,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           </div>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '25px', marginLeft: '6px' }}>
+          <div style={{ marginBottom: '40px', marginLeft: '6px' }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
