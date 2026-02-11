@@ -2,7 +2,6 @@ import React, { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'rea
 import { useAuth } from '../../contexts/AuthContext';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
-import CoursePageNavbar from '../CoursePageNavbar';
 import LoadingScreen from '../LoadingScreen';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
@@ -109,11 +108,6 @@ const ProgressHubV2 = () => {
     }
   }, []);
 
-  // Settings handler — navigates to /progress which has the settings modal
-  const handleOpenSettings = () => {
-    window.location.href = '/progress';
-  };
-
   if (loading) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
   }
@@ -126,16 +120,12 @@ const ProgressHubV2 = () => {
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
-      <CoursePageNavbar />
-
       {/* Section 1: Introduction */}
       <IntroSection
         firstName={firstName}
         profilePicture={profilePicture}
         progressPercentage={progressPercentage}
         courseTitle={courseTitle}
-        authUser={authUser}
-        onOpenSettings={handleOpenSettings}
       />
 
       {/* Section 2: Course Details */}
