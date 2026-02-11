@@ -130,19 +130,24 @@ const ProgressHubV2 = () => {
       />
 
       {/* Section 2: Course Details */}
-      <CourseDetailsSection courseTitle={courseTitle}>
-        <ProgressGraph userName={firstName} />
-        <LessonSlider
-          upcomingLessons={upcomingLessons}
-          completedLessons={completedLessons}
-          isLessonCompleted={isLessonCompleted}
-          isLessonAccessible={isLessonAccessible}
-          currentModule={currentModule}
-          currentLesson={currentLesson}
-        />
-        <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
-        <CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} />
-      </CourseDetailsSection>
+      <CourseDetailsSection
+        courseTitle={courseTitle}
+        graph={<ProgressGraph userName={firstName} />}
+        left={
+          <>
+            <LessonSlider
+              upcomingLessons={upcomingLessons}
+              completedLessons={completedLessons}
+              isLessonCompleted={isLessonCompleted}
+              isLessonAccessible={isLessonAccessible}
+              currentModule={currentModule}
+              currentLesson={currentLesson}
+            />
+            <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
+          </>
+        }
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} />}
+      />
 
       {/* Section 3: Merchandise */}
       <MerchandiseSection />

@@ -11,7 +11,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
   const cardContent = (
     <div className={className}>
       <div
-        className="rounded-md overflow-hidden cursor-pointer group"
+        className="rounded-sm overflow-hidden cursor-pointer group"
       >
         {featured_image && (
           <div className="w-full blog-card-image-container" style={{ height: '387px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -24,7 +24,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
           </div>
         )}
 
-        <div className="p-4 bg-white rounded-b-md flex items-center justify-between">
+        <div className="p-4 bg-white rounded-b-sm flex items-center justify-between">
           <div className="flex-1 pr-3">
             <h3 className="font-semibold text-gray-900 line-clamp-2" style={{ fontSize: '1.21rem', marginBottom: '0.1rem' }}>
               {title}
