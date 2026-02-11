@@ -29,7 +29,13 @@ export default async function SignInPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
-    redirect('/courses')
+    const { data } = await supabase
+      .from('users')
+      .select('enrolled_course')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    redirect(data?.enrolled_course ? '/progress' : '/courses')
   }
 
   return <SignInForm />

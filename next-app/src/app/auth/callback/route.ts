@@ -19,6 +19,19 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
+      // Check enrollment status to decide redirect destination
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('users')
+          .select('enrolled_course')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        const destination = data?.enrolled_course ? '/progress' : '/courses'
+        return NextResponse.redirect(`${origin}${destination}`)
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

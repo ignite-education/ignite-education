@@ -90,8 +90,22 @@ export default function SignInForm() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
+
+        // Check enrollment to redirect enrolled users to /progress
+        if (signInData.user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('enrolled_course')
+            .eq('id', signInData.user.id)
+            .maybeSingle()
+
+          if (userData?.enrolled_course) {
+            window.location.href = '/progress'
+            return
+          }
+        }
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,

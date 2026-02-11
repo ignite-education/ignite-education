@@ -2613,26 +2613,6 @@ const ProgressHub = () => {
       <div className="h-screen flex">
       {/* Left Sidebar - Fixed */}
       <div className="bg-black flex flex-col overflow-hidden" style={{ width: '650px', minWidth: '650px', maxHeight: '100vh' }}>
-        {/* Header */}
-        <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
-          <div className="flex items-center justify-between">
-            <div
-              className="w-auto cursor-pointer"
-              style={{
-                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center',
-                width: '108.8px',
-                height: '36px',
-                marginBottom: '12px',
-                marginLeft: '-5.44px'
-              }}
-              onClick={() => navigate('/')}
-            />
-          </div>
-        </div>
-
         {/* Content - Scrollable */}
         <div className="flex-1 pb-3 overflow-y-auto hide-scrollbar" style={{ paddingLeft: 'calc(41.56px + 15px)', paddingRight: '12px' }}>
           <div className="flex flex-col" style={{ gap: '0px', minHeight: '100%' }}>
