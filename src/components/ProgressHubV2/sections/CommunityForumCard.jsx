@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, ThumbsUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp, FileEdit } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 
 const getTimeAgo = (timestamp) => {
@@ -56,31 +56,42 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
   };
 
   return (
-    <div style={{ marginTop: '1.5rem' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '-2px' }}>Community Forum</h2>
+    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+      <div className="flex items-center gap-3" style={{ marginBottom: '2px', flexShrink: 0 }}>
+        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%' }}>Community Forum</h2>
+        <button
+          onClick={handleOpenForum}
+          className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group"
+          style={{ width: '38.4px', height: '38.4px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+          title="Create a post"
+        >
+          <FileEdit size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+        </button>
+      </div>
 
       {/* Posts list */}
       <div
         className="space-y-2 overflow-y-auto"
         style={{
-          maxHeight: '600px',
+          flex: 1,
+          minHeight: 0,
           marginTop: '8px',
           scrollbarWidth: 'thin',
           scrollbarColor: '#4B5563 transparent',
         }}
       >
         {posts.length === 0 ? (
-          <div className="rounded-lg p-6 text-center" style={{ background: '#7714E0' }}>
-            <p className="text-purple-200 text-sm">No posts yet.</p>
+          <div className="rounded-lg p-6 text-center" style={{ background: '#171717' }}>
+            <p className="text-gray-400 text-sm">No posts yet.</p>
           </div>
         ) : (
           posts.map(post => (
             <div key={post.id}>
               <div
                 className="rounded-lg p-4 cursor-pointer transition-colors"
-                style={{ background: '#7714E0' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#8A2BE2'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#7714E0'}
+                style={{ background: '#171717' }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#212121'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
                 onClick={() => togglePost(post)}
               >
                 <div className="flex items-start gap-2 mb-2">
@@ -120,7 +131,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
               {/* Comments */}
               {expandedPostId === post.id && (
                 <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
-                  <div className="rounded-lg p-3" style={{ background: '#6010B8' }}>
+                  <div className="rounded-lg p-3" style={{ background: '#171717' }}>
                     <h4 className="text-xs font-semibold text-white mb-2">
                       Comments ({postComments[post.id]?.length || 0})
                     </h4>
@@ -153,27 +164,6 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
         )}
       </div>
 
-      {/* Open Reddit button */}
-      <button
-        onClick={handleOpenForum}
-        className="flex items-center gap-3 w-full rounded-lg transition-colors hover:bg-white/10"
-        style={{ padding: '14px', background: '#7714E0', marginTop: '8px' }}
-      >
-        <div className="bg-white flex items-center justify-center flex-shrink-0" style={{ width: '48px', height: '48px', borderRadius: '0.3rem' }}>
-          <MessageSquare size={22} className="text-black" />
-        </div>
-        <div className="text-left flex-1">
-          <p className="text-white font-semibold" style={{ fontSize: '14px', marginBottom: '2px' }}>
-            Join the {courseName || 'Product Manager'} conversation
-          </p>
-          <p className="text-purple-200" style={{ fontSize: '12px' }}>
-            Open {courseReddit?.channel || 'r/ProductManagement'} on Reddit
-          </p>
-        </div>
-        <svg className="text-white" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        </svg>
-      </button>
     </div>
   );
 };
