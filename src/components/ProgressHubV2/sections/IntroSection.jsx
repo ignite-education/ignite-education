@@ -34,7 +34,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     <section
       className="bg-white px-12 pt-12"
       style={{
-        height: '75vh',
+        height: '70vh',
         minHeight: '500px',
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
@@ -59,26 +59,26 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                     }, 4000);
                   }
                 }}
-                style={{ width: 80, height: 80 }}
+                style={{ width: 68, height: 68 }}
               />
             ) : (
-              <div style={{ width: 80, height: 80 }} />
+              <div style={{ width: 68, height: 68 }} />
             )}
           </div>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '25px', marginLeft: '6px' }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
-                className="rounded-lg object-cover"
-                style={{ width: '100px', height: '100px' }}
+                className="object-cover"
+                style={{ width: '130px', height: '130px', borderRadius: '0.2rem' }}
               />
             ) : (
               <div
-                className="rounded-lg bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: '100px', height: '100px', fontSize: '36px' }}
+                className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
+                style={{ width: '130px', height: '130px', fontSize: '36px', borderRadius: '0.2rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
@@ -88,7 +88,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Greeting */}
           <h1 className="font-bold text-black" style={{ fontSize: '2.5rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
-            <span>
+            <span style={{ color: '#EF0B72' }}>
               {typedName}
               {!isTypingComplete && <span className="animate-blink font-light">|</span>}
             </span>
