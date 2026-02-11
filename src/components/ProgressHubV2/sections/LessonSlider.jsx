@@ -30,7 +30,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
     const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
     const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
     const isCurrent = upcomingLessons.indexOf(lesson) === firstIncompleteIndex;
-    return (isCompleted || isCurrent) ? 400 : 346.06;
+    return (isCompleted || isCurrent) ? 416 : 368;
   }, [upcomingLessons, isLessonCompleted]);
 
   // Scroll handlers
@@ -178,14 +178,14 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
           style={{
             minHeight: '7rem',
             height: '7rem',
-            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 400 - 16)}px` : '0px'
+            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 416 - 16)}px` : '0px'
           }}
         >
           {upcomingLessons.length > 0 ? (
             upcomingLessons.map((lesson, index) => {
               const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
               const isCurrentLesson = index === firstIncompleteIndex;
-              const cardWidth = (isCompleted || isCurrentLesson) ? 400 : 346.06;
+              const cardWidth = (isCompleted || isCurrentLesson) ? 416 : 368;
 
               return (
                 <div
@@ -220,12 +220,12 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     }}
                   />
                   <div className="flex-1">
-                    <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem' }}>
+                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
-                    <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-purple-100" style={{ fontSize: '1rem' }}>
+                        <li key={idx} className="flex items-start gap-2 text-purple-100" style={{ fontSize: '1rem', letterSpacing: '-1%' }}>
                           <span className="mt-0.5 text-purple-200">•</span>
                           <span>{bulletPoint}</span>
                         </li>
