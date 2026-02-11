@@ -86,7 +86,7 @@ const BlogCarousel = ({ limit = 5 }) => {
   }
 
   return (
-    <div className="relative w-full mx-auto" style={{ maxWidth: '50rem' }}>
+    <div className="relative w-full mx-auto" style={{ maxWidth: '25rem' }}>
       <div className="relative overflow-hidden rounded-xl">
         <div className="transition-all duration-500 ease-in-out">
           <BlogCard
