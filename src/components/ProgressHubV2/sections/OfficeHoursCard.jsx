@@ -127,16 +127,46 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
             <div className="flex gap-2.5 w-full items-center">
               {/* Single coach layout */}
               {coaches && coaches.length === 1 ? (
-                <div className="flex-1 flex flex-col items-center text-center" style={{ padding: '1rem 0' }}>
-                  {coaches[0].image_url ? (
-                    <img src={coaches[0].image_url} alt={coaches[0].name} className="rounded-lg object-cover" style={{ width: '10rem', height: '10rem', border: '3px solid rgba(135, 206, 250, 0.6)' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                <div className="flex-1 flex gap-4 items-center">
+                  {coaches[0].linkedin_url ? (
+                    <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" className="flex gap-4 items-center flex-1 group">
+                      <div className="flex flex-col items-center flex-shrink-0" style={{ marginLeft: '3px' }}>
+                        {coaches[0].image_url ? (
+                          <img src={coaches[0].image_url} alt={coaches[0].name} className="w-16 h-16 rounded object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-16 h-16 rounded bg-white/10" />
+                        )}
+                        <p className="text-white font-medium" style={{ fontSize: '0.75rem', marginTop: '4px' }}>Available</p>
+                        <div className="bg-white rounded" style={{ padding: '2px 8px', marginTop: '3px' }}>
+                          <p className="text-black font-semibold" style={{ fontSize: '0.7rem' }}>Tomorrow at 4PM</p>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%' }}>{coaches[0].description}</p>}
+                      </div>
+                    </a>
                   ) : (
-                    <div className="rounded-lg bg-white/10" style={{ width: '10rem', height: '10rem', border: '3px solid rgba(135, 206, 250, 0.6)' }} />
+                    <div className="flex gap-4 items-center flex-1">
+                      <div className="flex flex-col items-center flex-shrink-0" style={{ marginLeft: '3px' }}>
+                        {coaches[0].image_url ? (
+                          <img src={coaches[0].image_url} alt={coaches[0].name} className="w-16 h-16 rounded object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-16 h-16 rounded bg-white/10" />
+                        )}
+                        <p className="text-white font-medium" style={{ fontSize: '0.75rem', marginTop: '4px' }}>Available</p>
+                        <div className="bg-white rounded" style={{ padding: '2px 8px', marginTop: '3px' }}>
+                          <p className="text-black font-semibold" style={{ fontSize: '0.7rem' }}>Tomorrow at 4PM</p>
+                        </div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%' }}>{coaches[0].description}</p>}
+                      </div>
+                    </div>
                   )}
-                  <p className="text-white font-medium" style={{ fontSize: '1.1rem', marginTop: '0.75rem', marginBottom: '0.5rem' }}>Available</p>
-                  <div className="bg-white rounded-lg" style={{ padding: '0.5rem 1.25rem' }}>
-                    <p className="text-black font-semibold" style={{ fontSize: '1.1rem' }}>Tomorrow at 4PM</p>
-                  </div>
                 </div>
               ) : (
                 /* Multi-coach layout */
