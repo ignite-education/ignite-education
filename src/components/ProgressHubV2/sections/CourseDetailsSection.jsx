@@ -16,7 +16,7 @@ const CourseDetailsSection = ({ courseTitle, graph, left, right }) => {
   }, []);
 
   return (
-    <section className="bg-black px-12 pb-8" style={{ paddingTop: '45px' }}>
+    <section className="bg-black px-12" style={{ paddingTop: '45px', paddingBottom: '45px' }}>
       <h2 className="font-bold text-white" style={{ fontSize: '2rem', lineHeight: '1.2', letterSpacing: '-1%', marginBottom: '1rem' }}>{courseTitle}</h2>
       {graph && <div style={{ marginBottom: '20px' }}>{graph}</div>}
       <div className="flex w-full gap-16" style={{ overflow: 'hidden', alignItems: 'flex-start' }}>

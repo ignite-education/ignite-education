@@ -138,7 +138,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
                         {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '1rem', lineHeight: '1.5', opacity: 0.85 }}>{coaches[0].description}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%', opacity: 0.85 }}>{coaches[0].description}</p>}
                       </div>
                     </a>
                   ) : (
@@ -151,7 +151,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
                         {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', opacity: 0.9, marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '1rem', lineHeight: '1.5', opacity: 0.85 }}>{coaches[0].description}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%', opacity: 0.85 }}>{coaches[0].description}</p>}
                       </div>
                     </div>
                   )}

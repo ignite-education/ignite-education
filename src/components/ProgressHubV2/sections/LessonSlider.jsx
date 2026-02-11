@@ -198,7 +198,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingTop: '5.618px',
                     paddingRight: '5.618px',
                     paddingBottom: '5.618px',
-                    paddingLeft: '14px',
+                    paddingLeft: '1rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
                     height: '7rem',
