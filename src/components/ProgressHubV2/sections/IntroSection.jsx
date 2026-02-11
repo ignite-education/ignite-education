@@ -43,15 +43,15 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
       style={{
         height: '70vh',
         minHeight: '500px',
-        padding: '40px 40px 0 40px',
+        padding: '30px 40px 0 40px',
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
       <div className="flex w-full gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
-        <div className="flex flex-col" style={{ width: '50%', flexShrink: 0 }}>
+        <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo */}
-          <div style={{ marginBottom: '35px' }}>
+          <div style={{ marginBottom: '45px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -81,12 +81,12 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
                 className="object-cover"
-                style={{ width: '130px', height: '130px', borderRadius: '0.2rem' }}
+                style={{ width: '150px', height: '150px', borderRadius: '0.2rem' }}
               />
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: '130px', height: '130px', fontSize: '36px', borderRadius: '0.2rem' }}
+                style={{ width: '150px', height: '150px', fontSize: '36px', borderRadius: '0.2rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
@@ -104,7 +104,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Joined Tag */}
           {formatJoinDate(joinedAt) && (
             <span
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F8F8F8] rounded-[6px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
+              className="inline-block px-[8px] py-[3px] text-xs text-black bg-[#F8F8F8] rounded-[4px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
               style={{ letterSpacing: '-0.02em', marginTop: '16px' }}
             >
               {formatJoinDate(joinedAt)}
@@ -113,12 +113,12 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         </div>
 
         {/* Right Column: Progress Summary + Stats */}
-        <div className="flex flex-col justify-center" style={{ width: '50%', flexShrink: 0 }}>
+        <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
           {/* Progress Summary */}
-          <p className="text-black font-semibold" style={{ fontSize: '18px', marginBottom: '6px' }}>
+          <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
             You're <span>{progressPercentage}%</span> through the {courseTitle} course.
           </p>
-          <p className="text-gray-600" style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: '24px' }}>
+          <p className="text-black" style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: '24px', letterSpacing: '-0.01em' }}>
             Overall, you're scoring great. You're average so far
             is 73%, with particular strengths in Design Thinking
             and Prototyping Tools. Your next lesson is Agile Methodologies.
