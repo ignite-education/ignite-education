@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts } from '../../../lib/api';
 
 const useProgressData = () => {
   const { user: authUser, firstName, isInitialized, isAdFree, profilePicture, signOut } = useAuth();
@@ -17,6 +17,7 @@ const useProgressData = () => {
     channel: 'r/ProductManagement',
     url: 'https://www.reddit.com/r/ProductManagement/',
   });
+  const [communityPosts, setCommunityPosts] = useState([]);
   const hasInitialDataFetchRef = useRef(false);
 
   useEffect(() => {
@@ -64,6 +65,33 @@ const useProgressData = () => {
             channel: courseDataResult.reddit_channel || 'r/ProductManagement',
             url: courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/',
           });
+        }
+
+        // Fetch Reddit posts for community forum
+        try {
+          const subreddit = (courseDataResult?.reddit_url || '')
+            .replace(/\/$/, '')
+            .split('/r/')[1] || (courseDataResult?.reddit_channel || 'r/ProductManagement').replace(/^r\//, '');
+          const redditData = await getRedditPosts(25, false, subreddit);
+          const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
+          const posts = (Array.isArray(redditData) ? redditData : []).map((post, index) => ({
+            id: `reddit-${post.id}`,
+            redditId: post.id,
+            author: post.author,
+            author_icon: post.author_icon,
+            created_at: post.created_at,
+            title: post.title,
+            content: post.content,
+            tag: post.tag,
+            upvotes: post.upvotes,
+            comments: post.comments,
+            avatar: avatarColors[index % avatarColors.length],
+            url: post.url,
+            source: 'reddit',
+          }));
+          if (isMounted) setCommunityPosts(posts);
+        } catch {
+          if (isMounted) setCommunityPosts([]);
         }
 
         // Fetch coaches
@@ -141,6 +169,7 @@ const useProgressData = () => {
     calendlyLink,
     userCertificate,
     courseReddit,
+    communityPosts,
   };
 };
 

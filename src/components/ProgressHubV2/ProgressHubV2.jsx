@@ -67,6 +67,7 @@ const ProgressHubV2 = () => {
     calendlyLink,
     userCertificate,
     courseReddit,
+    communityPosts,
   } = useProgressData();
 
   const {
@@ -146,7 +147,7 @@ const ProgressHubV2 = () => {
             <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} />}
       />
 
       {/* Section 3: Merchandise */}
