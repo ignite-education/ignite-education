@@ -132,8 +132,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
   const showBackButton = isNotViewingCurrentLesson && !allLessonsCompleted;
 
   return (
-    <div className="relative" style={{ marginTop: '3px', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '2rem', letterSpacing: '-1%', marginBottom: '0.05rem', position: 'relative', height: '1.5em' }}>
+    <div className="relative" style={{ marginTop: '1.5rem', minHeight: '160px' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.05rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}

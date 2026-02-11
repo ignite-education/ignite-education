@@ -72,7 +72,7 @@ const ProgressGraph = ({ modules = MOCK_MODULE_SCORES, userName = '' }) => {
   return (
     <div className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
-        <h3 className="text-white font-semibold" style={{ fontSize: '2rem', letterSpacing: '-1%', marginBottom: '4px' }}>
+        <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '4px' }}>
           {userName}'s Progress
         </h3>
       )}

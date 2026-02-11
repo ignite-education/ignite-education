@@ -120,8 +120,8 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
 
   return (
     <>
-      <div style={{ marginTop: '-28px', minHeight: '160px' }}>
-        <h2 className="font-semibold text-white" style={{ fontSize: '2rem', letterSpacing: '-1%', marginBottom: '-2px' }}>Office Hours</h2>
+      <div style={{ marginTop: '1.5rem', minHeight: '160px' }}>
+        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '-2px' }}>Office Hours</h2>
         <p className="text-white" style={{ letterSpacing: '0.011em', fontSize: '14px', fontWeight: '100', marginBottom: '2px' }}>
           Get personalised support from your course leaders.
         </p>

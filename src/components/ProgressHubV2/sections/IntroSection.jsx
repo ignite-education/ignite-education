@@ -127,7 +127,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '40px' }}>
               {[
                 { label: "You're in the top", value: '15% of learners' },
                 { label: "You're a late", value: 'night learner' },
