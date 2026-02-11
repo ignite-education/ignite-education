@@ -94,7 +94,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           </div>
 
           {/* Greeting */}
-          <h1 className="font-bold text-black" style={{ fontSize: '2.5rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
+          <h1 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName}
@@ -119,7 +119,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               You're <span>{progressPercentage}%</span> through the {courseTitle} course.
             </p>
-            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '24px', letterSpacing: '-0.01em' }}>
+            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '75px', letterSpacing: '-0.01em' }}>
               Overall, you're scoring great. You're average so far
               is 73%, with particular strengths in Design Thinking
               and Prototyping Tools. Your next lesson is Agile Methodologies.
@@ -127,7 +127,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center" style={{ gap: '36px' }}>
+            <div className="flex items-center justify-between">
               {[
                 { label: "You're in the top", value: '15% of learners' },
                 { label: "You're a late", value: 'night learner' },
