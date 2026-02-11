@@ -57,7 +57,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
 
   return (
     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-      <div className="flex items-center" style={{ marginBottom: '0.375rem', flexShrink: 0 }}>
+      <div className="flex items-center" style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
         <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%' }}>Community Forum</h2>
         <button
           onClick={handleOpenForum}
@@ -75,7 +75,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [] }) => {
         style={{
           flex: 1,
           minHeight: 0,
-          marginTop: '0.625rem',
+          marginTop: '0',
           scrollbarWidth: 'thin',
           scrollbarColor: '#4B5563 transparent',
         }}

@@ -133,7 +133,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
 
   return (
     <div className="relative" style={{ marginTop: '1.5rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '1rem', position: 'relative', height: '1.5em' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
@@ -220,12 +220,12 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     }}
                   />
                   <div className="flex-1">
-                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
+                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 600, letterSpacing: '-1%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-purple-100" style={{ fontSize: '1rem', letterSpacing: '-1%' }}>
+                        <li key={idx} className="flex items-start gap-2 text-purple-100" style={{ fontSize: '0.9rem', letterSpacing: '-1%', lineHeight: '1.2' }}>
                           <span className="mt-0.5 text-purple-200">•</span>
                           <span>{bulletPoint}</span>
                         </li>
