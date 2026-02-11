@@ -104,8 +104,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Joined Tag */}
           {formatJoinDate(joinedAt) && (
             <span
-              className="inline-block px-[8px] py-[3px] text-xs text-black bg-[#F8F8F8] rounded-[4px] font-medium"
-              style={{ letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
+              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-medium"
+              style={{ fontSize: '14px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
             >
               {formatJoinDate(joinedAt)}
             </span>
@@ -119,7 +119,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               You're <span>{progressPercentage}%</span> through the {courseTitle} course.
             </p>
-            <p className="text-black" style={{ fontSize: '16px', lineHeight: '1.6', marginBottom: '24px', letterSpacing: '-0.01em' }}>
+            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '24px', letterSpacing: '-0.01em' }}>
               Overall, you're scoring great. You're average so far
               is 73%, with particular strengths in Design Thinking
               and Prototyping Tools. Your next lesson is Agile Methodologies.
@@ -135,10 +135,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   <div className="bg-[#F8F8F8] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
-                  <p className="text-black font-medium" style={{ fontSize: '14px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-semibold" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
-                  <p className="text-black font-medium" style={{ fontSize: '14px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-semibold" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.value}
                   </p>
                 </div>
