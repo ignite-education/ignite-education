@@ -86,13 +86,13 @@ const BlogCarousel = ({ limit = 5 }) => {
   }
 
   return (
-    <div className="relative w-full mx-auto" style={{ maxWidth: '25rem' }}>
+    <div className="relative w-full mx-auto" style={{ maxWidth: '20rem' }}>
       <div className="relative overflow-hidden rounded-md">
         <div className="transition-all duration-500 ease-in-out">
           <BlogCard
             post={posts[currentIndex]}
             onClick={handleCardClick}
-            className="min-h-[500px]"
+            className="min-h-[400px]"
           />
         </div>
 
