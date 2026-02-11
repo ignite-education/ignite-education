@@ -21,7 +21,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         width={576}
         height={144}
         className="mt-3"
-        style={{ maxWidth: '134px', height: 'auto' }}
+        style={{ maxWidth: '107px', height: 'auto' }}
       />
     </div>
   )

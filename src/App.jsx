@@ -24,6 +24,7 @@ const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
 const BlogManagement = lazy(() => import('./pages/BlogManagement'))
 const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
+const ProgressHubV2 = lazy(() => import('./components/ProgressHubV2'))
 const NotFound = lazy(() => import('./components/NotFound'))
 
 function App() {
@@ -47,6 +48,11 @@ function App() {
             <Route path="/progress" element={
               <ProtectedRoute>
                 <ProgressHub />
+              </ProtectedRoute>
+            } />
+            <Route path="/progress-v2" element={
+              <ProtectedRoute>
+                <ProgressHubV2 />
               </ProtectedRoute>
             } />
             <Route path="/learning" element={
