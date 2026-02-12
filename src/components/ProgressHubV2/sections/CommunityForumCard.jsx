@@ -157,8 +157,8 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
           flex: 1,
           minHeight: 0,
           marginTop: '0',
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#4B5563 transparent',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
         }}
       >
         {posts.length === 0 ? (
@@ -175,16 +175,16 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                 onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
                 onClick={() => togglePost(post)}
               >
-                <div className="flex items-start gap-2 mb-2">
+                <div className="flex gap-2 mb-2" style={{ alignItems: 'flex-start' }}>
                   {post.author_icon ? (
                     <img
                       src={post.author_icon}
                       alt={post.author}
-                      className="w-7 h-7 rounded-lg flex-shrink-0 object-cover"
+                      className="w-7 h-7 flex-shrink-0 object-cover" style={{ borderRadius: '0.25rem' }}
                       onError={(e) => { e.target.style.display = 'none'; if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex'; }}
                     />
                   ) : null}
-                  <div className={`w-7 h-7 ${post.avatar || 'bg-purple-600'} rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${post.author_icon ? 'hidden' : ''}`}>
+                  <div className={`w-7 h-7 ${post.avatar || 'bg-purple-600'} flex items-center justify-center text-xs font-bold flex-shrink-0 ${post.author_icon ? 'hidden' : ''}`} style={{ borderRadius: '0.25rem' }}>
                     {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -192,7 +192,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`} style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>
+                    <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>
                       {post.content}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-white">
@@ -203,11 +203,11 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         >
                           <ThumbsUp size={13} fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
                         </button>
-                        <span className="font-semibold">{localUpvotes[post.id] ?? post.upvotes}</span>
+                        <span style={{ fontWeight: 300 }}>{localUpvotes[post.id] ?? post.upvotes}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <MessageSquare size={13} />
-                        <span>{localCommentCounts[post.id] ?? post.comments ?? 0}</span>
+                        <span style={{ fontWeight: 300 }}>{localCommentCounts[post.id] ?? post.comments ?? 0}</span>
                       </div>
                     </div>
                   </div>
