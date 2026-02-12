@@ -61,6 +61,41 @@ const ConfettiBurst = () => {
   );
 };
 
+const ShareButton = () => {
+  const [hovered, setHovered] = useState(false);
+  const iconColor = hovered ? '#EF0B72' : '#000000';
+
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className="flex items-center justify-center rounded-[4px]"
+      style={{
+        width: '29px',
+        height: '29px',
+        cursor: 'pointer',
+      }}
+    >
+      <svg
+        width="21"
+        height="21"
+        viewBox="0 0 20 20"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M15 6.667a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM5 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM15 18.333a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM7.158 11.258l5.692 3.317M12.842 5.425 7.158 8.742"
+          stroke={iconColor}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transition: 'stroke 0.2s ease' }}
+        />
+      </svg>
+    </div>
+  );
+};
+
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#000000';
@@ -72,13 +107,9 @@ const SettingsCog = ({ onClick }) => {
       onMouseLeave={() => setHovered(false)}
       className="flex items-center justify-center rounded-[4px]"
       style={{
-        position: 'absolute',
-        bottom: '30px',
-        left: '40px',
         width: '29px',
         height: '29px',
         cursor: 'pointer',
-        transition: 'background-color 0.2s ease',
       }}
     >
       <svg
@@ -224,7 +255,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#D3D3D3] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
@@ -234,7 +265,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#D3D3D3] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
@@ -266,7 +297,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                 { label: '134 learners', value: 'in the UK' },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
-                  <div className="bg-[#D3D3D3] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                  <div className="bg-[#E6E6E6] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
@@ -280,8 +311,11 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         </div>
       </div>
 
-      {/* Settings Icon */}
-      <SettingsCog onClick={onSettingsClick} />
+      {/* Bottom Icons */}
+      <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px' }}>
+        <SettingsCog onClick={onSettingsClick} />
+        <ShareButton />
+      </div>
     </section>
   );
 };
