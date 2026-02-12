@@ -51,11 +51,12 @@ const ProgressGraph = ({
       const startIdx = lessons.length;
 
       if (mod.lessons && Array.isArray(mod.lessons)) {
-        mod.lessons.forEach((_, lessonIdx) => {
+        mod.lessons.forEach((lesson, lessonIdx) => {
           lessons.push({
             key: `${moduleNum}-${lessonIdx + 1}`,
             moduleNum,
             lessonNum: lessonIdx + 1,
+            name: lesson.name || `Lesson ${lessonIdx + 1}`,
           });
         });
       }
@@ -116,6 +117,7 @@ const ProgressGraph = ({
   const containerRef = useRef(null);
   const [animationProgress, setAnimationProgress] = useState(-1); // -1 = not started
   const hasTriggeredRef = useRef(false);
+  const [hoveredLessonIdx, setHoveredLessonIdx] = useState(null);
 
   useEffect(() => {
     const startAnimation = () => {
@@ -195,6 +197,26 @@ const ProgressGraph = ({
     return ((leftX + rightX) / 2) / SVG_WIDTH * 100;
   });
 
+  // Tooltip data for hovered lesson
+  const tooltipData = hoveredLessonIdx !== null ? (() => {
+    const gp = globalPoints[hoveredLessonIdx];
+    const up = userPoints[hoveredLessonIdx];
+    const anchorX = gp?.x ?? up?.x ?? 0;
+    // Anchor vertically at the higher (smaller y) of the two dots
+    const anchorY = Math.min(
+      gp?.hasData ? gp.y : Infinity,
+      up?.hasData ? up.y : Infinity,
+    );
+    return {
+      lessonName: lessons[hoveredLessonIdx]?.name || `Lesson ${hoveredLessonIdx + 1}`,
+      userScore: up?.hasData ? Math.round(up.score) : null,
+      globalScore: gp?.hasData ? Math.round(gp.score) : null,
+      anchorX,
+      anchorY: anchorY === Infinity ? 60 : anchorY, // fallback to mid-graph
+      side: hoveredLessonIdx < lessons.length / 2 ? 'right' : 'left',
+    };
+  })() : null;
+
   return (
     <div ref={containerRef} className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
@@ -251,15 +273,21 @@ const ProgressGraph = ({
           point.hasData ? (
             <div
               key={`global-${i}`}
+              onMouseEnter={() => setHoveredLessonIdx(i)}
+              onMouseLeave={() => setHoveredLessonIdx(null)}
               style={{
                 position: 'absolute',
                 left: `${(point.x / SVG_WIDTH) * 100}%`,
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
+                padding: '6px',
+                margin: '-6px',
+                backgroundClip: 'content-box',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#888',
                 borderRadius: '1px',
+                cursor: 'pointer',
               }}
             />
           ) : null
@@ -268,18 +296,95 @@ const ProgressGraph = ({
           point.hasData ? (
             <div
               key={`user-${i}`}
+              onMouseEnter={() => setHoveredLessonIdx(i)}
+              onMouseLeave={() => setHoveredLessonIdx(null)}
               style={{
                 position: 'absolute',
                 left: `${(point.x / SVG_WIDTH) * 100}%`,
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
+                padding: '6px',
+                margin: '-6px',
+                backgroundClip: 'content-box',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#EF0B72',
                 borderRadius: '1px',
+                cursor: 'pointer',
               }}
             />
           ) : null
+        )}
+
+        {/* Tooltip popup on hover */}
+        {tooltipData && (
+          <div
+            style={{
+              position: 'absolute',
+              left: `${(tooltipData.anchorX / SVG_WIDTH) * 100}%`,
+              top: `${(tooltipData.anchorY / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
+              transform: tooltipData.side === 'right'
+                ? 'translate(16px, -50%)'
+                : 'translate(calc(-100% - 16px), -50%)',
+              backgroundColor: '#171717',
+              borderRadius: '8px',
+              padding: '10px 14px',
+              zIndex: 50,
+              pointerEvents: 'none',
+              whiteSpace: 'nowrap',
+              fontFamily: 'Geist, sans-serif',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            {/* Arrow pointer */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                [tooltipData.side === 'right' ? 'left' : 'right']: '-6px',
+                transform: 'translateY(-50%)',
+                width: 0,
+                height: 0,
+                borderTop: '6px solid transparent',
+                borderBottom: '6px solid transparent',
+                ...(tooltipData.side === 'right'
+                  ? { borderRight: '6px solid #171717' }
+                  : { borderLeft: '6px solid #171717' }),
+              }}
+            />
+            {/* Lesson name */}
+            <div style={{
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.8rem',
+              lineHeight: '1.3',
+              marginBottom: '4px',
+            }}>
+              {tooltipData.lessonName}
+            </div>
+            {/* User's score */}
+            {tooltipData.userScore !== null && (
+              <div style={{
+                color: '#EF0B72',
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                lineHeight: '1.3',
+              }}>
+                {userName}'s Score: {tooltipData.userScore}%
+              </div>
+            )}
+            {/* Global average */}
+            {tooltipData.globalScore !== null && (
+              <div style={{
+                color: '#fff',
+                fontWeight: 300,
+                fontSize: '0.75rem',
+                lineHeight: '1.3',
+              }}>
+                Average Score: {tooltipData.globalScore}%
+              </div>
+            )}
+          </div>
         )}
       </div>
 
