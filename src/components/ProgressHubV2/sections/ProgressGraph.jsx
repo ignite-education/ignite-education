@@ -118,28 +118,22 @@ const ProgressGraph = ({
   const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !hasTriggeredRef.current) {
-          hasTriggeredRef.current = true;
-          const startTime = performance.now();
-          const duration = 1000;
-          const animate = (now) => {
-            const elapsed = now - startTime;
-            const t = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-            setAnimationProgress(eased);
-            if (t < 1) requestAnimationFrame(animate);
-          };
-          requestAnimationFrame(animate);
-        }
-      },
-      { threshold: 0.3 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const startAnimation = () => {
+      if (hasTriggeredRef.current) return;
+      hasTriggeredRef.current = true;
+      const startTime = performance.now();
+      const duration = 1000;
+      const animate = (now) => {
+        const elapsed = now - startTime;
+        const t = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        setAnimationProgress(eased);
+        if (t < 1) requestAnimationFrame(animate);
+      };
+      requestAnimationFrame(animate);
+    };
+    window.addEventListener('scroll', startAnimation, { once: true });
+    return () => window.removeEventListener('scroll', startAnimation);
   }, []);
 
   // Build data points for both series
@@ -159,7 +153,7 @@ const ProgressGraph = ({
     const hasData = result && result.total > 0;
     const actualScore = hasData ? (result.correct / result.total) * 100 : null;
     // Interpolate from 60% to actual score based on animation progress
-    const displayScore = hasData ? 60 + (actualScore - 60) * animationProgress : null;
+    const displayScore = hasData ? 65 + (actualScore - 65) * animationProgress : null;
     return {
       x: lessonX[idx],
       y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (displayScore / 100) * GRAPH_HEIGHT : null,
