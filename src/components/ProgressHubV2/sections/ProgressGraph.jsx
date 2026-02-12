@@ -243,8 +243,8 @@ const ProgressGraph = ({
     const effectiveAnchorY = anchorY === Infinity ? 60 : anchorY;
     // Dot's pixel y in the 120px graph container
     const dotYPx = (effectiveAnchorY / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120;
-    // Tooltip top edge: centered at 72px (60% of 120px), half of 100px height = 22px
-    const tooltipTopPx = 72 - 50;
+    // Tooltip top edge: centered at 48px (40% of 120px), half of 100px height = -2px
+    const tooltipTopPx = 48 - 50;
     const arrowTopPx = Math.max(12, Math.min(88, dotYPx - tooltipTopPx));
 
     return {
@@ -357,7 +357,7 @@ const ProgressGraph = ({
             style={{
               position: 'absolute',
               left: `${(tooltipData.anchorX / SVG_WIDTH) * 100}%`,
-              top: '60%',
+              top: '40%',
               transform: tooltipData.side === 'right'
                 ? 'translate(16px, -50%)'
                 : 'translate(calc(-100% - 16px), -50%)',
@@ -396,8 +396,8 @@ const ProgressGraph = ({
             {/* Lesson name */}
             <div style={{
               color: '#fff',
-              fontWeight: 600,
-              fontSize: '0.96rem',
+              fontWeight: 500,
+              fontSize: '0.7rem',
               lineHeight: '1.3',
               marginBottom: '5px',
             }}>
@@ -407,8 +407,8 @@ const ProgressGraph = ({
             {tooltipData.userScore !== null && (
               <div style={{
                 color: '#EF0B72',
-                fontWeight: 600,
-                fontSize: '0.9rem',
+                fontWeight: 500,
+                fontSize: '0.7rem',
                 lineHeight: '1.3',
               }}>
                 {userName}'s Score: {tooltipData.userScore}%
@@ -419,7 +419,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#fff',
                 fontWeight: 200,
-                fontSize: '0.9rem',
+                fontSize: '0.7rem',
                 lineHeight: '1.3',
               }}>
                 Average Score: {tooltipData.globalScore}%
