@@ -114,7 +114,7 @@ const ProgressGraph = ({
 
   // Scroll-triggered animation for pink user dots
   const containerRef = useRef(null);
-  const [animationProgress, setAnimationProgress] = useState(0);
+  const [animationProgress, setAnimationProgress] = useState(-1); // -1 = not started
   const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
@@ -148,11 +148,12 @@ const ProgressGraph = ({
     };
   });
 
+  const animationStarted = animationProgress >= 0;
   const userPoints = lessons.map((lesson, idx) => {
     const result = userLessonScores[lesson.key];
-    const hasData = result && result.total > 0;
+    const hasData = animationStarted && result && result.total > 0;
     const actualScore = hasData ? (result.correct / result.total) * 100 : null;
-    // Interpolate from 60% to actual score based on animation progress
+    // Interpolate from 65% to actual score based on animation progress
     const displayScore = hasData ? 65 + (actualScore - 65) * animationProgress : null;
     return {
       x: lessonX[idx],
