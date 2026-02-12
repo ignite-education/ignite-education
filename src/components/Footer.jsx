@@ -23,12 +23,12 @@ const Footer = ({ className = '' }) => {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Product</span>
             <div className="flex flex-col gap-2">
-              <a href="/courses" className="text-white hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</a>
+              <a href="/courses" className="text-white font-light hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</a>
               <a
                 href="https://shop.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Store
@@ -37,7 +37,7 @@ const Footer = ({ className = '' }) => {
                 href="https://forms.gle/XsRJE8RKWxTTsMom8"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Feedback
@@ -54,7 +54,7 @@ const Footer = ({ className = '' }) => {
                 href="/release-notes"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Releases
@@ -63,7 +63,7 @@ const Footer = ({ className = '' }) => {
                 href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Terms of Service
@@ -72,7 +72,7 @@ const Footer = ({ className = '' }) => {
                 href="/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Privacy Policy
@@ -89,7 +89,7 @@ const Footer = ({ className = '' }) => {
                 href="https://www.linkedin.com/school/ignite-courses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 LinkedIn
@@ -98,7 +98,7 @@ const Footer = ({ className = '' }) => {
                 href="https://www.reddit.com/user/ignite-education/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Reddit
@@ -107,7 +107,7 @@ const Footer = ({ className = '' }) => {
                 href="https://www.linkedin.com/school/ignite-courses/jobs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Careers
@@ -121,7 +121,7 @@ const Footer = ({ className = '' }) => {
             <div className="flex flex-col gap-2">
               <a
                 href="mailto:hello@ignite.education"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Contact
