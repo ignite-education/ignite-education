@@ -77,16 +77,24 @@ const ShareButton = () => {
       }}
     >
       <svg
-        width="21"
-        height="21"
-        viewBox="0 0 20 20"
+        width="19"
+        height="19"
+        viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M15 6.667a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM5 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM15 18.333a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM7.158 11.258l5.692 3.317M12.842 5.425 7.158 8.742"
+          d="M12 3v12M8 7l4-4 4 4"
           stroke={iconColor}
-          strokeWidth="1.5"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transition: 'stroke 0.2s ease' }}
+        />
+        <path
+          d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
+          stroke={iconColor}
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           style={{ transition: 'stroke 0.2s ease' }}
@@ -255,7 +263,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#EFEFEF] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
@@ -265,7 +273,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#EFEFEF] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
