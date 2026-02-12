@@ -259,7 +259,7 @@ const ProgressGraph = ({
                 height: '8px',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#888',
-                borderRadius: '2px',
+                borderRadius: '1px',
               }}
             />
           ) : null
@@ -276,7 +276,7 @@ const ProgressGraph = ({
                 height: '8px',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#EF0B72',
-                borderRadius: '2px',
+                borderRadius: '1px',
               }}
             />
           ) : null

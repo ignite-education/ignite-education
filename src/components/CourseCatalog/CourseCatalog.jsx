@@ -11,7 +11,8 @@ const CourseCatalog = ({
   variant = 'full',
   maxCoursesPerColumn,
   showSearch = true,
-  showDescriptions = true
+  showDescriptions = true,
+  showHeader = true
 }) => {
   const [coursesByType, setCoursesByType] = useState({
     specialism: [],
@@ -168,7 +169,7 @@ const CourseCatalog = ({
     <div className={`bg-white ${isFeatured || isWelcome ? 'py-0' : 'min-h-screen py-12'}`}>
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header */}
-        {!isFeatured && (
+        {!isFeatured && showHeader && (
           <div className="text-center mb-[13.5px]">
             <Link to="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
               {lottieData ? (

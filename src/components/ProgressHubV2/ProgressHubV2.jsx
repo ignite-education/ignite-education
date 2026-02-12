@@ -12,6 +12,7 @@ import OfficeHoursCard from './sections/OfficeHoursCard';
 import CommunityForumCard from './sections/CommunityForumCard';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
+import DiscoverSection from './sections/DiscoverSection';
 
 // Mobile Block Screen
 const MobileBlockScreen = ({ onSignOut }) => {
@@ -158,7 +159,10 @@ const ProgressHubV2 = () => {
       {/* Section 4: Blog */}
       <BlogSection />
 
-      {/* Section 5: Footer */}
+      {/* Section 5: Discover */}
+      <DiscoverSection />
+
+      {/* Section 6: Footer */}
       <Footer />
     </div>
   );
