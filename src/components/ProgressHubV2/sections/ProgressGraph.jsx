@@ -357,13 +357,17 @@ const ProgressGraph = ({
               backgroundColor: '#171717',
               borderRadius: '3px',
               padding: '12px 17px',
-              width: '300px',
-              height: '250px',
+              width: '250px',
+              height: '125px',
               zIndex: 50,
               pointerEvents: 'none',
               fontFamily: 'Geist, sans-serif',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
               textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
           >
             {/* Arrow pointer */}
@@ -407,7 +411,7 @@ const ProgressGraph = ({
             {tooltipData.globalScore !== null && (
               <div style={{
                 color: '#fff',
-                fontWeight: 300,
+                fontWeight: 200,
                 fontSize: '0.9rem',
                 lineHeight: '1.3',
               }}>
