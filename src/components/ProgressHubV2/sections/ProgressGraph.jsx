@@ -164,9 +164,12 @@ const ProgressGraph = ({
     return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
   };
 
-  // Compute flex proportions for HTML module labels (match SVG layout)
-  const moduleFlex = moduleRanges.map((mod) => mod.endIdx - mod.startIdx + 1);
-  const gapFlex = MODULE_GAP; // relative to 1 lesson unit
+  // Compute center percentage for each module label (midpoint between first & last dot)
+  const moduleCenters = moduleRanges.map((mod) => {
+    const leftX = lessonX[mod.startIdx];
+    const rightX = lessonX[mod.endIdx];
+    return ((leftX + rightX) / 2) / SVG_WIDTH * 100;
+  });
 
   return (
     <div className="w-full" style={{ marginTop: '8px' }}>
@@ -191,7 +194,7 @@ const ProgressGraph = ({
             fill="none"
             stroke="#888"
             strokeWidth="2"
-            strokeDasharray="3 2"
+            strokeDasharray="3 2.4"
           />
         ))}
 
@@ -212,10 +215,10 @@ const ProgressGraph = ({
           point.hasData ? (
             <rect
               key={`global-${i}`}
-              x={point.x - 3}
-              y={point.y - 3}
-              width={6}
-              height={6}
+              x={point.x - 5}
+              y={point.y - 5}
+              width={10}
+              height={10}
               fill="#888"
             />
           ) : null
@@ -226,10 +229,10 @@ const ProgressGraph = ({
           point.hasData ? (
             <rect
               key={`user-${i}`}
-              x={point.x - 4}
-              y={point.y - 4}
-              width={8}
-              height={8}
+              x={point.x - 5}
+              y={point.y - 5}
+              width={10}
+              height={10}
               fill="#EF0B72"
               stroke="black"
               strokeWidth="1.5"
@@ -248,31 +251,30 @@ const ProgressGraph = ({
         />
       </svg>
 
-      {/* HTML module labels — flex layout matches SVG proportions */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, marginTop: '8px' }}>
+      {/* HTML module labels — absolutely positioned at midpoint of each module's dots */}
+      <div style={{ position: 'relative', marginTop: '8px', height: '2.4em' }}>
         {moduleRanges.map((mod, idx) => {
           const lines = formatModuleName(mod.name);
           return (
-            <React.Fragment key={`label-${idx}`}>
-              <div
-                style={{
-                  flex: moduleFlex[idx],
-                  textAlign: 'center',
-                  color: '#fff',
-                  fontSize: '0.7rem',
-                  fontWeight: 300,
-                  fontFamily: 'Geist, sans-serif',
-                  lineHeight: '1.3',
-                }}
-              >
-                {lines.map((line, lineIdx) => (
-                  <div key={lineIdx}>{line}</div>
-                ))}
-              </div>
-              {idx < moduleRanges.length - 1 && (
-                <div style={{ flex: gapFlex }} />
-              )}
-            </React.Fragment>
+            <div
+              key={`label-${idx}`}
+              style={{
+                position: 'absolute',
+                left: `${moduleCenters[idx]}%`,
+                transform: 'translateX(-50%)',
+                textAlign: 'center',
+                color: '#fff',
+                fontSize: '0.7rem',
+                fontWeight: 300,
+                fontFamily: 'Geist, sans-serif',
+                lineHeight: '1.3',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {lines.map((line, lineIdx) => (
+                <div key={lineIdx}>{line}</div>
+              ))}
+            </div>
           );
         })}
       </div>
