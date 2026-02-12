@@ -228,10 +228,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                     }, 4000);
                   }
                 }}
-                style={{ width: 73, height: 73 }}
+                style={{ width: 61, height: 61 }}
               />
             ) : (
-              <div style={{ width: 73, height: 73 }} />
+              <div style={{ width: 61, height: 61 }} />
             )}
           </div>
 

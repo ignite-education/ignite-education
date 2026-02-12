@@ -2580,10 +2580,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       }, 4000);
                     }
                   }}
-                  style={{ width: 36, height: 36 }}
+                  style={{ width: 43, height: 43 }}
                 />
               ) : (
-                <div style={{ width: 36, height: 36 }} />
+                <div style={{ width: 43, height: 43 }} />
               )}
             </div>
           </div>
