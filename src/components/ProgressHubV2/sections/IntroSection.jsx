@@ -128,6 +128,7 @@ const SettingsCog = ({ onClick }) => {
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
+        style={{ transition: 'transform 0.3s ease', transform: hovered ? 'rotate(45deg)' : 'rotate(0deg)' }}
       >
         <path
           d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
