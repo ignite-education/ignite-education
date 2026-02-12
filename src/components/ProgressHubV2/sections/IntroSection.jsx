@@ -83,14 +83,16 @@ const ShareButton = () => {
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <path
-          d="M12 3v12M8 7l4-4 4 4"
-          stroke={iconColor}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          style={{ transition: 'stroke 0.2s ease' }}
-        />
+        <g style={{ transition: 'transform 0.2s ease', transform: hovered ? 'translateY(-2px)' : 'translateY(0)' }}>
+          <path
+            d="M12 3v12M8 7l4-4 4 4"
+            stroke={iconColor}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: 'stroke 0.2s ease' }}
+          />
+        </g>
         <path
           d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
           stroke={iconColor}
@@ -263,7 +265,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#EFEFEF] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F2F2F2] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
@@ -273,7 +275,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#EFEFEF] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F2F2F2] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
