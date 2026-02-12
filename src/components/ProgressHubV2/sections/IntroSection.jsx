@@ -17,12 +17,13 @@ const formatJoinDate = (dateStr) => {
   return `Joined ${months[date.getMonth()]}-${String(date.getFullYear()).slice(-2)}`;
 };
 
-const SettingsCog = () => {
+const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#C4C4C4';
 
   return (
     <div
+      onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="bg-[#F8F8F8] flex items-center justify-center rounded-[4px]"
@@ -64,7 +65,7 @@ const SettingsCog = () => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt }) => {
+const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, onSettingsClick }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -152,7 +153,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Joined Tag */}
           {formatJoinDate(joinedAt) && (
             <span
-              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-medium"
+              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-light"
               style={{ fontSize: '12px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
             >
               {formatJoinDate(joinedAt)}
@@ -183,10 +184,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   <div className="bg-[#F8F8F8] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
-                  <p className="text-black font-medium" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
-                  <p className="text-black font-medium" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.value}
                   </p>
                 </div>
@@ -196,8 +197,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         </div>
       </div>
 
-      {/* Settings Icon (placeholder) */}
-      <SettingsCog />
+      {/* Settings Icon */}
+      <SettingsCog onClick={onSettingsClick} />
     </section>
   );
 };

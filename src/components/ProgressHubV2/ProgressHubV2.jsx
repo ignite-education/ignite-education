@@ -12,6 +12,7 @@ import OfficeHoursCard from './sections/OfficeHoursCard';
 import CommunityForumCard from './sections/CommunityForumCard';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
+import SettingsModal from '../shared/SettingsModal';
 
 // Mobile Block Screen
 const MobileBlockScreen = ({ onSignOut }) => {
@@ -51,6 +52,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
 
 const ProgressHubV2 = () => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [showSettings, setShowSettings] = useState(false);
 
   const {
     loading,
@@ -130,6 +132,7 @@ const ProgressHubV2 = () => {
         progressPercentage={progressPercentage}
         courseTitle={courseTitle}
         joinedAt={authUser?.created_at}
+        onSettingsClick={() => setShowSettings(true)}
       />
 
       {/* Section 2: Course Details */}
@@ -160,6 +163,8 @@ const ProgressHubV2 = () => {
 
       {/* Section 5: Footer */}
       <Footer />
+
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 };
