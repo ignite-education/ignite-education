@@ -156,6 +156,7 @@ const ProgressGraph = ({
     const startAnimation = () => {
       if (hasTriggeredRef.current) return;
       hasTriggeredRef.current = true;
+      setTimeout(() => {
       const startTime = performance.now();
       const duration = 1500;
       const animate = (now) => {
@@ -166,6 +167,7 @@ const ProgressGraph = ({
         if (t < 1) requestAnimationFrame(animate);
       };
       requestAnimationFrame(animate);
+      }, 500);
     };
     window.addEventListener('scroll', startAnimation, { once: true });
     return () => window.removeEventListener('scroll', startAnimation);
