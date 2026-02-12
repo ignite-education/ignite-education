@@ -97,15 +97,30 @@ const ProgressGraph = ({
       );
 
   const graphWidth = SVG_WIDTH - PADDING_X * 2;
-  const spacing = lessons.length > 1 ? graphWidth / (lessons.length - 1) : graphWidth;
   const baseY = PADDING_TOP + GRAPH_HEIGHT;
+
+  // Compute x-positions with gaps between modules
+  const MODULE_GAP = 1.5; // gap between modules expressed as multiple of lesson spacing
+  const totalGaps = moduleRanges.length > 1 ? (moduleRanges.length - 1) * MODULE_GAP : 0;
+  const totalSlots = (lessons.length - 1) + totalGaps;
+  const unitWidth = totalSlots > 0 ? graphWidth / totalSlots : graphWidth;
+
+  const lessonX = [];
+  let cursor = 0;
+  moduleRanges.forEach((mod, modIdx) => {
+    for (let i = mod.startIdx; i <= mod.endIdx; i++) {
+      lessonX[i] = PADDING_X + cursor * unitWidth;
+      if (i < mod.endIdx) cursor += 1; // within-module step
+    }
+    if (modIdx < moduleRanges.length - 1) cursor += MODULE_GAP; // inter-module gap
+  });
 
   // Build data points for both series
   const globalPoints = lessons.map((lesson, idx) => {
     const score = effectiveGlobalScores[lesson.key];
     const hasData = score !== undefined && score !== null;
     return {
-      x: PADDING_X + idx * spacing,
+      x: lessonX[idx],
       y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (score / 100) * GRAPH_HEIGHT : null,
       score: hasData ? score : null,
       hasData,
@@ -117,7 +132,7 @@ const ProgressGraph = ({
     const hasData = result && result.total > 0;
     const score = hasData ? (result.correct / result.total) * 100 : null;
     return {
-      x: PADDING_X + idx * spacing,
+      x: lessonX[idx],
       y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (score / 100) * GRAPH_HEIGHT : null,
       score,
       hasData,
@@ -169,8 +184,7 @@ const ProgressGraph = ({
             fill="none"
             stroke="#888"
             strokeWidth="2"
-            strokeDasharray="6 4"
-            opacity="0.6"
+            strokeDasharray="3 2"
           />
         ))}
 
@@ -228,8 +242,8 @@ const ProgressGraph = ({
 
         {/* Module labels — centered under their lesson group */}
         {moduleRanges.map((mod, idx) => {
-          const startX = PADDING_X + mod.startIdx * spacing;
-          const endX = PADDING_X + mod.endIdx * spacing;
+          const startX = lessonX[mod.startIdx];
+          const endX = lessonX[mod.endIdx];
           const centerX = (startX + endX) / 2;
           const lines = formatModuleName(mod.name);
 
@@ -242,7 +256,7 @@ const ProgressGraph = ({
                   y={baseY + 26 + lineIdx * 14}
                   textAnchor="middle"
                   fill="#fff"
-                  fontSize="10"
+                  fontSize="0.8rem"
                   fontFamily="Geist, sans-serif"
                 >
                   {line}
