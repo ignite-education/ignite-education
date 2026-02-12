@@ -414,7 +414,7 @@ const ProgressGraph = ({
             <div style={{
               color: '#fff',
               fontWeight: 500,
-              fontSize: '0.75rem',
+              fontSize: '0.85rem',
               lineHeight: '1.3',
               marginBottom: '5px',
             }}>

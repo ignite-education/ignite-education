@@ -142,9 +142,9 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%' }}>{coaches[0].description}</p>}
+                        <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                        {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>{coaches[0].description}</p>}
                       </div>
                     </a>
                   ) : (
@@ -161,9 +161,9 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-white" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                        {coaches[0].position && <p className="text-white font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', lineHeight: '1.2', letterSpacing: '-1%' }}>{coaches[0].description}</p>}
+                        <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                        {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '2px' }}>{coaches[0].position}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>{coaches[0].description}</p>}
                       </div>
                     </div>
                   )}
@@ -185,7 +185,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                             ) : (
                               <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                             )}
-                            <span className="font-semibold text-white block truncate w-full" style={{ fontSize: '1rem', lineHeight: '1.2' }}>{coach.name}</span>
+                            <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.2' }}>{coach.name}</span>
                             {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                           </a>
                         ) : (
@@ -197,7 +197,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                                 ) : (
                                   <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                                 )}
-                                <h3 className="font-semibold text-white mb-0 truncate w-full" style={{ fontSize: '1rem', lineHeight: '1.2' }}>{coach.name}</h3>
+                                <h3 className="text-white mb-0 truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.2' }}>{coach.name}</h3>
                                 {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                               </>
                             ) : (

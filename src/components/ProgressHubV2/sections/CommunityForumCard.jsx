@@ -189,13 +189,13 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-2 mb-1">
-                      <h3 className="font-bold text-sm text-white">{post.title}</h3>
-                      <span className="text-xs text-white/70 flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
+                      <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>{post.title}</h3>
+                      <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className={`text-xs text-white/90 leading-relaxed mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`}>
+                    <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-3'}`} style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>
                       {post.content}
                     </p>
-                    <div className="flex items-center gap-4 text-xs text-white/70">
+                    <div className="flex items-center gap-4 text-xs text-white">
                       <div className="flex items-center gap-1.5">
                         <button
                           className={`hover:text-white transition ${likedPosts.has(post.id) ? 'text-pink-500' : ''}`}
