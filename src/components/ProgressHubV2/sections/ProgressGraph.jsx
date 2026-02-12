@@ -84,13 +84,10 @@ const ProgressGraph = ({
     );
   }
 
-  // Build effective global scores: real data where available, deterministic placeholders for the rest
+  // TODO: Switch to real global scores once we have data from 5+ users.
+  // Until then, use deterministic placeholders (65–95% range) for all lessons.
   const effectiveGlobalScores = Object.fromEntries(
     lessons.map((lesson) => {
-      if (globalLessonScores[lesson.key] !== undefined) {
-        return [lesson.key, globalLessonScores[lesson.key]];
-      }
-      // Deterministic placeholder (65–95% range)
       const hash = (lesson.moduleNum * 7 + lesson.lessonNum * 13) % 31;
       return [lesson.key, 65 + (hash / 31) * 30];
     })
@@ -195,7 +192,7 @@ const ProgressGraph = ({
               fill="none"
               stroke="#888"
               strokeWidth="2"
-              strokeDasharray="3 2.4"
+              strokeDasharray="3 3"
             />
           ))}
 
@@ -251,7 +248,6 @@ const ProgressGraph = ({
                 height: '8px',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#EF0B72',
-                border: '1.5px solid black',
               }}
             />
           ) : null
