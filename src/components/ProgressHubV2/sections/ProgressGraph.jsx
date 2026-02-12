@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const SVG_WIDTH = 1200;
 const SVG_HEIGHT = 200;
@@ -118,6 +118,39 @@ const ProgressGraph = ({
   const [animationProgress, setAnimationProgress] = useState(-1); // -1 = not started
   const hasTriggeredRef = useRef(false);
   const [hoveredLessonIdx, setHoveredLessonIdx] = useState(null);
+  const graphRef = useRef(null);
+
+  // Find closest lesson by mouse x-position within module line boundaries
+  const handleGraphMouseMove = useCallback((e) => {
+    const rect = graphRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const mouseXPct = (e.clientX - rect.left) / rect.width;
+    const mouseXSvg = mouseXPct * SVG_WIDTH;
+
+    let closest = null;
+    let closestDist = Infinity;
+
+    moduleRanges.forEach((mod) => {
+      const modLeftX = lessonX[mod.startIdx];
+      const modRightX = lessonX[mod.endIdx];
+      // Only match if mouse is within this module's horizontal span
+      if (mouseXSvg < modLeftX - unitWidth * 0.5 || mouseXSvg > modRightX + unitWidth * 0.5) return;
+
+      for (let i = mod.startIdx; i <= mod.endIdx; i++) {
+        const dist = Math.abs(lessonX[i] - mouseXSvg);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = i;
+        }
+      }
+    });
+
+    setHoveredLessonIdx(closest);
+  }, [moduleRanges, lessonX, unitWidth]);
+
+  const handleGraphMouseLeave = useCallback(() => {
+    setHoveredLessonIdx(null);
+  }, []);
 
   useEffect(() => {
     const startAnimation = () => {
@@ -226,7 +259,12 @@ const ProgressGraph = ({
       )}
 
       {/* Graph container — SVG lines + HTML dots overlay */}
-      <div style={{ position: 'relative', height: '120px' }}>
+      <div
+        ref={graphRef}
+        onMouseMove={handleGraphMouseMove}
+        onMouseLeave={handleGraphMouseLeave}
+        style={{ position: 'relative', height: '120px', cursor: 'crosshair' }}
+      >
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
           className="w-full"
@@ -273,21 +311,16 @@ const ProgressGraph = ({
           point.hasData ? (
             <div
               key={`global-${i}`}
-              onMouseEnter={() => setHoveredLessonIdx(i)}
-              onMouseLeave={() => setHoveredLessonIdx(null)}
               style={{
                 position: 'absolute',
                 left: `${(point.x / SVG_WIDTH) * 100}%`,
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                padding: '6px',
-                margin: '-6px',
-                backgroundClip: 'content-box',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#888',
                 borderRadius: '1px',
-                cursor: 'pointer',
+                pointerEvents: 'none',
               }}
             />
           ) : null
@@ -296,21 +329,16 @@ const ProgressGraph = ({
           point.hasData ? (
             <div
               key={`user-${i}`}
-              onMouseEnter={() => setHoveredLessonIdx(i)}
-              onMouseLeave={() => setHoveredLessonIdx(null)}
               style={{
                 position: 'absolute',
                 left: `${(point.x / SVG_WIDTH) * 100}%`,
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                padding: '6px',
-                margin: '-6px',
-                backgroundClip: 'content-box',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#EF0B72',
                 borderRadius: '1px',
-                cursor: 'pointer',
+                pointerEvents: 'none',
               }}
             />
           ) : null
@@ -327,13 +355,14 @@ const ProgressGraph = ({
                 ? 'translate(16px, -50%)'
                 : 'translate(calc(-100% - 16px), -50%)',
               backgroundColor: '#171717',
-              borderRadius: '8px',
-              padding: '10px 14px',
+              borderRadius: '10px',
+              padding: '12px 17px',
               zIndex: 50,
               pointerEvents: 'none',
               whiteSpace: 'nowrap',
               fontFamily: 'Geist, sans-serif',
               boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+              textAlign: 'center',
             }}
           >
             {/* Arrow pointer */}
@@ -341,24 +370,24 @@ const ProgressGraph = ({
               style={{
                 position: 'absolute',
                 top: '50%',
-                [tooltipData.side === 'right' ? 'left' : 'right']: '-6px',
+                [tooltipData.side === 'right' ? 'left' : 'right']: '-7px',
                 transform: 'translateY(-50%)',
                 width: 0,
                 height: 0,
-                borderTop: '6px solid transparent',
-                borderBottom: '6px solid transparent',
+                borderTop: '7px solid transparent',
+                borderBottom: '7px solid transparent',
                 ...(tooltipData.side === 'right'
-                  ? { borderRight: '6px solid #171717' }
-                  : { borderLeft: '6px solid #171717' }),
+                  ? { borderRight: '7px solid #171717' }
+                  : { borderLeft: '7px solid #171717' }),
               }}
             />
             {/* Lesson name */}
             <div style={{
               color: '#fff',
               fontWeight: 600,
-              fontSize: '0.8rem',
+              fontSize: '0.96rem',
               lineHeight: '1.3',
-              marginBottom: '4px',
+              marginBottom: '5px',
             }}>
               {tooltipData.lessonName}
             </div>
@@ -367,7 +396,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#EF0B72',
                 fontWeight: 600,
-                fontSize: '0.75rem',
+                fontSize: '0.9rem',
                 lineHeight: '1.3',
               }}>
                 {userName}'s Score: {tooltipData.userScore}%
@@ -378,7 +407,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#fff',
                 fontWeight: 300,
-                fontSize: '0.75rem',
+                fontSize: '0.9rem',
                 lineHeight: '1.3',
               }}>
                 Average Score: {tooltipData.globalScore}%

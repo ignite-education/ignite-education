@@ -41,7 +41,7 @@ const MerchandiseSection = () => {
             key={product.alt}
             src={product.src}
             alt={product.alt}
-            className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer"
+            className="h-full object-cover rounded transition-transform duration-200 hover:scale-105 cursor-pointer min-w-0 flex-1"
             onClick={() => window.open(product.url, '_blank', 'noopener,noreferrer')}
           />
         ))}
