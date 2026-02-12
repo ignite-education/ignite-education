@@ -179,77 +179,84 @@ const ProgressGraph = ({
         </h3>
       )}
 
-      {/* SVG graph — fixed height, stretches horizontally only */}
-      <svg
-        viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
-        className="w-full"
-        style={{ height: '120px' }}
-        preserveAspectRatio="none"
-      >
-        {/* Global average lines (dashed grey, per module) */}
-        {globalPaths.map((d, i) => (
-          <path
-            key={`gpath-${i}`}
-            d={d}
-            fill="none"
-            stroke="#888"
-            strokeWidth="2"
-            strokeDasharray="3 2.4"
-          />
-        ))}
+      {/* Graph container — SVG lines + HTML dots overlay */}
+      <div style={{ position: 'relative', height: '120px' }}>
+        <svg
+          viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
+          className="w-full"
+          style={{ height: '120px' }}
+          preserveAspectRatio="none"
+        >
+          {/* Global average lines (dashed grey, per module) */}
+          {globalPaths.map((d, i) => (
+            <path
+              key={`gpath-${i}`}
+              d={d}
+              fill="none"
+              stroke="#888"
+              strokeWidth="2"
+              strokeDasharray="3 2.4"
+            />
+          ))}
 
-        {/* User score lines (solid pink, per module) */}
-        {userPaths.map((d, i) => (
-          <path
-            key={`upath-${i}`}
-            d={d}
-            fill="none"
-            stroke="#EF0B72"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          />
-        ))}
+          {/* User score lines (solid pink, per module) */}
+          {userPaths.map((d, i) => (
+            <path
+              key={`upath-${i}`}
+              d={d}
+              fill="none"
+              stroke="#EF0B72"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          ))}
 
-        {/* Global average dots (grey squares) */}
+          {/* Horizontal separator */}
+          <line
+            x1={lessonX[0]}
+            y1={baseY + 8}
+            x2={lessonX[lessonX.length - 1]}
+            y2={baseY + 8}
+            stroke="#fff"
+            strokeWidth="1"
+          />
+        </svg>
+
+        {/* HTML dots — immune to SVG non-uniform scaling */}
         {globalPoints.map((point, i) =>
           point.hasData ? (
-            <rect
+            <div
               key={`global-${i}`}
-              x={point.x - 5}
-              y={point.y - 5}
-              width={10}
-              height={10}
-              fill="#888"
+              style={{
+                position: 'absolute',
+                left: `${(point.x / SVG_WIDTH) * 100}%`,
+                top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
+                width: '8px',
+                height: '8px',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#888',
+              }}
             />
           ) : null
         )}
-
-        {/* User score dots (pink squares) */}
         {userPoints.map((point, i) =>
           point.hasData ? (
-            <rect
+            <div
               key={`user-${i}`}
-              x={point.x - 5}
-              y={point.y - 5}
-              width={10}
-              height={10}
-              fill="#EF0B72"
-              stroke="black"
-              strokeWidth="1.5"
+              style={{
+                position: 'absolute',
+                left: `${(point.x / SVG_WIDTH) * 100}%`,
+                top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
+                width: '8px',
+                height: '8px',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#EF0B72',
+                border: '1.5px solid black',
+              }}
             />
           ) : null
         )}
-
-        {/* Horizontal separator */}
-        <line
-          x1={0}
-          y1={baseY + 8}
-          x2={SVG_WIDTH}
-          y2={baseY + 8}
-          stroke="#444"
-          strokeWidth="1"
-        />
-      </svg>
+      </div>
 
       {/* HTML module labels — absolutely positioned at midpoint of each module's dots */}
       <div style={{ position: 'relative', marginTop: '8px', height: '2.4em' }}>
