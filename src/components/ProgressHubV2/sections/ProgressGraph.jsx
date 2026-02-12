@@ -339,7 +339,7 @@ const ProgressGraph = ({
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.2 : 1})`,
+                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.3 : 1})`,
                 transition: 'transform 0.4s ease',
                 backgroundColor: '#888',
                 borderRadius: '1px',
@@ -358,7 +358,7 @@ const ProgressGraph = ({
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.2 : 1})`,
+                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.3 : 1})`,
                 transition: 'transform 0.4s ease',
                 backgroundColor: '#EF0B72',
                 borderRadius: '1px',
@@ -427,7 +427,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#EF0B72',
                 fontWeight: 500,
-                fontSize: '0.75rem',
+                fontSize: '0.85rem',
                 lineHeight: '1.3',
               }}>
                 {userName}'s Score: {tooltipData.userScore}%
@@ -438,7 +438,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#fff',
                 fontWeight: 200,
-                fontSize: '0.75rem',
+                fontSize: '0.85rem',
                 lineHeight: '1.3',
               }}>
                 Average Score: {tooltipData.globalScore}%

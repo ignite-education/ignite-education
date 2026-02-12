@@ -143,10 +143,10 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
         <button
           onClick={onCreatePost}
           className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group ml-auto"
-          style={{ width: '32.6px', height: '32.6px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+          style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
           title="Create a post"
         >
-          <FileEdit size={17} className="text-black group-hover:text-pink-500 transition-colors" />
+          <FileEdit size={18.7} className="text-black group-hover:text-pink-500 transition-colors" />
         </button>
       </div>
 
@@ -192,7 +192,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>
+                    <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.2' }}>
                       {post.content}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-white">

@@ -199,8 +199,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         <div
           className="flex gap-4"
           style={{
-            minHeight: '7rem',
-            height: '7rem',
+            minHeight: '6rem',
+            height: '6rem',
             paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 416 - 16)}px` : '0px'
           }}
         >
@@ -224,7 +224,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
-                    height: '7rem',
+                    height: '6rem',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always'
                   }}
@@ -288,8 +288,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         className="absolute bg-white text-black hover:bg-purple-50"
         style={{
           right: '16px',
-          top: '50%',
-          transform: 'translateY(calc(-50% - 5px))',
+          top: 'calc(2.4rem + 0.75rem + 3rem)',
+          transform: 'translateY(-50%)',
           width: '40px', height: '40px',
           borderRadius: '0.3rem',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
