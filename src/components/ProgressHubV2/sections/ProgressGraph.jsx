@@ -102,7 +102,7 @@ const ProgressGraph = ({
   // Compute x-positions with gaps between modules
   const MODULE_GAP = 1.5; // gap between modules expressed as multiple of lesson spacing
   const totalGaps = moduleRanges.length > 1 ? (moduleRanges.length - 1) * MODULE_GAP : 0;
-  const totalSlots = (lessons.length - 1) + totalGaps;
+  const totalSlots = (lessons.length - moduleRanges.length) + totalGaps;
   const unitWidth = totalSlots > 0 ? graphWidth / totalSlots : graphWidth;
 
   const lessonX = [];
@@ -164,6 +164,10 @@ const ProgressGraph = ({
     return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
   };
 
+  // Compute flex proportions for HTML module labels (match SVG layout)
+  const moduleFlex = moduleRanges.map((mod) => mod.endIdx - mod.startIdx + 1);
+  const gapFlex = MODULE_GAP; // relative to 1 lesson unit
+
   return (
     <div className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
@@ -171,10 +175,13 @@ const ProgressGraph = ({
           {userName}'s Results
         </h3>
       )}
+
+      {/* SVG graph — fixed height, stretches horizontally only */}
       <svg
-        viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
+        viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
         className="w-full"
-        preserveAspectRatio="xMidYMid meet"
+        style={{ height: '120px' }}
+        preserveAspectRatio="none"
       >
         {/* Global average lines (dashed grey, per module) */}
         {globalPaths.map((d, i) => (
@@ -232,40 +239,43 @@ const ProgressGraph = ({
 
         {/* Horizontal separator */}
         <line
-          x1={PADDING_X}
+          x1={0}
           y1={baseY + 8}
-          x2={SVG_WIDTH - PADDING_X}
+          x2={SVG_WIDTH}
           y2={baseY + 8}
           stroke="#444"
           strokeWidth="1"
         />
+      </svg>
 
-        {/* Module labels — centered under their lesson group */}
+      {/* HTML module labels — flex layout matches SVG proportions */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 0, marginTop: '8px' }}>
         {moduleRanges.map((mod, idx) => {
-          const startX = lessonX[mod.startIdx];
-          const endX = lessonX[mod.endIdx];
-          const centerX = (startX + endX) / 2;
           const lines = formatModuleName(mod.name);
-
           return (
-            <g key={`label-${idx}`}>
-              {lines.map((line, lineIdx) => (
-                <text
-                  key={lineIdx}
-                  x={centerX}
-                  y={baseY + 26 + lineIdx * 14}
-                  textAnchor="middle"
-                  fill="#fff"
-                  fontSize="0.8rem"
-                  fontFamily="Geist, sans-serif"
-                >
-                  {line}
-                </text>
-              ))}
-            </g>
+            <React.Fragment key={`label-${idx}`}>
+              <div
+                style={{
+                  flex: moduleFlex[idx],
+                  textAlign: 'center',
+                  color: '#fff',
+                  fontSize: '0.7rem',
+                  fontWeight: 300,
+                  fontFamily: 'Geist, sans-serif',
+                  lineHeight: '1.3',
+                }}
+              >
+                {lines.map((line, lineIdx) => (
+                  <div key={lineIdx}>{line}</div>
+                ))}
+              </div>
+              {idx < moduleRanges.length - 1 && (
+                <div style={{ flex: gapFlex }} />
+              )}
+            </React.Fragment>
           );
         })}
-      </svg>
+      </div>
     </div>
   );
 };
