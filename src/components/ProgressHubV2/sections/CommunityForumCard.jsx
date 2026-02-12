@@ -188,7 +188,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                     {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-1">
+                    <div className="flex items-start gap-2 mb-1" style={{ marginTop: '-2px' }}>
                       <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
@@ -255,7 +255,6 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         postComments[post.id].map(comment => (
                           <div key={comment.id}>
                             <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs text-white font-semibold">{comment.author}</span>
                               <span className="text-xs text-white/60">{getTimeAgo(comment.created_at)}</span>
                             </div>
                             <p className="text-xs text-white/90 break-words">{comment.content}</p>

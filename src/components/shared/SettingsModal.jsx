@@ -270,7 +270,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     >
       <div className="relative w-full px-4" style={{ maxWidth: '700px', marginBottom: '2rem' }}>
         {/* Title above the box */}
-        <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Settings</h2>
+        <h2 className="font-semibold text-white pl-1" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.15rem' }}>Settings</h2>
 
         {/* Settings Card */}
         <div
