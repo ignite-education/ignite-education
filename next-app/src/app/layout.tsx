@@ -18,6 +18,14 @@ export const metadata: Metadata = {
     template: "%s | Ignite Education",
   },
   description: "AI-powered courses designed to help you learn practical skills and advance your career.",
+  icons: {
+    icon: [
+      { url: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-24%20at%2008.26.51.png", sizes: "32x32", type: "image/png" },
+      { url: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-24%20at%2008.26.51.png", sizes: "16x16", type: "image/png" },
+    ],
+    shortcut: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-24%20at%2008.26.51.png",
+    apple: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202025-10-24%20at%2008.26.51.png",
+  },
 };
 
 export default function RootLayout({
