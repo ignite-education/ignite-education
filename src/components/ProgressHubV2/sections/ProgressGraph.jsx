@@ -84,17 +84,17 @@ const ProgressGraph = ({
     );
   }
 
-  // Placeholder global scores when no real data exists (65-95% range, deterministic per lesson)
-  const hasRealGlobalData = Object.keys(globalLessonScores).length > 0;
-  const effectiveGlobalScores = hasRealGlobalData
-    ? globalLessonScores
-    : Object.fromEntries(
-        lessons.map((lesson) => {
-          // Simple hash from key to get a stable value per lesson
-          const hash = (lesson.moduleNum * 7 + lesson.lessonNum * 13) % 31;
-          return [lesson.key, 65 + (hash / 31) * 30]; // 65–95 range
-        })
-      );
+  // Build effective global scores: real data where available, deterministic placeholders for the rest
+  const effectiveGlobalScores = Object.fromEntries(
+    lessons.map((lesson) => {
+      if (globalLessonScores[lesson.key] !== undefined) {
+        return [lesson.key, globalLessonScores[lesson.key]];
+      }
+      // Deterministic placeholder (65–95% range)
+      const hash = (lesson.moduleNum * 7 + lesson.lessonNum * 13) % 31;
+      return [lesson.key, 65 + (hash / 31) * 30];
+    })
+  );
 
   const graphWidth = SVG_WIDTH - PADDING_X * 2;
   const baseY = PADDING_TOP + GRAPH_HEIGHT;
@@ -213,9 +213,9 @@ const ProgressGraph = ({
 
           {/* Horizontal separator */}
           <line
-            x1={lessonX[0]}
+            x1={0}
             y1={baseY + 8}
-            x2={lessonX[lessonX.length - 1]}
+            x2={SVG_WIDTH}
             y2={baseY + 8}
             stroke="#fff"
             strokeWidth="1"
