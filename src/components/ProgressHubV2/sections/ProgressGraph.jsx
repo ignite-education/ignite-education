@@ -230,7 +230,7 @@ const ProgressGraph = ({
               d={d}
               fill="none"
               stroke="#EF0B72"
-              strokeWidth="2.5"
+              strokeWidth="2"
               strokeLinecap="round"
             />
           ))}
@@ -259,6 +259,7 @@ const ProgressGraph = ({
                 height: '8px',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#888',
+                borderRadius: '2px',
               }}
             />
           ) : null
@@ -275,6 +276,7 @@ const ProgressGraph = ({
                 height: '8px',
                 transform: 'translate(-50%, -50%)',
                 backgroundColor: '#EF0B72',
+                borderRadius: '2px',
               }}
             />
           ) : null
