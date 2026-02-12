@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 import { InlineWidget } from 'react-calendly';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -141,9 +142,9 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       </div>
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
                         {coaches[0].linkedin_url ? (
-                          <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" className="group/link" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-white group-hover/link:text-[#EF0B72] transition-colors" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white group-hover/link:text-[#EF0B72] transition-colors" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
+                          <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
                           </a>
                         ) : (
                           <>
@@ -250,23 +251,99 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
       {/* Upgrade Modal */}
       {showUpgradeModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
+          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
+          style={{
+            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+            animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+          }}
           onClick={handleCloseUpgradeModal}
         >
-          <div
-            className={`bg-white rounded-xl relative p-6 ${isClosingModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
-            style={{ width: '90vw', maxWidth: '500px', minHeight: '400px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button onClick={handleCloseUpgradeModal} className="absolute top-3 right-3 text-gray-500 hover:text-gray-700" style={{ fontSize: '24px' }}>×</button>
-            {upgradingToAdFree ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7714E0]" />
+          <div className="relative">
+            <div
+              className="bg-white relative flex"
+              style={{
+                width: '850px',
+                height: '65vh',
+                minHeight: '100px',
+                padding: '0px',
+                animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                borderRadius: '0.3rem',
+                overflow: 'hidden'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={handleCloseUpgradeModal}
+                className="absolute top-6 right-6 text-gray-600 hover:text-black z-10"
+              >
+                <X size={24} />
+              </button>
+
+              {/* Left side - Features section */}
+              <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
+                <div style={{ marginTop: '-10px' }}>
+                  <h3 className="text-white text-2xl font-medium" style={{ lineHeight: '1', marginBottom: '1.3rem' }}>
+                    <span className="font-light text-lg">For just 99p a week,</span><br />
+                    <span style={{ fontSize: '1.4rem', color: '#FFFFFF' }}>get exclusive access to</span>
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.4s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Office Hours</h4>
+                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Get personalised support from<br />course leaders when you need it.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.1s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Completely Ad-Free</h4>
+                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Learn without distractions with<br />a completely ad-free experience.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.8s', opacity: 0, animationFillMode: 'forwards' }}>
+                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
+                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Weekly Handpicked Roles</h4>
+                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>We'll send you the top career<br />opportunities to you every week.</p>
+                      </div>
+                    </div>
+
+                    <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
+                      Billed weekly. Cancel anytime.
+                    </p>
+                  </div>
+                </div>
               </div>
-            ) : (
-              <div ref={checkoutRef} style={{ minHeight: '350px' }} />
-            )}
+
+              {/* Right side - Stripe checkout */}
+              <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
+                <div
+                  key={clientSecret}
+                  ref={checkoutRef}
+                  style={{
+                    minHeight: '350px',
+                    paddingTop: '10px',
+                    paddingBottom: '10px'
+                  }}
+                />
+              </div>
+            </div>
           </div>
         </div>
       )}
