@@ -69,6 +69,7 @@ const ProgressHubV2 = () => {
     groupedLessons,
     lessonsMetadata,
     completedLessons,
+    totalCompletedLessons,
     coaches,
     calendlyLink,
     userCertificate,
@@ -160,6 +161,8 @@ const ProgressHubV2 = () => {
         progressPercentage={progressPercentage}
         courseTitle={courseTitle}
         joinedAt={authUser?.created_at}
+        totalCompletedLessons={totalCompletedLessons}
+        userId={authUser?.id}
         onSettingsClick={() => setShowSettings(true)}
       />
 

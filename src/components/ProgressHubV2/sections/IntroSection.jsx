@@ -17,6 +17,49 @@ const formatJoinDate = (dateStr) => {
   return `Joined ${months[date.getMonth()]}-${String(date.getFullYear()).slice(-2)}`;
 };
 
+const ConfettiBurst = () => {
+  const particles = Array.from({ length: 20 }, (_, i) => {
+    const angle = (i / 20) * 360;
+    const distance = 30 + Math.random() * 40;
+    const tx = Math.cos((angle * Math.PI) / 180) * distance;
+    const ty = Math.sin((angle * Math.PI) / 180) * distance;
+    const size = 4 + Math.random() * 4;
+    const delay = Math.random() * 0.3;
+    const shape = Math.random() > 0.5 ? 'circle' : 'square';
+    return { id: i, tx, ty, size, delay, shape };
+  });
+
+  return (
+    <>
+      <style>{`
+        @keyframes confettiBurst {
+          0% { opacity: 1; transform: translate(-50%, -50%) scale(0); }
+          50% { opacity: 1; }
+          100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1); }
+        }
+      `}</style>
+      <div style={{ position: 'absolute', top: '50%', left: '50%', width: 0, height: 0, pointerEvents: 'none', zIndex: 10 }}>
+        {particles.map((p) => (
+          <div
+            key={p.id}
+            style={{
+              position: 'absolute',
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              backgroundColor: '#7714E0',
+              borderRadius: p.shape === 'circle' ? '50%' : '1px',
+              '--tx': `${p.tx}px`,
+              '--ty': `${p.ty}px`,
+              animation: `confettiBurst 1.2s ease-out ${p.delay}s forwards`,
+              opacity: 0,
+            }}
+          />
+        ))}
+      </div>
+    </>
+  );
+};
+
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#6B7280';
@@ -65,16 +108,36 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, onSettingsClick }) => {
+const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
+
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const { displayText: typedName, isComplete: isTypingComplete } = useTypingAnimation(firstName || '', {
     charDelay: 100,
     startDelay: 1000,
     enabled: !!firstName,
   });
+
+  useEffect(() => {
+    if (totalCompletedLessons < 1 || !userId) return;
+
+    const storageKey = `ignite_lesson_tag_confetti_shown_${userId}`;
+    const alreadyShown = localStorage.getItem(storageKey);
+
+    if (!alreadyShown) {
+      setShowConfetti(true);
+      localStorage.setItem(storageKey, 'true');
+
+      const timer = setTimeout(() => {
+        setShowConfetti(false);
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [totalCompletedLessons, userId]);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {
@@ -150,15 +213,29 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             </span>
           </h1>
 
-          {/* Joined Tag */}
-          {formatJoinDate(joinedAt) && (
-            <span
-              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
-              style={{ fontSize: '12px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
-            >
-              {formatJoinDate(joinedAt)}
-            </span>
-          )}
+          {/* Tags Row */}
+          <div className="flex items-center gap-2" style={{ marginTop: '16px' }}>
+            {/* Joined Tag */}
+            {formatJoinDate(joinedAt) && (
+              <span
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
+              >
+                {formatJoinDate(joinedAt)}
+              </span>
+            )}
+
+            {/* Lesson Tag */}
+            {totalCompletedLessons >= 1 && (
+              <span
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
+              >
+                {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
+                {showConfetti && <ConfettiBurst />}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Right Column: Progress Summary + Stats */}

@@ -16,6 +16,7 @@ const useProgressData = () => {
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
   const [completedLessons, setCompletedLessons] = useState([]);
+  const [totalCompletedLessons, setTotalCompletedLessons] = useState(0);
   const [coaches, setCoaches] = useState([]);
   const [calendlyLink, setCalendlyLink] = useState('');
   const [userCertificate, setUserCertificate] = useState(null);
@@ -159,6 +160,20 @@ const useProgressData = () => {
           if (isMounted) setCompletedLessons([]);
         }
 
+        // Fetch total completed lessons across ALL courses
+        try {
+          const { count, error: countError } = await supabase
+            .from('lesson_completions')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', userId);
+
+          if (!countError && isMounted) {
+            setTotalCompletedLessons(count || 0);
+          }
+        } catch {
+          // Not critical
+        }
+
         // Check for certificate
         try {
           const certificates = await getUserCertificates(userId);
@@ -212,6 +227,7 @@ const useProgressData = () => {
     groupedLessons,
     lessonsMetadata,
     completedLessons,
+    totalCompletedLessons,
     coaches,
     calendlyLink,
     userCertificate,
