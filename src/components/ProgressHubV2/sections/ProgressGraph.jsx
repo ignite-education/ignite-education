@@ -216,11 +216,18 @@ const ProgressGraph = ({
       return [parts[0] + ' &', parts.slice(1).join(' & ')];
     }
     if (name.includes('\n')) return name.split('\n');
-    // Split at roughly the midpoint on a word boundary
     const words = name.split(' ');
     if (words.length <= 2) return [name];
-    const mid = Math.ceil(words.length / 2);
-    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+    // Split at the word boundary closest to the character midpoint
+    const charMid = name.length / 2;
+    let bestSplit = 1;
+    let bestDiff = Infinity;
+    for (let i = 1; i < words.length; i++) {
+      const line1Len = words.slice(0, i).join(' ').length;
+      const diff = Math.abs(line1Len - charMid);
+      if (diff < bestDiff) { bestDiff = diff; bestSplit = i; }
+    }
+    return [words.slice(0, bestSplit).join(' '), words.slice(bestSplit).join(' ')];
   };
 
   // Compute center percentage for each module label (midpoint between first & last dot)
@@ -306,9 +313,9 @@ const ProgressGraph = ({
           {hoveredLessonIdx !== null && lessonX[hoveredLessonIdx] !== undefined && (
             <line
               x1={lessonX[hoveredLessonIdx]}
-              y1={PADDING_TOP}
+              y1={PADDING_TOP - GRAPH_HEIGHT * 0.05}
               x2={lessonX[hoveredLessonIdx]}
-              y2={baseY}
+              y2={baseY + 8}
               stroke="#333"
               strokeWidth="1"
             />
@@ -415,7 +422,9 @@ const ProgressGraph = ({
               lineHeight: '1.3',
               marginBottom: '5px',
             }}>
-              {tooltipData.lessonName}
+              {formatModuleName(tooltipData.lessonName).map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
             </div>
             {/* User's score */}
             {tooltipData.userScore !== null && (

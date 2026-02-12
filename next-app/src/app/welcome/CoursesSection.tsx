@@ -287,7 +287,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 width={576}
                 height={144}
                 loading="lazy"
-                style={{ maxWidth: '119px', height: 'auto', marginTop: '10px' }}
+                style={{ maxWidth: '119px', height: 'auto', marginTop: '15px' }}
               />
             </div>
           </div>

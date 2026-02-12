@@ -31,8 +31,10 @@ const RedditCallback = () => {
         setStatus('Connecting to Reddit...');
         await handleRedditCallback(code, state);
 
-        // Redirect back to main page immediately
-        navigate('/');
+        // Redirect back to the page that initiated the auth flow
+        const returnPath = localStorage.getItem('reddit_return_path') || '/';
+        localStorage.removeItem('reddit_return_path');
+        navigate(returnPath);
 
       } catch (err) {
         console.error('Reddit callback error:', err);

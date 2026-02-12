@@ -1,7 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
+
+const extractSubredditFromUrl = (url) => {
+  if (!url) return null;
+  const match = url.match(/reddit\.com\/r\/([^\/]+)/);
+  return match ? `r/${match[1]}` : null;
+};
 
 const useProgressData = () => {
   const { user: authUser, firstName, isInitialized, isAdFree, profilePicture, signOut } = useAuth();
@@ -16,11 +22,50 @@ const useProgressData = () => {
   const [courseReddit, setCourseReddit] = useState({
     channel: 'r/ProductManagement',
     url: 'https://www.reddit.com/r/ProductManagement/',
+    readUrl: 'https://www.reddit.com/r/ProductManagement/',
+    postUrl: 'https://www.reddit.com/r/ProductManagement/',
+    readChannel: 'r/ProductManagement',
+    postChannel: 'r/ProductManagement',
   });
   const [communityPosts, setCommunityPosts] = useState([]);
   const [userLessonScores, setUserLessonScores] = useState({});
   const [globalLessonScores, setGlobalLessonScores] = useState({});
   const hasInitialDataFetchRef = useRef(false);
+  const courseDataResultRef = useRef(null);
+
+  const fetchRedditPosts = useCallback(async (courseDataForFetch, isMounted = true) => {
+    const data = courseDataForFetch || courseDataResultRef.current;
+    if (!data) return;
+    try {
+      const subreddit = (data.reddit_url || '')
+        .replace(/\/$/, '')
+        .split('/r/')[1] || (data.reddit_channel || 'r/ProductManagement').replace(/^r\//, '');
+      const redditData = await getRedditPosts(25, false, subreddit);
+      const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
+      const posts = (Array.isArray(redditData) ? redditData : []).map((post, index) => ({
+        id: `reddit-${post.id}`,
+        redditId: post.id,
+        author: post.author,
+        author_icon: post.author_icon,
+        created_at: post.created_at,
+        title: post.title,
+        content: post.content,
+        tag: post.tag,
+        upvotes: post.upvotes,
+        comments: post.comments,
+        avatar: avatarColors[index % avatarColors.length],
+        url: post.url,
+        source: 'reddit',
+      }));
+      if (isMounted) setCommunityPosts(posts);
+    } catch {
+      if (isMounted) setCommunityPosts([]);
+    }
+  }, []);
+
+  const refetchCommunityPosts = useCallback(() => {
+    return fetchRedditPosts(null, true);
+  }, [fetchRedditPosts]);
 
   useEffect(() => {
     if (!isInitialized) return;
@@ -61,40 +106,26 @@ const useProgressData = () => {
         if (courseDataResult) {
           setCourseData(courseDataResult);
           setCalendlyLink(courseDataResult.calendly_link || '');
+          courseDataResultRef.current = courseDataResult;
 
           // Set reddit info for community forum
+          const readUrl = courseDataResult.reddit_read_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+          const postUrl = courseDataResult.reddit_post_url || courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/';
+          const readChannel = extractSubredditFromUrl(readUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
+          const postChannel = extractSubredditFromUrl(postUrl) || courseDataResult.reddit_channel || 'r/ProductManagement';
+
           setCourseReddit({
             channel: courseDataResult.reddit_channel || 'r/ProductManagement',
             url: courseDataResult.reddit_url || 'https://www.reddit.com/r/ProductManagement/',
+            readUrl,
+            postUrl,
+            readChannel,
+            postChannel,
           });
         }
 
         // Fetch Reddit posts for community forum
-        try {
-          const subreddit = (courseDataResult?.reddit_url || '')
-            .replace(/\/$/, '')
-            .split('/r/')[1] || (courseDataResult?.reddit_channel || 'r/ProductManagement').replace(/^r\//, '');
-          const redditData = await getRedditPosts(25, false, subreddit);
-          const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
-          const posts = (Array.isArray(redditData) ? redditData : []).map((post, index) => ({
-            id: `reddit-${post.id}`,
-            redditId: post.id,
-            author: post.author,
-            author_icon: post.author_icon,
-            created_at: post.created_at,
-            title: post.title,
-            content: post.content,
-            tag: post.tag,
-            upvotes: post.upvotes,
-            comments: post.comments,
-            avatar: avatarColors[index % avatarColors.length],
-            url: post.url,
-            source: 'reddit',
-          }));
-          if (isMounted) setCommunityPosts(posts);
-        } catch {
-          if (isMounted) setCommunityPosts([]);
-        }
+        await fetchRedditPosts(courseDataResult, isMounted);
 
         // Fetch coaches
         try {
@@ -186,6 +217,7 @@ const useProgressData = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
   };

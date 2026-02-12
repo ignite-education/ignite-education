@@ -10,9 +10,11 @@ import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
 import CommunityForumCard from './sections/CommunityForumCard';
+import CreatePostModal from './sections/CreatePostModal';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
 import SettingsModal from '../shared/SettingsModal';
+import { isRedditAuthenticated, getRedditUsername } from '../../lib/reddit';
 
 // Mobile Block Screen
 const MobileBlockScreen = ({ onSignOut }) => {
@@ -53,6 +55,8 @@ const MobileBlockScreen = ({ onSignOut }) => {
 const ProgressHubV2 = () => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [showSettings, setShowSettings] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [pendingPostData, setPendingPostData] = useState(null);
 
   const {
     loading,
@@ -70,6 +74,7 @@ const ProgressHubV2 = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
   } = useProgressData();
@@ -104,6 +109,29 @@ const ProgressHubV2 = () => {
       document.documentElement.style.backgroundColor = originalHtmlBg;
       document.body.style.backgroundColor = originalBodyBg;
     };
+  }, []);
+
+  // Check Reddit auth and reopen post modal after OAuth callback
+  useEffect(() => {
+    const checkRedditAuth = async () => {
+      if (!isRedditAuthenticated()) return;
+
+      const shouldReopenModal = localStorage.getItem('reopen_post_modal');
+      const pendingPost = localStorage.getItem('pending_reddit_post');
+
+      if (shouldReopenModal && pendingPost) {
+        try {
+          const postData = JSON.parse(pendingPost);
+          setPendingPostData(postData);
+          setShowPostModal(true);
+        } catch {
+          // Ignore parse errors
+        }
+        localStorage.removeItem('reopen_post_modal');
+        localStorage.removeItem('pending_reddit_post');
+      }
+    };
+    checkRedditAuth();
   }, []);
 
   // Clean up hash fragments
@@ -152,7 +180,7 @@ const ProgressHubV2 = () => {
             <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} />}
       />
 
       {/* Section 3: Merchandise */}
@@ -165,6 +193,14 @@ const ProgressHubV2 = () => {
       <Footer />
 
       <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+
+      <CreatePostModal
+        isOpen={showPostModal}
+        onClose={() => { setShowPostModal(false); setPendingPostData(null); }}
+        courseReddit={courseReddit}
+        initialPostData={pendingPostData}
+        onPostCreated={refetchCommunityPosts}
+      />
     </div>
   );
 };
