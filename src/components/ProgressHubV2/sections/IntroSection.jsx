@@ -108,17 +108,13 @@ const ShareButton = () => {
 
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
-  const [rotated, setRotated] = useState(false);
+  const [rotation, setRotation] = useState(0);
   const iconColor = hovered ? '#EF0B72' : '#000000';
-
-  useEffect(() => {
-    if (hovered) setRotated(true);
-  }, [hovered]);
 
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
+      onMouseEnter={() => { setHovered(true); setRotation((r) => r + 45); }}
       onMouseLeave={() => setHovered(false)}
       className="flex items-center justify-center rounded-[4px]"
       style={{
@@ -133,7 +129,7 @@ const SettingsCog = ({ onClick }) => {
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ transition: 'transform 0.3s ease', transform: rotated ? 'rotate(45deg)' : 'rotate(0deg)' }}
+        style={{ transition: 'transform 0.3s ease', transform: `rotate(${rotation}deg)` }}
       >
         <path
           d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
@@ -232,10 +228,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                     }, 4000);
                   }
                 }}
-                style={{ width: 61, height: 61 }}
+                style={{ width: 73, height: 73 }}
               />
             ) : (
-              <div style={{ width: 61, height: 61 }} />
+              <div style={{ width: 73, height: 73 }} />
             )}
           </div>
 
