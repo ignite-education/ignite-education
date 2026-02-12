@@ -302,6 +302,18 @@ const ProgressGraph = ({
             />
           ))}
 
+          {/* Vertical hover indicator line */}
+          {hoveredLessonIdx !== null && lessonX[hoveredLessonIdx] !== undefined && (
+            <line
+              x1={lessonX[hoveredLessonIdx]}
+              y1={PADDING_TOP}
+              x2={lessonX[hoveredLessonIdx]}
+              y2={baseY}
+              stroke="#333"
+              strokeWidth="1"
+            />
+          )}
+
           {/* Horizontal separator */}
           <line
             x1={0}

@@ -256,9 +256,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 flex justify-center items-center z-50 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 flex justify-center items-center animate-fadeIn"
       style={{
-        background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+        backdropFilter: 'blur(2.4px)',
+        WebkitBackdropFilter: 'blur(2.4px)',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
+        zIndex: 9999,
         animation: isClosing ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
         padding: '2rem',
         overflowY: 'auto'

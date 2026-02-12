@@ -153,7 +153,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           {/* Joined Tag */}
           {formatJoinDate(joinedAt) && (
             <span
-              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-light"
+              className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
               style={{ fontSize: '12px', letterSpacing: '-0.02em', marginTop: '16px', alignSelf: 'flex-start' }}
             >
               {formatJoinDate(joinedAt)}
