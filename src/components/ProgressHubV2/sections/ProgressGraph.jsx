@@ -156,7 +156,6 @@ const ProgressGraph = ({
     const startAnimation = () => {
       if (hasTriggeredRef.current) return;
       hasTriggeredRef.current = true;
-      setTimeout(() => {
       const startTime = performance.now();
       const duration = 1500;
       const animate = (now) => {
@@ -167,7 +166,6 @@ const ProgressGraph = ({
         if (t < 1) requestAnimationFrame(animate);
       };
       requestAnimationFrame(animate);
-      }, 500);
     };
     window.addEventListener('scroll', startAnimation, { once: true });
     return () => window.removeEventListener('scroll', startAnimation);
@@ -272,7 +270,7 @@ const ProgressGraph = ({
         ref={graphRef}
         onMouseMove={handleGraphMouseMove}
         onMouseLeave={handleGraphMouseLeave}
-        style={{ position: 'relative', height: '120px', cursor: 'crosshair' }}
+        style={{ position: 'relative', height: '120px', cursor: 'pointer' }}
       >
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
@@ -326,7 +324,8 @@ const ProgressGraph = ({
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                transform: 'translate(-50%, -50%)',
+                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.2 : 1})`,
+                transition: 'transform 0.2s ease',
                 backgroundColor: '#888',
                 borderRadius: '1px',
                 pointerEvents: 'none',
@@ -344,7 +343,8 @@ const ProgressGraph = ({
                 top: `${(point.y / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
                 width: '8px',
                 height: '8px',
-                transform: 'translate(-50%, -50%)',
+                transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.2 : 1})`,
+                transition: 'transform 0.2s ease',
                 backgroundColor: '#EF0B72',
                 borderRadius: '1px',
                 pointerEvents: 'none',
@@ -399,7 +399,7 @@ const ProgressGraph = ({
             <div style={{
               color: '#fff',
               fontWeight: 500,
-              fontSize: '0.7rem',
+              fontSize: '0.75rem',
               lineHeight: '1.3',
               marginBottom: '5px',
             }}>
@@ -410,7 +410,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#EF0B72',
                 fontWeight: 500,
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 lineHeight: '1.3',
               }}>
                 {userName}'s Score: {tooltipData.userScore}%
@@ -421,7 +421,7 @@ const ProgressGraph = ({
               <div style={{
                 color: '#fff',
                 fontWeight: 200,
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 lineHeight: '1.3',
               }}>
                 Average Score: {tooltipData.globalScore}%
@@ -444,7 +444,7 @@ const ProgressGraph = ({
                 transform: 'translateX(-50%)',
                 textAlign: 'center',
                 color: '#fff',
-                fontSize: '0.7rem',
+                fontSize: '0.75rem',
                 fontWeight: 300,
                 fontFamily: 'Geist, sans-serif',
                 lineHeight: '1.3',

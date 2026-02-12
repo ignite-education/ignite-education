@@ -282,10 +282,10 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 in-demand by employers.
               </p>
               <Image
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
+                src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
                 alt="Trustpilot"
-                width={200}
-                height={40}
+                width={576}
+                height={144}
                 loading="lazy"
                 style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
               />
