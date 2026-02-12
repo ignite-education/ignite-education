@@ -88,9 +88,12 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, initialPostData, onPos
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
+      className="fixed inset-0 flex items-center justify-center animate-fadeIn"
       style={{
-        background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
+        backdropFilter: 'blur(2.4px)',
+        WebkitBackdropFilter: 'blur(2.4px)',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
+        zIndex: 9999,
         animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
       }}
       onClick={handleCloseModal}

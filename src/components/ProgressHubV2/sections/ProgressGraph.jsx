@@ -211,10 +211,6 @@ const ProgressGraph = ({
 
   // Split module name into two lines at "&" or midpoint
   const formatModuleName = (name) => {
-    if (name.includes(' & ')) {
-      const parts = name.split(' & ');
-      return [parts[0] + ' &', parts.slice(1).join(' & ')];
-    }
     if (name.includes('\n')) return name.split('\n');
     const words = name.split(' ');
     if (words.length <= 2) return [name];
