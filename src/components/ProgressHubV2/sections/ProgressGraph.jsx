@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const SVG_WIDTH = 1200;
 const SVG_HEIGHT = 200;
@@ -112,6 +112,36 @@ const ProgressGraph = ({
     if (modIdx < moduleRanges.length - 1) cursor += MODULE_GAP; // inter-module gap
   });
 
+  // Scroll-triggered animation for pink user dots
+  const containerRef = useRef(null);
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const hasTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasTriggeredRef.current) {
+          hasTriggeredRef.current = true;
+          const startTime = performance.now();
+          const duration = 1000;
+          const animate = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+            setAnimationProgress(eased);
+            if (t < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.3 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Build data points for both series
   const globalPoints = lessons.map((lesson, idx) => {
     const score = effectiveGlobalScores[lesson.key];
@@ -127,11 +157,13 @@ const ProgressGraph = ({
   const userPoints = lessons.map((lesson, idx) => {
     const result = userLessonScores[lesson.key];
     const hasData = result && result.total > 0;
-    const score = hasData ? (result.correct / result.total) * 100 : null;
+    const actualScore = hasData ? (result.correct / result.total) * 100 : null;
+    // Interpolate from 60% to actual score based on animation progress
+    const displayScore = hasData ? 60 + (actualScore - 60) * animationProgress : null;
     return {
       x: lessonX[idx],
-      y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (score / 100) * GRAPH_HEIGHT : null,
-      score,
+      y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (displayScore / 100) * GRAPH_HEIGHT : null,
+      score: displayScore,
       hasData,
     };
   });
@@ -169,7 +201,7 @@ const ProgressGraph = ({
   });
 
   return (
-    <div className="w-full" style={{ marginTop: '8px' }}>
+    <div ref={containerRef} className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
         <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '4px' }}>
           {userName}'s Results
