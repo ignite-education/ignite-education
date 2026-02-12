@@ -33,7 +33,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
           <div className="w-full text-center" style={{ maxWidth: '700px' }}>
             {/* Category Tag */}
             <span
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F8F8F8] rounded-[6px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#FBFBFB] rounded-[6px] font-medium shadow-[0_0_5px_rgba(0,0,0,0.25)]"
               style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
             >
               {getCourseTypeLabel(course)}

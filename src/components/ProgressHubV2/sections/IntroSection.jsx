@@ -19,7 +19,7 @@ const formatJoinDate = (dateStr) => {
 
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
-  const iconColor = hovered ? '#EF0B72' : '#4B5563';
+  const iconColor = hovered ? '#EF0B72' : '#6B7280';
 
   return (
     <div
