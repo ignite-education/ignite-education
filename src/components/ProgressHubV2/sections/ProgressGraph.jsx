@@ -192,7 +192,7 @@ const ProgressGraph = ({
               fill="none"
               stroke="#888"
               strokeWidth="2"
-              strokeDasharray="3 3"
+              strokeDasharray="3 3.2"
             />
           ))}
 
