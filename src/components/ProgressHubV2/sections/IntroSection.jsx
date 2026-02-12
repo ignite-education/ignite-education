@@ -18,12 +18,13 @@ const formatJoinDate = (dateStr) => {
 };
 
 const ConfettiBurst = () => {
-  const particles = Array.from({ length: 20 }, (_, i) => {
-    const angle = (i / 20) * 360;
-    const distance = 30 + Math.random() * 40;
+  const particles = Array.from({ length: 10 }, (_, i) => {
+    // Spread across upper arc: -150deg to -30deg (top-left through top to top-right)
+    const angle = -150 + (i / 9) * 120 + (Math.random() - 0.5) * 20;
+    const distance = 40 + Math.random() * 50;
     const tx = Math.cos((angle * Math.PI) / 180) * distance;
     const ty = Math.sin((angle * Math.PI) / 180) * distance;
-    const size = 4 + Math.random() * 4;
+    const size = 8;
     const delay = Math.random() * 0.3;
     const shape = Math.random() > 0.5 ? 'circle' : 'square';
     return { id: i, tx, ty, size, delay, shape };
@@ -33,12 +34,12 @@ const ConfettiBurst = () => {
     <>
       <style>{`
         @keyframes confettiBurst {
-          0% { opacity: 1; transform: translate(-50%, -50%) scale(0); }
+          0% { opacity: 1; transform: translate(0, 0) scale(0); }
           50% { opacity: 1; }
           100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1); }
         }
       `}</style>
-      <div style={{ position: 'absolute', top: '50%', left: '50%', width: 0, height: 0, pointerEvents: 'none', zIndex: 10 }}>
+      <div style={{ position: 'absolute', top: 0, left: '50%', width: 0, height: 0, pointerEvents: 'none', zIndex: -1 }}>
         {particles.map((p) => (
           <div
             key={p.id}
@@ -62,14 +63,14 @@ const ConfettiBurst = () => {
 
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
-  const iconColor = hovered ? '#EF0B72' : '#6B7280';
+  const iconColor = hovered ? '#EF0B72' : '#000000';
 
   return (
     <div
       onClick={onClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="bg-[#F8F8F8] flex items-center justify-center rounded-[4px]"
+      className="flex items-center justify-center rounded-[4px]"
       style={{
         position: 'absolute',
         bottom: '30px',
@@ -128,14 +129,19 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     const alreadyShown = localStorage.getItem(storageKey);
 
     if (!alreadyShown) {
-      setShowConfetti(true);
       localStorage.setItem(storageKey, 'true');
+      const startTimer = setTimeout(() => {
+        setShowConfetti(true);
+      }, 1000);
 
-      const timer = setTimeout(() => {
+      const hideTimer = setTimeout(() => {
         setShowConfetti(false);
-      }, 3000);
+      }, 4000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(startTimer);
+        clearTimeout(hideTimer);
+      };
     }
   }, [totalCompletedLessons, userId]);
 
@@ -218,7 +224,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#D3D3D3] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
@@ -228,7 +234,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F8F8F8] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#D3D3D3] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
@@ -260,7 +266,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                 { label: '134 learners', value: 'in the UK' },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
-                  <div className="bg-[#F8F8F8] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                  <div className="bg-[#D3D3D3] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>

@@ -133,6 +133,8 @@ const LearningHub = () => {
   const isProgrammaticScrollRef = React.useRef(false); // Track programmatic scroll to prevent handler interference
   const isCarouselReadyRef = React.useRef(false); // Ref version of isCarouselReady for stable observer access
   const currentLessonSectionsRef = React.useRef([]); // Ref for stable section data access in observer
+  const lottieRef = React.useRef(null);
+  const loopCountRef = React.useRef(0);
 
   // Event handler refs - store current handlers to avoid recreating listeners
   const handleSelectionRef = React.useRef(null);
@@ -166,6 +168,16 @@ const LearningHub = () => {
       setTypingMessageIndex(0);
     }, 2500);
   }, [isInitialized]);
+
+  // Delayed start for sidebar Lottie logo animation
+  useEffect(() => {
+    if (lottieData && lottieRef.current) {
+      const timer = setTimeout(() => {
+        lottieRef.current?.play();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [lottieData]);
 
   // Set Safari theme color to black for this page
   useEffect(() => {
@@ -2549,19 +2561,31 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         <div className="flex-shrink-0 px-8" style={{ paddingTop: '19.38px', paddingBottom: '5px' }}>
           <div className="flex items-center justify-between">
             <div
-              className="w-auto cursor-pointer"
-              style={{
-                backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'left center',
-                width: '108.8px',
-                height: '36px',
-                marginBottom: '12px',
-                marginLeft: '-5.44px'
-              }}
+              className="cursor-pointer"
+              style={{ marginBottom: '12px', marginLeft: '-5.44px' }}
               onClick={() => navigate('/')}
-            />
+            >
+              {lottieData && Object.keys(lottieData).length > 0 ? (
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={lottieData}
+                  loop={true}
+                  autoplay={false}
+                  onLoopComplete={() => {
+                    loopCountRef.current += 1;
+                    if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                      lottieRef.current.pause();
+                      setTimeout(() => {
+                        lottieRef.current?.goToAndPlay(0);
+                      }, 4000);
+                    }
+                  }}
+                  style={{ width: 36, height: 36 }}
+                />
+              ) : (
+                <div style={{ width: 36, height: 36 }} />
+              )}
+            </div>
           </div>
           <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
         </div>
