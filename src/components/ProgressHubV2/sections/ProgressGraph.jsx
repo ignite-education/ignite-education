@@ -240,12 +240,19 @@ const ProgressGraph = ({
       gp?.hasData ? gp.y : Infinity,
       up?.hasData ? up.y : Infinity,
     );
+    const effectiveAnchorY = anchorY === Infinity ? 60 : anchorY;
+    // Dot's pixel y in the 120px graph container
+    const dotYPx = (effectiveAnchorY / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120;
+    // Tooltip top edge: centered at 60px, half of 100px height = 10px
+    const tooltipTopPx = 60 - 50;
+    const arrowTopPx = Math.max(12, Math.min(88, dotYPx - tooltipTopPx));
+
     return {
       lessonName: lessons[hoveredLessonIdx]?.name || `Lesson ${hoveredLessonIdx + 1}`,
       userScore: up?.hasData ? Math.round(up.score) : null,
       globalScore: gp?.hasData ? Math.round(gp.score) : null,
       anchorX,
-      anchorY: anchorY === Infinity ? 60 : anchorY, // fallback to mid-graph
+      arrowTopPx,
       side: hoveredLessonIdx < lessons.length / 2 ? 'right' : 'left',
     };
   })() : null;
@@ -350,15 +357,15 @@ const ProgressGraph = ({
             style={{
               position: 'absolute',
               left: `${(tooltipData.anchorX / SVG_WIDTH) * 100}%`,
-              top: `${(tooltipData.anchorY / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120}px`,
+              top: '50%',
               transform: tooltipData.side === 'right'
                 ? 'translate(16px, -50%)'
                 : 'translate(calc(-100% - 16px), -50%)',
               backgroundColor: '#171717',
               borderRadius: '3px',
               padding: '12px 17px',
-              width: '250px',
-              height: '125px',
+              width: '225px',
+              height: '100px',
               zIndex: 50,
               pointerEvents: 'none',
               fontFamily: 'Geist, sans-serif',
@@ -374,9 +381,9 @@ const ProgressGraph = ({
             <div
               style={{
                 position: 'absolute',
-                top: '50%',
+                top: `${tooltipData.arrowTopPx}px`,
                 [tooltipData.side === 'right' ? 'left' : 'right']: '-7px',
-                transform: 'translateY(-50%)',
+                transform: 'translateY(-7px)',
                 width: 0,
                 height: 0,
                 borderTop: '7px solid transparent',
