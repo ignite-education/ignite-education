@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
 
 const useProgressData = () => {
   const { user: authUser, firstName, isInitialized, isAdFree, profilePicture, signOut } = useAuth();
@@ -18,6 +18,8 @@ const useProgressData = () => {
     url: 'https://www.reddit.com/r/ProductManagement/',
   });
   const [communityPosts, setCommunityPosts] = useState([]);
+  const [userLessonScores, setUserLessonScores] = useState({});
+  const [globalLessonScores, setGlobalLessonScores] = useState({});
   const hasInitialDataFetchRef = useRef(false);
 
   useEffect(() => {
@@ -137,6 +139,20 @@ const useProgressData = () => {
           // Certificate not critical
         }
 
+        // Fetch lesson scores (user + global)
+        try {
+          const [userScores, globalScores] = await Promise.all([
+            getLessonScores(userId, courseId),
+            getGlobalLessonScores(courseId),
+          ]);
+          if (isMounted) {
+            setUserLessonScores(userScores);
+            setGlobalLessonScores(globalScores);
+          }
+        } catch {
+          // Scores not critical — graph will render without data
+        }
+
         if (isMounted) {
           hasInitialDataFetchRef.current = true;
           setLoading(false);
@@ -170,6 +186,8 @@ const useProgressData = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    userLessonScores,
+    globalLessonScores,
   };
 };
 

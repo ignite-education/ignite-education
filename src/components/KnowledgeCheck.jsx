@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Check } from 'lucide-react';
-import { logKnowledgeCheck } from '../lib/api';
+import { logKnowledgeCheck, logQuestionResults } from '../lib/api';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -245,7 +245,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, less
             text: `${questionNum}. ${data.question}`,
             isComplete: false,
             isQuestion: true,
-            questionId: data.questionId
+            questionId: data.questionId,
+            sourceModule: data.sourceModule,
+            sourceLesson: data.sourceLesson,
           }];
         });
       } else if (data.needsGeneration) {
@@ -302,6 +304,8 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, less
         const newAnswer = {
           question: lastQuestionMessage.text,
           questionId: lastQuestionMessage.questionId,
+          sourceModule: lastQuestionMessage.sourceModule,
+          sourceLesson: lastQuestionMessage.sourceLesson,
           answer: userAnswer,
           isCorrect: data.isCorrect,
           feedback: data.feedback,
@@ -373,6 +377,9 @@ const KnowledgeCheck = ({ isOpen, onClose, onPass, lessonContext, courseId, less
         passed,
         allAnswers
       );
+
+      // Log individual question results attributed to their source lesson
+      logQuestionResults(userIdToLog, courseId, moduleNum, lessonNum, allAnswers);
 
       console.log(`✅ Knowledge check logged: ${correctCount}/${TOTAL_QUESTIONS} (${passed ? 'PASSED' : 'FAILED'})`);
       // Note: onPass will be called when user clicks Proceed or closes the modal

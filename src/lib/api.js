@@ -684,6 +684,66 @@ export async function logKnowledgeCheck(userId, courseId, moduleNumber, lessonNu
   return data;
 }
 
+/**
+ * Log individual question results attributed to their source lesson.
+ * Each quiz completion inserts one row per answer (typically 3 rows).
+ */
+export async function logQuestionResults(userId, courseId, quizModule, quizLesson, answers) {
+  const rows = answers.map(a => ({
+    user_id: userId,
+    course_id: courseId,
+    source_module: a.sourceModule ?? quizModule,
+    source_lesson: a.sourceLesson ?? quizLesson,
+    quiz_module: quizModule,
+    quiz_lesson: quizLesson,
+    question_id: a.questionId || null,
+    question_text: a.question,
+    answer_text: a.answer,
+    is_correct: a.isCorrect,
+    feedback: a.feedback || null,
+    completed_at: new Date().toISOString()
+  }));
+
+  const { error } = await supabase.from('question_results').insert(rows);
+  if (error) {
+    console.error('Error logging question results:', error);
+  }
+}
+
+/**
+ * Get aggregated per-lesson scores from individual question results.
+ * Returns { "module-lesson": { correct, total }, ... }
+ */
+export async function getLessonScores(userId, courseId) {
+  const { data, error } = await supabase
+    .from('question_results')
+    .select('source_module, source_lesson, is_correct')
+    .eq('user_id', userId)
+    .eq('course_id', courseId);
+
+  if (error || !data) return {};
+
+  const scores = {};
+  for (const row of data) {
+    const key = `${row.source_module}-${row.source_lesson}`;
+    if (!scores[key]) scores[key] = { correct: 0, total: 0 };
+    scores[key].total++;
+    if (row.is_correct) scores[key].correct++;
+  }
+  return scores;
+}
+
+export async function getGlobalLessonScores(courseId) {
+  try {
+    const response = await fetch(`${API_URL}/api/lesson-scores/global/${courseId}`);
+    if (!response.ok) throw new Error(`Status ${response.status}`);
+    return await response.json();
+  } catch (err) {
+    console.error('Error fetching global lesson scores:', err);
+    return {};
+  }
+}
+
 // =====================================================
 // POST LIKES FUNCTIONS
 // =====================================================

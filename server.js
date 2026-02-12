@@ -565,6 +565,48 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Claude chat server is running' });
 });
 
+// Global lesson scores — average across all users (bypasses RLS via service role)
+const globalScoresCache = {};
+const CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+app.get('/api/lesson-scores/global/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    // Check cache
+    const cached = globalScoresCache[courseId];
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      return res.json(cached.data);
+    }
+
+    const { data, error } = await supabase
+      .from('question_results')
+      .select('source_module, source_lesson, is_correct')
+      .eq('course_id', courseId);
+
+    if (error) throw error;
+
+    const buckets = {};
+    for (const row of data || []) {
+      const key = `${row.source_module}-${row.source_lesson}`;
+      if (!buckets[key]) buckets[key] = { correct: 0, total: 0 };
+      buckets[key].total++;
+      if (row.is_correct) buckets[key].correct++;
+    }
+
+    const scores = {};
+    for (const [key, v] of Object.entries(buckets)) {
+      scores[key] = Math.round((v.correct / v.total) * 1000) / 10; // one decimal
+    }
+
+    globalScoresCache[courseId] = { data: scores, timestamp: Date.now() };
+    res.json(scores);
+  } catch (err) {
+    console.error('Error fetching global lesson scores:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Knowledge Check - Get a random question from the pre-generated question bank
 app.post('/api/knowledge-check/question', async (req, res) => {
   try {

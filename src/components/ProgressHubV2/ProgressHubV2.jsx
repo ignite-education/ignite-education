@@ -68,6 +68,8 @@ const ProgressHubV2 = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    userLessonScores,
+    globalLessonScores,
   } = useProgressData();
 
   const {
@@ -133,7 +135,7 @@ const ProgressHubV2 = () => {
       {/* Section 2: Course Details */}
       <CourseDetailsSection
         courseTitle={courseTitle}
-        graph={<ProgressGraph userName={firstName} />}
+        graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} />}
         left={
           <>
             <LessonSlider
