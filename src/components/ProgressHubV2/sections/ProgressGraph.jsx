@@ -122,7 +122,7 @@ const ProgressGraph = ({
       if (hasTriggeredRef.current) return;
       hasTriggeredRef.current = true;
       const startTime = performance.now();
-      const duration = 1000;
+      const duration = 1500;
       const animate = (now) => {
         const elapsed = now - startTime;
         const t = Math.min(elapsed / duration, 1);
@@ -219,7 +219,7 @@ const ProgressGraph = ({
               fill="none"
               stroke="#888"
               strokeWidth="2"
-              strokeDasharray="3 3.2"
+              strokeDasharray="3 3.5"
             />
           ))}
 
