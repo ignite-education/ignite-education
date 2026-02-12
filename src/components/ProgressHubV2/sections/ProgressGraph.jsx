@@ -243,8 +243,8 @@ const ProgressGraph = ({
     const effectiveAnchorY = anchorY === Infinity ? 60 : anchorY;
     // Dot's pixel y in the 120px graph container
     const dotYPx = (effectiveAnchorY / (PADDING_TOP + GRAPH_HEIGHT + 10)) * 120;
-    // Tooltip top edge: centered at 60px, half of 100px height = 10px
-    const tooltipTopPx = 60 - 50;
+    // Tooltip top edge: centered at 72px (60% of 120px), half of 100px height = 22px
+    const tooltipTopPx = 72 - 50;
     const arrowTopPx = Math.max(12, Math.min(88, dotYPx - tooltipTopPx));
 
     return {
@@ -357,7 +357,7 @@ const ProgressGraph = ({
             style={{
               position: 'absolute',
               left: `${(tooltipData.anchorX / SVG_WIDTH) * 100}%`,
-              top: '50%',
+              top: '60%',
               transform: tooltipData.side === 'right'
                 ? 'translate(16px, -50%)'
                 : 'translate(calc(-100% - 16px), -50%)',
