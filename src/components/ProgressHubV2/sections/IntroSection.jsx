@@ -108,7 +108,12 @@ const ShareButton = () => {
 
 const SettingsCog = ({ onClick }) => {
   const [hovered, setHovered] = useState(false);
+  const [rotated, setRotated] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#000000';
+
+  useEffect(() => {
+    if (hovered) setRotated(true);
+  }, [hovered]);
 
   return (
     <div
@@ -128,7 +133,7 @@ const SettingsCog = ({ onClick }) => {
         viewBox="0 0 20 20"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ transition: 'transform 0.3s ease', transform: hovered ? 'rotate(45deg)' : 'rotate(0deg)' }}
+        style={{ transition: 'transform 0.3s ease', transform: rotated ? 'rotate(45deg)' : 'rotate(0deg)' }}
       >
         <path
           d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"
@@ -303,12 +308,16 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Stats Row */}
             <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
               {[
-                { label: "You're in the top", value: '15% of learners' },
+                { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
                 { label: "You're a late", value: 'night learner' },
                 { label: '134 learners', value: 'in the UK' },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
-                  <div className="bg-[#E6E6E6] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                  {stat.image ? (
+                    <img src={stat.image} alt="" style={{ width: '75px', height: '75px', objectFit: 'contain', marginBottom: '8px' }} />
+                  ) : (
+                    <div className="bg-[#E6E6E6] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                  )}
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
