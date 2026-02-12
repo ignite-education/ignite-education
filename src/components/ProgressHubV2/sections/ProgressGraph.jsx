@@ -7,6 +7,12 @@ const PADDING_TOP = 20;
 const PADDING_BOTTOM = 70;
 const GRAPH_HEIGHT = SVG_HEIGHT - PADDING_TOP - PADDING_BOTTOM;
 
+// Generate straight-line path through points
+const generateStraightPath = (points) => {
+  if (points.length < 2) return '';
+  return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+};
+
 // Generate smooth bezier path through points
 const generateSmoothPath = (points) => {
   if (points.length < 2) return '';
@@ -118,12 +124,16 @@ const ProgressGraph = ({
     };
   });
 
-  // Filter to points that have data for path generation
-  const validGlobalPoints = globalPoints.filter((p) => p.hasData);
-  const validUserPoints = userPoints.filter((p) => p.hasData);
+  // Generate separate paths per module (no lines across module boundaries)
+  const globalPaths = moduleRanges.map((mod) => {
+    const points = globalPoints.slice(mod.startIdx, mod.endIdx + 1).filter((p) => p.hasData);
+    return points.length >= 2 ? generateStraightPath(points) : '';
+  }).filter(Boolean);
 
-  const globalPath = validGlobalPoints.length >= 2 ? generateSmoothPath(validGlobalPoints) : '';
-  const userPath = validUserPoints.length >= 2 ? generateSmoothPath(validUserPoints) : '';
+  const userPaths = moduleRanges.map((mod) => {
+    const points = userPoints.slice(mod.startIdx, mod.endIdx + 1).filter((p) => p.hasData);
+    return points.length >= 2 ? generateStraightPath(points) : '';
+  }).filter(Boolean);
 
   // Split module name into two lines at "&" or midpoint
   const formatModuleName = (name) => {
@@ -151,30 +161,32 @@ const ProgressGraph = ({
         className="w-full"
         preserveAspectRatio="xMidYMid meet"
       >
-        {/* Global average line (dashed grey) */}
-        {globalPath && (
+        {/* Global average lines (dashed grey, per module) */}
+        {globalPaths.map((d, i) => (
           <path
-            d={globalPath}
+            key={`gpath-${i}`}
+            d={d}
             fill="none"
             stroke="#888"
             strokeWidth="2"
             strokeDasharray="6 4"
             opacity="0.6"
           />
-        )}
+        ))}
 
-        {/* User score line (solid pink) */}
-        {userPath && (
+        {/* User score lines (solid pink, per module) */}
+        {userPaths.map((d, i) => (
           <path
-            d={userPath}
+            key={`upath-${i}`}
+            d={d}
             fill="none"
             stroke="#EF0B72"
             strokeWidth="2.5"
             strokeLinecap="round"
           />
-        )}
+        ))}
 
-        {/* Global average dots (grey) */}
+        {/* Global average dots (grey squares) */}
         {globalPoints.map((point, i) =>
           point.hasData ? (
             <rect
@@ -184,13 +196,11 @@ const ProgressGraph = ({
               width={6}
               height={6}
               fill="#888"
-              opacity="0.7"
-              transform={`rotate(45, ${point.x}, ${point.y})`}
             />
           ) : null
         )}
 
-        {/* User score dots (pink) */}
+        {/* User score dots (pink squares) */}
         {userPoints.map((point, i) =>
           point.hasData ? (
             <rect
@@ -202,7 +212,6 @@ const ProgressGraph = ({
               fill="#EF0B72"
               stroke="black"
               strokeWidth="1.5"
-              transform={`rotate(45, ${point.x}, ${point.y})`}
             />
           ) : null
         )}
@@ -232,7 +241,7 @@ const ProgressGraph = ({
                   x={centerX}
                   y={baseY + 26 + lineIdx * 14}
                   textAnchor="middle"
-                  fill="#999"
+                  fill="#fff"
                   fontSize="10"
                   fontFamily="Geist, sans-serif"
                 >
