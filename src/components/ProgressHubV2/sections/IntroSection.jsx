@@ -55,9 +55,12 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
     const lessonName = getLessonName(completed.module_number, completed.lesson_number);
     const score = getLessonScore(completed.module_number, completed.lesson_number);
     const scoreText = score !== null ? `You scored ${score}% on ${lessonName}. ` : '';
+    const linkText = `adding the ${courseTitle} course to your LinkedIn`;
     return {
       headline: `Congratulations on completing your first lesson, ${firstName}.`,
-      body: `${scoreText}Mark your achievement by adding the ${courseTitle} course to your LinkedIn. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
+      body: `${scoreText}Mark your achievement by ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
+      linkText,
+      linkUrl: `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationId=106869661&certUrl=https://ignite.education`,
     };
   }
 
@@ -292,7 +295,61 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
   }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
 
-  const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
+  // Renders full body text with typed/untyped visibility + optional link
+  // Full text is always in the DOM so word-wrapping stays consistent as characters type in
+  const renderBodyWithTyping = (typedLength) => {
+    const fullText = introText.body || '';
+
+    if (!introText.linkText || !introText.linkUrl) {
+      return (
+        <>
+          {fullText.substring(0, typedLength)}
+          {typedLength < fullText.length && <span style={{ visibility: 'hidden' }}>{fullText.substring(typedLength)}</span>}
+        </>
+      );
+    }
+
+    const linkStart = fullText.indexOf(introText.linkText);
+    if (linkStart === -1) {
+      return (
+        <>
+          {fullText.substring(0, typedLength)}
+          {typedLength < fullText.length && <span style={{ visibility: 'hidden' }}>{fullText.substring(typedLength)}</span>}
+        </>
+      );
+    }
+
+    const linkEnd = linkStart + introText.linkText.length;
+
+    const renderSegment = (start, end, isLink) => {
+      const segText = fullText.substring(start, end);
+      const typedInSeg = Math.max(0, Math.min(typedLength - start, end - start));
+      const typed = segText.substring(0, typedInSeg);
+      const untyped = segText.substring(typedInSeg);
+
+      const content = (
+        <>
+          {typed}
+          {untyped && <span style={{ visibility: 'hidden' }}>{untyped}</span>}
+        </>
+      );
+
+      if (isLink) {
+        return <a key="link" href={introText.linkUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: 'inherit' }}>{content}</a>;
+      }
+      return content;
+    };
+
+    return (
+      <>
+        {renderSegment(0, linkStart, false)}
+        {renderSegment(linkStart, linkEnd, true)}
+        {renderSegment(linkEnd, fullText.length, false)}
+      </>
+    );
+  };
+
+  const { displayText: typedBody, isComplete: isBodyComplete } = useTypingAnimation(introText.body || '', {
     charDelay: 35,
     startDelay: 1000,
     pausePoints: getPausePoints(introText.body || '', 600, 700),
@@ -428,17 +485,12 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
               {introText.headline}
             </p>
-            <div style={{ position: 'relative', marginBottom: '50px' }}>
-              <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, visibility: 'hidden' }} aria-hidden="true">
-                {introText.body}
-              </p>
-              <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, position: 'absolute', top: 0, left: 0, right: 0 }}>
-                {typedBody}
-              </p>
-            </div>
+            <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '43px' }}>
+              {renderBodyWithTyping(typedBody.length)}
+            </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
+            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: isBodyComplete ? 1 : 0, transition: 'opacity 0.5s ease' }}>
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
                 { label: "You're a late", value: 'night learner', image: '/moon.png' },
@@ -446,9 +498,9 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (
-                    <img src={stat.image} alt="" style={{ width: '75px', height: '75px', objectFit: 'contain', marginBottom: '8px' }} />
+                    <img src={stat.image} alt="" style={{ width: '68px', height: '68px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
-                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '68px', height: '68px', marginBottom: '8px' }} />
                   )}
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
