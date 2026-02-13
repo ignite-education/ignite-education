@@ -60,7 +60,7 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
       headline: `Congratulations on completing your first lesson, ${firstName}.`,
       body: `${scoreText}Mark your achievement by ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
       linkText,
-      linkUrl: `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationId=106869661&certUrl=https://ignite.education`,
+      linkUrl: `https://www.linkedin.com/profile/add?startTask=EDUCATION_NAME&organizationId=106869661&fieldOfStudy=${encodeURIComponent(courseTitle)}`,
     };
   }
 
@@ -335,7 +335,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
       );
 
       if (isLink) {
-        return <a key="link" href={introText.linkUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline', color: 'inherit' }}>{content}</a>;
+        return <a key="link" href={introText.linkUrl} target="_blank" rel="noopener noreferrer" className="intro-link" style={{ textDecoration: 'underline', color: 'inherit', transition: 'color 0.2s ease' }}>{content}</a>;
       }
       return content;
     };
@@ -406,6 +406,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
+      <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
       <div className="flex w-full gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
