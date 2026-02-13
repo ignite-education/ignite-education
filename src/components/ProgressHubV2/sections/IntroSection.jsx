@@ -295,7 +295,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
   const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
     charDelay: 35,
     startDelay: 1000,
-    pausePoints: getPausePoints(introText.body || '', 400, 500),
+    pausePoints: getPausePoints(introText.body || '', 600, 700),
     enabled: !!introText.body,
   });
 
