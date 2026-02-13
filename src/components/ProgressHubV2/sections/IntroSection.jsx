@@ -267,8 +267,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F2F2F2] rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
+                className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', boxShadow: '0 0 4px rgba(103,103,103,0.35)' }}
               >
                 {formatJoinDate(joinedAt)}
               </span>
@@ -277,8 +277,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F2F2F2] rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
+                className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', boxShadow: '0 0 4px rgba(103,103,103,0.35)' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
                 {showConfetti && <ConfettiBurst />}
@@ -305,8 +305,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
-                { label: "You're a late", value: 'night learner' },
-                { label: '134 learners', value: 'in the UK' },
+                { label: "You're a late", value: 'night learner', image: '/moon.png' },
+                { label: '134 learners', value: 'in the UK', image: '/big-ben.png' },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (

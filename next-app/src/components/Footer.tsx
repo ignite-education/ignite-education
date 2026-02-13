@@ -17,7 +17,7 @@ export default function Footer({ className = '' }: FooterProps) {
           />
           <div className="flex flex-col gap-1">
             <span className="text-white font-semibold" style={{ fontSize: '15px' }}>Built in London, UK.</span>
-            <span className="text-white font-light" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
+            <span className="text-white font-extralight" style={{ fontSize: '12px' }}>Ignite Education AI Ltd.</span>
           </div>
         </div>
 
@@ -27,12 +27,12 @@ export default function Footer({ className = '' }: FooterProps) {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Product</span>
             <div className="flex flex-col gap-2">
-              <Link href="/courses" className="text-white hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</Link>
+              <Link href="/courses" className="text-white font-light hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</Link>
               <a
                 href="https://shop.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Store
@@ -41,7 +41,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 href="https://forms.gle/XsRJE8RKWxTTsMom8"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Feedback
@@ -56,21 +56,21 @@ export default function Footer({ className = '' }: FooterProps) {
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
               <Link
                 href="/release-notes"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Releases
               </Link>
               <Link
                 href="/terms"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Terms of Service
               </Link>
               <Link
                 href="/privacy"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Privacy Policy
@@ -87,7 +87,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 href="https://www.linkedin.com/school/ignite-courses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 LinkedIn
@@ -96,7 +96,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 href="https://www.reddit.com/user/ignite-education/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Reddit
@@ -105,7 +105,7 @@ export default function Footer({ className = '' }: FooterProps) {
                 href="https://www.linkedin.com/school/ignite-courses/jobs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Careers
@@ -119,7 +119,7 @@ export default function Footer({ className = '' }: FooterProps) {
             <div className="flex flex-col gap-2">
               <a
                 href="mailto:hello@ignite.education"
-                className="text-white hover:text-[#EF0B72] transition"
+                className="text-white font-light hover:text-[#EF0B72] transition"
                 style={{ fontSize: '14px' }}
               >
                 Contact
