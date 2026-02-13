@@ -349,11 +349,18 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     );
   };
 
-  const { displayText: typedBody, isComplete: isBodyComplete } = useTypingAnimation(introText.body || '', {
+  const { displayText: typedHeadline, isComplete: isHeadlineComplete } = useTypingAnimation(introText.headline || '', {
     charDelay: 35,
     startDelay: 1000,
+    pausePoints: getPausePoints(introText.headline || '', 600, 700),
+    enabled: !!introText.headline,
+  });
+
+  const { displayText: typedBody, isComplete: isBodyComplete } = useTypingAnimation(introText.body || '', {
+    charDelay: 35,
+    startDelay: 300,
     pausePoints: getPausePoints(introText.body || '', 600, 700),
-    enabled: !!introText.body,
+    enabled: isHeadlineComplete,
   });
 
   useEffect(() => {
@@ -483,20 +490,20 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              {introText.headline}
+              {typedHeadline}
             </p>
             <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '43px' }}>
               {renderBodyWithTyping(typedBody.length)}
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: isBodyComplete ? 1 : 0, transition: 'opacity 0.5s ease' }}>
+            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
                 { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: '134 learners', value: 'in the UK', image: '/big-ben.png' },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center flex flex-col items-center">
+                <div key={idx} className="text-center flex flex-col items-center" style={{ opacity: isBodyComplete ? 1 : 0, transition: 'opacity 0.5s ease', transitionDelay: isBodyComplete ? `${idx * 400}ms` : '0ms' }}>
                   {stat.image ? (
                     <img src={stat.image} alt="" style={{ width: '68px', height: '68px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
