@@ -282,10 +282,22 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
   }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
 
-  const { displayText: typedName } = useTypingAnimation(firstName || '', {
+  const { displayText: typedName, isComplete: isNameComplete } = useTypingAnimation(firstName || '', {
     charDelay: 100,
     startDelay: 1000,
     enabled: !!firstName,
+  });
+
+  const { displayText: typedHeadline, isComplete: isHeadlineComplete } = useTypingAnimation(introText.headline || '', {
+    charDelay: 75,
+    startDelay: 300,
+    enabled: isNameComplete,
+  });
+
+  const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
+    charDelay: 30,
+    startDelay: 200,
+    enabled: isHeadlineComplete,
   });
 
   useEffect(() => {
@@ -390,8 +402,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
+                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
               </span>
@@ -400,8 +412,8 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
+                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
                 {showConfetti && <ConfettiBurst />}
@@ -415,10 +427,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              {introText.headline}
+              {typedHeadline}
             </p>
-            <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em', fontWeight: 300 }}>
-              {introText.body}
+            <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em', fontWeight: 300 }}>
+              {typedBody}
             </p>
 
             {/* Stats Row */}
