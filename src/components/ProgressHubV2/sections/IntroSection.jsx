@@ -292,24 +292,11 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
   }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
 
-  const { displayText: typedName, isComplete: isNameComplete } = useTypingAnimation(firstName || '', {
-    charDelay: 100,
-    startDelay: 1000,
-    enabled: !!firstName,
-  });
-
-  const { displayText: typedHeadline, isComplete: isHeadlineComplete } = useTypingAnimation(introText.headline || '', {
-    charDelay: 50,
-    startDelay: 300,
-    pausePoints: getPausePoints(introText.headline || ''),
-    enabled: isNameComplete,
-  });
-
   const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
-    charDelay: 50,
-    startDelay: 200,
+    charDelay: 40,
+    startDelay: 1000,
     pausePoints: getPausePoints(introText.body || ''),
-    enabled: isHeadlineComplete,
+    enabled: !!introText.body,
   });
 
   useEffect(() => {
@@ -405,7 +392,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <h1 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
-              {typedName}
+              {firstName}
             </span>
           </h1>
 
@@ -437,15 +424,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         {/* Right Column: Progress Summary + Stats */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
           <div style={{ maxWidth: '550px' }}>
-            {/* Progress Summary — invisible full text holds space, typed text overlays */}
-            <div style={{ position: 'relative', marginBottom: '6px' }}>
-              <p className="text-black font-semibold" style={{ fontSize: '20px', visibility: 'hidden' }} aria-hidden="true">
-                {introText.headline}
-              </p>
-              <p className="text-black font-semibold" style={{ fontSize: '20px', position: 'absolute', top: 0, left: 0, right: 0 }}>
-                {typedHeadline}
-              </p>
-            </div>
+            {/* Progress Summary */}
+            <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
+              {introText.headline}
+            </p>
             <div style={{ position: 'relative', marginBottom: '50px' }}>
               <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, visibility: 'hidden' }} aria-hidden="true">
                 {introText.body}
