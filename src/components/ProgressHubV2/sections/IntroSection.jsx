@@ -11,6 +11,16 @@ const seededRandom = (seed) => {
 
 const pickRandom = (arr, seed) => arr[Math.floor(seededRandom(seed) * arr.length)];
 
+// Generate pause points after every ',' and '.' in text
+const getPausePoints = (text, commaPause = 300, periodPause = 400) => {
+  const points = [];
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === ',') points.push({ after: i + 1, duration: commaPause });
+    else if (text[i] === '.') points.push({ after: i + 1, duration: periodPause });
+  }
+  return points;
+};
+
 const generateIntroText = ({ firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
   const completedCount = completedLessons?.length || 0;
 
@@ -289,14 +299,16 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
   });
 
   const { displayText: typedHeadline, isComplete: isHeadlineComplete } = useTypingAnimation(introText.headline || '', {
-    charDelay: 75,
+    charDelay: 50,
     startDelay: 300,
+    pausePoints: getPausePoints(introText.headline || ''),
     enabled: isNameComplete,
   });
 
   const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
-    charDelay: 30,
+    charDelay: 50,
     startDelay: 200,
+    pausePoints: getPausePoints(introText.body || ''),
     enabled: isHeadlineComplete,
   });
 
@@ -402,7 +414,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
               >
                 {formatJoinDate(joinedAt)}
@@ -412,7 +424,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#E6E6E6] rounded-[4px] font-normal"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
@@ -425,13 +437,23 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         {/* Right Column: Progress Summary + Stats */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
           <div style={{ maxWidth: '550px' }}>
-            {/* Progress Summary */}
-            <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              {typedHeadline}
-            </p>
-            <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em', fontWeight: 300 }}>
-              {typedBody}
-            </p>
+            {/* Progress Summary — invisible full text holds space, typed text overlays */}
+            <div style={{ position: 'relative', marginBottom: '6px' }}>
+              <p className="text-black font-semibold" style={{ fontSize: '20px', visibility: 'hidden' }} aria-hidden="true">
+                {introText.headline}
+              </p>
+              <p className="text-black font-semibold" style={{ fontSize: '20px', position: 'absolute', top: 0, left: 0, right: 0 }}>
+                {typedHeadline}
+              </p>
+            </div>
+            <div style={{ position: 'relative', marginBottom: '50px' }}>
+              <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, visibility: 'hidden' }} aria-hidden="true">
+                {introText.body}
+              </p>
+              <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, position: 'absolute', top: 0, left: 0, right: 0 }}>
+                {typedBody}
+              </p>
+            </div>
 
             {/* Stats Row */}
             <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
@@ -444,7 +466,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                   {stat.image ? (
                     <img src={stat.image} alt="" style={{ width: '75px', height: '75px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
-                    <div className="bg-[#E6E6E6] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
+                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '75px', height: '75px', marginBottom: '8px' }} />
                   )}
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
