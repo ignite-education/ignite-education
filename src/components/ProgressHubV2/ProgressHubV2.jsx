@@ -164,6 +164,10 @@ const ProgressHubV2 = () => {
         totalCompletedLessons={totalCompletedLessons}
         userId={authUser?.id}
         onSettingsClick={() => setShowSettings(true)}
+        completedLessons={completedLessons}
+        lessonsMetadata={lessonsMetadata}
+        userLessonScores={userLessonScores}
+        upcomingLessons={upcomingLessons}
       />
 
       {/* Section 2: Course Details */}

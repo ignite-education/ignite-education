@@ -1,7 +1,126 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
+
+// Seed-based random to avoid flicker on re-renders (changes daily)
+const seededRandom = (seed) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+const pickRandom = (arr, seed) => arr[Math.floor(seededRandom(seed) * arr.length)];
+
+const generateIntroText = ({ firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
+  const completedCount = completedLessons?.length || 0;
+
+  // Helper: look up lesson name from metadata
+  const getLessonName = (moduleNum, lessonNum) => {
+    const lesson = lessonsMetadata?.find(
+      (l) => l.module_number === moduleNum && l.lesson_number === lessonNum
+    );
+    return lesson?.lesson_name || `Lesson ${lessonNum}`;
+  };
+
+  // Helper: get score percentage for a lesson
+  const getLessonScore = (moduleNum, lessonNum) => {
+    const key = `${moduleNum}-${lessonNum}`;
+    const score = userLessonScores?.[key];
+    if (!score || score.total === 0) return null;
+    return Math.round((score.correct / score.total) * 100);
+  };
+
+  // --- Profile 1: No lessons completed ---
+  if (completedCount === 0) {
+    const firstLessonName = getLessonName(1, 1);
+    return {
+      headline: `Welcome to the ${courseTitle} course.`,
+      body: `This is where you can find upcoming lessons, get support from industry professionals and connect with the global community. To get started, click on the ${firstLessonName} card below. Let's get started, ${firstName}!`,
+    };
+  }
+
+  // --- Profile 2: Exactly 1 lesson completed ---
+  if (completedCount === 1) {
+    const completed = completedLessons[0];
+    const lessonName = getLessonName(completed.module_number, completed.lesson_number);
+    const score = getLessonScore(completed.module_number, completed.lesson_number);
+    const scoreText = score !== null ? `You scored ${score}% on ${lessonName}. ` : '';
+    return {
+      headline: `Congratulations on completing your first lesson, ${firstName}.`,
+      body: `${scoreText}Mark your achievement by adding the ${courseTitle} course to your LinkedIn. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
+    };
+  }
+
+  // --- Profile 3: More than 1 lesson completed ---
+  const daySeed = Math.floor(Date.now() / 86400000); // changes daily
+
+  const intros = ['Overall,', 'So far,', 'Currently,'];
+  const outros = ['Keep it up,', 'Keep climbing,', 'You\'ve got this,', 'Continue the great work,'];
+  const randomIntro = pickRandom(intros, daySeed);
+  const randomOutro = pickRandom(outros, daySeed + 1);
+
+  // Compute average score across completed lessons
+  let totalCorrect = 0;
+  let totalQuestions = 0;
+  const lessonScoresWithNames = [];
+
+  for (const completed of completedLessons) {
+    const key = `${completed.module_number}-${completed.lesson_number}`;
+    const score = userLessonScores?.[key];
+    if (score && score.total > 0) {
+      totalCorrect += score.correct;
+      totalQuestions += score.total;
+      const pct = Math.round((score.correct / score.total) * 100);
+      lessonScoresWithNames.push({
+        name: getLessonName(completed.module_number, completed.lesson_number),
+        score: pct,
+      });
+    }
+  }
+
+  const avgScore = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : null;
+
+  // Score assessment
+  let scoreAssessment = "you're progressing well";
+  if (avgScore !== null) {
+    if (avgScore > 80) scoreAssessment = "you're scoring great";
+    else if (avgScore > 50) scoreAssessment = "you're scoring well";
+  }
+
+  // Top 2 highest-scoring lessons
+  const sortedByScore = [...lessonScoresWithNames].sort((a, b) => b.score - a.score);
+  const topLessons = sortedByScore.slice(0, 2);
+
+  // Next upcoming lesson (first not completed)
+  const completedSet = new Set(completedLessons.map((c) => `${c.module_number}-${c.lesson_number}`));
+  const nextLesson = upcomingLessons?.find(
+    (l) => !completedSet.has(`${l.module_number}-${l.lesson_number}`)
+  );
+
+  // Build body
+  let body = `${randomIntro} ${scoreAssessment}.`;
+
+  if (avgScore !== null) {
+    body += ` Your average score so far is ${avgScore}%`;
+    if (topLessons.length >= 2) {
+      body += `, with particular strengths in ${topLessons[0].name} and ${topLessons[1].name}`;
+    } else if (topLessons.length === 1) {
+      body += `, with particular strengths in ${topLessons[0].name}`;
+    }
+    body += '.';
+  }
+
+  if (nextLesson) {
+    body += ` Your next lesson is ${nextLesson.lesson_name || `Lesson ${nextLesson.lesson_number}`}.`;
+  }
+
+  body += ` ${randomOutro} ${firstName}!`;
+
+  return {
+    headline: `You're ${progressPercentage}% through the ${courseTitle} course.`,
+    body,
+  };
+};
 
 const getGreeting = () => {
   const hour = new Date().getHours();
@@ -152,14 +271,18 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick }) => {
+const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
 
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const { displayText: typedName, isComplete: isTypingComplete } = useTypingAnimation(firstName || '', {
+  const introText = useMemo(() => generateIntroText({
+    firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
+  }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
+
+  const { displayText: typedName } = useTypingAnimation(firstName || '', {
     charDelay: 100,
     startDelay: 1000,
     enabled: !!firstName,
@@ -268,7 +391,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {formatJoinDate(joinedAt) && (
               <span
                 className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', boxShadow: '0 0 4px rgba(103,103,103,0.35)' }}
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
               >
                 {formatJoinDate(joinedAt)}
               </span>
@@ -278,7 +401,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {totalCompletedLessons >= 1 && (
               <span
                 className="inline-block px-[8px] py-[3px] text-black bg-white/80 backdrop-blur-sm rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', boxShadow: '0 0 4px rgba(103,103,103,0.35)' }}
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
               >
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
                 {showConfetti && <ConfettiBurst />}
@@ -292,13 +415,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              You're <span>{progressPercentage}%</span> through the {courseTitle} course.
+              {introText.headline}
             </p>
             <p className="text-black" style={{ fontSize: '18px', lineHeight: '1.6', marginBottom: '50px', letterSpacing: '-0.01em', fontWeight: 300 }}>
-              Overall, you're scoring great. You're average so far
-              is 73%, with particular strengths in Design Thinking
-              and Prototyping Tools. Your next lesson is Agile Methodologies.
-              Keep it up, {firstName}!
+              {introText.body}
             </p>
 
             {/* Stats Row */}
