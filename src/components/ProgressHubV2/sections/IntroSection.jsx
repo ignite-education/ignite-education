@@ -293,9 +293,9 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
   }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
 
   const { displayText: typedBody } = useTypingAnimation(introText.body || '', {
-    charDelay: 40,
+    charDelay: 35,
     startDelay: 1000,
-    pausePoints: getPausePoints(introText.body || ''),
+    pausePoints: getPausePoints(introText.body || '', 400, 500),
     enabled: !!introText.body,
   });
 
