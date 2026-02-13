@@ -11,16 +11,6 @@ const seededRandom = (seed) => {
 
 const pickRandom = (arr, seed) => arr[Math.floor(seededRandom(seed) * arr.length)];
 
-// Generate pause points after every ',' and '.' in text
-const getPausePoints = (text, commaPause = 300, periodPause = 400) => {
-  const points = [];
-  for (let i = 0; i < text.length; i++) {
-    if (text[i] === ',') points.push({ after: i + 1, duration: commaPause });
-    else if (text[i] === '.') points.push({ after: i + 1, duration: periodPause });
-  }
-  return points;
-};
-
 const generateIntroText = ({ firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
   const completedCount = completedLessons?.length || 0;
 
@@ -55,12 +45,12 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
     const lessonName = getLessonName(completed.module_number, completed.lesson_number);
     const score = getLessonScore(completed.module_number, completed.lesson_number);
     const scoreText = score !== null ? `You scored ${score}% on ${lessonName}. ` : '';
-    const linkText = `adding the ${courseTitle} course to your LinkedIn`;
+    const linkText = 'to your LinkedIn';
     return {
       headline: `Congratulations on completing your first lesson, ${firstName}.`,
-      body: `${scoreText}Mark your achievement by ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
+      body: `${scoreText}Mark your achievement by adding the ${courseTitle} course ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
       linkText,
-      linkUrl: `https://www.linkedin.com/profile/add?startTask=EDUCATION_NAME&organizationId=106869661&fieldOfStudy=${encodeURIComponent(courseTitle)}`,
+      linkUrl: `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationId=106869661&certUrl=https://ignite.education`,
     };
   }
 
@@ -295,72 +285,26 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
   }), [firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons]);
 
-  // Renders full body text with typed/untyped visibility + optional link
-  // Full text is always in the DOM so word-wrapping stays consistent as characters type in
-  const renderBodyWithTyping = (typedLength) => {
-    const fullText = introText.body || '';
-
-    if (!introText.linkText || !introText.linkUrl) {
-      return (
-        <>
-          {fullText.substring(0, typedLength)}
-          {typedLength < fullText.length && <span style={{ visibility: 'hidden' }}>{fullText.substring(typedLength)}</span>}
-        </>
-      );
-    }
-
-    const linkStart = fullText.indexOf(introText.linkText);
-    if (linkStart === -1) {
-      return (
-        <>
-          {fullText.substring(0, typedLength)}
-          {typedLength < fullText.length && <span style={{ visibility: 'hidden' }}>{fullText.substring(typedLength)}</span>}
-        </>
-      );
-    }
-
-    const linkEnd = linkStart + introText.linkText.length;
-
-    const renderSegment = (start, end, isLink) => {
-      const segText = fullText.substring(start, end);
-      const typedInSeg = Math.max(0, Math.min(typedLength - start, end - start));
-      const typed = segText.substring(0, typedInSeg);
-      const untyped = segText.substring(typedInSeg);
-
-      const content = (
-        <>
-          {typed}
-          {untyped && <span style={{ visibility: 'hidden' }}>{untyped}</span>}
-        </>
-      );
-
-      if (isLink) {
-        return <a key="link" href={introText.linkUrl} target="_blank" rel="noopener noreferrer" className="intro-link" style={{ textDecoration: 'underline', color: 'inherit', transition: 'color 0.2s ease' }}>{content}</a>;
-      }
-      return content;
-    };
-
+  const renderBodyWithLink = (text) => {
+    if (!introText.linkText || !introText.linkUrl) return text;
+    const idx = text.indexOf(introText.linkText);
+    if (idx === -1) return text;
+    const before = text.substring(0, idx);
+    const linkPart = text.substring(idx, idx + introText.linkText.length);
+    const after = text.substring(idx + introText.linkText.length);
     return (
       <>
-        {renderSegment(0, linkStart, false)}
-        {renderSegment(linkStart, linkEnd, true)}
-        {renderSegment(linkEnd, fullText.length, false)}
+        {before}
+        <a href={introText.linkUrl} target="_blank" rel="noopener noreferrer" className="intro-link" style={{ textDecoration: 'underline', color: 'inherit', transition: 'font-weight 0.2s ease' }}>{linkPart}</a>
+        {after}
       </>
     );
   };
 
-  const { displayText: typedHeadline, isComplete: isHeadlineComplete } = useTypingAnimation(introText.headline || '', {
-    charDelay: 35,
+  const { displayText: typedName } = useTypingAnimation(firstName || '', {
+    charDelay: 100,
     startDelay: 1000,
-    pausePoints: getPausePoints(introText.headline || '', 600, 700),
-    enabled: !!introText.headline,
-  });
-
-  const { displayText: typedBody, isComplete: isBodyComplete } = useTypingAnimation(introText.body || '', {
-    charDelay: 35,
-    startDelay: 300,
-    pausePoints: getPausePoints(introText.body || '', 600, 700),
-    enabled: isHeadlineComplete,
+    enabled: !!firstName,
   });
 
   useEffect(() => {
@@ -406,7 +350,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
-      <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
+      <style>{`.intro-link:hover { font-weight: 400 !important; }`}</style>
       <div className="flex w-full gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
@@ -457,7 +401,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <h1 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
-              {firstName}
+              {typedName}
             </span>
           </h1>
 
@@ -491,10 +435,10 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              {typedHeadline}
+              {introText.headline}
             </p>
             <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '43px' }}>
-              {renderBodyWithTyping(typedBody.length)}
+              {renderBodyWithLink(introText.body)}
             </p>
 
             {/* Stats Row */}
@@ -504,7 +448,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
                 { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: '134 learners', value: 'in the UK', image: '/big-ben.png' },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center flex flex-col items-center" style={{ opacity: isBodyComplete ? 1 : 0, transition: 'opacity 0.5s ease', transitionDelay: isBodyComplete ? `${idx * 400}ms` : '0ms' }}>
+                <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (
                     <img src={stat.image} alt="" style={{ width: '68px', height: '68px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
