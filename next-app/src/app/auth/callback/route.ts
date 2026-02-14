@@ -33,12 +33,21 @@ export async function GET(request: Request) {
           addToResendAudience(user.email, firstName, lastName)
         }
 
-        // Check enrollment status to decide redirect destination
+        // Check enrollment status and role to decide redirect destination
         const { data } = await supabase
           .from('users')
-          .select('enrolled_course')
+          .select('enrolled_course, role')
           .eq('id', user.id)
           .maybeSingle()
+
+        // Admin redirect: send admin/teacher to admin portal, students to welcome
+        const redirectParam = searchParams.get('redirect')
+        if (redirectParam === 'admin') {
+          if (data?.role === 'admin' || data?.role === 'teacher') {
+            return NextResponse.redirect('https://admin.ignite.education')
+          }
+          return NextResponse.redirect(`${origin}/welcome`)
+        }
 
         const destination = data?.enrolled_course ? '/progress' : '/courses'
         return NextResponse.redirect(`${origin}${destination}`)

@@ -4494,77 +4494,16 @@ const ProgressHub = () => {
         </div>
       )}
 
-      {/* Floating Admin/Teacher Navigation Box */}
+      {/* Floating Admin Portal Link */}
       {(userRole === 'teacher' || userRole === 'admin') && (
-        <div className="fixed bottom-8 right-8 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl z-50 group/menu hover:min-w-[240px] transition-all duration-300 overflow-hidden">
-          {/* Compact View - Icon Only */}
-          <div className="p-3 group-hover/menu:hidden flex items-center justify-center">
-            <Settings size={24} className="text-pink-400" />
-          </div>
-
-          {/* Expanded View - On Hover */}
-          <div className="hidden group-hover/menu:block p-4">
-            <div className="flex flex-col gap-3">
-              <div className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
-                {userRole === 'admin' ? 'Admin Tools' : 'Teacher Tools'}
-              </div>
-
-              {/* Curriculum Upload Link */}
-              <button
-                onClick={() => navigate('/admin/curriculum')}
-                className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
-              >
-                <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
-                <span className="text-sm font-medium">Curriculum Upload</span>
-              </button>
-
-              {/* Analytics Dashboard Link - Only for Admins */}
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => navigate('/admin/analytics')}
-                  className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
-                >
-                  <svg
-                    className="w-[18px] h-[18px] text-pink-400 group-hover/item:text-pink-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                  <span className="text-sm font-medium">Analytics Dashboard</span>
-                </button>
-              )}
-
-              {/* Blog Management - Only for Admins */}
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => navigate('/admin/blog')}
-                  className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
-                >
-                  <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
-                  <span className="text-sm font-medium">Blog Management</span>
-                </button>
-              )}
-
-              {/* Release Notes Management - Only for Admins */}
-              {userRole === 'admin' && (
-                <button
-                  onClick={() => navigate('/admin/release-notes')}
-                  className="flex items-center gap-3 px-4 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition group/item"
-                >
-                  <FileEdit size={18} className="text-pink-400 group-hover/item:text-pink-300" />
-                  <span className="text-sm font-medium">Release Notes</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <a
+          href="https://admin.ignite.education"
+          className="fixed bottom-8 right-8 p-3 bg-gray-900 border border-gray-700 rounded-lg shadow-2xl z-50 hover:bg-gray-800 transition-colors flex items-center gap-2 group/admin"
+          title="Admin Portal"
+        >
+          <Settings size={24} className="text-pink-400" />
+          <span className="hidden group-hover/admin:inline text-sm font-medium text-white pr-1">Admin Portal</span>
+        </a>
       )}
     </div>
   );

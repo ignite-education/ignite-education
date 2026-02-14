@@ -40,6 +40,9 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
       'Content-Type': 'application/json',
     },
   },
+  cookieOptions: {
+    domain: '.ignite.education',
+  },
 })
 
 // One-time cleanup: remove stale Supabase auth tokens from localStorage

@@ -30,7 +30,7 @@
 
     { "source": "/progress", "destination": "/index.html" },
     { "source": "/learning", "destination": "/index.html" },
-    { "source": "/admin/:path*", "destination": "/index.html" },
+    { "source": "/admin/:path*", "destination": "https://admin.ignite.education/:path*" },
     { "source": "/auth/:path*", "destination": "/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],

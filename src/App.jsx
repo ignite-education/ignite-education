@@ -14,16 +14,19 @@ const SimpleLoader = () => (
   </div>
 )
 
+// Redirect old /admin/* routes to admin.ignite.education
+const AdminRedirect = () => {
+  useEffect(() => {
+    window.location.href = 'https://admin.ignite.education'
+  }, [])
+  return null
+}
+
 // Lazy load all route components for code splitting
 const ProgressHub = lazy(() => import('./components/ProgressHub'))
 const RedditCallback = lazy(() => import('./components/RedditCallback'))
 const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
-const CurriculumUploadNew = lazy(() => import('./pages/CurriculumUploadNew'))
-const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'))
-const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'))
-const BlogManagement = lazy(() => import('./pages/BlogManagement'))
-const ReleaseNotesManagement = lazy(() => import('./pages/ReleaseNotesManagement'))
 const ProgressHubV2 = lazy(() => import('./components/ProgressHubV2'))
 const NotFound = lazy(() => import('./components/NotFound'))
 
@@ -60,33 +63,9 @@ function App() {
                 <LearningHub />
               </ProtectedRoute>
             } />
-            <Route path="/admin/curriculum" element={
-              <ProtectedRoute>
-                <CurriculumUploadNew />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/analytics" element={
-              <ProtectedRoute>
-                <AnalyticsDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/courses" element={
-              <ProtectedRoute>
-                <CoursesDashboard />
-              </ProtectedRoute>
-            } />
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
-            <Route path="/admin/blog" element={
-              <ProtectedRoute>
-                <BlogManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/release-notes" element={
-              <ProtectedRoute>
-                <ReleaseNotesManagement />
-              </ProtectedRoute>
-            } />
+            <Route path="/admin/*" element={<AdminRedirect />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

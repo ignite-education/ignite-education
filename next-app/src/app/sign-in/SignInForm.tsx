@@ -88,18 +88,30 @@ export default function SignInForm() {
     setError('')
     setLoading(true)
 
+    const redirectParam = searchParams.get('redirect')
+
     try {
       if (isLogin) {
         const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
 
-        // Check enrollment to redirect enrolled users to /progress
+        // Check role + enrollment to decide redirect destination
         if (signInData.user) {
           const { data: userData } = await supabase
             .from('users')
-            .select('enrolled_course')
+            .select('enrolled_course, role')
             .eq('id', signInData.user.id)
             .maybeSingle()
+
+          // Admin redirect: send admin/teacher to admin portal, students to welcome
+          if (redirectParam === 'admin') {
+            if (userData?.role === 'admin' || userData?.role === 'teacher') {
+              window.location.href = 'https://admin.ignite.education'
+              return
+            }
+            window.location.href = '/welcome'
+            return
+          }
 
           if (userData?.enrolled_course) {
             window.location.href = '/progress'
@@ -134,10 +146,15 @@ export default function SignInForm() {
     setLoading(true)
 
     try {
+      const redirectParam = searchParams.get('redirect')
+      const callbackParams = redirectParam === 'admin'
+        ? '?next=/courses&redirect=admin'
+        : '?next=/courses'
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${siteUrl}/auth/callback?next=/courses`,
+          redirectTo: `${siteUrl}/auth/callback${callbackParams}`,
         },
       })
       if (error) throw error
