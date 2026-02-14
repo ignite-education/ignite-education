@@ -188,12 +188,17 @@ const CourseManagement = () => {
       // Get next display order
       const maxOrder = courses.reduce((max, course) => Math.max(max, course.display_order || 0), 0);
 
+      // Specialisms must always use modules_and_lessons
+      const effectiveStructureType = (formData.course_type || 'specialism') === 'specialism'
+        ? 'modules_and_lessons'
+        : (formData.structure_type || 'modules_and_lessons');
+
       const courseData = {
         name: generatedName,
         title: formData.title,
         status: formData.status,
         course_type: formData.course_type || 'specialism',
-        structure_type: formData.structure_type || 'modules_and_lessons',
+        structure_type: effectiveStructureType,
         modules: totalModules > 1 ? String(totalModules) : 'Multiple',
         lessons: totalLessons,
         description: formData.description,
@@ -236,11 +241,16 @@ const CourseManagement = () => {
       const totalModules = formData.modules.length;
       const totalLessons = formData.modules.reduce((sum, mod) => sum + (mod.lessons?.length || 0), 0);
 
+      // Specialisms must always use modules_and_lessons
+      const effectiveStructureType = (formData.course_type || 'specialism') === 'specialism'
+        ? 'modules_and_lessons'
+        : (formData.structure_type || 'modules_and_lessons');
+
       const courseData = {
         title: formData.title,
         status: formData.status,
         course_type: formData.course_type || 'specialism',
-        structure_type: formData.structure_type || 'modules_and_lessons',
+        structure_type: effectiveStructureType,
         modules: totalModules > 1 ? String(totalModules) : 'Multiple',
         lessons: totalLessons,
         description: formData.description,
@@ -480,7 +490,20 @@ const CourseManagement = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Type</label>
                 <select
                   value={formData.course_type || 'specialism'}
-                  onChange={(e) => setFormData({ ...formData, course_type: e.target.value })}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    if (newType === 'specialism' && formData.structure_type === 'lessons_only') {
+                      const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                      setFormData({
+                        ...formData,
+                        course_type: newType,
+                        structure_type: 'modules_and_lessons',
+                        modules: allLessons.length > 0 ? [{ name: '', lessons: allLessons }] : [{ name: '', lessons: [{ name: '' }] }]
+                      });
+                    } else {
+                      setFormData({ ...formData, course_type: newType });
+                    }
+                  }}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 >
                   <option value="specialism">Specialism</option>
@@ -498,9 +521,7 @@ const CourseManagement = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      // When switching to modules_and_lessons, ensure proper structure
                       if (formData.structure_type === 'lessons_only') {
-                        // Flatten all lessons into one module
                         const allLessons = formData.modules.flatMap(m => m.lessons || []);
                         setFormData({
                           ...formData,
@@ -522,8 +543,9 @@ const CourseManagement = () => {
                   </button>
                   <button
                     type="button"
+                    disabled={formData.course_type === 'specialism'}
                     onClick={() => {
-                      // When switching to lessons_only, flatten all lessons
+                      if (formData.course_type === 'specialism') return;
                       if (formData.structure_type === 'modules_and_lessons') {
                         const allLessons = formData.modules.flatMap(m => m.lessons || []);
                         setFormData({
@@ -536,9 +558,11 @@ const CourseManagement = () => {
                       }
                     }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
-                      formData.structure_type === 'lessons_only'
-                        ? 'border-pink-500 bg-pink-50 text-pink-700'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      formData.course_type === 'specialism'
+                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                        : formData.structure_type === 'lessons_only'
+                          ? 'border-pink-500 bg-pink-50 text-pink-700'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                     }`}
                   >
                     <div className="font-semibold text-sm mb-1">Lessons Only</div>
@@ -546,7 +570,9 @@ const CourseManagement = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  This affects how content is displayed on course pages.
+                  {formData.course_type === 'specialism'
+                    ? 'Specialisms always use Modules & Lessons.'
+                    : 'This affects how content is displayed on course pages.'}
                 </p>
               </div>
 
@@ -883,7 +909,20 @@ const CourseManagement = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Course Type</label>
                 <select
                   value={formData.course_type || 'specialism'}
-                  onChange={(e) => setFormData({ ...formData, course_type: e.target.value })}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    if (newType === 'specialism' && formData.structure_type === 'lessons_only') {
+                      const allLessons = formData.modules.flatMap(m => m.lessons || []);
+                      setFormData({
+                        ...formData,
+                        course_type: newType,
+                        structure_type: 'modules_and_lessons',
+                        modules: allLessons.length > 0 ? [{ name: '', lessons: allLessons }] : [{ name: '', lessons: [{ name: '' }] }]
+                      });
+                    } else {
+                      setFormData({ ...formData, course_type: newType });
+                    }
+                  }}
                   className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
                 >
                   <option value="specialism">Specialism</option>
@@ -901,9 +940,7 @@ const CourseManagement = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      // When switching to modules_and_lessons, ensure proper structure
                       if (formData.structure_type === 'lessons_only') {
-                        // Flatten all lessons into one module
                         const allLessons = formData.modules.flatMap(m => m.lessons || []);
                         setFormData({
                           ...formData,
@@ -925,8 +962,9 @@ const CourseManagement = () => {
                   </button>
                   <button
                     type="button"
+                    disabled={formData.course_type === 'specialism'}
                     onClick={() => {
-                      // When switching to lessons_only, flatten all lessons
+                      if (formData.course_type === 'specialism') return;
                       if (formData.structure_type === 'modules_and_lessons') {
                         const allLessons = formData.modules.flatMap(m => m.lessons || []);
                         setFormData({
@@ -939,9 +977,11 @@ const CourseManagement = () => {
                       }
                     }}
                     className={`px-4 py-3 border-2 rounded-lg text-left transition ${
-                      formData.structure_type === 'lessons_only'
-                        ? 'border-pink-500 bg-pink-50 text-pink-700'
-                        : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
+                      formData.course_type === 'specialism'
+                        ? 'border-gray-200 bg-gray-50 text-gray-400 cursor-not-allowed opacity-60'
+                        : formData.structure_type === 'lessons_only'
+                          ? 'border-pink-500 bg-pink-50 text-pink-700'
+                          : 'border-gray-300 bg-white text-gray-700 hover:border-gray-400'
                     }`}
                   >
                     <div className="font-semibold text-sm mb-1">Lessons Only</div>
@@ -949,7 +989,9 @@ const CourseManagement = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  This affects how content is displayed on course pages.
+                  {formData.course_type === 'specialism'
+                    ? 'Specialisms always use Modules & Lessons.'
+                    : 'This affects how content is displayed on course pages.'}
                 </p>
               </div>
 
