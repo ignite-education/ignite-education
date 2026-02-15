@@ -122,7 +122,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   return (
     <>
       <div style={{ marginTop: '1.5rem', minHeight: '160px' }}>
-        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.75rem' }}>Office Hours</h2>
+        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
         <div className="rounded-lg flex items-center" style={{ padding: '1rem', minHeight: '100px', background: '#7714E0' }}>
           {coaches || calendlyLink ? (
             <div className="flex gap-2.5 w-full items-center">
@@ -143,16 +143,16 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
                         {coaches[0].linkedin_url ? (
                           <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
+                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
                           </a>
                         ) : (
                           <>
-                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.3', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
+                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
                           </>
                         )}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>{coaches[0].description}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
                       </div>
                 </div>
               ) : (
@@ -172,7 +172,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                             ) : (
                               <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                             )}
-                            <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.2' }}>{coach.name}</span>
+                            <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
                             {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                           </a>
                         ) : (
@@ -184,7 +184,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                                 ) : (
                                   <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
                                 )}
-                                <h3 className="text-white mb-0 truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%', lineHeight: '1.2' }}>{coach.name}</h3>
+                                <h3 className="text-white mb-0 truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</h3>
                                 {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                               </>
                             ) : (
