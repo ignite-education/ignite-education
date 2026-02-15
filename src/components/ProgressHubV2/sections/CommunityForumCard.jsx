@@ -175,7 +175,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                 onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
                 onClick={() => togglePost(post)}
               >
-                <div className="flex gap-2 mb-2" style={{ alignItems: 'flex-start' }}>
+                <div className="flex mb-2" style={{ alignItems: 'flex-start', gap: '1rem' }}>
                   {post.author_icon ? (
                     <img
                       src={post.author_icon}
