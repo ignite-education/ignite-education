@@ -61,7 +61,8 @@
       "Bash(Ignite Education\"\\)\n- Truncate course page meta descriptions to 160 chars \\(were 435-564\\)\n- Add OG/Twitter images to welcome and courses pages\n- Add OG/Twitter meta tags to reset-password page\n- Add SEO validation script \\(next-app/scripts/validate-seo.mjs\\)\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
       "Bash(# Check if /admin/courses is matched by a rewrite echo \"\"=== Admin route test ===\"\" curl -s -o /dev/null -w \"\"Status: %{http_code}\\\\nFinal URL: %{url_effective}\"\" -L https://ignite.education/admin/courses echo \"\"\"\" echo \"\"\"\" # Check the auth callback redirect more carefully echo \"\"=== Auth callback redirect ===\"\" curl -s -D - -o /dev/null https://ignite.education/auth/callback)",
       "Bash(# Test if the auth callback redirect issue is only with direct curl \\(missing x-forwarded-host\\) # vs through the Vercel rewrite proxy \\(which should set x-forwarded-host\\) echo \"\"=== Auth callback with headers ===\"\" curl -s -D - -o /dev/null \"\"https://ignite.education/auth/callback\"\")",
-      "WebFetch(domain:addtoprofile.linkedin.com)"
+      "WebFetch(domain:addtoprofile.linkedin.com)",
+      "Bash(git check-ignore:*)"
     ],
     "deny": [],
     "ask": []

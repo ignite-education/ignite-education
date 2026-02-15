@@ -243,12 +243,12 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     }}
                   />
                   <div className="flex-1">
-                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
+                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '-1%', lineHeight: '1.2' }}>
+                        <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.2' }}>
                           <span className="mt-0.5 text-white">•</span>
                           <span>{bulletPoint}</span>
                         </li>
