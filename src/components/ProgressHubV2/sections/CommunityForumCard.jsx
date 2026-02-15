@@ -146,10 +146,10 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
           style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
           title="Create a post"
         >
-          <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black">
+          <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
                     <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5" />
                     <polyline points="14 2 14 8 20 8" />
-                    <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.96 5.42-5.43Z" className="group-hover:text-pink-500 group-hover:-translate-x-[2px] group-hover:translate-y-[2px] transition-all duration-300" />
+                    <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.96 5.42-5.43Z" className="group-hover:-translate-x-[2px] group-hover:translate-y-[2px] transition-transform duration-300" />
                   </svg>
         </button>
       </div>
@@ -174,7 +174,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
             <div key={post.id}>
               <div
                 className="rounded-lg cursor-pointer transition-colors"
-                style={{ background: '#171717', padding: '1.5rem' }}
+                style={{ background: '#171717', padding: '1.25rem' }}
                 onMouseEnter={(e) => e.currentTarget.style.background = '#212121'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
                 onClick={() => togglePost(post)}
