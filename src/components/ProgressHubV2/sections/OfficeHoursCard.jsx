@@ -152,7 +152,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                             {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
                           </>
                         )}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.8rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
+                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
                       </div>
                 </div>
               ) : (
