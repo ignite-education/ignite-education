@@ -402,7 +402,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName}
-              {!isComplete && <span className="animate-blink font-light">|</span>}
+              {!isComplete && <span className="animate-blink font-light" style={{ color: '#F0F0F0' }}>|</span>}
             </span>
           </h1>
 
