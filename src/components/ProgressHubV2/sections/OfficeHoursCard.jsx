@@ -144,14 +144,11 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         {coaches[0].linkedin_url ? (
                           <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                             <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
                           </a>
                         ) : (
-                          <>
-                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
-                          </>
+                          <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
                         )}
+                        {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
                         {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
                       </div>
                 </div>
@@ -164,38 +161,32 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       displayCoaches.push(coaches && coaches[i] ? coaches[i] : null);
                     }
                     return displayCoaches.map((coach, index) => (
-                      <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group">
-                        {coach && coach.linkedin_url ? (
-                          <a href={coach.linkedin_url} target="_blank" rel="noopener noreferrer" className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center cursor-pointer">
-                            {coach.image_url ? (
-                              <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
-                            ) : (
-                              <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
-                            )}
-                            <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
-                            {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
-                          </a>
-                        ) : (
-                          <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
-                            {coach ? (
-                              <>
-                                {coach.image_url ? (
-                                  <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
-                                ) : (
-                                  <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
-                                )}
-                                <h3 className="text-white mb-0 truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</h3>
-                                {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
-                              </>
-                            ) : (
-                              <>
+                      <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer" onClick={handleOpenCalendly}>
+                        <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
+                          {coach ? (
+                            <>
+                              {coach.image_url ? (
+                                <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
+                              ) : (
                                 <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
-                                <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
-                                <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
-                              </>
-                            )}
-                          </div>
-                        )}
+                              )}
+                              {coach.linkedin_url ? (
+                                <a href={coach.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
+                                  <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
+                                </a>
+                              ) : (
+                                <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
+                              )}
+                              {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
+                              <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
+                              <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
+                            </>
+                          )}
+                        </div>
                       </div>
                     ));
                   })()}

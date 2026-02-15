@@ -26,7 +26,7 @@ const BlogCard = ({ post, className = '', onClick = null }) => {
 
         <div className="p-4 bg-white rounded-b-sm flex items-center justify-between">
           <div className="flex-1 pr-3">
-            <h3 className="font-semibold text-gray-900 line-clamp-2" style={{ fontSize: '1.21rem', marginBottom: '0.1rem' }}>
+            <h3 className="font-medium text-gray-900 line-clamp-2" style={{ fontSize: '1.21rem', marginBottom: '0.1rem' }}>
               {title}
             </h3>
 

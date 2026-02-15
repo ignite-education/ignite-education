@@ -193,7 +193,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-2" style={{ marginTop: '-4px', marginBottom: '0.4rem' }}>
-                      <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
+                      <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
                     <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>
@@ -223,7 +223,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                 <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
                   <div className="rounded-lg p-3" style={{ background: '#171717' }}>
                     <h4 className="text-xs font-semibold text-white mb-2">
-                      Comments ({postComments[post.id]?.length || 0})
+                      Comments
                     </h4>
 
                     {/* Comment input */}
@@ -258,10 +258,10 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       {postComments[post.id] && postComments[post.id].length > 0 ? (
                         postComments[post.id].map(comment => (
                           <div key={comment.id}>
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-xs text-white/60">{getTimeAgo(comment.created_at)}</span>
+                            <div className="flex items-start gap-2">
+                              <p className="text-white/90 break-words flex-1" style={{ fontSize: '0.9rem', fontWeight: 300 }}>{comment.content}</p>
+                              <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(comment.created_at)}</span>
                             </div>
-                            <p className="text-xs text-white/90 break-words">{comment.content}</p>
                           </div>
                         ))
                       ) : !loadingComments[post.id] ? (
