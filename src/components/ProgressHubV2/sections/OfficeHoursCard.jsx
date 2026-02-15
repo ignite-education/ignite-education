@@ -144,12 +144,12 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         {coaches[0].linkedin_url ? (
                           <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
                             <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
+                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
                           </a>
                         ) : (
                           <>
                             <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
-                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.75rem' }}>{coaches[0].position}</p>}
+                            {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
                           </>
                         )}
                         {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}

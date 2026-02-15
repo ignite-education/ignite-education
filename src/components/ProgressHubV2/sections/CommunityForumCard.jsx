@@ -146,7 +146,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
           style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
           title="Create a post"
         >
-          <FileEdit size={18.7} className="text-black group-hover:text-pink-500 transition-colors" />
+          <FileEdit size={18.7} className="text-black group-hover:text-pink-500 group-hover:-translate-x-[2px] group-hover:translate-y-[2px] transition-all duration-300" />
         </button>
       </div>
 
