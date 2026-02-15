@@ -169,8 +169,8 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
           posts.map(post => (
             <div key={post.id}>
               <div
-                className="rounded-lg p-4 cursor-pointer transition-colors"
-                style={{ background: '#171717' }}
+                className="rounded-lg cursor-pointer transition-colors"
+                style={{ background: '#171717', padding: '1.5rem' }}
                 onMouseEnter={(e) => e.currentTarget.style.background = '#212121'}
                 onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
                 onClick={() => togglePost(post)}
@@ -188,7 +188,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                     {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2 mb-1" style={{ marginTop: '-4px' }}>
+                    <div className="flex items-start gap-2" style={{ marginTop: '-4px', marginBottom: '0.4rem' }}>
                       <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.2' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
