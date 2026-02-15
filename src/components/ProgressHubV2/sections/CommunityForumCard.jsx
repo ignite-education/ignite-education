@@ -193,7 +193,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start gap-2" style={{ marginTop: '-4px', marginBottom: '0.4rem' }}>
-                      <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
+                      <h3 className="text-white flex-1" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
                     <p className={`text-white mb-2 ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>

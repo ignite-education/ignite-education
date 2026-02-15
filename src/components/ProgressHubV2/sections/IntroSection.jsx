@@ -301,7 +301,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
     );
   };
 
-  const { displayText: typedName } = useTypingAnimation(firstName || '', {
+  const { displayText: typedName, isComplete } = useTypingAnimation(firstName || '', {
     charDelay: 100,
     startDelay: 1000,
     enabled: !!firstName,
@@ -402,6 +402,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName}
+              {!isComplete && <span className="animate-blink font-light">|</span>}
             </span>
           </h1>
 
