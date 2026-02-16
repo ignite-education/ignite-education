@@ -27,7 +27,9 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const [lockedSize, setLockedSize] = useState<{ width: number; height: number } | null>(null)
+  const [checkingAuth, setCheckingAuth] = useState(initialPhase === 'sign-in')
   const [editedCourseName, setEditedCourseName] = useState(courseName)
+  const [savedCourseName, setSavedCourseName] = useState(courseName)
   const [isEditing, setIsEditing] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
@@ -52,7 +54,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     if (initialPhase !== 'sign-in') return
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) return
+      if (!user) {
+        setCheckingAuth(false)
+        return
+      }
       authUserIdRef.current = user.id
       submittedCourseNameRef.current = editedCourseName
       const { error } = await supabase.from('course_requests').insert({
@@ -170,6 +175,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     const trimmed = editedCourseName.trim()
     const newName = trimmed || courseName
     setEditedCourseName(newName)
+    setSavedCourseName(newName)
     setIsEditing(false)
 
     if (phase === 'thank-you' && authUserIdRef.current && newName !== submittedCourseNameRef.current) {
@@ -245,56 +251,58 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif', position: 'absolute', visibility: 'hidden', whiteSpace: 'pre' }}
             >{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
-            {isEditing ? (
-              <>
-                <input
-                  ref={editInputRef}
-                  type="text"
-                  value={editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}
-                  onChange={(e) => setEditedCourseName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleEditSave()
-                  }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/50 rounded py-0.5 outline-none text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}
-                />
-                <button
-                  onClick={handleEditSave}
-                  className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                  style={{ marginLeft: '4px', marginTop: '-8px' }}
-                  title="Save"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                    <polyline points="17 21 17 13 7 13 7 21" />
-                    <polyline points="7 3 7 8 15 8" />
-                  </svg>
-                </button>
-              </>
-            ) : (
-              <>
-                <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
-                <button
-                  onClick={() => {
-                    setIsEditing(true)
-                    setTimeout(() => editInputRef.current?.focus(), 0)
-                  }}
-                  className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                  style={{ marginLeft: '7px', marginTop: '-11px' }}
-                  title="Edit course name"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
-                  </svg>
-                </button>
-              </>
-            )}
+            <span className="inline-flex items-baseline" style={{ height: '2.0625rem', verticalAlign: 'baseline' }}>
+              {isEditing ? (
+                <>
+                  <input
+                    ref={editInputRef}
+                    type="text"
+                    value={editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}
+                    onChange={(e) => setEditedCourseName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleEditSave()
+                    }}
+                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/50 rounded outline-none text-center"
+                    style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.5rem', paddingRight: '0.5rem', paddingTop: 0, paddingBottom: 0, height: '2.0625rem' }}
+                  />
+                  <button
+                    onClick={handleEditSave}
+                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                    style={{ marginLeft: '4px', marginTop: '-8px' }}
+                    title="Save"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                      <polyline points="17 21 17 13 7 13 7 21" />
+                      <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
+                  <button
+                    onClick={() => {
+                      setIsEditing(true)
+                      setTimeout(() => editInputRef.current?.focus(), 0)
+                    }}
+                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                    style={{ marginLeft: '7px', marginTop: '-11px' }}
+                    title="Edit course name"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </span>
           </span>
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
 
-        {phase === 'sign-in' ? (
+        {checkingAuth ? null : phase === 'sign-in' ? (
           <>
             {/* Sign-in buttons */}
             <div className="space-y-2" style={{ marginTop: '38px' }}>
@@ -397,10 +405,31 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-[#009600] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
+              className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '4px', display: 'inline-block' }}>We&rsquo;ll notify you when<br />{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())} is available</span>
+              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '4px', display: 'inline-block' }}>{(() => {
+                const name = savedCourseName.replace(/\b\w/g, c => c.toUpperCase())
+                const before = "We\u2019ll notify you when the"
+                const after = "course is available"
+                const full = `${before} ${name} ${after}`
+                const words = full.split(' ')
+                const mid = full.length / 2
+                let bestSplit = 1
+                let bestDiff = Infinity
+                for (let i = 1; i < words.length; i++) {
+                  const diff = Math.abs(words.slice(0, i).join(' ').length - mid)
+                  if (diff < bestDiff) { bestDiff = diff; bestSplit = i }
+                }
+                const line1 = words.slice(0, bestSplit).join(' ')
+                const line2 = words.slice(bestSplit).join(' ')
+                const renderLine = (line: string) => {
+                  const idx = line.indexOf(name)
+                  if (idx === -1) return line
+                  return <>{line.slice(0, idx)}<span className="font-medium">{name}</span>{line.slice(idx + name.length)}</>
+                }
+                return <>{renderLine(line1)}<br />{renderLine(line2)}</>
+              })()}</span>
             </p>
           </div>
         )}
