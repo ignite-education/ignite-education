@@ -45,6 +45,26 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     setGoogleHint(getGoogleProfileHint())
   }, [])
 
+  // If user is already signed in, submit the request immediately
+  useEffect(() => {
+    if (initialPhase !== 'sign-in') return
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) return
+      const { error } = await supabase.from('course_requests').insert({
+        user_id: user.id,
+        course_name: editedCourseName,
+      })
+      if (error) {
+        console.error('[CourseRequest] Auto-insert failed:', error.message, error.code)
+      } else {
+        console.log('[CourseRequest] Auto-insert succeeded for:', editedCourseName)
+      }
+      lockAndTransition(extractFirstName(user))
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const lockAndTransition = (firstName: string) => {
     if (modalRef.current) {
       setLockedSize({
@@ -210,7 +230,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-100/60 rounded py-0.5 outline-none text-center"
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/50 rounded py-0.5 outline-none text-center"
                   style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1.2rem)` : 'auto', paddingLeft: '0.6rem', paddingRight: '0.6rem' }}
                 />
                 <button
@@ -361,7 +381,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-[#2B8A1A] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-medium text-black">We&rsquo;ll be in touch soon</span>
+              Thank you, {userName}<br /><span className="font-medium text-black">We&rsquo;ll notify you when it&rsquo;s available</span>
             </p>
           </div>
         )}
