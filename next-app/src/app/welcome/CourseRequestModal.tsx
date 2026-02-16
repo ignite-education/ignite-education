@@ -292,7 +292,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
         {/* Heading */}
         <h3
-          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
+          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em] shrink-0"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           <span className="whitespace-nowrap">We&rsquo;ve added{' '}
