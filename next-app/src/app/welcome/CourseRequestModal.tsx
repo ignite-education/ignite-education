@@ -231,7 +231,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     }
                   }}
                   className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/50 rounded py-0.5 outline-none text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1.2rem)` : 'auto', paddingLeft: '0.6rem', paddingRight: '0.6rem' }}
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}
                 />
                 <button
                   onClick={() => {
@@ -240,7 +240,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     setIsEditing(false)
                   }}
                   className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                  style={{ marginLeft: '4px', marginTop: '-6px' }}
+                  style={{ marginLeft: '4px', marginTop: '-8px' }}
                   title="Save"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -260,7 +260,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '7px', marginTop: '-9px' }}
+                    style={{ marginLeft: '7px', marginTop: '-11px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -372,7 +372,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </>
         ) : (
           /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginBottom: '-2.75rem', marginTop: '-20px' }}>
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '24px', marginBottom: '0' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#2B8A1A" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#2B8A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
