@@ -186,7 +186,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 <input
                   ref={editInputRef}
                   type="text"
-                  value={editedCourseName}
+                  value={editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}
                   onChange={(e) => setEditedCourseName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -195,8 +195,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300 bg-gray-100 rounded px-2 py-0.5 outline-none focus:border-gray-400"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: `${Math.max(editedCourseName.length, 3) + 2}ch` }}
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300 bg-gray-100 rounded px-2 py-0.5 outline-none focus:border-gray-400 text-center"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: `${Math.max(editedCourseName.length, 3)}ch` }}
                 />
                 <button
                   onClick={() => {
@@ -204,7 +204,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     setEditedCourseName(trimmed || courseName)
                     setIsEditing(false)
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                  className="text-black hover:text-[#EF0B72] transition-colors flex-shrink-0"
                   title="Save"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -215,7 +215,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 </button>
               </span>
             ) : (
-              <span className="inline-flex items-center align-baseline gap-1">
+              <>
                 <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
                 {phase === 'sign-in' && (
                   <button
@@ -223,7 +223,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(true)
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
-                    className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                    className="text-black hover:text-[#EF0B72] transition-colors absolute"
+                    style={{ marginLeft: '4px', marginTop: '-4px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -232,7 +233,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     </svg>
                   </button>
                 )}
-              </span>
+              </>
             )}
           </span>
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
