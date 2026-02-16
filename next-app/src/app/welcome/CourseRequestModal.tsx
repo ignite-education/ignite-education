@@ -100,6 +100,69 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     setPhase('thank-you')
   }
 
+  const openOAuthPopup = useCallback(async (
+    provider: 'google' | 'linkedin_oidc',
+    queryParams?: Record<string, string>
+  ) => {
+    const supabase = createClient()
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        skipBrowserRedirect: true,
+        ...(queryParams ? { queryParams } : {}),
+      },
+    })
+
+    if (error || !data?.url) {
+      // Popup approach failed — fall back to redirect
+      sessionStorage.setItem('pendingCourseRequest', editedCourseName)
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.href },
+      })
+      return
+    }
+
+    const w = 500, h = 600
+    const left = window.screenX + (window.outerWidth - w) / 2
+    const top = window.screenY + (window.outerHeight - h) / 2
+    const popup = window.open(data.url, 'auth-popup', `width=${w},height=${h},left=${left},top=${top}`)
+
+    if (!popup) {
+      // Popup blocked — fall back to redirect
+      sessionStorage.setItem('pendingCourseRequest', editedCourseName)
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.href },
+      })
+      return
+    }
+
+    // Poll for auth completion
+    const interval = setInterval(async () => {
+      if (popup.closed) {
+        clearInterval(interval)
+        setSigningIn(false)
+        setLockedSize(null)
+        return
+      }
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        clearInterval(interval)
+        popup.close()
+        if (provider === 'google') saveGoogleProfileHint(user)
+        authUserIdRef.current = user.id
+        submittedCourseNameRef.current = editedCourseName
+        await supabase.from('course_requests').insert({
+          user_id: user.id,
+          course_name: editedCourseName,
+        })
+        lockAndTransition(extractFirstName(user))
+      }
+    }, 500)
+  }, [editedCourseName])
+
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     startSigningIn()
     try {
@@ -141,15 +204,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
   const handleLinkedInClick = useCallback(async () => {
     startSigningIn()
-    sessionStorage.setItem('pendingCourseRequest', editedCourseName)
-    const supabase = createClient()
-    await supabase.auth.signInWithOAuth({
-      provider: 'linkedin_oidc',
-      options: {
-        redirectTo: window.location.href,
-      },
-    })
-  }, [editedCourseName])
+    openOAuthPopup('linkedin_oidc')
+  }, [editedCourseName, openOAuthPopup])
 
   const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
@@ -175,16 +231,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const handlePersonalizedGoogleClick = useCallback(() => {
     startSigningIn()
     triggerPrompt(() => {
-      // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
-      sessionStorage.setItem('pendingCourseRequest', editedCourseName)
-      const supabase = createClient()
-      supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href,
-          queryParams: googleHint?.email ? { login_hint: googleHint.email } : undefined,
-        },
-      })
+      // Prompt was blocked (e.g. cooldown, Safari ITP) — use popup OAuth
+      openOAuthPopup('google', googleHint?.email ? { login_hint: googleHint.email } : undefined)
     })
   }, [triggerPrompt, editedCourseName, googleHint])
 
