@@ -306,7 +306,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleEditSave()
                     }}
-                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-none tracking-[-0.02em] bg-gray-200/40 rounded outline-none text-center"
+                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-[0.9] tracking-[-0.02em] bg-gray-200/40 rounded outline-none text-center"
                     style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.4rem', paddingRight: '0.4rem', paddingTop: '0.15rem', paddingBottom: '0.15rem', height: 'auto' }}
                   />
                   <button
