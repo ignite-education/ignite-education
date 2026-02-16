@@ -398,7 +398,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-black text-center mt-6 text-[0.95rem] font-medium tracking-[-0.01em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Register and we&rsquo;ll let<br />you know when it launches
+              Register and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
             </p>
           </>
         ) : (
@@ -409,10 +409,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
+              className="text-[#009600] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '4px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-medium">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
             </p>
           </div>
         )}
