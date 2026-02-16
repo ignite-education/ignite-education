@@ -245,8 +245,7 @@ export default function TestimonialsSection() {
                       pointerEvents: currentTestimonial === idx ? 'auto' : 'none',
                       transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       width: '100%',
-                      minHeight: '19rem',
-                      height: 'auto',
+                      height: '19rem',
                       overflow: 'visible',
                       padding: '2rem 1.5rem'
                     }}
