@@ -69,7 +69,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       } else {
         console.log('[CourseRequest] Auto-insert succeeded for:', editedCourseName)
       }
-      lockAndTransition(extractFirstName(user))
+      // Don't lock modal size — sign-in buttons were never shown
+      setCheckingAuth(false)
+      setUserName(extractFirstName(user))
+      setPhase('thank-you')
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -268,7 +271,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                   />
                   <button
                     onClick={handleEditSave}
-                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute focus:outline-none"
                     style={{ right: '-20px', top: '-2px' }}
                     title="Save"
                   >
@@ -287,7 +290,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(true)
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
-                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute focus:outline-none"
                     style={{ right: '-20px', top: '-2px' }}
                     title="Edit course name"
                   >
