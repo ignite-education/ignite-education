@@ -306,13 +306,13 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleEditSave()
                     }}
-                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-none tracking-[-0.02em] bg-gray-200/50 rounded outline-none text-center"
+                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-none tracking-[-0.02em] bg-gray-200/40 rounded outline-none text-center"
                     style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.4rem', paddingRight: '0.4rem', paddingTop: 0, paddingBottom: 0, height: '2.0625rem' }}
                   />
                   <button
                     onClick={handleEditSave}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute focus:outline-none"
-                    style={{ right: '-20px', top: '-2px' }}
+                    style={{ right: '-20px', top: '-6px' }}
                     title="Save"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -331,7 +331,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute focus:outline-none"
-                    style={{ right: '-20px', top: '-2px' }}
+                    style={{ right: '-20px', top: '-6px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
