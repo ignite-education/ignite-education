@@ -355,7 +355,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo */}
-          <div style={{ marginBottom: '55px' }}>
+          <a href="/welcome" style={{ marginBottom: '55px', display: 'block', width: 'fit-content' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -376,7 +376,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             ) : (
               <div style={{ width: 61, height: 61 }} />
             )}
-          </div>
+          </a>
 
           {/* Profile Picture */}
           <div style={{ marginBottom: '30px', marginLeft: '6px' }}>
@@ -402,7 +402,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName}
-              {!isComplete && <span className="animate-blink font-light" style={{ color: '#F0F0F0' }}>|</span>}
+              {!isComplete && <span className="animate-blink" style={{ color: '#000000', fontWeight: 100 }}>|</span>}
             </span>
           </h1>
 

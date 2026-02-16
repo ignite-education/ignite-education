@@ -356,7 +356,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         </div>
 
         {/* Bottom section — 65% height, vertically centered */}
-        <div className="flex flex-col items-center justify-center" style={{ flex: '0 0 65%' }}>
+        <div className="flex flex-col items-center justify-center" style={{ flex: '0 0 65%', paddingBottom: '10px' }}>
           {checkingAuth ? (
             /* Loading spinner while checking auth */
             <div className="flex items-center justify-center">
