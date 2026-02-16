@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import { createClient } from '@/lib/supabase/client'
 import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
@@ -33,8 +33,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const measureRef = useRef<HTMLSpanElement>(null)
   const [inputWidth, setInputWidth] = useState<number | undefined>(undefined)
 
-  // Measure the rendered text width and size the input to match
-  useEffect(() => {
+  // Measure the rendered text width and size the input to match (useLayoutEffect to avoid flicker)
+  useLayoutEffect(() => {
     if (measureRef.current) {
       setInputWidth(measureRef.current.scrollWidth + 4) // +4 for minimal breathing room
     }
@@ -211,7 +211,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     }
                   }}
                   className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300/70 bg-white rounded py-0.5 outline-none focus:border-gray-400/70 text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 2rem)` : 'auto', paddingLeft: '1rem', paddingRight: '1rem' }}
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1.4rem)` : 'auto', paddingLeft: '0.7rem', paddingRight: '0.7rem' }}
                 />
                 <button
                   onClick={() => {
