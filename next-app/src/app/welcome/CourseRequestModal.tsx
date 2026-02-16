@@ -479,7 +479,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                <span className="text-[1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+                <span className="text-[1.1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
               </p>
             </div>
           )}
