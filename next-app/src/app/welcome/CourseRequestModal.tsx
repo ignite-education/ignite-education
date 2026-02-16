@@ -25,8 +25,6 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const [userName, setUserName] = useState(initialUserName || '')
   const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
   const googleBtnRef = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  const [lockedSize, setLockedSize] = useState<{ width: number; height: number } | null>(null)
   const [checkingAuth, setCheckingAuth] = useState(initialPhase === 'sign-in')
   const [editedCourseName, setEditedCourseName] = useState(courseName)
   const [savedCourseName, setSavedCourseName] = useState(courseName)
@@ -70,7 +68,6 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       } else {
         console.log('[CourseRequest] Auto-insert succeeded for:', editedCourseName)
       }
-      // Don't lock modal size — sign-in buttons were never shown
       setCheckingAuth(false)
       setUserName(extractFirstName(user))
       setPhase('thank-you')
@@ -79,22 +76,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   }, [])
 
   const startSigningIn = useCallback(() => {
-    if (modalRef.current) {
-      setLockedSize({
-        width: modalRef.current.offsetWidth,
-        height: modalRef.current.offsetHeight,
-      })
-    }
     setSigningIn(true)
   }, [])
 
   const lockAndTransition = (firstName: string) => {
-    if (modalRef.current) {
-      setLockedSize({
-        width: modalRef.current.offsetWidth,
-        height: modalRef.current.offsetHeight,
-      })
-    }
     setCheckingAuth(false)
     setUserName(firstName)
     setPhase('thank-you')
@@ -144,13 +129,14 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       if (popup.closed) {
         clearInterval(interval)
         setSigningIn(false)
-        setLockedSize(null)
         return
       }
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         clearInterval(interval)
         popup.close()
+        // Refresh session so onAuthStateChange fires in the Navbar
+        await supabase.auth.refreshSession()
         if (provider === 'google') saveGoogleProfileHint(user)
         authUserIdRef.current = user.id
         submittedCourseNameRef.current = editedCourseName
@@ -282,12 +268,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       onClick={handleClose}
     >
       <div
-        ref={modalRef}
         className={`relative bg-white flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
-          width: lockedSize ? `${lockedSize.width}px` : 'fit-content',
-          height: lockedSize ? `${lockedSize.height}px` : 'auto',
-          minWidth: lockedSize ? undefined : '575px',
+          width: 'fit-content',
+          minWidth: '575px',
           maxWidth: '90vw',
           padding: '3.3rem 2.75rem 2.75rem',
           borderRadius: '6px',
@@ -368,134 +352,137 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
 
-        {checkingAuth ? (
-          /* Loading spinner while checking auth */
-          <div className="flex-1 flex items-center justify-center" style={{ marginTop: '38px', marginBottom: '24px' }}>
-            <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
-              <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
-            </svg>
-          </div>
-        ) : phase === 'sign-in' ? (
-          signingIn ? (
-            /* Loading spinner while signing in */
-            <div className="flex-1 flex items-center justify-center" style={{ marginTop: '38px', marginBottom: '24px' }}>
+        {/* Content area — fixed minHeight to match sign-in buttons state */}
+        <div className="flex flex-col" style={{ minHeight: '193px' }}>
+          {checkingAuth ? (
+            /* Loading spinner while checking auth */
+            <div className="flex-1 flex items-center justify-center">
               <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
               </svg>
             </div>
-          ) : (
-          <>
-            {/* Sign-in buttons */}
-            <div className="space-y-2" style={{ marginTop: '38px' }}>
-              {googleHint ? (
-                <>
-                  {/* Custom personalized Google button (for returning users) */}
-                  <button
-                    onClick={handlePersonalizedGoogleClick}
-                    className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                    style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-                  >
-                    {/* Avatar */}
-                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                      {googleHint.avatar ? (
-                        <img
-                          src={googleHint.avatar}
-                          alt=""
-                          className="rounded-full"
-                          style={{ width: '24px', height: '24px' }}
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div
-                          className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
-                          style={{ width: '24px', height: '24px' }}
-                        >
-                          {googleHint.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </div>
-                    {/* Name and email */}
-                    <div className="flex-1 text-left min-w-0 pr-1">
-                      <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
-                        Continue as {googleHint.name}
-                      </span>
-                      <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
-                        {googleHint.email}
-                      </span>
-                    </div>
-                    {/* Google logo */}
-                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                      <svg width="18" height="18" viewBox="0 0 48 48">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                      </svg>
-                    </div>
-                  </button>
-                </>
-              ) : (
-                /* Standard GIS button (for first-time users) */
-                <div
-                  ref={googleBtnRef}
-                  className="mx-auto rounded overflow-hidden"
-                  style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-                />
-              )}
-
-              <button
-                onClick={handleLinkedInClick}
-                className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
-                style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-              >
+          ) : phase === 'sign-in' ? (
+            signingIn ? (
+              /* Loading spinner while signing in */
+              <div className="flex-1 flex items-center justify-center">
+                <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
+                </svg>
+              </div>
+            ) : (
+            <>
+              {/* Sign-in buttons */}
+              <div className="space-y-2" style={{ marginTop: '38px' }}>
                 {googleHint ? (
                   <>
-                    <span className="flex-1 text-left pl-3">Continue with LinkedIn</span>
-                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                      </svg>
-                    </div>
+                    {/* Custom personalized Google button (for returning users) */}
+                    <button
+                      onClick={handlePersonalizedGoogleClick}
+                      className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+                      style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    >
+                      {/* Avatar */}
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        {googleHint.avatar ? (
+                          <img
+                            src={googleHint.avatar}
+                            alt=""
+                            className="rounded-full"
+                            style={{ width: '24px', height: '24px' }}
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div
+                            className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
+                            style={{ width: '24px', height: '24px' }}
+                          >
+                            {googleHint.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Name and email */}
+                      <div className="flex-1 text-left min-w-0 pr-1">
+                        <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
+                          Continue as {googleHint.name}
+                        </span>
+                        <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
+                          {googleHint.email}
+                        </span>
+                      </div>
+                      {/* Google logo */}
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        <svg width="18" height="18" viewBox="0 0 48 48">
+                          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                      </div>
+                    </button>
                   </>
                 ) : (
-                  <>
-                    <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                      </svg>
-                    </div>
-                    <span className="flex-1 text-center">Continue with LinkedIn</span>
-                  </>
+                  /* Standard GIS button (for first-time users) */
+                  <div
+                    ref={googleBtnRef}
+                    className="mx-auto rounded overflow-hidden"
+                    style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                  />
                 )}
-              </button>
-            </div>
 
-            {/* Subtext */}
-            <p
-              className="text-black text-center mt-6 text-[0.9rem] font-normal tracking-[-0.01em]"
-              style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-            >
-              Register and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
-            </p>
-          </>
-          )
-        ) : (
-          /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center animate-fadeIn" style={{ marginTop: '24px', marginBottom: '0' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
-              <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
-              <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <p
-              className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
-              style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-            >
-              <span className="text-[1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
-            </p>
-          </div>
-        )}
+                <button
+                  onClick={handleLinkedInClick}
+                  className="mx-auto flex items-center bg-[#0077B5] text-white rounded text-sm hover:bg-[#006097] transition font-medium cursor-pointer"
+                  style={{ width: '380px', maxWidth: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                >
+                  {googleHint ? (
+                    <>
+                      <span className="flex-1 text-left pl-3">Continue with LinkedIn</span>
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                        </svg>
+                      </div>
+                      <span className="flex-1 text-center">Continue with LinkedIn</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Subtext */}
+              <p
+                className="text-black text-center mt-6 text-[0.9rem] font-normal tracking-[-0.01em]"
+                style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+              >
+                Register and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
+              </p>
+            </>
+            )
+          ) : (
+            /* Thank-you phase */
+            <div className="flex-1 flex flex-col items-center justify-center animate-fadeIn">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
+                <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
+                <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <p
+                className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
+                style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+              >
+                <span className="text-[1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
