@@ -32,6 +32,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const editInputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [inputWidth, setInputWidth] = useState<number | undefined>(undefined)
+  const authUserIdRef = useRef<string | null>(null)
+  const submittedCourseNameRef = useRef<string>(courseName)
 
   // Measure the rendered text width and size the input to match (useLayoutEffect to avoid flicker)
   useLayoutEffect(() => {
@@ -51,6 +53,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     const supabase = createClient()
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return
+      authUserIdRef.current = user.id
+      submittedCourseNameRef.current = editedCourseName
       const { error } = await supabase.from('course_requests').insert({
         user_id: user.id,
         course_name: editedCourseName,
@@ -94,6 +98,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
       // Save Google profile for future personalization (Safari etc.)
       saveGoogleProfileHint(data.user)
+      authUserIdRef.current = data.user.id
+      submittedCourseNameRef.current = editedCourseName
 
       const { error: insertError } = await supabase.from('course_requests').insert({
         user_id: data.user.id,
@@ -158,6 +164,29 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       })
     })
   }, [triggerPrompt, editedCourseName, googleHint])
+
+  // Save edited course name — update Supabase if already submitted
+  const handleEditSave = useCallback(async () => {
+    const trimmed = editedCourseName.trim()
+    const newName = trimmed || courseName
+    setEditedCourseName(newName)
+    setIsEditing(false)
+
+    if (phase === 'thank-you' && authUserIdRef.current && newName !== submittedCourseNameRef.current) {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('course_requests')
+        .update({ course_name: newName })
+        .eq('user_id', authUserIdRef.current)
+        .eq('course_name', submittedCourseNameRef.current)
+      if (error) {
+        console.error('[CourseRequest] Update failed:', error.message, error.code)
+      } else {
+        console.log('[CourseRequest] Updated course name from', submittedCourseNameRef.current, 'to', newName)
+        submittedCourseNameRef.current = newName
+      }
+    }
+  }, [editedCourseName, courseName, phase])
 
   const handleClose = () => {
     setClosing(true)
@@ -224,21 +253,13 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                   value={editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}
                   onChange={(e) => setEditedCourseName(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      const trimmed = editedCourseName.trim()
-                      setEditedCourseName(trimmed || courseName)
-                      setIsEditing(false)
-                    }
+                    if (e.key === 'Enter') handleEditSave()
                   }}
                   className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/50 rounded py-0.5 outline-none text-center"
                   style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}
                 />
                 <button
-                  onClick={() => {
-                    const trimmed = editedCourseName.trim()
-                    setEditedCourseName(trimmed || courseName)
-                    setIsEditing(false)
-                  }}
+                  onClick={handleEditSave}
                   className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
                   style={{ marginLeft: '4px', marginTop: '-8px' }}
                   title="Save"
@@ -253,22 +274,20 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
             ) : (
               <>
                 <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
-                {phase === 'sign-in' && (
-                  <button
-                    onClick={() => {
-                      setIsEditing(true)
-                      setTimeout(() => editInputRef.current?.focus(), 0)
-                    }}
-                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '7px', marginTop: '-11px' }}
-                    title="Edit course name"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                      <path d="m15 5 4 4" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    setIsEditing(true)
+                    setTimeout(() => editInputRef.current?.focus(), 0)
+                  }}
+                  className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                  style={{ marginLeft: '7px', marginTop: '-11px' }}
+                  title="Edit course name"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
               </>
             )}
           </span>
