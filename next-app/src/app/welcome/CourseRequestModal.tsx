@@ -27,6 +27,9 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   const [lockedSize, setLockedSize] = useState<{ width: number; height: number } | null>(null)
+  const [editedCourseName, setEditedCourseName] = useState(courseName)
+  const [isEditing, setIsEditing] = useState(false)
+  const editInputRef = useRef<HTMLInputElement>(null)
 
   // Check for stored Google profile on mount
   useEffect(() => {
@@ -65,23 +68,23 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
       const { error: insertError } = await supabase.from('course_requests').insert({
         user_id: data.user.id,
-        course_name: courseName,
+        course_name: editedCourseName,
       })
 
       if (insertError) {
         console.error('[CourseRequest] Insert failed:', insertError.message, insertError.code, insertError)
       } else {
-        console.log('[CourseRequest] Insert succeeded for:', courseName)
+        console.log('[CourseRequest] Insert succeeded for:', editedCourseName)
       }
 
       lockAndTransition(extractFirstName(data.user))
     } catch (err) {
       console.error('[CourseRequest] Unexpected error:', err)
     }
-  }, [courseName])
+  }, [editedCourseName])
 
   const handleLinkedInClick = useCallback(async () => {
-    sessionStorage.setItem('pendingCourseRequest', courseName)
+    sessionStorage.setItem('pendingCourseRequest', editedCourseName)
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
@@ -89,7 +92,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         redirectTo: window.location.href,
       },
     })
-  }, [courseName])
+  }, [editedCourseName])
 
   const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
@@ -115,7 +118,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const handlePersonalizedGoogleClick = useCallback(() => {
     triggerPrompt(() => {
       // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
-      sessionStorage.setItem('pendingCourseRequest', courseName)
+      sessionStorage.setItem('pendingCourseRequest', editedCourseName)
       const supabase = createClient()
       supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -125,7 +128,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         },
       })
     })
-  }, [triggerPrompt, courseName, googleHint])
+  }, [triggerPrompt, editedCourseName, googleHint])
 
   const handleClose = () => {
     setClosing(true)
@@ -177,7 +180,61 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
-          <span className="whitespace-nowrap">We&rsquo;ve added <span className="text-[#EF0B72]">{courseName.replace(/\b\w/g, c => c.toUpperCase())}</span></span>
+          <span className="whitespace-nowrap">We&rsquo;ve added{' '}
+            {isEditing ? (
+              <span className="inline-flex items-center align-baseline gap-1">
+                <input
+                  ref={editInputRef}
+                  type="text"
+                  value={editedCourseName}
+                  onChange={(e) => setEditedCourseName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const trimmed = editedCourseName.trim()
+                      setEditedCourseName(trimmed || courseName)
+                      setIsEditing(false)
+                    }
+                  }}
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300 bg-gray-100 rounded px-2 py-0.5 outline-none focus:border-gray-400"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: `${Math.max(editedCourseName.length, 3) + 2}ch` }}
+                />
+                <button
+                  onClick={() => {
+                    const trimmed = editedCourseName.trim()
+                    setEditedCourseName(trimmed || courseName)
+                    setIsEditing(false)
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                  title="Save"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                    <polyline points="17 21 17 13 7 13 7 21" />
+                    <polyline points="7 3 7 8 15 8" />
+                  </svg>
+                </button>
+              </span>
+            ) : (
+              <span className="inline-flex items-center align-baseline gap-1">
+                <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
+                {phase === 'sign-in' && (
+                  <button
+                    onClick={() => {
+                      setIsEditing(true)
+                      setTimeout(() => editInputRef.current?.focus(), 0)
+                    }}
+                    className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+                    title="Edit course name"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                      <path d="m15 5 4 4" />
+                    </svg>
+                  </button>
+                )}
+              </span>
+            )}
+          </span>
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
 
