@@ -15,6 +15,7 @@ import MyPostsModal from './sections/MyPostsModal';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
 import SettingsModal from '../shared/SettingsModal';
+import SEO from '../SEO';
 import { isRedditAuthenticated, getRedditUsername } from '../../lib/reddit';
 import { blockRedditPost } from '../../lib/api';
 
@@ -174,6 +175,7 @@ const ProgressHubV2 = () => {
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      <SEO title={firstName ? `${firstName}'s Progress | Ignite` : 'Your Progress | Ignite'} />
       {/* Section 1: Introduction */}
       <IntroSection
         firstName={firstName}

@@ -173,6 +173,14 @@ const ProgressGraph = ({
 
   // Build data points for both series
   const animationStarted = animationProgress >= 0;
+  const progress = animationStarted ? animationProgress : 0;
+  // Interpolate colors from 50% darker starting values to final values
+  const greyChannel = Math.round(0x44 + (0x88 - 0x44) * progress);
+  const greyColor = `rgb(${greyChannel},${greyChannel},${greyChannel})`;
+  const pinkR = Math.round(0x78 + (0xEF - 0x78) * progress);
+  const pinkG = Math.round(0x06 + (0x0B - 0x06) * progress);
+  const pinkB = Math.round(0x39 + (0x72 - 0x39) * progress);
+  const pinkColor = `rgb(${pinkR},${pinkG},${pinkB})`;
 
   const globalPoints = lessons.map((lesson, idx) => {
     const score = effectiveGlobalScores[lesson.key];
@@ -290,7 +298,7 @@ const ProgressGraph = ({
               key={`gpath-${i}`}
               d={d}
               fill="none"
-              stroke="#888"
+              stroke={greyColor}
               strokeWidth="2"
               strokeDasharray="3 3.5"
             />
@@ -302,7 +310,7 @@ const ProgressGraph = ({
               key={`upath-${i}`}
               d={d}
               fill="none"
-              stroke="#EF0B72"
+              stroke={pinkColor}
               strokeWidth="2"
               strokeLinecap="round"
             />
@@ -343,9 +351,8 @@ const ProgressGraph = ({
                 width: '7px',
                 height: '7px',
                 transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.3 : 1})`,
-                opacity: 0.5 + 0.5 * (animationStarted ? animationProgress : 0),
                 transition: 'transform 0.4s ease',
-                backgroundColor: '#888',
+                backgroundColor: greyColor,
                 borderRadius: '1px',
                 pointerEvents: 'none',
               }}
@@ -363,9 +370,8 @@ const ProgressGraph = ({
                 width: '7px',
                 height: '7px',
                 transform: `translate(-50%, -50%) scale(${hoveredLessonIdx === i ? 1.3 : 1})`,
-                opacity: 0.5 + 0.5 * (animationStarted ? animationProgress : 0),
                 transition: 'transform 0.4s ease',
-                backgroundColor: '#EF0B72',
+                backgroundColor: pinkColor,
                 borderRadius: '1px',
                 pointerEvents: 'none',
               }}
