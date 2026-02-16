@@ -34,8 +34,10 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
   if (completedCount === 0) {
     const firstLessonName = getLessonName(1, 1);
     return {
-      headline: `Welcome to the ${courseTitle} course.`,
-      body: `This is where you can find upcoming lessons, get support from industry professionals and connect with the global community. To get started, click on the ${firstLessonName} card below. Let's get started, ${firstName}!`,
+      headline: `Welcome to the ${courseTitle} course, ${firstName}.`,
+      body: `Here you can see your progress, upcoming lessons, get support from industry professionals and connect with the global community. To get started, click on the ${firstLessonName} lesson below. Let's get started, ${firstName}!`,
+      linkText: firstLessonName,
+      linkUrl: '#course-details',
     };
   }
 
@@ -292,10 +294,26 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     const before = text.substring(0, idx);
     const linkPart = text.substring(idx, idx + introText.linkText.length);
     const after = text.substring(idx + introText.linkText.length);
+    const isAnchor = introText.linkUrl.startsWith('#');
+    const handleClick = isAnchor ? (e) => {
+      e.preventDefault();
+      const el = document.getElementById(introText.linkUrl.slice(1));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } : undefined;
     return (
       <>
         {before}
-        <a href={introText.linkUrl} target="_blank" rel="noopener noreferrer" className="intro-link" style={{ textDecoration: 'underline', color: 'inherit', transition: 'font-weight 0.2s ease' }}>{linkPart}</a>
+        <a
+          href={introText.linkUrl}
+          {...(!isAnchor && { target: '_blank', rel: 'noopener noreferrer' })}
+          onClick={handleClick}
+          className="intro-link"
+          style={{ textDecoration: 'underline', color: 'inherit', transition: 'color 0.2s ease', cursor: 'pointer' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'inherit'; }}
+        >
+          {linkPart}
+        </a>
         {after}
       </>
     );
