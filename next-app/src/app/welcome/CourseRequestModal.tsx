@@ -271,6 +271,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         className={`relative bg-white flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
           width: 'fit-content',
+          height: '320px',
           minWidth: '575px',
           maxWidth: '90vw',
           padding: '3.3rem 2.75rem 2.75rem',
@@ -353,7 +354,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         </h3>
 
         {/* Content area — fixed minHeight to match sign-in buttons state */}
-        <div className="flex flex-col" style={{ height: '320px' }}>
+        <div className="flex flex-col flex-1">
           {checkingAuth ? (
             /* Loading spinner while checking auth */
             <div className="flex-1 flex items-center justify-center">
