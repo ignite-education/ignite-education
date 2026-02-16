@@ -174,8 +174,8 @@ const ProgressGraph = ({
   // Build data points for both series
   const animationStarted = animationProgress >= 0;
   const progress = animationStarted ? animationProgress : 0;
-  // Interpolate colors from 20% darker starting values to final values
-  const dark = 0.8 + 0.2 * progress; // 0.8 → 1.0
+  // Interpolate colors from 50% darker starting values to final values
+  const dark = 0.5 + 0.5 * progress; // 0.5 → 1.0
   const greyChannel = Math.round(0x88 * dark);
   const greyColor = `rgb(${greyChannel},${greyChannel},${greyChannel})`;
   const pinkColor = `rgb(${Math.round(0xEF * dark)},${Math.round(0x0B * dark)},${Math.round(0x72 * dark)})`;

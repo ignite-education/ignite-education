@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { BlogPost } from '@/types/blog'
 import BlogCarousel from '@/components/BlogCarousel'
 
@@ -16,18 +16,44 @@ interface FAQSectionProps {
 
 export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
   const [expandedFAQ, setExpandedFAQ] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
+
+  useEffect(() => {
+    const update = () => {
+      setIsMobile(window.innerWidth < 768)
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200)
+    }
+    update()
+    let timeout: ReturnType<typeof setTimeout>
+    const handleResize = () => {
+      clearTimeout(timeout)
+      timeout = setTimeout(update, 100)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   return (
-    <section className="min-h-screen flex items-center justify-center px-8 bg-black">
-      <div className="max-w-7xl w-full text-white">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 max-w-7xl mx-auto mb-8">
+    <section className="min-h-screen flex items-center justify-center bg-black">
+      <div
+        className="w-full text-white"
+        style={{
+          paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px)',
+          paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
+        }}
+      >
+        <div className={`grid gap-8 mb-8 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
           {/* FAQs Column */}
-          <div className="order-1 md:order-2 md:pl-4">
+          <div className={isMobile ? '' : 'order-2 pl-4'}>
             <h3 className="font-bold text-white mb-4 text-left text-3xl">
               FAQs
             </h3>
 
-            <div className="space-y-3 w-full md:w-[85%]">
+            <div className="space-y-3 w-full">
               {faqs.map((faq, idx) => (
                 <div
                   key={idx}
@@ -72,8 +98,8 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
           </div>
 
           {/* Blog Column */}
-          <div className="order-2 md:order-1 flex flex-col items-end justify-center md:pl-8">
-            <div className="w-full md:w-[85%] md:max-w-[30.8rem] mx-auto">
+          <div className={`flex flex-col justify-center ${isMobile ? '' : 'order-1'}`}>
+            <div className="w-full">
               <h3 className="font-bold text-white text-left text-3xl mb-2">
                 Latest from Ignite
               </h3>
@@ -89,7 +115,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
         </div>
 
         {/* Get Started Button */}
-        <div className="flex justify-center px-4">
+        <div className="flex justify-center">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
