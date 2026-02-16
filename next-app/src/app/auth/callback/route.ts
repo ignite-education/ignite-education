@@ -17,7 +17,7 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
       const { data: { user } } = await supabase.auth.getUser()
@@ -31,6 +31,26 @@ export async function GET(request: Request) {
         // Add to Resend audience (non-blocking, safe for returning users)
         if (user.email) {
           addToResendAudience(user.email, firstName, lastName)
+        }
+
+        // For LinkedIn sign-ins, try to fetch a higher-res profile picture
+        // LinkedIn OIDC returns ~100x100 thumbnails; the userinfo endpoint may provide a better URL
+        const providerToken = sessionData?.session?.provider_token
+        if (user.app_metadata?.provider === 'linkedin_oidc' && providerToken) {
+          try {
+            const linkedinRes = await fetch('https://api.linkedin.com/v2/userinfo', {
+              headers: { Authorization: `Bearer ${providerToken}` },
+            })
+            if (linkedinRes.ok) {
+              const profile = await linkedinRes.json()
+              if (profile.picture && profile.picture !== metadata.avatar_url && profile.picture !== metadata.picture) {
+                await supabase.auth.updateUser({ data: { avatar_url: profile.picture } })
+              }
+            }
+          } catch (e) {
+            // Non-critical — continue with default OIDC picture
+            console.error('LinkedIn profile picture fetch failed:', e)
+          }
         }
 
         // Check enrollment status and role to decide redirect destination

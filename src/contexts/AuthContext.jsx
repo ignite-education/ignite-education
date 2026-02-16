@@ -4,14 +4,10 @@ import { addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
 
 const AuthContext = createContext({});
 
-// Upgrade OAuth profile picture URLs to higher resolution
+// Upgrade Google profile picture URLs to higher resolution
+// (LinkedIn URLs are signed and can't be manipulated — handled at callback time instead)
 const getHighResProfilePicture = (url) => {
   if (!url) return null;
-  // LinkedIn: shrink_100_100 → shrink_400_400
-  if (url.includes('licdn.com') || url.includes('linkedin.com')) {
-    return url.replace(/shrink_\d+_\d+/, 'shrink_400_400');
-  }
-  // Google: =s96-c → =s400-c
   if (url.includes('googleusercontent.com')) {
     return url.replace(/=s\d+-c/, '=s400-c');
   }
