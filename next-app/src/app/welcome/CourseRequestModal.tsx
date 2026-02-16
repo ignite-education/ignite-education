@@ -412,28 +412,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '4px', display: 'inline-block' }}>{(() => {
-                const name = savedCourseName.replace(/\b\w/g, c => c.toUpperCase())
-                const before = "We\u2019ll notify you when the"
-                const after = "course is available"
-                const full = `${before} ${name} ${after}`
-                const words = full.split(' ')
-                const mid = full.length / 2
-                let bestSplit = 1
-                let bestDiff = Infinity
-                for (let i = 1; i < words.length; i++) {
-                  const diff = Math.abs(words.slice(0, i).join(' ').length - mid)
-                  if (diff < bestDiff) { bestDiff = diff; bestSplit = i }
-                }
-                const line1 = words.slice(0, bestSplit).join(' ')
-                const line2 = words.slice(bestSplit).join(' ')
-                const renderLine = (line: string) => {
-                  const idx = line.indexOf(name)
-                  if (idx === -1) return line
-                  return <>{line.slice(0, idx)}<span className="font-medium">{name}</span>{line.slice(idx + name.length)}</>
-                }
-                return <>{renderLine(line1)}<br />{renderLine(line2)}</>
-              })()}</span>
+              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '4px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
             </p>
           </div>
         )}
