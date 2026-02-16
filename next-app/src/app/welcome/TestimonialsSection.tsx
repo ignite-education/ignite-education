@@ -245,9 +245,10 @@ export default function TestimonialsSection() {
                       pointerEvents: currentTestimonial === idx ? 'auto' : 'none',
                       transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       width: '100%',
-                      height: '19rem',
+                      minHeight: '19rem',
+                      height: 'auto',
                       overflow: 'visible',
-                      padding: '1rem 1.5rem 1.5rem 1.5rem'
+                      padding: '2rem 1.5rem'
                     }}
                   >
                     <div className="auth-testimonial-quote-wrapper" style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.625rem' }}>
@@ -355,7 +356,7 @@ export default function TestimonialsSection() {
                         width: '10.3rem',
                         top: card.position.top,
                         left: card.position.left,
-                        padding: '1.5rem 0',
+                        padding: '1.5rem',
                         opacity: hoveredUseCase !== null ? 0 : 1,
                         transition: 'all 300ms ease-in-out',
                         pointerEvents: 'auto'
@@ -394,7 +395,7 @@ export default function TestimonialsSection() {
                       width: '21.35rem',
                       height: '20.3rem',
                       zIndex: 10,
-                      padding: '2rem 0',
+                      padding: '2rem',
                       opacity: hoveredUseCase !== null ? 1 : 0,
                       visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
                       transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
