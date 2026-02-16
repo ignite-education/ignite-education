@@ -154,11 +154,11 @@ export default function MerchSection() {
                   alt={item.alt}
                   loading="lazy"
                   decoding="async"
-                  className={`${isTablet ? 'object-contain' : 'object-cover'} rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer`}
+                  className="object-contain rounded-lg transition-transform duration-200 hover:scale-[1.02] cursor-pointer"
                   style={{
-                    height: (isMobile || isTablet) ? 'auto' : '250px',
-                    width: (isMobile || isTablet) ? '100%' : 'auto',
-                    maxWidth: (isMobile || isTablet) ? '100%' : '18%'
+                    height: 'auto',
+                    width: (isMobile || isTablet) ? '100%' : '18%',
+                    maxWidth: '100%'
                   }}
                   onClick={() => window.open(item.url, '_blank', 'noopener,noreferrer')}
                 />

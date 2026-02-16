@@ -247,7 +247,7 @@ export default function TestimonialsSection() {
                       width: '100%',
                       height: '19rem',
                       overflow: 'visible',
-                      padding: '2rem 1.5rem'
+                      padding: '3rem 1.5rem'
                     }}
                   >
                     <div className="auth-testimonial-quote-wrapper" style={{ paddingBottom: '3.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.625rem' }}>
