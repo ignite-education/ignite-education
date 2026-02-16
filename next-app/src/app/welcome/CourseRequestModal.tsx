@@ -210,8 +210,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-400 bg-white rounded py-0.5 outline-none focus:border-gray-500 text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `${inputWidth}px` : 'auto', paddingLeft: '2px', paddingRight: '2px' }}
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300/70 bg-white rounded py-0.5 outline-none focus:border-gray-400/70 text-center"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 2rem)` : 'auto', paddingLeft: '1rem', paddingRight: '1rem' }}
                 />
                 <button
                   onClick={() => {
