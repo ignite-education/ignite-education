@@ -19,7 +19,7 @@ export default function CourseSearch({
 }: CourseSearchProps) {
   return (
     <div
-      className="w-full max-w-[660px] mx-auto relative"
+      className="w-full max-w-[660px] mx-auto relative group"
       onMouseEnter={() => {
         const input = document.querySelector<HTMLInputElement>('.course-search-input')
         if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)'
@@ -50,7 +50,7 @@ export default function CourseSearch({
       <button
         type="button"
         onClick={onRequestClick}
-        className="absolute right-1 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB]/80 rounded-lg pl-3 pr-1.5 cursor-pointer group"
+        className="absolute right-1 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB]/80 rounded-lg pl-3 pr-1.5 cursor-pointer"
         style={{
           height: 'fit-content',
           paddingTop: '6px',

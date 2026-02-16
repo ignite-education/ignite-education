@@ -393,14 +393,14 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           /* Thank-you phase */
           <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '24px', marginBottom: '0' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
-              <circle cx="12" cy="12" r="11" stroke="#2B8A1A" strokeWidth="2" />
-              <path d="M7 12.5l3 3 7-7" stroke="#2B8A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
+              <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-[#2B8A1A] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
+              className="text-[#009600] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-medium text-black">We&rsquo;ll notify you when it&rsquo;s available</span>
+              Thank you, {userName}<br /><span className="font-medium text-black" style={{ marginTop: '4px', display: 'inline-block' }}>We&rsquo;ll notify you when it&rsquo;s available</span>
             </p>
           </div>
         )}
