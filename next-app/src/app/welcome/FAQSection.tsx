@@ -98,7 +98,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
           </div>
 
           {/* Blog Column */}
-          <div className={`flex flex-col justify-center ${isMobile ? '' : 'order-1'}`}>
+          <div className={`flex flex-col justify-start ${isMobile ? '' : 'order-1'}`}>
             <div className="w-full">
               <h3 className="font-bold text-white text-left text-3xl mb-2">
                 Latest from Ignite

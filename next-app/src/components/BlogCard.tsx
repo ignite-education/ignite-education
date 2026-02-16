@@ -10,7 +10,7 @@ export default function BlogCard({ post, className = '' }: BlogCardProps) {
   return (
     <Link href={`/blog/${post.slug}`} className="block h-full">
       <div className={className}>
-        <div className="rounded-md overflow-hidden cursor-pointer group">
+        <div className="rounded overflow-hidden cursor-pointer group">
           {post.featured_image && (
             <div
               className="w-full overflow-hidden flex items-center justify-center"
@@ -25,7 +25,7 @@ export default function BlogCard({ post, className = '' }: BlogCardProps) {
             </div>
           )}
 
-          <div className="p-4 bg-white rounded-b-md flex items-center justify-between">
+          <div className="p-4 bg-white rounded-b flex items-center justify-between">
             <div className="flex-1 pr-3">
               <h3
                 className="font-semibold text-gray-900 line-clamp-2"
