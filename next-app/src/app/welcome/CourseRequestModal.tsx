@@ -30,6 +30,15 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const [editedCourseName, setEditedCourseName] = useState(courseName)
   const [isEditing, setIsEditing] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
+  const measureRef = useRef<HTMLSpanElement>(null)
+  const [inputWidth, setInputWidth] = useState<number | undefined>(undefined)
+
+  // Measure the rendered text width and size the input to match
+  useEffect(() => {
+    if (measureRef.current) {
+      setInputWidth(measureRef.current.scrollWidth + 4) // +4 for minimal breathing room
+    }
+  }, [editedCourseName, isEditing])
 
   // Check for stored Google profile on mount
   useEffect(() => {
@@ -181,6 +190,12 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           <span className="whitespace-nowrap">We&rsquo;ve added{' '}
+            {/* Hidden span to measure exact text width */}
+            <span
+              ref={measureRef}
+              className="text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
+              style={{ fontFamily: 'var(--font-geist-sans), sans-serif', position: 'absolute', visibility: 'hidden', whiteSpace: 'pre' }}
+            >{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
             {isEditing ? (
               <>
                 <input
@@ -195,8 +210,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-400 bg-white rounded px-1 py-0.5 outline-none focus:border-gray-500 text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: `${Math.max(editedCourseName.length, 3)}ch` }}
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-400 bg-white rounded py-0.5 outline-none focus:border-gray-500 text-center"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `${inputWidth}px` : 'auto', paddingLeft: '2px', paddingRight: '2px' }}
                 />
                 <button
                   onClick={() => {
@@ -225,7 +240,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '4px', marginTop: '-4px' }}
+                    style={{ marginLeft: '7px', marginTop: '-7px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
