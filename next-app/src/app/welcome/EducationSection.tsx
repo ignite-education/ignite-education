@@ -112,7 +112,7 @@ export default function EducationSection() {
         >
           <div
             className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
-            style={{ width: '100%', gap: '4rem' }}
+            style={{ width: '100%', gap: '2rem' }}
           >
             {showFeatures && (
               <>
