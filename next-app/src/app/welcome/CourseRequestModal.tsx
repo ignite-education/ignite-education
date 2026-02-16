@@ -182,7 +182,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         >
           <span className="whitespace-nowrap">We&rsquo;ve added{' '}
             {isEditing ? (
-              <span className="inline-flex items-center align-baseline gap-1">
+              <>
                 <input
                   ref={editInputRef}
                   type="text"
@@ -195,7 +195,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300 bg-gray-100 rounded px-2 py-0.5 outline-none focus:border-gray-400 text-center"
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-400 bg-white rounded px-1 py-0.5 outline-none focus:border-gray-500 text-center"
                   style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: `${Math.max(editedCourseName.length, 3)}ch` }}
                 />
                 <button
@@ -204,16 +204,17 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     setEditedCourseName(trimmed || courseName)
                     setIsEditing(false)
                   }}
-                  className="text-black hover:text-[#EF0B72] transition-colors flex-shrink-0"
+                  className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
+                  style={{ marginLeft: '4px', marginTop: '-4px' }}
                   title="Save"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
                     <polyline points="17 21 17 13 7 13 7 21" />
                     <polyline points="7 3 7 8 15 8" />
                   </svg>
                 </button>
-              </span>
+              </>
             ) : (
               <>
                 <span className="text-[#EF0B72]">{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
@@ -223,7 +224,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(true)
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
-                    className="text-black hover:text-[#EF0B72] transition-colors absolute"
+                    className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
                     style={{ marginLeft: '4px', marginTop: '-4px' }}
                     title="Edit course name"
                   >
