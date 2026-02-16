@@ -42,7 +42,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
       <div
         className="w-full text-white"
         style={{
-          paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px)',
+          paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px + 10px)',
           paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
         }}
       >
