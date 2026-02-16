@@ -298,7 +298,20 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     const handleClick = isAnchor ? (e) => {
       e.preventDefault();
       const el = document.getElementById(introText.linkUrl.slice(1));
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (!el) return;
+      const targetY = el.getBoundingClientRect().top + window.scrollY;
+      const startY = window.scrollY;
+      const distance = targetY - startY;
+      const duration = 1000;
+      let start = null;
+      const ease = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      const step = (timestamp) => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        window.scrollTo(0, startY + distance * ease(progress));
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
     } : undefined;
     return (
       <>
@@ -368,7 +381,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
-      <style>{`.intro-link:hover { font-weight: 400 !important; }`}</style>
+      <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
       <div className="flex w-full gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
