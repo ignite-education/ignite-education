@@ -4,7 +4,27 @@ import { useState, useEffect, useRef } from 'react'
 
 export default function EducationSection() {
   const [showFeatures, setShowFeatures] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const update = () => {
+      setIsMobile(window.innerWidth < 768)
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200)
+    }
+    update()
+    let timeout: ReturnType<typeof setTimeout>
+    const handleResize = () => {
+      clearTimeout(timeout)
+      timeout = setTimeout(update, 100)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      clearTimeout(timeout)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   useEffect(() => {
     const section = sectionRef.current
@@ -67,9 +87,9 @@ export default function EducationSection() {
       className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
       style={{ background: 'black' }}
     >
-      <div className="max-w-4xl w-full text-white">
+      <div className="w-full text-white">
+        {/* Heading — stays centered with max-w-3xl */}
         <div className="w-full max-w-3xl mx-auto px-4">
-          {/* Main Heading */}
           <h2
             className="text-4xl md:text-5xl font-bold leading-tight text-center w-full auth-education-heading"
             style={{ minHeight: '240px' }}
@@ -78,68 +98,73 @@ export default function EducationSection() {
               {renderHeading()}
             </span>
           </h2>
+        </div>
 
-          {/* Feature bullets */}
+        {/* Feature bullets — aligned to navbar bounds */}
+        <div
+          className="w-full auth-features-container"
+          style={{
+            minHeight: '118px',
+            marginTop: '2rem',
+            paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px)',
+            paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
+          }}
+        >
           <div
-            className="w-full auth-features-container"
-            style={{ minHeight: '118px', marginTop: '2rem' }}
+            className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
+            style={{ width: '100%', gap: '4rem' }}
           >
-            <div
-              className="grid grid-cols-1 md:grid-cols-3 text-center auth-promises-list"
-              style={{ width: '120%', marginLeft: '-10%', gap: '4rem' }}
-            >
-              {showFeatures && (
-                <>
-                  <div
-                    className="flex flex-col items-center"
-                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}
-                  >
-                    <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
-                      Built by Industry Experts
-                    </div>
-                    <div className="text-base text-white font-normal">
-                      Our courses are built with
-                      <br />
-                      industry experts to ensure you
-                      <br />
-                      get the latest area expertise.
-                    </div>
+            {showFeatures && (
+              <>
+                <div
+                  className="flex flex-col items-center"
+                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}
+                >
+                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                    Built by Industry Experts
                   </div>
+                  <div className="text-base text-white font-normal">
+                    Our courses are built with
+                    <br />
+                    industry experts to ensure you
+                    <br />
+                    get the latest area expertise.
+                  </div>
+                </div>
 
-                  <div
-                    className="flex flex-col items-center"
-                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}
-                  >
-                    <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
-                      Ignite is Free
-                    </div>
-                    <div className="text-base text-white font-normal">
-                      All of our courses are
-                      <br />
-                      free. Always have been
-                      <br />
-                      and always will be.
-                    </div>
+                <div
+                  className="flex flex-col items-center"
+                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}
+                >
+                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                    Ignite is Free
                   </div>
+                  <div className="text-base text-white font-normal">
+                    All of our courses are
+                    <br />
+                    free. Always have been
+                    <br />
+                    and always will be.
+                  </div>
+                </div>
 
-                  <div
-                    className="flex flex-col items-center"
-                    style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}
-                  >
-                    <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
-                      No Educational Prerequisite
-                    </div>
-                    <div className="text-base text-white font-normal">
-                      You don&apos;t need any experience
-                      <br />
-                      to study. Our curricula is built
-                      <br />
-                      for all backgrounds.
-                    </div>
+                <div
+                  className="flex flex-col items-center"
+                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}
+                >
+                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                    No Educational Prerequisite
                   </div>
-                </>
-              )}
-            </div>
+                  <div className="text-base text-white font-normal">
+                    You don&apos;t need any experience
+                    <br />
+                    to study. Our curricula is built
+                    <br />
+                    for all backgrounds.
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

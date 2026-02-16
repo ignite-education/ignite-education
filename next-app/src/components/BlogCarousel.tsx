@@ -52,7 +52,7 @@ export default function BlogCarousel({ posts }: BlogCarouselProps) {
 
   return (
     <div className="relative w-full mx-auto" style={{ maxWidth: '50rem' }}>
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="relative overflow-hidden rounded">
         <div className="transition-all duration-500 ease-in-out">
           <BlogCard
             post={posts[currentIndex]}
