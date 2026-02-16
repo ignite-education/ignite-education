@@ -291,7 +291,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         </button>
 
         {/* Top section — 35% height, vertically centered */}
-        <div className="flex items-center justify-center" style={{ flex: '0 0 45%' }}>
+        <div className="flex items-end justify-center" style={{ flex: '0 0 35%' }}>
         <h3
           className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
@@ -356,7 +356,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         </div>
 
         {/* Bottom section — 65% height, vertically centered */}
-        <div className="flex flex-col items-center justify-center" style={{ flex: '0 0 55%' }}>
+        <div className="flex flex-col items-center justify-center" style={{ flex: '0 0 65%' }}>
           {checkingAuth ? (
             /* Loading spinner while checking auth */
             <div className="flex items-center justify-center">
