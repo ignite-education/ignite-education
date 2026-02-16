@@ -78,6 +78,16 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  const startSigningIn = useCallback(() => {
+    if (modalRef.current) {
+      setLockedSize({
+        width: modalRef.current.offsetWidth,
+        height: modalRef.current.offsetHeight,
+      })
+    }
+    setSigningIn(true)
+  }, [])
+
   const lockAndTransition = (firstName: string) => {
     if (modalRef.current) {
       setLockedSize({
@@ -91,7 +101,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   }
 
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
-    setSigningIn(true)
+    startSigningIn()
     try {
       const supabase = createClient()
       console.log('[CourseRequest] Starting Google sign-in...')
@@ -130,7 +140,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   }, [editedCourseName])
 
   const handleLinkedInClick = useCallback(async () => {
-    setSigningIn(true)
+    startSigningIn()
     sessionStorage.setItem('pendingCourseRequest', editedCourseName)
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
@@ -163,7 +173,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
   // Handle custom personalized Google button click
   const handlePersonalizedGoogleClick = useCallback(() => {
-    setSigningIn(true)
+    startSigningIn()
     triggerPrompt(() => {
       // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
       sessionStorage.setItem('pendingCourseRequest', editedCourseName)
@@ -311,12 +321,12 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         </h3>
 
         {checkingAuth ? (
-          /* Invisible placeholder to reserve space while checking auth */
-          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '24px', marginBottom: '0', opacity: 0 }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4"><circle cx="12" cy="12" r="11" /><path d="M7 12.5l3 3 7-7" /></svg>
-            <p className="text-center text-[0.9rem] leading-tight" style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
-              &nbsp;<br /><span style={{ marginTop: '10px', display: 'inline-block' }}>&nbsp;<br />&nbsp;</span>
-            </p>
+          /* Loading spinner while checking auth */
+          <div className="flex-1 flex items-center justify-center" style={{ marginTop: '38px', marginBottom: '24px' }}>
+            <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
+            </svg>
           </div>
         ) : phase === 'sign-in' ? (
           signingIn ? (
@@ -431,7 +441,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
+              className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
               Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
