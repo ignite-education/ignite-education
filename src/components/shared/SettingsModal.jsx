@@ -177,8 +177,8 @@ const SettingsModal = ({ isOpen, onClose }) => {
     e.preventDefault();
     try {
       const updates = {
-        first_name: settingsForm.firstName,
-        last_name: settingsForm.lastName
+        first_name: settingsForm.firstName.trim(),
+        last_name: settingsForm.lastName.trim()
       };
 
       if (settingsForm.email !== authUser?.email) {

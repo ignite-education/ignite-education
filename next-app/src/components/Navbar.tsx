@@ -36,7 +36,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        const avatarUrl = session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
+        const avatarUrl = session.user.user_metadata?.custom_avatar_url || session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
         setProfilePicture(avatarUrl)
         setFirstName(session.user.user_metadata?.first_name || session.user.user_metadata?.name?.split(' ')[0])
       } else {

@@ -119,16 +119,18 @@ export default function SignInForm() {
           }
         }
       } else {
+        const trimmedFirst = firstName.trim()
+        const trimmedLast = lastName.trim()
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { first_name: firstName, last_name: lastName } },
+          options: { data: { first_name: trimmedFirst, last_name: trimmedLast } },
         })
         if (error) throw error
 
         if (data.user) {
-          await createUserRecord(supabase, data.user, firstName, lastName)
-          addToResendAudience(email, firstName, lastName)
+          await createUserRecord(supabase, data.user, trimmedFirst, trimmedLast)
+          addToResendAudience(email, trimmedFirst, trimmedLast)
         }
       }
       router.push('/courses')

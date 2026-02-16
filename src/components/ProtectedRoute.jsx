@@ -78,8 +78,8 @@ const ProtectedRoute = ({ children }) => {
           } else {
             // No user record found - create one for new users
             const metadata = user.user_metadata || {};
-            const firstName = metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '';
-            const lastName = metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '';
+            const firstName = (metadata.first_name || metadata.given_name || metadata.name?.split(' ')[0] || '').trim();
+            const lastName = (metadata.last_name || metadata.family_name || metadata.name?.split(' ')[1] || '').trim();
 
             try {
               await supabase.from('users').insert({

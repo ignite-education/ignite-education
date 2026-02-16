@@ -8,16 +8,16 @@ BEGIN
   INSERT INTO public.users (id, first_name, last_name, onboarding_completed, role)
   VALUES (
     NEW.id,
-    COALESCE(
+    TRIM(COALESCE(
       NEW.raw_user_meta_data->>'first_name',
       split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1),
       ''
-    ),
-    COALESCE(
+    )),
+    TRIM(COALESCE(
       NEW.raw_user_meta_data->>'last_name',
       split_part(NEW.raw_user_meta_data->>'full_name', ' ', 2),
       ''
-    ),
+    )),
     false,
     'student'
   );
@@ -38,16 +38,16 @@ CREATE TRIGGER on_auth_user_created
 INSERT INTO public.users (id, first_name, last_name, onboarding_completed, role)
 SELECT
   au.id,
-  COALESCE(
+  TRIM(COALESCE(
     au.raw_user_meta_data->>'first_name',
     split_part(au.raw_user_meta_data->>'full_name', ' ', 1),
     ''
-  ) as first_name,
-  COALESCE(
+  )) as first_name,
+  TRIM(COALESCE(
     au.raw_user_meta_data->>'last_name',
     split_part(au.raw_user_meta_data->>'full_name', ' ', 2),
     ''
-  ) as last_name,
+  )) as last_name,
   false as onboarding_completed,
   'student' as role
 FROM auth.users au

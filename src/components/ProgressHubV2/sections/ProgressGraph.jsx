@@ -172,18 +172,19 @@ const ProgressGraph = ({
   }, []);
 
   // Build data points for both series
+  const animationStarted = animationProgress >= 0;
+
   const globalPoints = lessons.map((lesson, idx) => {
     const score = effectiveGlobalScores[lesson.key];
-    const hasData = score !== undefined && score !== null;
+    const hasData = animationStarted && score !== undefined && score !== null;
+    const displayScore = hasData ? 65 + (score - 65) * animationProgress : null;
     return {
       x: lessonX[idx],
-      y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (score / 100) * GRAPH_HEIGHT : null,
-      score: hasData ? score : null,
+      y: hasData ? PADDING_TOP + GRAPH_HEIGHT - (displayScore / 100) * GRAPH_HEIGHT : null,
+      score: displayScore,
       hasData,
     };
   });
-
-  const animationStarted = animationProgress >= 0;
   const userPoints = lessons.map((lesson, idx) => {
     const result = userLessonScores[lesson.key];
     const hasData = animationStarted && result && result.total > 0;

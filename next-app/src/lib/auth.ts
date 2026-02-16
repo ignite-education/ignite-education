@@ -17,8 +17,8 @@ export async function createUserRecord(
     .from('users')
     .insert({
       id: user.id,
-      first_name: firstName,
-      last_name: lastName,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
       onboarding_completed: false,
       role: 'student',
     })

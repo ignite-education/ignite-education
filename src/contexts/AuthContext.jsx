@@ -152,6 +152,8 @@ export const AuthProvider = ({ children }) => {
 
   // Sign up with email and password
   const signUp = async (email, password, firstName, lastName) => {
+    firstName = firstName.trim();
+    lastName = lastName.trim();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -314,8 +316,8 @@ export const AuthProvider = ({ children }) => {
     signInWithOAuth,
     resetPassword,
     updatePassword,
-    firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,
-    lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
+    firstName: (user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || '').trim() || null,
+    lastName: (user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || '').trim() || null,
     isAdFree: user?.user_metadata?.is_ad_free || false,
     profilePicture: getHighResProfilePicture(
       user?.user_metadata?.custom_avatar_url

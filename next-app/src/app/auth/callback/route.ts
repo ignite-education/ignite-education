@@ -24,8 +24,8 @@ export async function GET(request: Request) {
       if (user) {
         // Ensure user record exists (idempotent — ignores duplicate key errors)
         const metadata = user.user_metadata || {}
-        const firstName = metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || ''
-        const lastName = metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || ''
+        const firstName = (metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || '').trim()
+        const lastName = (metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || '').trim()
         await createUserRecord(supabase, user, firstName, lastName)
 
         // Add to Resend audience (non-blocking, safe for returning users)
