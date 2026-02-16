@@ -271,7 +271,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         className={`relative bg-white flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
           width: 'fit-content',
-          height: '320px',
+          height: '350px',
           minWidth: '575px',
           maxWidth: '90vw',
           padding: '3.3rem 2.75rem 2.75rem',
