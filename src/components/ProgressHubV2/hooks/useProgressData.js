@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
 
 const extractSubredditFromUrl = (url) => {
   if (!url) return null;
@@ -31,6 +31,7 @@ const useProgressData = () => {
   const [communityPosts, setCommunityPosts] = useState([]);
   const [userLessonScores, setUserLessonScores] = useState({});
   const [globalLessonScores, setGlobalLessonScores] = useState({});
+  const [userRole, setUserRole] = useState('student');
   const hasInitialDataFetchRef = useRef(false);
   const courseDataResultRef = useRef(null);
 
@@ -42,8 +43,16 @@ const useProgressData = () => {
         .replace(/\/$/, '')
         .split('/r/')[1] || (data.reddit_channel || 'r/ProductManagement').replace(/^r\//, '');
       const redditData = await getRedditPosts(25, false, subreddit);
+      let blockedPostIds = [];
+      try {
+        blockedPostIds = await getBlockedRedditPosts();
+      } catch {
+        blockedPostIds = [];
+      }
       const avatarColors = ['bg-purple-600', 'bg-yellow-500', 'bg-teal-500'];
-      const posts = (Array.isArray(redditData) ? redditData : []).map((post, index) => ({
+      const posts = (Array.isArray(redditData) ? redditData : [])
+        .filter(post => !blockedPostIds.includes(post.id))
+        .map((post, index) => ({
         id: `reddit-${post.id}`,
         redditId: post.id,
         author: post.author,
@@ -84,7 +93,7 @@ const useProgressData = () => {
         // Fetch enrolled course
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('enrolled_course')
+          .select('enrolled_course, role')
           .eq('id', userId)
           .single();
 
@@ -93,6 +102,7 @@ const useProgressData = () => {
           return;
         }
 
+        if (isMounted) setUserRole(userData.role || 'student');
         const courseId = userData.enrolled_course;
 
         // Fetch course details
@@ -236,6 +246,7 @@ const useProgressData = () => {
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
+    userRole,
   };
 };
 

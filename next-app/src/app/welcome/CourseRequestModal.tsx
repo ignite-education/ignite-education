@@ -274,7 +274,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           height: '350px',
           minWidth: '575px',
           maxWidth: '90vw',
-          padding: '3.3rem 2.75rem 2.75rem',
+          padding: '0 2.75rem',
           borderRadius: '6px',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -290,9 +290,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </svg>
         </button>
 
-        {/* Heading */}
+        {/* Top section — 35% height, vertically centered */}
+        <div className="flex items-center justify-center" style={{ flex: '0 0 35%' }}>
         <h3
-          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em] shrink-0"
+          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           <span className="whitespace-nowrap">We&rsquo;ve added{' '}
@@ -352,12 +353,13 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           </span>
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
+        </div>
 
-        {/* Content area — fixed minHeight to match sign-in buttons state */}
-        <div className="flex flex-col flex-1">
+        {/* Bottom section — 65% height, vertically centered */}
+        <div className="flex flex-col items-center justify-center" style={{ flex: '0 0 65%' }}>
           {checkingAuth ? (
             /* Loading spinner while checking auth */
-            <div className="flex items-center justify-center" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+            <div className="flex items-center justify-center">
               <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
                 <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
@@ -366,7 +368,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           ) : phase === 'sign-in' ? (
             signingIn ? (
               /* Loading spinner while signing in */
-              <div className="flex items-center justify-center" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+              <div className="flex items-center justify-center">
                 <svg className="animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="#E5E7EB" strokeWidth="3" />
                   <path d="M12 2a10 10 0 0 1 10 10" stroke="#9CA3AF" strokeWidth="3" strokeLinecap="round" />
@@ -375,7 +377,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
             ) : (
             <>
               {/* Sign-in buttons */}
-              <div className="space-y-2" style={{ marginTop: '38px' }}>
+              <div className="space-y-2">
                 {googleHint ? (
                   <>
                     {/* Custom personalized Google button (for returning users) */}
@@ -470,7 +472,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
             )
           ) : (
             /* Thank-you phase */
-            <div className="flex flex-col items-center animate-fadeIn" style={{ marginTop: 'auto', marginBottom: 'auto' }}>
+            <div className="flex flex-col items-center animate-fadeIn">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
                 <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
                 <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

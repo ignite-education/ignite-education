@@ -60,7 +60,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, initialPostData, onPos
           flair: newPost.flair,
         }));
         localStorage.setItem('reopen_post_modal', 'true');
-        localStorage.setItem('reddit_return_path', '/progress-v2');
+        localStorage.setItem('reddit_return_path', '/progress');
         initiateRedditAuth();
         return;
       }

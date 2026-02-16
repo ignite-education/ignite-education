@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, ThumbsUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp, User, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
 
@@ -14,7 +14,7 @@ const getTimeAgo = (timestamp) => {
   return `${diffInDays} days ago`;
 };
 
-const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost }) => {
+const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost, onMyPosts, userRole, userId, onBlockPost }) => {
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [postComments, setPostComments] = useState({});
   const [loadingComments, setLoadingComments] = useState({});
@@ -29,7 +29,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
       `To ${action} Reddit posts, you need to connect your Reddit account. Would you like to connect now?`
     );
     if (confirmed) {
-      localStorage.setItem('reddit_return_path', '/progress-v2');
+      localStorage.setItem('reddit_return_path', '/progress');
       initiateRedditAuth();
     }
     return false;
@@ -140,10 +140,20 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div className="flex items-center" style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
         <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%' }}>Community Forum</h2>
+        {onMyPosts && (
+          <button
+            onClick={onMyPosts}
+            className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group ml-auto"
+            style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+            title="My posts"
+          >
+            <User size={18} className="text-black group-hover:text-pink-500 transition-colors duration-300" />
+          </button>
+        )}
         <button
           onClick={onCreatePost}
-          className="bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group ml-auto"
-          style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
+          className={`bg-white flex items-center justify-center hover:bg-purple-50 flex-shrink-0 group ${!onMyPosts ? 'ml-auto' : ''}`}
+          style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', marginLeft: onMyPosts ? '0.4rem' : undefined }}
           title="Create a post"
         >
           <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
@@ -213,6 +223,20 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         <MessageSquare size={13} />
                         <span style={{ fontWeight: 300 }}>{localCommentCounts[post.id] ?? post.comments ?? 0}</span>
                       </div>
+                      {userRole === 'admin' && onBlockPost && (
+                        <button
+                          className="ml-auto text-white/30 hover:text-red-400 transition"
+                          title="Block this post"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Block this post? It will be hidden for all users.')) {
+                              onBlockPost(post.redditId);
+                            }
+                          }}
+                        >
+                          <Ban size={13} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

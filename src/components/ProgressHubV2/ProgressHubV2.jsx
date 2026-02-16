@@ -11,10 +11,12 @@ import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
 import CommunityForumCard from './sections/CommunityForumCard';
 import CreatePostModal from './sections/CreatePostModal';
+import MyPostsModal from './sections/MyPostsModal';
 import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
 import SettingsModal from '../shared/SettingsModal';
 import { isRedditAuthenticated, getRedditUsername } from '../../lib/reddit';
+import { blockRedditPost } from '../../lib/api';
 
 // Mobile Block Screen
 const MobileBlockScreen = ({ onSignOut }) => {
@@ -56,6 +58,7 @@ const ProgressHubV2 = () => {
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showMyPostsModal, setShowMyPostsModal] = useState(false);
   const [pendingPostData, setPendingPostData] = useState(null);
 
   const {
@@ -78,6 +81,7 @@ const ProgressHubV2 = () => {
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
+    userRole,
   } = useProgressData();
 
   const {
@@ -135,6 +139,21 @@ const ProgressHubV2 = () => {
     checkRedditAuth();
   }, []);
 
+  // Refresh user session after successful payment
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pendingRefresh = localStorage.getItem('pendingPaymentRefresh');
+
+    const hasPaymentSuccess = params.get('payment') === 'success';
+    const hasSessionId = params.get('session_id');
+    const hasPendingRefresh = pendingRefresh && (Date.now() - parseInt(pendingRefresh)) < 5 * 60 * 1000;
+
+    if (hasPaymentSuccess || hasSessionId || hasPendingRefresh) {
+      localStorage.removeItem('pendingPaymentRefresh');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   // Clean up hash fragments
   useLayoutEffect(() => {
     if (window.location.hash) {
@@ -187,7 +206,7 @@ const ProgressHubV2 = () => {
             <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={() => setShowMyPostsModal(true)} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
       />
 
       {/* Section 3: Merchandise */}
@@ -207,6 +226,11 @@ const ProgressHubV2 = () => {
         courseReddit={courseReddit}
         initialPostData={pendingPostData}
         onPostCreated={refetchCommunityPosts}
+      />
+
+      <MyPostsModal
+        isOpen={showMyPostsModal}
+        onClose={() => setShowMyPostsModal(false)}
       />
     </div>
   );

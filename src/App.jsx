@@ -23,7 +23,6 @@ const AdminRedirect = () => {
 }
 
 // Lazy load all route components for code splitting
-const ProgressHub = lazy(() => import('./components/ProgressHub'))
 const RedditCallback = lazy(() => import('./components/RedditCallback'))
 const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
@@ -45,15 +44,10 @@ function App() {
           <Routes>
             <Route path="/" element={
               <ProtectedRoute>
-                <ProgressHub />
+                <ProgressHubV2 />
               </ProtectedRoute>
             } />
             <Route path="/progress" element={
-              <ProtectedRoute>
-                <ProgressHub />
-              </ProtectedRoute>
-            } />
-            <Route path="/progress-v2" element={
               <ProtectedRoute>
                 <ProgressHubV2 />
               </ProtectedRoute>
