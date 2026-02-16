@@ -210,8 +210,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setIsEditing(false)
                     }
                   }}
-                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] border border-gray-300/70 bg-white rounded py-0.5 outline-none focus:border-gray-400/70 text-center"
-                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1.4rem)` : 'auto', paddingLeft: '0.7rem', paddingRight: '0.7rem' }}
+                  className="text-[#EF0B72] text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-100/60 rounded py-0.5 outline-none text-center"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1.2rem)` : 'auto', paddingLeft: '0.6rem', paddingRight: '0.6rem' }}
                 />
                 <button
                   onClick={() => {
@@ -220,7 +220,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     setIsEditing(false)
                   }}
                   className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                  style={{ marginLeft: '4px', marginTop: '-4px' }}
+                  style={{ marginLeft: '4px', marginTop: '-6px' }}
                   title="Save"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -240,7 +240,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '7px', marginTop: '-7px' }}
+                    style={{ marginLeft: '7px', marginTop: '-9px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
