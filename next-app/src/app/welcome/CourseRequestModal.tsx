@@ -435,16 +435,16 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           )
         ) : (
           /* Thank-you phase */
-          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '24px', marginBottom: '0' }}>
+          <div className="flex-1 flex flex-col items-center justify-center animate-fadeIn" style={{ marginTop: '24px', marginBottom: '0' }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
               <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
               <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             <p
-              className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
+              className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+              <span className="text-[1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
             </p>
           </div>
         )}
