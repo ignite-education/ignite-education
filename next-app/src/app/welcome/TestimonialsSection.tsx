@@ -196,7 +196,13 @@ export default function TestimonialsSection() {
         </div>
 
         {/* Testimonials and Cards Container */}
-        <div style={{ maxWidth: '70rem', paddingLeft: '4rem', paddingRight: '0rem' }} className="auth-section-5-grid mx-auto">
+        <div
+          style={{
+            paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px)',
+            paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
+          }}
+          className="auth-section-5-grid"
+        >
           <div className="grid grid-cols-2 gap-4 items-start">
             {/* Left Column - Testimonials Slider */}
             <div
