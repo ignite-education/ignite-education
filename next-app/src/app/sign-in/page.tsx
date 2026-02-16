@@ -24,16 +24,30 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (user) {
+    const params = await searchParams
+    const redirectParam = typeof params.redirect === 'string' ? params.redirect : undefined
+
     const { data } = await supabase
       .from('users')
-      .select('enrolled_course')
+      .select('enrolled_course, role')
       .eq('id', user.id)
       .maybeSingle()
+
+    if (redirectParam === 'admin') {
+      if (data?.role === 'admin' || data?.role === 'teacher') {
+        redirect('https://admin.ignite.education')
+      }
+      redirect('/welcome')
+    }
 
     redirect(data?.enrolled_course ? '/progress' : '/courses')
   }
