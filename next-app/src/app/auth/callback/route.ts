@@ -43,13 +43,21 @@ export async function GET(request: Request) {
             })
             if (linkedinRes.ok) {
               const profile = await linkedinRes.json()
+              console.log('[LinkedIn] userinfo picture:', profile.picture)
+              console.log('[LinkedIn] existing avatar_url:', metadata.avatar_url)
+              console.log('[LinkedIn] existing picture:', metadata.picture)
               if (profile.picture && profile.picture !== metadata.avatar_url && profile.picture !== metadata.picture) {
                 await supabase.auth.updateUser({ data: { avatar_url: profile.picture } })
+                console.log('[LinkedIn] Updated avatar_url to userinfo picture')
+              } else {
+                console.log('[LinkedIn] userinfo picture is same as existing — no update')
               }
+            } else {
+              console.error('[LinkedIn] userinfo request failed:', linkedinRes.status, await linkedinRes.text())
             }
           } catch (e) {
             // Non-critical — continue with default OIDC picture
-            console.error('LinkedIn profile picture fetch failed:', e)
+            console.error('[LinkedIn] profile picture fetch failed:', e)
           }
         }
 
