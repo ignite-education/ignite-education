@@ -3174,7 +3174,7 @@ const ProgressHub = () => {
                       borderRadius: '0.3rem'
                     }}
                   >
-                    <Inbox size={20} className="text-black group-hover:text-pink-500 transition-colors" />
+                    <Inbox size={20} strokeWidth={2.25} className="text-black group-hover:text-pink-500 transition-colors" />
                   </button>
                 )}
                 <div className="flex-1">

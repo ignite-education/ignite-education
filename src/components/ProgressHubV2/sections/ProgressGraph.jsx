@@ -174,13 +174,11 @@ const ProgressGraph = ({
   // Build data points for both series
   const animationStarted = animationProgress >= 0;
   const progress = animationStarted ? animationProgress : 0;
-  // Interpolate colors from 50% darker starting values to final values
-  const greyChannel = Math.round(0x44 + (0x88 - 0x44) * progress);
+  // Interpolate colors from 20% darker starting values to final values
+  const dark = 0.8 + 0.2 * progress; // 0.8 → 1.0
+  const greyChannel = Math.round(0x88 * dark);
   const greyColor = `rgb(${greyChannel},${greyChannel},${greyChannel})`;
-  const pinkR = Math.round(0x78 + (0xEF - 0x78) * progress);
-  const pinkG = Math.round(0x06 + (0x0B - 0x06) * progress);
-  const pinkB = Math.round(0x39 + (0x72 - 0x39) * progress);
-  const pinkColor = `rgb(${pinkR},${pinkG},${pinkB})`;
+  const pinkColor = `rgb(${Math.round(0xEF * dark)},${Math.round(0x0B * dark)},${Math.round(0x72 * dark)})`;
 
   const globalPoints = lessons.map((lesson, idx) => {
     const score = effectiveGlobalScores[lesson.key];

@@ -115,8 +115,10 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
     body += '.';
   }
 
-  if (nextLesson) {
-    body += ` Your next lesson is ${nextLesson.lesson_name || `Lesson ${nextLesson.lesson_number}`}.`;
+  const nextLessonName = nextLesson ? (nextLesson.lesson_name || `Lesson ${nextLesson.lesson_number}`) : null;
+
+  if (nextLessonName) {
+    body += ` Your next lesson is ${nextLessonName}.`;
   }
 
   body += ` ${randomOutro} ${firstName}!`;
@@ -124,6 +126,7 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
   return {
     headline: `You're ${progressPercentage}% through the ${courseTitle} course.`,
     body,
+    ...(nextLessonName && { linkText: nextLessonName, linkUrl: '#course-details' }),
   };
 };
 

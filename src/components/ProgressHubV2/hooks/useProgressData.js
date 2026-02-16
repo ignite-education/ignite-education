@@ -170,12 +170,13 @@ const useProgressData = () => {
           if (isMounted) setCompletedLessons([]);
         }
 
-        // Fetch total completed lessons across ALL courses
+        // Fetch total completed lessons for enrolled course
         try {
           const { count, error: countError } = await supabase
             .from('lesson_completions')
             .select('*', { count: 'exact', head: true })
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .eq('course_id', courseId);
 
           if (!countError && isMounted) {
             setTotalCompletedLessons(count || 0);
