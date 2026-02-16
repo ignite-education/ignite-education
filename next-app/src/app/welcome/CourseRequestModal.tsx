@@ -480,10 +480,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <p
-                className="text-[#009600] text-center text-[0.9rem] font-semibold tracking-[-0.02em] leading-tight"
+                className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                <span className="text-[1.1rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+                <span className="text-[1.2rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
               </p>
             </div>
           )}
