@@ -194,7 +194,6 @@ const SettingsModal = ({ isOpen, onClose }) => {
       }
 
       await updateProfile(updates);
-      alert('Account updated successfully!');
       handleClose();
     } catch (error) {
       console.error('Error updating account:', error);

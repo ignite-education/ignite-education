@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
           .from('users')
           .update({ last_active_at: new Date().toISOString() })
           .eq('id', session.user.id)
-          .catch(err => console.error('Failed to update last_active_at:', err));
+          .then(({ error }) => { if (error) console.error('Failed to update last_active_at:', error); });
       }
     });
 

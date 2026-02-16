@@ -17,7 +17,7 @@ export function saveGoogleProfileHint(user: { user_metadata?: Record<string, str
       || user.email?.split('@')[0]
 
     const email = meta.email || user.email
-    const avatar = meta.avatar_url || meta.picture
+    const avatar = meta.custom_avatar_url || meta.avatar_url || meta.picture
 
     if (name && email) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, email, avatar: avatar || '' }))

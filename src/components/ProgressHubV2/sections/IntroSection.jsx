@@ -398,21 +398,22 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             {!hasHighQualityAvatar && (
               <button
                 onClick={onSettingsClick}
-                className="absolute flex items-center justify-center bg-white hover:bg-gray-100 transition-colors"
+                className="absolute flex items-center justify-center transition-colors group"
                 style={{
                   bottom: '6px',
                   left: '6px',
                   width: '28px',
                   height: '28px',
-                  borderRadius: '0.15rem',
                   cursor: 'pointer',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
                 }}
                 title="Upload profile picture"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="13" r="4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-white group-hover:text-[#EF0B72] transition-colors" style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="13" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
             )}

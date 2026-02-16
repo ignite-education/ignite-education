@@ -25,7 +25,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       if (user) {
-        const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture
+        const avatarUrl = user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture
         setProfilePicture(avatarUrl)
         setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
       }
