@@ -81,6 +81,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         height: modalRef.current.offsetHeight,
       })
     }
+    setCheckingAuth(false)
     setUserName(firstName)
     setPhase('thank-you')
   }
@@ -251,7 +252,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif', position: 'absolute', visibility: 'hidden', whiteSpace: 'pre' }}
             >{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
-            <span className="inline-flex items-baseline" style={{ height: '2.0625rem', verticalAlign: 'baseline' }}>
+            <span className="relative inline-flex items-baseline" style={{ height: '2.0625rem', verticalAlign: 'baseline' }}>
               {isEditing ? (
                 <>
                   <input
@@ -268,7 +269,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                   <button
                     onClick={handleEditSave}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '4px', marginTop: '-8px' }}
+                    style={{ right: '-20px', top: '-2px' }}
                     title="Save"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -287,7 +288,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                       setTimeout(() => editInputRef.current?.focus(), 0)
                     }}
                     className="text-gray-400 hover:text-[#EF0B72] transition-colors absolute"
-                    style={{ marginLeft: '7px', marginTop: '-11px' }}
+                    style={{ right: '-20px', top: '-2px' }}
                     title="Edit course name"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
