@@ -67,6 +67,7 @@ const ProgressHubV2 = () => {
     authUser,
     isAdFree,
     profilePicture,
+    hasHighQualityAvatar,
     signOut,
     courseData,
     groupedLessons,
@@ -177,6 +178,7 @@ const ProgressHubV2 = () => {
       <IntroSection
         firstName={firstName}
         profilePicture={profilePicture}
+        hasHighQualityAvatar={hasHighQualityAvatar}
         progressPercentage={progressPercentage}
         courseTitle={courseTitle}
         joinedAt={authUser?.created_at}

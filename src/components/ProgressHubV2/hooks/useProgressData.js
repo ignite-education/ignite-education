@@ -10,7 +10,7 @@ const extractSubredditFromUrl = (url) => {
 };
 
 const useProgressData = () => {
-  const { user: authUser, firstName, isInitialized, isAdFree, profilePicture, signOut } = useAuth();
+  const { user: authUser, firstName, isInitialized, isAdFree, profilePicture, hasHighQualityAvatar, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [courseData, setCourseData] = useState(null);
   const [groupedLessons, setGroupedLessons] = useState({});
@@ -232,6 +232,7 @@ const useProgressData = () => {
     authUser,
     isAdFree,
     profilePicture,
+    hasHighQualityAvatar,
     signOut,
     courseData,
     groupedLessons,

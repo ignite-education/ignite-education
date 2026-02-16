@@ -274,7 +274,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -379,7 +379,7 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
           </a>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '30px', marginLeft: '6px' }}>
+          <div style={{ marginBottom: '30px', marginLeft: '6px', position: 'relative', width: '150px', height: '150px' }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
@@ -394,6 +394,27 @@ const IntroSection = ({ firstName, profilePicture, progressPercentage, courseTit
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
+            )}
+            {!hasHighQualityAvatar && (
+              <button
+                onClick={onSettingsClick}
+                className="absolute flex items-center justify-center bg-white hover:bg-gray-100 transition-colors"
+                style={{
+                  bottom: '6px',
+                  left: '6px',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '0.15rem',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                }}
+                title="Upload profile picture"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="13" r="4" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
             )}
           </div>
 

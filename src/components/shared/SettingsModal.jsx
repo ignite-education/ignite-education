@@ -1,18 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 
+const resizeProfileImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 400;
+        const srcSize = Math.min(img.width, img.height);
+        const srcX = (img.width - srcSize) / 2;
+        const srcY = (img.height - srcSize) / 2;
+        const outSize = Math.min(srcSize, maxDim);
+        canvas.width = outSize;
+        canvas.height = outSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, outSize, outSize);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) { reject(new Error('Compression failed')); return; }
+            resolve(new File([blob], 'profile.jpg', { type: 'image/jpeg' }));
+          },
+          'image/jpeg',
+          0.85
+        );
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const SettingsModal = ({ isOpen, onClose }) => {
-  const { user: authUser, updateProfile, signOut, isAdFree } = useAuth();
+  const { user: authUser, updateProfile, signOut, isAdFree, profilePicture, firstName } = useAuth();
   const navigate = useNavigate();
+  const imageInputRef = useRef(null);
 
   const [isClosing, setIsClosing] = useState(false);
   const [settingsTab, setSettingsTab] = useState('account');
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [pictureError, setPictureError] = useState(null);
   const [settingsForm, setSettingsForm] = useState({
     firstName: '',
     lastName: '',
@@ -86,6 +122,48 @@ const SettingsModal = ({ isOpen, onClose }) => {
       }
     })();
   }, [isOpen]);
+
+  const handleProfilePictureUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPictureError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setPictureError('Please select an image file.');
+      return;
+    }
+    if (file.size < 50 * 1024) {
+      setPictureError('Image is too small. Please use a higher quality image (min 50KB).');
+      return;
+    }
+    if (file.size > 3.5 * 1024 * 1024) {
+      setPictureError('Image is too large. Please use an image under 3.5MB.');
+      return;
+    }
+
+    try {
+      setIsUploadingPicture(true);
+      const resizedFile = await resizeProfileImage(file);
+      const filePath = `profile_pictures/${authUser.id}.jpg`;
+      const arrayBuffer = await resizedFile.arrayBuffer();
+
+      const { error: uploadError } = await supabase.storage
+        .from('assets')
+        .upload(filePath, arrayBuffer, { contentType: 'image/jpeg', upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from('assets').getPublicUrl(filePath);
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
+      await updateProfile({ custom_avatar_url: publicUrl });
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      setPictureError('Failed to upload image. Please try again.');
+    } finally {
+      setIsUploadingPicture(false);
+      if (imageInputRef.current) imageInputRef.current.value = '';
+    }
+  };
 
   const handleClose = () => {
     setIsClosing(true);
@@ -324,6 +402,50 @@ const SettingsModal = ({ isOpen, onClose }) => {
           {/* Account Tab */}
           {settingsTab === 'account' && (
             <form onSubmit={handleUpdateAccount} className="space-y-3">
+              {/* Profile Picture Upload */}
+              <div className="flex items-center gap-4 pb-3 border-b border-gray-200">
+                <div>
+                  {profilePicture ? (
+                    <img
+                      src={profilePicture}
+                      alt="Profile"
+                      className="object-cover"
+                      style={{ width: '72px', height: '72px', borderRadius: '0.2rem' }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div
+                      className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
+                      style={{ width: '72px', height: '72px', fontSize: '22px', borderRadius: '0.2rem' }}
+                    >
+                      {(firstName || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    ref={imageInputRef}
+                    onChange={handleProfilePictureUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={isUploadingPicture}
+                    className="px-4 py-1.5 text-sm font-medium border border-gray-300 hover:bg-gray-50 transition disabled:opacity-50"
+                    style={{ borderRadius: '0.25rem' }}
+                  >
+                    {isUploadingPicture ? 'Uploading...' : 'Change Photo'}
+                  </button>
+                  <p className="text-xs text-gray-500 mt-1">JPG, PNG, or GIF. Max 3.5MB.</p>
+                  {pictureError && (
+                    <p className="text-xs text-red-500 mt-1">{pictureError}</p>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-0.5">First Name</label>

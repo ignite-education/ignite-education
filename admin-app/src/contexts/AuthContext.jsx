@@ -148,7 +148,7 @@ export const AuthProvider = ({ children }) => {
     signOut,
     firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
-    profilePicture: user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
+    profilePicture: user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
     userRole,
   }), [user, loading, isInitialized, userRole]);
 

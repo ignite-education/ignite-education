@@ -317,7 +317,16 @@ export const AuthProvider = ({ children }) => {
     firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
     isAdFree: user?.user_metadata?.is_ad_free || false,
-    profilePicture: getHighResProfilePicture(user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null),
+    profilePicture: getHighResProfilePicture(
+      user?.user_metadata?.custom_avatar_url
+      || user?.user_metadata?.avatar_url
+      || user?.user_metadata?.picture
+      || null
+    ),
+    hasHighQualityAvatar: !!(
+      user?.user_metadata?.custom_avatar_url
+      || user?.identities?.some(id => id.provider === 'google')
+    ),
     userRole,
     enrolledCourse,
   }), [user, loading, isInitialized, userRole, enrolledCourse]);
