@@ -4,6 +4,20 @@ import { addContactToAudience, RESEND_AUDIENCES } from '../lib/email';
 
 const AuthContext = createContext({});
 
+// Upgrade OAuth profile picture URLs to higher resolution
+const getHighResProfilePicture = (url) => {
+  if (!url) return null;
+  // LinkedIn: shrink_100_100 → shrink_400_400
+  if (url.includes('licdn.com') || url.includes('linkedin.com')) {
+    return url.replace(/shrink_\d+_\d+/, 'shrink_400_400');
+  }
+  // Google: =s96-c → =s400-c
+  if (url.includes('googleusercontent.com')) {
+    return url.replace(/=s\d+-c/, '=s400-c');
+  }
+  return url;
+};
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -307,7 +321,7 @@ export const AuthProvider = ({ children }) => {
     firstName: user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || null,
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
     isAdFree: user?.user_metadata?.is_ad_free || false,
-    profilePicture: user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
+    profilePicture: getHighResProfilePicture(user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null),
     userRole,
     enrolledCourse,
   }), [user, loading, isInitialized, userRole, enrolledCourse]);
