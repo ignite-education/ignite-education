@@ -306,7 +306,15 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           <br /><span className="whitespace-nowrap">to our upcoming course list</span>
         </h3>
 
-        {checkingAuth ? null : phase === 'sign-in' ? (
+        {checkingAuth ? (
+          /* Invisible placeholder to reserve space while checking auth */
+          <div className="flex-1 flex flex-col items-center justify-center" style={{ marginTop: '24px', marginBottom: '0', opacity: 0 }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4"><circle cx="12" cy="12" r="11" /><path d="M7 12.5l3 3 7-7" /></svg>
+            <p className="text-center text-[1.1rem] leading-tight" style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+              &nbsp;<br /><span style={{ marginTop: '10px', display: 'inline-block' }}>&nbsp;<br />&nbsp;</span>
+            </p>
+          </div>
+        ) : phase === 'sign-in' ? (
           <>
             {/* Sign-in buttons */}
             <div className="space-y-2" style={{ marginTop: '38px' }}>
@@ -395,7 +403,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
             {/* Subtext */}
             <p
-              className="text-black text-center mt-6 text-[0.95rem] font-medium tracking-[-0.01em]"
+              className="text-black text-center mt-6 text-[0.9rem] font-normal tracking-[-0.01em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
               Register and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
@@ -412,7 +420,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               className="text-[#009600] text-center text-[1.1rem] font-semibold tracking-[-0.02em] leading-tight"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
             >
-              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-medium">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
+              Thank you, {userName}<br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
             </p>
           </div>
         )}
