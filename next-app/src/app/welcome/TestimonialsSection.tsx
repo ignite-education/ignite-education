@@ -244,7 +244,7 @@ export default function TestimonialsSection() {
                       opacity: currentTestimonial === idx ? 1 : 0,
                       pointerEvents: currentTestimonial === idx ? 'auto' : 'none',
                       transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      width: '36rem',
+                      width: '100%',
                       height: '19rem',
                       overflow: 'visible',
                       padding: '1rem 1.5rem 1.5rem 1.5rem'
@@ -355,7 +355,7 @@ export default function TestimonialsSection() {
                         width: '10.3rem',
                         top: card.position.top,
                         left: card.position.left,
-                        padding: '1.5rem',
+                        padding: '1.5rem 0',
                         opacity: hoveredUseCase !== null ? 0 : 1,
                         transition: 'all 300ms ease-in-out',
                         pointerEvents: 'auto'
@@ -394,7 +394,7 @@ export default function TestimonialsSection() {
                       width: '21.35rem',
                       height: '20.3rem',
                       zIndex: 10,
-                      padding: '2rem',
+                      padding: '2rem 0',
                       opacity: hoveredUseCase !== null ? 1 : 0,
                       visibility: hoveredUseCase !== null ? 'visible' : 'hidden',
                       transition: 'opacity 300ms ease-in-out, visibility 300ms ease-in-out',
