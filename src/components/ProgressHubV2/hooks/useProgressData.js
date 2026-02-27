@@ -66,7 +66,8 @@ const useProgressData = () => {
         avatar: avatarColors[index % avatarColors.length],
         url: post.url,
         source: 'reddit',
-      }));
+      }))
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       if (isMounted) setCommunityPosts(posts);
     } catch {
       if (isMounted) setCommunityPosts([]);
