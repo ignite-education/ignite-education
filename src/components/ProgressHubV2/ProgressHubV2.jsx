@@ -9,6 +9,7 @@ import CourseDetailsSection from './sections/CourseDetailsSection';
 import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
+import ResourcesSlider from './sections/ResourcesSlider';
 import CommunityForumCard from './sections/CommunityForumCard';
 import CreatePostModal from './sections/CreatePostModal';
 import MyPostsModal from './sections/MyPostsModal';
@@ -208,6 +209,7 @@ const ProgressHubV2 = () => {
               currentLesson={currentLesson}
             />
             <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
+            <ResourcesSlider />
           </>
         }
         right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={() => setShowMyPostsModal(true)} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
