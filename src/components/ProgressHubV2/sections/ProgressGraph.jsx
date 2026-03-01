@@ -458,7 +458,7 @@ const ProgressGraph = ({
       </div>
 
       {/* HTML module labels — absolutely positioned at midpoint of each module's dots */}
-      <div style={{ position: 'relative', marginTop: '8px', height: '2.4em' }}>
+      <div style={{ position: 'relative', marginTop: '8px', height: '2.4em', width: '90%', margin: '8px auto 0' }}>
         {moduleRanges.map((mod, idx) => {
           const lines = formatModuleName(mod.name);
           return (
