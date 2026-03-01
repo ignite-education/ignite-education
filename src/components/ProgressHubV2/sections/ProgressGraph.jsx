@@ -282,7 +282,7 @@ const ProgressGraph = ({
         ref={graphRef}
         onMouseMove={handleGraphMouseMove}
         onMouseLeave={handleGraphMouseLeave}
-        style={{ position: 'relative', height: '120px', cursor: 'pointer' }}
+        style={{ position: 'relative', height: '120px', cursor: 'pointer', width: '90%', margin: '0 auto' }}
       >
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
