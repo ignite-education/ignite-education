@@ -1,0 +1,53 @@
+'use client'
+
+import type { Prompt } from '@/data/placeholderPrompts'
+import PromptCard from './PromptCard'
+
+type ColumnType = 'most-used' | 'highly-rated' | 'most-recent'
+
+const COLUMN_CONFIG: Record<ColumnType, { title: string; description: string }> = {
+  'most-used': {
+    title: 'Most Used',
+    description: 'The top utilised LLM\nprompts from the Toolkit',
+  },
+  'highly-rated': {
+    title: 'Highly Rated',
+    description: 'The highest rated prompts\nas scored by Ignite users',
+  },
+  'most-recent': {
+    title: 'Most Recent',
+    description: 'The newest prompts\nfrom the community',
+  },
+}
+
+interface PromptColumnProps {
+  type: ColumnType
+  prompts: Prompt[]
+  onPromptClick: (prompt: Prompt) => void
+}
+
+export default function PromptColumn({ type, prompts, onPromptClick }: PromptColumnProps) {
+  const config = COLUMN_CONFIG[type]
+
+  return (
+    <div className="flex flex-col">
+      <h2
+        className="text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em]"
+        style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+      >
+        {config.title}
+      </h2>
+      <p
+        className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line"
+        style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+      >
+        {config.description}
+      </p>
+      <div className="space-y-3">
+        {prompts.map((prompt) => (
+          <PromptCard key={prompt.id} prompt={prompt} onClick={onPromptClick} />
+        ))}
+      </div>
+    </div>
+  )
+}
