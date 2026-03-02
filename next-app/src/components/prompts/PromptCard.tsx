@@ -15,21 +15,11 @@ export default function PromptCard({ prompt, onClick }: PromptCardProps) {
     <button
       type="button"
       onClick={() => onClick(prompt)}
-      className="group block w-full text-left bg-white rounded-xl px-5 py-4 cursor-pointer transition-all"
-      style={{
-        border: '1px solid #E5E7EB',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)'
-      }}
+      className="group block w-full text-left bg-[#F8F8F8] rounded-xl px-5 py-3 cursor-pointer"
     >
       <h3
         className="text-black font-semibold tracking-[-0.01em] mb-1.5"
-        style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '15px' }}
+        style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
       >
         {prompt.title}
       </h3>

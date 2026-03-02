@@ -66,7 +66,7 @@ export default function PromptToolkitPage() {
       />
 
       <div className="min-h-screen bg-white">
-        <Navbar variant="black" />
+        <Navbar hideLogo />
         <PromptToolkitClient />
         <Footer />
       </div>
