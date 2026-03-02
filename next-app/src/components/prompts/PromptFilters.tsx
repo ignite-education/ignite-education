@@ -95,10 +95,27 @@ export default function PromptFilters({
                 e.currentTarget.style.backgroundColor = selected ? '#6600BB' : '#8200EA'
               }}
             >
-              {selected || FILTER_LABELS[type]}
-              {selected && (
-                <span className="ml-1.5 opacity-70">&times;</span>
-              )}
+              <span className="flex items-center gap-2">
+                {selected || FILTER_LABELS[type]}
+                {selected && (
+                  <span className="opacity-70">&times;</span>
+                )}
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  className="shrink-0"
+                >
+                  <line x1="3" y1="8" x2="21" y2="8" />
+                  <circle cx="16" cy="8" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-top" />
+                  <line x1="3" y1="16" x2="21" y2="16" />
+                  <circle cx="8" cy="16" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-bottom" />
+                </svg>
+              </span>
             </button>
 
             {isOpen && (

@@ -153,6 +153,20 @@ body {
   }
 }
 
+/* Filter icon slider animation */
+.filter-knob-top,
+.filter-knob-bottom {
+  transition: cx 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+button:hover .filter-knob-top {
+  cx: 8;
+}
+
+button:hover .filter-knob-bottom {
+  cx: 16;
+}
+
 /* Logo split-color effect performance optimizations */
 .logo-container {
   will-change: clip-path;

@@ -135,8 +135,8 @@ export default function PromptToolkitClient() {
             />
           </div>
           <p
-            className="text-black text-sm mt-3 max-w-[480px] mx-auto leading-relaxed text-center"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+            className="text-black mt-[18px] max-w-[480px] mx-auto leading-relaxed text-center"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem', letterSpacing: '-0.01em' }}
           >
             Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
             {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
