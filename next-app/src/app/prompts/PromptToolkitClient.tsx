@@ -81,7 +81,7 @@ export default function PromptToolkitClient() {
   )
 
   return (
-    <div className="bg-white py-12">
+    <div className="bg-white pb-12">
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
@@ -113,13 +113,6 @@ export default function PromptToolkitClient() {
           >
             Prompt Toolkit
           </h1>
-          <p
-            className="text-gray-600 text-sm mb-0 max-w-[480px] mx-auto leading-relaxed"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-          >
-            Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
-            {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
-          </p>
         </div>
 
         {/* Search */}
@@ -141,6 +134,13 @@ export default function PromptToolkitClient() {
               }}
             />
           </div>
+          <p
+            className="text-black text-sm mt-3 max-w-[480px] mx-auto leading-relaxed text-center"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+          >
+            Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
+            {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
+          </p>
         </div>
 
         {/* Filters */}

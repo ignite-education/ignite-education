@@ -97,7 +97,7 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
     && filteredSubject.length === 0
 
   return (
-    <div className="bg-white py-12">
+    <div className="bg-white pb-12">
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
