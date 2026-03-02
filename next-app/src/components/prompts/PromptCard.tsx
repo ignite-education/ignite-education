@@ -21,32 +21,32 @@ export default function PromptCard({ prompt, onClick }: PromptCardProps) {
         <div className="flex-1 min-w-0">
           <h3
             className="text-black font-semibold tracking-[-0.01em] mb-1.5"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1.1rem' }}
           >
             {prompt.title}
           </h3>
           <p
             className="text-black text-sm font-light leading-relaxed mb-3 line-clamp-3"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '13px', letterSpacing: '-0.01em' }}
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.9rem', letterSpacing: '-0.01em' }}
           >
             {prompt.description}
           </p>
           <div className="flex items-center gap-2 flex-wrap">
             <span
               className="inline-block text-xs font-semibold px-2.5 py-1 rounded-[5px]"
-              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '11px', letterSpacing: '-0.01em' }}
+              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '0.8rem', letterSpacing: '-0.01em' }}
             >
               {prompt.profession}
             </span>
             <span
               className="inline-block text-xs font-semibold px-2.5 py-1 rounded-[5px]"
-              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '11px', letterSpacing: '-0.01em' }}
+              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '0.8rem', letterSpacing: '-0.01em' }}
             >
               {displayTool}{extraTools > 0 ? ` +${extraTools}` : ''}
             </span>
             <span
               className="inline-block text-xs font-semibold px-2.5 py-1 rounded-[5px]"
-              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '11px', letterSpacing: '-0.01em' }}
+              style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '0.8rem', letterSpacing: '-0.01em' }}
             >
               {prompt.complexity}
             </span>

@@ -11,9 +11,9 @@ import PromptDetailModal from '@/components/prompts/PromptDetailModal'
 
 export default function PromptToolkitClient() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedProfession, setSelectedProfession] = useState<string | null>(null)
-  const [selectedTool, setSelectedTool] = useState<string | null>(null)
-  const [selectedComplexity, setSelectedComplexity] = useState<string | null>(null)
+  const [selectedProfessions, setSelectedProfessions] = useState<string[]>([])
+  const [selectedTools, setSelectedTools] = useState<string[]>([])
+  const [selectedComplexities, setSelectedComplexities] = useState<string[]>([])
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
@@ -52,17 +52,17 @@ export default function PromptToolkitClient() {
       }
 
       // Profession filter
-      if (selectedProfession && prompt.profession !== selectedProfession) return false
+      if (selectedProfessions.length > 0 && !selectedProfessions.includes(prompt.profession)) return false
 
       // LLM Tool filter
-      if (selectedTool && !prompt.llmTools.includes(selectedTool)) return false
+      if (selectedTools.length > 0 && !prompt.llmTools.some(t => selectedTools.includes(t))) return false
 
       // Complexity filter
-      if (selectedComplexity && prompt.complexity !== selectedComplexity) return false
+      if (selectedComplexities.length > 0 && !selectedComplexities.includes(prompt.complexity)) return false
 
       return true
     })
-  }, [searchQuery, selectedProfession, selectedTool, selectedComplexity])
+  }, [searchQuery, selectedProfessions, selectedTools, selectedComplexities])
 
   // Sort prompts for each column
   const mostUsed = useMemo(
@@ -82,7 +82,7 @@ export default function PromptToolkitClient() {
 
   return (
     <div className="bg-white pb-12">
-      <div className="max-w-[1267px] mx-auto px-6">
+      <div className="max-w-[1330px] mx-auto px-6">
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
           <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
@@ -146,12 +146,12 @@ export default function PromptToolkitClient() {
         {/* Filters */}
         <div className="mb-10">
           <PromptFilters
-            selectedProfession={selectedProfession}
-            selectedTool={selectedTool}
-            selectedComplexity={selectedComplexity}
-            onProfessionChange={setSelectedProfession}
-            onToolChange={setSelectedTool}
-            onComplexityChange={setSelectedComplexity}
+            selectedProfessions={selectedProfessions}
+            selectedTools={selectedTools}
+            selectedComplexities={selectedComplexities}
+            onProfessionsChange={setSelectedProfessions}
+            onToolsChange={setSelectedTools}
+            onComplexitiesChange={setSelectedComplexities}
           />
         </div>
 

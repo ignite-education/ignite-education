@@ -4,12 +4,12 @@ import { useState, useRef, useEffect } from 'react'
 import { PROFESSIONS, LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 
 interface PromptFiltersProps {
-  selectedProfession: string | null
-  selectedTool: string | null
-  selectedComplexity: string | null
-  onProfessionChange: (value: string | null) => void
-  onToolChange: (value: string | null) => void
-  onComplexityChange: (value: string | null) => void
+  selectedProfessions: string[]
+  selectedTools: string[]
+  selectedComplexities: string[]
+  onProfessionsChange: (value: string[]) => void
+  onToolsChange: (value: string[]) => void
+  onComplexitiesChange: (value: string[]) => void
 }
 
 type FilterType = 'profession' | 'tool' | 'complexity'
@@ -27,12 +27,12 @@ const FILTER_LABELS: Record<FilterType, string> = {
 }
 
 export default function PromptFilters({
-  selectedProfession,
-  selectedTool,
-  selectedComplexity,
-  onProfessionChange,
-  onToolChange,
-  onComplexityChange,
+  selectedProfessions,
+  selectedTools,
+  selectedComplexities,
+  onProfessionsChange,
+  onToolsChange,
+  onComplexitiesChange,
 }: PromptFiltersProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -47,27 +47,34 @@ export default function PromptFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const getSelectedValue = (type: FilterType): string | null => {
+  const getSelectedValues = (type: FilterType): string[] => {
     switch (type) {
-      case 'profession': return selectedProfession
-      case 'tool': return selectedTool
-      case 'complexity': return selectedComplexity
+      case 'profession': return selectedProfessions
+      case 'tool': return selectedTools
+      case 'complexity': return selectedComplexities
     }
   }
 
   const getOnChange = (type: FilterType) => {
     switch (type) {
-      case 'profession': return onProfessionChange
-      case 'tool': return onToolChange
-      case 'complexity': return onComplexityChange
+      case 'profession': return onProfessionsChange
+      case 'tool': return onToolsChange
+      case 'complexity': return onComplexitiesChange
     }
   }
 
-  const handleSelect = (type: FilterType, value: string) => {
+  const handleToggle = (type: FilterType, value: string) => {
     const onChange = getOnChange(type)
-    const current = getSelectedValue(type)
-    onChange(current === value ? null : value)
-    setOpenFilter(null)
+    const current = getSelectedValues(type)
+    if (current.includes(value)) {
+      onChange(current.filter(v => v !== value))
+    } else {
+      onChange([...current, value])
+    }
+  }
+
+  const handleClear = (type: FilterType) => {
+    getOnChange(type)([])
   }
 
   const filterTypes: FilterType[] = ['profession', 'tool', 'complexity']
@@ -75,7 +82,8 @@ export default function PromptFilters({
   return (
     <div ref={containerRef} className="flex items-center justify-center gap-3 flex-wrap">
       {filterTypes.map((type) => {
-        const selected = getSelectedValue(type)
+        const selected = getSelectedValues(type)
+        const hasSelection = selected.length > 0
         const isOpen = openFilter === type
 
         return (
@@ -88,9 +96,9 @@ export default function PromptFilters({
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-semibold px-5 py-2 rounded-[5px] transition-all cursor-pointer"
+              className="text-white text-sm font-semibold px-5 py-2 rounded-[7px] transition-all cursor-pointer"
               style={{
-                backgroundColor: selected ? '#6600BB' : '#8200EA',
+                backgroundColor: hasSelection ? '#6600BB' : '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 letterSpacing: '-0.01em',
               }}
@@ -98,13 +106,23 @@ export default function PromptFilters({
                 e.currentTarget.style.backgroundColor = '#7000C9'
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = selected ? '#6600BB' : '#8200EA'
+                e.currentTarget.style.backgroundColor = hasSelection ? '#6600BB' : '#8200EA'
               }}
             >
               <span className="flex items-center gap-2">
-                {selected || FILTER_LABELS[type]}
-                {selected && (
-                  <span className="opacity-70">&times;</span>
+                {FILTER_LABELS[type]}
+                {hasSelection && (
+                  <span
+                    className="inline-flex items-center justify-center rounded-full text-xs font-bold"
+                    style={{
+                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      width: '20px',
+                      height: '20px',
+                      fontSize: '11px',
+                    }}
+                  >
+                    {selected.length}
+                  </span>
                 )}
                 <svg
                   width="16"
@@ -112,7 +130,7 @@ export default function PromptFilters({
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="2.5"
+                  strokeWidth="2"
                   strokeLinecap="round"
                   className="shrink-0"
                 >
@@ -134,22 +152,50 @@ export default function PromptFilters({
                   border: '1px solid #E5E7EB',
                 }}
               >
-                {FILTER_OPTIONS[type].map((option) => (
+                {FILTER_OPTIONS[type].map((option) => {
+                  const isChecked = selected.includes(option)
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => handleToggle(type, option)}
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer"
+                      style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+                    >
+                      <span
+                        className="shrink-0 flex items-center justify-center rounded"
+                        style={{
+                          width: '16px',
+                          height: '16px',
+                          border: isChecked ? 'none' : '2px solid #D1D5DB',
+                          backgroundColor: isChecked ? '#8200EA' : 'transparent',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {isChecked && (
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </span>
+                      <span className="text-black">{option}</span>
+                    </button>
+                  )
+                })}
+                {hasSelection && (
                   <button
-                    key={option}
                     type="button"
-                    onClick={() => handleSelect(type, option)}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between cursor-pointer"
-                    style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+                    onClick={() => handleClear(type)}
+                    className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors cursor-pointer"
+                    style={{
+                      fontFamily: 'var(--font-geist-sans), sans-serif',
+                      color: '#8200EA',
+                      borderTop: '1px solid #E5E7EB',
+                    }}
                   >
-                    <span className="text-black">{option}</span>
-                    {getSelectedValue(type) === option && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8200EA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
+                    Clear all
                   </button>
-                ))}
+                )}
               </div>
             )}
           </div>
