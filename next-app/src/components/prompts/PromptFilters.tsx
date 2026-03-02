@@ -79,14 +79,20 @@ export default function PromptFilters({
         const isOpen = openFilter === type
 
         return (
-          <div key={type} className="relative">
+          <div
+            key={type}
+            className="relative"
+            onMouseEnter={() => setOpenFilter(type)}
+            onMouseLeave={() => setOpenFilter(null)}
+          >
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-medium px-5 py-2 rounded-full transition-all cursor-pointer"
+              className="text-white text-sm font-semibold px-5 py-2 rounded-[5px] transition-all cursor-pointer"
               style={{
                 backgroundColor: selected ? '#6600BB' : '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
+                letterSpacing: '-0.01em',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = '#7000C9'
