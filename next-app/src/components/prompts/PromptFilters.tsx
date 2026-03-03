@@ -96,11 +96,13 @@ export default function PromptFilters({
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-semibold px-5 py-2 rounded-[7px] transition-all cursor-pointer"
+              className="text-white text-sm font-semibold px-5 rounded-[7px] transition-all cursor-pointer"
               style={{
                 backgroundColor: hasSelection ? '#6600BB' : '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 letterSpacing: '-0.01em',
+                paddingTop: '5px',
+                paddingBottom: '5px',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = '#7000C9'

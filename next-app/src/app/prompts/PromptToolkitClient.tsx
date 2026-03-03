@@ -135,7 +135,7 @@ export default function PromptToolkitClient() {
             />
           </div>
           <p
-            className="text-black mt-[25px] max-w-[480px] mx-auto leading-relaxed text-center"
+            className="text-black mt-[25px] max-w-[480px] mx-auto leading-normal text-center"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem', letterSpacing: '-0.01em' }}
           >
             Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
