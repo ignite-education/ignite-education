@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { placeholderPrompts, promptToSlug, getPromptBySlug } from '@/data/placeholderPrompts'
@@ -90,100 +89,10 @@ export default async function PromptDetailPage({ params }: PageProps) {
       />
 
       <div className="min-h-screen bg-white">
-        <Navbar variant="default" />
+        <Navbar variant="black" />
 
-        <div className="max-w-[640px] mx-auto px-6 pt-6 pb-16">
-          {/* Back link */}
-          <Link
-            href="/prompts"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-black transition-colors mb-8"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            All Prompts
-          </Link>
-
-          {/* Title */}
-          <h1
-            className="text-[1.5rem] font-bold text-black tracking-[-0.02em] mb-3"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-          >
-            {prompt.title}
-          </h1>
-
-          {/* Tags */}
-          <div className="flex items-center gap-2 flex-wrap mb-5">
-            <span
-              className="inline-block text-white text-xs font-medium px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: '#8200EA', fontSize: '11px' }}
-            >
-              {prompt.profession}
-            </span>
-            {prompt.llmTools.map((tool) => (
-              <span
-                key={tool}
-                className="inline-block text-white text-xs font-medium px-2.5 py-1 rounded-full"
-                style={{ backgroundColor: '#8200EA', fontSize: '11px' }}
-              >
-                {tool}
-              </span>
-            ))}
-            <span
-              className="inline-block text-white text-xs font-medium px-2.5 py-1 rounded-full"
-              style={{ backgroundColor: '#8200EA', fontSize: '11px' }}
-            >
-              {prompt.complexity}
-            </span>
-          </div>
-
-          {/* Description */}
-          <p
-            className="text-gray-600 text-sm leading-relaxed mb-5"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-          >
-            {prompt.description}
-          </p>
-
-          {/* Prompt text */}
-          <div
-            className="mb-5 rounded-lg"
-            style={{
-              backgroundColor: '#F8F8F8',
-              padding: '1rem 1.25rem',
-              border: '1px solid #E5E7EB',
-            }}
-          >
-            <pre
-              className="text-sm text-black whitespace-pre-wrap leading-relaxed"
-              style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
-            >
-              {prompt.fullPrompt}
-            </pre>
-          </div>
-
-          {/* Stats row */}
-          <div className="flex items-center gap-4 text-xs text-gray-500 mb-5" style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
-            <span className="flex items-center gap-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-              {prompt.usageCount.toLocaleString()} uses
-            </span>
-            <span className="flex items-center gap-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              {prompt.rating.toFixed(1)}
-            </span>
-          </div>
-
-          {/* Copy button (client component) */}
-          <PromptDetailClient fullPrompt={prompt.fullPrompt} />
+        <div className="max-w-[1200px] mx-auto px-6 py-10 pb-16">
+          <PromptDetailClient prompt={prompt} slug={slug} />
         </div>
 
         <Footer />
