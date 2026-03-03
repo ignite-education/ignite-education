@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
+import useTypingAnimation from '@/hooks/useTypingAnimation'
 import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
@@ -26,7 +27,7 @@ const LLM_SITE_URLS: Record<string, string> = {
 
 const LLM_LOGO_PATHS: Record<string, string> = {
   'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
-  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo.png',
+  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
   'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
   'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
@@ -49,6 +50,14 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [saving, setSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
+  const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
+    prompt.title,
+    {
+      charDelay: 75,
+      startDelay: 750,
+      enabled: true,
+    }
+  )
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -302,12 +311,17 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
-      {/* Title */}
+      {/* Title with typing animation */}
       <h1
         className="text-[38px] font-bold text-black leading-tight text-center mb-[15px]"
         style={{ letterSpacing: '-0.02em' }}
       >
-        {prompt.title}
+        <span style={{ display: 'inline-block', textAlign: 'left' }}>
+          {displayedTitle}
+          {!isTypingComplete && (
+            <span style={{ opacity: 0 }}>{prompt.title.substring(displayedTitle.length)}</span>
+          )}
+        </span>
       </h1>
 
       {/* Description */}
@@ -534,10 +548,11 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             <button
               key={tool}
               onClick={() => handleOpenTool(tool)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-normal transition-all cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer"
               style={{
                 backgroundColor: isCopied ? '#009600' : 'white',
                 color: isCopied ? 'white' : 'black',
+                fontSize: '12px',
                 letterSpacing: '-0.02em',
                 boxShadow: isCopied ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
               }}
