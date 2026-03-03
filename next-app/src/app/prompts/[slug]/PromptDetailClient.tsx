@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import useGoogleOneTap from '@/hooks/useGoogleOneTap'
+import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 
@@ -10,11 +12,16 @@ interface PromptDetailClientProps {
   slug: string
 }
 
-const LLM_URLS: Record<string, string> = {
+// Tools that support deep linking with prompt pre-filled
+const LLM_DEEP_LINK_URLS: Record<string, string> = {
   'Claude': 'https://claude.ai/new?q=',
   'ChatGPT': 'https://chatgpt.com/?q=',
-  'Co-Pilot': 'https://copilot.microsoft.com/?q=',
-  'Gemini': 'https://gemini.google.com/app?q=',
+}
+
+// Tools that don't support deep linking — copy to clipboard then open site
+const LLM_SITE_URLS: Record<string, string> = {
+  'Co-Pilot': 'https://copilot.microsoft.com/',
+  'Gemini': 'https://gemini.google.com/app',
 }
 
 const LLM_ICONS: Record<string, string> = {
@@ -24,29 +31,167 @@ const LLM_ICONS: Record<string, string> = {
   'Gemini': '\u2B50',
 }
 
+function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
+  return user.user_metadata?.first_name
+    || user.user_metadata?.full_name?.split(' ')[0]
+    || user.user_metadata?.name?.split(' ')[0]
+    || user.email?.split('@')[0]
+    || 'your'
+}
+
 export default function PromptDetailClient({ prompt, slug }: PromptDetailClientProps) {
   const [user, setUser] = useState<User | null>(null)
-  const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
+  const [copiedTool, setCopiedTool] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState(false)
+  const [checkingStatus, setCheckingStatus] = useState(true)
+  const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
+  const googleBtnRef = useRef<HTMLDivElement>(null)
   const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const shareUrl = `https://ignite.education/prompts/${slug}`
 
+  // Check for stored Google profile on mount
+  useEffect(() => {
+    setGoogleHint(getGoogleProfileHint())
+  }, [])
+
+  // Handle Google sign-in success (direct, no redirect)
+  const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
+    try {
+      const supabase = createClient()
+      const { data, error: authError } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential,
+        nonce: nonce,
+      })
+
+      if (authError || !data.user) {
+        console.error('[PromptDetail] Google sign-in failed:', authError)
+        return
+      }
+
+      // Save Google profile for future personalization
+      saveGoogleProfileHint(data.user)
+
+      setUser(data.user)
+      setFirstName(extractFirstName(data.user))
+      setCheckingStatus(false)
+
+      // Auto-save the prompt
+      const supabase2 = createClient()
+      const { data: existing } = await supabase2
+        .from('saved_prompts')
+        .select('id')
+        .eq('user_id', data.user.id)
+        .eq('prompt_id', prompt.id)
+        .maybeSingle()
+
+      if (!existing) {
+        await supabase2
+          .from('saved_prompts')
+          .insert({ user_id: data.user.id, prompt_id: prompt.id })
+      }
+      setSaved(true)
+    } catch (err) {
+      console.error('[PromptDetail] Unexpected error:', err)
+    }
+  }, [prompt.id])
+
+  const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
+    onSuccess: handleGoogleSuccess,
+    enabled: !user,
+    autoPrompt: false,
+    loginHint: googleHint?.email,
+  })
+
+  // Render Google GIS button when ready (only for first-time users without stored profile)
+  useEffect(() => {
+    if (!user && !googleHint && isLoaded && googleBtnRef.current) {
+      const containerWidth = googleBtnRef.current.offsetWidth
+      renderButton(googleBtnRef.current, {
+        width: containerWidth,
+        theme: 'outline',
+        size: 'large',
+        shape: 'rectangular',
+        text: 'continue_with',
+      })
+    }
+  }, [user, googleHint, isLoaded, renderButton])
+
+  // Handle custom personalized Google button click
+  const handlePersonalizedGoogleClick = useCallback(() => {
+    triggerPrompt(() => {
+      // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
+      sessionStorage.setItem('pendingSavePrompt', prompt.id)
+      const supabase = createClient()
+      supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.href,
+          queryParams: googleHint?.email ? { login_hint: googleHint.email } : undefined,
+        },
+      })
+    })
+  }, [triggerPrompt, prompt.id, googleHint])
+
+  // Handle LinkedIn sign-in (OAuth redirect)
+  const handleLinkedInClick = useCallback(async () => {
+    sessionStorage.setItem('pendingSavePrompt', prompt.id)
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'linkedin_oidc',
+      options: {
+        redirectTo: window.location.href,
+      },
+    })
+  }, [prompt.id])
+
+  // Initial auth check + OAuth callback detection
   useEffect(() => {
     const supabase = createClient()
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user)
       if (user) {
-        const avatarUrl = user.user_metadata?.custom_avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture
-        setProfilePicture(avatarUrl)
-        setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
-        checkIfSaved(user.id)
+        setFirstName(extractFirstName(user))
+
+        // Check for pending save (OAuth redirect)
+        const pendingPromptId = sessionStorage.getItem('pendingSavePrompt')
+        if (pendingPromptId === prompt.id) {
+          sessionStorage.removeItem('pendingSavePrompt')
+          const { data: existing } = await supabase
+            .from('saved_prompts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('prompt_id', prompt.id)
+            .maybeSingle()
+
+          if (!existing) {
+            await supabase
+              .from('saved_prompts')
+              .insert({ user_id: user.id, prompt_id: prompt.id })
+          }
+          setSaved(true)
+          setCheckingStatus(false)
+          return
+        }
+
+        // Check if prompt is already saved
+        const { data } = await supabase
+          .from('saved_prompts')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('prompt_id', prompt.id)
+          .maybeSingle()
+        setSaved(!!data)
+        setCheckingStatus(false)
+      } else {
+        setCheckingStatus(false)
       }
       setAuthLoaded(true)
     })
@@ -54,72 +199,69 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        const avatarUrl = session.user.user_metadata?.custom_avatar_url || session.user.user_metadata?.avatar_url || session.user.user_metadata?.picture
-        setProfilePicture(avatarUrl)
-        setFirstName(session.user.user_metadata?.first_name || session.user.user_metadata?.name?.split(' ')[0])
-        checkIfSaved(session.user.id)
+        setFirstName(extractFirstName(session.user))
       } else {
-        setProfilePicture(null)
         setFirstName(null)
         setSaved(false)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [])
-
-  const checkIfSaved = async (userId: string) => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('saved_prompts')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('prompt_id', prompt.id)
-      .single()
-    if (data) setSaved(true)
-  }
+  }, [prompt.id])
 
   const handleSaveToggle = async () => {
     if (!user) return
     setSaving(true)
-    const supabase = createClient()
 
-    if (saved) {
-      await supabase
-        .from('saved_prompts')
-        .delete()
-        .eq('user_id', user.id)
-        .eq('prompt_id', prompt.id)
-      setSaved(false)
-    } else {
-      await supabase
-        .from('saved_prompts')
-        .insert({ user_id: user.id, prompt_id: prompt.id })
-      setSaved(true)
+    try {
+      const supabase = createClient()
+      if (saved) {
+        await supabase
+          .from('saved_prompts')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('prompt_id', prompt.id)
+        setSaved(false)
+      } else {
+        await supabase
+          .from('saved_prompts')
+          .insert({ user_id: user.id, prompt_id: prompt.id })
+        setSaved(true)
+      }
+    } catch (err) {
+      console.error('Error toggling save status:', err)
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
-  const handleOpenTool = (tool: string) => {
-    const baseUrl = LLM_URLS[tool]
-    if (!baseUrl) return
-    window.open(baseUrl + encodeURIComponent(prompt.fullPrompt), '_blank')
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textarea)
+    }
   }
 
-  const handleOAuthSignIn = async (provider: 'google' | 'linkedin_oidc') => {
-    setOauthLoading(true)
-    const siteUrl = window.location.origin
-    const currentPath = `/prompts/${slug}`
+  const handleOpenTool = async (tool: string) => {
+    const deepLinkUrl = LLM_DEEP_LINK_URLS[tool]
+    if (deepLinkUrl) {
+      window.open(deepLinkUrl + encodeURIComponent(prompt.fullPrompt), '_blank')
+      return
+    }
 
-    const { error } = await createClient().auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${siteUrl}/auth/callback?next=${encodeURIComponent(currentPath)}`,
-      },
-    })
-    if (error) {
-      console.error(error)
-      setOauthLoading(false)
+    const siteUrl = LLM_SITE_URLS[tool]
+    if (siteUrl) {
+      await copyToClipboard(prompt.fullPrompt)
+      setCopiedTool(tool)
+      if (copiedToolTimeoutRef.current) clearTimeout(copiedToolTimeoutRef.current)
+      copiedToolTimeoutRef.current = setTimeout(() => setCopiedTool(null), 3000)
+      window.open(siteUrl, '_blank')
     }
   }
 
@@ -139,6 +281,19 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     linkCopyTimeoutRef.current = setTimeout(() => setLinkCopied(false), 2000)
   }
 
+  const handleLinkedInShare = () => {
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')
+  }
+
+  const handleWhatsAppShare = () => {
+    const text = `Check out this AI prompt: ${prompt.title} on Ignite Education`
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')
+  }
+
+  const handleSubstackShare = () => {
+    window.open(`https://substack.com/note?url=${encodeURIComponent(shareUrl)}`, '_blank')
+  }
+
   const tags = [
     prompt.profession,
     ...prompt.llmTools,
@@ -146,12 +301,10 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   ]
 
   return (
-    <div
-      className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-10 lg:gap-16 items-start"
-      style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-    >
-      {/* LEFT COLUMN */}
-      <div>
+    <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+      <div className="flex gap-6 items-start">
+      {/* LEFT COLUMN — Prompt Content */}
+      <div className="flex-1 min-w-0">
         {/* Title */}
         <h1
           className="text-[2.25rem] font-bold text-black tracking-[-0.02em] mb-3 leading-tight"
@@ -205,16 +358,24 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
         {/* Copy to LLM buttons */}
         <div className="flex items-center gap-2 flex-wrap mb-10">
-          {prompt.llmTools.map((tool) => (
-            <button
-              key={tool}
-              onClick={() => handleOpenTool(tool)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer border border-gray-200 bg-white text-black hover:bg-gray-50"
-            >
-              <span>{LLM_ICONS[tool] ?? '\uD83D\uDCCB'}</span>
-              Copy to {tool}
-            </button>
-          ))}
+          {prompt.llmTools.map((tool) => {
+            const isCopied = copiedTool === tool
+            return (
+              <button
+                key={tool}
+                onClick={() => handleOpenTool(tool)}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer border"
+                style={{
+                  backgroundColor: isCopied ? '#009600' : 'white',
+                  color: isCopied ? 'white' : 'black',
+                  borderColor: isCopied ? '#009600' : '#E5E7EB',
+                }}
+              >
+                <span>{LLM_ICONS[tool] ?? '\uD83D\uDCCB'}</span>
+                {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
+              </button>
+            )
+          })}
         </div>
 
         {/* Output Section */}
@@ -226,175 +387,293 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         </p>
       </div>
 
-      {/* RIGHT COLUMN */}
-      <div className="lg:sticky lg:top-6 flex flex-col gap-6">
-        {/* Auth CTA / User Info */}
-        {authLoaded && !user && (
-          <div className="border border-gray-200 rounded-xl p-6">
-            <p className="text-sm text-gray-600 mb-5 leading-snug text-center">
-              Sign in to save the prompt and<br />auto-populate with your information
-            </p>
-            <div className="space-y-2">
+      {/* RIGHT COLUMN — Sticky Sidebar (hidden on mobile) */}
+      <div className="flex-shrink-0 hidden lg:block" style={{ width: '315px' }}>
+        <div className="sticky top-24">
+          <div className="w-full">
+            {!user ? (
+              <>
+                {/* Sign-in buttons */}
+                <div className="space-y-2 w-[90%] mx-auto mb-3">
+                  {googleHint ? (
+                    <button
+                      onClick={handlePersonalizedGoogleClick}
+                      className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+                      style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    >
+                      {/* Avatar */}
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        {googleHint.avatar ? (
+                          <img
+                            src={googleHint.avatar}
+                            alt=""
+                            className="rounded-full"
+                            style={{ width: '24px', height: '24px' }}
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div
+                            className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
+                            style={{ width: '24px', height: '24px' }}
+                          >
+                            {googleHint.name.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      {/* Name and email */}
+                      <div className="flex-1 text-left min-w-0 pr-1">
+                        <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
+                          Continue as {googleHint.name}
+                        </span>
+                        <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
+                          {googleHint.email}
+                        </span>
+                      </div>
+                      {/* Google logo */}
+                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                        <svg width="18" height="18" viewBox="0 0 48 48">
+                          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                      </div>
+                    </button>
+                  ) : (
+                    /* Standard GIS button (for first-time users) */
+                    <div
+                      ref={googleBtnRef}
+                      className="mx-auto rounded overflow-hidden"
+                      style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    />
+                  )}
+
+                  {/* LinkedIn Sign In Button */}
+                  <button
+                    onClick={handleLinkedInClick}
+                    className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
+                    style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                  >
+                    Continue with LinkedIn
+                  </button>
+                </div>
+
+                {/* Status Text */}
+                <p className="text-center text-black text-sm font-normal mb-4" style={{ letterSpacing: '-0.02em' }}>
+                  Sign in to save the prompt
+                </p>
+              </>
+            ) : (
+              <>
+                {/* Save to Account Button for authenticated users */}
+                <div className="w-[80%] mx-auto mb-4">
+                  <button
+                    onClick={handleSaveToggle}
+                    disabled={saving || checkingStatus}
+                    className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                      checkingStatus
+                        ? 'bg-[#9E9E9E] text-white'
+                        : saved
+                        ? 'bg-[#009600] text-white hover:bg-[#007D00]'
+                        : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+                  >
+                    {checkingStatus ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                      </span>
+                    ) : saving ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                          {saved ? 'Removing...' : 'Saving...'}
+                        </span>
+                      </span>
+                    ) : saved ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                          Saved to Account
+                        </span>
+                      </span>
+                    ) : (
+                      <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                        Add to {firstName || 'your'}&apos;s Account
+                      </span>
+                    )}
+                  </button>
+
+                  <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+                    {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
+                  </p>
+                </div>
+              </>
+            )}
+
+            {/* Share Buttons Row */}
+            <div className="flex items-center justify-center gap-2">
+              {/* Copy Link Button */}
               <button
-                type="button"
-                onClick={() => handleOAuthSignIn('google')}
-                disabled={oauthLoading}
-                className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2.5 text-[0.9rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)] cursor-pointer"
+                onClick={handleCopyLink}
+                className={`flex items-center justify-center gap-1.5 h-[30px] rounded-md transition-colors w-[85px] ${
+                  linkCopied
+                    ? 'bg-[#009600] text-white'
+                    : 'bg-[#EDEDED] text-black hover:bg-[#E0E0E0]'
+                }`}
               >
-                <span className="truncate">Continue with Google</span>
-                <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
-                  alt="Google"
-                  className="w-5 h-5 flex-shrink-0 object-contain"
-                />
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+                <span className="text-xs font-medium">{linkCopied ? 'Copied' : 'Copy link'}</span>
               </button>
+
+              {/* LinkedIn Share */}
               <button
-                type="button"
-                onClick={() => handleOAuthSignIn('linkedin_oidc')}
-                disabled={oauthLoading}
-                className="w-full flex items-center justify-center gap-2 bg-[#0a66c2] text-white rounded-md px-3 py-2.5 text-[0.9rem] tracking-[-0.02em] hover:bg-[#084d93] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)] cursor-pointer"
+                onClick={handleLinkedInShare}
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#0A66C2] hover:bg-[#004182] transition-colors"
               >
-                <span className="truncate">Continue with LinkedIn</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white" className="flex-shrink-0">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </button>
+
+              {/* WhatsApp Share */}
+              <button
+                onClick={handleWhatsAppShare}
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#25D366] hover:bg-[#1DA851] transition-colors"
+              >
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+              </button>
+
+              {/* Substack Share */}
+              <button
+                onClick={handleSubstackShare}
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#FF6719] hover:bg-[#E55A14] transition-colors"
+              >
+                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
+                  <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
                 </svg>
               </button>
             </div>
           </div>
-        )}
+        </div>
+      </div>
+      </div>
 
-        {authLoaded && user && (
-          <div className="border border-gray-200 rounded-xl p-6">
-            <div className="flex items-center gap-3 mb-4">
-              {profilePicture ? (
-                <img
-                  src={profilePicture}
-                  alt={firstName || 'User'}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                  style={{ backgroundColor: '#8200EA' }}
-                >
-                  {(firstName || user.email || 'U')[0].toUpperCase()}
+      {/* Mobile CTA (shown below content on mobile, hidden on desktop) */}
+      <div className="lg:hidden mt-8">
+        {!user ? (
+          <div className="space-y-2 w-full mb-3">
+            {googleHint ? (
+              <button
+                onClick={handlePersonalizedGoogleClick}
+                className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              >
+                <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                  {googleHint.avatar ? (
+                    <img
+                      src={googleHint.avatar}
+                      alt=""
+                      className="rounded-full"
+                      style={{ width: '24px', height: '24px' }}
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div
+                      className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
+                      style={{ width: '24px', height: '24px' }}
+                    >
+                      {googleHint.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-black truncate">
-                  {firstName || 'Welcome'}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {user.email}
-                </p>
-              </div>
-            </div>
+                <div className="flex-1 text-left min-w-0 pr-1">
+                  <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
+                    Continue as {googleHint.name}
+                  </span>
+                  <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
+                    {googleHint.email}
+                  </span>
+                </div>
+                <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                  <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  </svg>
+                </div>
+              </button>
+            ) : (
+              <div
+                className="mx-auto rounded overflow-hidden"
+                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              />
+            )}
+            <button
+              onClick={handleLinkedInClick}
+              className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
+              style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+            >
+              Continue with LinkedIn
+            </button>
+            <p className="text-center text-black text-sm font-normal mt-1" style={{ letterSpacing: '-0.02em' }}>
+              Sign in to save the prompt
+            </p>
+          </div>
+        ) : (
+          <div className="w-full mb-4">
             <button
               onClick={handleSaveToggle}
-              disabled={saving}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                backgroundColor: saved ? '#009600' : '#8200EA',
-                color: 'white',
-              }}
-              onMouseEnter={(e) => {
-                if (!saved && !saving) e.currentTarget.style.backgroundColor = '#7000CC'
-              }}
-              onMouseLeave={(e) => {
-                if (!saved && !saving) e.currentTarget.style.backgroundColor = '#8200EA'
-              }}
+              disabled={saving || checkingStatus}
+              className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                checkingStatus
+                  ? 'bg-[#9E9E9E] text-white'
+                  : saved
+                  ? 'bg-[#009600] text-white hover:bg-[#007D00]'
+                  : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+              } disabled:opacity-50 disabled:cursor-not-allowed`}
+              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
             >
-              {saved ? (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Saved
-                </>
+              {checkingStatus ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                </span>
               ) : saving ? (
-                'Saving...'
-              ) : (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                    <polyline points="17 21 17 13 7 13 7 21" />
-                    <polyline points="7 3 7 8 15 8" />
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    {saved ? 'Removing...' : 'Saving...'}
+                  </span>
+                </span>
+              ) : saved ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                   </svg>
-                  Save Prompt
-                </>
+                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    Saved to Account
+                  </span>
+                </span>
+              ) : (
+                <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                  Add to {firstName || 'your'}&apos;s Account
+                </span>
               )}
             </button>
+            <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+              {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
+            </p>
           </div>
         )}
-
-        {/* Placeholder while auth loads to prevent layout shift */}
-        {!authLoaded && (
-          <div className="border border-gray-200 rounded-xl p-6" style={{ minHeight: '160px' }} />
-        )}
-
-        {/* Social Sharing */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Copy Link */}
-          <button
-            onClick={handleCopyLink}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors text-sm font-medium cursor-pointer"
-            style={{
-              backgroundColor: linkCopied ? '#10B981' : '#f3f4f6',
-              color: linkCopied ? 'white' : '#374151',
-            }}
-          >
-            {linkCopied ? (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-              </svg>
-            )}
-            <span>{linkCopied ? 'Copied!' : 'Copy link'}</span>
-          </button>
-
-          {/* LinkedIn */}
-          <a
-            href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#0A66C2] hover:bg-[#004182] transition-colors"
-            title="Share on LinkedIn"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-            </svg>
-          </a>
-
-          {/* X (Twitter) */}
-          <a
-            href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(prompt.title)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-black hover:bg-gray-800 transition-colors"
-            title="Share on X"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-          </a>
-
-          {/* Facebook */}
-          <a
-            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center w-9 h-9 rounded-lg bg-[#1877F2] hover:bg-[#0d65d9] transition-colors"
-            title="Share on Facebook"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-            </svg>
-          </a>
-        </div>
       </div>
     </div>
   )
