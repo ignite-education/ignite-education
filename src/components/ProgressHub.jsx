@@ -3932,11 +3932,11 @@ const ProgressHub = () => {
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
             animation: isClosingSettingsModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
             padding: '2rem',
-            overflowY: 'auto'
+            overflow: 'hidden'
           }}
           onClick={handleCloseSettings}
         >
-          <div className="relative w-full px-4" style={{ maxWidth: '700px', marginBottom: '2rem', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+          <div className="relative w-full px-4" style={{ maxWidth: '700px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             {/* Title above the box */}
             <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', flexShrink: 0 }}>Settings</h2>
 
@@ -3946,22 +3946,23 @@ const ProgressHub = () => {
               style={{
                 animation: isClosingSettingsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
-                padding: '1.5rem',
                 minHeight: 'auto',
-                overflowY: 'auto'
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden'
               }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close button */}
               <button
                 onClick={handleCloseSettings}
-                className="absolute top-4 right-4 text-gray-600 hover:text-black"
+                className="absolute top-4 right-4 text-gray-600 hover:text-black z-10"
               >
                 <X size={24} />
               </button>
 
-              {/* Tabs */}
-              <div className="flex gap-4 mb-4 border-b border-gray-200">
+              {/* Tabs - fixed header */}
+              <div className="flex gap-4 border-b border-gray-200" style={{ padding: '1.5rem 1.5rem 0 1.5rem', flexShrink: 0 }}>
                 <button
                   onClick={() => setSettingsTab('account')}
                   className={`pb-2 px-1 font-medium transition ${settingsTab === 'account' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-gray-700'}`}
@@ -3990,6 +3991,8 @@ const ProgressHub = () => {
                 )}
               </div>
 
+              {/* Scrollable tab content */}
+              <div style={{ overflowY: 'auto', padding: '1.5rem' }}>
               {/* Account Tab */}
               {settingsTab === 'account' && (
                 <form onSubmit={handleUpdateAccount} className="space-y-3">
@@ -4288,6 +4291,7 @@ const ProgressHub = () => {
                   </div>
                 </div>
               )}
+              </div>
             </div>
           </div>
         </div>

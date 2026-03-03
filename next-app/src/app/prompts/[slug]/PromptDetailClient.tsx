@@ -158,9 +158,8 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     }).join('')
   }, [segments, placeholderValues])
 
-  const visibleTitle = `${prompt.title} - AI Prompt`
   const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
-    visibleTitle,
+    prompt.title,
     {
       charDelay: 75,
       startDelay: 750,
@@ -429,8 +428,10 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         <span style={{ display: 'inline-block', textAlign: 'left' }}>
           {displayedTitle}
           {!isTypingComplete && (
-            <span style={{ opacity: 0 }}>{visibleTitle.substring(displayedTitle.length)}</span>
+            <span style={{ opacity: 0 }}>{prompt.title.substring(displayedTitle.length)}</span>
           )}
+          <br />
+          <span>- AI Prompt</span>
         </span>
       </h1>
 

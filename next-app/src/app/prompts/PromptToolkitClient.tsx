@@ -144,7 +144,7 @@ export default function PromptToolkitClient({ professions, initialProfession, pa
             )}
           </Link>
           <h1
-            className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] leading-none"
+            className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] leading-tight"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
             AI Prompt Toolkit
