@@ -12,14 +12,39 @@ interface PromptToolkitClientProps {
   professions: string[]
 }
 
+const FILTERS_STORAGE_KEY = 'ignite_prompt_filters'
+
+function loadSavedFilters(): { search: string; professions: string[]; tools: string[]; complexities: string[] } | null {
+  try {
+    const raw = localStorage.getItem(FILTERS_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
 export default function PromptToolkitClient({ professions }: PromptToolkitClientProps) {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedProfessions, setSelectedProfessions] = useState<string[]>([])
-  const [selectedTools, setSelectedTools] = useState<string[]>([])
-  const [selectedComplexities, setSelectedComplexities] = useState<string[]>([])
+  const saved = useMemo(() => loadSavedFilters(), [])
+  const [searchQuery, setSearchQuery] = useState(saved?.search ?? '')
+  const [selectedProfessions, setSelectedProfessions] = useState<string[]>(saved?.professions ?? [])
+  const [selectedTools, setSelectedTools] = useState<string[]>(saved?.tools ?? [])
+  const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
+
+  // Persist filter selections to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
+        search: searchQuery,
+        professions: selectedProfessions,
+        tools: selectedTools,
+        complexities: selectedComplexities,
+      }))
+    } catch {}
+  }, [searchQuery, selectedProfessions, selectedTools, selectedComplexities])
 
   // Load Lottie animation
   useEffect(() => {

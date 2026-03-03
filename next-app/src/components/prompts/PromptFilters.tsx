@@ -11,6 +11,7 @@ interface PromptFiltersProps {
   onProfessionsChange: (value: string[]) => void
   onToolsChange: (value: string[]) => void
   onComplexitiesChange: (value: string[]) => void
+  onResetAll?: () => void
 }
 
 type FilterType = 'profession' | 'tool' | 'complexity'
@@ -29,6 +30,7 @@ export default function PromptFilters({
   onProfessionsChange,
   onToolsChange,
   onComplexitiesChange,
+  onResetAll,
 }: PromptFiltersProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
 
@@ -80,6 +82,14 @@ export default function PromptFilters({
   }
 
   const filterTypes: FilterType[] = ['profession', 'tool', 'complexity']
+  const hasAnyFilter = selectedProfessions.length > 0 || selectedTools.length > 0 || selectedComplexities.length > 0
+
+  const handleResetAll = () => {
+    onProfessionsChange([])
+    onToolsChange([])
+    onComplexitiesChange([])
+    onResetAll?.()
+  }
 
   return (
     <div ref={containerRef} className="flex items-center justify-center gap-4 flex-wrap">
@@ -164,7 +174,7 @@ export default function PromptFilters({
                       key={option}
                       type="button"
                       onClick={() => handleToggle(type, option)}
-                      className="w-full text-left px-4 py-1 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
+                      className="w-full text-left px-[10px] py-1 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
                       style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em' }}
                     >
                       <span
@@ -207,6 +217,30 @@ export default function PromptFilters({
           </div>
         )
       })}
+
+      {hasAnyFilter && (
+        <button
+          type="button"
+          onClick={handleResetAll}
+          className="group transition-transform hover:scale-110 cursor-pointer"
+          title="Reset all filters"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#9CA3AF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="transition-colors group-hover:stroke-[#EF0B72]"
+          >
+            <path d="M3 12a9 9 0 1 1 3 6.75" />
+            <polyline points="3 22 3 12 13 12" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
