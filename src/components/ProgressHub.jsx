@@ -3936,9 +3936,9 @@ const ProgressHub = () => {
           }}
           onClick={handleCloseSettings}
         >
-          <div className="relative w-full px-4" style={{ maxWidth: '700px', marginBottom: '2rem' }}>
+          <div className="relative w-full px-4" style={{ maxWidth: '700px', marginBottom: '2rem', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             {/* Title above the box */}
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>Settings</h2>
+            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', flexShrink: 0 }}>Settings</h2>
 
             {/* Settings Card */}
             <div
@@ -3947,7 +3947,8 @@ const ProgressHub = () => {
                 animation: isClosingSettingsModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
                 borderRadius: '0.3rem',
                 padding: '1.5rem',
-                minHeight: 'auto'
+                minHeight: 'auto',
+                overflowY: 'auto'
               }}
               onClick={(e) => e.stopPropagation()}
             >
