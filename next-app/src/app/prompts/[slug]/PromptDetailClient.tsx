@@ -119,7 +119,7 @@ function InlinePlaceholderInput({
           verticalAlign: 'baseline',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 0 2px #7714E0'
+          e.currentTarget.style.boxShadow = '0 0 0 1px #7714E0'
         }}
         onBlur={(e) => {
           e.currentTarget.style.boxShadow = 'none'
@@ -673,7 +673,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                 letterSpacing: '-0.02em',
                 boxShadow: isCopied ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
               }}
-              onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)' }}
+              onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)' }}
               onMouseLeave={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
