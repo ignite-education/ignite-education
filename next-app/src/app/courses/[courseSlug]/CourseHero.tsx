@@ -25,7 +25,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
   return (
     <>
       <div className="sticky top-0 z-50">
-        <Navbar variant="black" />
+        <Navbar variant="frosted" />
       </div>
 
       <div className="bg-white">

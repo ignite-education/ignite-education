@@ -9,12 +9,15 @@ interface NavbarProps {
   logoClipPercentage?: number
   invertLayers?: boolean
   logoContainerRef?: RefObject<HTMLDivElement | null>
-  variant?: 'default' | 'black'
+  variant?: 'default' | 'black' | 'frosted'
   hideLogo?: boolean
   noPaddingBottom?: boolean
 }
 
 export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', hideLogo = false, noPaddingBottom = false }: NavbarProps) {
+  // For frosted variant, always show black logo (invert layers to put black on top)
+  const effectiveInvertLayers = variant === 'frosted' ? true : invertLayers
+  const effectiveClipPercentage = variant === 'frosted' ? 100 : logoClipPercentage
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -51,7 +54,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   }, [])
 
   return (
-    <div className={variant === 'black' ? 'bg-black' : ''}>
+    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-white/70 backdrop-blur-md border-b border-black/[0.04]' : ''}>
       <div className={`px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo) */}
         {hideLogo ? (
@@ -59,7 +62,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         ) : (
           <Link href="/" className="inline-block">
             <div ref={logoContainerRef} className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
-              {!invertLayers ? (
+              {!effectiveInvertLayers ? (
                 <>
                   {/* Standard order for BLACK->WHITE transitions */}
                   {/* Black logo - clips from top, shows bottom portion */}
@@ -73,7 +76,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                       left: 0,
                       width: '99px',
                       height: 'auto',
-                      clipPath: `inset(${logoClipPercentage}% 0 0 0)`
+                      clipPath: `inset(${effectiveClipPercentage}% 0 0 0)`
                     }}
                   />
                   {/* White logo - clips from bottom, shows top portion */}
@@ -86,7 +89,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                       position: 'relative',
                       width: '99px',
                       height: 'auto',
-                      clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
+                      clipPath: `inset(0 0 ${100 - effectiveClipPercentage}% 0)`
                     }}
                   />
                 </>
@@ -104,7 +107,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                       left: 0,
                       width: '99px',
                       height: 'auto',
-                      clipPath: `inset(${logoClipPercentage}% 0 0 0)`
+                      clipPath: `inset(${effectiveClipPercentage}% 0 0 0)`
                     }}
                   />
                   {/* Black logo - clips from bottom, shows top portion */}
@@ -117,7 +120,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
                       position: 'relative',
                       width: '99px',
                       height: 'auto',
-                      clipPath: `inset(0 0 ${100 - logoClipPercentage}% 0)`
+                      clipPath: `inset(0 0 ${100 - effectiveClipPercentage}% 0)`
                     }}
                   />
                 </>
