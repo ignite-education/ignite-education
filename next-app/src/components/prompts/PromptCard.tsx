@@ -19,7 +19,7 @@ export default function PromptCard({ prompt }: PromptCardProps) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           <h3
-            className="text-black font-semibold tracking-[-0.01em] mb-1.5"
+            className="text-black font-semibold tracking-[-0.01em] mb-1"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1.1rem' }}
           >
             {prompt.title}
