@@ -172,6 +172,12 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder=""
               autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && showContributeButton) {
+                  e.preventDefault()
+                  setShowContributeModal(true)
+                }
+              }}
               className="prompt-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
               style={{
                 boxShadow: '0 0 10px rgba(103,103,103,0.6)',

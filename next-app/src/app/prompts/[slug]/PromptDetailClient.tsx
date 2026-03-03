@@ -458,7 +458,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
       <div className="flex gap-6 items-stretch">
       {/* LEFT COLUMN — Grey prompt container (matches curriculum grey box) */}
-      <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0">
+      <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0 relative">
           <pre
             className="text-sm text-black whitespace-pre-wrap leading-relaxed relative"
             style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
@@ -476,6 +476,15 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               )
             )}
           </pre>
+          <button
+            onClick={() => copyToClipboard(buildFinalPrompt())}
+            className="absolute bottom-3 right-3 p-1.5 rounded-md bg-white/80 hover:bg-white transition-colors cursor-pointer"
+            aria-label="Copy prompt"
+          >
+            <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+          </button>
       </div>
 
       {/* RIGHT COLUMN — Sticky Sidebar (hidden on mobile) */}
@@ -676,7 +685,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)' }}
               onMouseLeave={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
             >
-              {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
+              {isCopied ? `Copied! Paste in ${tool}` : (LLM_SITE_URLS[tool] ? `Open ${tool}` : `Copy to ${tool}`)}
               {LLM_LOGO_PATHS[tool] && (
                 <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 17 : 16} height={tool === 'ChatGPT' ? 17 : 16} />
               )}
