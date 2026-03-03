@@ -304,18 +304,22 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
       {/* Title */}
       <h1
-        className="text-[2.25rem] font-bold text-black tracking-[-0.02em] mb-3 leading-tight"
+        className="text-[38px] font-bold text-black leading-tight text-center mb-[15px]"
+        style={{ letterSpacing: '-0.02em' }}
       >
         {prompt.title}
       </h1>
 
       {/* Description */}
-      <p className="text-gray-600 text-[0.95rem] leading-relaxed mb-5">
+      <p
+        className="text-black text-lg leading-relaxed font-medium text-center"
+        style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+      >
         {prompt.description}
       </p>
 
       {/* Tags */}
-      <div className="flex items-center gap-2 flex-wrap mb-8">
+      <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
         {tags.map((tag) => (
           <span
             key={tag}
@@ -333,22 +337,15 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         ))}
       </div>
 
-      {/* Prompt heading — above the two-column flex, like "Curriculum" on course pages */}
-      <h2 className="text-[1.35rem] font-bold text-black mb-3">
+      <div className="lg:-mx-24">
+      <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Prompt
       </h2>
 
-      <div className="flex gap-6 items-stretch lg:-mx-24">
+      <div className="flex gap-6 items-stretch">
       {/* LEFT COLUMN — Prompt Content */}
       <div className="flex-1 min-w-0">
-        <div
-          className="mb-4 rounded-lg"
-          style={{
-            backgroundColor: '#FAFAFA',
-            padding: '1.25rem 1.5rem',
-            border: '1px solid #E5E7EB',
-          }}
-        >
+        <div className="bg-[#F0F0F2] p-6 rounded-lg mb-4">
           <pre
             className="text-sm text-black whitespace-pre-wrap leading-relaxed"
             style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
@@ -379,13 +376,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           })}
         </div>
 
-        {/* Output Section */}
-        <h2 className="text-[1.35rem] font-bold text-black mb-3">
-          Output
-        </h2>
-        <p className="text-gray-600 text-[0.95rem] leading-relaxed">
-          {prompt.description}
-        </p>
       </div>
 
       {/* RIGHT COLUMN — Sticky Sidebar (hidden on mobile) */}
@@ -565,6 +555,17 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           </div>
         </div>
       </div>
+      </div>
+      </div>
+
+      {/* Output Section — single-column below the two-column layout */}
+      <div className="mt-10">
+        <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
+          Output
+        </h2>
+        <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em' }}>
+          {prompt.description}
+        </p>
       </div>
 
       {/* Mobile CTA (shown below content on mobile, hidden on desktop) */}
