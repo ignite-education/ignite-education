@@ -534,11 +534,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             <button
               key={tool}
               onClick={() => handleOpenTool(tool)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-normal transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-normal transition-colors cursor-pointer"
               style={{
-                backgroundColor: isCopied ? '#009600' : '#F0F0F2',
+                backgroundColor: isCopied ? '#009600' : 'white',
                 color: isCopied ? 'white' : 'black',
                 letterSpacing: '-0.02em',
+                boxShadow: isCopied ? 'none' : '0 0 10px rgba(103,103,103,0.4)',
               }}
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
