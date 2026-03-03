@@ -1088,78 +1088,42 @@ export async function deleteExplainedSection(sectionId) {
 // =====================================================
 
 /**
- * Get all memory items for a user
- * @param {string} userId - The user's ID
- * @returns {Promise<Array>} Array of memory item objects
+ * Get the user's memory text (single free-form block).
+ * Handles backward compat: if multiple rows exist, joins them.
  */
-export async function getUserMemory(userId) {
+export async function getUserMemoryText(userId) {
   const { data, error } = await supabase
     .from('user_memory')
-    .select('*')
+    .select('content')
     .eq('user_id', userId)
     .order('created_at', { ascending: true });
 
   if (error) throw error;
-  return data || [];
+  if (!data || data.length === 0) return '';
+  return data.map(row => row.content).join('\n\n');
 }
 
 /**
- * Add a new memory item for a user
- * @param {string} userId - The user's ID
- * @param {string} content - The memory text content
- * @param {string} category - The category ('career', 'skills', 'interests', 'general')
- * @returns {Promise<Object>} The created memory item
+ * Save the user's memory text (replaces all existing rows with one).
  */
-export async function addMemoryItem(userId, content, category = 'general') {
-  const { data, error } = await supabase
-    .from('user_memory')
-    .insert({
-      user_id: userId,
-      content: content.trim(),
-      category
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-/**
- * Update an existing memory item
- * @param {string} id - The memory item ID
- * @param {string} content - Updated text content
- * @param {string} category - Updated category
- * @returns {Promise<Object>} The updated memory item
- */
-export async function updateMemoryItem(id, content, category) {
-  const updates = {};
-  if (content !== undefined) updates.content = content.trim();
-  if (category !== undefined) updates.category = category;
-
-  const { data, error } = await supabase
-    .from('user_memory')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
-/**
- * Delete a memory item
- * @param {string} id - The memory item ID
- * @returns {Promise<void>}
- */
-export async function deleteMemoryItem(id) {
-  const { error } = await supabase
+export async function saveUserMemoryText(userId, content) {
+  // Delete all existing rows
+  const { error: deleteError } = await supabase
     .from('user_memory')
     .delete()
-    .eq('id', id);
+    .eq('user_id', userId);
 
-  if (error) throw error;
+  if (deleteError) throw deleteError;
+
+  // Insert the new text as a single row (skip if empty)
+  const trimmed = content.trim();
+  if (!trimmed) return;
+
+  const { error: insertError } = await supabase
+    .from('user_memory')
+    .insert({ user_id: userId, content: trimmed, category: 'general' });
+
+  if (insertError) throw insertError;
 }
 
 // =====================================================

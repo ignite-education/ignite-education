@@ -11,6 +11,8 @@ import PromptContributeModal from './PromptContributeModal'
 
 interface PromptToolkitClientProps {
   professions: string[]
+  initialProfession?: string
+  pageTitle?: string
 }
 
 const FILTERS_STORAGE_KEY = 'ignite_prompt_filters'
@@ -25,10 +27,12 @@ function loadSavedFilters(): { search: string; professions: string[]; tools: str
   }
 }
 
-export default function PromptToolkitClient({ professions }: PromptToolkitClientProps) {
-  const saved = useMemo(() => loadSavedFilters(), [])
+export default function PromptToolkitClient({ professions, initialProfession, pageTitle }: PromptToolkitClientProps) {
+  const saved = useMemo(() => initialProfession ? null : loadSavedFilters(), [])
   const [searchQuery, setSearchQuery] = useState(saved?.search ?? '')
-  const [selectedProfessions, setSelectedProfessions] = useState<string[]>(saved?.professions ?? [])
+  const [selectedProfessions, setSelectedProfessions] = useState<string[]>(
+    initialProfession ? [initialProfession] : (saved?.professions ?? [])
+  )
   const [selectedTools, setSelectedTools] = useState<string[]>(saved?.tools ?? [])
   const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
   const [showContributeModal, setShowContributeModal] = useState(false)
@@ -36,8 +40,9 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
 
-  // Persist filter selections to localStorage
+  // Persist filter selections to localStorage (skip on profession subpages)
   useEffect(() => {
+    if (initialProfession) return
     try {
       localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
         search: searchQuery,
@@ -46,7 +51,7 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
         complexities: selectedComplexities,
       }))
     } catch {}
-  }, [searchQuery, selectedProfessions, selectedTools, selectedComplexities])
+  }, [searchQuery, selectedProfessions, selectedTools, selectedComplexities, initialProfession])
 
   // Load Lottie animation
   useEffect(() => {
@@ -142,7 +147,7 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
-            AI Prompt Toolkit
+            {pageTitle || 'AI Prompt Toolkit'}
           </h1>
         </div>
 

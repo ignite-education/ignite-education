@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import { placeholderPrompts, promptToSlug, getPromptBySlug } from '@/data/placeholderPrompts'
+import { getCoursesByType } from '@/lib/courseData'
+import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
 import PromptDetailClient from './PromptDetailClient'
+import PromptToolkitClient from '../PromptToolkitClient'
 
 export const revalidate = 3600
 
@@ -14,15 +17,52 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return placeholderPrompts.map((p) => ({
-    slug: promptToSlug(p.title),
-  }))
+  const [professionSlugs, promptSlugs] = await Promise.all([
+    getAllProfessionSlugs(),
+    Promise.resolve(placeholderPrompts.map((p) => promptToSlug(p.title))),
+  ])
+
+  return [
+    ...professionSlugs.map((slug) => ({ slug })),
+    ...promptSlugs.map((slug) => ({ slug })),
+  ]
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const prompt = getPromptBySlug(slug)
 
+  // Check profession first
+  const profession = await getProfessionBySlug(slug)
+  if (profession) {
+    const professionName = profession.title || profession.name
+    const plural = pluraliseProfession(professionName)
+    const title = `AI Prompt Toolkit for ${plural} | Ignite`
+    const description = `Free AI prompt templates for ${plural}. Ready-to-use prompts for ChatGPT, Claude, Co-Pilot and Gemini tailored to ${professionName} workflows.`
+    const url = `${BASE_URL}/prompts/${slug}`
+
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
+        description,
+        url,
+        siteName: 'Ignite Education',
+        images: [{ url: `${BASE_URL}/og-image.png` }],
+        type: 'website',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
+        description,
+        images: [`${BASE_URL}/og-image.png`],
+      },
+    }
+  }
+
+  // Fall back to prompt detail metadata
+  const prompt = getPromptBySlug(slug)
   if (!prompt) {
     return { title: 'Prompt Not Found' }
   }
@@ -54,8 +94,62 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function PromptDetailPage({ params }: PageProps) {
+export default async function PromptSlugPage({ params }: PageProps) {
   const { slug } = await params
+
+  // Check profession first
+  const profession = await getProfessionBySlug(slug)
+  if (profession) {
+    const coursesByType = await getCoursesByType()
+    const professions = coursesByType.specialism.map(c => c.title || c.name)
+    const professionName = profession.title || profession.name
+    const plural = pluraliseProfession(professionName)
+
+    const structuredData = [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        'name': `AI Prompt Toolkit for ${plural}`,
+        'description': `Curated LLM prompts for ${plural}.`,
+        'url': `${BASE_URL}/prompts/${slug}`,
+        'publisher': {
+          '@type': 'Organization',
+          'name': 'Ignite Education',
+          'url': BASE_URL,
+        },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+          { '@type': 'ListItem', 'position': 2, 'name': 'Prompt Toolkit', 'item': `${BASE_URL}/prompts` },
+          { '@type': 'ListItem', 'position': 3, 'name': plural, 'item': `${BASE_URL}/prompts/${slug}` },
+        ],
+      },
+    ]
+
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+
+        <div className="min-h-screen bg-white">
+          <Navbar hideLogo noPaddingBottom />
+          <PromptToolkitClient
+            professions={professions}
+            initialProfession={professionName}
+            pageTitle={`AI Prompt Toolkit for ${plural}`}
+          />
+          <Footer />
+        </div>
+      </>
+    )
+  }
+
+  // Fall back to prompt detail
   const prompt = getPromptBySlug(slug)
 
   if (!prompt) {

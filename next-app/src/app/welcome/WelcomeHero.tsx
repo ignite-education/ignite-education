@@ -120,15 +120,16 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
     && filteredSubject.length === 0
 
   const maxRows = Math.max(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)
-  const sectionMinHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
+  const sectionHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
+  const sectionMinHeight = maxRows >= 3 ? '600px' : maxRows === 2 ? '500px' : maxRows === 1 ? '400px' : '350px'
 
   return (
     <section
       className="relative bg-white auth-section-1"
       style={{
+        height: isExpanded ? 'auto' : sectionHeight,
         minHeight: isExpanded ? 'auto' : sectionMinHeight,
-        maxHeight: isExpanded ? 'none' : '1000px',
-        transition: 'min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden'
       }}
     >

@@ -70,10 +70,12 @@ function InlinePlaceholderInput({
   placeholderText,
   value,
   onChange,
+  autoFocus,
 }: {
   placeholderText: string
   value: string
   onChange: (value: string) => void
+  autoFocus?: boolean
 }) {
   const measureRef = useRef<HTMLSpanElement>(null)
   const [width, setWidth] = useState<number>(0)
@@ -104,6 +106,7 @@ function InlinePlaceholderInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholderText}
         aria-label={placeholderText}
+        autoFocus={autoFocus}
         style={{
           fontFamily: 'var(--font-geist-sans), sans-serif',
           fontSize: '13px',
@@ -114,7 +117,7 @@ function InlinePlaceholderInput({
           border: 'none',
           borderRadius: '4px',
           padding: '1px 4px',
-          margin: '0 1px',
+          margin: '2px 1px',
           outline: 'none',
           verticalAlign: 'baseline',
         }}
@@ -460,7 +463,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       {/* LEFT COLUMN — Grey prompt container (matches curriculum grey box) */}
       <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0 relative">
           <pre
-            className="text-sm text-black whitespace-pre-wrap leading-relaxed relative"
+            className="text-sm text-black whitespace-pre-wrap leading-loose relative"
             style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
           >
             {segments.map((seg, i) =>
@@ -472,6 +475,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                   placeholderText={seg.content}
                   value={placeholderValues[seg.index] || ''}
                   onChange={(val) => handlePlaceholderChange(seg.index, val)}
+                  autoFocus={seg.index === 0}
                 />
               )
             )}
