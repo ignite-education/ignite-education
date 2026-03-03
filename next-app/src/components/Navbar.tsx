@@ -54,7 +54,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   }, [])
 
   return (
-    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-gray-100/70 backdrop-blur-md' : ''}>
+    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#F0F0F0]/70 backdrop-blur-md' : ''}>
       <div className={`px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo) */}
         {hideLogo ? (
