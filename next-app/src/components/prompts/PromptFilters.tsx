@@ -114,9 +114,9 @@ export default function PromptFilters({
                     style={{
                       backgroundColor: '#FFFFFF',
                       color: '#8200EA',
-                      width: '20px',
-                      height: '20px',
-                      fontSize: '11px',
+                      width: '16px',
+                      height: '16px',
+                      fontSize: '10px',
                       borderRadius: '3px',
                     }}
                   >
@@ -147,6 +147,7 @@ export default function PromptFilters({
                 className="absolute top-full left-1/2 pt-2 z-50 animate-fadeIn"
                 style={{
                   transform: 'translateX(-50%)',
+                  width: 'max-content',
                   minWidth: '180px',
                 }}
               >
@@ -164,7 +165,7 @@ export default function PromptFilters({
                       key={option}
                       type="button"
                       onClick={() => handleToggle(type, option)}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer"
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
                       style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
                     >
                       <span

@@ -15,7 +15,7 @@ export default function PromptCard({ prompt, onClick }: PromptCardProps) {
     <button
       type="button"
       onClick={() => onClick(prompt)}
-      className="group block w-full text-left bg-[#F8F8F8] rounded-xl px-5 py-3 cursor-pointer"
+      className="group block w-full text-left bg-[#F2F2F2] rounded-xl px-5 py-3 cursor-pointer"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">

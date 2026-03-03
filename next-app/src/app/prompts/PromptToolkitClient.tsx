@@ -119,8 +119,15 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
           </h1>
         </div>
 
-        {/* Search */}
+        {/* Description and Search */}
         <div className="mb-5">
+          <p
+            className="text-black max-w-[480px] mx-auto leading-normal text-center mb-[25px]"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem', letterSpacing: '-0.01em' }}
+          >
+            Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
+            {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
+          </p>
           <div className="w-full max-w-[660px] mx-auto">
             <input
               type="text"
@@ -138,13 +145,6 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
               }}
             />
           </div>
-          <p
-            className="text-black mt-[25px] max-w-[480px] mx-auto leading-normal text-center"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem', letterSpacing: '-0.01em' }}
-          >
-            Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
-            {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
-          </p>
         </div>
 
         {/* Filters */}
