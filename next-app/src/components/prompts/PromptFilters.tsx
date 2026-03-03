@@ -18,7 +18,7 @@ type FilterType = 'profession' | 'tool' | 'complexity'
 
 const FILTER_LABELS: Record<FilterType, string> = {
   profession: 'Profession',
-  tool: 'LLM Tool',
+  tool: 'AI Tool',
   complexity: 'Complexity',
 }
 
@@ -77,10 +77,6 @@ export default function PromptFilters({
     }
   }
 
-  const handleClear = (type: FilterType) => {
-    getOnChange(type)([])
-  }
-
   const filterTypes: FilterType[] = ['profession', 'tool', 'complexity']
   const hasAnyFilter = selectedProfessions.length > 0 || selectedTools.length > 0 || selectedComplexities.length > 0
 
@@ -126,7 +122,7 @@ export default function PromptFilters({
                       color: '#8200EA',
                       width: '16px',
                       height: '16px',
-                      fontSize: '11px',
+                      fontSize: '12px',
                       borderRadius: '3px',
                     }}
                   >
@@ -197,20 +193,6 @@ export default function PromptFilters({
                     </button>
                   )
                 })}
-                {hasSelection && (
-                  <button
-                    type="button"
-                    onClick={() => handleClear(type)}
-                    className="w-full text-left px-4 py-2 text-xs hover:bg-gray-50 transition-colors cursor-pointer"
-                    style={{
-                      fontFamily: 'var(--font-geist-sans), sans-serif',
-                      color: '#8200EA',
-                      borderTop: '1px solid #E5E7EB',
-                    }}
-                  >
-                    Clear all
-                  </button>
-                )}
                 </div>
               </div>
             )}
@@ -221,27 +203,27 @@ export default function PromptFilters({
       <button
         type="button"
         onClick={handleResetAll}
-        className={`group transition-all hover:scale-110 cursor-pointer ${hasAnyFilter ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`group cursor-pointer transition-opacity duration-200 ${hasAnyFilter ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         title="Reset all filters"
       >
         <svg
           width="18"
           height="18"
           viewBox="0 0 24 24"
-          className="transition-colors"
+          fill="none"
+          className="transition-transform duration-300 ease-in-out group-hover:rotate-90"
         >
           <path
-            d="M12 4a8 8 0 1 1-6.3 3.1"
-            fill="none"
+            d="M18.3 7.7A8 8 0 1 1 16.9 18.3"
             stroke="#9CA3AF"
-            strokeWidth="2.5"
+            strokeWidth="1.5"
             strokeLinecap="round"
-            className="group-hover:stroke-[#EF0B72] transition-colors"
+            className="group-hover:stroke-[#EF0B72] transition-colors duration-300"
           />
           <polygon
-            points="12,1 12,7 6,4"
+            points="20,15.5 15,21 14,17"
             fill="#9CA3AF"
-            className="group-hover:fill-[#EF0B72] transition-colors"
+            className="group-hover:fill-[#EF0B72] transition-colors duration-300"
           />
         </svg>
       </button>

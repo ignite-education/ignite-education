@@ -90,7 +90,7 @@ export default async function PromptDetailPage({ params }: PageProps) {
 
       <div className="min-h-screen bg-white">
         <div className="sticky top-0 z-50">
-          <Navbar variant="frosted" />
+          <Navbar variant="black" />
         </div>
 
         <div className="max-w-4xl mx-auto px-6 py-20 pb-16 flex justify-center">

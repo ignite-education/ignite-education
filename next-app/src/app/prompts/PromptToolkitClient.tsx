@@ -7,6 +7,7 @@ import type { LottieRefCurrentProps } from 'lottie-react'
 import { placeholderPrompts } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
+import PromptContributeModal from './PromptContributeModal'
 
 interface PromptToolkitClientProps {
   professions: string[]
@@ -30,6 +31,7 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>(saved?.professions ?? [])
   const [selectedTools, setSelectedTools] = useState<string[]>(saved?.tools ?? [])
   const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
+  const [showContributeModal, setShowContributeModal] = useState(false)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
@@ -91,6 +93,8 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
     })
   }, [searchQuery, selectedProfessions, selectedTools, selectedComplexities])
 
+  const showContributeButton = filteredPrompts.length === 0 && searchQuery.trim().length > 0
+
   // Sort prompts for each column
   const mostUsed = useMemo(
     () => [...filteredPrompts].sort((a, b) => b.usageCount - a.usageCount),
@@ -148,25 +152,71 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
             className="text-black max-w-[480px] mx-auto leading-normal text-center mb-[25px]"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem', letterSpacing: '-0.01em' }}
           >
-            Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT
+            Discover the best AI prompts for Claude, Co-Pilot, ChatGPT
             {'\n'}and Gemini to make your daily work tasks easier with better outcomes.
           </p>
-          <div className="w-full max-w-[660px] mx-auto">
+          <div
+            className="w-full max-w-[660px] mx-auto relative group"
+            onMouseEnter={() => {
+              const input = document.querySelector<HTMLInputElement>('.prompt-search-input')
+              if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)'
+            }}
+            onMouseLeave={() => {
+              const input = document.querySelector<HTMLInputElement>('.prompt-search-input')
+              if (input) input.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)'
+            }}
+          >
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder=""
               autoFocus
-              className="w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
-              style={{ boxShadow: '0 0 10px rgba(103,103,103,0.6)' }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)'
+              className="prompt-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
+              style={{
+                boxShadow: '0 0 10px rgba(103,103,103,0.6)',
+                paddingRight: showContributeButton ? '175px' : '24px',
               }}
             />
+            <button
+              type="button"
+              onClick={() => setShowContributeModal(true)}
+              className="absolute right-1 top-0 bottom-0 my-auto flex items-center gap-2 bg-[#EBEBEB]/80 rounded-lg pl-3 pr-1.5 cursor-pointer"
+              style={{
+                height: 'fit-content',
+                paddingTop: '6px',
+                paddingBottom: '6px',
+                opacity: showContributeButton ? 1 : 0,
+                transform: showContributeButton ? 'scale(1)' : 'scale(0.9)',
+                pointerEvents: showContributeButton ? 'auto' : 'none',
+                transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+              }}
+            >
+              <span
+                className="text-black font-semibold text-sm tracking-[-0.01em]"
+                style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+              >
+                Contribute
+              </span>
+              <div
+                className="bg-white rounded-md flex items-center justify-center"
+                style={{ width: '28px', height: '28px' }}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-black group-hover:text-[#EF0B72] transition-colors"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -191,6 +241,12 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
         </div>
       </div>
 
+      {showContributeModal && (
+        <PromptContributeModal
+          professions={professions}
+          onClose={() => setShowContributeModal(false)}
+        />
+      )}
     </div>
   )
 }

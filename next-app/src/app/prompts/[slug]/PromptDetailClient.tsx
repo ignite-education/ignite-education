@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
@@ -40,6 +40,98 @@ function extractFirstName(user: { user_metadata?: Record<string, string>; email?
     || 'your'
 }
 
+type PromptSegment =
+  | { type: 'text'; content: string }
+  | { type: 'placeholder'; content: string; index: number }
+
+function parsePromptSegments(fullPrompt: string): PromptSegment[] {
+  const regex = /\[([^\]]+)\]/g
+  const segments: PromptSegment[] = []
+  let lastIndex = 0
+  let placeholderIndex = 0
+  let match: RegExpExecArray | null
+
+  while ((match = regex.exec(fullPrompt)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'text', content: fullPrompt.slice(lastIndex, match.index) })
+    }
+    segments.push({ type: 'placeholder', content: match[1], index: placeholderIndex++ })
+    lastIndex = match.index + match[0].length
+  }
+
+  if (lastIndex < fullPrompt.length) {
+    segments.push({ type: 'text', content: fullPrompt.slice(lastIndex) })
+  }
+
+  return segments
+}
+
+function InlinePlaceholderInput({
+  placeholderText,
+  value,
+  onChange,
+}: {
+  placeholderText: string
+  value: string
+  onChange: (value: string) => void
+}) {
+  const measureRef = useRef<HTMLSpanElement>(null)
+  const [width, setWidth] = useState<number>(0)
+
+  useEffect(() => {
+    if (measureRef.current) {
+      measureRef.current.textContent = value || placeholderText
+      setWidth(measureRef.current.scrollWidth + 16)
+    }
+  }, [value, placeholderText])
+
+  return (
+    <>
+      <span
+        ref={measureRef}
+        aria-hidden
+        style={{
+          position: 'absolute',
+          visibility: 'hidden',
+          whiteSpace: 'pre',
+          fontFamily: 'var(--font-geist-mono), monospace',
+          fontSize: '13px',
+        }}
+      />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholderText}
+        aria-label={placeholderText}
+        style={{
+          fontFamily: 'var(--font-geist-mono), monospace',
+          fontSize: '13px',
+          lineHeight: 'inherit',
+          width: `${Math.max(width, 40)}px`,
+          backgroundColor: '#FFFFFF',
+          color: '#000000',
+          border: '1px solid #D4D4D8',
+          borderRadius: '4px',
+          padding: '1px 6px',
+          margin: '0 1px',
+          outline: 'none',
+          verticalAlign: 'baseline',
+          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)',
+        }}
+        onFocus={(e) => {
+          e.currentTarget.style.borderColor = '#7714E0'
+          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(119, 20, 224, 0.15), inset 0 1px 2px rgba(0,0,0,0.06)'
+        }}
+        onBlur={(e) => {
+          e.currentTarget.style.borderColor = '#D4D4D8'
+          e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.06)'
+        }}
+      />
+    </>
+  )
+}
+
 export default function PromptDetailClient({ prompt, slug }: PromptDetailClientProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -50,6 +142,22 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [saving, setSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
+  const [placeholderValues, setPlaceholderValues] = useState<Record<number, string>>({})
+
+  const segments = useMemo(() => parsePromptSegments(prompt.fullPrompt), [prompt.fullPrompt])
+
+  const handlePlaceholderChange = useCallback((index: number, value: string) => {
+    setPlaceholderValues(prev => ({ ...prev, [index]: value }))
+  }, [])
+
+  const buildFinalPrompt = useCallback((): string => {
+    return segments.map(seg => {
+      if (seg.type === 'text') return seg.content
+      const userValue = placeholderValues[seg.index]
+      return userValue && userValue.trim() !== '' ? userValue : `[${seg.content}]`
+    }).join('')
+  }, [segments, placeholderValues])
+
   const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
     prompt.title,
     {
@@ -258,15 +366,16 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   }
 
   const handleOpenTool = async (tool: string) => {
+    const finalPrompt = buildFinalPrompt()
     const deepLinkUrl = LLM_DEEP_LINK_URLS[tool]
     if (deepLinkUrl) {
-      window.open(deepLinkUrl + encodeURIComponent(prompt.fullPrompt), '_blank')
+      window.open(deepLinkUrl + encodeURIComponent(finalPrompt), '_blank')
       return
     }
 
     const siteUrl = LLM_SITE_URLS[tool]
     if (siteUrl) {
-      await copyToClipboard(prompt.fullPrompt)
+      await copyToClipboard(finalPrompt)
       setCopiedTool(tool)
       if (copiedToolTimeoutRef.current) clearTimeout(copiedToolTimeoutRef.current)
       copiedToolTimeoutRef.current = setTimeout(() => setCopiedTool(null), 3000)
@@ -354,10 +463,21 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       {/* LEFT COLUMN — Grey prompt container (matches curriculum grey box) */}
       <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0">
           <pre
-            className="text-sm text-black whitespace-pre-wrap leading-relaxed"
+            className="text-sm text-black whitespace-pre-wrap leading-relaxed relative"
             style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
           >
-            {prompt.fullPrompt}
+            {segments.map((seg, i) =>
+              seg.type === 'text' ? (
+                <span key={i}>{seg.content}</span>
+              ) : (
+                <InlinePlaceholderInput
+                  key={`placeholder-${seg.index}`}
+                  placeholderText={seg.content}
+                  value={placeholderValues[seg.index] || ''}
+                  onChange={(val) => handlePlaceholderChange(seg.index, val)}
+                />
+              )
+            )}
           </pre>
       </div>
 
@@ -561,7 +681,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
               {LLM_LOGO_PATHS[tool] && (
-                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 29 : 16} height={tool === 'ChatGPT' ? 29 : 16} />
+                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 20 : 16} height={tool === 'ChatGPT' ? 20 : 16} />
               )}
             </button>
           )

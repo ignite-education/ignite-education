@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Prompt Toolkit | Ignite Education',
     description:
-      'Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
+      'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
     url: `${BASE_URL}/prompts`,
     siteName: 'Ignite Education',
     images: [{ url: `${BASE_URL}/og-image.png` }],
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Prompt Toolkit | Ignite Education',
     description:
-      'Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
+      'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
     images: [`${BASE_URL}/og-image.png`],
   },
 }

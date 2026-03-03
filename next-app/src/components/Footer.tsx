@@ -28,6 +28,13 @@ export default function Footer({ className = '' }: FooterProps) {
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Product</span>
             <div className="flex flex-col gap-2">
               <Link href="/courses" className="text-white font-light hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</Link>
+              <Link
+                href="/prompts"
+                className="text-white font-light hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                AI Prompt Toolkit
+              </Link>
               <a
                 href="https://shop.ignite.education"
                 target="_blank"
@@ -53,13 +60,6 @@ export default function Footer({ className = '' }: FooterProps) {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Resources</span>
             <div className="flex flex-col gap-2">
-              <Link
-                href="/prompts"
-                className="text-white font-light hover:text-[#EF0B72] transition"
-                style={{ fontSize: '14px' }}
-              >
-                AI Prompt Toolkit
-              </Link>
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
               <Link
                 href="/release-notes"
