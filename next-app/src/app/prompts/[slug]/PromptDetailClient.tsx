@@ -302,44 +302,45 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
-      <div className="flex gap-6 items-start">
+      {/* Title */}
+      <h1
+        className="text-[2.25rem] font-bold text-black tracking-[-0.02em] mb-3 leading-tight"
+      >
+        {prompt.title}
+      </h1>
+
+      {/* Description */}
+      <p className="text-gray-600 text-[0.95rem] leading-relaxed mb-5">
+        {prompt.description}
+      </p>
+
+      {/* Tags */}
+      <div className="flex items-center gap-2 flex-wrap mb-8">
+        {tags.map((tag) => (
+          <span
+            key={tag}
+            className="inline-block text-xs font-semibold px-3 py-1.5 rounded-[5px] border"
+            style={{
+              color: '#7500F1',
+              borderColor: '#7500F1',
+              backgroundColor: 'white',
+              fontSize: '0.8rem',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      {/* Prompt heading — above the two-column flex, like "Curriculum" on course pages */}
+      <h2 className="text-[1.35rem] font-bold text-black mb-3">
+        Prompt
+      </h2>
+
+      <div className="flex gap-6 items-stretch lg:-mx-24">
       {/* LEFT COLUMN — Prompt Content */}
       <div className="flex-1 min-w-0">
-        {/* Title */}
-        <h1
-          className="text-[2.25rem] font-bold text-black tracking-[-0.02em] mb-3 leading-tight"
-        >
-          {prompt.title}
-        </h1>
-
-        {/* Description */}
-        <p className="text-gray-600 text-[0.95rem] leading-relaxed mb-5">
-          {prompt.description}
-        </p>
-
-        {/* Tags */}
-        <div className="flex items-center gap-2 flex-wrap mb-8">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="inline-block text-xs font-semibold px-3 py-1.5 rounded-[5px] border"
-              style={{
-                color: '#7500F1',
-                borderColor: '#7500F1',
-                backgroundColor: 'white',
-                fontSize: '0.8rem',
-                letterSpacing: '-0.01em',
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Prompt Section */}
-        <h2 className="text-[1.35rem] font-bold text-black mb-3">
-          Prompt
-        </h2>
         <div
           className="mb-4 rounded-lg"
           style={{
@@ -388,7 +389,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       </div>
 
       {/* RIGHT COLUMN — Sticky Sidebar (hidden on mobile) */}
-      <div className="flex-shrink-0 hidden lg:block" style={{ width: '315px' }}>
+      <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
         <div className="sticky top-24">
           <div className="w-full">
             {!user ? (
