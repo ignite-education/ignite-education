@@ -244,7 +244,7 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
       {showContributeModal && (
         <PromptContributeModal
           professions={professions}
-          onClose={() => setShowContributeModal(false)}
+          onClose={() => { setShowContributeModal(false); setSearchQuery('') }}
         />
       )}
     </div>

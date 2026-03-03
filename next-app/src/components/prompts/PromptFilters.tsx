@@ -214,14 +214,15 @@ export default function PromptFilters({
           className="transition-transform duration-300 ease-in-out group-hover:rotate-90"
         >
           <path
-            d="M18.3 7.7A8 8 0 1 1 16.9 18.3"
+            d="M12 4a8 8 0 1 1-6.3 3.1"
+            fill="none"
             stroke="#9CA3AF"
             strokeWidth="1.5"
             strokeLinecap="round"
             className="group-hover:stroke-[#EF0B72] transition-colors duration-300"
           />
           <polygon
-            points="20,15.5 15,21 14,17"
+            points="12,1 12,7 6,4"
             fill="#9CA3AF"
             className="group-hover:fill-[#EF0B72] transition-colors duration-300"
           />

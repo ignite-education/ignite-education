@@ -94,7 +94,7 @@ function InlinePlaceholderInput({
           position: 'absolute',
           visibility: 'hidden',
           whiteSpace: 'pre',
-          fontFamily: 'var(--font-geist-mono), monospace',
+          fontFamily: 'var(--font-geist-sans), sans-serif',
           fontSize: '13px',
         }}
       />
@@ -105,27 +105,24 @@ function InlinePlaceholderInput({
         placeholder={placeholderText}
         aria-label={placeholderText}
         style={{
-          fontFamily: 'var(--font-geist-mono), monospace',
+          fontFamily: 'var(--font-geist-sans), sans-serif',
           fontSize: '13px',
           lineHeight: 'inherit',
           width: `${Math.max(width, 40)}px`,
           backgroundColor: '#FFFFFF',
           color: '#000000',
-          border: '1px solid #D4D4D8',
+          border: 'none',
           borderRadius: '4px',
           padding: '1px 6px',
           margin: '0 1px',
           outline: 'none',
           verticalAlign: 'baseline',
-          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.borderColor = '#7714E0'
-          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(119, 20, 224, 0.15), inset 0 1px 2px rgba(0,0,0,0.06)'
+          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(119, 20, 224, 0.15)'
         }}
         onBlur={(e) => {
-          e.currentTarget.style.borderColor = '#D4D4D8'
-          e.currentTarget.style.boxShadow = 'inset 0 1px 2px rgba(0,0,0,0.06)'
+          e.currentTarget.style.boxShadow = 'none'
         }}
       />
     </>
@@ -681,7 +678,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
               {LLM_LOGO_PATHS[tool] && (
-                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 20 : 16} height={tool === 'ChatGPT' ? 20 : 16} />
+                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 17 : 16} height={tool === 'ChatGPT' ? 17 : 16} />
               )}
             </button>
           )
