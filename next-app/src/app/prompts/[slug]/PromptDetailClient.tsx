@@ -25,10 +25,10 @@ const LLM_SITE_URLS: Record<string, string> = {
 }
 
 const LLM_LOGO_PATHS: Record<string, string> = {
-  'Claude': '/logos/claude.svg',
-  'ChatGPT': '/logos/chatgpt.svg',
-  'Co-Pilot': '/logos/copilot.svg',
-  'Gemini': '/logos/gemini.svg',
+  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo.png',
+  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
 
 function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
