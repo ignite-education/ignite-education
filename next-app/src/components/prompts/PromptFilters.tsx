@@ -116,7 +116,7 @@ export default function PromptFilters({
                       color: '#8200EA',
                       width: '16px',
                       height: '16px',
-                      fontSize: '10px',
+                      fontSize: '11px',
                       borderRadius: '3px',
                     }}
                   >
@@ -155,7 +155,6 @@ export default function PromptFilters({
                   className="bg-white rounded-lg py-1"
                   style={{
                     boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
-                    border: '1px solid #E5E7EB',
                   }}
                 >
                 {filterOptions[type].map((option) => {
@@ -165,15 +164,15 @@ export default function PromptFilters({
                       key={option}
                       type="button"
                       onClick={() => handleToggle(type, option)}
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
-                      style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+                      className="w-full text-left px-4 py-1 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
+                      style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em' }}
                     >
                       <span
                         className="shrink-0 flex items-center justify-center rounded"
                         style={{
                           width: '16px',
                           height: '16px',
-                          border: isChecked ? 'none' : '2px solid #D1D5DB',
+                          border: isChecked ? 'none' : '1px solid #D1D5DB',
                           backgroundColor: isChecked ? '#8200EA' : 'transparent',
                           borderRadius: '4px',
                         }}

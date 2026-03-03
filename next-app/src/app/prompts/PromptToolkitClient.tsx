@@ -148,7 +148,7 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
         </div>
 
         {/* Filters */}
-        <div className="mb-10">
+        <div className="mb-[50px]">
           <PromptFilters
             professions={professions}
             selectedProfessions={selectedProfessions}
