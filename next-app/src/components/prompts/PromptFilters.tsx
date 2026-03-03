@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { PROFESSIONS, LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
+import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 
 interface PromptFiltersProps {
+  professions: string[]
   selectedProfessions: string[]
   selectedTools: string[]
   selectedComplexities: string[]
@@ -14,12 +15,6 @@ interface PromptFiltersProps {
 
 type FilterType = 'profession' | 'tool' | 'complexity'
 
-const FILTER_OPTIONS: Record<FilterType, readonly string[]> = {
-  profession: PROFESSIONS,
-  tool: LLM_TOOLS,
-  complexity: COMPLEXITIES,
-}
-
 const FILTER_LABELS: Record<FilterType, string> = {
   profession: 'Profession',
   tool: 'LLM Tool',
@@ -27,6 +22,7 @@ const FILTER_LABELS: Record<FilterType, string> = {
 }
 
 export default function PromptFilters({
+  professions,
   selectedProfessions,
   selectedTools,
   selectedComplexities,
@@ -35,6 +31,12 @@ export default function PromptFilters({
   onComplexitiesChange,
 }: PromptFiltersProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
+
+  const filterOptions: Record<FilterType, readonly string[]> = {
+    profession: professions,
+    tool: LLM_TOOLS,
+    complexity: COMPLEXITIES,
+  }
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -142,15 +144,20 @@ export default function PromptFilters({
 
             {isOpen && (
               <div
-                className="absolute top-full left-1/2 mt-2 bg-white rounded-lg py-1 z-50 animate-fadeIn"
+                className="absolute top-full left-1/2 pt-2 z-50 animate-fadeIn"
                 style={{
                   transform: 'translateX(-50%)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
                   minWidth: '180px',
-                  border: '1px solid #E5E7EB',
                 }}
               >
-                {FILTER_OPTIONS[type].map((option) => {
+                <div
+                  className="bg-white rounded-lg py-1"
+                  style={{
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                    border: '1px solid #E5E7EB',
+                  }}
+                >
+                {filterOptions[type].map((option) => {
                   const isChecked = selected.includes(option)
                   return (
                     <button
@@ -194,6 +201,7 @@ export default function PromptFilters({
                     Clear all
                   </button>
                 )}
+                </div>
               </div>
             )}
           </div>

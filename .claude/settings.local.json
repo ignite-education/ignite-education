@@ -62,7 +62,8 @@
       "Bash(# Check if /admin/courses is matched by a rewrite echo \"\"=== Admin route test ===\"\" curl -s -o /dev/null -w \"\"Status: %{http_code}\\\\nFinal URL: %{url_effective}\"\" -L https://ignite.education/admin/courses echo \"\"\"\" echo \"\"\"\" # Check the auth callback redirect more carefully echo \"\"=== Auth callback redirect ===\"\" curl -s -D - -o /dev/null https://ignite.education/auth/callback)",
       "Bash(# Test if the auth callback redirect issue is only with direct curl \\(missing x-forwarded-host\\) # vs through the Vercel rewrite proxy \\(which should set x-forwarded-host\\) echo \"\"=== Auth callback with headers ===\"\" curl -s -D - -o /dev/null \"\"https://ignite.education/auth/callback\"\")",
       "WebFetch(domain:addtoprofile.linkedin.com)",
-      "Bash(git check-ignore:*)"
+      "Bash(git check-ignore:*)",
+      "Bash(npx tsc --noEmit)"
     ],
     "deny": [],
     "ask": []

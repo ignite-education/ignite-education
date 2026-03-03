@@ -9,7 +9,11 @@ import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
 import PromptDetailModal from '@/components/prompts/PromptDetailModal'
 
-export default function PromptToolkitClient() {
+interface PromptToolkitClientProps {
+  professions: string[]
+}
+
+export default function PromptToolkitClient({ professions }: PromptToolkitClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>([])
   const [selectedTools, setSelectedTools] = useState<string[]>([])
@@ -111,7 +115,7 @@ export default function PromptToolkitClient() {
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
-            Prompt Toolkit
+            AI Prompt Toolkit
           </h1>
         </div>
 
@@ -146,6 +150,7 @@ export default function PromptToolkitClient() {
         {/* Filters */}
         <div className="mb-10">
           <PromptFilters
+            professions={professions}
             selectedProfessions={selectedProfessions}
             selectedTools={selectedTools}
             selectedComplexities={selectedComplexities}

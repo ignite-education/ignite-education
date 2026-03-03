@@ -11,9 +11,10 @@ interface NavbarProps {
   logoContainerRef?: RefObject<HTMLDivElement | null>
   variant?: 'default' | 'black'
   hideLogo?: boolean
+  noPaddingBottom?: boolean
 }
 
-export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', hideLogo = false }: NavbarProps) {
+export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', hideLogo = false, noPaddingBottom = false }: NavbarProps) {
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -51,7 +52,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
 
   return (
     <div className={variant === 'black' ? 'bg-black' : ''}>
-      <div className="px-10 py-[15px] flex items-center justify-between">
+      <div className={`px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo) */}
         {hideLogo ? (
           <div style={{ width: '99px' }} />

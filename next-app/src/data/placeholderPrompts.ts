@@ -11,19 +11,6 @@ export type Prompt = {
   createdAt: string
 }
 
-export const PROFESSIONS = [
-  'Data Analyst',
-  'Product Manager',
-  'Software Engineer',
-  'Marketing',
-  'HR',
-  'Finance',
-  'Designer',
-  'Sales',
-  'Operations',
-  'Educator',
-] as const
-
 export const LLM_TOOLS = ['Claude', 'Co-Pilot', 'ChatGPT', 'Gemini'] as const
 
 export const COMPLEXITIES = ['Low', 'Mid', 'High'] as const

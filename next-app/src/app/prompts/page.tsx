@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import PromptToolkitClient from './PromptToolkitClient'
+import { getCoursesByType } from '@/lib/courseData'
 
 export const revalidate = 3600
 
@@ -10,7 +11,7 @@ const BASE_URL = 'https://ignite.education'
 export const metadata: Metadata = {
   title: 'Free AI Prompt Templates for Professionals | Ignite',
   description:
-    'Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT and Gemini. Browse curated prompts by profession, tool, and complexity to make your daily work tasks easier with better outcomes.',
+    'Browse free AI prompt templates for ChatGPT, Claude, Co-Pilot and Gemini. Ready-to-use prompts for product managers, marketers, analysts, engineers and more.',
   keywords:
     'LLM prompts, AI prompts, Claude prompts, ChatGPT prompts, Co-Pilot prompts, Gemini prompts, prompt toolkit, AI productivity, prompt engineering, ignite education',
   alternates: {
@@ -34,7 +35,10 @@ export const metadata: Metadata = {
   },
 }
 
-export default function PromptToolkitPage() {
+export default async function PromptToolkitPage() {
+  const coursesByType = await getCoursesByType()
+  const professions = coursesByType.specialism.map(c => c.title || c.name)
+
   const structuredData = [
     {
       '@context': 'https://schema.org',
@@ -66,8 +70,8 @@ export default function PromptToolkitPage() {
       />
 
       <div className="min-h-screen bg-white">
-        <Navbar hideLogo />
-        <PromptToolkitClient />
+        <Navbar hideLogo noPaddingBottom />
+        <PromptToolkitClient professions={professions} />
         <Footer />
       </div>
     </>
