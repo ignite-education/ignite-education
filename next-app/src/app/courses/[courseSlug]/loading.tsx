@@ -2,7 +2,7 @@ export default function Loading() {
   return (
     <div className="min-h-screen bg-white">
       {/* Navbar skeleton */}
-      <div className="sticky top-0 z-50 bg-white/70 backdrop-blur-md border-b border-black/[0.04]">
+      <div className="sticky top-0 z-50 bg-gray-50/70 backdrop-blur-md">
         <div className="px-10 py-[15px] flex items-center justify-between">
           <div className="w-[99px] h-[30px] bg-gray-200 animate-pulse rounded" />
           <div className="w-[85px] h-[35px] bg-gray-200 animate-pulse rounded" />
