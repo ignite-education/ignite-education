@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import UserMemorySection from './UserMemorySection';
 
 const resizeProfileImage = (file) => {
   return new Promise((resolve, reject) => {
@@ -570,6 +571,9 @@ const SettingsModal = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               </div>
+
+              {/* Memory Section */}
+              <UserMemorySection userId={authUser?.id} />
 
               <button
                 type="submit"

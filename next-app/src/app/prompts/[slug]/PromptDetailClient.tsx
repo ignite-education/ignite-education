@@ -478,11 +478,11 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           </pre>
           <button
             onClick={() => copyToClipboard(buildFinalPrompt())}
-            className="absolute bottom-3 right-3 p-1.5 rounded-md bg-white/80 hover:bg-white transition-colors cursor-pointer"
+            className="absolute bottom-3 right-3 p-1.5 cursor-pointer group"
             aria-label="Copy prompt"
           >
-            <svg className="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            <svg className="w-4 h-4 text-white group-hover:text-[#EF0B72] transition-colors" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z" />
             </svg>
           </button>
       </div>
