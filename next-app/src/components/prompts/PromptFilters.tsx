@@ -80,7 +80,7 @@ export default function PromptFilters({
   const filterTypes: FilterType[] = ['profession', 'tool', 'complexity']
 
   return (
-    <div ref={containerRef} className="flex items-center justify-center gap-3 flex-wrap">
+    <div ref={containerRef} className="flex items-center justify-center gap-4 flex-wrap">
       {filterTypes.map((type) => {
         const selected = getSelectedValues(type)
         const hasSelection = selected.length > 0
@@ -96,51 +96,47 @@ export default function PromptFilters({
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-semibold px-5 rounded-[7px] transition-all cursor-pointer"
+              className="text-white text-sm font-semibold rounded-[7px] transition-all cursor-pointer"
               style={{
-                backgroundColor: hasSelection ? '#6600BB' : '#8200EA',
+                backgroundColor: '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
                 letterSpacing: '-0.01em',
-                paddingTop: '5px',
-                paddingBottom: '5px',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#7000C9'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = hasSelection ? '#6600BB' : '#8200EA'
+                padding: '5px 10px',
               }}
             >
               <span className="flex items-center gap-2">
                 {FILTER_LABELS[type]}
-                {hasSelection && (
+                {hasSelection ? (
                   <span
-                    className="inline-flex items-center justify-center rounded-full text-xs font-bold"
+                    className="inline-flex items-center justify-center text-xs font-bold"
                     style={{
-                      backgroundColor: 'rgba(255,255,255,0.25)',
+                      backgroundColor: '#FFFFFF',
+                      color: '#8200EA',
                       width: '20px',
                       height: '20px',
                       fontSize: '11px',
+                      borderRadius: '3px',
                     }}
                   >
                     {selected.length}
                   </span>
+                ) : (
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    className="shrink-0"
+                  >
+                    <line x1="3" y1="8" x2="21" y2="8" />
+                    <circle cx="16" cy="8" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-top" />
+                    <line x1="3" y1="16" x2="21" y2="16" />
+                    <circle cx="8" cy="16" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-bottom" />
+                  </svg>
                 )}
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  className="shrink-0"
-                >
-                  <line x1="3" y1="8" x2="21" y2="8" />
-                  <circle cx="16" cy="8" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-top" />
-                  <line x1="3" y1="16" x2="21" y2="16" />
-                  <circle cx="8" cy="16" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-bottom" />
-                </svg>
               </span>
             </button>
 

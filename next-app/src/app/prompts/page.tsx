@@ -8,7 +8,7 @@ export const revalidate = 3600
 const BASE_URL = 'https://ignite.education'
 
 export const metadata: Metadata = {
-  title: 'Prompt Toolkit',
+  title: 'Free AI Prompt Templates for Professionals | Ignite',
   description:
     'Discover the best LLM prompts for Claude, Co-Pilot, ChatGPT and Gemini. Browse curated prompts by profession, tool, and complexity to make your daily work tasks easier with better outcomes.',
   keywords:
