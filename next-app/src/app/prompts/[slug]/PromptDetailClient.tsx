@@ -534,17 +534,19 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             <button
               key={tool}
               onClick={() => handleOpenTool(tool)}
-              className="flex items-center gap-2 px-2 py-2 rounded-lg text-sm font-normal transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg text-sm font-normal transition-all cursor-pointer"
               style={{
                 backgroundColor: isCopied ? '#009600' : 'white',
                 color: isCopied ? 'white' : 'black',
                 letterSpacing: '-0.02em',
-                boxShadow: isCopied ? 'none' : '0 0 10px rgba(103,103,103,0.4)',
+                boxShadow: isCopied ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
               }}
+              onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
+              onMouseLeave={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
               {LLM_LOGO_PATHS[tool] && (
-                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 24 : 16} height={tool === 'ChatGPT' ? 24 : 16} />
+                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 29 : 16} height={tool === 'ChatGPT' ? 29 : 16} />
               )}
             </button>
           )
