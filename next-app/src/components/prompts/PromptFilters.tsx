@@ -147,8 +147,8 @@ export default function PromptFilters({
                 className="absolute top-full left-1/2 pt-2 z-50 animate-fadeIn"
                 style={{
                   transform: 'translateX(-50%)',
+                  minWidth: '100%',
                   width: 'max-content',
-                  minWidth: '180px',
                 }}
               >
                 <div
