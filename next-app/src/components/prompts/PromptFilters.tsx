@@ -211,13 +211,13 @@ export default function PromptFilters({
           height="18"
           viewBox="0 0 24 24"
           fill="none"
-          className="transition-transform duration-300 ease-in-out group-hover:rotate-90"
+          className="transition-transform duration-300 ease-in-out group-hover:-rotate-90"
         >
           <path
             d="M12 4a8 8 0 1 1-6.3 3.1"
             fill="none"
             stroke="#9CA3AF"
-            strokeWidth="1.5"
+            strokeWidth="2"
             strokeLinecap="round"
             className="group-hover:stroke-[#EF0B72] transition-colors duration-300"
           />

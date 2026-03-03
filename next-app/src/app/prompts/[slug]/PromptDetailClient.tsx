@@ -81,7 +81,7 @@ function InlinePlaceholderInput({
   useEffect(() => {
     if (measureRef.current) {
       measureRef.current.textContent = value || placeholderText
-      setWidth(measureRef.current.scrollWidth + 16)
+      setWidth(measureRef.current.scrollWidth + 12)
     }
   }, [value, placeholderText])
 
@@ -113,13 +113,13 @@ function InlinePlaceholderInput({
           color: '#000000',
           border: 'none',
           borderRadius: '4px',
-          padding: '1px 6px',
+          padding: '1px 4px',
           margin: '0 1px',
           outline: 'none',
           verticalAlign: 'baseline',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 0 2px rgba(119, 20, 224, 0.15)'
+          e.currentTarget.style.boxShadow = '0 0 0 2px #7714E0'
         }}
         onBlur={(e) => {
           e.currentTarget.style.boxShadow = 'none'
@@ -432,7 +432,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
       {/* Description */}
       <p
-        className="text-black text-lg leading-relaxed font-normal text-center mx-auto"
+        className="text-black text-lg leading-normal font-normal text-center mx-auto"
         style={{ letterSpacing: '-0.02em', marginBottom: '30px', maxWidth: '610px', textWrap: 'balance' }}
       >
         {prompt.description}
