@@ -1,5 +1,3 @@
-'use client'
-
 import type { Prompt } from '@/data/placeholderPrompts'
 import PromptCard from './PromptCard'
 
@@ -23,10 +21,9 @@ const COLUMN_CONFIG: Record<ColumnType, { title: string; description: string }> 
 interface PromptColumnProps {
   type: ColumnType
   prompts: Prompt[]
-  onPromptClick: (prompt: Prompt) => void
 }
 
-export default function PromptColumn({ type, prompts, onPromptClick }: PromptColumnProps) {
+export default function PromptColumn({ type, prompts }: PromptColumnProps) {
   const config = COLUMN_CONFIG[type]
 
   return (
@@ -45,7 +42,7 @@ export default function PromptColumn({ type, prompts, onPromptClick }: PromptCol
       </p>
       <div className="space-y-3">
         {prompts.map((prompt) => (
-          <PromptCard key={prompt.id} prompt={prompt} onClick={onPromptClick} />
+          <PromptCard key={prompt.id} prompt={prompt} />
         ))}
       </div>
     </div>

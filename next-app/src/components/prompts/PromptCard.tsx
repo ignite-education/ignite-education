@@ -1,21 +1,20 @@
-'use client'
-
+import Link from 'next/link'
 import type { Prompt } from '@/data/placeholderPrompts'
+import { promptToSlug } from '@/data/placeholderPrompts'
 
 interface PromptCardProps {
   prompt: Prompt
-  onClick: (prompt: Prompt) => void
 }
 
-export default function PromptCard({ prompt, onClick }: PromptCardProps) {
+export default function PromptCard({ prompt }: PromptCardProps) {
   const displayTool = prompt.llmTools[0]
   const extraTools = prompt.llmTools.length - 1
 
   return (
-    <button
-      type="button"
-      onClick={() => onClick(prompt)}
-      className="group block w-full text-left bg-[#F3F3F3] rounded-xl px-5 py-3 cursor-pointer"
+    <Link
+      href={`/prompts/${promptToSlug(prompt.title)}`}
+      target="_blank"
+      className="group block w-full text-left bg-[#F6F6F6] rounded-xl px-5 py-3"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
@@ -71,6 +70,6 @@ export default function PromptCard({ prompt, onClick }: PromptCardProps) {
           </svg>
         </div>
       </div>
-    </button>
+    </Link>
   )
 }

@@ -4,10 +4,9 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
-import { placeholderPrompts, type Prompt } from '@/data/placeholderPrompts'
+import { placeholderPrompts } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
-import PromptDetailModal from '@/components/prompts/PromptDetailModal'
 
 interface PromptToolkitClientProps {
   professions: string[]
@@ -18,7 +17,6 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>([])
   const [selectedTools, setSelectedTools] = useState<string[]>([])
   const [selectedComplexities, setSelectedComplexities] = useState<string[]>([])
-  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
@@ -162,18 +160,12 @@ export default function PromptToolkitClient({ professions }: PromptToolkitClient
 
         {/* Prompt Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <PromptColumn type="most-used" prompts={mostUsed} onPromptClick={setSelectedPrompt} />
-          <PromptColumn type="highly-rated" prompts={highlyRated} onPromptClick={setSelectedPrompt} />
-          <PromptColumn type="most-recent" prompts={mostRecent} onPromptClick={setSelectedPrompt} />
+          <PromptColumn type="most-used" prompts={mostUsed} />
+          <PromptColumn type="highly-rated" prompts={highlyRated} />
+          <PromptColumn type="most-recent" prompts={mostRecent} />
         </div>
       </div>
 
-      {selectedPrompt && (
-        <PromptDetailModal
-          prompt={selectedPrompt}
-          onClose={() => setSelectedPrompt(null)}
-        />
-      )}
     </div>
   )
 }

@@ -15,6 +15,14 @@ export const LLM_TOOLS = ['Claude', 'Co-Pilot', 'ChatGPT', 'Gemini'] as const
 
 export const COMPLEXITIES = ['Low', 'Mid', 'High'] as const
 
+export function promptToSlug(title: string): string {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+export function getPromptBySlug(slug: string): Prompt | undefined {
+  return placeholderPrompts.find(p => promptToSlug(p.title) === slug)
+}
+
 export const placeholderPrompts: Prompt[] = [
   {
     id: '1',
