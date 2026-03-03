@@ -116,7 +116,7 @@ function InlinePlaceholderInput({
           color: '#000000',
           border: 'none',
           borderRadius: '4px',
-          padding: '1px 4px',
+          padding: '0px 4px',
           margin: '2px 1px',
           outline: 'none',
           verticalAlign: 'baseline',
@@ -463,7 +463,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       {/* LEFT COLUMN — Grey prompt container (matches curriculum grey box) */}
       <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0 relative">
           <pre
-            className="text-sm text-black whitespace-pre-wrap leading-loose relative"
+            className="text-sm text-black whitespace-pre-wrap leading-relaxed relative"
             style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
           >
             {segments.map((seg, i) =>
@@ -485,8 +485,9 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             className="absolute bottom-3 right-3 p-1.5 cursor-pointer group"
             aria-label="Copy prompt"
           >
-            <svg className="w-4 h-4 text-white group-hover:text-[#EF0B72] transition-colors" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M16 1H4a2 2 0 00-2 2v14h2V3h12V1zm3 4H8a2 2 0 00-2 2v14a2 2 0 002 2h11a2 2 0 002-2V7a2 2 0 00-2-2zm0 16H8V7h11v14z" />
+            <svg className="w-5 h-5 text-white group-hover:text-[#EF0B72] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
             </svg>
           </button>
       </div>

@@ -1104,26 +1104,57 @@ export async function getUserMemoryText(userId) {
 }
 
 /**
- * Save the user's memory text (replaces all existing rows with one).
+ * Save the user's memory text. Updates existing row if one exists, otherwise inserts.
+ * Cleans up legacy multi-row data from the old card-based system.
  */
 export async function saveUserMemoryText(userId, content) {
-  // Delete all existing rows
-  const { error: deleteError } = await supabase
-    .from('user_memory')
-    .delete()
-    .eq('user_id', userId);
-
-  if (deleteError) throw deleteError;
-
-  // Insert the new text as a single row (skip if empty)
   const trimmed = content.trim();
-  if (!trimmed) return;
 
-  const { error: insertError } = await supabase
+  // Fetch existing rows
+  const { data: existing, error: fetchError } = await supabase
     .from('user_memory')
-    .insert({ user_id: userId, content: trimmed, category: 'general' });
+    .select('id')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: true });
 
-  if (insertError) throw insertError;
+  if (fetchError) throw fetchError;
+
+  if (!trimmed) {
+    // Clear all memory if content is empty
+    if (existing && existing.length > 0) {
+      const { error } = await supabase
+        .from('user_memory')
+        .delete()
+        .in('id', existing.map(r => r.id));
+      if (error) throw error;
+    }
+    return;
+  }
+
+  if (existing && existing.length > 0) {
+    // Update the first row with the new text
+    const [first, ...rest] = existing;
+    const { error: updateError } = await supabase
+      .from('user_memory')
+      .update({ content: trimmed, category: 'general' })
+      .eq('id', first.id);
+    if (updateError) throw updateError;
+
+    // Clean up extra rows from legacy multi-item system
+    if (rest.length > 0) {
+      const { error: deleteError } = await supabase
+        .from('user_memory')
+        .delete()
+        .in('id', rest.map(r => r.id));
+      if (deleteError) throw deleteError;
+    }
+  } else {
+    // No existing rows — insert a new one
+    const { error: insertError } = await supabase
+      .from('user_memory')
+      .insert({ user_id: userId, content: trimmed, category: 'general' });
+    if (insertError) throw insertError;
+  }
 }
 
 // =====================================================

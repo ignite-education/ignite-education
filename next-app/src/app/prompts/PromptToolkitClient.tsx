@@ -147,7 +147,13 @@ export default function PromptToolkitClient({ professions, initialProfession, pa
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
-            {pageTitle || 'AI Prompt Toolkit'}
+            AI Prompt Toolkit
+            {pageTitle && (
+              <>
+                <br />
+                <span>{pageTitle.replace('AI Prompt Toolkit ', '')}</span>
+              </>
+            )}
           </h1>
         </div>
 

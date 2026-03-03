@@ -59,6 +59,11 @@ const UserMemorySection = ({ userId }) => {
   };
 
   const handleSave = async () => {
+    // Nothing to save if empty and no existing text to clear
+    if (!draft.trim() && !text) {
+      setIsEditing(false);
+      return;
+    }
     setIsSaving(true);
     setError(null);
     try {
@@ -67,7 +72,7 @@ const UserMemorySection = ({ userId }) => {
       setIsEditing(false);
     } catch (err) {
       console.error('Error saving user memory:', err);
-      setError('Failed to save memory.');
+      setError(err?.message || 'Failed to save memory.');
     } finally {
       setIsSaving(false);
     }
