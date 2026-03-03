@@ -541,7 +541,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                 letterSpacing: '-0.02em',
                 boxShadow: isCopied ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
               }}
-              onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
+              onMouseEnter={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)' }}
               onMouseLeave={(e) => { if (!isCopied) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
             >
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
@@ -559,7 +559,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
           Output
         </h2>
-        <p className="text-black text-lg leading-relaxed font-medium" style={{ letterSpacing: '-0.02em' }}>
+        <p className="text-black text-lg leading-relaxed font-normal" style={{ letterSpacing: '-0.02em' }}>
           {prompt.description}
         </p>
       </div>

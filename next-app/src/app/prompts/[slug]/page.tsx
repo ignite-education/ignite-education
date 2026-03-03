@@ -92,7 +92,7 @@ export default async function PromptDetailPage({ params }: PageProps) {
         <Navbar variant="black" />
 
         <div className="max-w-4xl mx-auto px-6 py-10 pb-16 flex justify-center">
-          <div className="w-full" style={{ maxWidth: '762px' }}>
+          <div className="w-full" style={{ maxWidth: '610px' }}>
             <PromptDetailClient prompt={prompt} slug={slug} />
           </div>
         </div>
