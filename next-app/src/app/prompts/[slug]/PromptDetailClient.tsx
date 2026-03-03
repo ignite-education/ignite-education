@@ -313,7 +313,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       {/* Description */}
       <p
         className="text-black text-lg leading-relaxed font-normal text-center mx-auto"
-        style={{ letterSpacing: '-0.02em', marginBottom: '30px', maxWidth: '610px' }}
+        style={{ letterSpacing: '-0.02em', marginBottom: '30px', maxWidth: '610px', textWrap: 'balance' }}
       >
         {prompt.description}
       </p>
