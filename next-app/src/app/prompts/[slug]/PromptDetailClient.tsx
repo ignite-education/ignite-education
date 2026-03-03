@@ -323,7 +323,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-block text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-black"
+            className="inline-block text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
             style={{ letterSpacing: '-0.02em' }}
           >
             {tag}
@@ -534,17 +534,17 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             <button
               key={tool}
               onClick={() => handleOpenTool(tool)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-normal transition-colors cursor-pointer"
               style={{
                 backgroundColor: isCopied ? '#009600' : '#F0F0F2',
                 color: isCopied ? 'white' : 'black',
                 letterSpacing: '-0.02em',
               }}
             >
-              {LLM_LOGO_PATHS[tool] && (
-                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={16} height={16} />
-              )}
               {isCopied ? `Copied! Paste in ${tool}` : `Copy to ${tool}`}
+              {LLM_LOGO_PATHS[tool] && (
+                <img src={LLM_LOGO_PATHS[tool]} alt={tool} width={tool === 'ChatGPT' ? 24 : 16} height={tool === 'ChatGPT' ? 24 : 16} />
+              )}
             </button>
           )
         })}
