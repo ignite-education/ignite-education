@@ -16,8 +16,8 @@ interface NavbarProps {
 
 export default function Navbar({ logoClipPercentage = 100, invertLayers = false, logoContainerRef, variant = 'default', hideLogo = false, noPaddingBottom = false }: NavbarProps) {
   // For frosted variant, always show black logo (invert layers to put black on top)
-  const effectiveInvertLayers = variant === 'frosted' ? true : invertLayers
-  const effectiveClipPercentage = variant === 'frosted' ? 100 : logoClipPercentage
+  const effectiveInvertLayers = invertLayers
+  const effectiveClipPercentage = logoClipPercentage
   const [user, setUser] = useState<User | null>(null)
   const [profilePicture, setProfilePicture] = useState<string | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -54,7 +54,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
   }, [])
 
   return (
-    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-[#F0F0F0]/70 backdrop-blur-md' : ''}>
+    <div className={variant === 'black' ? 'bg-black' : variant === 'frosted' ? 'bg-black/70 backdrop-blur-md' : ''}>
       <div className={`px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo) */}
         {hideLogo ? (
