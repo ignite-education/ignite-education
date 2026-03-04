@@ -42,8 +42,8 @@ function mapDbPrompt(row: Record<string, unknown>): Prompt {
     profession: row.profession as string,
     llmTools: row.llm_tools as string[],
     complexity: row.complexity as 'Low' | 'Mid' | 'High',
-    usageCount: row.usage_count as number,
-    rating: Number(row.rating),
+    usageCount: Math.max(row.usage_count as number, (row.real_usage_count as number) || 0),
+    rating: Math.max(row.rating as number, (row.real_thumbs_up as number) || 0),
     createdAt: (row.created_at as string).split('T')[0],
     slug: row.slug as string,
   }

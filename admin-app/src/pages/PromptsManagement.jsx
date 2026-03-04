@@ -42,18 +42,27 @@ const PromptsManagement = () => {
   const [reviewingContribution, setReviewingContribution] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Unique professions for datalist
-  const [existingProfessions, setExistingProfessions] = useState([]);
+  // Professions from specialism courses
+  const [professions, setProfessions] = useState([]);
 
   useEffect(() => {
     loadPrompts();
     loadContributions();
+    loadProfessions();
   }, []);
 
-  useEffect(() => {
-    const profs = [...new Set(prompts.map(p => p.profession))].sort();
-    setExistingProfessions(profs);
-  }, [prompts]);
+  const loadProfessions = async () => {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('title, name, course_type')
+      .in('status', ['live', 'coming_soon']);
+    if (error) { console.error('Error loading courses:', error); return; }
+    const specialisms = (data || [])
+      .filter(c => !c.course_type || c.course_type === 'specialism')
+      .map(c => c.title || c.name)
+      .sort();
+    setProfessions(specialisms);
+  };
 
   // ---- Data loading ----
 
@@ -406,17 +415,14 @@ const PromptsManagement = () => {
               {/* Profession */}
               <div className="mb-5">
                 <label className="block text-sm font-medium mb-2">Profession *</label>
-                <input
-                  type="text"
+                <select
                   value={formData.profession}
                   onChange={(e) => handleInputChange('profession', e.target.value)}
-                  placeholder="e.g., Data Analyst, Product Manager"
-                  list="professions-list"
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
-                />
-                <datalist id="professions-list">
-                  {existingProfessions.map(p => <option key={p} value={p} />)}
-                </datalist>
+                >
+                  <option value="" className="bg-gray-900">Select a profession...</option>
+                  {professions.map(p => <option key={p} value={p} className="bg-gray-900">{p}</option>)}
+                </select>
               </div>
 
               {/* AI Tools */}
@@ -472,14 +478,13 @@ const PromptsManagement = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Rating (0-5)</label>
+                  <label className="block text-sm font-medium mb-2">Thumbs Up Count</label>
                   <input
                     type="number"
                     value={formData.rating}
                     onChange={(e) => handleInputChange('rating', e.target.value)}
                     min="0"
-                    max="5"
-                    step="0.1"
+                    step="1"
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
                   />
                 </div>

@@ -149,6 +149,32 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [autocompleting, setAutocompleting] = useState(false)
   const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
   const [autocompleteError, setAutocompleteError] = useState(false)
+  const [thumbsUp, setThumbsUp] = useState(false)
+
+  // Check if user already thumbs-upped this prompt
+  useEffect(() => {
+    try {
+      const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
+      if (liked.includes(prompt.id)) setThumbsUp(true)
+    } catch {}
+  }, [prompt.id])
+
+  const trackUsage = useCallback(() => {
+    const supabase = createClient()
+    supabase.rpc('increment_prompt_usage', { p_id: prompt.id }).then()
+  }, [prompt.id])
+
+  const handleThumbsUp = useCallback(async () => {
+    if (thumbsUp) return
+    setThumbsUp(true)
+    try {
+      const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
+      liked.push(prompt.id)
+      localStorage.setItem('prompt_thumbs_up', JSON.stringify(liked))
+    } catch {}
+    const supabase = createClient()
+    await supabase.rpc('increment_prompt_thumbs_up', { p_id: prompt.id })
+  }, [prompt.id, thumbsUp])
 
   const segments = useMemo(() => parsePromptSegments(prompt.fullPrompt), [prompt.fullPrompt])
   const hasPlaceholders = useMemo(() => segments.some(seg => seg.type === 'placeholder'), [segments])
@@ -477,6 +503,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   }
 
   const handleOpenTool = async (tool: string) => {
+    trackUsage()
     const finalPrompt = buildFinalPrompt()
     const deepLinkUrl = LLM_DEEP_LINK_URLS[tool]
     if (deepLinkUrl) {
@@ -603,6 +630,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           </pre>
           <button
             onClick={async () => {
+              trackUsage()
               await copyToClipboard(buildFinalPrompt())
               setPromptCopied(true)
               if (promptCopyTimeoutRef.current) clearTimeout(promptCopyTimeoutRef.current)
@@ -858,6 +886,28 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             </button>
           )
         })}
+
+        {/* Thumbs up button */}
+        <button
+          onClick={handleThumbsUp}
+          disabled={thumbsUp}
+          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer disabled:cursor-default"
+          style={{
+            backgroundColor: thumbsUp ? '#009600' : 'white',
+            color: thumbsUp ? 'white' : 'black',
+            fontSize: '12px',
+            letterSpacing: '-0.02em',
+            boxShadow: thumbsUp ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
+          }}
+          onMouseEnter={(e) => { if (!thumbsUp) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)' }}
+          onMouseLeave={(e) => { if (!thumbsUp) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
+            <path d="M2 13h2v8H2z" />
+          </svg>
+          {thumbsUp ? 'Thanks!' : 'Helpful'}
+        </button>
       </div>
       </div>
 

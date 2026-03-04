@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS public.prompts (
   llm_tools TEXT[] NOT NULL DEFAULT '{}',
   complexity TEXT NOT NULL CHECK (complexity IN ('Low', 'Mid', 'High')),
   usage_count INTEGER NOT NULL DEFAULT 0,
-  rating NUMERIC(2,1) NOT NULL DEFAULT 0.0,
+  rating INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('published', 'draft')),
   contribution_id UUID REFERENCES public.prompt_contributions(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
