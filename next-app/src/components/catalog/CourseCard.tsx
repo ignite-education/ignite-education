@@ -15,7 +15,7 @@ export default function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
       href={`/courses/${slug}`}
-      className="group block bg-[#F8F8F8] rounded-xl px-5 py-3"
+      className="group block bg-[#F6F6F6] rounded-[8px] px-5 py-3"
     >
       <div className="flex items-center justify-between">
         <span

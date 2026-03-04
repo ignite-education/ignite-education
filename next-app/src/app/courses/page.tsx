@@ -64,7 +64,7 @@ export default async function CourseCatalogPage() {
       />
 
       <div className="min-h-screen bg-white">
-        <Navbar hideLogo />
+        <Navbar hideLogo noPaddingBottom />
         <CourseCatalogClient coursesByType={coursesByType} />
         <Footer />
       </div>

@@ -151,7 +151,7 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 1200, delay = 750) {
+function useCountUp(target: number, duration = 1200, delay = 500) {
   const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return
@@ -502,7 +502,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           {autocompleting ? (
             <span className="flex items-center justify-center gap-2">
               <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
                 Autocompleting...
               </span>
             </span>
@@ -511,16 +511,16 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
               </svg>
-              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
                 Prompt Completed
               </span>
             </span>
           ) : autocompleteError ? (
-            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
               Something went wrong
             </span>
           ) : (
-            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
               Autocomplete Prompt
             </span>
           )}
@@ -859,12 +859,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                     {checkingStatus ? (
                       <span className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>Loading...</span>
                       </span>
                     ) : saving ? (
                       <span className="flex items-center justify-center gap-2">
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
                           {saved ? 'Removing...' : 'Saving...'}
                         </span>
                       </span>
@@ -873,12 +873,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                         </svg>
-                        <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                        <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.01em' }}>
                           Saved to Account
                         </span>
                       </span>
                     ) : (
-                      <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.01em' }}>
                         Add to {firstName || 'your'}&apos;s Account
                       </span>
                     )}
@@ -1106,12 +1106,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                 {checkingStatus ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>Loading...</span>
                   </span>
                 ) : saving ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
                       {saved ? 'Removing...' : 'Saving...'}
                     </span>
                   </span>
@@ -1120,12 +1120,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
-                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.01em' }}>
                       Saved to Account
                     </span>
                   </span>
                 ) : (
-                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.01em' }}>
                     Add to {firstName || 'your'}&apos;s Account
                   </span>
                 )}

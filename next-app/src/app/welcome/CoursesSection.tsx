@@ -52,8 +52,8 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
       onClick={onClick}
     >
       <div
-        className="absolute inset-0 text-black rounded transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner hover:scale-[1.015] hover:shadow-xl"
-        style={{ backgroundColor: '#F0F0F2', transformOrigin: 'center', zIndex: 1 }}
+        className="absolute inset-0 text-black rounded-[8px] transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner hover:scale-[1.015] hover:shadow-xl"
+        style={{ backgroundColor: '#F6F6F6', transformOrigin: 'center', zIndex: 1 }}
       >
         <div
           className="flex flex-col h-full auth-course-card-content"
@@ -62,7 +62,7 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
             paddingLeft: '13px',
             paddingRight: '13px',
             paddingBottom: '13px',
-            backgroundColor: '#F0F0F2',
+            backgroundColor: '#F6F6F6',
             borderRadius: 'inherit'
           }}
         >
@@ -352,7 +352,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                     {[...Array(4)].map((_, i) => (
                       <div
                         key={i}
-                        className="bg-[#F0F0F2] rounded aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
+                        className="bg-[#F6F6F6] rounded-[8px] aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
                         style={{ padding: '16px', width: '249px', height: '249px' }}
                       >
                         <div className="h-6 bg-gray-300 rounded w-3/4 mb-2" />

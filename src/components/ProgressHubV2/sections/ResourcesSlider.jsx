@@ -10,8 +10,6 @@ const ResourcesSlider = ({ resources = [] }) => {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [snappedCardIndex, setSnappedCardIndex] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
-  const dragDistanceRef = useRef(0);
-
   // Measure container width for right padding calculation
   useEffect(() => {
     if (!scrollContainerRef.current) return;
@@ -30,7 +28,6 @@ const ResourcesSlider = ({ resources = [] }) => {
     setIsScrolling(true);
     setScrollStartX(e.pageX - scrollContainerRef.current.offsetLeft);
     setScrollLeft(scrollContainerRef.current.scrollLeft);
-    dragDistanceRef.current = 0;
   };
 
   const handleMouseMove = (e) => {
@@ -38,7 +35,6 @@ const ResourcesSlider = ({ resources = [] }) => {
     e.preventDefault();
     const x = e.pageX - scrollContainerRef.current.offsetLeft;
     const walk = (x - scrollStartX) * 2;
-    dragDistanceRef.current = Math.abs(walk);
     scrollContainerRef.current.scrollLeft = scrollLeft - walk;
   };
 
@@ -61,12 +57,6 @@ const ResourcesSlider = ({ resources = [] }) => {
     }
 
     setSnappedCardIndex(index);
-  };
-
-  const handleCardClick = (url) => {
-    // Don't open link if user was dragging
-    if (dragDistanceRef.current > 5) return;
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   if (resources.length === 0) return null;
@@ -108,7 +98,7 @@ const ResourcesSlider = ({ resources = [] }) => {
           {resources.map((resource, index) => (
             <div
               key={resource.id}
-              className="relative flex items-center"
+              className="relative flex items-center gap-3"
               style={{
                 width: `${CARD_WIDTH}px`,
                 minWidth: `${CARD_WIDTH}px`,
@@ -122,9 +112,7 @@ const ResourcesSlider = ({ resources = [] }) => {
                 height: '6.5rem',
                 scrollSnapAlign: 'start',
                 scrollSnapStop: 'always',
-                cursor: 'pointer',
               }}
-              onClick={() => handleCardClick(resource.url)}
             >
               {/* Blur overlay for non-snapped cards */}
               <div
@@ -147,6 +135,23 @@ const ResourcesSlider = ({ resources = [] }) => {
                   {resource.description}
                 </p>
               </div>
+
+              <button
+                className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                style={{
+                  width: '48px', height: '48px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '0.3rem', marginRight: '10px'
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
+                }}
+              >
+                <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
             </div>
           ))}
         </div>
