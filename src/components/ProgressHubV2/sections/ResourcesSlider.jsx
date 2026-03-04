@@ -88,10 +88,8 @@ const ResourcesSlider = ({ resources = [] }) => {
         onScroll={handleScroll}
       >
         <div
-          className="flex gap-4"
+          className="flex gap-4 items-stretch"
           style={{
-            minHeight: '6.5rem',
-            height: '6.5rem',
             paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - CARD_WIDTH - CARD_GAP)}px` : '0px',
           }}
         >
@@ -109,7 +107,6 @@ const ResourcesSlider = ({ resources = [] }) => {
                 paddingLeft: '1.4rem',
                 borderRadius: '0.3rem',
                 background: '#7714E0',
-                height: '6.5rem',
                 scrollSnapAlign: 'start',
                 scrollSnapStop: 'always',
               }}
