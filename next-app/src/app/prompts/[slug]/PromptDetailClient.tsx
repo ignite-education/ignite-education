@@ -93,8 +93,7 @@ function InlinePlaceholderInput({
   useEffect(() => {
     if (measureRef.current) {
       measureRef.current.textContent = value || placeholderText
-      const raw = measureRef.current.scrollWidth + 12
-      setWidth(Math.ceil(raw / 20) * 20)
+      setWidth(measureRef.current.scrollWidth + 16)
     }
   }, [value, placeholderText])
 
@@ -187,6 +186,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [autocompleting, setAutocompleting] = useState(false)
   const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
   const [autocompleteError, setAutocompleteError] = useState(false)
+  const [hasMemory, setHasMemory] = useState(false)
   const [thumbsUp, setThumbsUp] = useState(false)
   const [thumbsUpExtra, setThumbsUpExtra] = useState(0)
   const [usageExtra, setUsageExtra] = useState(0)
@@ -380,14 +380,21 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           return
         }
 
-        // Check if prompt is already saved
-        const { data } = await supabase
-          .from('saved_prompts')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('prompt_id', prompt.id)
-          .maybeSingle()
+        // Check if prompt is already saved + if user has logged memory
+        const [{ data }, { data: memoryRows }] = await Promise.all([
+          supabase
+            .from('saved_prompts')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('prompt_id', prompt.id)
+            .maybeSingle(),
+          supabase
+            .from('user_memory')
+            .select('content')
+            .eq('user_id', user.id),
+        ])
         setSaved(!!data)
+        setHasMemory(memoryRows?.some(row => row.content?.trim()) ?? false)
         setCheckingStatus(false)
       } else {
         setCheckingStatus(false)
@@ -481,7 +488,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   }
 
   const renderAutocompleteButton = (widthClass: string) => {
-    if (!hasPlaceholders) return null
+    if (!hasPlaceholders || !hasMemory) return null
 
     return (
       <div className={`${widthClass} mx-auto mb-4`}>
@@ -612,12 +619,13 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
       {/* Category Tag */}
       <div className="text-center" style={{ marginBottom: '30px' }}>
-        <span
-          className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
+        <a
+          href="https://ignite.education/prompts"
+          className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium no-underline"
           style={{ letterSpacing: '-0.02em' }}
         >
           AI Prompt
-        </span>
+        </a>
       </div>
 
       {/* Title */}
@@ -887,11 +895,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                   {renderAutocompleteButton('w-full')}
                 </div>
 
-                {!checkingStatus && saved && (
-                  <p className="text-center text-black text-sm font-normal" style={{ letterSpacing: '-0.02em', marginTop: '-0.25rem' }}>
-                    Prompt saved to your account
-                  </p>
-                )}
               </>
             )}
 
@@ -1130,9 +1133,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                   </span>
                 )}
               </button>
-              <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                {!checkingStatus && saved && 'Prompt saved to your account'}
-              </p>
             </div>
 
             {renderAutocompleteButton('w-full')}

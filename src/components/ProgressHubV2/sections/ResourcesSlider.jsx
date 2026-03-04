@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const CARD_WIDTH = 416;
+const CARD_WIDTH = 450;
 const CARD_GAP = 16;
 
 const ResourcesSlider = ({ resources = [] }) => {
@@ -128,10 +128,10 @@ const ResourcesSlider = ({ resources = [] }) => {
                 }}
               />
               <div className="flex-1">
-                <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>
+                <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                   {resource.title}
                 </h4>
-                <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.2' }}>
+                <p className="text-white leading-snug" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>
                   {resource.description}
                 </p>
               </div>
