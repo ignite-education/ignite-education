@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, ThumbsUp, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
@@ -21,6 +21,33 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   const [localUpvotes, setLocalUpvotes] = useState({});
   const [commentInputs, setCommentInputs] = useState({});
   const [localCommentCounts, setLocalCommentCounts] = useState({});
+  const [closingPostId, setClosingPostId] = useState(null);
+  const leaveTimerRef = useRef(null);
+  const animTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(leaveTimerRef.current);
+      clearTimeout(animTimerRef.current);
+    };
+  }, []);
+
+  const handleCommentsMouseLeave = (postId) => {
+    clearTimeout(leaveTimerRef.current);
+    leaveTimerRef.current = setTimeout(() => {
+      setClosingPostId(postId);
+      animTimerRef.current = setTimeout(() => {
+        setExpandedPostId(null);
+        setClosingPostId(null);
+      }, 250);
+    }, 3000);
+  };
+
+  const handleCommentsMouseEnter = () => {
+    clearTimeout(leaveTimerRef.current);
+    clearTimeout(animTimerRef.current);
+    setClosingPostId(null);
+  };
 
   const requireRedditAuth = (action) => {
     if (isRedditAuthenticated()) return true;
@@ -127,6 +154,9 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   };
 
   const togglePost = (post) => {
+    clearTimeout(leaveTimerRef.current);
+    clearTimeout(animTimerRef.current);
+    setClosingPostId(null);
     if (expandedPostId === post.id) {
       setExpandedPostId(null);
     } else {
@@ -245,9 +275,18 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               </div>
 
               {/* Comments */}
-              {expandedPostId === post.id && (
-                <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
-                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem 1.2rem' }}>
+              {(expandedPostId === post.id || closingPostId === post.id) && (
+                <div
+                  className="ml-auto mt-1 overflow-hidden"
+                  style={{
+                    width: '90%',
+                    animation: closingPostId === post.id ? 'scaleDown 0.25s ease-out forwards' : 'scaleUp 0.2s ease-out',
+                    transformOrigin: 'top center',
+                  }}
+                  onMouseLeave={() => handleCommentsMouseLeave(post.id)}
+                  onMouseEnter={handleCommentsMouseEnter}
+                >
+                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem 1.3rem' }}>
                     <h4 className="text-white mb-2" style={{ fontSize: '1rem', fontWeight: 500 }}>
                       Comments
                     </h4>
@@ -261,12 +300,12 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitComment(e, post); }}
                         placeholder="Post your comment"
                         className="flex-1 bg-black text-white leading-snug px-3 py-1.5 focus:outline-none focus:ring-[0.5px] focus:ring-purple-500 placeholder-white"
-                        style={{ borderRadius: '0.3rem', fontSize: '0.9rem', fontWeight: 300, marginLeft: '-5px' }}
+                        style={{ borderRadius: '0.3rem', fontSize: '0.8rem', fontWeight: 300, marginLeft: '-12px' }}
                       />
                       <button
                         onClick={(e) => handleSubmitComment(e, post)}
                         className="px-3 py-1.5 text-black transition bg-white hover:bg-purple-50"
-                        style={{ fontSize: '0.9rem', fontWeight: 500, borderRadius: '0.3rem' }}
+                        style={{ fontSize: '0.8rem', fontWeight: 500, borderRadius: '0.3rem' }}
                       >
                         Post
                       </button>
