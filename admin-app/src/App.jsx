@@ -11,6 +11,7 @@ const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'));
 const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
 const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
+const ResourcesManagement = lazy(() => import('./pages/ResourcesManagement'));
 
 const App = () => {
   return (
@@ -51,6 +52,12 @@ const App = () => {
             <Route path="/release-notes" element={
               <AdminRoute requireAdmin>
                 <AdminLayout><ReleaseNotes /></AdminLayout>
+              </AdminRoute>
+            } />
+
+            <Route path="/resources" element={
+              <AdminRoute requireAdmin>
+                <AdminLayout><ResourcesManagement /></AdminLayout>
               </AdminRoute>
             } />
 

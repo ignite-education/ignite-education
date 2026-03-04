@@ -46,6 +46,7 @@ const useProgressData = () => {
   const [communityPosts, setCommunityPosts] = useState([]);
   const [userLessonScores, setUserLessonScores] = useState({});
   const [globalLessonScores, setGlobalLessonScores] = useState({});
+  const [resources, setResources] = useState([]);
   const [userRole, setUserRole] = useState('student');
   const hasInitialDataFetchRef = useRef(false);
   const courseDataResultRef = useRef(null);
@@ -155,6 +156,18 @@ const useProgressData = () => {
 
         // Fetch Reddit posts for community forum
         await fetchRedditPosts(courseDataResult, isMounted);
+
+        // Fetch course resources
+        try {
+          const { data: resourcesData, error: resourcesError } = await supabase
+            .from('course_resources')
+            .select('id, title, description, url, display_order')
+            .eq('course_id', courseId)
+            .order('display_order', { ascending: true });
+          if (!resourcesError && isMounted) setResources(resourcesData || []);
+        } catch {
+          if (isMounted) setResources([]);
+        }
 
         // Fetch coaches
         try {
@@ -267,6 +280,7 @@ const useProgressData = () => {
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
+    resources,
     userRole,
   };
 };

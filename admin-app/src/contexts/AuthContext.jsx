@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [roleError, setRoleError] = useState(null);
 
   useEffect(() => {
     let isSubscribed = true;
@@ -34,10 +35,7 @@ export const AuthProvider = ({ children }) => {
       if (!isSubscribed) return;
 
       sessionFromListener = session;
-
-      if (session?.user) {
-        safeInitialize(session);
-      }
+      safeInitialize(session);
 
       setUser(session?.user ?? null);
       setLoading(false);
@@ -50,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         safeInitialize(null);
       }
-    }, 30000);
+    }, 5000);
 
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
@@ -86,10 +84,12 @@ export const AuthProvider = ({ children }) => {
     const fetchUserRole = async () => {
       if (!user) {
         setUserRole(null);
+        setRoleError(null);
         return;
       }
 
       try {
+        setRoleError(null);
         const { data, error } = await supabase
           .from('users')
           .select('role')
@@ -98,14 +98,18 @@ export const AuthProvider = ({ children }) => {
 
         if (error) {
           console.error('Error fetching user role:', error);
+          setRoleError(error.message || 'Failed to fetch user role');
           return;
         }
 
         if (data) {
           setUserRole(data.role);
+        } else {
+          setRoleError('No user record found');
         }
       } catch (err) {
         console.error('Exception fetching user role:', err);
+        setRoleError(err.message || 'Unexpected error fetching role');
       }
     };
 
@@ -150,7 +154,8 @@ export const AuthProvider = ({ children }) => {
     lastName: user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || null,
     profilePicture: user?.user_metadata?.custom_avatar_url || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null,
     userRole,
-  }), [user, loading, isInitialized, userRole]);
+    roleError,
+  }), [user, loading, isInitialized, userRole, roleError]);
 
   return (
     <AuthContext.Provider value={value}>

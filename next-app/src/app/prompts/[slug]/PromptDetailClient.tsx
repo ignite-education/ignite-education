@@ -94,7 +94,8 @@ function InlinePlaceholderInput({
   useEffect(() => {
     if (measureRef.current) {
       measureRef.current.textContent = value || placeholderText
-      setWidth(measureRef.current.scrollWidth + 12)
+      const raw = measureRef.current.scrollWidth + 12
+      setWidth(Math.ceil(raw / 20) * 20)
     }
   }, [value, placeholderText])
 
@@ -115,7 +116,7 @@ function InlinePlaceholderInput({
           visibility: 'hidden',
           whiteSpace: 'pre',
           fontFamily: 'var(--font-geist-sans), sans-serif',
-          fontSize: '13px',
+          fontSize: '12px',
         }}
       />
       <input
@@ -127,7 +128,7 @@ function InlinePlaceholderInput({
         aria-label={placeholderText}
         style={{
           fontFamily: 'var(--font-geist-sans), sans-serif',
-          fontSize: '13px',
+          fontSize: '12px',
           lineHeight: 'inherit',
           width: `${Math.max(width, 40)}px`,
           backgroundColor: '#FFFFFF',
@@ -137,6 +138,7 @@ function InlinePlaceholderInput({
           padding: '0px 4px',
           margin: '2px 1px',
           outline: 'none',
+          textAlign: 'center',
           verticalAlign: 'baseline',
         }}
         onFocus={(e) => {
@@ -150,22 +152,24 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 1200) {
+function useCountUp(target: number, duration = 1200, delay = 1000) {
   const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return
     const from = Math.max(target - 5, 0)
-    const start = performance.now()
     let raf: number
-    const step = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setValue(Math.round(from + eased * (target - from)))
-      if (progress < 1) raf = requestAnimationFrame(step)
-    }
-    raf = requestAnimationFrame(step)
-    return () => cancelAnimationFrame(raf)
-  }, [target, duration])
+    const timeout = setTimeout(() => {
+      const start = performance.now()
+      const step = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setValue(Math.round(from + eased * (target - from)))
+        if (progress < 1) raf = requestAnimationFrame(step)
+      }
+      raf = requestAnimationFrame(step)
+    }, delay)
+    return () => { clearTimeout(timeout); cancelAnimationFrame(raf) }
+  }, [target, duration, delay])
   return value
 }
 

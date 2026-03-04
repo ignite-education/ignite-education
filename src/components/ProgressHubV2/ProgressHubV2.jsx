@@ -84,6 +84,7 @@ const ProgressHubV2 = () => {
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
+    resources,
     userRole,
   } = useProgressData();
 
@@ -209,7 +210,7 @@ const ProgressHubV2 = () => {
               currentLesson={currentLesson}
             />
             <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
-            <ResourcesSlider />
+            <ResourcesSlider resources={resources} />
           </>
         }
         right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={() => setShowMyPostsModal(true)} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}

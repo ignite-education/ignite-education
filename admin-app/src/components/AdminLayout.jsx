@@ -8,6 +8,7 @@ import {
   Newspaper,
   Lightbulb,
   FileText,
+  Link2,
   LogOut,
   ExternalLink,
   Menu,
@@ -21,6 +22,7 @@ const navItems = [
   { path: '/blog', label: 'Blog', icon: Newspaper, roles: ['admin'] },
   { path: '/prompts', label: 'Prompts', icon: Lightbulb, roles: ['admin'] },
   { path: '/release-notes', label: 'Release Notes', icon: FileText, roles: ['admin'] },
+  { path: '/resources', label: 'Resources', icon: Link2, roles: ['admin'] },
 ];
 
 const AdminLayout = ({ children }) => {
