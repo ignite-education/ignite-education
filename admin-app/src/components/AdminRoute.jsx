@@ -19,9 +19,52 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
     return <LoadingScreen />;
   }
 
-  // Not authenticated → redirect to main site sign-in
+  // Not authenticated → redirect to main site sign-in (with loop detection)
   if (!user) {
+    const redirectKey = 'admin_auth_redirect';
+    const lastRedirect = sessionStorage.getItem(redirectKey);
+    const now = Date.now();
+
+    // If we redirected less than 30 seconds ago, we're in a loop
+    if (lastRedirect && (now - parseInt(lastRedirect, 10)) < 30000) {
+      console.error('[AdminRoute] REDIRECT LOOP DETECTED — cookies not shared across subdomains');
+      return (
+        <div className="flex items-center justify-center h-screen bg-gray-900">
+          <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
+            <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center">
+              <svg className="w-6 h-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-white font-medium">Session not found</p>
+            <p className="text-gray-400 text-sm">
+              Your sign-in session couldn't be shared with the admin portal. Please sign out and sign in again.
+            </p>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem(redirectKey);
+                  window.location.reload();
+                }}
+                className="px-4 py-2 bg-pink-500 hover:bg-pink-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Try Again
+              </button>
+              <a
+                href="https://ignite.education/sign-in?redirect=admin"
+                onClick={() => sessionStorage.removeItem(redirectKey)}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+              >
+                Sign In Again
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     console.log('[AdminRoute] → redirecting to sign-in (no user)');
+    sessionStorage.setItem(redirectKey, now.toString());
     window.location.href = 'https://ignite.education/sign-in?redirect=admin';
     return <LoadingScreen />;
   }

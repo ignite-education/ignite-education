@@ -19,6 +19,12 @@ export const AuthProvider = ({ children }) => {
   const [roleError, setRoleError] = useState(null);
 
   useEffect(() => {
+    // Diagnostic: dump all cookies visible on this domain
+    const allCookies = document.cookie;
+    const sbCookies = allCookies.split(';').filter(c => c.trim().startsWith('sb-'));
+    console.log('[AuthContext] COOKIES on', window.location.hostname, '→', sbCookies.length ? sbCookies.map(c => c.trim().split('=')[0]) : 'NONE');
+    console.log('[AuthContext] ALL cookies:', allCookies || '(empty)');
+
     let isSubscribed = true;
     let sessionFromListener = null;
     let hasInitialized = false;
