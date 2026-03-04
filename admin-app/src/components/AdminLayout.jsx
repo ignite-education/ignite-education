@@ -6,6 +6,7 @@ import {
   BarChart3,
   BookOpen,
   Newspaper,
+  Lightbulb,
   FileText,
   LogOut,
   ExternalLink,
@@ -18,6 +19,7 @@ const navItems = [
   { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
   { path: '/courses', label: 'Courses', icon: BookOpen, roles: ['admin'] },
   { path: '/blog', label: 'Blog', icon: Newspaper, roles: ['admin'] },
+  { path: '/prompts', label: 'Prompts', icon: Lightbulb, roles: ['admin'] },
   { path: '/release-notes', label: 'Release Notes', icon: FileText, roles: ['admin'] },
 ];
 

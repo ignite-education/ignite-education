@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import PromptToolkitClient from './PromptToolkitClient'
 import { getCoursesByType } from '@/lib/courseData'
+import { getAllPrompts } from '@/data/placeholderPrompts'
 
 export const revalidate = 3600
 
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
 }
 
 export default async function PromptToolkitPage() {
-  const coursesByType = await getCoursesByType()
+  const [coursesByType, prompts] = await Promise.all([getCoursesByType(), getAllPrompts()])
   const professions = coursesByType.specialism.map(c => c.title || c.name)
 
   const structuredData = [
@@ -71,7 +72,7 @@ export default async function PromptToolkitPage() {
 
       <div className="min-h-screen bg-white">
         <Navbar hideLogo noPaddingBottom />
-        <PromptToolkitClient professions={professions} />
+        <PromptToolkitClient professions={professions} prompts={prompts} />
         <Footer />
       </div>
     </>

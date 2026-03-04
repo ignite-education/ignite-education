@@ -10,6 +10,7 @@ const AnalyticsDashboard = lazy(() => import('./pages/AnalyticsDashboard'));
 const CoursesDashboard = lazy(() => import('./pages/CoursesDashboard'));
 const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
+const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
 
 const App = () => {
   return (
@@ -40,6 +41,11 @@ const App = () => {
             <Route path="/blog" element={
               <AdminRoute requireAdmin>
                 <AdminLayout><BlogManagement /></AdminLayout>
+              </AdminRoute>
+            } />
+            <Route path="/prompts" element={
+              <AdminRoute requireAdmin>
+                <AdminLayout><PromptsManagement /></AdminLayout>
               </AdminRoute>
             } />
             <Route path="/release-notes" element={

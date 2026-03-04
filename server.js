@@ -4434,19 +4434,39 @@ app.get('/sitemap.xml', async (req, res) => {
       console.error('Error fetching blog posts for sitemap:', error);
     }
 
+    // Fetch all courses for dynamic course and prompt profession pages
+    const { data: courses, error: coursesError } = await supabase
+      .from('courses')
+      .select('name, course_type, updated_at')
+      .in('status', ['live', 'coming_soon']);
+
+    if (coursesError) {
+      console.error('Error fetching courses for sitemap:', coursesError);
+    }
+
+    // Read prompt data from shared JSON source
+    let prompts = [];
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      const promptsPath = path.default.join(process.cwd(), 'next-app', 'src', 'data', 'prompts.json');
+      prompts = JSON.parse(fs.default.readFileSync(promptsPath, 'utf8'));
+    } catch (e) {
+      console.error('Error reading prompts.json for sitemap:', e);
+    }
+
     const today = new Date().toISOString().split('T')[0];
+    const toSlug = (name) => name.toLowerCase().replace(/\s+/g, '-');
+    const promptToSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     // Static pages
     const staticPages = [
       { loc: '/', priority: '1.0', changefreq: 'daily' },
       { loc: '/welcome', priority: '0.9', changefreq: 'weekly' },
+      { loc: '/prompts', priority: '0.7', changefreq: 'weekly' },
       { loc: '/privacy', priority: '0.5', changefreq: 'monthly' },
       { loc: '/terms', priority: '0.5', changefreq: 'monthly' },
       { loc: '/reset-password', priority: '0.3', changefreq: 'yearly' },
-      { loc: '/courses/product-manager', priority: '0.8', changefreq: 'weekly' },
-      { loc: '/courses/cyber-security-analyst', priority: '0.8', changefreq: 'weekly' },
-      { loc: '/courses/data-analyst', priority: '0.8', changefreq: 'weekly' },
-      { loc: '/courses/ux-designer', priority: '0.8', changefreq: 'weekly' },
     ];
 
     // Generate XML
@@ -4467,6 +4487,44 @@ app.get('/sitemap.xml', async (req, res) => {
   </url>`;
     }
 
+    // Add course pages
+    if (courses && courses.length > 0) {
+      xml += `
+
+  <!-- Course Pages -->`;
+
+      for (const course of courses) {
+        const slug = toSlug(course.name);
+        const lastmod = course.updated_at?.split('T')[0] || today;
+        xml += `
+  <url>
+    <loc>https://www.ignite.education/courses/${slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+      }
+
+      // Add prompt profession pages (one per specialism course)
+      const specialismCourses = courses.filter(c => !c.course_type || c.course_type === 'specialism');
+      if (specialismCourses.length > 0) {
+        xml += `
+
+  <!-- Prompt Profession Pages -->`;
+
+        for (const course of specialismCourses) {
+          const slug = toSlug(course.name);
+          xml += `
+  <url>
+    <loc>https://www.ignite.education/prompts/${slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+        }
+      }
+    }
+
     // Add blog posts
     if (blogPosts && blogPosts.length > 0) {
       xml += `
@@ -4484,6 +4542,24 @@ app.get('/sitemap.xml', async (req, res) => {
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
+  </url>`;
+      }
+    }
+
+    // Add individual prompt pages
+    if (prompts.length > 0) {
+      xml += `
+
+  <!-- Individual Prompt Pages -->`;
+
+      for (const prompt of prompts) {
+        const slug = promptToSlug(prompt.title);
+        xml += `
+  <url>
+    <loc>https://www.ignite.education/prompts/${slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>`;
       }
     }
@@ -4820,6 +4896,111 @@ Return ONLY the description text, no other commentary.`;
 
 // ============================================================================
 // END COURSE DESCRIPTION GENERATION
+// ============================================================================
+
+// ============================================================================
+// PROMPT AUTOCOMPLETE
+// ============================================================================
+
+app.post('/api/autocomplete-prompt', async (req, res) => {
+  try {
+    const { userId, placeholders } = req.body;
+
+    if (!userId || !Array.isArray(placeholders) || placeholders.length === 0) {
+      return res.status(400).json({ error: 'Invalid request: userId and placeholders are required' });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
+    // Fetch user data from three sources in parallel
+    const [userResult, authResult, memoryResult] = await Promise.all([
+      supabase
+        .from('users')
+        .select('first_name, last_name, enrolled_course, seniority_level, role')
+        .eq('id', userId)
+        .single(),
+      supabase.auth.admin.getUserById(userId),
+      supabase
+        .from('user_memory')
+        .select('content, category')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: true }),
+    ]);
+
+    const userData = userResult.data;
+    const authUser = authResult.data?.user;
+    const memoryRows = memoryResult.data;
+
+    // Build user context string
+    const userContext = [
+      userData?.first_name && `First name: ${userData.first_name}`,
+      userData?.last_name && `Last name: ${userData.last_name}`,
+      authUser?.email && `Email: ${authUser.email}`,
+      authUser?.user_metadata?.full_name && `Full name: ${authUser.user_metadata.full_name}`,
+      userData?.enrolled_course && `Enrolled course: ${userData.enrolled_course}`,
+      userData?.seniority_level && `Seniority level: ${userData.seniority_level}`,
+      userData?.role && `Platform role: ${userData.role}`,
+      memoryRows?.length > 0 && `User notes/memory:\n${memoryRows.map(r => r.content).join('\n')}`,
+    ].filter(Boolean).join('\n');
+
+    if (!userContext.trim()) {
+      return res.json({ values: {} });
+    }
+
+    const placeholderList = placeholders
+      .map(p => `  - Index ${p.index}: "${p.name}"`)
+      .join('\n');
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 1024,
+      temperature: 0,
+      messages: [{
+        role: 'user',
+        content: `You are a helpful assistant that maps user profile data to prompt placeholder fields.
+
+Given the following user profile information:
+${userContext}
+
+And the following placeholder fields in a prompt template:
+${placeholderList}
+
+Return a JSON object mapping each placeholder index to the best value from the user's data.
+Rules:
+- Only fill a placeholder if you can confidently determine the correct value from the provided user data.
+- For placeholders that ask for content to paste (like "PASTE TEAM NOTES HERE", "PASTE YOUR QUERY", "DESCRIBE YOUR CURRENT WORKFLOW"), always leave them as empty string - these require user-specific content that cannot be inferred from profile data.
+- For placeholders asking for personal details (name, role, company, experience level, etc.), fill them if the data is available.
+- Leave placeholders as empty string ("") if there is no confident match.
+- Return ONLY valid JSON, no commentary.
+
+Example response format:
+{"0": "Product Manager", "1": "", "2": "SaaS Platform"}`
+      }]
+    });
+
+    let responseText = message.content[0].text.trim();
+    // Strip markdown code fences if present
+    if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+    }
+
+    try {
+      const values = JSON.parse(responseText);
+      res.json({ values });
+    } catch (parseErr) {
+      console.error('Failed to parse autocomplete response:', responseText);
+      res.json({ values: {} });
+    }
+  } catch (error) {
+    console.error('Autocomplete prompt error:', error);
+    res.status(500).json({ error: 'Failed to autocomplete prompt' });
+  }
+});
+
+// ============================================================================
+// END PROMPT AUTOCOMPLETE
 // ============================================================================
 
 app.listen(PORT, () => {

@@ -33,6 +33,7 @@ async function generateSitemap() {
   const staticPages = [
     { url: '/', priority: '1.0', changefreq: 'weekly' },
     { url: '/welcome', priority: '0.9', changefreq: 'weekly' },
+    { url: '/prompts', priority: '0.7', changefreq: 'weekly' },
     { url: '/privacy', priority: '0.3', changefreq: 'monthly' },
     { url: '/terms', priority: '0.3', changefreq: 'monthly' }
   ];
@@ -40,7 +41,7 @@ async function generateSitemap() {
   // Fetch all live and coming soon courses
   const { data: courses, error: coursesError } = await supabase
     .from('courses')
-    .select('name, updated_at')
+    .select('name, course_type, updated_at')
     .in('status', ['live', 'coming_soon']);
 
   if (coursesError) {
@@ -59,6 +60,18 @@ async function generateSitemap() {
     console.error('Error fetching blog posts:', postsError);
   } else {
     console.log(`Found ${posts?.length || 0} blog posts`);
+  }
+
+  // Fetch published prompts from Supabase
+  const { data: prompts, error: promptsError } = await supabase
+    .from('prompts')
+    .select('slug, updated_at')
+    .eq('status', 'published');
+
+  if (promptsError) {
+    console.error('Error fetching prompts:', promptsError);
+  } else {
+    console.log(`Found ${prompts?.length || 0} prompts`);
   }
 
   // Build sitemap XML
@@ -80,13 +93,25 @@ async function generateSitemap() {
   // Add course pages (convert course names to URL-safe slugs)
   courses?.forEach(course => {
     const lastmod = course.updated_at?.split('T')[0] || today;
-    // Convert course name to URL-safe slug: "Data Analyst" -> "data-analyst"
     const slug = course.name.toLowerCase().replace(/\s+/g, '-');
     xml += `  <url>
     <loc>${baseUrl}/courses/${slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+`;
+  });
+
+  // Add prompt profession pages (one per specialism course)
+  const specialismCourses = (courses || []).filter(c => !c.course_type || c.course_type === 'specialism');
+  specialismCourses.forEach(course => {
+    const slug = course.name.toLowerCase().replace(/\s+/g, '-');
+    xml += `  <url>
+    <loc>${baseUrl}/prompts/${slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 `;
   });
@@ -103,13 +128,25 @@ async function generateSitemap() {
 `;
   });
 
+  // Add individual prompt pages
+  (prompts || []).forEach(prompt => {
+    const lastmod = prompt.updated_at?.split('T')[0] || today;
+    xml += `  <url>
+    <loc>${baseUrl}/prompts/${prompt.slug}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+`;
+  });
+
   xml += '</urlset>';
 
   // Write to public/sitemap.xml
   const sitemapPath = path.join(__dirname, '..', 'public', 'sitemap.xml');
   fs.writeFileSync(sitemapPath, xml);
 
-  const totalUrls = staticPages.length + (courses?.length || 0) + (posts?.length || 0);
+  const totalUrls = staticPages.length + (courses?.length || 0) + specialismCourses.length + (posts?.length || 0) + (prompts?.length || 0);
   console.log(`Sitemap generated with ${totalUrls} URLs`);
   console.log(`Written to: ${sitemapPath}`);
 }

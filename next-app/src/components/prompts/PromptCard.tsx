@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import type { Prompt } from '@/data/placeholderPrompts'
-import { promptToSlug } from '@/data/placeholderPrompts'
 
 interface PromptCardProps {
   prompt: Prompt
@@ -12,7 +11,7 @@ export default function PromptCard({ prompt }: PromptCardProps) {
 
   return (
     <Link
-      href={`/prompts/${promptToSlug(prompt.title)}`}
+      href={`/prompts/${prompt.slug}`}
       target="_blank"
       className="group block w-full text-left bg-[#F6F6F6] rounded-xl px-5 py-3"
     >

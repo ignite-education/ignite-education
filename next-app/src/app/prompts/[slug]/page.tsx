@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { placeholderPrompts, promptToSlug, getPromptBySlug } from '@/data/placeholderPrompts'
+import { getAllPromptSlugs, getPromptBySlug, getAllPrompts } from '@/data/placeholderPrompts'
 import { getCoursesByType } from '@/lib/courseData'
 import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
 import PromptDetailClient from './PromptDetailClient'
@@ -19,7 +19,7 @@ interface PageProps {
 export async function generateStaticParams() {
   const [professionSlugs, promptSlugs] = await Promise.all([
     getAllProfessionSlugs(),
-    Promise.resolve(placeholderPrompts.map((p) => promptToSlug(p.title))),
+    getAllPromptSlugs(),
   ])
 
   return [
@@ -62,7 +62,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   // Fall back to prompt detail metadata
-  const prompt = getPromptBySlug(slug)
+  const prompt = await getPromptBySlug(slug)
   if (!prompt) {
     return { title: 'Prompt Not Found' }
   }
@@ -100,7 +100,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
   // Check profession first
   const profession = await getProfessionBySlug(slug)
   if (profession) {
-    const coursesByType = await getCoursesByType()
+    const [coursesByType, prompts] = await Promise.all([getCoursesByType(), getAllPrompts()])
     const professions = coursesByType.specialism.map(c => c.title || c.name)
     const professionName = profession.title || profession.name
     const plural = pluraliseProfession(professionName)
@@ -140,6 +140,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
           <Navbar hideLogo noPaddingBottom />
           <PromptToolkitClient
             professions={professions}
+            prompts={prompts}
             initialProfession={professionName}
             pageTitle={`AI Prompt Toolkit for ${plural}`}
           />
@@ -150,7 +151,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
   }
 
   // Fall back to prompt detail
-  const prompt = getPromptBySlug(slug)
+  const prompt = await getPromptBySlug(slug)
 
   if (!prompt) {
     notFound()

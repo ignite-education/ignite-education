@@ -4,13 +4,14 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
-import { placeholderPrompts } from '@/data/placeholderPrompts'
+import type { Prompt } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
 import PromptContributeModal from './PromptContributeModal'
 
 interface PromptToolkitClientProps {
   professions: string[]
+  prompts: Prompt[]
   initialProfession?: string
   pageTitle?: string
 }
@@ -27,7 +28,7 @@ function loadSavedFilters(): { search: string; professions: string[]; tools: str
   }
 }
 
-export default function PromptToolkitClient({ professions, initialProfession, pageTitle }: PromptToolkitClientProps) {
+export default function PromptToolkitClient({ professions, prompts, initialProfession, pageTitle }: PromptToolkitClientProps) {
   const saved = useMemo(() => initialProfession ? null : loadSavedFilters(), [])
   const [searchQuery, setSearchQuery] = useState(saved?.search ?? '')
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>(
@@ -73,7 +74,7 @@ export default function PromptToolkitClient({ professions, initialProfession, pa
 
   // Filter prompts based on search and filters
   const filteredPrompts = useMemo(() => {
-    return placeholderPrompts.filter((prompt) => {
+    return prompts.filter((prompt) => {
       // Search filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase()

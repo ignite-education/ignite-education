@@ -8,6 +8,8 @@ import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } f
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
+
 interface PromptDetailClientProps {
   prompt: Prompt
   slug: string
@@ -144,8 +146,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
   const [placeholderValues, setPlaceholderValues] = useState<Record<number, string>>({})
+  const [autocompleting, setAutocompleting] = useState(false)
+  const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
+  const [autocompleteError, setAutocompleteError] = useState(false)
 
   const segments = useMemo(() => parsePromptSegments(prompt.fullPrompt), [prompt.fullPrompt])
+  const hasPlaceholders = useMemo(() => segments.some(seg => seg.type === 'placeholder'), [segments])
 
   const handlePlaceholderChange = useCallback((index: number, value: string) => {
     setPlaceholderValues(prev => ({ ...prev, [index]: value }))
@@ -171,6 +177,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const promptCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const autocompleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const shareUrl = `https://ignite.education/prompts/${slug}`
 
@@ -354,6 +361,108 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     }
   }
 
+  const handleAutocomplete = async () => {
+    if (!user || autocompleting || !hasPlaceholders) return
+    setAutocompleting(true)
+    setAutocompleteSuccess(false)
+    setAutocompleteError(false)
+
+    try {
+      const placeholders = segments
+        .filter((seg): seg is Extract<PromptSegment, { type: 'placeholder' }> => seg.type === 'placeholder')
+        .map(seg => ({ index: seg.index, name: seg.content }))
+
+      const res = await fetch(`${API_URL}/api/autocomplete-prompt`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, placeholders }),
+      })
+
+      if (!res.ok) throw new Error('API error')
+
+      const data = await res.json()
+      const values: Record<string, string> = data.values || {}
+
+      setPlaceholderValues(prev => {
+        const updated = { ...prev }
+        for (const [indexStr, value] of Object.entries(values)) {
+          const idx = parseInt(indexStr, 10)
+          if ((!updated[idx] || updated[idx].trim() === '') && value && (value as string).trim() !== '') {
+            updated[idx] = value as string
+          }
+        }
+        return updated
+      })
+
+      setAutocompleteSuccess(true)
+      if (autocompleteTimeoutRef.current) clearTimeout(autocompleteTimeoutRef.current)
+      autocompleteTimeoutRef.current = setTimeout(() => setAutocompleteSuccess(false), 2000)
+    } catch (err) {
+      console.error('Autocomplete error:', err)
+      setAutocompleteError(true)
+      if (autocompleteTimeoutRef.current) clearTimeout(autocompleteTimeoutRef.current)
+      autocompleteTimeoutRef.current = setTimeout(() => setAutocompleteError(false), 2000)
+    } finally {
+      setAutocompleting(false)
+    }
+  }
+
+  const renderAutocompleteButton = (widthClass: string) => {
+    if (!hasPlaceholders) return null
+
+    return (
+      <div className={`${widthClass} mx-auto mb-4`}>
+        <button
+          onClick={handleAutocomplete}
+          disabled={autocompleting}
+          className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] cursor-pointer ${
+            autocompleteSuccess
+              ? 'bg-[#009600] text-white'
+              : autocompleteError
+              ? 'bg-[#DC2626] text-white'
+              : 'bg-white text-black hover:bg-gray-50'
+          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+        >
+          {autocompleting ? (
+            <span className="flex items-center justify-center gap-2">
+              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                Autocompleting...
+              </span>
+            </span>
+          ) : autocompleteSuccess ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+              </svg>
+              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                Prompt Completed
+              </span>
+            </span>
+          ) : autocompleteError ? (
+            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+              Something went wrong
+            </span>
+          ) : (
+            <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+              Autocomplete Prompt
+            </span>
+          )}
+        </button>
+        <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+          {autocompleting
+            ? 'Analysing your profile...'
+            : autocompleteSuccess
+            ? 'Fields filled from your profile'
+            : autocompleteError
+            ? 'Please try again'
+            : "We'll complete the prompt based on your information"}
+        </p>
+      </div>
+    )
+  }
+
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text)
@@ -423,12 +532,14 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
       {/* Category Tag */}
-      <span
-        className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
-        style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
-      >
-        AI Prompt
-      </span>
+      <div className="text-center" style={{ marginBottom: '30px' }}>
+        <span
+          className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
+          style={{ letterSpacing: '-0.02em' }}
+        >
+          AI Prompt
+        </span>
+      </div>
 
       {/* Title with typing animation */}
       <h1
@@ -500,16 +611,43 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             className="absolute bottom-3 right-3 p-1.5 cursor-pointer group"
             aria-label="Copy prompt"
           >
-            {promptCopied ? (
-              <svg className="w-5 h-5 text-black transition-colors" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-                <path d="M20 6L9 17l-5-5" />
-              </svg>
-            ) : (
-              <svg className="w-5 h-5 text-black group-hover:text-[#EF0B72] transition-colors" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+            <div className="relative w-5 h-5">
+              {/* Copy icon */}
+              <svg
+                className="absolute inset-0 w-5 h-5 text-black group-hover:text-[#EF0B72] transition-all duration-200"
+                style={{
+                  opacity: promptCopied ? 0 : 1,
+                  transform: promptCopied ? 'scale(0.6)' : 'scale(1)',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)',
+                }}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                viewBox="0 0 24 24"
+              >
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                 <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
               </svg>
-            )}
+              {/* Tick icon */}
+              <svg
+                className={`absolute inset-0 w-5 h-5 text-black transition-all duration-200${promptCopied ? ' animate-checkDraw' : ''}`}
+                style={{
+                  opacity: promptCopied ? 1 : 0,
+                  transform: promptCopied ? 'scale(1)' : 'scale(0.6)',
+                  transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                viewBox="0 0 24 24"
+              >
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
           </button>
       </div>
 
@@ -637,6 +775,8 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                     {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
                   </p>
                 </div>
+
+                {renderAutocompleteButton('w-[80%]')}
               </>
             )}
 
@@ -794,50 +934,54 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             </p>
           </div>
         ) : (
-          <div className="w-full mb-4">
-            <button
-              onClick={handleSaveToggle}
-              disabled={saving || checkingStatus}
-              className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
-                checkingStatus
-                  ? 'bg-[#9E9E9E] text-white'
-                  : saved
-                  ? 'bg-[#009600] text-white hover:bg-[#007D00]'
-                  : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
-              } disabled:opacity-50 disabled:cursor-not-allowed`}
-              style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-            >
-              {checkingStatus ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
-                </span>
-              ) : saving ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
-                    {saved ? 'Removing...' : 'Saving...'}
+          <>
+            <div className="w-full mb-4">
+              <button
+                onClick={handleSaveToggle}
+                disabled={saving || checkingStatus}
+                className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                  checkingStatus
+                    ? 'bg-[#9E9E9E] text-white'
+                    : saved
+                    ? 'bg-[#009600] text-white hover:bg-[#007D00]'
+                    : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+              >
+                {checkingStatus ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
                   </span>
-                </span>
-              ) : saved ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                  </svg>
+                ) : saving ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                      {saved ? 'Removing...' : 'Saving...'}
+                    </span>
+                  </span>
+                ) : saved ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                    </svg>
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Saved to Account
+                    </span>
+                  </span>
+                ) : (
                   <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                    Saved to Account
+                    Add to {firstName || 'your'}&apos;s Account
                   </span>
-                </span>
-              ) : (
-                <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                  Add to {firstName || 'your'}&apos;s Account
-                </span>
-              )}
-            </button>
-            <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-              {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
-            </p>
-          </div>
+                )}
+              </button>
+              <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+                {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
+              </p>
+            </div>
+
+            {renderAutocompleteButton('w-full')}
+          </>
         )}
       </div>
     </div>

@@ -133,6 +133,18 @@ body {
   will-change: opacity;
 }
 
+/* Copy button icon swap — checkmark stroke draw */
+@keyframes checkDrawIn {
+  from { stroke-dashoffset: 30; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-checkDraw path {
+  stroke-dasharray: 30;
+  stroke-dashoffset: 30;
+  animation: checkDrawIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
 /* Respect users' reduced motion preferences for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -150,6 +162,12 @@ body {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .animate-checkDraw path {
+    animation: none !important;
+    stroke-dasharray: none !important;
+    stroke-dashoffset: 0 !important;
   }
 }
 
