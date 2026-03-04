@@ -25,6 +25,13 @@ const Footer = ({ className = '' }) => {
             <div className="flex flex-col gap-2">
               <a href="/courses" className="text-white font-light hover:text-[#EF0B72] transition" style={{ fontSize: '14px' }}>Courses</a>
               <a
+                href="/prompts"
+                className="text-white font-light hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                AI Prompt Toolkit
+              </a>
+              <a
                 href="https://shop.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -49,13 +56,6 @@ const Footer = ({ className = '' }) => {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Resources</span>
             <div className="flex flex-col gap-2">
-              <a
-                href="/prompts"
-                className="text-white font-light hover:text-[#EF0B72] transition"
-                style={{ fontSize: '14px' }}
-              >
-                AI Prompt Toolkit
-              </a>
               <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
               <a
                 href="/release-notes"

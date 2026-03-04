@@ -137,7 +137,7 @@ function InlinePlaceholderInput({
           padding: '0px 4px',
           margin: '2px 1px',
           outline: 'none',
-          textAlign: 'center',
+          textAlign: 'left',
           verticalAlign: 'baseline',
         }}
         onFocus={(e) => {
@@ -151,7 +151,7 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 1200, delay = 1000) {
+function useCountUp(target: number, duration = 1200, delay = 750) {
   const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return

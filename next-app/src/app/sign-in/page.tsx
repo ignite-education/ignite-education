@@ -29,11 +29,19 @@ export default async function SignInPage({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
+  const params = await searchParams
+
+  // When fresh=true, skip the auth check and always show the sign-in form.
+  // This allows users with stale cookies (wrong domain) to re-authenticate
+  // and get new cookies with domain=.ignite.education for cross-subdomain sharing.
+  const forceFresh = params.fresh === 'true'
+
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user } } = forceFresh
+    ? { data: { user: null } }
+    : await supabase.auth.getUser()
 
   if (user) {
-    const params = await searchParams
     const redirectParam = typeof params.redirect === 'string' ? params.redirect : undefined
 
     const { data } = await supabase
