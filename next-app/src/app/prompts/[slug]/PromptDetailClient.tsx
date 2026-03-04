@@ -138,6 +138,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [authLoaded, setAuthLoaded] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [copiedTool, setCopiedTool] = useState<string | null>(null)
+  const [promptCopied, setPromptCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
@@ -169,6 +170,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const promptCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const shareUrl = `https://ignite.education/prompts/${slug}`
 
@@ -420,6 +422,14 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+      {/* Category Tag */}
+      <span
+        className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
+        style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+      >
+        AI Prompt
+      </span>
+
       {/* Title with typing animation */}
       <h1
         className="text-[38px] font-bold text-black leading-tight text-center mb-[15px]"
@@ -430,8 +440,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           {!isTypingComplete && (
             <span style={{ opacity: 0 }}>{prompt.title.substring(displayedTitle.length)}</span>
           )}
-          <br />
-          <span>- AI Prompt</span>
         </span>
       </h1>
 
@@ -483,14 +491,25 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             )}
           </pre>
           <button
-            onClick={() => copyToClipboard(buildFinalPrompt())}
+            onClick={async () => {
+              await copyToClipboard(buildFinalPrompt())
+              setPromptCopied(true)
+              if (promptCopyTimeoutRef.current) clearTimeout(promptCopyTimeoutRef.current)
+              promptCopyTimeoutRef.current = setTimeout(() => setPromptCopied(false), 3000)
+            }}
             className="absolute bottom-3 right-3 p-1.5 cursor-pointer group"
             aria-label="Copy prompt"
           >
-            <svg className="w-5 h-5 text-black group-hover:text-[#EF0B72] transition-colors" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-            </svg>
+            {promptCopied ? (
+              <svg className="w-5 h-5 text-black transition-colors" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-black group-hover:text-[#EF0B72] transition-colors" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+            )}
           </button>
       </div>
 

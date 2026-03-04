@@ -3,6 +3,21 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
 
+const PRELOAD_IMAGES = ['/trophy.png', '/moon.png', '/big-ben.png'];
+
+const preloadImages = (urls) =>
+  Promise.all(
+    urls.map(
+      (src) =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = resolve;
+          img.src = src;
+        })
+    )
+  );
+
 const extractSubredditFromUrl = (url) => {
   if (!url) return null;
   const match = url.match(/reddit\.com\/r\/([^\/]+)/);
@@ -89,6 +104,8 @@ const useProgressData = () => {
         setLoading(false);
         return;
       }
+
+      const imagePromise = preloadImages(PRELOAD_IMAGES);
 
       try {
         // Fetch enrolled course
@@ -211,6 +228,7 @@ const useProgressData = () => {
           // Scores not critical — graph will render without data
         }
 
+        await imagePromise;
         if (isMounted) {
           hasInitialDataFetchRef.current = true;
           setLoading(false);
