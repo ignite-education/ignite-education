@@ -100,7 +100,7 @@ function InlinePlaceholderInput({
   useEffect(() => {
     if (autoFocus && inputRef.current) {
       inputRef.current.focus()
-      inputRef.current.style.boxShadow = '0 0 0 1px #7714E0'
+      inputRef.current.style.boxShadow = 'none'
     }
   }, [autoFocus])
 
@@ -140,7 +140,7 @@ function InlinePlaceholderInput({
           verticalAlign: 'baseline',
         }}
         onFocus={(e) => {
-          e.currentTarget.style.boxShadow = '0 0 0 1px #7714E0'
+          e.currentTarget.style.boxShadow = 'none'
         }}
         onBlur={(e) => {
           e.currentTarget.style.boxShadow = 'none'
@@ -645,7 +645,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       </p>
 
       {/* Tags */}
-      <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
+      <div className="flex items-center justify-center gap-2 flex-wrap" style={{ marginBottom: '1.5rem' }}>
         {tags.map((tag) => (
           <span
             key={tag}
