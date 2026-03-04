@@ -41,7 +41,6 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
       setClosingPostId(postId);
       animTimerRef.current = setTimeout(() => {
         setCommentsVisibleId(null);
-        setExpandedPostId(null);
         setClosingPostId(null);
       }, 250);
     }, 3000);
