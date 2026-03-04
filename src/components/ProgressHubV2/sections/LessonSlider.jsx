@@ -197,10 +197,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         onScroll={handleScroll}
       >
         <div
-          className="flex gap-4"
+          className="flex gap-4 items-stretch"
           style={{
-            minHeight: '6.5rem',
-            height: '6.5rem',
             paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 416 - 16)}px` : '0px'
           }}
         >
@@ -224,7 +222,6 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
-                    height: '6.5rem',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always'
                   }}
