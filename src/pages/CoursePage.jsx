@@ -7,7 +7,6 @@ import { X, ChevronRight, Star } from 'lucide-react';
 import { getTestimonialForCourse } from '../constants/testimonials';
 import { generateCourseKeywords } from '../constants/courseKeywords';
 import { useAuth } from '../contexts/AuthContext';
-import useTypingAnimation from '../hooks/useTypingAnimation';
 
 import OptimizedImage from '../components/OptimizedImage';
 import GoogleOneTap from '../components/GoogleOneTap';
@@ -110,15 +109,6 @@ const CoursePage = () => {
   // Refs
   const curriculumSectionRef = useRef(null);
 
-  // Typing animation for course title using shared hook
-  const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
-    course?.title || '',
-    {
-      charDelay: 75,
-      startDelay: 750,
-      enabled: !!course?.title
-    }
-  );
 
   // Check for waitlist success on mount (after OAuth redirect)
   useEffect(() => {
@@ -728,17 +718,14 @@ const CoursePage = () => {
           <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center" style={{ paddingTop: '75px' }}>
             <div className="w-full text-center" style={{ maxWidth: '700px' }}>
               {/* Category Tag */}
-              <span className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium" style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}>
+              <Link to="/courses" className="inline-block px-2 py-1 text-sm bg-[#EDEDED] rounded-sm font-medium hover:bg-[#E0E0E0] transition-colors" style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}>
                 {getCourseTypeLabel(course)}
-              </span>
+              </Link>
 
               {/* Title */}
               <h1 className="text-[38px] font-bold text-black mb-[15px] leading-tight" style={{ letterSpacing: '-0.02em' }}>
                 <span style={{ display: 'inline-block', textAlign: 'left' }}>
-                  {displayedTitle}
-                  {!isTypingComplete && (
-                    <span style={{ opacity: 0 }}>{course.title.substring(displayedTitle.length)}</span>
-                  )}
+                  {course.title}
                 </span>
               </h1>
 

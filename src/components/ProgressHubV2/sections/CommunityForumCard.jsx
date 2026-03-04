@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, ThumbsUp, User, Ban } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
 
@@ -8,10 +8,9 @@ const getTimeAgo = (timestamp) => {
   const past = new Date(timestamp);
   const diffInHours = Math.floor((now - past) / (1000 * 60 * 60));
   if (diffInHours < 1) return 'Just now';
-  if (diffInHours < 24) return `${diffInHours} hr. ago`;
+  if (diffInHours < 24) return `${diffInHours}h`;
   const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays === 1) return '1 day ago';
-  return `${diffInDays} days ago`;
+  return `${diffInDays}d`;
 };
 
 const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost, onMyPosts, userRole, userId, onBlockPost }) => {
@@ -147,7 +146,10 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
             style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
             title="My posts"
           >
-            <User size={18} strokeWidth={2} className="text-black group-hover:text-pink-500 transition-colors duration-300" />
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
+              <circle cx="12" cy="8" r="5" />
+              <path d="M20 21a8 8 0 0 0-16 0" />
+            </svg>
           </button>
         )}
         <button
@@ -246,7 +248,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               {expandedPostId === post.id && (
                 <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
                   <div className="rounded-lg p-3" style={{ background: '#171717' }}>
-                    <h4 className="text-xs font-semibold text-white mb-2">
+                    <h4 className="text-white mb-2" style={{ fontSize: '0.9rem', fontWeight: 500 }}>
                       Comments
                     </h4>
 
@@ -258,15 +260,13 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitComment(e, post); }}
                         placeholder="Add a comment..."
-                        className="flex-1 bg-white text-black text-xs px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                        className="flex-1 bg-black text-white text-xs px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-gray-500"
                         style={{ borderRadius: '0.3rem' }}
                       />
                       <button
                         onClick={(e) => handleSubmitComment(e, post)}
-                        className="px-3 py-1.5 text-white text-xs font-semibold transition"
-                        style={{ borderRadius: '0.3rem', backgroundColor: '#EF0B72' }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = '#D10A64'}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = '#EF0B72'}
+                        className="px-3 py-1.5 text-black transition bg-white hover:bg-purple-50"
+                        style={{ fontSize: '0.9rem', fontWeight: 500, borderRadius: '0.3rem' }}
                       >
                         Post
                       </button>
@@ -276,14 +276,14 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       <p className="text-xs text-white/60 py-2">Loading comments...</p>
                     )}
                     <div
-                      className="space-y-2 overflow-y-auto"
-                      style={{ maxHeight: '200px', scrollbarWidth: 'thin', scrollbarColor: '#4B5563 transparent' }}
+                      className="overflow-y-auto"
+                      style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '200px', scrollbarWidth: 'thin', scrollbarColor: '#4B5563 transparent' }}
                     >
                       {postComments[post.id] && postComments[post.id].length > 0 ? (
                         postComments[post.id].map(comment => (
                           <div key={comment.id}>
                             <div className="flex items-start gap-2">
-                              <p className="text-white/90 break-words flex-1" style={{ fontSize: '0.9rem', fontWeight: 300 }}>{comment.content}</p>
+                              <p className="text-white leading-snug break-words flex-1" style={{ fontSize: '0.9rem', fontWeight: 300 }}>{comment.content}</p>
                               <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(comment.created_at)}</span>
                             </div>
                           </div>

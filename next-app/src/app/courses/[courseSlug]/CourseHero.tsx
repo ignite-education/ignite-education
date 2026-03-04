@@ -3,6 +3,7 @@
 import useTypingAnimation from '@/hooks/useTypingAnimation'
 import { getCourseTypeLabel, getCourseTagline, getTwoSentences } from '@/lib/courseUtils'
 import type { Course } from '@/types/course'
+import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import EnrollmentCTA from './EnrollmentCTA'
 
@@ -32,12 +33,13 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
         <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center" style={{ paddingTop: '75px' }}>
           <div className="w-full text-center" style={{ maxWidth: '700px' }}>
             {/* Category Tag */}
-            <span
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
+            <Link
+              href="/courses"
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium hover:bg-[#E4E4E4] transition-colors"
               style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
             >
               {getCourseTypeLabel(course)}
-            </span>
+            </Link>
 
             {/* Title with typing animation */}
             <h1

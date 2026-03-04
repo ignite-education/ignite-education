@@ -173,6 +173,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         ))}
       </h2>
 
+      <div className="relative">
       <div
         ref={scrollContainerRef}
         className="overflow-x-auto overflow-y-hidden select-none"
@@ -285,7 +286,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         className="absolute bg-white text-black hover:bg-purple-50"
         style={{
           right: '16px',
-          top: 'calc(2.4rem + 0.75rem + 3rem)',
+          top: '50%',
           transform: 'translateY(-50%)',
           width: '40px', height: '40px',
           borderRadius: '0.3rem',
@@ -320,6 +321,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
       </button>
+      </div>
     </div>
   );
 };
