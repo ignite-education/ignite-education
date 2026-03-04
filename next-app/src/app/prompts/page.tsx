@@ -5,7 +5,7 @@ import PromptToolkitClient from './PromptToolkitClient'
 import { getCoursesByType } from '@/lib/courseData'
 import { getAllPrompts } from '@/data/placeholderPrompts'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 const BASE_URL = 'https://ignite.education'
 

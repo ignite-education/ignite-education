@@ -8,7 +8,7 @@ import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from 
 import PromptDetailClient from './PromptDetailClient'
 import PromptToolkitClient from '../PromptToolkitClient'
 
-export const revalidate = 3600
+export const revalidate = 60
 
 const BASE_URL = 'https://ignite.education'
 
