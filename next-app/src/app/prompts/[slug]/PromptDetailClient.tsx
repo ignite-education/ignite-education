@@ -142,16 +142,17 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 800, delay = 900) {
-  const [value, setValue] = useState(0)
+function useCountUp(target: number, duration = 600, delay = 900) {
+  const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return
+    const from = Math.max(target - 5, 0)
     const timeout = setTimeout(() => {
       const start = performance.now()
       const step = (now: number) => {
         const progress = Math.min((now - start) / duration, 1)
         const eased = 1 - Math.pow(1 - progress, 3)
-        setValue(Math.round(eased * target))
+        setValue(Math.round(from + eased * (target - from)))
         if (progress < 1) requestAnimationFrame(step)
       }
       requestAnimationFrame(step)
@@ -587,6 +588,9 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     window.open(`https://substack.com/note?url=${encodeURIComponent(shareUrl)}`, '_blank')
   }
 
+  const updatedDate = new Date(prompt.updatedAt + 'T00:00:00')
+  const updatedLabel = `Updated ${updatedDate.toLocaleString('en-US', { month: 'short' })}-${String(updatedDate.getFullYear()).slice(-2)}`
+
   const tags = [
     prompt.profession,
     ...prompt.llmTools,
@@ -637,28 +641,19 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             {tag}
           </span>
         ))}
+        <span
+          className="inline-block text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
+          style={{ letterSpacing: '-0.02em' }}
+        >
+          {updatedLabel}
+        </span>
       </div>
 
       {/* Stats row */}
       <div className="flex items-center justify-center gap-3 mb-8">
-        <button
-          onClick={handleThumbsUp}
-          disabled={thumbsUp}
-          className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer disabled:cursor-default"
-          style={{ color: thumbsUp ? '#009600' : '#6B7280', letterSpacing: '-0.02em' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
-            <path d="M2 13h2v8H2z" />
-          </svg>
-          {displayedThumbsUp}
-        </button>
-
-        <span className="text-[#D1D5DB]">·</span>
-
         <span
           className="flex items-center gap-1.5 text-sm"
-          style={{ color: '#6B7280', letterSpacing: '-0.02em' }}
+          style={{ color: '#000000', letterSpacing: '-0.02em' }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
@@ -666,6 +661,21 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           </svg>
           {displayedUsage}
         </span>
+
+        <span className="text-black">·</span>
+
+        <button
+          onClick={handleThumbsUp}
+          disabled={thumbsUp}
+          className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer disabled:cursor-default"
+          style={{ color: thumbsUp ? '#009600' : '#000000', letterSpacing: '-0.02em' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
+            <path d="M2 13h2v8H2z" />
+          </svg>
+          {displayedThumbsUp}
+        </button>
       </div>
 
       <div className="lg:-mx-24">
@@ -825,8 +835,8 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               </>
             ) : (
               <>
-                {/* Save to Account Button for authenticated users */}
-                <div className="w-[80%] mx-auto mb-2">
+                {/* Save to Account Button + Autocomplete for authenticated users */}
+                <div className="space-y-2 w-[80%] mx-auto mb-3">
                   <button
                     onClick={handleSaveToggle}
                     disabled={saving || checkingStatus}
@@ -869,12 +879,14 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                     )}
                   </button>
 
-                  <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                    {!checkingStatus && saved && 'Prompt saved to your account'}
-                  </p>
+                  {renderAutocompleteButton('w-full')}
                 </div>
 
-                {renderAutocompleteButton('w-[80%]')}
+                {!checkingStatus && saved && (
+                  <p className="text-center text-black text-sm font-normal" style={{ letterSpacing: '-0.02em', marginTop: '-0.25rem' }}>
+                    Prompt saved to your account
+                  </p>
+                )}
               </>
             )}
 
@@ -957,27 +969,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           )
         })}
 
-        {/* Thumbs up button */}
-        <button
-          onClick={handleThumbsUp}
-          disabled={thumbsUp}
-          className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer disabled:cursor-default"
-          style={{
-            backgroundColor: thumbsUp ? '#009600' : 'white',
-            color: thumbsUp ? 'white' : 'black',
-            fontSize: '12px',
-            letterSpacing: '-0.02em',
-            boxShadow: thumbsUp ? 'none' : '0 0 6px rgba(103,103,103,0.25)',
-          }}
-          onMouseEnter={(e) => { if (!thumbsUp) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)' }}
-          onMouseLeave={(e) => { if (!thumbsUp) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
-            <path d="M2 13h2v8H2z" />
-          </svg>
-          {thumbsUp ? 'Thanks!' : 'Helpful'}
-        </button>
       </div>
       </div>
 

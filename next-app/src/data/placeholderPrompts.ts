@@ -11,6 +11,7 @@ export type Prompt = {
   usageCount: number
   rating: number
   createdAt: string
+  updatedAt: string
   slug: string
 }
 
@@ -45,6 +46,7 @@ function mapDbPrompt(row: Record<string, unknown>): Prompt {
     usageCount: Math.max(row.usage_count as number, (row.real_usage_count as number) || 0),
     rating: Math.max(row.rating as number, (row.real_thumbs_up as number) || 0),
     createdAt: (row.created_at as string).split('T')[0],
+    updatedAt: (row.updated_at as string).split('T')[0],
     slug: row.slug as string,
   }
 }
