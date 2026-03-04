@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
-import useTypingAnimation from '@/hooks/useTypingAnimation'
 import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
@@ -247,14 +246,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     }).join('')
   }, [segments, placeholderValues])
 
-  const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
-    prompt.title,
-    {
-      charDelay: 75,
-      startDelay: 750,
-      enabled: true,
-    }
-  )
   const googleBtnRef = useRef<HTMLDivElement>(null)
   const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -629,17 +620,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         </span>
       </div>
 
-      {/* Title with typing animation */}
+      {/* Title */}
       <h1
         className="text-[38px] font-bold text-black leading-tight text-center mb-[15px]"
         style={{ letterSpacing: '-0.02em' }}
       >
-        <span style={{ display: 'inline-block', textAlign: 'left' }}>
-          {displayedTitle}
-          {!isTypingComplete && (
-            <span style={{ opacity: 0 }}>{prompt.title.substring(displayedTitle.length)}</span>
-          )}
-        </span>
+        {prompt.title}
       </h1>
 
       {/* Description */}
@@ -991,15 +977,52 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       </div>
       </div>
 
-      {/* Output Section — single-column below the two-column layout */}
-      <div className="mt-10">
-        <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
-          Output
-        </h2>
-        <p className="text-black text-lg leading-relaxed font-normal" style={{ letterSpacing: '-0.02em' }}>
-          {prompt.description}
-        </p>
-      </div>
+      {/* Author Section — only shown when author info is present */}
+      {prompt.authorName && (
+        <div className="mt-10 flex items-center gap-4">
+          {prompt.authorImage ? (
+            <img
+              src={prompt.authorImage}
+              alt={prompt.authorName}
+              className="rounded-full object-cover"
+              style={{ width: '48px', height: '48px' }}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div
+              className="rounded-full bg-[#7714E0] text-white flex items-center justify-center text-lg font-semibold"
+              style={{ width: '48px', height: '48px', flexShrink: 0 }}
+            >
+              {prompt.authorName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-black" style={{ fontSize: '16px', letterSpacing: '-0.02em' }}>
+                {prompt.authorName}
+              </span>
+              {prompt.authorLinkedin && (
+                <a
+                  href={prompt.authorLinkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${prompt.authorName} on LinkedIn`}
+                  className="text-[#0A66C2] hover:text-[#004182] transition-colors"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                </a>
+              )}
+            </div>
+            {prompt.authorTitle && (
+              <p className="text-gray-500 text-sm" style={{ letterSpacing: '-0.02em' }}>
+                {prompt.authorTitle}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Mobile CTA (shown below content on mobile, hidden on desktop) */}
       <div className="lg:hidden mt-8">

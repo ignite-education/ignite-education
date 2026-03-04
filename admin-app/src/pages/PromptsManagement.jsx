@@ -34,6 +34,10 @@ const PromptsManagement = () => {
     usage_count: 0,
     rating: 0,
     status: 'published',
+    author_name: '',
+    author_image: '',
+    author_title: '',
+    author_linkedin: '',
   });
 
   // Contributions state
@@ -139,6 +143,10 @@ const PromptsManagement = () => {
       usage_count: 0,
       rating: 0,
       status: 'published',
+      author_name: '',
+      author_image: '',
+      author_title: '',
+      author_linkedin: '',
     });
   };
 
@@ -155,6 +163,10 @@ const PromptsManagement = () => {
       usage_count: prompt.usage_count || 0,
       rating: Number(prompt.rating) || 0,
       status: prompt.status || 'published',
+      author_name: prompt.author_name || '',
+      author_image: prompt.author_image || '',
+      author_title: prompt.author_title || '',
+      author_linkedin: prompt.author_linkedin || '',
     });
   };
 
@@ -194,7 +206,11 @@ const PromptsManagement = () => {
         usage_count: Number(formData.usage_count) || 0,
         rating: Number(formData.rating) || 0,
         status: formData.status,
-        ...(reviewingContribution ? { contribution_id: reviewingContribution.id } : {}),
+        ...(reviewingContribution ? { contribution_id: reviewingContribution.id, created_by: reviewingContribution.user_id } : {}),
+        ...(formData.author_name.trim() && { author_name: formData.author_name.trim() }),
+        ...(formData.author_image.trim() && { author_image: formData.author_image.trim() }),
+        ...(formData.author_title.trim() && { author_title: formData.author_title.trim() }),
+        ...(formData.author_linkedin.trim() && { author_linkedin: formData.author_linkedin.trim() }),
       };
 
       if (selectedPrompt) {
@@ -251,10 +267,24 @@ const PromptsManagement = () => {
 
   // ---- Contributions ----
 
-  const handleReviewContribution = (contribution) => {
+  const handleReviewContribution = async (contribution) => {
     setActiveTab('published');
     setSelectedPrompt(null);
     setReviewingContribution(contribution);
+
+    // Try to fetch contributor's name for author attribution
+    let contributorName = '';
+    if (contribution.user_id) {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('first_name, last_name')
+        .eq('id', contribution.user_id)
+        .maybeSingle();
+      if (userData) {
+        contributorName = [userData.first_name, userData.last_name].filter(Boolean).join(' ');
+      }
+    }
+
     setFormData({
       title: contribution.title || '',
       description: contribution.description || '',
@@ -265,6 +295,10 @@ const PromptsManagement = () => {
       usage_count: 0,
       rating: 0,
       status: 'published',
+      author_name: contributorName,
+      author_image: '',
+      author_title: '',
+      author_linkedin: '',
     });
   };
 
@@ -541,6 +575,49 @@ const PromptsManagement = () => {
                   <option value="published" className="bg-gray-900">Published</option>
                   <option value="draft" className="bg-gray-900">Draft</option>
                 </select>
+              </div>
+
+              {/* Author Attribution (optional) */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">Author (optional)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.author_name}
+                      onChange={(e) => handleInputChange('author_name', e.target.value)}
+                      placeholder="Author name"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.author_title}
+                      onChange={(e) => handleInputChange('author_title', e.target.value)}
+                      placeholder="Title (e.g. Product Manager at Acme)"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.author_image}
+                      onChange={(e) => handleInputChange('author_image', e.target.value)}
+                      placeholder="Profile image URL"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.author_linkedin}
+                      onChange={(e) => handleInputChange('author_linkedin', e.target.value)}
+                      placeholder="LinkedIn profile URL"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Save Button */}

@@ -28,6 +28,27 @@ if (
   )
 }
 
+// Explicit cookie handlers to ensure domain=.ignite.education is always set.
+// cookieOptions.domain alone does not reliably set the domain attribute on cookies.
+function getAll() {
+  return document.cookie.split('; ').filter(Boolean).map(c => {
+    const [name, ...rest] = c.split('=')
+    return { name, value: rest.join('=') }
+  })
+}
+
+function setAll(cookiesToSet) {
+  cookiesToSet.forEach(({ name, value, options }) => {
+    const parts = [`${name}=${value}`]
+    parts.push(`path=${options?.path || '/'}`)
+    parts.push('domain=.ignite.education')
+    if (options?.maxAge != null) parts.push(`max-age=${options.maxAge}`)
+    if (options?.sameSite) parts.push(`samesite=${options.sameSite}`)
+    if (options?.secure !== false) parts.push('secure')
+    document.cookie = parts.join('; ')
+  })
+}
+
 // Use createBrowserClient from @supabase/ssr so the Vite SPA shares
 // cookie-based auth storage with the Next.js app (both on ignite.education)
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
@@ -40,9 +61,7 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
       'Content-Type': 'application/json',
     },
   },
-  cookieOptions: {
-    domain: '.ignite.education',
-  },
+  cookies: { getAll, setAll },
 })
 
 // One-time cleanup: remove stale Supabase auth tokens from localStorage

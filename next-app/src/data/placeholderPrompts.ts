@@ -13,6 +13,10 @@ export type Prompt = {
   createdAt: string
   updatedAt: string
   slug: string
+  authorName?: string
+  authorImage?: string
+  authorTitle?: string
+  authorLinkedin?: string
 }
 
 export const LLM_TOOLS = ['Claude', 'Co-Pilot', 'ChatGPT', 'Gemini'] as const
@@ -48,6 +52,10 @@ function mapDbPrompt(row: Record<string, unknown>): Prompt {
     createdAt: (row.created_at as string).split('T')[0],
     updatedAt: (row.updated_at as string).split('T')[0],
     slug: row.slug as string,
+    authorName: (row.author_name as string) || undefined,
+    authorImage: (row.author_image as string) || undefined,
+    authorTitle: (row.author_title as string) || undefined,
+    authorLinkedin: (row.author_linkedin as string) || undefined,
   }
 }
 
