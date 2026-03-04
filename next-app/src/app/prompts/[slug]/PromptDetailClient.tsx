@@ -150,7 +150,7 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 1200, delay = 500) {
+function useCountUp(target: number, duration = 1200, delay = 300) {
   const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return

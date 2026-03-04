@@ -147,7 +147,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
             title="My posts"
           >
             <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
-              <rect x="7.5" y="3" width="9" height="9" rx="2" />
+              <rect x="7.5" y="3" width="9" height="9" rx="4" />
               <path d="M4 22v-1c0-2.5 1.5-4 4-4h8c2.5 0 4 1.5 4 4v1" />
             </svg>
           </button>
@@ -247,8 +247,8 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               {/* Comments */}
               {expandedPostId === post.id && (
                 <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
-                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem' }}>
-                    <h4 className="text-white mb-2" style={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem 1.2rem' }}>
+                    <h4 className="text-white mb-2" style={{ fontSize: '1rem', fontWeight: 500 }}>
                       Comments
                     </h4>
 
@@ -260,8 +260,8 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitComment(e, post); }}
                         placeholder="Post your comment"
-                        className="flex-1 bg-black text-white leading-snug px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-white"
-                        style={{ borderRadius: '0.3rem', fontSize: '0.9rem', fontWeight: 300 }}
+                        className="flex-1 bg-black text-white leading-snug px-3 py-1.5 focus:outline-none focus:ring-[0.5px] focus:ring-purple-500 placeholder-white"
+                        style={{ borderRadius: '0.3rem', fontSize: '0.9rem', fontWeight: 300, marginLeft: '-5px' }}
                       />
                       <button
                         onClick={(e) => handleSubmitComment(e, post)}
@@ -277,7 +277,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                     )}
                     <div
                       className="overflow-y-auto"
-                      style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '200px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', maxHeight: '200px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                       {postComments[post.id] && postComments[post.id].length > 0 ? (
                         postComments[post.id].map(comment => (

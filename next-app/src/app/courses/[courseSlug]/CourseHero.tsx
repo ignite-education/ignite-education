@@ -23,7 +23,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             {/* Category Tag */}
             <Link
               href="/courses"
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium hover:bg-[#E4E4E4] transition-colors"
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
               style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
             >
               {getCourseTypeLabel(course)}
