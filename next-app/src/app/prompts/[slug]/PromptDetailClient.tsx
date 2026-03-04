@@ -88,6 +88,7 @@ function InlinePlaceholderInput({
   autoFocus?: boolean
 }) {
   const measureRef = useRef<HTMLSpanElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [width, setWidth] = useState<number>(0)
 
   useEffect(() => {
@@ -96,6 +97,13 @@ function InlinePlaceholderInput({
       setWidth(measureRef.current.scrollWidth + 12)
     }
   }, [value, placeholderText])
+
+  useEffect(() => {
+    if (autoFocus && inputRef.current) {
+      inputRef.current.focus()
+      inputRef.current.style.boxShadow = '0 0 0 1px #7714E0'
+    }
+  }, [autoFocus])
 
   return (
     <>
@@ -111,12 +119,12 @@ function InlinePlaceholderInput({
         }}
       />
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholderText}
         aria-label={placeholderText}
-        autoFocus={autoFocus}
         style={{
           fontFamily: 'var(--font-geist-sans), sans-serif',
           fontSize: '13px',
@@ -142,23 +150,22 @@ function InlinePlaceholderInput({
   )
 }
 
-function useCountUp(target: number, duration = 600, delay = 900) {
+function useCountUp(target: number, duration = 1200) {
   const [value, setValue] = useState(Math.max(target - 5, 0))
   useEffect(() => {
     if (target === 0) return
     const from = Math.max(target - 5, 0)
-    const timeout = setTimeout(() => {
-      const start = performance.now()
-      const step = (now: number) => {
-        const progress = Math.min((now - start) / duration, 1)
-        const eased = 1 - Math.pow(1 - progress, 3)
-        setValue(Math.round(from + eased * (target - from)))
-        if (progress < 1) requestAnimationFrame(step)
-      }
-      requestAnimationFrame(step)
-    }, delay)
-    return () => clearTimeout(timeout)
-  }, [target, duration, delay])
+    const start = performance.now()
+    let raf: number
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3)
+      setValue(Math.round(from + eased * (target - from)))
+      if (progress < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration])
   return value
 }
 
@@ -200,16 +207,25 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   }, [prompt.id])
 
   const handleThumbsUp = useCallback(async () => {
-    if (thumbsUp) return
-    setThumbsUp(true)
-    setThumbsUpExtra(prev => prev + 1)
-    try {
-      const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
-      liked.push(prompt.id)
-      localStorage.setItem('prompt_thumbs_up', JSON.stringify(liked))
-    } catch {}
     const supabase = createClient()
-    await supabase.rpc('increment_prompt_thumbs_up', { p_id: prompt.id })
+    if (thumbsUp) {
+      setThumbsUp(false)
+      setThumbsUpExtra(prev => prev - 1)
+      try {
+        const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
+        localStorage.setItem('prompt_thumbs_up', JSON.stringify(liked.filter((id: string) => id !== prompt.id)))
+      } catch {}
+      await supabase.rpc('decrement_prompt_thumbs_up', { p_id: prompt.id })
+    } else {
+      setThumbsUp(true)
+      setThumbsUpExtra(prev => prev + 1)
+      try {
+        const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
+        liked.push(prompt.id)
+        localStorage.setItem('prompt_thumbs_up', JSON.stringify(liked))
+      } catch {}
+      await supabase.rpc('increment_prompt_thumbs_up', { p_id: prompt.id })
+    }
   }, [prompt.id, thumbsUp])
 
   const segments = useMemo(() => parsePromptSegments(prompt.fullPrompt), [prompt.fullPrompt])
@@ -659,22 +675,21 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
           </svg>
-          {displayedUsage}
+          <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: `${String(prompt.usageCount).length}ch`, textAlign: 'right', display: 'inline-block' }}>{displayedUsage}</span>
         </span>
 
         <span className="text-black">·</span>
 
         <button
           onClick={handleThumbsUp}
-          disabled={thumbsUp}
-          className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer disabled:cursor-default"
+          className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer"
           style={{ color: thumbsUp ? '#009600' : '#000000', letterSpacing: '-0.02em' }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
             <path d="M2 13h2v8H2z" />
           </svg>
-          {displayedThumbsUp}
+          <span style={{ fontVariantNumeric: 'tabular-nums', minWidth: `${String(prompt.rating + 1).length}ch`, textAlign: 'right', display: 'inline-block' }}>{displayedThumbsUp}</span>
         </button>
       </div>
 

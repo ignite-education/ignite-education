@@ -67,7 +67,7 @@ const ResourcesSlider = () => {
   };
 
   return (
-    <div style={{ marginTop: '1.5rem', minHeight: '160px' }}>
+    <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
       <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.75rem' }}>
         Resources
       </h2>
