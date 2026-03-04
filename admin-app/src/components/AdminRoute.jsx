@@ -12,18 +12,23 @@ import LoadingScreen from './LoadingScreen';
 const AdminRoute = ({ children, requireAdmin = false }) => {
   const { user, isInitialized, userRole, roleError } = useAuth();
 
+  console.log('[AdminRoute] render → isInitialized:', isInitialized, 'user:', user?.id ?? 'null', 'userRole:', userRole, 'roleError:', roleError, 'requireAdmin:', requireAdmin);
+
   if (!isInitialized) {
+    console.log('[AdminRoute] → showing LoadingScreen (not initialized)');
     return <LoadingScreen />;
   }
 
   // Not authenticated → redirect to main site sign-in
   if (!user) {
+    console.log('[AdminRoute] → redirecting to sign-in (no user)');
     window.location.href = 'https://ignite.education/sign-in?redirect=admin';
     return <LoadingScreen />;
   }
 
   // Role fetch failed → show error with recovery options
   if (roleError) {
+    console.log('[AdminRoute] → showing error screen (roleError:', roleError, ')');
     return (
       <div className="flex items-center justify-center h-screen bg-gray-900">
         <div className="flex flex-col items-center gap-4 max-w-md text-center px-6">
@@ -57,20 +62,24 @@ const AdminRoute = ({ children, requireAdmin = false }) => {
 
   // Role not yet loaded
   if (userRole === null) {
+    console.log('[AdminRoute] → showing LoadingScreen (role not loaded yet)');
     return <LoadingScreen />;
   }
 
   // Student → redirect to main site
   if (userRole === 'student') {
+    console.log('[AdminRoute] → redirecting to welcome (student role)');
     window.location.href = 'https://ignite.education/welcome';
     return <LoadingScreen />;
   }
 
   // Teacher trying to access admin-only route
   if (requireAdmin && userRole !== 'admin') {
+    console.log('[AdminRoute] → redirecting to /curriculum (teacher on admin-only route)');
     return <Navigate to="/curriculum" replace />;
   }
 
+  console.log('[AdminRoute] → rendering children');
   return children;
 };
 

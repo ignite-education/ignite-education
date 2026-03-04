@@ -24,14 +24,19 @@ export const AuthProvider = ({ children }) => {
     let hasInitialized = false;
 
     const safeInitialize = (session) => {
-      if (!isSubscribed || hasInitialized) return;
+      if (!isSubscribed || hasInitialized) {
+        console.log('[AuthContext] safeInitialize SKIPPED (subscribed:', isSubscribed, 'hasInit:', hasInitialized, ')');
+        return;
+      }
       hasInitialized = true;
+      console.log('[AuthContext] safeInitialize → user:', session?.user?.id ?? 'null', 'email:', session?.user?.email ?? 'none');
       setUser(session?.user ?? null);
       setLoading(false);
       setIsInitialized(true);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('[AuthContext] onAuthStateChange →', event, 'user:', session?.user?.id ?? 'null');
       if (!isSubscribed) return;
 
       sessionFromListener = session;
@@ -52,6 +57,7 @@ export const AuthProvider = ({ children }) => {
 
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
+        console.log('[AuthContext] getSession resolved → user:', session?.user?.id ?? 'null');
         if (!isSubscribed) return;
         clearTimeout(loadingTimeout);
 
@@ -61,7 +67,8 @@ export const AuthProvider = ({ children }) => {
           safeInitialize(sessionFromListener);
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[AuthContext] getSession FAILED:', err);
         if (!isSubscribed) return;
         clearTimeout(loadingTimeout);
 
@@ -82,6 +89,7 @@ export const AuthProvider = ({ children }) => {
   // Fetch user role from database
   useEffect(() => {
     const fetchUserRole = async () => {
+      console.log('[AuthContext] fetchUserRole called, user:', user?.id ?? 'null');
       if (!user) {
         setUserRole(null);
         setRoleError(null);
@@ -96,19 +104,22 @@ export const AuthProvider = ({ children }) => {
           .eq('id', user.id)
           .single();
 
+        console.log('[AuthContext] role fetch result → data:', data, 'error:', error);
+
         if (error) {
-          console.error('Error fetching user role:', error);
+          console.error('[AuthContext] role fetch ERROR:', error);
           setRoleError(error.message || 'Failed to fetch user role');
           return;
         }
 
         if (data) {
+          console.log('[AuthContext] setting userRole →', data.role);
           setUserRole(data.role);
         } else {
           setRoleError('No user record found');
         }
       } catch (err) {
-        console.error('Exception fetching user role:', err);
+        console.error('[AuthContext] role fetch EXCEPTION:', err);
         setRoleError(err.message || 'Unexpected error fetching role');
       }
     };

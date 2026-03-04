@@ -7,6 +7,7 @@ import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
 import CourseRequestModal from './CourseRequestModal'
+import lottieData from '../../../public/icon-animation.json'
 
 interface Course {
   id: string
@@ -27,7 +28,6 @@ interface WelcomeHeroProps {
 export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestedQuery, setRequestedQuery] = useState('')
   const [modalPhase, setModalPhase] = useState<'sign-in' | 'thank-you'>('sign-in')
@@ -36,20 +36,13 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const loopCountRef = useRef(0)
 
   useEffect(() => {
-    fetch('/icon-animation.json')
-      .then(res => res.json())
-      .then(data => setLottieData(data))
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    if (lottieData && lottieRef.current) {
+    if (lottieRef.current) {
       const timer = setTimeout(() => {
         lottieRef.current?.play()
       }, 2000)
       return () => clearTimeout(timer)
     }
-  }, [lottieData])
+  }, [])
 
   const handleRequestCourse = () => {
     setRequestedQuery(searchQuery.trim())
@@ -144,26 +137,22 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         {/* Header with Logo */}
         <div className="text-center mb-[7px]">
           <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
-            {lottieData ? (
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={lottieData}
-                loop={true}
-                autoplay={false}
-                onLoopComplete={() => {
-                  loopCountRef.current += 1
-                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
-                    lottieRef.current.pause()
-                    setTimeout(() => {
-                      lottieRef.current?.goToAndPlay(0)
-                    }, 4000)
-                  }
-                }}
-                style={{ width: 80, height: 80, margin: '0 auto' }}
-              />
-            ) : (
-              <div style={{ width: 80, height: 80, margin: '0 auto' }} />
-            )}
+            <Lottie
+              lottieRef={lottieRef}
+              animationData={lottieData}
+              loop={true}
+              autoplay={false}
+              onLoopComplete={() => {
+                loopCountRef.current += 1
+                if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                  lottieRef.current.pause()
+                  setTimeout(() => {
+                    lottieRef.current?.goToAndPlay(0)
+                  }, 4000)
+                }
+              }}
+              style={{ width: 80, height: 80, margin: '0 auto' }}
+            />
           </Link>
           <h1
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
