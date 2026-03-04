@@ -13,7 +13,7 @@ export default function PromptCard({ prompt }: PromptCardProps) {
     <Link
       href={`/prompts/${prompt.slug}`}
       target="_blank"
-      className="group block w-full text-left bg-[#F6F6F6] rounded-[8px] px-5 py-5"
+      className="group block w-full text-left bg-[#F6F6F6] rounded-[8px] px-5 py-4"
     >
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
