@@ -441,14 +441,16 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         <button
           onClick={handleAutocomplete}
           disabled={autocompleting}
-          className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] cursor-pointer ${
+          className={`w-full px-4 transition-all duration-200 cursor-pointer ${
             autocompleteSuccess
               ? 'bg-[#009600] text-white'
               : autocompleteError
               ? 'bg-[#DC2626] text-white'
-              : 'bg-white text-black hover:bg-gray-50'
+              : 'bg-white text-black'
           } disabled:opacity-50 disabled:cursor-not-allowed`}
-          style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+          style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+          onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)' }}
+          onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
         >
           {autocompleting ? (
             <span className="flex items-center justify-center gap-2">
@@ -483,7 +485,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             ? 'Fields filled from your profile'
             : autocompleteError
             ? 'Please try again'
-            : "We'll complete the prompt based on your information"}
+            : <>We&apos;ll complete the prompt<br />based on your information</>}
         </p>
       </div>
     )
@@ -584,7 +586,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       {/* Description */}
       <p
         className="text-black text-lg leading-normal font-normal text-center mx-auto"
-        style={{ letterSpacing: '-0.02em', marginBottom: '30px', maxWidth: '610px', textWrap: 'balance' }}
+        style={{ letterSpacing: '-0.02em', marginBottom: '30px', maxWidth: '700px', textWrap: 'balance' }}
       >
         {prompt.description}
       </p>
@@ -762,14 +764,16 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                   <button
                     onClick={handleSaveToggle}
                     disabled={saving || checkingStatus}
-                    className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                    className={`w-full px-4 transition-all duration-200 cursor-pointer ${
                       checkingStatus
                         ? 'bg-[#9E9E9E] text-white'
                         : saved
-                        ? 'bg-[#009600] text-white hover:bg-[#007D00]'
-                        : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                        ? 'bg-[#009600] text-white'
+                        : 'bg-[#EF0B72] text-white'
                     } disabled:opacity-50 disabled:cursor-not-allowed`}
-                    style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+                    style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
                   >
                     {checkingStatus ? (
                       <span className="flex items-center justify-center gap-2">
@@ -800,7 +804,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                   </button>
 
                   <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                    {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
+                    {!checkingStatus && saved && 'Prompt saved to your account'}
                   </p>
                 </div>
 
@@ -989,14 +993,16 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               <button
                 onClick={handleSaveToggle}
                 disabled={saving || checkingStatus}
-                className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                className={`w-full px-4 transition-all duration-200 cursor-pointer ${
                   checkingStatus
                     ? 'bg-[#9E9E9E] text-white'
                     : saved
-                    ? 'bg-[#009600] text-white hover:bg-[#007D00]'
-                    : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                    ? 'bg-[#009600] text-white'
+                    : 'bg-[#EF0B72] text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
-                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
               >
                 {checkingStatus ? (
                   <span className="flex items-center justify-center gap-2">
@@ -1026,7 +1032,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
                 )}
               </button>
               <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                {!checkingStatus && (saved ? 'Prompt saved to your account' : "We'll save this prompt for later")}
+                {!checkingStatus && saved && 'Prompt saved to your account'}
               </p>
             </div>
 

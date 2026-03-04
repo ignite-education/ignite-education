@@ -99,7 +99,7 @@ const ProgressHub = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { firstName, user: authUser, isAdFree, signOut, updateProfile, isInitialized } = useAuth();
+  const { firstName, user: authUser, isAdFree, signOut, updateProfile, isInitialized, profilePicture } = useAuth();
   const { lottieData } = useAnimation();
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
@@ -1021,6 +1021,21 @@ const ProgressHub = () => {
       }
 
       console.log('✅ fetchData completed successfully');
+
+      // Preload profile picture before showing page to avoid flash
+      if (profilePicture) {
+        try {
+          await new Promise((resolve) => {
+            const img = new Image();
+            img.onload = resolve;
+            img.onerror = resolve; // Don't block on error — fallback initial will show
+            img.src = profilePicture;
+          });
+        } catch {
+          // Ignore — page will show fallback initial
+        }
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('❌ CRITICAL Error fetching data:', error);
