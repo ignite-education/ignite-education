@@ -22,13 +22,16 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   const [commentInputs, setCommentInputs] = useState({});
   const [localCommentCounts, setLocalCommentCounts] = useState({});
   const [closingPostId, setClosingPostId] = useState(null);
+  const [commentsVisibleId, setCommentsVisibleId] = useState(null);
   const leaveTimerRef = useRef(null);
   const animTimerRef = useRef(null);
+  const expandTimerRef = useRef(null);
 
   useEffect(() => {
     return () => {
       clearTimeout(leaveTimerRef.current);
       clearTimeout(animTimerRef.current);
+      clearTimeout(expandTimerRef.current);
     };
   }, []);
 
@@ -37,6 +40,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
     leaveTimerRef.current = setTimeout(() => {
       setClosingPostId(postId);
       animTimerRef.current = setTimeout(() => {
+        setCommentsVisibleId(null);
         setExpandedPostId(null);
         setClosingPostId(null);
       }, 250);
@@ -156,12 +160,17 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   const togglePost = (post) => {
     clearTimeout(leaveTimerRef.current);
     clearTimeout(animTimerRef.current);
+    clearTimeout(expandTimerRef.current);
     setClosingPostId(null);
     if (expandedPostId === post.id) {
+      setCommentsVisibleId(null);
       setExpandedPostId(null);
     } else {
       setExpandedPostId(post.id);
       fetchComments(post);
+      expandTimerRef.current = setTimeout(() => {
+        setCommentsVisibleId(post.id);
+      }, 300);
     }
   };
 
@@ -238,7 +247,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       <h3 className="text-white flex-1" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className={`text-white mb-2 leading-snug ${expandedPostId === post.id ? '' : 'line-clamp-6'}`} style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>
+                    <p className="text-white mb-2 leading-snug" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', maxHeight: expandedPostId === post.id ? '2000px' : '8.25em', overflow: 'hidden', transition: 'max-height 0.3s ease-out' }}>
                       {post.content}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-white">
@@ -275,17 +284,21 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               </div>
 
               {/* Comments */}
-              {(expandedPostId === post.id || closingPostId === post.id) && (
+              {expandedPostId === post.id && (
                 <div
-                  className="ml-auto mt-1 overflow-hidden"
+                  className="ml-auto"
                   style={{
                     width: '90%',
-                    animation: closingPostId === post.id ? 'scaleDown 0.25s ease-out forwards' : 'scaleUp 0.2s ease-out',
-                    transformOrigin: 'top center',
+                    display: 'grid',
+                    gridTemplateRows: commentsVisibleId === post.id && closingPostId !== post.id ? '1fr' : '0fr',
+                    opacity: commentsVisibleId === post.id && closingPostId !== post.id ? 1 : 0,
+                    transition: 'grid-template-rows 0.25s ease-out, opacity 0.2s ease-out',
+                    marginTop: commentsVisibleId === post.id && closingPostId !== post.id ? '0.25rem' : '0',
                   }}
                   onMouseLeave={() => handleCommentsMouseLeave(post.id)}
                   onMouseEnter={handleCommentsMouseEnter}
                 >
+                  <div style={{ overflow: 'hidden', minHeight: 0 }}>
                   <div className="rounded-lg" style={{ background: '#171717', padding: '1rem 1.3rem' }}>
                     <h4 className="text-white mb-2" style={{ fontSize: '1rem', fontWeight: 500 }}>
                       Comments
@@ -300,7 +313,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitComment(e, post); }}
                         placeholder="Post your comment"
                         className="flex-1 bg-black text-white leading-snug px-3 py-1.5 focus:outline-none focus:ring-[0.5px] focus:ring-purple-500 placeholder-white"
-                        style={{ borderRadius: '0.3rem', fontSize: '0.8rem', fontWeight: 300, marginLeft: '-12px' }}
+                        style={{ borderRadius: '0.3rem', fontSize: '0.8rem', fontWeight: 300 }}
                       />
                       <button
                         onClick={(e) => handleSubmitComment(e, post)}
@@ -331,6 +344,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         <p className="text-xs text-white/50">No comments yet.</p>
                       ) : null}
                     </div>
+                  </div>
                   </div>
                 </div>
               )}
