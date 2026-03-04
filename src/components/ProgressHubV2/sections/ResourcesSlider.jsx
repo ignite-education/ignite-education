@@ -63,7 +63,7 @@ const ResourcesSlider = ({ resources = [] }) => {
 
   return (
     <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.75rem' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>
         Resources
       </h2>
 
@@ -109,6 +109,10 @@ const ResourcesSlider = ({ resources = [] }) => {
                 background: '#7714E0',
                 scrollSnapAlign: 'start',
                 scrollSnapStop: 'always',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
               }}
             >
               {/* Blur overlay for non-snapped cards */}

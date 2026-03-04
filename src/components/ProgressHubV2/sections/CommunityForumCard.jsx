@@ -139,7 +139,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   return (
     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div className="flex items-center" style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
-        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%' }}>Community Forum</h2>
+        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%' }}>Community Forum</h2>
         {onMyPosts && (
           <button
             onClick={onMyPosts}

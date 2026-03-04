@@ -104,7 +104,7 @@ export default function PromptFilters({
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-semibold rounded-[5px] transition-all cursor-pointer"
+              className="text-white text-sm font-medium rounded-[5px] transition-all cursor-pointer"
               style={{
                 backgroundColor: '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',
@@ -170,7 +170,7 @@ export default function PromptFilters({
                       key={option}
                       type="button"
                       onClick={() => handleToggle(type, option)}
-                      className="w-full text-left px-[10px] py-1 text-sm font-medium hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
+                      className="w-full text-left px-[10px] py-1 text-sm font-normal hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
                       style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em' }}
                     >
                       <span

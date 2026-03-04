@@ -76,7 +76,7 @@ const ProgressGraph = ({
     return (
       <div className="w-full" style={{ marginTop: '8px' }}>
         {userName && (
-          <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '4px' }}>
+          <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '4px' }}>
             {userName}'s Progress
           </h3>
         )}
@@ -272,7 +272,7 @@ const ProgressGraph = ({
   return (
     <div ref={containerRef} className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
-        <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '4px' }}>
+        <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '4px' }}>
           {userName}'s Progress
         </h3>
       )}

@@ -156,7 +156,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
 
   return (
     <div className="relative" style={{ marginTop: '1.5rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
@@ -216,9 +216,9 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     width: `${cardWidth}px`,
                     minWidth: `${cardWidth}px`,
                     flexShrink: 0,
-                    paddingTop: '5.618px',
+                    paddingTop: '1rem',
                     paddingRight: '5.618px',
-                    paddingBottom: '5.618px',
+                    paddingBottom: '1rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
