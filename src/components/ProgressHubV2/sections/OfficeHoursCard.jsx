@@ -123,7 +123,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
     <>
       <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
         <h2 className="font-semibold text-white leading-snug" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
-        <div className="rounded-lg flex items-center" style={{ padding: '1rem', minHeight: '100px', background: '#7714E0', cursor: 'pointer' }} onClick={handleOpenCalendly}>
+        <div className="rounded-lg flex items-center group" style={{ padding: '1rem', minHeight: '100px', background: '#7714E0', cursor: 'pointer' }} onClick={handleOpenCalendly}>
           {coaches || calendlyLink ? (
             <div className="flex gap-2.5 w-full items-center">
               {/* Single coach layout */}

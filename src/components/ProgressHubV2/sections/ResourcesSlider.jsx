@@ -96,14 +96,14 @@ const ResourcesSlider = ({ resources = [] }) => {
           {resources.map((resource, index) => (
             <div
               key={resource.id}
-              className="relative flex items-center gap-3"
+              className="relative flex items-center gap-3 group"
               style={{
                 width: `${CARD_WIDTH}px`,
                 minWidth: `${CARD_WIDTH}px`,
                 flexShrink: 0,
-                paddingTop: '1rem',
+                paddingTop: '0.85rem',
                 paddingRight: '5.618px',
-                paddingBottom: '1rem',
+                paddingBottom: '0.85rem',
                 paddingLeft: '1.4rem',
                 borderRadius: '0.3rem',
                 background: '#7714E0',
