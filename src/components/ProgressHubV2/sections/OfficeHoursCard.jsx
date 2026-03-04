@@ -122,7 +122,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   return (
     <>
       <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
-        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
+        <h2 className="font-semibold text-white leading-snug" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
         <div className="rounded-lg flex items-center" style={{ padding: '1rem', minHeight: '100px', background: '#7714E0' }}>
           {coaches || calendlyLink ? (
             <div className="flex gap-2.5 w-full items-center">
@@ -135,21 +135,21 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         ) : (
                           <div className="rounded bg-white/10" style={{ width: '6rem', height: '6rem' }} />
                         )}
-                        <p className="text-white" style={{ fontSize: '0.75rem', fontWeight: 400, marginTop: '4px' }}>Available</p>
+                        <p className="text-white leading-snug" style={{ fontSize: '0.75rem', fontWeight: 400, marginTop: '4px' }}>Available</p>
                         <div className="bg-white rounded" style={{ width: '6rem', padding: '2px 0', marginTop: '3px', textAlign: 'center' }}>
-                          <p className="text-black" style={{ fontSize: '0.7rem', fontWeight: 400 }}>Tomorrow at 4PM</p>
+                          <p className="text-black leading-snug" style={{ fontSize: '0.7rem', fontWeight: 400 }}>Tomorrow at 4PM</p>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
                         {coaches[0].linkedin_url ? (
                           <a href={coaches[0].linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                            <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                            <h3 className="text-white leading-snug" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
                           </a>
                         ) : (
-                          <h3 className="text-white" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
+                          <h3 className="text-white leading-snug" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', marginBottom: '0px' }}>{coaches[0].name}</h3>
                         )}
-                        {coaches[0].position && <p className="text-white" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
-                        {coaches[0].description && <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
+                        {coaches[0].position && <p className="text-white leading-snug" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '0%', marginBottom: '0.5rem' }}>{coaches[0].position}</p>}
+                        {coaches[0].description && <p className="text-white leading-snug" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>{coaches[0].description}</p>}
                       </div>
                 </div>
               ) : (
@@ -172,12 +172,12 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                               )}
                               {coach.linkedin_url ? (
                                 <a href={coach.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                                  <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
+                                  <span className="text-white block truncate w-full leading-snug" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
                                 </a>
                               ) : (
-                                <span className="text-white block truncate w-full" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
+                                <span className="text-white block truncate w-full leading-snug" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>{coach.name}</span>
                               )}
-                              {coach.position && <p className="text-white truncate w-full" style={{ fontSize: '10px', marginTop: '0.5px', lineHeight: '1.2', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
+                              {coach.position && <p className="text-white truncate w-full leading-snug" style={{ fontSize: '10px', marginTop: '0.5px', opacity: 0.9, marginBottom: '-3px' }}>{coach.position}</p>}
                             </>
                           ) : (
                             <>
