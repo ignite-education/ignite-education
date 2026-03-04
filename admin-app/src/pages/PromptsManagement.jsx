@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, Check, X, Lightbulb, Users, Eye } from 'lucide-react';
+import { Plus, Trash2, Save, Check, X, Lightbulb, Users, Eye, Bold } from 'lucide-react';
 
 const LLM_TOOLS = ['Claude', 'Co-Pilot', 'ChatGPT', 'Gemini'];
 const COMPLEXITIES = ['Low', 'Mid', 'High'];
@@ -44,6 +44,7 @@ const PromptsManagement = () => {
 
   // Professions from specialism courses
   const [professions, setProfessions] = useState([]);
+  const promptTextareaRef = useRef(null);
 
   useEffect(() => {
     loadPrompts();
@@ -97,6 +98,32 @@ const PromptsManagement = () => {
         ? prev.llm_tools.filter(t => t !== tool)
         : [...prev.llm_tools, tool],
     }));
+  };
+
+  const toggleBold = () => {
+    const ta = promptTextareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const text = formData.full_prompt;
+    if (start === end) {
+      // No selection — insert empty bold markers
+      const updated = text.slice(0, start) + '****' + text.slice(end);
+      handleInputChange('full_prompt', updated);
+      setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, start + 2); }, 0);
+    } else {
+      const selected = text.slice(start, end);
+      // If already wrapped in **, unwrap
+      if (text.slice(start - 2, start) === '**' && text.slice(end, end + 2) === '**') {
+        const updated = text.slice(0, start - 2) + selected + text.slice(end + 2);
+        handleInputChange('full_prompt', updated);
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(start - 2, end - 2); }, 0);
+      } else {
+        const updated = text.slice(0, start) + '**' + selected + '**' + text.slice(end);
+        handleInputChange('full_prompt', updated);
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, end + 2); }, 0);
+      }
+    }
   };
 
   const handleNewPrompt = () => {
@@ -402,11 +429,24 @@ const PromptsManagement = () => {
 
               {/* Full Prompt */}
               <div className="mb-5">
-                <label className="block text-sm font-medium mb-2">Full Prompt *</label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium">Full Prompt *</label>
+                  <button
+                    type="button"
+                    onClick={toggleBold}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white transition-colors"
+                    title="Wrap selected text in **bold** (Ctrl+B)"
+                  >
+                    <Bold className="w-3.5 h-3.5" />
+                    Bold
+                  </button>
+                </div>
                 <textarea
+                  ref={promptTextareaRef}
                   value={formData.full_prompt}
                   onChange={(e) => handleInputChange('full_prompt', e.target.value)}
-                  placeholder="The complete prompt text. Use [PLACEHOLDER] syntax for user-editable fields."
+                  onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold(); } }}
+                  placeholder="The complete prompt text. Use [PLACEHOLDER] syntax for user-editable fields. Use **text** for bold."
                   rows={10}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72] resize-y font-mono text-sm"
                 />

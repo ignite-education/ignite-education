@@ -37,6 +37,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
 
   // Ref to auto-submit after sign-in completes
   const pendingSubmitRef = useRef(false)
+  const promptTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const isFormValid = title.trim() && description.trim() && fullPrompt.trim() && profession && llmTools.length > 0 && complexity
 
@@ -212,6 +213,29 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
     setLlmTools(prev => prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool])
   }
 
+  const toggleBold = () => {
+    const ta = promptTextareaRef.current
+    if (!ta) return
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    if (start === end) {
+      const updated = fullPrompt.slice(0, start) + '****' + fullPrompt.slice(end)
+      setFullPrompt(updated)
+      setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, start + 2) }, 0)
+    } else {
+      const selected = fullPrompt.slice(start, end)
+      if (fullPrompt.slice(start - 2, start) === '**' && fullPrompt.slice(end, end + 2) === '**') {
+        const updated = fullPrompt.slice(0, start - 2) + selected + fullPrompt.slice(end + 2)
+        setFullPrompt(updated)
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(start - 2, end - 2) }, 0)
+      } else {
+        const updated = fullPrompt.slice(0, start) + '**' + selected + '**' + fullPrompt.slice(end)
+        setFullPrompt(updated)
+        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, end + 2) }, 0)
+      }
+    }
+  }
+
   const handleClose = () => {
     setClosing(true)
     setTimeout(onClose, 300)
@@ -306,16 +330,30 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
 
             {/* Full Prompt */}
             <div>
-              <label
-                className="block text-sm font-medium text-black tracking-[-0.01em] mb-1"
-                style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
-              >
-                Full Prompt
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label
+                  className="block text-sm font-medium text-black tracking-[-0.01em]"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+                >
+                  Full Prompt
+                </label>
+                <button
+                  type="button"
+                  onClick={toggleBold}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black transition-colors"
+                  style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
+                  title="Bold selected text (Ctrl+B)"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                  Bold
+                </button>
+              </div>
               <textarea
+                ref={promptTextareaRef}
                 value={fullPrompt}
                 onChange={(e) => setFullPrompt(e.target.value)}
-                placeholder="The complete prompt text..."
+                onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold() } }}
+                placeholder="The complete prompt text... Use **text** for bold."
                 rows={5}
                 className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors resize-none"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}

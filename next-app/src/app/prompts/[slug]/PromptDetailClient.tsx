@@ -44,10 +44,12 @@ function extractFirstName(user: { user_metadata?: Record<string, string>; email?
 
 type PromptSegment =
   | { type: 'text'; content: string }
+  | { type: 'bold'; content: string }
   | { type: 'placeholder'; content: string; index: number }
 
 function parsePromptSegments(fullPrompt: string): PromptSegment[] {
-  const regex = /\[([^\]]+)\]/g
+  // Single regex to match [PLACEHOLDER] or **bold** tokens
+  const regex = /\[([^\]]+)\]|\*\*([^*]+)\*\*/g
   const segments: PromptSegment[] = []
   let lastIndex = 0
   let placeholderIndex = 0
@@ -57,7 +59,13 @@ function parsePromptSegments(fullPrompt: string): PromptSegment[] {
     if (match.index > lastIndex) {
       segments.push({ type: 'text', content: fullPrompt.slice(lastIndex, match.index) })
     }
-    segments.push({ type: 'placeholder', content: match[1], index: placeholderIndex++ })
+    if (match[1] !== undefined) {
+      // [PLACEHOLDER] match
+      segments.push({ type: 'placeholder', content: match[1], index: placeholderIndex++ })
+    } else {
+      // **bold** match
+      segments.push({ type: 'bold', content: match[2] })
+    }
     lastIndex = match.index + match[0].length
   }
 
@@ -134,6 +142,25 @@ function InlinePlaceholderInput({
   )
 }
 
+function useCountUp(target: number, duration = 800, delay = 900) {
+  const [value, setValue] = useState(0)
+  useEffect(() => {
+    if (target === 0) return
+    const timeout = setTimeout(() => {
+      const start = performance.now()
+      const step = (now: number) => {
+        const progress = Math.min((now - start) / duration, 1)
+        const eased = 1 - Math.pow(1 - progress, 3)
+        setValue(Math.round(eased * target))
+        if (progress < 1) requestAnimationFrame(step)
+      }
+      requestAnimationFrame(step)
+    }, delay)
+    return () => clearTimeout(timeout)
+  }, [target, duration, delay])
+  return value
+}
+
 export default function PromptDetailClient({ prompt, slug }: PromptDetailClientProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
@@ -150,6 +177,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
   const [autocompleteError, setAutocompleteError] = useState(false)
   const [thumbsUp, setThumbsUp] = useState(false)
+  const [thumbsUpExtra, setThumbsUpExtra] = useState(0)
+  const [usageExtra, setUsageExtra] = useState(0)
+  const animatedThumbsUp = useCountUp(prompt.rating)
+  const animatedUsage = useCountUp(prompt.usageCount)
+  const displayedThumbsUp = animatedThumbsUp + thumbsUpExtra
+  const displayedUsage = animatedUsage + usageExtra
 
   // Check if user already thumbs-upped this prompt
   useEffect(() => {
@@ -162,11 +195,13 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const trackUsage = useCallback(() => {
     const supabase = createClient()
     supabase.rpc('increment_prompt_usage', { p_id: prompt.id }).then()
+    setUsageExtra(prev => prev + 1)
   }, [prompt.id])
 
   const handleThumbsUp = useCallback(async () => {
     if (thumbsUp) return
     setThumbsUp(true)
+    setThumbsUpExtra(prev => prev + 1)
     try {
       const liked = JSON.parse(localStorage.getItem('prompt_thumbs_up') || '[]')
       liked.push(prompt.id)
@@ -185,7 +220,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   const buildFinalPrompt = useCallback((): string => {
     return segments.map(seg => {
-      if (seg.type === 'text') return seg.content
+      if (seg.type === 'text' || seg.type === 'bold') return seg.content
       const userValue = placeholderValues[seg.index]
       return userValue && userValue.trim() !== '' ? userValue : `[${seg.content}]`
     }).join('')
@@ -604,6 +639,35 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         ))}
       </div>
 
+      {/* Stats row */}
+      <div className="flex items-center justify-center gap-3 mb-8">
+        <button
+          onClick={handleThumbsUp}
+          disabled={thumbsUp}
+          className="flex items-center gap-1.5 text-sm transition-colors cursor-pointer disabled:cursor-default"
+          style={{ color: thumbsUp ? '#009600' : '#6B7280', letterSpacing: '-0.02em' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={thumbsUp ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
+            <path d="M2 13h2v8H2z" />
+          </svg>
+          {displayedThumbsUp}
+        </button>
+
+        <span className="text-[#D1D5DB]">·</span>
+
+        <span
+          className="flex items-center gap-1.5 text-sm"
+          style={{ color: '#6B7280', letterSpacing: '-0.02em' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          {displayedUsage}
+        </span>
+      </div>
+
       <div className="lg:-mx-24">
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Prompt
@@ -619,6 +683,8 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             {segments.map((seg, i) =>
               seg.type === 'text' ? (
                 <span key={i}>{seg.content}</span>
+              ) : seg.type === 'bold' ? (
+                <strong key={i} className="font-bold">{seg.content}</strong>
               ) : (
                 <InlinePlaceholderInput
                   key={`placeholder-${seg.index}`}
@@ -760,7 +826,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
             ) : (
               <>
                 {/* Save to Account Button for authenticated users */}
-                <div className="w-[80%] mx-auto mb-4">
+                <div className="w-[80%] mx-auto mb-2">
                   <button
                     onClick={handleSaveToggle}
                     disabled={saving || checkingStatus}
@@ -989,7 +1055,7 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
           </div>
         ) : (
           <>
-            <div className="w-full mb-4">
+            <div className="w-full mb-2">
               <button
                 onClick={handleSaveToggle}
                 disabled={saving || checkingStatus}
