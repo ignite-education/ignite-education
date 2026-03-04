@@ -5,6 +5,7 @@ const CARD_GAP = 16;
 
 const ResourcesSlider = ({ resources = [] }) => {
   const scrollContainerRef = useRef(null);
+  const rafRef = useRef(null);
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollStartX, setScrollStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
@@ -20,6 +21,12 @@ const ResourcesSlider = ({ resources = [] }) => {
     });
     observer.observe(scrollContainerRef.current);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   // Drag scroll handlers
@@ -42,21 +49,24 @@ const ResourcesSlider = ({ resources = [] }) => {
   const handleMouseLeave = () => setIsScrolling(false);
 
   const handleScroll = () => {
-    if (!scrollContainerRef.current) return;
-    const scrollPosition = scrollContainerRef.current.scrollLeft;
-    let cumulativeWidth = 0;
-    let index = 0;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!scrollContainerRef.current) return;
+      const scrollPosition = scrollContainerRef.current.scrollLeft;
+      let cumulativeWidth = 0;
+      let index = 0;
 
-    for (let i = 0; i < resources.length; i++) {
-      if (scrollPosition < cumulativeWidth + CARD_WIDTH / 2) {
-        index = i;
-        break;
+      for (let i = 0; i < resources.length; i++) {
+        if (scrollPosition < cumulativeWidth + CARD_WIDTH / 2) {
+          index = i;
+          break;
+        }
+        cumulativeWidth += CARD_WIDTH + CARD_GAP;
+        if (i === resources.length - 1) index = i;
       }
-      cumulativeWidth += CARD_WIDTH + CARD_GAP;
-      if (i === resources.length - 1) index = i;
-    }
 
-    setSnappedCardIndex(index);
+      setSnappedCardIndex(index);
+    });
   };
 
   if (resources.length === 0) return null;
@@ -120,12 +130,14 @@ const ResourcesSlider = ({ resources = [] }) => {
                 style={{
                   position: 'absolute',
                   top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: index !== snappedCardIndex ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
-                  backdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
-                  WebkitBackdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  backdropFilter: 'blur(0.75px)',
+                  WebkitBackdropFilter: 'blur(0.75px)',
                   borderRadius: '0.3rem',
                   pointerEvents: 'none',
-                  transition: 'background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out',
+                  opacity: index !== snappedCardIndex ? 1 : 0,
+                  transition: 'opacity 0.3s ease-in-out',
+                  willChange: 'opacity',
                 }}
               />
               <div className="flex-1">

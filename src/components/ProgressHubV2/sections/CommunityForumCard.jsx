@@ -146,9 +146,9 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
             style={{ width: '35.9px', height: '35.9px', borderRadius: '0.3rem', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}
             title="My posts"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
-              <circle cx="12" cy="8" r="5" />
-              <path d="M20 21a8 8 0 0 0-16 0" />
+            <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-pink-500 transition-colors duration-300">
+              <rect x="7.5" y="3" width="9" height="9" rx="2" />
+              <path d="M4 22v-1c0-2.5 1.5-4 4-4h8c2.5 0 4 1.5 4 4v1" />
             </svg>
           </button>
         )}
@@ -247,21 +247,21 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               {/* Comments */}
               {expandedPostId === post.id && (
                 <div className="ml-auto mt-1 overflow-hidden" style={{ width: '90%' }}>
-                  <div className="rounded-lg p-3" style={{ background: '#171717' }}>
+                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem' }}>
                     <h4 className="text-white mb-2" style={{ fontSize: '0.9rem', fontWeight: 500 }}>
                       Comments
                     </h4>
 
                     {/* Comment input */}
-                    <div className="flex gap-2 mb-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex gap-2 mb-2 items-stretch" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="text"
                         value={commentInputs[post.id] || ''}
                         onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitComment(e, post); }}
-                        placeholder="Add a comment..."
-                        className="flex-1 bg-black text-white text-xs px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-gray-500"
-                        style={{ borderRadius: '0.3rem' }}
+                        placeholder="Post your comment"
+                        className="flex-1 bg-black text-white leading-snug px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-pink-500 placeholder-white"
+                        style={{ borderRadius: '0.3rem', fontSize: '0.9rem', fontWeight: 300 }}
                       />
                       <button
                         onClick={(e) => handleSubmitComment(e, post)}
@@ -277,7 +277,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                     )}
                     <div
                       className="overflow-y-auto"
-                      style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '200px', scrollbarWidth: 'thin', scrollbarColor: '#4B5563 transparent' }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', maxHeight: '200px', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                       {postComments[post.id] && postComments[post.id].length > 0 ? (
                         postComments[post.id].map(comment => (

@@ -1,6 +1,3 @@
-'use client'
-
-import useTypingAnimation from '@/hooks/useTypingAnimation'
 import { getCourseTypeLabel, getCourseTagline, getTwoSentences } from '@/lib/courseUtils'
 import type { Course } from '@/types/course'
 import Link from 'next/link'
@@ -14,15 +11,6 @@ interface CourseHeroProps {
 }
 
 export default function CourseHero({ course, courseSlug, isComingSoon }: CourseHeroProps) {
-  const { displayText: displayedTitle, isComplete: isTypingComplete } = useTypingAnimation(
-    course.title,
-    {
-      charDelay: 75,
-      startDelay: 750,
-      enabled: true,
-    }
-  )
-
   return (
     <>
       <div className="sticky top-0 z-50">
@@ -41,17 +29,12 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
               {getCourseTypeLabel(course)}
             </Link>
 
-            {/* Title with typing animation */}
+            {/* Title */}
             <h1
               className="text-[38px] font-bold text-black mb-[15px] leading-tight"
               style={{ letterSpacing: '-0.02em' }}
             >
-              <span style={{ display: 'inline-block', textAlign: 'left' }}>
-                {displayedTitle}
-                {!isTypingComplete && (
-                  <span style={{ opacity: 0 }}>{course.title.substring(displayedTitle.length)}</span>
-                )}
-              </span>
+              {course.title}
             </h1>
 
             {/* Tagline */}

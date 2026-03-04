@@ -16,6 +16,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
   const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
   const hasInitializedScrollRef = useRef(false);
+  const rafRef = useRef(null);
 
   const [isScrolling, setIsScrolling] = useState(false);
   const [scrollStartX, setScrollStartX] = useState(0);
@@ -35,6 +36,12 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
     });
     observer.observe(scrollContainerRef.current);
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
   }, []);
 
   const getCardWidth = useCallback((lesson) => {
@@ -76,23 +83,26 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
   const handleScrollMouseLeave = () => setIsScrolling(false);
 
   const handleScroll = () => {
-    if (!scrollContainerRef.current || upcomingLessons.length === 0) return;
-    const scrollPosition = scrollContainerRef.current.scrollLeft;
-    const gap = 16;
-    let cumulativeWidth = 0;
-    let index = 0;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      if (!scrollContainerRef.current || upcomingLessons.length === 0) return;
+      const scrollPosition = scrollContainerRef.current.scrollLeft;
+      const gap = 16;
+      let cumulativeWidth = 0;
+      let index = 0;
 
-    for (let i = 0; i < upcomingLessons.length; i++) {
-      const cardWidth = getCardWidth(upcomingLessons[i]);
-      if (scrollPosition < cumulativeWidth + cardWidth / 2) {
-        index = i;
-        break;
+      for (let i = 0; i < upcomingLessons.length; i++) {
+        const cardWidth = getCardWidth(upcomingLessons[i]);
+        if (scrollPosition < cumulativeWidth + cardWidth / 2) {
+          index = i;
+          break;
+        }
+        cumulativeWidth += cardWidth + gap;
+        if (i === upcomingLessons.length - 1) index = i;
       }
-      cumulativeWidth += cardWidth + gap;
-      if (i === upcomingLessons.length - 1) index = i;
-    }
 
-    setSnappedCardIndex(index);
+      setSnappedCardIndex(index);
+    });
   };
 
   const scrollToCurrentLesson = () => {
@@ -232,12 +242,14 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     style={{
                       position: 'absolute',
                       top: 0, left: 0, right: 0, bottom: 0,
-                      backgroundColor: index !== snappedCardIndex ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
-                      backdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
-                      WebkitBackdropFilter: index !== snappedCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                      backdropFilter: 'blur(0.75px)',
+                      WebkitBackdropFilter: 'blur(0.75px)',
                       borderRadius: '0.3rem',
                       pointerEvents: 'none',
-                      transition: 'background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out'
+                      opacity: index !== snappedCardIndex ? 1 : 0,
+                      transition: 'opacity 0.3s ease-in-out',
+                      willChange: 'opacity',
                     }}
                   />
                   <div className="flex-1">
