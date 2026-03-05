@@ -78,14 +78,14 @@ export async function getAllPrompts(): Promise<Prompt[]> {
   return (data || []).map(mapDbPrompt)
 }
 
-/** Fetch a single prompt by slug (includes pending prompts for direct URL access) */
+/** Fetch a single prompt by slug (includes draft prompts for direct URL access) */
 export async function getPromptBySlug(slug: string): Promise<Prompt | undefined> {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('prompts')
     .select('*')
     .eq('slug', slug)
-    .in('status', ['published', 'pending'])
+    .in('status', ['published', 'draft'])
     .maybeSingle()
 
   if (error || !data) return undefined

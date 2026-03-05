@@ -214,9 +214,11 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       console.error('[PromptContribute] Prompt insert failed:', promptError.message, promptError.code)
     }
 
-    // Open the new prompt page in a new tab (only if prompt row was created)
-    if (!promptError) {
-      window.open(`/prompts/${slug}`, '_blank')
+    const openSlug = promptError ? null : slug
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    if (openSlug) {
+      window.open(`/prompts/${openSlug}`, '_blank')
     }
 
     setSubmitting(false)
