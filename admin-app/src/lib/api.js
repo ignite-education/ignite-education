@@ -1548,12 +1548,23 @@ export async function syncUserToCourseCompletedAudience(courseId, userInfo) {
  */
 export async function getCourseRequestAnalytics() {
   try {
-    const { data, error } = await supabase
+    console.log('[getCourseRequestAnalytics] Starting query...');
+    console.log('[getCourseRequestAnalytics] Supabase URL:', supabase.supabaseUrl);
+
+    const { data, error, status, statusText } = await supabase
       .from('course_requests')
       .select('course_name, status, created_at');
 
+    console.log('[getCourseRequestAnalytics] Response status:', status, statusText);
+    console.log('[getCourseRequestAnalytics] Data:', data);
+    console.log('[getCourseRequestAnalytics] Error:', error);
+
     if (error) {
-      console.error('Error fetching course requests:', error);
+      console.error('[getCourseRequestAnalytics] Full error object:', JSON.stringify(error, null, 2));
+      console.error('[getCourseRequestAnalytics] Error code:', error.code);
+      console.error('[getCourseRequestAnalytics] Error message:', error.message);
+      console.error('[getCourseRequestAnalytics] Error details:', error.details);
+      console.error('[getCourseRequestAnalytics] Error hint:', error.hint);
       return [];
     }
 
