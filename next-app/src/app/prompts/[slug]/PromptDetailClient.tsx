@@ -129,6 +129,7 @@ function InlinePlaceholderInput({
           fontSize: '12px',
           lineHeight: 'inherit',
           width: `${Math.max(width, 40)}px`,
+          maxWidth: '100%',
           backgroundColor: '#FFFFFF',
           color: '#000000',
           border: 'none',

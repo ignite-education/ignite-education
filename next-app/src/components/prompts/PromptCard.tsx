@@ -24,7 +24,7 @@ export default function PromptCard({ prompt }: PromptCardProps) {
             {prompt.title}
           </h3>
           <p
-            className="text-black text-sm font-light leading-snug mb-3 line-clamp-3"
+            className="text-black text-sm font-light leading-snug mb-3"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.9rem', letterSpacing: '-0.01em' }}
           >
             {prompt.description}
