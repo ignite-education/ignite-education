@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Plus, X, Trash2 } from 'lucide-react';
+import { getCourseRequestAnalytics } from '../lib/api';
+import { Plus, X, Trash2, Users } from 'lucide-react';
 
 const CoursesDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [isAdding, setIsAdding] = useState(false);
+  const [courseRequests, setCourseRequests] = useState([]);
+  const [requestsLoading, setRequestsLoading] = useState(true);
   const [newCourse, setNewCourse] = useState({
     title: '',
-    status: 'requested',
+    status: 'coming_soon',
     course_type: 'skill',
     modules: '',
     lessons: 0,
@@ -18,6 +21,7 @@ const CoursesDashboard = () => {
 
   useEffect(() => {
     fetchCourses();
+    fetchCourseRequests();
   }, []);
 
   const fetchCourses = async () => {
@@ -33,6 +37,19 @@ const CoursesDashboard = () => {
       console.error('Error fetching courses:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCourseRequests = async () => {
+    try {
+      setRequestsLoading(true);
+      const requests = await getCourseRequestAnalytics();
+      setCourseRequests(requests || []);
+    } catch (error) {
+      console.error('Error fetching course requests:', error);
+      setCourseRequests([]);
+    } finally {
+      setRequestsLoading(false);
     }
   };
 
@@ -103,7 +120,7 @@ const CoursesDashboard = () => {
       setIsAdding(false);
       setNewCourse({
         title: '',
-        status: 'requested',
+        status: 'coming_soon',
         course_type: 'skill',
         modules: '',
         lessons: 0,
@@ -116,7 +133,6 @@ const CoursesDashboard = () => {
   };
 
   const getFilteredCourses = () => {
-    // Sort alphabetically by title within each status category
     const liveCourses = courses
       .filter(c => c.status === 'live')
       .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
@@ -125,11 +141,7 @@ const CoursesDashboard = () => {
       .filter(c => c.status === 'coming_soon')
       .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
 
-    const requestedCourses = courses
-      .filter(c => c.status === 'requested')
-      .sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-
-    return { liveCourses, comingSoonCourses, requestedCourses };
+    return { liveCourses, comingSoonCourses };
   };
 
   const getStatusBadgeClasses = (status) => {
@@ -189,16 +201,6 @@ const CoursesDashboard = () => {
                 <span className="w-3 h-3 rounded-full bg-blue-500"></span>
                 Coming Soon
               </button>
-              <button
-                onClick={() => {
-                  handleStatusChange(course.id, 'requested');
-                  setShowDropdown(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2"
-              >
-                <span className="w-3 h-3 rounded-full bg-gray-500"></span>
-                Requested
-              </button>
             </div>
           </>
         )}
@@ -214,7 +216,8 @@ const CoursesDashboard = () => {
     );
   }
 
-  const { liveCourses, comingSoonCourses, requestedCourses } = getFilteredCourses();
+  const { liveCourses, comingSoonCourses } = getFilteredCourses();
+  const maxRequests = courseRequests.length > 0 ? Math.max(...courseRequests.map(r => r.total)) : 1;
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
@@ -320,36 +323,48 @@ const CoursesDashboard = () => {
             </div>
           )}
 
-          {(filter === 'all' || filter === 'requested') && requestedCourses.length > 0 && (
+          {(filter === 'all' || filter === 'requested') && (
             <div>
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
                 Requested Courses
               </h2>
-              <div className="space-y-2">
-                {requestedCourses.map((course) => (
-                  <div
-                    key={course.id}
-                    className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 flex items-center justify-between hover:bg-white/10 transition group"
-                  >
-                    <div className="flex-1">
-                      <h3 className="text-lg font-medium text-white mb-1">{course.title}</h3>
-                      <p className="text-sm text-gray-400">
-                        {course.modules && `${course.modules === 'Multiple' ? 'Multiple modules' : `${course.modules} modules`}`}
-                        {course.lessons > 0 && ` • ${course.lessons} lessons`}
-                      </p>
+              {requestsLoading ? (
+                <div className="text-gray-400 text-sm py-4">Loading requests...</div>
+              ) : courseRequests.length > 0 ? (
+                <div className="space-y-2">
+                  {courseRequests.map((request) => (
+                    <div
+                      key={request.courseName}
+                      className="bg-white/5 backdrop-blur-sm rounded-xl px-6 py-4 hover:bg-white/10 transition"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-lg font-medium text-white">{request.courseName}</h3>
+                        <div className="flex items-center gap-1.5 text-gray-400">
+                          <Users size={14} />
+                          <span className="text-sm font-medium">{request.total} {request.total === 1 ? 'request' : 'requests'}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"
+                            style={{ width: `${(request.total / maxRequests) * 100}%` }}
+                          />
+                        </div>
+                        {request.latestRequestDate && (
+                          <span className="text-xs text-gray-500 whitespace-nowrap">
+                            Latest: {new Date(request.latestRequestDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <StatusBadge course={course} />
-                      <button
-                        onClick={() => handleDelete(course.id)}
-                        className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 text-sm">
+                  No course requests yet. Users can request courses from the course catalog.
+                </div>
+              )}
             </div>
           )}
 
@@ -396,7 +411,6 @@ const CoursesDashboard = () => {
                     >
                       <option value="live">Available</option>
                       <option value="coming_soon">Coming Soon</option>
-                      <option value="requested">Requested</option>
                     </select>
                   </div>
 

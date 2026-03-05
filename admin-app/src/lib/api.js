@@ -1557,25 +1557,45 @@ export async function getCourseRequestAnalytics() {
       return [];
     }
 
-    // Group by course name and count requests
+    // Group by normalized course name and count requests
     const requestCounts = {};
+    const casingCounts = {}; // Track casing frequency to pick the most common
 
     (data || []).forEach(request => {
-      if (!requestCounts[request.course_name]) {
-        requestCounts[request.course_name] = {
+      const key = (request.course_name || '').trim().toLowerCase();
+      if (!key) return;
+
+      if (!requestCounts[key]) {
+        requestCounts[key] = {
           courseName: request.course_name,
           total: 0,
           upcoming: 0,
-          requested: 0
+          requested: 0,
+          latestRequestDate: null
         };
+        casingCounts[key] = {};
       }
 
-      requestCounts[request.course_name].total++;
+      // Track most common casing for display
+      const original = request.course_name.trim();
+      casingCounts[key][original] = (casingCounts[key][original] || 0) + 1;
+      const mostCommon = Object.entries(casingCounts[key]).sort((a, b) => b[1] - a[1])[0][0];
+      requestCounts[key].courseName = mostCommon;
+
+      requestCounts[key].total++;
 
       if (request.status === 'upcoming') {
-        requestCounts[request.course_name].upcoming++;
+        requestCounts[key].upcoming++;
       } else if (request.status === 'requested') {
-        requestCounts[request.course_name].requested++;
+        requestCounts[key].requested++;
+      }
+
+      // Track most recent request date
+      if (request.created_at) {
+        const requestDate = new Date(request.created_at);
+        if (!requestCounts[key].latestRequestDate || requestDate > new Date(requestCounts[key].latestRequestDate)) {
+          requestCounts[key].latestRequestDate = request.created_at;
+        }
       }
     });
 

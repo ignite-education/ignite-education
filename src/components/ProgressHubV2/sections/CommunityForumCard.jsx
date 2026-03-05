@@ -43,7 +43,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
         setCommentsVisibleId(null);
         setClosingPostId(null);
       }, 250);
-    }, 3000);
+    }, 2000);
   };
 
   const handleCommentsMouseEnter = () => {

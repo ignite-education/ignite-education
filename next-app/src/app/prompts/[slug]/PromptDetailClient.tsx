@@ -151,10 +151,10 @@ function InlinePlaceholderInput({
 }
 
 function useCountUp(target: number, duration = 1200, delay = 300) {
-  const [value, setValue] = useState(Math.max(target - 10, 0))
+  const [value, setValue] = useState(Math.max(target - 11, 0))
   useEffect(() => {
     if (target === 0) return
-    const from = Math.max(target - 10, 0)
+    const from = Math.max(target - 11, 0)
     let raf: number
     const timeout = setTimeout(() => {
       const start = performance.now()

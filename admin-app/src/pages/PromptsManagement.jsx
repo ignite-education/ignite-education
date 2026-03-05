@@ -295,10 +295,10 @@ const PromptsManagement = () => {
       usage_count: 0,
       rating: 0,
       status: 'published',
-      author_name: contributorName,
-      author_image: '',
-      author_title: '',
-      author_linkedin: '',
+      author_name: contribution.author_name || contributorName,
+      author_image: contribution.author_image || '',
+      author_title: contribution.author_title || '',
+      author_linkedin: contribution.author_linkedin || '',
     });
   };
 
