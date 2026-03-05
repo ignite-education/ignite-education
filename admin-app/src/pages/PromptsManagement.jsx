@@ -15,6 +15,22 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
+const withSessionRefresh = async (mutationFn) => {
+  await supabase.auth.getSession();
+  const result = await mutationFn();
+  if (result.error) {
+    const code = result.error.code || '';
+    const msg = (result.error.message || '').toLowerCase();
+    if (code === 'PGRST301' || code === 'PGRST302' || msg.includes('jwt')) {
+      console.warn('[PromptsManagement] Auth error, refreshing session and retrying...', result.error);
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) return result;
+      return await mutationFn();
+    }
+  }
+  return result;
+};
+
 const PromptsManagement = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('published');
@@ -213,18 +229,18 @@ const PromptsManagement = () => {
         ...(formData.author_linkedin.trim() && { author_linkedin: formData.author_linkedin.trim() }),
       };
 
+      let result;
       if (selectedPrompt) {
-        const { error } = await supabase
-          .from('prompts')
-          .update(promptData)
-          .eq('id', selectedPrompt.id);
-        if (error) throw error;
+        result = await withSessionRefresh(() =>
+          supabase.from('prompts').update(promptData).eq('id', selectedPrompt.id)
+        );
+        if (result.error) throw result.error;
         alert('Prompt updated!');
       } else {
-        const { error } = await supabase
-          .from('prompts')
-          .insert([promptData]);
-        if (error) throw error;
+        result = await withSessionRefresh(() =>
+          supabase.from('prompts').insert([promptData])
+        );
+        if (result.error) throw result.error;
 
         // If approving a contribution, update its status
         if (reviewingContribution) {
@@ -245,8 +261,8 @@ const PromptsManagement = () => {
       await loadPrompts();
       handleNewPrompt();
     } catch (error) {
-      console.error('Error saving:', error);
-      alert('Error: ' + error.message);
+      console.error('[PromptsManagement] Error saving prompt:', { message: error.message, code: error.code, details: error.details });
+      alert('Error saving prompt: ' + error.message);
     } finally {
       setIsSaving(false);
     }
@@ -255,13 +271,16 @@ const PromptsManagement = () => {
   const handleDeletePrompt = async (promptId) => {
     if (!confirm('Delete this prompt? This will remove it from the public toolkit.')) return;
     try {
-      const { error } = await supabase.from('prompts').delete().eq('id', promptId);
+      const { error } = await withSessionRefresh(() =>
+        supabase.from('prompts').delete().eq('id', promptId)
+      );
       if (error) throw error;
       await loadPrompts();
       if (selectedPrompt?.id === promptId) handleNewPrompt();
       alert('Deleted!');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('[PromptsManagement] Error deleting prompt:', { message: error.message, code: error.code });
+      alert('Error deleting prompt: ' + error.message);
     }
   };
 
@@ -305,20 +324,24 @@ const PromptsManagement = () => {
   const handleRejectContribution = async (contributionId) => {
     if (!confirm('Reject this contribution?')) return;
     try {
-      await supabase
-        .from('prompt_contributions')
-        .update({
-          status: 'rejected',
-          reviewed_at: new Date().toISOString(),
-          reviewed_by: user?.id,
-          rejection_reason: rejectionReason.trim() || null,
-        })
-        .eq('id', contributionId);
+      const { error } = await withSessionRefresh(() =>
+        supabase
+          .from('prompt_contributions')
+          .update({
+            status: 'rejected',
+            reviewed_at: new Date().toISOString(),
+            reviewed_by: user?.id,
+            rejection_reason: rejectionReason.trim() || null,
+          })
+          .eq('id', contributionId)
+      );
+      if (error) throw error;
       setRejectionReason('');
       await loadContributions();
       alert('Contribution rejected.');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('[PromptsManagement] Error rejecting contribution:', { message: error.message, code: error.code });
+      alert('Error rejecting contribution: ' + error.message);
     }
   };
 
