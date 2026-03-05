@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
+import { LLM_TOOLS, COMPLEXITIES, promptToSlug } from '@/data/placeholderPrompts'
 
 interface PromptContributeModalProps {
   professions: string[]
@@ -64,21 +64,19 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group/tip inline-flex items-center ml-[5px]">
-      <span className="inline-flex items-center justify-center" style={{ width: '16px', height: '16px', backgroundColor: '#F6F6F6', borderRadius: '3px' }}>
-        <svg
-          width="14"
-          height="14"
-          viewBox="4 2 16 20"
-          fill="none"
-          stroke="#fff"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M12 16v-4" />
-          <path d="M12 8h.01" />
-        </svg>
-      </span>
+      <svg
+        width="14"
+        height="14"
+        viewBox="4 2 16 20"
+        fill="none"
+        stroke="#DEDEDE"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
       <span
         className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2.5 text-xs text-black bg-white rounded-md opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-20"
         style={{ ...FONT, width: '140px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
@@ -100,6 +98,9 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   const [userId, setUserId] = useState('')
   const [signingIn, setSigningIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [submittingStep, setSubmittingStep] = useState(0)
+  const submittingStepRef = useRef(0)
+  const SUBMIT_MESSAGES = ['Sparking', 'Doing the work', 'Compounding']
 
   // Form fields
   const [title, setTitle] = useState(initialTitle ? toTitleCase(initialTitle.trim()) : '')
@@ -144,7 +145,21 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
 
   const submitToDatabase = useCallback(async (uid: string, name: string) => {
     setSubmitting(true)
+    setSubmittingStep(0)
+    submittingStepRef.current = 0
+
+    // Cycle through messages every 2.5s
+    const stepInterval = setInterval(() => {
+      submittingStepRef.current += 1
+      if (submittingStepRef.current < 3) {
+        setSubmittingStep(submittingStepRef.current)
+      }
+    }, 2500)
+
     const supabase = createClient()
+    const slug = promptToSlug(title.trim())
+
+    // Insert contribution for admin review
     const { error } = await supabase.from('prompt_contributions').insert({
       user_id: uid,
       title: title.trim(),
@@ -161,9 +176,33 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
 
     if (error) {
       console.error('[PromptContribute] Insert failed:', error.message, error.code)
+      clearInterval(stepInterval)
       setSubmitting(false)
       return
     }
+
+    // Also create the prompt page (pending status, not searchable until approved)
+    await supabase.from('prompts').insert({
+      title: title.trim(),
+      slug,
+      description: description.trim(),
+      full_prompt: fullPrompt.trim(),
+      profession: profession.trim(),
+      llm_tools: llmTools,
+      complexity,
+      status: 'pending',
+      usage_count: 0,
+      rating: 0,
+      author_name: authorName.trim() || null,
+      author_image: authorImage || null,
+      author_title: authorJobTitle.trim() || null,
+      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
+    })
+
+    clearInterval(stepInterval)
+
+    // Open the new prompt page in a new tab
+    window.open(`/prompts/${slug}`, '_blank')
 
     setUserName(name)
     setPhase('thank-you')
@@ -181,7 +220,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
     if (isSignedIn && !authorName.trim()) missing.add('authorName')
     if (missing.size > 0) {
       setInvalidFields(missing)
-      setTimeout(() => setInvalidFields(new Set()), 1000)
+      setTimeout(() => setInvalidFields(new Set()), 1800)
       return
     }
     setInvalidFields(new Set())
@@ -407,7 +446,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   const errorOutline = (field: string): Record<string, string> => ({
     outline: '0.5px solid',
     outlineColor: invalidFields.has(field) ? '#EF0B72' : 'transparent',
-    transition: 'outline-color 0.3s ease',
+    transition: 'outline-color 0.6s ease',
   })
   const clearError = (field: string) => { if (invalidFields.has(field)) setInvalidFields(prev => { const next = new Set(prev); next.delete(field); return next }) }
 
@@ -564,7 +603,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                       className="w-full rounded-lg px-3 py-2 text-sm text-left focus:outline-none transition-colors flex items-center justify-between cursor-pointer"
                       style={{ ...FONT, backgroundColor: FIELD_BG, color: profession ? '#111827' : '#9CA3AF', ...errorOutline('profession') }}
                     >
-                      <span>{profession || 'Select profession'}</span>
+                      <span>{profession || '\u00A0'}</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: professionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}>
                         <path d="M6 9l6 6 6-6" />
                       </svg>
@@ -731,13 +770,13 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                       <div style={{ width: '52px', flexShrink: 0 }} className="flex items-center">
                         <img src="https://auth.ignite.education/storage/v1/object/public/assets/LinkedIn_logo_initials.png" alt="" width={20} height={20} />
                       </div>
-                      <div className="flex-1 flex items-center rounded-lg py-1.5 text-sm text-gray-900" style={{ backgroundColor: FIELD_BG }}>
-                        <span className="pl-3 select-none text-gray-400 whitespace-nowrap" style={FONT}>linkedin.com/in/</span>
+                      <div className="flex-1 min-w-0 flex items-center rounded-lg py-1.5 text-sm text-gray-900" style={{ backgroundColor: FIELD_BG }}>
+                        <span className="pl-3 select-none text-gray-400 whitespace-nowrap" style={{ ...FONT, fontSize: '0.75rem' }}>linkedin.com/in/</span>
                         <input
                           type="text"
                           value={authorLinkedin}
                           onChange={(e) => setAuthorLinkedin(e.target.value)}
-                          className="flex-1 bg-transparent pr-3 text-sm text-gray-900 focus:outline-none"
+                          className="flex-1 min-w-0 bg-transparent pr-3 text-sm text-gray-900 focus:outline-none"
                           style={FONT}
                         />
                       </div>
@@ -749,24 +788,35 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow hover:shadow-[0_0_12px_rgba(60,60,60,0.5)]"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.5)]"
                     style={{
                       ...FONT,
                       fontSize: '0.9rem',
                       borderRadius: '4px',
                       backgroundColor: '#EF0B72',
                       color: 'white',
-                      boxShadow: 'none',
                     }}
                   >
                     {submitting ? (
-                      <svg className="animate-spin mx-auto" width="20" height="20" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="#ffffff" strokeWidth="3" />
-                        <path d="M12 2a10 10 0 0 1 10 10" stroke="#ffffff80" strokeWidth="3" strokeLinecap="round" />
-                      </svg>
-                    ) : (
-                      'Submit'
-                    )}
+                      <span className="inline-flex items-center" key={submittingStep}>
+                        <span style={{ animation: 'fadeIn 0.3s ease' }}>
+                          {SUBMIT_MESSAGES[submittingStep]}
+                        </span>
+                        <span className="inline-flex" style={{ width: '18px' }}>
+                          {[0, 1, 2].map(i => (
+                            <span
+                              key={i}
+                              className="inline-block"
+                              style={{
+                                animation: 'dotPulse 1.4s ease-in-out infinite',
+                                animationDelay: `${i * 0.2}s`,
+                                opacity: 0.3,
+                              }}
+                            >.</span>
+                          ))}
+                        </span>
+                      </span>
+                    ) : 'Submit'}
                   </button>
                 </div>
               ) : (

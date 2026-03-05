@@ -63,9 +63,11 @@ export default async function CourseCatalogPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen bg-white">
+      <div className="flex flex-col min-h-screen bg-white">
         <Navbar hideLogo noPaddingBottom />
-        <CourseCatalogClient coursesByType={coursesByType} />
+        <div className="flex-1">
+          <CourseCatalogClient coursesByType={coursesByType} />
+        </div>
         <Footer />
       </div>
     </>

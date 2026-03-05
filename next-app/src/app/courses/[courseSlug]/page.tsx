@@ -138,31 +138,33 @@ export default async function CoursePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen bg-white">
-        <CourseHero
-          course={course}
-          courseSlug={courseSlug}
-          isComingSoon={isComingSoon}
-        />
+      <div className="flex flex-col min-h-screen bg-white">
+        <div className="flex-1">
+          <CourseHero
+            course={course}
+            courseSlug={courseSlug}
+            isComingSoon={isComingSoon}
+          />
 
-        <div className="max-w-4xl mx-auto px-6 pb-12 flex justify-center">
-          <div className="w-full" style={{ maxWidth: '762px' }}>
-            <CourseCurriculum
-              moduleStructure={course.module_structure}
-              courseSlug={courseSlug}
-              courseTitle={course.title}
-              isComingSoon={isComingSoon}
-            />
+          <div className="max-w-4xl mx-auto px-6 pb-12 flex justify-center">
+            <div className="w-full" style={{ maxWidth: '762px' }}>
+              <CourseCurriculum
+                moduleStructure={course.module_structure}
+                courseSlug={courseSlug}
+                courseTitle={course.title}
+                isComingSoon={isComingSoon}
+              />
 
-            {!isComingSoon && (
-              <FeedbackSection courseTitle={course.title} />
-            )}
+              {!isComingSoon && (
+                <FeedbackSection courseTitle={course.title} />
+              )}
 
-            {coaches.length > 0 && (
-              <CourseLeaders coaches={coaches} courseTitle={course.title} />
-            )}
+              {coaches.length > 0 && (
+                <CourseLeaders coaches={coaches} courseTitle={course.title} />
+              )}
 
-            <FAQSection faqs={COURSE_FAQS} />
+              <FAQSection faqs={COURSE_FAQS} />
+            </div>
           </div>
         </div>
 

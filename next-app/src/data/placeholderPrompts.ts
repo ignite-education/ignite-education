@@ -13,6 +13,7 @@ export type Prompt = {
   createdAt: string
   updatedAt: string
   slug: string
+  status?: 'published' | 'pending'
   authorName?: string
   authorImage?: string
   authorTitle?: string
@@ -52,6 +53,7 @@ function mapDbPrompt(row: Record<string, unknown>): Prompt {
     createdAt: (row.created_at as string).split('T')[0],
     updatedAt: (row.updated_at as string).split('T')[0],
     slug: row.slug as string,
+    status: (row.status as 'published' | 'pending') || 'published',
     authorName: (row.author_name as string) || undefined,
     authorImage: (row.author_image as string) || undefined,
     authorTitle: (row.author_title as string) || undefined,
@@ -76,14 +78,14 @@ export async function getAllPrompts(): Promise<Prompt[]> {
   return (data || []).map(mapDbPrompt)
 }
 
-/** Fetch a single prompt by slug */
+/** Fetch a single prompt by slug (includes pending prompts for direct URL access) */
 export async function getPromptBySlug(slug: string): Promise<Prompt | undefined> {
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('prompts')
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'published')
+    .in('status', ['published', 'pending'])
     .maybeSingle()
 
   if (error || !data) return undefined

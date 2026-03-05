@@ -292,7 +292,13 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
         </div>
 
         {/* Prompt Columns - 3 column grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-[35px]"
+          style={{
+            opacity: filteredPrompts.length > 0 ? 1 : 0,
+            transition: 'opacity 0.35s ease',
+          }}
+        >
           <PromptColumn type="most-used" prompts={mostUsed} />
           <PromptColumn type="highly-rated" prompts={highlyRated} />
           <PromptColumn type="most-recent" prompts={mostRecent} />
@@ -303,7 +309,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
         <PromptContributeModal
           professions={professions}
           initialTitle={searchQuery}
-          onClose={() => { setShowContributeModal(false); setSearchQuery('') }}
+          onClose={() => { setShowContributeModal(false); setTimeout(() => setSearchQuery(''), 150) }}
         />
       )}
     </div>

@@ -136,14 +136,16 @@ export default async function PromptSlugPage({ params }: PageProps) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
 
-        <div className="min-h-screen bg-white">
+        <div className="flex flex-col min-h-screen bg-white">
           <Navbar hideLogo noPaddingBottom />
-          <PromptToolkitClient
-            professions={professions}
-            prompts={prompts}
-            initialProfession={professionName}
-            pageTitle={`AI Prompt Toolkit for ${plural}`}
-          />
+          <div className="flex-1">
+            <PromptToolkitClient
+              professions={professions}
+              prompts={prompts}
+              initialProfession={professionName}
+              pageTitle={`AI Prompt Toolkit for ${plural}`}
+            />
+          </div>
           <Footer />
         </div>
       </>
@@ -183,14 +185,16 @@ export default async function PromptSlugPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen bg-white">
+      <div className="flex flex-col min-h-screen bg-white">
         <div className="sticky top-0 z-50">
           <Navbar variant="black" />
         </div>
 
-        <div className="max-w-4xl mx-auto px-6 py-20 pb-16 flex justify-center">
-          <div className="w-full" style={{ maxWidth: '762px' }}>
-            <PromptDetailClient prompt={prompt} slug={slug} />
+        <div className="flex-1">
+          <div className="max-w-4xl mx-auto px-6 py-20 pb-16 flex justify-center">
+            <div className="w-full" style={{ maxWidth: '762px' }}>
+              <PromptDetailClient prompt={prompt} slug={slug} isPending={prompt.status === 'pending'} />
+            </div>
           </div>
         </div>
 

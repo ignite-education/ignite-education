@@ -70,9 +70,11 @@ export default async function PromptToolkitPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <div className="min-h-screen bg-white">
+      <div className="flex flex-col min-h-screen bg-white">
         <Navbar hideLogo noPaddingBottom />
-        <PromptToolkitClient professions={professions} prompts={prompts} />
+        <div className="flex-1">
+          <PromptToolkitClient professions={professions} prompts={prompts} />
+        </div>
         <Footer />
       </div>
     </>

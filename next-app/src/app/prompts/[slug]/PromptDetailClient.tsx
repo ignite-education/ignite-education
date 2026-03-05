@@ -11,6 +11,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api
 interface PromptDetailClientProps {
   prompt: Prompt
   slug: string
+  isPending?: boolean
 }
 
 // Tools that support deep linking with prompt pre-filled
@@ -170,7 +171,7 @@ function useCountUp(target: number, duration = 1200, delay = 300) {
   return value
 }
 
-export default function PromptDetailClient({ prompt, slug }: PromptDetailClientProps) {
+export default function PromptDetailClient({ prompt, slug, isPending }: PromptDetailClientProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)
@@ -602,6 +603,19 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   return (
     <div style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}>
+      {/* Pending approval banner */}
+      {isPending && (
+        <div
+          className="text-center text-sm text-gray-600 font-medium py-2.5 px-4 rounded-lg mb-6"
+          style={{
+            backgroundColor: '#F6F6F6',
+            animation: 'fadeInUp 0.5s ease forwards',
+          }}
+        >
+          This prompt will be visible to everyone once fully approved
+        </div>
+      )}
+
       {/* Category Tag */}
       <div className="text-center" style={{ marginBottom: '30px' }}>
         <a
