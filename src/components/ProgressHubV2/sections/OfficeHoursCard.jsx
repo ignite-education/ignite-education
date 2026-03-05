@@ -135,8 +135,8 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                         ) : (
                           <div className="rounded bg-white/10" style={{ width: '4.8rem', height: '4.8rem' }} />
                         )}
-                        <p className="text-white leading-snug" style={{ fontSize: '0.75rem', fontWeight: 400, marginTop: '4px' }}>Available</p>
-                        <div className="bg-white rounded" style={{ padding: '4px', marginTop: '3px', textAlign: 'center' }}>
+                        <p className="text-white leading-snug" style={{ fontSize: '0.8rem', fontWeight: 400, marginTop: '5px' }}>Available</p>
+                        <div className="bg-white rounded" style={{ padding: '4px 6px', marginTop: '5px', textAlign: 'center' }}>
                           <p className="text-black leading-snug" style={{ fontSize: '0.8rem', fontWeight: 400 }}>Tomorrow at 4PM</p>
                         </div>
                       </div>
