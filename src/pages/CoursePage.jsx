@@ -1165,12 +1165,17 @@ const CoursePage = () => {
                       setInterestSubmitting(true);
 
                       try {
+                        if (!user) {
+                          alert('Please sign in to register interest.');
+                          return;
+                        }
                         // Insert into course_requests table
                         const { error } = await supabase
                           .from('course_requests')
                           .insert({
-                            email: interestForm.email,
-                            course_name: course?.name || courseSlug
+                            user_id: user.id,
+                            course_name: course?.name || courseSlug,
+                            status: 'requested'
                           });
 
                         if (error) {

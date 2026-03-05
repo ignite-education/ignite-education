@@ -67,6 +67,7 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
       supabase.from('course_requests').insert({
         user_id: user.id,
         course_name: pendingCourse,
+        status: 'requested',
       }).then(() => {
         setRequestedQuery(pendingCourse)
         setModalPhase('thank-you')

@@ -77,6 +77,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
       supabase.from('course_requests').insert({
         user_id: user.id,
         course_name: pendingCourse,
+        status: 'requested',
       }).then(({ error }) => {
         if (error) {
           console.error('[LinkedIn callback] Insert failed:', error.message, error.code, error)

@@ -1,9 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import { createClient } from '@/lib/supabase/client'
-import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 
 interface PromptContributeModalProps {
@@ -35,12 +33,55 @@ function extractAvatar(user: { user_metadata?: Record<string, string> }) {
 
 const FONT = { fontFamily: 'var(--font-geist-sans), sans-serif' }
 
+const LLM_LOGO_PATHS: Record<string, string> = {
+  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
+  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
+}
+
+const FIELD_TOOLTIPS: Record<string, string> = {
+  Title: 'A short, descriptive name for your prompt.',
+  Description: 'A brief summary of what this prompt helps with.',
+  Prompt: 'The full prompt text that users will copy and use.',
+  Profession: 'The profession this prompt is most relevant to.',
+  'AI Tool': 'Which AI tools this prompt works best with.',
+  Complexity: 'How complex or advanced this prompt is to use.',
+}
+
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <span className="relative group/tip inline-flex items-center ml-1">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#9CA3AF"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="cursor-help"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+      <span
+        className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2.5 py-1.5 text-xs text-white bg-gray-800 rounded-md whitespace-nowrap opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-20"
+        style={FONT}
+      >
+        {text}
+      </span>
+    </span>
+  )
+}
+
 export default function PromptContributeModal({ professions, onClose }: PromptContributeModalProps) {
   const [closing, setClosing] = useState(false)
   const [phase, setPhase] = useState<'form' | 'thank-you'>('form')
   const [userName, setUserName] = useState('')
   const [userId, setUserId] = useState('')
-  const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
   const [signingIn, setSigningIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -64,11 +105,6 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   const isFormValid = title.trim() && description.trim() && fullPrompt.trim() && profession.trim() && llmTools.length > 0 && complexity
   const isAuthorValid = authorName.trim() !== ''
   const canSubmit = isFormValid && isAuthorValid && !submitting
-
-  // Check for stored Google profile on mount
-  useEffect(() => {
-    setGoogleHint(getGoogleProfileHint())
-  }, [])
 
   // Silently check if already signed in
   useEffect(() => {
@@ -180,7 +216,6 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
         clearInterval(interval)
         popup.close()
         await supabase.auth.refreshSession()
-        if (provider === 'google') saveGoogleProfileHint(user)
         onAuthSuccess(user)
       }
     }, 500)
@@ -202,7 +237,6 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
         return
       }
 
-      saveGoogleProfileHint(data.user)
       onAuthSuccess(data.user)
     } catch (err) {
       console.error('[PromptContribute] Unexpected error:', err)
@@ -215,24 +249,10 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
     openOAuthPopup('linkedin_oidc')
   }, [openOAuthPopup])
 
-  const { triggerPrompt } = useGoogleOneTap({
-    onSuccess: handleGoogleSuccess,
-    enabled: !isSignedIn,
-    autoPrompt: false,
-    loginHint: googleHint?.email,
-  })
-
   const handleGoogleClick = useCallback(() => {
     startSigningIn()
     openOAuthPopup('google')
   }, [openOAuthPopup])
-
-  const handlePersonalizedGoogleClick = useCallback(() => {
-    startSigningIn()
-    triggerPrompt(() => {
-      openOAuthPopup('google', googleHint?.email ? { login_hint: googleHint.email } : undefined)
-    })
-  }, [triggerPrompt, googleHint])
 
   const toggleLlmTool = (tool: string) => {
     setLlmTools(prev => prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool])
@@ -287,6 +307,10 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
     </svg>
   )
 
+  // Shared label width for inline layout
+  const LABEL_WIDTH = '90px'
+  const INPUT_CLASS = 'flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors'
+
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center ${closing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
@@ -301,7 +325,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
       <div
         className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
-          width: phase === 'thank-you' ? '540px' : '860px',
+          width: phase === 'thank-you' ? '540px' : '946px',
           maxWidth: '90vw',
           maxHeight: '90vh',
           borderRadius: '6px',
@@ -333,7 +357,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     Submit a Prompt
                   </h3>
                   <p
-                    className="text-gray-500 text-sm mt-1 leading-relaxed"
+                    className="text-black text-sm mt-1 leading-relaxed"
                     style={FONT}
                   >
                     Share the prompts you rely on to tackle work tasks more effectively and get better results, faster.
@@ -341,76 +365,90 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* Title */}
-                <div>
-                  <label className="block text-sm font-bold text-black tracking-[-0.01em] mb-1" style={FONT}>
-                    Title
-                  </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                      Title
+                    </label>
+                    <InfoTooltip text={FIELD_TOOLTIPS.Title} />
+                  </div>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Weekly Report Generator"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                    className={INPUT_CLASS}
                     style={FONT}
                   />
                 </div>
 
                 {/* Description */}
-                <div>
-                  <label className="block text-sm font-bold text-black tracking-[-0.01em] mb-1" style={FONT}>
-                    Description
-                  </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                      Description
+                    </label>
+                    <InfoTooltip text={FIELD_TOOLTIPS.Description} />
+                  </div>
                   <input
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Brief description of what the prompt does"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                    className={INPUT_CLASS}
                     style={FONT}
                   />
                 </div>
 
                 {/* Prompt */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center shrink-0 pt-2" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
                       Prompt
                     </label>
-                    <button
-                      type="button"
-                      onClick={toggleBold}
-                      className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black transition-colors"
-                      style={FONT}
-                      title="Bold selected text (Ctrl+B)"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
-                      Bold
-                    </button>
+                    <InfoTooltip text={FIELD_TOOLTIPS.Prompt} />
                   </div>
-                  <textarea
-                    ref={promptTextareaRef}
-                    value={fullPrompt}
-                    onChange={(e) => setFullPrompt(e.target.value)}
-                    onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold() } }}
-                    placeholder="The complete prompt text... Use **text** for bold."
-                    rows={6}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors resize-none"
-                    style={FONT}
-                  />
+                  <div className="flex-1">
+                    <div className="flex justify-end mb-1">
+                      <button
+                        type="button"
+                        onClick={toggleBold}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black transition-colors"
+                        style={FONT}
+                        title="Bold selected text (Ctrl+B)"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z"/><path d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z"/></svg>
+                        Bold
+                      </button>
+                    </div>
+                    <textarea
+                      ref={promptTextareaRef}
+                      value={fullPrompt}
+                      onChange={(e) => setFullPrompt(e.target.value)}
+                      onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold() } }}
+                      placeholder="The complete prompt text... Use **text** for bold."
+                      rows={6}
+                      className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors resize-none"
+                      style={FONT}
+                    />
+                  </div>
                 </div>
 
                 {/* Profession */}
-                <div>
-                  <label className="block text-sm font-bold text-black tracking-[-0.01em] mb-1" style={FONT}>
-                    Profession
-                  </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                      Profession
+                    </label>
+                    <InfoTooltip text={FIELD_TOOLTIPS.Profession} />
+                  </div>
                   <input
                     type="text"
                     value={profession}
                     onChange={(e) => setProfession(e.target.value)}
                     list="professions-list"
                     placeholder="e.g. Product Management"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                    className={INPUT_CLASS}
                     style={FONT}
                   />
                   <datalist id="professions-list">
@@ -421,24 +459,35 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* AI Tool */}
-                <div>
-                  <label className="block text-sm font-bold text-black tracking-[-0.01em] mb-1.5" style={FONT}>
-                    AI Tool
-                  </label>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                      AI Tool
+                    </label>
+                    <InfoTooltip text={FIELD_TOOLTIPS['AI Tool']} />
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {LLM_TOOLS.map((tool) => (
                       <button
                         key={tool}
                         type="button"
                         onClick={() => toggleLlmTool(tool)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                           llmTools.includes(tool)
                             ? 'bg-[#EF0B72] text-white'
                             : 'bg-gray-100 text-black hover:bg-gray-200'
                         }`}
                         style={FONT}
                       >
-                        <span style={{ fontSize: '13px' }}>✨</span>
+                        {LLM_LOGO_PATHS[tool] && (
+                          <img
+                            src={LLM_LOGO_PATHS[tool]}
+                            alt=""
+                            width={16}
+                            height={16}
+                            className={llmTools.includes(tool) ? 'brightness-0 invert' : ''}
+                          />
+                        )}
                         {tool}
                       </button>
                     ))}
@@ -446,17 +495,20 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* Complexity */}
-                <div className="pb-2">
-                  <label className="block text-sm font-bold text-black tracking-[-0.01em] mb-1.5" style={FONT}>
-                    Complexity
-                  </label>
+                <div className="flex items-center gap-3 pb-2">
+                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                    <label className="text-sm font-bold text-black tracking-[-0.01em]" style={FONT}>
+                      Complexity
+                    </label>
+                    <InfoTooltip text={FIELD_TOOLTIPS.Complexity} />
+                  </div>
                   <div className="flex gap-2">
                     {COMPLEXITIES.map((level) => (
                       <button
                         key={level}
                         type="button"
                         onClick={() => setComplexity(level)}
-                        className={`px-5 py-1.5 rounded-full text-sm font-medium transition-colors cursor-pointer ${
+                        className={`px-5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                           complexity === level
                             ? 'bg-[#EF0B72] text-white'
                             : 'bg-gray-100 text-black hover:bg-gray-200'
@@ -470,9 +522,6 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
               </div>
             </div>
-
-            {/* DIVIDER */}
-            <div className="hidden md:block w-px bg-gray-200" />
 
             {/* RIGHT COLUMN — Auth / Profile */}
             <div
@@ -494,20 +543,20 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     <img
                       src={authorImage}
                       alt=""
-                      className="rounded-full object-cover"
-                      style={{ width: '64px', height: '64px' }}
+                      className="object-cover"
+                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                       referrerPolicy="no-referrer"
                     />
                   ) : (
                     <div
-                      className="rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xl font-semibold"
-                      style={{ width: '64px', height: '64px' }}
+                      className="bg-gray-200 text-gray-600 flex items-center justify-center text-xl font-semibold"
+                      style={{ width: '64px', height: '64px', borderRadius: '4px' }}
                     >
                       {authorName.charAt(0).toUpperCase() || '?'}
                     </div>
                   )}
 
-                  <p className="text-sm text-gray-500 text-center" style={FONT}>
+                  <p className="text-sm text-black text-center" style={FONT}>
                     Your public info for the prompt
                   </p>
 
@@ -523,7 +572,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         value={authorName}
                         onChange={(e) => setAuthorName(e.target.value)}
                         placeholder="Your name"
-                        className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
                         style={FONT}
                       />
                     </div>
@@ -538,7 +587,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         value={authorJobTitle}
                         onChange={(e) => setAuthorJobTitle(e.target.value)}
                         placeholder="e.g. Sr Product Manager at Amazon"
-                        className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
                         style={FONT}
                       />
                     </div>
@@ -553,7 +602,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         value={authorLinkedin}
                         onChange={(e) => setAuthorLinkedin(e.target.value)}
                         placeholder="linkedin.com/in/username"
-                        className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:border-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
                         style={FONT}
                       />
                     </div>
@@ -588,35 +637,18 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     Sign in to save your prompt
                   </p>
 
-                  {googleHint ? (
-                    <button
-                      onClick={handlePersonalizedGoogleClick}
-                      className="w-full flex items-center bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                      style={{ height: '44px' }}
-                    >
-                      <div className="flex-1 text-left pl-4 min-w-0">
-                        <span className="block text-[13px] font-medium text-gray-700 leading-tight truncate">
-                          Continue as {googleHint.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center" style={{ width: '44px', height: '44px', flexShrink: 0 }}>
-                        <GoogleIcon />
-                      </div>
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleGoogleClick}
-                      className="w-full flex items-center bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                      style={{ height: '44px' }}
-                    >
-                      <span className="flex-1 text-center text-[14px] font-medium text-gray-700" style={FONT}>
-                        Continue with Google
-                      </span>
-                      <div className="flex items-center justify-center" style={{ width: '44px', height: '44px', flexShrink: 0 }}>
-                        <GoogleIcon />
-                      </div>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleGoogleClick}
+                    className="w-full flex items-center bg-white border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+                    style={{ height: '44px' }}
+                  >
+                    <span className="flex-1 text-center text-[14px] font-medium text-gray-700" style={FONT}>
+                      Continue with Google
+                    </span>
+                    <div className="flex items-center justify-center" style={{ width: '44px', height: '44px', flexShrink: 0 }}>
+                      <GoogleIcon />
+                    </div>
+                  </button>
 
                   <button
                     onClick={handleLinkedInClick}

@@ -1,48 +1,29 @@
-const STORAGE_KEY = 'ignite_google_hint'
+const STORAGE_KEY = 'ignite_google_profile_hint'
 
-export interface GoogleProfileHint {
+export type GoogleProfileHint = {
   name: string
   email: string
   avatar: string
 }
 
-export function saveGoogleProfileHint(user: { user_metadata?: Record<string, string>; email?: string }): void {
+export function saveGoogleProfileHint(user: { user_metadata?: Record<string, string>; email?: string }) {
   try {
-    const meta = user.user_metadata
-    if (!meta) return
-
-    const name = meta.full_name?.split(' ')[0]
-      || meta.name?.split(' ')[0]
-      || meta.first_name
-      || user.email?.split('@')[0]
-
-    const email = meta.email || user.email
-    const avatar = meta.custom_avatar_url || meta.avatar_url || meta.picture
-
-    if (name && email) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, email, avatar: avatar || '' }))
+    const meta = user.user_metadata ?? {}
+    const hint: GoogleProfileHint = {
+      name: meta.full_name || meta.name || '',
+      email: user.email || meta.email || '',
+      avatar: meta.avatar_url || meta.picture || '',
     }
-  } catch {
-    // localStorage may be unavailable (private browsing, etc.)
-  }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(hint))
+  } catch {}
 }
 
 export function getGoogleProfileHint(): GoogleProfileHint | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (parsed.name && parsed.email) return parsed
-    return null
+    return JSON.parse(raw) as GoogleProfileHint
   } catch {
     return null
-  }
-}
-
-export function clearGoogleProfileHint(): void {
-  try {
-    localStorage.removeItem(STORAGE_KEY)
-  } catch {
-    // ignore
   }
 }

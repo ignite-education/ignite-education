@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
-import { saveGoogleProfileHint, getGoogleProfileHint, type GoogleProfileHint } from '@/lib/googleProfileHint'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 
@@ -181,7 +180,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
-  const [googleHint, setGoogleHint] = useState<GoogleProfileHint | null>(null)
   const [placeholderValues, setPlaceholderValues] = useState<Record<number, string>>({})
   const [autocompleting, setAutocompleting] = useState(false)
   const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
@@ -254,11 +252,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
 
   const shareUrl = `https://ignite.education/prompts/${slug}`
 
-  // Check for stored Google profile on mount
-  useEffect(() => {
-    setGoogleHint(getGoogleProfileHint())
-  }, [])
-
   // Handle Google sign-in success (direct, no redirect)
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
@@ -273,9 +266,6 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         console.error('[PromptDetail] Google sign-in failed:', authError)
         return
       }
-
-      // Save Google profile for future personalization
-      saveGoogleProfileHint(data.user)
 
       setUser(data.user)
       setFirstName(extractFirstName(data.user))
@@ -301,16 +291,15 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
     }
   }, [prompt.id])
 
-  const { isLoaded, renderButton, triggerPrompt } = useGoogleOneTap({
+  const { isLoaded, renderButton } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
     enabled: !user,
     autoPrompt: false,
-    loginHint: googleHint?.email,
   })
 
-  // Render Google GIS button when ready (only for first-time users without stored profile)
+  // Render Google GIS button when ready
   useEffect(() => {
-    if (!user && !googleHint && isLoaded && googleBtnRef.current) {
+    if (!user && isLoaded && googleBtnRef.current) {
       const containerWidth = googleBtnRef.current.offsetWidth
       renderButton(googleBtnRef.current, {
         width: containerWidth,
@@ -320,23 +309,19 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
         text: 'continue_with',
       })
     }
-  }, [user, googleHint, isLoaded, renderButton])
+  }, [user, isLoaded, renderButton])
 
-  // Handle custom personalized Google button click
-  const handlePersonalizedGoogleClick = useCallback(() => {
-    triggerPrompt(() => {
-      // Prompt was blocked (Safari ITP) — fall back to OAuth redirect
-      sessionStorage.setItem('pendingSavePrompt', prompt.id)
-      const supabase = createClient()
-      supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: window.location.href,
-          queryParams: googleHint?.email ? { login_hint: googleHint.email } : undefined,
-        },
-      })
+  // Handle Google OAuth redirect (used by mobile where GIS renderButton isn't available)
+  const handleGoogleOAuthClick = useCallback(async () => {
+    sessionStorage.setItem('pendingSavePrompt', prompt.id)
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href,
+      },
     })
-  }, [triggerPrompt, prompt.id, googleHint])
+  }, [prompt.id])
 
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
@@ -778,58 +763,12 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
               <>
                 {/* Sign-in buttons */}
                 <div className="space-y-2 w-[90%] mx-auto mb-3">
-                  {googleHint ? (
-                    <button
-                      onClick={handlePersonalizedGoogleClick}
-                      className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                      style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-                    >
-                      {/* Avatar */}
-                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                        {googleHint.avatar ? (
-                          <img
-                            src={googleHint.avatar}
-                            alt=""
-                            className="rounded-full"
-                            style={{ width: '24px', height: '24px' }}
-                            referrerPolicy="no-referrer"
-                          />
-                        ) : (
-                          <div
-                            className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
-                            style={{ width: '24px', height: '24px' }}
-                          >
-                            {googleHint.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      {/* Name and email */}
-                      <div className="flex-1 text-left min-w-0 pr-1">
-                        <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
-                          Continue as {googleHint.name}
-                        </span>
-                        <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
-                          {googleHint.email}
-                        </span>
-                      </div>
-                      {/* Google logo */}
-                      <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                        <svg width="18" height="18" viewBox="0 0 48 48">
-                          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                        </svg>
-                      </div>
-                    </button>
-                  ) : (
-                    /* Standard GIS button (for first-time users) */
-                    <div
-                      ref={googleBtnRef}
-                      className="mx-auto rounded overflow-hidden"
-                      style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-                    />
-                  )}
+                  {/* Standard GIS "Continue with Google" button */}
+                  <div
+                    ref={googleBtnRef}
+                    className="mx-auto rounded overflow-hidden"
+                    style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                  />
 
                   {/* LinkedIn Sign In Button */}
                   <button
@@ -1031,53 +970,22 @@ export default function PromptDetailClient({ prompt, slug }: PromptDetailClientP
       <div className="lg:hidden mt-8">
         {!user ? (
           <div className="space-y-2 w-full mb-3">
-            {googleHint ? (
-              <button
-                onClick={handlePersonalizedGoogleClick}
-                className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-              >
-                <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                  {googleHint.avatar ? (
-                    <img
-                      src={googleHint.avatar}
-                      alt=""
-                      className="rounded-full"
-                      style={{ width: '24px', height: '24px' }}
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div
-                      className="rounded-full bg-[#1a73e8] text-white flex items-center justify-center text-xs font-medium"
-                      style={{ width: '24px', height: '24px' }}
-                    >
-                      {googleHint.name.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 text-left min-w-0 pr-1">
-                  <span className="block text-[13px] font-medium text-[#3c4043] leading-tight truncate">
-                    Continue as {googleHint.name}
-                  </span>
-                  <span className="block text-[11px] text-[#5f6368] leading-tight truncate">
-                    {googleHint.email}
-                  </span>
-                </div>
-                <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 48 48">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                  </svg>
-                </div>
-              </button>
-            ) : (
-              <div
-                className="mx-auto rounded overflow-hidden"
-                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-              />
-            )}
+            {/* Custom Google button for mobile (GIS renderButton already used by desktop sidebar) */}
+            <button
+              onClick={handleGoogleOAuthClick}
+              className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
+              style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+            >
+              <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                <svg width="18" height="18" viewBox="0 0 48 48">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+              </div>
+              <span className="flex-1 text-center text-[14px] font-medium text-[#3c4043]">Continue with Google</span>
+            </button>
             <button
               onClick={handleLinkedInClick}
               className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
