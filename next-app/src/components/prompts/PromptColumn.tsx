@@ -40,7 +40,13 @@ export default function PromptColumn({ type, prompts }: PromptColumnProps) {
       >
         {config.description}
       </p>
-      <div className="space-y-3">
+      <div
+        className="space-y-3"
+        style={{
+          opacity: prompts.length > 0 ? 1 : 0,
+          transition: 'opacity 0.35s ease',
+        }}
+      >
         {prompts.map((prompt) => (
           <PromptCard key={prompt.id} prompt={prompt} />
         ))}

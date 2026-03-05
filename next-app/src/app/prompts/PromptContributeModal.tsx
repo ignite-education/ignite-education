@@ -65,8 +65,8 @@ function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group/tip inline-flex items-center ml-[5px]">
       <svg
-        width="14"
-        height="14"
+        width="18"
+        height="18"
         viewBox="4 2 16 20"
         fill="none"
         stroke="#DEDEDE"
@@ -78,7 +78,7 @@ function InfoTooltip({ text }: { text: string }) {
         <path d="M12 8h.01" />
       </svg>
       <span
-        className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2.5 text-xs text-black bg-white rounded-md opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-20"
+        className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2.5 text-xs text-black bg-white rounded-md opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-50"
         style={{ ...FONT, width: '140px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
       >
         {text}
@@ -96,6 +96,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   const [phase, setPhase] = useState<'form' | 'thank-you'>('form')
   const [userName, setUserName] = useState('')
   const [userId, setUserId] = useState('')
+  const [authLoaded, setAuthLoaded] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submittingStep, setSubmittingStep] = useState(0)
@@ -119,6 +120,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   const [authorImage, setAuthorImage] = useState('')
 
   const promptRef = useRef<HTMLDivElement>(null)
+  const linkedinRef = useRef<HTMLInputElement>(null)
 
   const isSignedIn = userId !== ''
   const isFormValid = title.trim() && description.trim() && fullPrompt.trim() && profession.trim() && llmTools.length > 0 && complexity
@@ -135,6 +137,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
         setAuthorName(extractFullName(user))
         setAuthorImage(extractAvatar(user))
       }
+      setAuthLoaded(true)
     })
   }, [])
 
@@ -497,7 +500,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                 className="text-black font-light mt-1 leading-snug"
                 style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}
               >
-                Share the prompts you rely on to tackle work tasks more effectively and get better results, faster.
+                Share your best prompts to tackle work tasks more effectively and get better results, faster.
               </p>
             </div>
 
@@ -655,8 +658,8 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         key={tool}
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
-                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
+                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? 'hover:!bg-[#E2E2E2]' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E5E5E5' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -686,8 +689,8 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         key={level}
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
-                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
+                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? 'hover:!bg-[#E2E2E2]' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E5E5E5' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
@@ -701,7 +704,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
             {/* RIGHT COLUMN — Auth / Profile */}
             <div
               className="flex flex-col items-center justify-center"
-              style={{ width: '330px', minWidth: '330px', padding: '2rem 1.75rem' }}
+              style={{ width: '330px', minWidth: '330px', padding: '2rem 1.75rem', opacity: authLoaded ? 1 : 0, transition: 'opacity 0.15s ease' }}
             >
               {signingIn ? (
                 <div className="flex items-center justify-center">
@@ -770,9 +773,14 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                       <div style={{ width: '52px', flexShrink: 0 }} className="flex items-center">
                         <img src="https://auth.ignite.education/storage/v1/object/public/assets/LinkedIn_logo_initials.png" alt="" width={20} height={20} />
                       </div>
-                      <div className="flex-1 min-w-0 flex items-center rounded-lg py-1.5 text-sm text-gray-900" style={{ backgroundColor: FIELD_BG }}>
-                        <span className="pl-3 select-none text-gray-400 whitespace-nowrap" style={{ ...FONT, fontSize: '0.75rem' }}>linkedin.com/in/</span>
+                      <div
+                        className="flex-1 min-w-0 flex items-center rounded-lg py-1.5 text-sm text-gray-900 cursor-text"
+                        style={{ backgroundColor: FIELD_BG }}
+                        onClick={() => linkedinRef.current?.focus()}
+                      >
+                        <span className="pl-3 select-none text-gray-400 whitespace-nowrap" style={FONT}>linkedin.com/in/</span>
                         <input
+                          ref={linkedinRef}
                           type="text"
                           value={authorLinkedin}
                           onChange={(e) => setAuthorLinkedin(e.target.value)}
@@ -788,7 +796,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.5)]"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.4)]"
                     style={{
                       ...FONT,
                       fontSize: '0.9rem',
