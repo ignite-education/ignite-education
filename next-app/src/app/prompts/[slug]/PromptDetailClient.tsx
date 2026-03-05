@@ -659,8 +659,8 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
           className="inline-flex items-center gap-1 text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
           style={{ letterSpacing: '-0.02em' }}
         >
-          <ComplexityIcon level={prompt.complexity as 'Low' | 'Mid' | 'High'} />
           {prompt.complexity}
+          <ComplexityIcon level={prompt.complexity as 'Low' | 'Mid' | 'High'} />
         </span>
         <span
           className="inline-block text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
