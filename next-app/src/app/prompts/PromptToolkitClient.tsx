@@ -302,6 +302,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
       {showContributeModal && (
         <PromptContributeModal
           professions={professions}
+          initialTitle={searchQuery}
           onClose={() => { setShowContributeModal(false); setSearchQuery('') }}
         />
       )}

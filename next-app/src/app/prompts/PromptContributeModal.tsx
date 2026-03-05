@@ -6,6 +6,7 @@ import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 
 interface PromptContributeModalProps {
   professions: string[]
+  initialTitle?: string
   onClose: () => void
 }
 
@@ -53,30 +54,31 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
   const bars = level === 'Low' ? 1 : level === 'Mid' ? 2 : 3
   return (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <rect x="1" y="9" width="3" height="4" rx="0.5" fill={bars >= 1 ? '#000' : '#D1D5DB'} />
-      <rect x="5.5" y="5.5" width="3" height="7.5" rx="0.5" fill={bars >= 2 ? '#000' : '#D1D5DB'} />
-      <rect x="10" y="1" width="3" height="12" rx="0.5" fill={bars >= 3 ? '#000' : '#D1D5DB'} />
+      <rect x="1" y="9" width="3" height="4" rx="0.5" fill={bars >= 1 ? '#EF0B72' : '#D1D5DB'} />
+      <rect x="5.5" y="5.5" width="3" height="7.5" rx="0.5" fill={bars >= 2 ? '#EF0B72' : '#D1D5DB'} />
+      <rect x="10" y="1" width="3" height="12" rx="0.5" fill={bars >= 3 ? '#EF0B72' : '#D1D5DB'} />
     </svg>
   )
 }
 
 function InfoTooltip({ text }: { text: string }) {
   return (
-    <span className="relative group/tip inline-flex items-center ml-1">
-      <svg
-        width="36"
-        height="36"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#F6F6F6"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="cursor-help"
-      >
-        <path d="M12 16v-4" />
-        <path d="M12 8h.01" />
-      </svg>
+    <span className="relative group/tip inline-flex items-center ml-[5px]">
+      <span className="inline-flex items-center justify-center" style={{ width: '22px', height: '22px', backgroundColor: '#D1D5DB', borderRadius: '4px' }}>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      </span>
       <span
         className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2.5 text-xs text-black bg-white rounded-md opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-20"
         style={{ ...FONT, width: '140px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
@@ -87,7 +89,11 @@ function InfoTooltip({ text }: { text: string }) {
   )
 }
 
-export default function PromptContributeModal({ professions, onClose }: PromptContributeModalProps) {
+function toTitleCase(str: string) {
+  return str.replace(/\b\w/g, c => c.toUpperCase())
+}
+
+export default function PromptContributeModal({ professions, initialTitle, onClose }: PromptContributeModalProps) {
   const [closing, setClosing] = useState(false)
   const [phase, setPhase] = useState<'form' | 'thank-you'>('form')
   const [userName, setUserName] = useState('')
@@ -96,7 +102,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   const [submitting, setSubmitting] = useState(false)
 
   // Form fields
-  const [title, setTitle] = useState('')
+  const [title, setTitle] = useState(initialTitle ? toTitleCase(initialTitle.trim()) : '')
   const [description, setDescription] = useState('')
   const [fullPrompt, setFullPrompt] = useState('')
   const [profession, setProfession] = useState('')
@@ -108,7 +114,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   // Author fields (right column)
   const [authorName, setAuthorName] = useState('')
   const [authorJobTitle, setAuthorJobTitle] = useState('')
-  const [authorLinkedin, setAuthorLinkedin] = useState('')
+  const [authorLinkedin, setAuthorLinkedin] = useState('linkedin.com/in/')
   const [authorImage, setAuthorImage] = useState('')
 
   const promptRef = useRef<HTMLDivElement>(null)
@@ -175,6 +181,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
     if (isSignedIn && !authorName.trim()) missing.add('authorName')
     if (missing.size > 0) {
       setInvalidFields(missing)
+      setTimeout(() => setInvalidFields(new Set()), 1000)
       return
     }
     setInvalidFields(new Set())
@@ -394,10 +401,10 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   )
 
   // Shared label width for inline layout
-  const LABEL_WIDTH = '90px'
+  // LABEL_WIDTH removed — labels shrink-wrap; gap handles spacing
   const INPUT_CLASS = 'flex-1 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors'
   const FIELD_BG = '#F6F6F6'
-  const errorBorder = (field: string) => invalidFields.has(field) ? '2px solid #EF0B72' : 'none'
+  const errorOutline = (field: string) => invalidFields.has(field) ? '2px solid #EF0B72' : 'none'
   const clearError = (field: string) => { if (invalidFields.has(field)) setInvalidFields(prev => { const next = new Set(prev); next.delete(field); return next }) }
 
   return (
@@ -453,11 +460,11 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
 
             <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
             {/* LEFT COLUMN — Form */}
-            <div className="overflow-y-auto" style={{ flex: '0.95', padding: '1rem 2.25rem 2rem 2.25rem' }}>
+            <div className="overflow-hidden" style={{ flex: '0.95', padding: '1rem 2.25rem 2rem 2.25rem' }}>
               <div className="flex flex-col" style={{ gap: '14px' }}>
                 {/* Title */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-center gap-[5px]">
+                  <div className="flex items-center shrink-0">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Title
                     </label>
@@ -469,13 +476,13 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     onChange={(e) => { setTitle(e.target.value); clearError('title') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('title') }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('title') }}
                   />
                 </div>
 
                 {/* Description */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-center gap-[5px]">
+                  <div className="flex items-center shrink-0">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Description
                     </label>
@@ -487,13 +494,13 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     onChange={(e) => { setDescription(e.target.value); clearError('description') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('description') }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('description') }}
                   />
                 </div>
 
                 {/* Prompt */}
-                <div className="flex items-start gap-3">
-                  <div className="flex items-center shrink-0 pt-2" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-start gap-[5px]">
+                  <div className="flex items-center shrink-0 pt-2">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Prompt
                     </label>
@@ -510,13 +517,13 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         document.execCommand('insertText', false, text)
                       }}
                       className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
-                      style={{ ...FONT, backgroundColor: FIELD_BG, minHeight: '136px', whiteSpace: 'pre-wrap', overflowY: 'auto', border: errorBorder('prompt') }}
+                      style={{ ...FONT, backgroundColor: FIELD_BG, minHeight: '136px', whiteSpace: 'pre-wrap', overflowY: 'auto', outline: errorOutline('prompt') }}
                     />
-                    <div className="flex justify-end gap-1.5" style={{ marginTop: '-1px' }}>
+                    <div className="flex justify-end gap-1.5" style={{ marginTop: '5px' }}>
                       <button
                         type="button"
                         onClick={toggleBold}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:text-[#EF0B72] transition-colors"
                         style={FONT}
                         title="Bold selected text (Ctrl+B)"
                       >
@@ -526,7 +533,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                       <button
                         type="button"
                         onClick={toggleVariable}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:bg-gray-100 transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:text-[#EF0B72] transition-colors"
                         style={FONT}
                         title="Wrap selection as variable [text]"
                       >
@@ -538,8 +545,8 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* Profession */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-center gap-[5px]">
+                  <div className="flex items-center shrink-0">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Profession
                     </label>
@@ -555,7 +562,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                       placeholder=""
                       autoComplete="off"
                       className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
-                      style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('profession') }}
+                      style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('profession') }}
                     />
                     {(() => {
                       const filtered = professions.filter(p =>
@@ -567,7 +574,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         <div
                           className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg overflow-y-auto z-30"
                           style={{
-                            maxHeight: '180px',
+                            maxHeight: '128px',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             opacity: showDropdown ? 1 : 0,
                             transform: showDropdown ? 'scaleY(1)' : 'scaleY(0.95)',
@@ -582,7 +589,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                               type="button"
                               onMouseDown={(e) => e.preventDefault()}
                               onClick={() => { setProfession(p); setProfessionOpen(false) }}
-                              className="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
+                              className="w-full text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
                               style={FONT}
                             >
                               {p}
@@ -595,21 +602,21 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* AI Tool */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-center gap-[5px]">
+                  <div className="flex items-center shrink-0">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       AI Tool
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS['AI Tool']} />
                   </div>
-                  <div className="flex flex-wrap gap-2 rounded-lg" style={{ padding: invalidFields.has('llmTools') ? '4px' : '0', border: errorBorder('llmTools'), transition: 'padding 0.2s, border 0.2s' }}>
+                  <div className="flex flex-wrap gap-2 rounded-lg" style={{ outline: errorOutline('llmTools'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {LLM_TOOLS.map((tool) => (
                       <button
                         key={tool}
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
-                        className="px-4 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black"
-                        style={{ ...FONT, letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
+                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E5E5E5' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -626,21 +633,21 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
 
                 {/* Complexity */}
-                <div className="flex items-center gap-3 pb-2">
-                  <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
+                <div className="flex items-center gap-[5px] pb-2">
+                  <div className="flex items-center shrink-0">
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Complexity
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Complexity} />
                   </div>
-                  <div className="flex gap-2 rounded-lg" style={{ padding: invalidFields.has('complexity') ? '4px' : '0', border: errorBorder('complexity'), transition: 'padding 0.2s, border 0.2s' }}>
+                  <div className="flex gap-2 rounded-lg" style={{ outline: errorOutline('complexity'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {COMPLEXITIES.map((level) => (
                       <button
                         key={level}
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
-                        className="px-5 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5"
-                        style={{ ...FONT, letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
+                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E5E5E5' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
@@ -700,7 +707,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         value={authorName}
                         onChange={(e) => { setAuthorName(e.target.value); clearError('authorName') }}
                         className="flex-1 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
-                        style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('authorName') }}
+                        style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('authorName') }}
                       />
                     </div>
 
@@ -738,9 +745,10 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 text-sm font-semibold cursor-pointer mt-1"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow hover:shadow-[0_0_14px_rgba(80,80,80,0.6)]"
                     style={{
                       ...FONT,
+                      fontSize: '0.9rem',
                       borderRadius: '4px',
                       backgroundColor: '#EF0B72',
                       color: 'white',
