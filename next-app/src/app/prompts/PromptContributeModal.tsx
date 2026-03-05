@@ -64,10 +64,10 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group/tip inline-flex items-center ml-[5px]">
-      <span className="inline-flex items-center justify-center" style={{ width: '22px', height: '22px', backgroundColor: '#D1D5DB', borderRadius: '4px' }}>
+      <span className="inline-flex items-center justify-center" style={{ width: '16px', height: '16px', backgroundColor: '#D1D5DB', borderRadius: '3px' }}>
         <svg
-          width="16"
-          height="16"
+          width="14"
+          height="14"
           viewBox="0 0 24 24"
           fill="none"
           stroke="#fff"
@@ -114,7 +114,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   // Author fields (right column)
   const [authorName, setAuthorName] = useState('')
   const [authorJobTitle, setAuthorJobTitle] = useState('')
-  const [authorLinkedin, setAuthorLinkedin] = useState('linkedin.com/in/')
+  const [authorLinkedin, setAuthorLinkedin] = useState('')
   const [authorImage, setAuthorImage] = useState('')
 
   const promptRef = useRef<HTMLDivElement>(null)
@@ -156,7 +156,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
       author_name: authorName.trim() || null,
       author_image: authorImage || null,
       author_title: authorJobTitle.trim() || null,
-      author_linkedin: authorLinkedin.trim() || null,
+      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
     })
 
     if (error) {
@@ -404,7 +404,11 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   // LABEL_WIDTH removed — labels shrink-wrap; gap handles spacing
   const INPUT_CLASS = 'flex-1 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors'
   const FIELD_BG = '#F6F6F6'
-  const errorOutline = (field: string) => invalidFields.has(field) ? '2px solid #EF0B72' : 'none'
+  const errorOutline = (field: string): Record<string, string> => ({
+    outline: '0.5px solid',
+    outlineColor: invalidFields.has(field) ? '#EF0B72' : 'transparent',
+    transition: 'outline-color 0.3s ease',
+  })
   const clearError = (field: string) => { if (invalidFields.has(field)) setInvalidFields(prev => { const next = new Set(prev); next.delete(field); return next }) }
 
   return (
@@ -464,7 +468,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
               <div className="flex flex-col" style={{ gap: '14px' }}>
                 {/* Title */}
                 <div className="flex items-center gap-[5px]">
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Title
                     </label>
@@ -476,13 +480,13 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     onChange={(e) => { setTitle(e.target.value); clearError('title') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('title') }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('title') }}
                   />
                 </div>
 
                 {/* Description */}
                 <div className="flex items-center gap-[5px]">
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Description
                     </label>
@@ -494,13 +498,13 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     onChange={(e) => { setDescription(e.target.value); clearError('description') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('description') }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('description') }}
                   />
                 </div>
 
                 {/* Prompt */}
                 <div className="flex items-start gap-[5px]">
-                  <div className="flex items-center shrink-0 pt-2">
+                  <div className="flex items-center shrink-0 pt-2" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Prompt
                     </label>
@@ -517,7 +521,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         document.execCommand('insertText', false, text)
                       }}
                       className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
-                      style={{ ...FONT, backgroundColor: FIELD_BG, minHeight: '136px', whiteSpace: 'pre-wrap', overflowY: 'auto', outline: errorOutline('prompt') }}
+                      style={{ ...FONT, backgroundColor: FIELD_BG, minHeight: '136px', whiteSpace: 'pre-wrap', overflowY: 'auto', ...errorOutline('prompt') }}
                     />
                     <div className="flex justify-end gap-1.5" style={{ marginTop: '5px' }}>
                       <button
@@ -546,7 +550,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
 
                 {/* Profession */}
                 <div className="flex items-center gap-[5px]">
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Profession
                     </label>
@@ -562,7 +566,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                       placeholder=""
                       autoComplete="off"
                       className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
-                      style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('profession') }}
+                      style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('profession') }}
                     />
                     {(() => {
                       const filtered = professions.filter(p =>
@@ -574,7 +578,8 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         <div
                           className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg overflow-y-auto z-30"
                           style={{
-                            maxHeight: '128px',
+                            maxHeight: '102px',
+                            scrollbarWidth: 'none',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             opacity: showDropdown ? 1 : 0,
                             transform: showDropdown ? 'scaleY(1)' : 'scaleY(0.95)',
@@ -603,20 +608,20 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
 
                 {/* AI Tool */}
                 <div className="flex items-center gap-[5px]">
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       AI Tool
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS['AI Tool']} />
                   </div>
-                  <div className="flex flex-wrap gap-2 rounded-lg" style={{ outline: errorOutline('llmTools'), outlineOffset: '4px', borderRadius: '8px' }}>
+                  <div className="flex flex-wrap gap-2 rounded-lg" style={{ ...errorOutline('llmTools'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {LLM_TOOLS.map((tool) => (
                       <button
                         key={tool}
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
                         className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E5E5E5' : FIELD_BG }}
+                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -634,20 +639,20 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
 
                 {/* Complexity */}
                 <div className="flex items-center gap-[5px] pb-2">
-                  <div className="flex items-center shrink-0">
+                  <div className="flex items-center shrink-0" style={{ minWidth: '130px' }}>
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Complexity
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Complexity} />
                   </div>
-                  <div className="flex gap-2 rounded-lg" style={{ outline: errorOutline('complexity'), outlineOffset: '4px', borderRadius: '8px' }}>
+                  <div className="flex gap-2 rounded-lg" style={{ ...errorOutline('complexity'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {COMPLEXITIES.map((level) => (
                       <button
                         key={level}
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
                         className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E5E5E5' : FIELD_BG }}
+                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
@@ -707,7 +712,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         value={authorName}
                         onChange={(e) => { setAuthorName(e.target.value); clearError('authorName') }}
                         className="flex-1 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
-                        style={{ ...FONT, backgroundColor: FIELD_BG, outline: errorOutline('authorName') }}
+                        style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('authorName') }}
                       />
                     </div>
 
@@ -730,13 +735,17 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                       <div style={{ width: '52px', flexShrink: 0 }} className="flex items-center">
                         <img src="https://auth.ignite.education/storage/v1/object/public/assets/LinkedIn_logo_initials.png" alt="" width={20} height={20} />
                       </div>
-                      <input
-                        type="text"
-                        value={authorLinkedin}
-                        onChange={(e) => setAuthorLinkedin(e.target.value)}
-                        className="flex-1 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
-                        style={{ ...FONT, backgroundColor: FIELD_BG }}
-                      />
+                      <div className="flex-1 flex items-center rounded-lg py-1.5 text-sm text-gray-900" style={{ backgroundColor: FIELD_BG }}>
+                        <span className="pl-3 select-none text-gray-400 whitespace-nowrap" style={FONT}>linkedin.com/in/</span>
+                        <input
+                          type="text"
+                          value={authorLinkedin}
+                          onChange={(e) => setAuthorLinkedin(e.target.value)}
+                          placeholder="username"
+                          className="flex-1 bg-transparent pr-3 text-sm text-gray-900 focus:outline-none"
+                          style={FONT}
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -745,14 +754,14 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow hover:shadow-[0_0_14px_rgba(80,80,80,0.6)]"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow hover:shadow-[0_0_12px_rgba(60,60,60,0.5)]"
                     style={{
                       ...FONT,
                       fontSize: '0.9rem',
                       borderRadius: '4px',
                       backgroundColor: '#EF0B72',
                       color: 'white',
-                      boxShadow: '0 0 10px rgba(103,103,103,0.4)',
+                      boxShadow: 'none',
                     }}
                   >
                     {submitting ? (
