@@ -370,7 +370,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
               onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)' }}
               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)' }}
             >
-              <Pencil size={20} className="text-gray-500 transition-all duration-200 group-hover/create:text-[#EF0B72] group-hover/create:rotate-[-12deg]" />
+              <Pencil size={17} className="text-gray-500 transition-all duration-200 group-hover/create:text-[#EF0B72] group-hover/create:rotate-[-12deg]" style={{ transformOrigin: 'bottom left' }} />
             </button>
           </div>
         </div>

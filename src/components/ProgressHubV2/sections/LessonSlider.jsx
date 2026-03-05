@@ -207,14 +207,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         onMouseLeave={handleScrollMouseLeave}
         onScroll={handleScroll}
       >
-        <div
-          className="flex gap-4 items-stretch"
-          style={{
-            paddingRight: containerWidth > 0 && upcomingLessons.length > 0
-              ? `${Math.max(0, containerWidth - getCardWidth(upcomingLessons[upcomingLessons.length - 1]))}px`
-              : '0px'
-          }}
-        >
+        <div className="flex gap-4 items-stretch">
           {upcomingLessons.length > 0 ? (
             upcomingLessons.map((lesson, index) => {
               const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
@@ -290,6 +283,10 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
             <div className="flex-1 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center" style={{ padding: '7.398px' }}>
               <p className="text-purple-200 text-sm">No lesson data available</p>
             </div>
+          )}
+          {/* Spacer to allow last card to scroll fully to start position */}
+          {upcomingLessons.length > 0 && containerWidth > 0 && (
+            <div style={{ width: `${Math.max(0, containerWidth - getCardWidth(upcomingLessons[upcomingLessons.length - 1]))}px`, flexShrink: 0 }} />
           )}
         </div>
       </div>

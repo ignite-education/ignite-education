@@ -65,20 +65,25 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 
 function InfoTooltip({ text }: { text: string }) {
   return (
-    <span className="relative group/tip inline-flex items-center ml-[1px]">
-      <svg
-        width="18"
-        height="18"
-        viewBox="4 2 16 20"
-        fill="none"
-        stroke="#B0B0B0"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <span className="relative group/tip inline-flex items-center ml-[3px]">
+      <span
+        className="inline-flex items-center justify-center"
+        style={{ width: '16px', height: '16px', borderRadius: '3px', backgroundColor: '#D4D4D4' }}
       >
-        <path d="M12 16v-4" />
-        <path d="M12 8h.01" />
-      </svg>
+        <svg
+          width="10"
+          height="10"
+          viewBox="4 2 16 20"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 16v-4" />
+          <path d="M12 8h.01" />
+        </svg>
+      </span>
       <span
         className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-3 py-2.5 text-xs text-black bg-white rounded-md opacity-0 pointer-events-none group-hover/tip:opacity-100 transition-opacity z-50"
         style={{ ...FONT, width: '140px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
@@ -593,7 +598,6 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Title
                     </label>
-                    <InfoTooltip text={FIELD_TOOLTIPS.Title} />
                   </div>
                   <input
                     type="text"
@@ -677,7 +681,6 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Profession
                     </label>
-                    <InfoTooltip text={FIELD_TOOLTIPS.Profession} />
                   </div>
                   <div className="flex-1 relative">
                     <button
@@ -732,7 +735,6 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       AI Tool
                     </label>
-                    <InfoTooltip text={FIELD_TOOLTIPS['AI Tool']} />
                   </div>
                   <div className="flex flex-wrap gap-2 rounded-lg" style={{ ...errorOutline('llmTools'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {LLM_TOOLS.map((tool) => (
@@ -763,7 +765,6 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Complexity
                     </label>
-                    <InfoTooltip text={FIELD_TOOLTIPS.Complexity} />
                   </div>
                   <div className="flex gap-2 rounded-lg" style={{ ...errorOutline('complexity'), outlineOffset: '4px', borderRadius: '8px' }}>
                     {COMPLEXITIES.map((level) => (
