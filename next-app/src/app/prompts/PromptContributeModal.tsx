@@ -163,7 +163,13 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     }, 2500)
 
     const supabase = createClient()
-    const slug = promptToSlug(title.trim())
+    let slug = promptToSlug(title.trim())
+
+    // Ensure slug is unique — append a number suffix if it already exists
+    const { count } = await supabase.from('prompts').select('id', { count: 'exact', head: true }).eq('slug', slug)
+    if (count && count > 0) {
+      slug = `${slug}-${Date.now().toString(36)}`
+    }
 
     // Insert contribution for admin review
     const { error } = await supabase.from('prompt_contributions').insert({
