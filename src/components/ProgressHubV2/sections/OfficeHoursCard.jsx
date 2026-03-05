@@ -131,13 +131,13 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                 <div className="flex-1 flex items-center cursor-pointer" style={{ gap: '1.5rem' }} onClick={handleOpenCalendly}>
                       <div className="flex flex-col items-center flex-shrink-0" style={{ marginLeft: '0' }}>
                         {coaches[0].image_url ? (
-                          <img src={coaches[0].image_url} alt={coaches[0].name} style={{ width: '6rem', height: '6rem' }} className="rounded object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                          <img src={coaches[0].image_url} alt={coaches[0].name} style={{ width: '4.8rem', height: '4.8rem' }} className="rounded object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
                         ) : (
-                          <div className="rounded bg-white/10" style={{ width: '6rem', height: '6rem' }} />
+                          <div className="rounded bg-white/10" style={{ width: '4.8rem', height: '4.8rem' }} />
                         )}
                         <p className="text-white leading-snug" style={{ fontSize: '0.75rem', fontWeight: 400, marginTop: '4px' }}>Available</p>
-                        <div className="bg-white rounded" style={{ width: '6rem', padding: '2px 0', marginTop: '3px', textAlign: 'center' }}>
-                          <p className="text-black leading-snug" style={{ fontSize: '0.7rem', fontWeight: 400 }}>Tomorrow at 4PM</p>
+                        <div className="bg-white rounded" style={{ width: '4.8rem', padding: '4px', marginTop: '3px', textAlign: 'center' }}>
+                          <p className="text-black leading-snug" style={{ fontSize: '0.8rem', fontWeight: 400 }}>Tomorrow at 4PM</p>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
@@ -166,9 +166,9 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                           {coach ? (
                             <>
                               {coach.image_url ? (
-                                <img src={coach.image_url} alt={coach.name} className="w-[5rem] h-[5rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
+                                <img src={coach.image_url} alt={coach.name} className="w-[4rem] h-[4rem] rounded object-cover mb-1" onError={(e) => { e.target.style.display = 'none'; }} />
                               ) : (
-                                <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
+                                <div className="w-[4rem] h-[4rem] rounded bg-white/10 mb-1" />
                               )}
                               {coach.linkedin_url ? (
                                 <a href={coach.linkedin_url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
@@ -181,7 +181,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                             </>
                           ) : (
                             <>
-                              <div className="w-[5rem] h-[5rem] rounded bg-white/10 mb-1" />
+                              <div className="w-[4rem] h-[4rem] rounded bg-white/10 mb-1" />
                               <div className="h-2.5 bg-white/10 rounded mb-0.5 w-16" />
                               <div className="h-2 bg-white/10 rounded w-12" style={{ marginBottom: '-3px' }} />
                             </>

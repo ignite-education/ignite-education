@@ -2831,17 +2831,17 @@ ${contentBlocks.map((block, index) => {
                     <label className="block text-sm font-medium mb-1 text-gray-300">
                       Description
                       <span className="text-gray-400 text-xs ml-2">
-                        ({coachForm.description.length}/185 characters)
+                        ({coachForm.description.length}/115 characters)
                       </span>
                     </label>
                     <textarea
                       value={coachForm.description}
                       onChange={(e) => {
-                        if (e.target.value.length <= 185) {
+                        if (e.target.value.length <= 115) {
                           setCoachForm({ ...coachForm, description: e.target.value });
                         }
                       }}
-                      maxLength={185}
+                      maxLength={115}
                       className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white focus:border-pink-500 focus:outline-none"
                       placeholder="Brief bio about the coach..."
                       rows={3}
