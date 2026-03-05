@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
+import ComplexityIcon from '@/components/prompts/ComplexityIcon'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
 
@@ -599,7 +600,6 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
   const tags = [
     prompt.profession,
     ...prompt.llmTools,
-    `${prompt.complexity} Complexity`,
   ]
 
   return (
@@ -655,6 +655,13 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
             {tag}
           </span>
         ))}
+        <span
+          className="inline-flex items-center gap-1 text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
+          style={{ letterSpacing: '-0.02em' }}
+        >
+          <ComplexityIcon level={prompt.complexity as 'Low' | 'Mid' | 'High'} />
+          {prompt.complexity}
+        </span>
         <span
           className="inline-block text-sm font-medium px-[11px] py-[6px] rounded-[6px] bg-[#F0F0F0] text-[#7714E0]"
           style={{ letterSpacing: '-0.02em' }}
