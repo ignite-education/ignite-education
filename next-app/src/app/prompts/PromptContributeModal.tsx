@@ -64,11 +64,11 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group/tip inline-flex items-center ml-[5px]">
-      <span className="inline-flex items-center justify-center" style={{ width: '16px', height: '16px', backgroundColor: '#D1D5DB', borderRadius: '3px' }}>
+      <span className="inline-flex items-center justify-center" style={{ width: '16px', height: '16px', backgroundColor: '#F6F6F6', borderRadius: '3px' }}>
         <svg
           width="14"
           height="14"
-          viewBox="0 0 24 24"
+          viewBox="4 2 16 20"
           fill="none"
           stroke="#fff"
           strokeWidth="3"
@@ -557,23 +557,19 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                     <InfoTooltip text={FIELD_TOOLTIPS.Profession} />
                   </div>
                   <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      value={profession}
-                      onChange={(e) => { setProfession(e.target.value); setProfessionOpen(true); clearError('profession') }}
-                      onFocus={() => setProfessionOpen(true)}
+                    <button
+                      type="button"
+                      onClick={() => { setProfessionOpen(prev => !prev); clearError('profession') }}
                       onBlur={() => setTimeout(() => setProfessionOpen(false), 150)}
-                      placeholder=""
-                      autoComplete="off"
-                      className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
-                      style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('profession') }}
-                    />
+                      className="w-full rounded-lg px-3 py-2 text-sm text-left focus:outline-none transition-colors flex items-center justify-between cursor-pointer"
+                      style={{ ...FONT, backgroundColor: FIELD_BG, color: profession ? '#111827' : '#9CA3AF', ...errorOutline('profession') }}
+                    >
+                      <span>{profession || 'Select profession'}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: professionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}>
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </button>
                     {(() => {
-                      const filtered = professions.filter(p =>
-                        !profession.trim() || p.toLowerCase().includes(profession.toLowerCase())
-                      )
-                      const showDropdown = professionOpen && filtered.length > 0
-                        && !(filtered.length === 1 && filtered[0].toLowerCase() === profession.toLowerCase())
                       return (
                         <div
                           className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg overflow-y-auto z-30"
@@ -581,20 +577,20 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                             maxHeight: '102px',
                             scrollbarWidth: 'none',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                            opacity: showDropdown ? 1 : 0,
-                            transform: showDropdown ? 'scaleY(1)' : 'scaleY(0.95)',
+                            opacity: professionOpen ? 1 : 0,
+                            transform: professionOpen ? 'scaleY(1)' : 'scaleY(0.95)',
                             transformOrigin: 'top',
-                            pointerEvents: showDropdown ? 'auto' : 'none',
+                            pointerEvents: professionOpen ? 'auto' : 'none',
                             transition: 'opacity 0.15s ease, transform 0.15s ease',
                           }}
                         >
-                          {filtered.map((p) => (
+                          {professions.map((p) => (
                             <button
                               key={p}
                               type="button"
                               onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => { setProfession(p); setProfessionOpen(false) }}
-                              className="w-full text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
+                              onClick={() => { setProfession(p); setProfessionOpen(false); clearError('profession') }}
+                              className={`w-full text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors ${profession === p ? 'bg-gray-50 font-medium' : ''}`}
                               style={FONT}
                             >
                               {p}
@@ -621,7 +617,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
                         className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -652,7 +648,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
                         className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.85rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
@@ -741,7 +737,6 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                           type="text"
                           value={authorLinkedin}
                           onChange={(e) => setAuthorLinkedin(e.target.value)}
-                          placeholder="username"
                           className="flex-1 bg-transparent pr-3 text-sm text-gray-900 focus:outline-none"
                           style={FONT}
                         />
