@@ -942,7 +942,7 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
           <div className="flex gap-4 items-start group cursor-pointer">
             {prompt.authorLinkedin ? (
               <a
-                href={prompt.authorLinkedin}
+                href={prompt.authorLinkedin.startsWith('http') ? prompt.authorLinkedin : `https://${prompt.authorLinkedin}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex gap-4 items-start flex-1"

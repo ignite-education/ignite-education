@@ -52,14 +52,14 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
 
     // Measure content width to expand card if needed
     const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
-    const titleWidth = getTextWidth(titleText, 16, '600');
+    const titleWidth = getTextWidth(titleText, 17.6, '500');
     const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
     const maxBulletWidth = bulletPoints.length > 0
       ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
       : 0;
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
-    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(0.75rem≈12) + buffer
-    const neededWidth = Math.ceil(maxContentWidth + 110);
+    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1rem≈16) + buffer
+    const neededWidth = Math.ceil(maxContentWidth + 114);
     return Math.max(416, neededWidth);
   }, [upcomingLessons, isLessonCompleted]);
 
@@ -223,7 +223,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     minWidth: `${cardWidth}px`,
                     flexShrink: 0,
                     paddingTop: '0.85rem',
-                    paddingRight: '0.75rem',
+                    paddingRight: '1rem',
                     paddingBottom: '0.85rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
@@ -247,8 +247,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                       willChange: 'opacity',
                     }}
                   />
-                  <div className="flex-1" style={{ minWidth: 0, overflow: 'hidden' }}>
-                    <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
+                  <div className="flex-1" style={{ minWidth: 0 }}>
+                    <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
