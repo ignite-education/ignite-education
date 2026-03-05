@@ -32,6 +32,79 @@ function loadSavedFilters(): { search: string; professions: string[]; tools: str
 }
 
 export default function PromptToolkitClient({ professions, prompts, initialProfession, pageTitle }: PromptToolkitClientProps) {
+  // === DEBUG: Catch mystery 404 ===
+  useEffect(() => {
+    // 1. Catch all resource load errors (images, scripts, stylesheets, etc.)
+    const handleError = (e: Event) => {
+      const target = e.target as HTMLElement
+      if (target && target !== (window as unknown)) {
+        const src = (target as HTMLImageElement).src || (target as HTMLScriptElement).src || (target as HTMLLinkElement).href
+        console.error('[DEBUG 404] Resource load error:', {
+          tagName: target.tagName,
+          src,
+          id: target.id,
+          className: target.className,
+          outerHTML: target.outerHTML?.slice(0, 200),
+        })
+      }
+    }
+    window.addEventListener('error', handleError, true) // capture phase to catch resource errors
+
+    // 2. Patch fetch to log all requests and flag 404s
+    const originalFetch = window.fetch
+    window.fetch = async (...args) => {
+      const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request)?.url
+      const response = await originalFetch(...args)
+      if (response.status === 404) {
+        console.error('[DEBUG 404] fetch returned 404:', {
+          url,
+          status: response.status,
+          stack: new Error().stack,
+        })
+      }
+      return response
+    }
+
+    // 3. Patch XMLHttpRequest to catch older-style requests
+    const originalOpen = XMLHttpRequest.prototype.open
+    const originalSend = XMLHttpRequest.prototype.send
+    XMLHttpRequest.prototype.open = function (method: string, url: string | URL, ...rest: unknown[]) {
+      (this as XMLHttpRequest & { _debugUrl: string })._debugUrl = typeof url === 'string' ? url : url.toString()
+      return originalOpen.call(this, method, url, ...(rest as [boolean, string?, string?]))
+    }
+    XMLHttpRequest.prototype.send = function (...args) {
+      this.addEventListener('load', () => {
+        if (this.status === 404) {
+          console.error('[DEBUG 404] XHR returned 404:', {
+            url: (this as XMLHttpRequest & { _debugUrl: string })._debugUrl,
+            status: this.status,
+            responseURL: this.responseURL,
+            stack: new Error().stack,
+          })
+        }
+      })
+      return originalSend.apply(this, args as [Document | XMLHttpRequestBodyInit | null | undefined])
+    }
+
+    // 4. Log all current resource hints (preload/prefetch links)
+    const resourceHints = document.querySelectorAll('link[rel="preload"], link[rel="prefetch"], link[rel="preconnect"]')
+    if (resourceHints.length > 0) {
+      console.log('[DEBUG 404] Resource hints on page:', Array.from(resourceHints).map(l => ({
+        rel: l.getAttribute('rel'),
+        href: l.getAttribute('href'),
+        as: l.getAttribute('as'),
+      })))
+    }
+
+    return () => {
+      window.removeEventListener('error', handleError, true)
+      window.fetch = originalFetch
+      XMLHttpRequest.prototype.open = originalOpen
+      XMLHttpRequest.prototype.send = originalSend
+    }
+  }, [])
+  // === END DEBUG ===
+
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>(
     initialProfession ? [initialProfession] : []
