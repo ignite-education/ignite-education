@@ -193,8 +193,15 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       return
     }
 
+    // Save job title and LinkedIn on the user record for future use
+    if (authorJobTitle.trim() || authorLinkedin.trim()) {
+      const profileUpdate: Record<string, string> = {}
+      if (authorJobTitle.trim()) profileUpdate.job_title = authorJobTitle.trim()
+      if (authorLinkedin.trim()) profileUpdate.linkedin_url = `linkedin.com/in/${authorLinkedin.trim()}`
+      await supabase.from('users').update(profileUpdate).eq('id', uid)
+    }
+
     // Also create the prompt page (draft until admin approves)
-    // Author fields live on prompt_contributions; admin copies them to prompts on approval
     const { error: promptError } = await supabase.from('prompts').insert({
       title: title.trim(),
       slug,
@@ -206,6 +213,10 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       status: 'draft',
       usage_count: 0,
       rating: 0,
+      author_name: authorName.trim() || null,
+      author_image: authorImage || null,
+      author_title: authorJobTitle.trim() || null,
+      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
     })
 
     clearInterval(stepInterval)
@@ -238,7 +249,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     if (isSignedIn && !authorName.trim()) missing.add('authorName')
     if (missing.size > 0) {
       setInvalidFields(missing)
-      setTimeout(() => setInvalidFields(new Set()), 1800)
+      setTimeout(() => setInvalidFields(new Set()), 1300)
       return
     }
     setInvalidFields(new Set())
