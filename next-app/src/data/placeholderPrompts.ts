@@ -34,6 +34,16 @@ function getSupabase() {
   )
 }
 
+/**
+ * Service-role Supabase client that bypasses RLS.
+ * Used for fetching draft prompts server-side (e.g. contributor preview).
+ */
+function getServiceSupabase() {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!key) return getSupabase()
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key)
+}
+
 export function promptToSlug(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
@@ -80,7 +90,7 @@ export async function getAllPrompts(): Promise<Prompt[]> {
 
 /** Fetch a single prompt by slug (includes draft prompts for direct URL access) */
 export async function getPromptBySlug(slug: string): Promise<Prompt | undefined> {
-  const supabase = getSupabase()
+  const supabase = getServiceSupabase()
   const { data, error } = await supabase
     .from('prompts')
     .select('*')

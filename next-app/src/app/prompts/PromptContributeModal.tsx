@@ -71,7 +71,7 @@ function InfoTooltip({ text }: { text: string }) {
         height="18"
         viewBox="4 2 16 20"
         fill="none"
-        stroke="#C4C4C4"
+        stroke="#B0B0B0"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -728,8 +728,8 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                         key={tool}
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
-                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? 'hover:!bg-[#E2E2E2]' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E5E5E5' : FIELD_BG }}
+                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E2E2E2' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -759,8 +759,8 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                         key={level}
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
-                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? 'hover:!bg-[#E2E2E2]' : 'hover:!bg-[#EBEBEB]'}`}
-                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E5E5E5' : FIELD_BG }}
+                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E2E2E2' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
