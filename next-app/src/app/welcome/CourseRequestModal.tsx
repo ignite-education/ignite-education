@@ -53,7 +53,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       const { error } = await supabase.from('course_requests').insert({
         user_id: user.id,
         course_name: editedCourseName,
-        status: 'requested',
+
       })
       if (error) {
         console.error('[CourseRequest] Auto-insert failed:', error.message, error.code)
@@ -134,7 +134,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         await supabase.from('course_requests').insert({
           user_id: user.id,
           course_name: editedCourseName,
-          status: 'requested',
+  
         })
         lockAndTransition(extractFirstName(user))
       }
@@ -164,7 +164,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       const { error: insertError } = await supabase.from('course_requests').insert({
         user_id: data.user.id,
         course_name: editedCourseName,
-        status: 'requested',
+
       })
 
       if (insertError) {

@@ -1548,29 +1548,18 @@ export async function syncUserToCourseCompletedAudience(courseId, userInfo) {
  */
 export async function getCourseRequestAnalytics() {
   try {
-    console.log('[getCourseRequestAnalytics] Starting query...');
-    console.log('[getCourseRequestAnalytics] Supabase URL:', supabase.supabaseUrl);
-
-    const { data, error, status, statusText } = await supabase
+    const { data, error } = await supabase
       .from('course_requests')
-      .select('course_name, status, created_at');
-
-    console.log('[getCourseRequestAnalytics] Response status:', status, statusText);
-    console.log('[getCourseRequestAnalytics] Data:', data);
-    console.log('[getCourseRequestAnalytics] Error:', error);
+      .select('course_name, created_at');
 
     if (error) {
-      console.error('[getCourseRequestAnalytics] Full error object:', JSON.stringify(error, null, 2));
-      console.error('[getCourseRequestAnalytics] Error code:', error.code);
-      console.error('[getCourseRequestAnalytics] Error message:', error.message);
-      console.error('[getCourseRequestAnalytics] Error details:', error.details);
-      console.error('[getCourseRequestAnalytics] Error hint:', error.hint);
+      console.error('Error fetching course requests:', error);
       return [];
     }
 
     // Group by normalized course name and count requests
     const requestCounts = {};
-    const casingCounts = {}; // Track casing frequency to pick the most common
+    const casingCounts = {};
 
     (data || []).forEach(request => {
       const key = (request.course_name || '').trim().toLowerCase();
@@ -1580,8 +1569,6 @@ export async function getCourseRequestAnalytics() {
         requestCounts[key] = {
           courseName: request.course_name,
           total: 0,
-          upcoming: 0,
-          requested: 0,
           latestRequestDate: null
         };
         casingCounts[key] = {};
@@ -1594,12 +1581,6 @@ export async function getCourseRequestAnalytics() {
       requestCounts[key].courseName = mostCommon;
 
       requestCounts[key].total++;
-
-      if (request.status === 'upcoming') {
-        requestCounts[key].upcoming++;
-      } else if (request.status === 'requested') {
-        requestCounts[key].requested++;
-      }
 
       // Track most recent request date
       if (request.created_at) {

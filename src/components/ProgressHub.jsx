@@ -271,7 +271,6 @@ const ProgressHub = () => {
           .upsert({
             user_id: authUser.id,
             course_name: waitlistCourse,
-            status: 'upcoming'
           }, { onConflict: 'user_id,course_name' });
 
         if (error) throw error;

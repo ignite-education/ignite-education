@@ -64,8 +64,8 @@ function InfoTooltip({ text }: { text: string }) {
   return (
     <span className="relative group/tip inline-flex items-center ml-1">
       <svg
-        width="21"
-        height="21"
+        width="36"
+        height="36"
         viewBox="0 0 24 24"
         fill="none"
         stroke="#F6F6F6"
@@ -100,6 +100,8 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   const [description, setDescription] = useState('')
   const [fullPrompt, setFullPrompt] = useState('')
   const [profession, setProfession] = useState('')
+  const [professionOpen, setProfessionOpen] = useState(false)
+  const [invalidFields, setInvalidFields] = useState<Set<string>>(new Set())
   const [llmTools, setLlmTools] = useState<string[]>([])
   const [complexity, setComplexity] = useState<'Low' | 'Mid' | 'High' | ''>('')
 
@@ -109,7 +111,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   const [authorLinkedin, setAuthorLinkedin] = useState('')
   const [authorImage, setAuthorImage] = useState('')
 
-  const promptTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const promptRef = useRef<HTMLDivElement>(null)
 
   const isSignedIn = userId !== ''
   const isFormValid = title.trim() && description.trim() && fullPrompt.trim() && profession.trim() && llmTools.length > 0 && complexity
@@ -162,7 +164,21 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   }, [title, description, fullPrompt, profession, llmTools, complexity, authorName, authorImage, authorJobTitle, authorLinkedin])
 
   const handleFormSubmit = async () => {
-    if (!canSubmit || !userId) return
+    if (submitting) return
+    const missing = new Set<string>()
+    if (!title.trim()) missing.add('title')
+    if (!description.trim()) missing.add('description')
+    if (!fullPrompt.trim()) missing.add('prompt')
+    if (!profession.trim()) missing.add('profession')
+    if (llmTools.length === 0) missing.add('llmTools')
+    if (!complexity) missing.add('complexity')
+    if (isSignedIn && !authorName.trim()) missing.add('authorName')
+    if (missing.size > 0) {
+      setInvalidFields(missing)
+      return
+    }
+    setInvalidFields(new Set())
+    if (!userId) return
     await submitToDatabase(userId, userName)
   }
 
@@ -268,50 +284,87 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
     setLlmTools(prev => prev.includes(tool) ? prev.filter(t => t !== tool) : [...prev, tool])
   }
 
-  const toggleBold = () => {
-    const ta = promptTextareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    if (start === end) {
-      const updated = fullPrompt.slice(0, start) + '****' + fullPrompt.slice(end)
-      setFullPrompt(updated)
-      setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, start + 2) }, 0)
-    } else {
-      const selected = fullPrompt.slice(start, end)
-      if (fullPrompt.slice(start - 2, start) === '**' && fullPrompt.slice(end, end + 2) === '**') {
-        const updated = fullPrompt.slice(0, start - 2) + selected + fullPrompt.slice(end + 2)
-        setFullPrompt(updated)
-        setTimeout(() => { ta.focus(); ta.setSelectionRange(start - 2, end - 2) }, 0)
-      } else {
-        const updated = fullPrompt.slice(0, start) + '**' + selected + '**' + fullPrompt.slice(end)
-        setFullPrompt(updated)
-        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 2, end + 2) }, 0)
-      }
+  const htmlToMarkdown = (html: string): string => {
+    let md = html
+    // Convert variable spans to [text] before stripping tags
+    md = md.replace(/<span[^>]*data-variable="true"[^>]*>([\s\S]*?)<\/span>/gi, (_, inner) => {
+      // Strip any tags inside the variable span to get plain text
+      const plain = inner.replace(/<[^>]*>/g, '')
+      return `[${plain}]`
+    })
+    md = md.replace(/<(strong|b)\b[^>]*>/gi, '**')
+    md = md.replace(/<\/(strong|b)>/gi, '**')
+    md = md.replace(/<div><br\s*\/?><\/div>/gi, '\n')
+    md = md.replace(/<\/div><div>/gi, '\n')
+    md = md.replace(/<div>/gi, '\n')
+    md = md.replace(/<\/div>/gi, '')
+    md = md.replace(/<br\s*\/?>/gi, '\n')
+    md = md.replace(/<[^>]*>/g, '')
+    md = md.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"')
+    if (md.startsWith('\n')) md = md.slice(1)
+    return md
+  }
+
+  const syncPromptContent = () => {
+    if (promptRef.current) {
+      setFullPrompt(htmlToMarkdown(promptRef.current.innerHTML))
     }
   }
 
+  const toggleBold = () => {
+    const el = promptRef.current
+    if (!el) return
+    el.focus()
+    document.execCommand('bold', false)
+    syncPromptContent()
+  }
+
+  const VAR_STYLE = 'background:#fff;border-radius:4px;padding:1px 6px;display:inline'
+
   const toggleVariable = () => {
-    const ta = promptTextareaRef.current
-    if (!ta) return
-    const start = ta.selectionStart
-    const end = ta.selectionEnd
-    if (start === end) {
-      const updated = fullPrompt.slice(0, start) + '[]' + fullPrompt.slice(end)
-      setFullPrompt(updated)
-      setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 1, start + 1) }, 0)
-    } else {
-      const selected = fullPrompt.slice(start, end)
-      if (fullPrompt[start - 1] === '[' && fullPrompt[end] === ']') {
-        const updated = fullPrompt.slice(0, start - 1) + selected + fullPrompt.slice(end + 1)
-        setFullPrompt(updated)
-        setTimeout(() => { ta.focus(); ta.setSelectionRange(start - 1, end - 1) }, 0)
-      } else {
-        const updated = fullPrompt.slice(0, start) + '[' + selected + ']' + fullPrompt.slice(end)
-        setFullPrompt(updated)
-        setTimeout(() => { ta.focus(); ta.setSelectionRange(start + 1, end + 1) }, 0)
-      }
+    const el = promptRef.current
+    if (!el) return
+    el.focus()
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return
+    const range = sel.getRangeAt(0)
+
+    // Check if cursor/selection is inside an existing variable span
+    const parentVar = (range.startContainer as HTMLElement).closest?.('[data-variable]')
+      || (range.startContainer.parentElement?.closest?.('[data-variable]'))
+    if (parentVar) {
+      // Unwrap: replace span with its text content
+      const text = document.createTextNode(parentVar.textContent || '')
+      parentVar.parentNode?.replaceChild(text, parentVar)
+      const newRange = document.createRange()
+      newRange.selectNodeContents(text)
+      sel.removeAllRanges()
+      sel.addRange(newRange)
+      syncPromptContent()
+      return
     }
+
+    const span = document.createElement('span')
+    span.setAttribute('data-variable', 'true')
+    span.style.cssText = VAR_STYLE
+
+    if (range.collapsed) {
+      span.textContent = '\u00A0'
+      range.insertNode(span)
+      const innerRange = document.createRange()
+      innerRange.selectNodeContents(span)
+      sel.removeAllRanges()
+      sel.addRange(innerRange)
+    } else {
+      span.textContent = range.toString()
+      range.deleteContents()
+      range.insertNode(span)
+      const newRange = document.createRange()
+      newRange.selectNodeContents(span)
+      sel.removeAllRanges()
+      sel.addRange(newRange)
+    }
+    syncPromptContent()
   }
 
   const handleClose = () => {
@@ -344,6 +397,8 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
   const LABEL_WIDTH = '90px'
   const INPUT_CLASS = 'flex-1 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors'
   const FIELD_BG = '#F6F6F6'
+  const errorBorder = (field: string) => invalidFields.has(field) ? '2px solid #EF0B72' : 'none'
+  const clearError = (field: string) => { if (invalidFields.has(field)) setInvalidFields(prev => { const next = new Set(prev); next.delete(field); return next }) }
 
   return (
     <div
@@ -379,29 +434,31 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
         </button>
 
         {phase === 'form' ? (
-          <div className="flex flex-col md:flex-row" style={{ maxHeight: '90vh' }}>
-            {/* LEFT COLUMN — Form */}
-            <div className="overflow-y-auto" style={{ flex: '0.9', padding: '2rem 2.25rem' }}>
-              <div className="flex flex-col" style={{ gap: '14px' }}>
-                <div>
-                  <h3
-                    className="text-[1.6rem] font-bold text-black leading-tight tracking-[-0.02em]"
-                    style={FONT}
-                  >
-                    Submit a Prompt
-                  </h3>
-                  <p
-                    className="text-black font-light mt-1 leading-snug"
-                    style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}
-                  >
-                    Share the prompts you rely on to tackle work tasks more effectively and get better results, faster.
-                  </p>
-                </div>
+          <div className="flex flex-col" style={{ maxHeight: '90vh' }}>
+            {/* Header — spans full width */}
+            <div style={{ padding: '2rem 2.25rem 0 2.25rem' }}>
+              <h3
+                className="text-[1.6rem] font-bold text-black leading-tight tracking-[-0.02em]"
+                style={FONT}
+              >
+                Submit a Prompt
+              </h3>
+              <p
+                className="text-black font-light mt-1 leading-snug"
+                style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}
+              >
+                Share the prompts you rely on to tackle work tasks more effectively and get better results, faster.
+              </p>
+            </div>
 
+            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+            {/* LEFT COLUMN — Form */}
+            <div className="overflow-y-auto" style={{ flex: '0.95', padding: '1rem 2.25rem 2rem 2.25rem' }}>
+              <div className="flex flex-col" style={{ gap: '14px' }}>
                 {/* Title */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Title
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Title} />
@@ -409,17 +466,17 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                   <input
                     type="text"
                     value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    onChange={(e) => { setTitle(e.target.value); clearError('title') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('title') }}
                   />
                 </div>
 
                 {/* Description */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Description
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Description} />
@@ -427,37 +484,39 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                   <input
                     type="text"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => { setDescription(e.target.value); clearError('description') }}
                     placeholder=""
                     className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG }}
+                    style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('description') }}
                   />
                 </div>
 
                 {/* Prompt */}
                 <div className="flex items-start gap-3">
                   <div className="flex items-center shrink-0 pt-2" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Prompt
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Prompt} />
                   </div>
                   <div className="flex-1">
-                    <textarea
-                      ref={promptTextareaRef}
-                      value={fullPrompt}
-                      onChange={(e) => setFullPrompt(e.target.value)}
-                      onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold() } }}
-                      placeholder=""
-                      rows={6}
-                      className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors resize-none"
-                      style={{ ...FONT, backgroundColor: FIELD_BG }}
+                    <div
+                      ref={promptRef}
+                      contentEditable
+                      onInput={() => { syncPromptContent(); clearError('prompt') }}
+                      onPaste={(e) => {
+                        e.preventDefault()
+                        const text = e.clipboardData.getData('text/plain')
+                        document.execCommand('insertText', false, text)
+                      }}
+                      className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
+                      style={{ ...FONT, backgroundColor: FIELD_BG, minHeight: '136px', whiteSpace: 'pre-wrap', overflowY: 'auto', border: errorBorder('prompt') }}
                     />
-                    <div className="flex justify-end gap-1.5 mt-1">
+                    <div className="flex justify-end gap-1.5" style={{ marginTop: '-1px' }}>
                       <button
                         type="button"
                         onClick={toggleBold}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-black transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:bg-gray-100 transition-colors"
                         style={FONT}
                         title="Bold selected text (Ctrl+B)"
                       >
@@ -467,7 +526,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                       <button
                         type="button"
                         onClick={toggleVariable}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-gray-500 hover:bg-gray-100 hover:text-black transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium text-black hover:bg-gray-100 transition-colors"
                         style={FONT}
                         title="Wrap selection as variable [text]"
                       >
@@ -481,47 +540,76 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 {/* Profession */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Profession
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Profession} />
                   </div>
-                  <input
-                    type="text"
-                    value={profession}
-                    onChange={(e) => setProfession(e.target.value)}
-                    list="professions-list"
-                    placeholder=""
-                    className={INPUT_CLASS}
-                    style={{ ...FONT, backgroundColor: FIELD_BG }}
-                  />
-                  <datalist id="professions-list">
-                    {professions.map((p) => (
-                      <option key={p} value={p} />
-                    ))}
-                  </datalist>
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={profession}
+                      onChange={(e) => { setProfession(e.target.value); setProfessionOpen(true); clearError('profession') }}
+                      onFocus={() => setProfessionOpen(true)}
+                      onBlur={() => setTimeout(() => setProfessionOpen(false), 150)}
+                      placeholder=""
+                      autoComplete="off"
+                      className="w-full rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors"
+                      style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('profession') }}
+                    />
+                    {(() => {
+                      const filtered = professions.filter(p =>
+                        !profession.trim() || p.toLowerCase().includes(profession.toLowerCase())
+                      )
+                      const showDropdown = professionOpen && filtered.length > 0
+                        && !(filtered.length === 1 && filtered[0].toLowerCase() === profession.toLowerCase())
+                      return (
+                        <div
+                          className="absolute left-0 right-0 top-full mt-1 bg-white rounded-lg overflow-y-auto z-30"
+                          style={{
+                            maxHeight: '180px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            opacity: showDropdown ? 1 : 0,
+                            transform: showDropdown ? 'scaleY(1)' : 'scaleY(0.95)',
+                            transformOrigin: 'top',
+                            pointerEvents: showDropdown ? 'auto' : 'none',
+                            transition: 'opacity 0.15s ease, transform 0.15s ease',
+                          }}
+                        >
+                          {filtered.map((p) => (
+                            <button
+                              key={p}
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => { setProfession(p); setProfessionOpen(false) }}
+                              className="w-full text-left px-3 py-2 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors"
+                              style={FONT}
+                            >
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      )
+                    })()}
+                  </div>
                 </div>
 
                 {/* AI Tool */}
                 <div className="flex items-center gap-3">
                   <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       AI Tool
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS['AI Tool']} />
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 rounded-lg" style={{ padding: invalidFields.has('llmTools') ? '4px' : '0', border: errorBorder('llmTools'), transition: 'padding 0.2s, border 0.2s' }}>
                     {LLM_TOOLS.map((tool) => (
                       <button
                         key={tool}
                         type="button"
-                        onClick={() => toggleLlmTool(tool)}
-                        className={`px-4 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${
-                          llmTools.includes(tool)
-                            ? 'bg-gray-100'
-                            : 'hover:bg-gray-100'
-                        }`}
-                        style={{ ...FONT, letterSpacing: '-0.02em', ...(!llmTools.includes(tool) ? { backgroundColor: FIELD_BG } : {}) }}
+                        onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
+                        className="px-4 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black"
+                        style={{ ...FONT, letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#EAEAEA' : FIELD_BG }}
                       >
                         {tool}
                         {LLM_LOGO_PATHS[tool] && (
@@ -540,23 +628,19 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 {/* Complexity */}
                 <div className="flex items-center gap-3 pb-2">
                   <div className="flex items-center shrink-0" style={{ width: LABEL_WIDTH }}>
-                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.2rem' }}>
+                    <label className="font-semibold text-black tracking-[-0.01em]" style={{ ...FONT, fontSize: '1.1rem' }}>
                       Complexity
                     </label>
                     <InfoTooltip text={FIELD_TOOLTIPS.Complexity} />
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 rounded-lg" style={{ padding: invalidFields.has('complexity') ? '4px' : '0', border: errorBorder('complexity'), transition: 'padding 0.2s, border 0.2s' }}>
                     {COMPLEXITIES.map((level) => (
                       <button
                         key={level}
                         type="button"
-                        onClick={() => setComplexity(level)}
-                        className={`px-5 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${
-                          complexity === level
-                            ? 'bg-gray-100'
-                            : 'hover:bg-gray-100'
-                        }`}
-                        style={{ ...FONT, letterSpacing: '-0.02em', ...(complexity !== level ? { backgroundColor: FIELD_BG } : {}) }}
+                        onClick={() => { setComplexity(level); clearError('complexity') }}
+                        className="px-5 py-1.5 rounded-lg text-sm font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5"
+                        style={{ ...FONT, letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#EAEAEA' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
                         {level}
@@ -581,7 +665,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
               ) : isSignedIn ? (
                 /* Signed-in: Profile card */
-                <div className="flex flex-col items-start w-full" style={{ gap: '16px' }}>
+                <div className="flex flex-col items-start w-full max-w-[260px]" style={{ gap: '16px' }}>
                   {/* Avatar */}
                   {authorImage ? (
                     <img
@@ -608,21 +692,21 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                   <div className="w-full space-y-3">
                     {/* Name */}
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-bold text-black whitespace-nowrap" style={{ ...FONT, width: '52px' }}>
+                      <label className="font-semibold text-black tracking-[-0.01em] whitespace-nowrap" style={{ ...FONT, fontSize: '1.1rem', width: '52px' }}>
                         Name
                       </label>
                       <input
                         type="text"
                         value={authorName}
-                        onChange={(e) => setAuthorName(e.target.value)}
+                        onChange={(e) => { setAuthorName(e.target.value); clearError('authorName') }}
                         className="flex-1 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
-                        style={{ ...FONT, backgroundColor: FIELD_BG }}
+                        style={{ ...FONT, backgroundColor: FIELD_BG, border: errorBorder('authorName') }}
                       />
                     </div>
 
                     {/* Title */}
                     <div className="flex items-center gap-3">
-                      <label className="text-sm font-bold text-black whitespace-nowrap" style={{ ...FONT, width: '52px' }}>
+                      <label className="font-semibold text-black tracking-[-0.01em] whitespace-nowrap" style={{ ...FONT, fontSize: '1.1rem', width: '52px' }}>
                         Title
                       </label>
                       <input
@@ -653,14 +737,14 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                   <button
                     type="button"
                     onClick={handleFormSubmit}
-                    disabled={!canSubmit}
-                    className="w-full py-2.5 text-sm font-semibold transition-colors cursor-pointer mt-1"
+                    disabled={submitting}
+                    className="w-full py-2.5 text-sm font-semibold cursor-pointer mt-1"
                     style={{
                       ...FONT,
                       borderRadius: '4px',
-                      backgroundColor: canSubmit ? '#EF0B72' : '#E5E7EB',
-                      color: canSubmit ? 'white' : '#9CA3AF',
-                      boxShadow: canSubmit ? '0 0 10px rgba(103,103,103,0.4)' : 'none',
+                      backgroundColor: '#EF0B72',
+                      color: 'white',
+                      boxShadow: '0 0 10px rgba(103,103,103,0.4)',
                     }}
                   >
                     {submitting ? (
@@ -707,6 +791,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                   </button>
                 </div>
               )}
+            </div>
             </div>
           </div>
         ) : (

@@ -334,7 +334,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       const supabase = createClient()
       const { error } = await supabase
         .from('course_requests')
-        .insert({ user_id: user.id, course_name: courseSlug, status: 'requested' })
+        .insert({ user_id: user.id, course_name: courseSlug })
 
       if (error && error.code !== '23505') {
         console.error('Error registering interest:', error)

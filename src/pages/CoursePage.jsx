@@ -1174,8 +1174,7 @@ const CoursePage = () => {
                           .from('course_requests')
                           .insert({
                             user_id: user.id,
-                            course_name: course?.name || courseSlug,
-                            status: 'requested'
+                            course_name: course?.name || courseSlug
                           });
 
                         if (error) {
