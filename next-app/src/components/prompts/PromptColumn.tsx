@@ -28,29 +28,7 @@ interface PromptColumnProps {
 
 export default function PromptColumn({ type, prompts }: PromptColumnProps) {
   const config = COLUMN_CONFIG[type]
-  const [animateRef] = useAutoAnimate((el, action, oldCoords, newCoords) => {
-    const duration = 150
-    const easing = 'ease-out'
-
-    if (action === 'add') {
-      return new KeyframeEffect(el, [
-        { opacity: 0, transform: 'translateY(8px)' },
-        { opacity: 1, transform: 'translateY(0)' },
-      ], { duration, easing })
-    }
-    if (action === 'remove') {
-      return new KeyframeEffect(el, [
-        { opacity: 1, transform: 'translateY(0)' },
-        { opacity: 0, transform: 'translateY(-8px)' },
-      ], { duration, easing })
-    }
-    // remain — slide into new position
-    const deltaY = (oldCoords?.top ?? 0) - (newCoords?.top ?? 0)
-    return new KeyframeEffect(el, [
-      { transform: `translateY(${deltaY}px)` },
-      { transform: 'translateY(0)' },
-    ], { duration, easing })
-  })
+  const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
 
   return (
     <div className="flex flex-col">

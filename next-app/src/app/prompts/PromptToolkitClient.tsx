@@ -32,13 +32,23 @@ function loadSavedFilters(): { search: string; professions: string[]; tools: str
 }
 
 export default function PromptToolkitClient({ professions, prompts, initialProfession, pageTitle }: PromptToolkitClientProps) {
-  const saved = useMemo(() => initialProfession ? null : loadSavedFilters(), [])
-  const [searchQuery, setSearchQuery] = useState(saved?.search ?? '')
+  const [searchQuery, setSearchQuery] = useState('')
   const [selectedProfessions, setSelectedProfessions] = useState<string[]>(
-    initialProfession ? [initialProfession] : (saved?.professions ?? [])
+    initialProfession ? [initialProfession] : []
   )
-  const [selectedTools, setSelectedTools] = useState<string[]>(saved?.tools ?? [])
-  const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
+  const [selectedTools, setSelectedTools] = useState<string[]>([])
+  const [selectedComplexities, setSelectedComplexities] = useState<string[]>([])
+
+  // Restore saved filters from localStorage after hydration (avoids SSR mismatch)
+  useEffect(() => {
+    if (initialProfession) return
+    const saved = loadSavedFilters()
+    if (!saved) return
+    setSearchQuery(saved.search)
+    setSelectedProfessions(saved.professions)
+    setSelectedTools(saved.tools)
+    setSelectedComplexities(saved.complexities)
+  }, [])
   const [showContributeModal, setShowContributeModal] = useState(false)
   const [authUser, setAuthUser] = useState<User | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)

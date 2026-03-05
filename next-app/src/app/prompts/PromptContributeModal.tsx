@@ -65,7 +65,7 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 
 function InfoTooltip({ text }: { text: string }) {
   return (
-    <span className="relative group/tip inline-flex items-center ml-[4px]">
+    <span className="relative group/tip inline-flex items-center ml-[1px]">
       <svg
         width="18"
         height="18"
@@ -187,7 +187,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       return
     }
 
-    // Also create the prompt page (pending status, not searchable until approved)
+    // Also create the prompt page (draft until admin approves)
     // Author fields live on prompt_contributions; admin copies them to prompts on approval
     const { error: promptError } = await supabase.from('prompts').insert({
       title: title.trim(),
@@ -197,7 +197,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       profession: profession.trim(),
       llm_tools: llmTools,
       complexity,
-      status: 'pending',
+      status: 'draft',
       usage_count: 0,
       rating: 0,
     })
@@ -559,7 +559,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                 className="text-black font-light mt-1 leading-snug"
                 style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}
               >
-                Share your best prompts to tackle work tasks more effectively and get better results, faster.
+                Share your best AI prompts to tackle work tasks more effectively and get better results, faster.
               </p>
             </div>
 
@@ -797,7 +797,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                   )}
 
                   <p className="text-black font-light leading-snug" style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}>
-                    Your public info for the prompt
+                    Your public info for the prompt.
                   </p>
 
                   {/* Author fields */}
@@ -858,13 +858,14 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.36)]"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.36)]"
                     style={{
                       ...FONT,
                       fontSize: '0.9rem',
                       borderRadius: '4px',
                       backgroundColor: '#EF0B72',
                       color: 'white',
+                      transition: 'box-shadow 0.3s ease',
                     }}
                   >
                     {submitting ? (
