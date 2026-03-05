@@ -65,14 +65,14 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 
 function InfoTooltip({ text }: { text: string }) {
   return (
-    <span className="relative group/tip inline-flex items-center ml-[3px]">
+    <span className="relative group/tip inline-flex items-center ml-[6px]">
       <span
         className="inline-flex items-center justify-center"
         style={{ width: '16px', height: '16px', borderRadius: '3px', backgroundColor: '#D4D4D4' }}
       >
         <svg
-          width="10"
-          height="10"
+          width="12"
+          height="12"
           viewBox="4 2 16 20"
           fill="none"
           stroke="#FFFFFF"
@@ -188,7 +188,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       author_name: authorName.trim() || null,
       author_image: authorImage || null,
       author_title: authorJobTitle.trim() || null,
-      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
+      author_linkedin: authorLinkedin.trim() ? `https://linkedin.com/in/${authorLinkedin.trim()}` : null,
     })
 
     if (error) {
@@ -202,7 +202,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     if (authorJobTitle.trim() || authorLinkedin.trim()) {
       const profileUpdate: Record<string, string> = {}
       if (authorJobTitle.trim()) profileUpdate.job_title = authorJobTitle.trim()
-      if (authorLinkedin.trim()) profileUpdate.linkedin_url = `linkedin.com/in/${authorLinkedin.trim()}`
+      if (authorLinkedin.trim()) profileUpdate.linkedin_url = `https://linkedin.com/in/${authorLinkedin.trim()}`
       await supabase.from('users').update(profileUpdate).eq('id', uid)
     }
 
@@ -221,7 +221,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       author_name: authorName.trim() || null,
       author_image: authorImage || null,
       author_title: authorJobTitle.trim() || null,
-      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
+      author_linkedin: authorLinkedin.trim() ? `https://linkedin.com/in/${authorLinkedin.trim()}` : null,
     })
 
     clearInterval(stepInterval)

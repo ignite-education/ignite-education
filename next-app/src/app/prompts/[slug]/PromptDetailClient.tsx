@@ -202,10 +202,10 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
     } catch {}
   }, [prompt.id])
 
-  const trackUsage = useCallback(() => {
-    const supabase = createClient()
-    supabase.rpc('increment_prompt_usage', { p_id: prompt.id }).then()
+  const trackUsage = useCallback(async () => {
     setUsageExtra(prev => prev + 1)
+    const supabase = createClient()
+    await supabase.rpc('increment_prompt_usage', { p_id: prompt.id })
   }, [prompt.id])
 
   const handleThumbsUp = useCallback(async () => {
@@ -935,7 +935,7 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
 
       {/* Author Section — matches Course Leader styling */}
       {prompt.authorName && (
-        <div className="mt-9 mb-2">
+        <div className="mt-9 mb-2 flex flex-col items-center">
           <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
             Author
           </h2>
@@ -963,13 +963,13 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
                 )}
                 <div className="flex-1 min-w-0">
                   <h4
-                    className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors"
-                    style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}
+                    className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors text-lg"
+                    style={{ lineHeight: '1.3', marginBottom: '2px' }}
                   >
                     {prompt.authorName}
                   </h4>
                   {prompt.authorTitle && (
-                    <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3' }}>
+                    <p className="text-gray-900 font-medium text-lg" style={{ lineHeight: '1.3' }}>
                       {prompt.authorTitle}
                     </p>
                   )}
@@ -993,13 +993,13 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
                 )}
                 <div className="flex-1 min-w-0">
                   <h4
-                    className="font-semibold text-gray-900"
-                    style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}
+                    className="font-semibold text-gray-900 text-lg"
+                    style={{ lineHeight: '1.3', marginBottom: '2px' }}
                   >
                     {prompt.authorName}
                   </h4>
                   {prompt.authorTitle && (
-                    <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3' }}>
+                    <p className="text-gray-900 font-medium text-lg" style={{ lineHeight: '1.3' }}>
                       {prompt.authorTitle}
                     </p>
                   )}

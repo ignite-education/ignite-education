@@ -58,8 +58,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
       ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
       : 0;
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
-    // paddingLeft(1.2rem≈19.2) + gap-3(12) + button(48) + buttonMarginRight(10) + paddingRight(5.618) + buffer
-    const neededWidth = Math.ceil(maxContentWidth + 100);
+    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(0.75rem≈12) + buffer
+    const neededWidth = Math.ceil(maxContentWidth + 110);
     return Math.max(416, neededWidth);
   }, [upcomingLessons, isLessonCompleted]);
 
@@ -223,7 +223,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     minWidth: `${cardWidth}px`,
                     flexShrink: 0,
                     paddingTop: '0.85rem',
-                    paddingRight: '5.618px',
+                    paddingRight: '0.75rem',
                     paddingBottom: '0.85rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
@@ -247,7 +247,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                       willChange: 'opacity',
                     }}
                   />
-                  <div className="flex-1">
+                  <div className="flex-1" style={{ minWidth: 0, overflow: 'hidden' }}>
                     <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
@@ -267,7 +267,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                       style={{
                         width: '48px', height: '48px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRadius: '0.3rem', marginRight: '10px'
+                        borderRadius: '0.3rem'
                       }}
                       onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                     >

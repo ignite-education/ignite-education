@@ -11,7 +11,6 @@ import type { Prompt } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
 import PromptContributeModal from './PromptContributeModal'
-import { Pencil } from 'lucide-react'
 
 interface PromptToolkitClientProps {
   professions: string[]
@@ -370,7 +369,11 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
               onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.75)' }}
               onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.6)' }}
             >
-              <Pencil size={17} className="text-gray-500 transition-all duration-200 group-hover/create:text-[#EF0B72] group-hover/create:rotate-[-12deg]" style={{ transformOrigin: 'bottom left' }} />
+              <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500 group-hover/create:text-[#EF0B72] transition-colors duration-300">
+                <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5" />
+                <polyline points="14 2 14 8 20 8" />
+                <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.96 5.42-5.43Z" className="group-hover/create:-translate-x-[2px] group-hover/create:translate-y-[2px] transition-transform duration-300" />
+              </svg>
             </button>
           </div>
         </div>
