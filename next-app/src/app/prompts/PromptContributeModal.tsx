@@ -65,7 +65,7 @@ function ComplexityIcon({ level }: { level: 'Low' | 'Mid' | 'High' }) {
 
 function InfoTooltip({ text }: { text: string }) {
   return (
-    <span className="relative group/tip inline-flex items-center ml-[5px]">
+    <span className="relative group/tip inline-flex items-center ml-[4px]">
       <svg
         width="18"
         height="18"
@@ -188,6 +188,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     }
 
     // Also create the prompt page (pending status, not searchable until approved)
+    // Author fields live on prompt_contributions; admin copies them to prompts on approval
     const { error: promptError } = await supabase.from('prompts').insert({
       title: title.trim(),
       slug,
@@ -199,10 +200,6 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       status: 'pending',
       usage_count: 0,
       rating: 0,
-      author_name: authorName.trim() || null,
-      author_image: authorImage || null,
-      author_title: authorJobTitle.trim() || null,
-      author_linkedin: authorLinkedin.trim() ? `linkedin.com/in/${authorLinkedin.trim()}` : null,
     })
 
     clearInterval(stepInterval)
@@ -423,8 +420,60 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       sel.removeAllRanges()
       sel.addRange(newRange)
     }
+    // Ensure a zero-width space exists after the variable span so the cursor can land outside it
+    if (!span.nextSibling || (span.nextSibling.nodeType === Node.TEXT_NODE && span.nextSibling.textContent === '')) {
+      span.parentNode?.insertBefore(document.createTextNode('\u200B'), span.nextSibling)
+    }
     syncPromptContent()
   }
+
+  const escapeVariableSpan = useCallback(() => {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return false
+    const range = sel.getRangeAt(0)
+    if (!range.collapsed) return false
+    const node = range.startContainer
+    const varSpan = node.nodeType === Node.TEXT_NODE
+      ? node.parentElement?.closest('[data-variable]')
+      : (node as HTMLElement).closest?.('[data-variable]')
+    if (!varSpan) return false
+    // Check if cursor is at the end of the variable content
+    const atEnd = range.startOffset >= (node.textContent?.length ?? 0)
+    if (!atEnd) return false
+    let after = varSpan.nextSibling
+    if (!after || after.nodeType !== Node.TEXT_NODE) {
+      after = document.createTextNode('\u200B')
+      varSpan.parentNode?.insertBefore(after, varSpan.nextSibling)
+    }
+    const newRange = document.createRange()
+    newRange.setStart(after, after.nodeType === Node.TEXT_NODE ? Math.min(1, after.textContent?.length ?? 0) : 0)
+    newRange.collapse(true)
+    sel.removeAllRanges()
+    sel.addRange(newRange)
+    return true
+  }, [])
+
+  const handlePromptKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowRight') {
+      if (escapeVariableSpan()) e.preventDefault()
+    }
+  }, [escapeVariableSpan])
+
+  const handlePromptClick = useCallback((e: React.MouseEvent) => {
+    const sel = window.getSelection()
+    if (!sel || sel.rangeCount === 0) return
+    const range = sel.getRangeAt(0)
+    if (!range.collapsed) return
+    const node = range.startContainer
+    const varSpan = node.nodeType === Node.TEXT_NODE
+      ? node.parentElement?.closest('[data-variable]')
+      : (node as HTMLElement).closest?.('[data-variable]')
+    if (!varSpan) return
+    const rect = (varSpan as HTMLElement).getBoundingClientRect()
+    if (e.clientX > rect.right - 2) {
+      escapeVariableSpan()
+    }
+  }, [escapeVariableSpan])
 
   const handleClose = () => {
     setClosing(true)
@@ -567,6 +616,8 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                       ref={promptRef}
                       contentEditable
                       onInput={() => { syncPromptContent(); clearError('prompt') }}
+                      onKeyDown={handlePromptKeyDown}
+                      onClick={handlePromptClick}
                       onPaste={(e) => {
                         e.preventDefault()
                         const text = e.clipboardData.getData('text/plain')
@@ -807,7 +858,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={submitting}
-                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.4)]"
+                    className="w-full py-2.5 font-semibold cursor-pointer mt-1 transition-shadow shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.36)]"
                     style={{
                       ...FONT,
                       fontSize: '0.9rem',
