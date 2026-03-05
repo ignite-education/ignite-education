@@ -210,7 +210,9 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         <div
           className="flex gap-4 items-stretch"
           style={{
-            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 416 - 16)}px` : '0px'
+            paddingRight: containerWidth > 0 && upcomingLessons.length > 0
+              ? `${Math.max(0, containerWidth - getCardWidth(upcomingLessons[upcomingLessons.length - 1]))}px`
+              : '0px'
           }}
         >
           {upcomingLessons.length > 0 ? (

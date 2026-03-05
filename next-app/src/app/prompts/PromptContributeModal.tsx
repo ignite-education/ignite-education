@@ -579,7 +579,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                 className="text-black font-light mt-1 leading-snug"
                 style={{ ...FONT, fontSize: '1rem', letterSpacing: '-0.01em' }}
               >
-                Share your best AI prompts to tackle work tasks more effectively and get better results, faster.
+                Share your best AI prompt to tackle work tasks more effectively and get better results, faster.
               </p>
             </div>
 

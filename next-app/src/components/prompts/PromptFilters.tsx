@@ -170,7 +170,7 @@ export default function PromptFilters({
                       key={option}
                       type="button"
                       onClick={() => handleToggle(type, option)}
-                      className="w-full text-left px-[10px] py-1 text-sm font-normal hover:bg-gray-50 transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
+                      className="w-full text-left px-[10px] py-1 text-sm font-normal hover:bg-[#F6F6F6] transition-colors flex items-center gap-3 cursor-pointer whitespace-nowrap"
                       style={{ fontFamily: 'var(--font-geist-sans), sans-serif', letterSpacing: '-0.01em' }}
                     >
                       <span

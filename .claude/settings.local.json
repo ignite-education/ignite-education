@@ -64,7 +64,8 @@
       "WebFetch(domain:addtoprofile.linkedin.com)",
       "Bash(git check-ignore:*)",
       "Bash(npx tsc --noEmit)",
-      "Bash(npx tsc --noEmit --pretty)"
+      "Bash(npx tsc --noEmit --pretty)",
+      "Bash(xargs -I {} basename {})"
     ],
     "deny": [],
     "ask": []

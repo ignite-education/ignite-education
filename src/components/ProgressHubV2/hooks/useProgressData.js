@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
+import { trackPageVisit } from '../../../lib/tracking';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png', '/big-ben.png'];
 
@@ -105,6 +106,9 @@ const useProgressData = () => {
         setLoading(false);
         return;
       }
+
+      // Fire-and-forget: track this page visit with geo data
+      trackPageVisit(userId, 'progress');
 
       const imagePromise = preloadImages(PRELOAD_IMAGES);
 
