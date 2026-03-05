@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { Prompt } from '@/data/placeholderPrompts'
@@ -39,7 +40,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
   const [selectedTools, setSelectedTools] = useState<string[]>(saved?.tools ?? [])
   const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
   const [showContributeModal, setShowContributeModal] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authUser, setAuthUser] = useState<User | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
@@ -49,7 +50,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
   useEffect(() => {
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setIsAuthenticated(true)
+      if (user) setAuthUser(user)
       setAuthLoaded(true)
     })
   }, [])
@@ -69,7 +70,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
         return
       }
 
-      setIsAuthenticated(true)
+      setAuthUser(data.user)
     } catch (err) {
       console.error('[PromptToolkit] Unexpected error:', err)
     }
@@ -77,7 +78,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
   useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
-    enabled: authLoaded && !isAuthenticated,
+    enabled: authLoaded && !authUser,
     autoPrompt: true,
   })
 
@@ -303,6 +304,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
         <PromptContributeModal
           professions={professions}
           initialTitle={searchQuery}
+          user={authUser}
           onClose={() => { setShowContributeModal(false); setTimeout(() => setSearchQuery(''), 150) }}
         />
       )}

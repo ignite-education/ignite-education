@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { LLM_TOOLS, COMPLEXITIES, promptToSlug } from '@/data/placeholderPrompts'
 
 interface PromptContributeModalProps {
   professions: string[]
   initialTitle?: string
+  user?: User | null
   onClose: () => void
 }
 
@@ -69,7 +71,7 @@ function InfoTooltip({ text }: { text: string }) {
         height="18"
         viewBox="4 2 16 20"
         fill="none"
-        stroke="#DEDEDE"
+        stroke="#C4C4C4"
         strokeWidth="3"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -91,12 +93,12 @@ function toTitleCase(str: string) {
   return str.replace(/\b\w/g, c => c.toUpperCase())
 }
 
-export default function PromptContributeModal({ professions, initialTitle, onClose }: PromptContributeModalProps) {
+export default function PromptContributeModal({ professions, initialTitle, user: preloadedUser, onClose }: PromptContributeModalProps) {
   const [closing, setClosing] = useState(false)
   const [phase, setPhase] = useState<'form' | 'thank-you'>('form')
-  const [userName, setUserName] = useState('')
-  const [userId, setUserId] = useState('')
-  const [authLoaded, setAuthLoaded] = useState(false)
+  const [userName, setUserName] = useState(() => preloadedUser ? extractFirstName(preloadedUser) : '')
+  const [userId, setUserId] = useState(() => preloadedUser?.id ?? '')
+  const [authLoaded, setAuthLoaded] = useState(() => preloadedUser !== undefined)
   const [signingIn, setSigningIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submittingStep, setSubmittingStep] = useState(0)
@@ -114,21 +116,22 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
   const [complexity, setComplexity] = useState<'Low' | 'Mid' | 'High' | ''>('')
 
   // Author fields (right column)
-  const [authorName, setAuthorName] = useState('')
+  const [authorName, setAuthorName] = useState(() => preloadedUser ? extractFullName(preloadedUser) : '')
   const [authorJobTitle, setAuthorJobTitle] = useState('')
   const [authorLinkedin, setAuthorLinkedin] = useState('')
-  const [authorImage, setAuthorImage] = useState('')
+  const [authorImage, setAuthorImage] = useState(() => preloadedUser ? extractAvatar(preloadedUser) : '')
 
   const promptRef = useRef<HTMLDivElement>(null)
   const linkedinRef = useRef<HTMLInputElement>(null)
 
   const isSignedIn = userId !== ''
   const isFormValid = title.trim() && description.trim() && fullPrompt.trim() && profession.trim() && llmTools.length > 0 && complexity
-  const isAuthorValid = authorName.trim() !== ''
+  const isAuthorValid = authorName.trim() !== '' && authorJobTitle.trim() !== ''
   const canSubmit = isFormValid && isAuthorValid && !submitting
 
-  // Silently check if already signed in
+  // Silently check if already signed in (skip if parent pre-loaded user)
   useEffect(() => {
+    if (preloadedUser !== undefined) return
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) {
@@ -504,9 +507,9 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+            <div className="flex flex-col md:flex-row flex-1">
             {/* LEFT COLUMN — Form */}
-            <div className="overflow-hidden" style={{ flex: '0.95', padding: '1rem 2.25rem 2rem 2.25rem' }}>
+            <div style={{ flex: '0.95', padding: '1rem 2.25rem 2rem 2.25rem' }}>
               <div className="flex flex-col" style={{ gap: '14px' }}>
                 {/* Title */}
                 <div className="flex items-center gap-[5px]">
@@ -618,6 +621,7 @@ export default function PromptContributeModal({ professions, initialTitle, onClo
                           style={{
                             maxHeight: '102px',
                             scrollbarWidth: 'none',
+                            overscrollBehavior: 'contain',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             opacity: professionOpen ? 1 : 0,
                             transform: professionOpen ? 'scaleY(1)' : 'scaleY(0.95)',

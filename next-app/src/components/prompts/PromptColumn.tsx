@@ -1,3 +1,6 @@
+'use client'
+
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import type { Prompt } from '@/data/placeholderPrompts'
 import PromptCard from './PromptCard'
 
@@ -25,6 +28,7 @@ interface PromptColumnProps {
 
 export default function PromptColumn({ type, prompts }: PromptColumnProps) {
   const config = COLUMN_CONFIG[type]
+  const [animateRef] = useAutoAnimate({ duration: 250, easing: 'ease-out' })
 
   return (
     <div className="flex flex-col">
@@ -40,13 +44,7 @@ export default function PromptColumn({ type, prompts }: PromptColumnProps) {
       >
         {config.description}
       </p>
-      <div
-        className="space-y-3"
-        style={{
-          opacity: prompts.length > 0 ? 1 : 0,
-          transition: 'opacity 0.35s ease',
-        }}
-      >
+      <div ref={animateRef} className="space-y-3">
         {prompts.map((prompt) => (
           <PromptCard key={prompt.id} prompt={prompt} />
         ))}

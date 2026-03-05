@@ -1,3 +1,6 @@
+'use client'
+
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import CourseCard from './CourseCard'
 
 export const COURSE_TYPE_CONFIG: Record<string, { title: string; description: string }> = {
@@ -30,6 +33,7 @@ export default function CourseTypeColumn({
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
+  const [animateRef] = useAutoAnimate({ duration: 250, easing: 'ease-out' })
 
   return (
     <div className="flex flex-col">
@@ -47,7 +51,7 @@ export default function CourseTypeColumn({
           {config.description}
         </p>
       )}
-      <div className="space-y-3">
+      <div ref={animateRef} className="space-y-3">
         {displayCourses.map((course) => (
           <CourseCard key={course.id || course.name} course={course} />
         ))}
