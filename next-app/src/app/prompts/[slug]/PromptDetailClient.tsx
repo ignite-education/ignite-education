@@ -933,48 +933,78 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
       </div>
       </div>
 
-      {/* Author Section — only shown when author info is present */}
+      {/* Author Section — matches Course Leader styling */}
       {prompt.authorName && (
-        <div className="mt-10 flex items-center gap-4">
-          {prompt.authorImage ? (
-            <img
-              src={prompt.authorImage}
-              alt={prompt.authorName}
-              className="rounded-full object-cover"
-              style={{ width: '48px', height: '48px' }}
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div
-              className="rounded-full bg-[#7714E0] text-white flex items-center justify-center text-lg font-semibold"
-              style={{ width: '48px', height: '48px', flexShrink: 0 }}
-            >
-              {prompt.authorName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-black" style={{ fontSize: '16px', letterSpacing: '-0.02em' }}>
-                {prompt.authorName}
-              </span>
-              {prompt.authorLinkedin && (
-                <a
-                  href={prompt.authorLinkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${prompt.authorName} on LinkedIn`}
-                  className="text-[#0A66C2] hover:text-[#004182] transition-colors"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                  </svg>
-                </a>
-              )}
-            </div>
-            {prompt.authorTitle && (
-              <p className="text-gray-500 text-sm" style={{ letterSpacing: '-0.02em' }}>
-                {prompt.authorTitle}
-              </p>
+        <div className="mt-9 mb-2">
+          <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
+            Author
+          </h2>
+          <div className="flex gap-4 items-start group cursor-pointer">
+            {prompt.authorLinkedin ? (
+              <a
+                href={prompt.authorLinkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex gap-4 items-start flex-1"
+              >
+                {prompt.authorImage ? (
+                  <img
+                    src={prompt.authorImage}
+                    alt={`${prompt.authorName}${prompt.authorTitle ? `, ${prompt.authorTitle}` : ''}`}
+                    className="w-20 h-20 rounded object-cover object-center flex-shrink-0"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div
+                    className="w-20 h-20 rounded bg-[#7714E0] text-white flex items-center justify-center text-2xl font-semibold flex-shrink-0"
+                  >
+                    {prompt.authorName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4
+                    className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors"
+                    style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}
+                  >
+                    {prompt.authorName}
+                  </h4>
+                  {prompt.authorTitle && (
+                    <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3' }}>
+                      {prompt.authorTitle}
+                    </p>
+                  )}
+                </div>
+              </a>
+            ) : (
+              <div className="flex gap-4 items-start flex-1">
+                {prompt.authorImage ? (
+                  <img
+                    src={prompt.authorImage}
+                    alt={`${prompt.authorName}${prompt.authorTitle ? `, ${prompt.authorTitle}` : ''}`}
+                    className="w-20 h-20 rounded object-cover object-center flex-shrink-0"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <div
+                    className="w-20 h-20 rounded bg-[#7714E0] text-white flex items-center justify-center text-2xl font-semibold flex-shrink-0"
+                  >
+                    {prompt.authorName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <h4
+                    className="font-semibold text-gray-900"
+                    style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}
+                  >
+                    {prompt.authorName}
+                  </h4>
+                  {prompt.authorTitle && (
+                    <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3' }}>
+                      {prompt.authorTitle}
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>

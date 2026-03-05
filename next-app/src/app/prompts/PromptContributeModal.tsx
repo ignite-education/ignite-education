@@ -103,7 +103,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
   const [submitting, setSubmitting] = useState(false)
   const [submittingStep, setSubmittingStep] = useState(0)
   const submittingStepRef = useRef(0)
-  const SUBMIT_MESSAGES = ['Sparking', 'Doing the work', 'Compounding']
+  const SUBMIT_MESSAGES = ['Building', 'Doing the work', 'Compounding']
 
   // Form fields
   const [title, setTitle] = useState(initialTitle ? toTitleCase(initialTitle.trim()) : '')
@@ -215,7 +215,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     }
 
     const openSlug = promptError ? null : slug
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     if (openSlug) {
       window.open(`/prompts/${openSlug}`, '_blank')
@@ -416,7 +416,8 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       span.textContent = '\u00A0'
       range.insertNode(span)
       const innerRange = document.createRange()
-      innerRange.selectNodeContents(span)
+      innerRange.setStart(span.firstChild!, 0)
+      innerRange.collapse(true)
       sel.removeAllRanges()
       sel.addRange(innerRange)
     } else {
@@ -676,7 +677,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                       style={{ ...FONT, backgroundColor: FIELD_BG, color: profession ? '#111827' : '#9CA3AF', ...errorOutline('profession') }}
                     >
                       <span>{profession || '\u00A0'}</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: professionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: professionOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.25s ease' }}>
                         <path d="M6 9l6 6 6-6" />
                       </svg>
                     </button>
@@ -702,7 +703,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                               type="button"
                               onMouseDown={(e) => e.preventDefault()}
                               onClick={() => { setProfession(p); setProfessionOpen(false); clearError('profession') }}
-                              className={`w-full text-left px-3 py-1.5 text-sm text-gray-900 hover:bg-gray-50 cursor-pointer transition-colors ${profession === p ? 'bg-gray-50 font-medium' : ''}`}
+                              className={`w-full text-left px-3 py-1.5 text-sm text-gray-900 hover:!bg-[#F6F6F6] cursor-pointer transition-colors ${profession === p ? 'bg-[#F6F6F6] font-medium' : ''}`}
                               style={FONT}
                             >
                               {p}
@@ -728,7 +729,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                         key={tool}
                         type="button"
                         onClick={() => { toggleLlmTool(tool); clearError('llmTools') }}
-                        className={`px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black ${llmTools.includes(tool) ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        className="px-4 py-1.5 rounded-lg font-normal transition-colors cursor-pointer flex items-center gap-1.5 text-black hover:!bg-[#E2E2E2]"
                         style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: llmTools.includes(tool) ? '#E2E2E2' : FIELD_BG }}
                       >
                         {tool}
@@ -759,7 +760,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                         key={level}
                         type="button"
                         onClick={() => { setComplexity(level); clearError('complexity') }}
-                        className={`px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 ${complexity === level ? '' : 'hover:!bg-[#EBEBEB]'}`}
+                        className="px-5 py-1.5 rounded-lg font-normal transition-colors cursor-pointer text-black flex items-center gap-1.5 hover:!bg-[#E2E2E2]"
                         style={{ ...FONT, fontSize: '0.75rem', letterSpacing: '-0.02em', backgroundColor: complexity === level ? '#E2E2E2' : FIELD_BG }}
                       >
                         <ComplexityIcon level={level as 'Low' | 'Mid' | 'High'} />
