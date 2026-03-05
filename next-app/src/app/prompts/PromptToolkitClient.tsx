@@ -40,6 +40,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
   const [selectedComplexities, setSelectedComplexities] = useState<string[]>(saved?.complexities ?? [])
   const [showContributeModal, setShowContributeModal] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authLoaded, setAuthLoaded] = useState(false)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
@@ -49,6 +50,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setIsAuthenticated(true)
+      setAuthLoaded(true)
     })
   }, [])
 
@@ -75,7 +77,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
   useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
-    enabled: !isAuthenticated,
+    enabled: authLoaded && !isAuthenticated,
     autoPrompt: true,
   })
 

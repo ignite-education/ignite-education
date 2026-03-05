@@ -58,12 +58,11 @@ function InfoTooltip({ text }: { text: string }) {
         viewBox="0 0 24 24"
         fill="none"
         stroke="#9CA3AF"
-        strokeWidth="2"
+        strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         className="cursor-help"
       >
-        <circle cx="12" cy="12" r="10" />
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
       </svg>
@@ -309,7 +308,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
 
   // Shared label width for inline layout
   const LABEL_WIDTH = '90px'
-  const INPUT_CLASS = 'flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors'
+  const INPUT_CLASS = 'flex-1 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors'
 
   return (
     <div
@@ -325,7 +324,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
       <div
         className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
         style={{
-          width: phase === 'thank-you' ? '540px' : '946px',
+          width: phase === 'thank-you' ? '540px' : '975px',
           maxWidth: '90vw',
           maxHeight: '90vh',
           borderRadius: '6px',
@@ -376,7 +375,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Weekly Report Generator"
+                    placeholder=""
                     className={INPUT_CLASS}
                     style={FONT}
                   />
@@ -394,7 +393,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Brief description of what the prompt does"
+                    placeholder=""
                     className={INPUT_CLASS}
                     style={FONT}
                   />
@@ -426,9 +425,9 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                       value={fullPrompt}
                       onChange={(e) => setFullPrompt(e.target.value)}
                       onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'b') { e.preventDefault(); toggleBold() } }}
-                      placeholder="The complete prompt text... Use **text** for bold."
+                      placeholder=""
                       rows={6}
-                      className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors resize-none"
+                      className="w-full bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none transition-colors resize-none"
                       style={FONT}
                     />
                   </div>
@@ -447,7 +446,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     value={profession}
                     onChange={(e) => setProfession(e.target.value)}
                     list="professions-list"
-                    placeholder="e.g. Product Management"
+                    placeholder=""
                     className={INPUT_CLASS}
                     style={FONT}
                   />
@@ -475,7 +474,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                           llmTools.includes(tool)
                             ? 'bg-[#EF0B72] text-white'
-                            : 'bg-gray-100 text-black hover:bg-gray-200'
+                            : 'bg-gray-50 text-black hover:bg-gray-200'
                         }`}
                         style={FONT}
                       >
@@ -511,7 +510,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         className={`px-5 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                           complexity === level
                             ? 'bg-[#EF0B72] text-white'
-                            : 'bg-gray-100 text-black hover:bg-gray-200'
+                            : 'bg-gray-50 text-black hover:bg-gray-200'
                         }`}
                         style={FONT}
                       >
@@ -537,7 +536,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                 </div>
               ) : isSignedIn ? (
                 /* Signed-in: Profile card */
-                <div className="flex flex-col items-center w-full" style={{ gap: '16px' }}>
+                <div className="flex flex-col items-start w-full" style={{ gap: '16px' }}>
                   {/* Avatar */}
                   {authorImage ? (
                     <img
@@ -556,7 +555,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     </div>
                   )}
 
-                  <p className="text-sm text-black text-center" style={FONT}>
+                  <p className="text-sm text-black" style={FONT}>
                     Your public info for the prompt
                   </p>
 
@@ -571,8 +570,7 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         type="text"
                         value={authorName}
                         onChange={(e) => setAuthorName(e.target.value)}
-                        placeholder="Your name"
-                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
                         style={FONT}
                       />
                     </div>
@@ -586,23 +584,21 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                         type="text"
                         value={authorJobTitle}
                         onChange={(e) => setAuthorJobTitle(e.target.value)}
-                        placeholder="e.g. Sr Product Manager at Amazon"
-                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
                         style={FONT}
                       />
                     </div>
 
                     {/* LinkedIn */}
                     <div className="flex items-center gap-3">
-                      <div style={{ width: '52px', flexShrink: 0 }} className="flex justify-center">
-                        <LinkedInIcon size={24} />
+                      <div style={{ width: '52px', flexShrink: 0 }} className="flex items-center">
+                        <LinkedInIcon size={20} />
                       </div>
                       <input
                         type="text"
                         value={authorLinkedin}
                         onChange={(e) => setAuthorLinkedin(e.target.value)}
-                        placeholder="linkedin.com/in/username"
-                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#EF0B72] transition-colors"
+                        className="flex-1 bg-gray-50 rounded-lg px-3 py-1.5 text-sm text-gray-900 focus:outline-none transition-colors"
                         style={FONT}
                       />
                     </div>
@@ -613,11 +609,13 @@ export default function PromptContributeModal({ professions, onClose }: PromptCo
                     type="button"
                     onClick={handleFormSubmit}
                     disabled={!canSubmit}
-                    className="w-full py-2.5 rounded-full text-sm font-semibold transition-colors cursor-pointer mt-1"
+                    className="w-full py-2.5 text-sm font-semibold transition-colors cursor-pointer mt-1"
                     style={{
                       ...FONT,
+                      borderRadius: '4px',
                       backgroundColor: canSubmit ? '#EF0B72' : '#E5E7EB',
                       color: canSubmit ? 'white' : '#9CA3AF',
+                      boxShadow: canSubmit ? '0 0 10px rgba(103,103,103,0.4)' : 'none',
                     }}
                   >
                     {submitting ? (

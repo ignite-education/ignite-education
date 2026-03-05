@@ -36,6 +36,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
+  const [authLoaded, setAuthLoaded] = useState(false)
   const [showInterestModal, setShowInterestModal] = useState(false)
   const [interestEmail, setInterestEmail] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -169,7 +170,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
   const { isLoaded, renderButton } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
-    enabled: !user,
+    enabled: authLoaded && !user,
     autoPrompt: true,
   })
 
@@ -234,6 +235,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       } else {
         setCheckingStatus(false)
       }
+      setAuthLoaded(true)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
