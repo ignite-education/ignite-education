@@ -33,7 +33,7 @@ export default function CourseTypeColumn({
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
-  const [animateRef] = useAutoAnimate({ duration: 250, easing: 'ease-out' })
+  const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
 
   return (
     <div className="flex flex-col">

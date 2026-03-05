@@ -28,7 +28,7 @@ interface PromptColumnProps {
 
 export default function PromptColumn({ type, prompts }: PromptColumnProps) {
   const config = COLUMN_CONFIG[type]
-  const [animateRef] = useAutoAnimate({ duration: 250, easing: 'ease-out' })
+  const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
 
   return (
     <div className="flex flex-col">

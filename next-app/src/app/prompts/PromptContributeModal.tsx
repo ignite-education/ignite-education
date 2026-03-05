@@ -188,7 +188,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     }
 
     // Also create the prompt page (pending status, not searchable until approved)
-    await supabase.from('prompts').insert({
+    const { error: promptError } = await supabase.from('prompts').insert({
       title: title.trim(),
       slug,
       description: description.trim(),
@@ -207,12 +207,19 @@ export default function PromptContributeModal({ professions, initialTitle, user:
 
     clearInterval(stepInterval)
 
-    // Open the new prompt page in a new tab
-    window.open(`/prompts/${slug}`, '_blank')
+    if (promptError) {
+      console.error('[PromptContribute] Prompt insert failed:', promptError.message, promptError.code)
+    }
 
-    setUserName(name)
-    setPhase('thank-you')
-  }, [title, description, fullPrompt, profession, llmTools, complexity, authorName, authorImage, authorJobTitle, authorLinkedin])
+    // Open the new prompt page in a new tab (only if prompt row was created)
+    if (!promptError) {
+      window.open(`/prompts/${slug}`, '_blank')
+    }
+
+    setSubmitting(false)
+    setClosing(true)
+    setTimeout(onClose, 300)
+  }, [title, description, fullPrompt, profession, llmTools, complexity, authorName, authorImage, authorJobTitle, authorLinkedin, onClose])
 
   const handleFormSubmit = async () => {
     if (submitting) return
@@ -811,22 +818,16 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                   >
                     {submitting ? (
                       <span className="inline-flex items-center" key={submittingStep}>
-                        <span style={{ animation: 'fadeIn 0.3s ease' }}>
-                          {SUBMIT_MESSAGES[submittingStep]}
-                        </span>
-                        <span className="inline-flex" style={{ width: '18px' }}>
-                          {[0, 1, 2].map(i => (
-                            <span
-                              key={i}
-                              className="inline-block"
-                              style={{
-                                animation: 'dotPulse 1.4s ease-in-out infinite',
-                                animationDelay: `${i * 0.2}s`,
-                                opacity: 0.3,
-                              }}
-                            >.</span>
-                          ))}
-                        </span>
+                        {(SUBMIT_MESSAGES[submittingStep] + '...').split('').map((char, i) => (
+                          <span
+                            key={i}
+                            style={{
+                              animation: 'letterFadeIn 0.4s ease forwards',
+                              animationDelay: `${i * 0.03}s`,
+                              opacity: 0,
+                            }}
+                          >{char}</span>
+                        ))}
                       </span>
                     ) : 'Submit'}
                   </button>

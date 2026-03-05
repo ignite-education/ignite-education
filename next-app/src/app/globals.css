@@ -150,6 +150,11 @@ body {
   30% { opacity: 1; }
 }
 
+@keyframes letterFadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Respect users' reduced motion preferences for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
