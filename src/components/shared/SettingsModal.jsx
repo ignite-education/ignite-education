@@ -428,13 +428,12 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
   return (
     <div
-      className="fixed inset-0 flex justify-center items-center"
+      className={`fixed inset-0 flex justify-center items-center ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
       style={{
         backdropFilter: 'blur(2.4px)',
         WebkitBackdropFilter: 'blur(2.4px)',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
         zIndex: 9999,
-        animation: isClosing ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
         padding: '2rem',
       }}
       onClick={handleClose}
@@ -443,9 +442,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
         {/* Settings Card */}
         <div
           ref={scrollRef}
-          className="bg-white text-black relative"
+          className={`bg-white text-black relative ${isClosing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
           style={{
-            animation: isClosing ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem',
             padding: '2rem 2.25rem 1.5rem 2.25rem',
             maxHeight: '75vh',
@@ -457,10 +455,11 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
         >
           <style>{`
             .settings-scroll::-webkit-scrollbar { display: none; }
+            .settings-toggle::after { border-radius: 3px !important; }
           `}</style>
 
           {/* Close button */}
-          <button onClick={handleClose} className="absolute top-4 right-4 text-gray-600 hover:text-black z-10">
+          <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10">
             <X size={24} />
           </button>
 
@@ -479,13 +478,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     src={profilePicture}
                     alt="Profile"
                     className="object-cover"
-                    style={{ width: '90px', height: '90px', borderRadius: '0.25rem' }}
+                    style={{ width: '100px', height: '100px', borderRadius: '0.25rem' }}
                     referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div
                     className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                    style={{ width: '90px', height: '90px', fontSize: '24px', borderRadius: '0.25rem' }}
+                    style={{ width: '100px', height: '100px', fontSize: '24px', borderRadius: '0.25rem' }}
                   >
                     {(firstName || 'U')[0].toUpperCase()}
                   </div>
@@ -502,7 +501,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
                   className="text-xs font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
-                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '90px' }}
+                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px' }}
                 >
                   {isUploadingPicture ? 'Uploading...' : 'Edit'}
                 </button>
@@ -515,7 +514,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               <div className="flex-1 space-y-2.5">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium whitespace-nowrap shrink-0">First Name</label>
+                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>First Name</label>
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -531,7 +530,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium whitespace-nowrap shrink-0">Last Name</label>
+                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Last Name</label>
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -549,7 +548,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium whitespace-nowrap shrink-0">Email</label>
+                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Email</label>
                   <div className="relative flex-1">
                     <input
                       type="email"
@@ -566,7 +565,9 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 </div>
 
                 {/* Linked Accounts */}
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex items-center gap-2">
+                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Accounts</label>
+                  <div className="grid grid-cols-2 gap-3 flex-1">
                   <button
                     type="button"
                     onClick={() => isGoogleLinked ? handleUnlinkProvider('google') : handleLinkProvider('google')}
@@ -593,6 +594,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
                   </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -604,34 +606,36 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
             {!isAdFree ? (
               /* Upsell Card */
-              <div className="flex gap-4 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
-                <div className="flex-1">
-                  <h4 className="font-medium text-purple-700 mb-1.5" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
-                    Try Ignite Insider for free
-                  </h4>
-                  <p className="text-sm text-gray-600 mb-3">
+              <>
+              <h4 className="font-medium text-purple-700 mb-1.5" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+                Try Ignite Insider for free
+              </h4>
+              <div className="flex gap-4">
+                <div className="flex-1 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
+                  <p className="text-gray-600 mb-3" style={{ fontSize: '1rem' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
-                  <ul className="space-y-1.5 text-sm font-semibold text-black">
+                  <ul className="space-y-1.5 font-semibold text-black" style={{ fontSize: '1rem' }}>
                     <li>1:1 Office Hours with industry professionals</li>
                     <li>Weekly hand-pick job opportunities</li>
                     <li>AI Tool Prompt highlights</li>
                   </ul>
                 </div>
                 <div className="flex flex-col items-center justify-center text-center" style={{ minWidth: '160px' }}>
-                  <div className="text-3xl mb-1">🎁</div>
+                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
                   <p className="font-bold text-sm">Two weeks free</p>
                   <p className="text-xs text-gray-500 mb-2">then 99p/week</p>
                   <button
                     onClick={handleStartCheckout}
                     className="text-white font-semibold text-sm px-5 py-2 hover:opacity-90 transition"
-                    style={{ borderRadius: '0.3rem', backgroundColor: '#EF6C00' }}
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA' }}
                   >
                     Get your free trial
                   </button>
                   <p className="text-xs text-gray-400 mt-1.5">All Ignite features. Cancel anytime.</p>
                 </div>
               </div>
+              </>
             ) : (
               /* Premium Subscriber Card */
               <div className="space-y-4">
@@ -680,7 +684,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       onChange={(e) => setEmailPrefs(prev => ({ ...prev, [key]: e.target.checked }))}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                    <div className="settings-toggle w-9 h-5 bg-gray-300 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600" style={{ borderRadius: '3px' }}></div>
                   </label>
                 </div>
               ))}

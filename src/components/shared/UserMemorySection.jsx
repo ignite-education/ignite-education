@@ -142,7 +142,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
           </button>
         )}
       </div>
-      <p className="text-sm text-gray-500 mb-3">
+      <p className="text-black mb-3" style={{ fontSize: '1rem' }}>
         We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts. Your memory is completely private and secure. It is never used for ads or shared.
       </p>
 
@@ -165,7 +165,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
             maxLength={MAX_LENGTH}
             rows={4}
             className="w-full bg-gray-100 text-black text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
-            style={{ borderRadius: '0.3rem', minHeight: '100px' }}
+            style={{ borderRadius: '0.3rem', minHeight: '350px', minWidth: '300px' }}
             placeholder={"e.g. I'm a Product Manager at a fintech startup with 5 years of experience. Previously worked in consulting.\n\nCurrently learning Python and data science. Building a budgeting app with React Native as a side project.\n\nInterested in AI, machine learning, and product strategy."}
           />
           <div className="flex items-center justify-between">
@@ -195,7 +195,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
             {text ? (
               <div
                 className="text-sm text-gray-700 bg-gray-50 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
-                style={{ borderRadius: '0.3rem', whiteSpace: 'pre-wrap' }}
+                style={{ borderRadius: '0.3rem', whiteSpace: 'pre-wrap', minHeight: '350px', minWidth: '300px' }}
                 onClick={handleEdit}
               >
                 {text}
@@ -203,7 +203,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
             ) : (
               <div
                 className="text-sm text-gray-400 bg-gray-50 px-3 py-3 cursor-pointer hover:bg-gray-100 transition"
-                style={{ borderRadius: '0.3rem', minHeight: '80px' }}
+                style={{ borderRadius: '0.3rem', minHeight: '350px', minWidth: '300px' }}
                 onClick={handleEdit}
               >
                 Click to add your memory...
