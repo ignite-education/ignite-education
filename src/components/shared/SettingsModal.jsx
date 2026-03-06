@@ -88,8 +88,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [clientSecret, setClientSecret] = useState(null);
   const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
 
-  // Initialize form and fetch courses when modal opens
-  // Lock body scroll when modal is open
+  // Lock body scroll and prevent overscroll bounce inside modal
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -97,6 +96,37 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!isOpen || !el) return;
+
+    const onTouchMove = (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const atTop = scrollTop <= 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight;
+
+      if (atTop && atBottom) {
+        e.preventDefault();
+      } else if (atTop) {
+        if (el._lastTouchY && e.touches[0].clientY > el._lastTouchY) e.preventDefault();
+      } else if (atBottom) {
+        if (el._lastTouchY && e.touches[0].clientY < el._lastTouchY) e.preventDefault();
+      }
+      el._lastTouchY = e.touches[0].clientY;
+    };
+
+    const onTouchStart = (e) => {
+      el._lastTouchY = e.touches[0].clientY;
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -456,7 +486,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             padding: '2rem 2.25rem 1.5rem 2.25rem',
             maxHeight: '75vh',
             overflowY: 'auto',
-            overscrollBehavior: 'contain',
+            overscrollBehavior: 'none',
             scrollbarWidth: 'none',
           }}
           onClick={(e) => e.stopPropagation()}
@@ -476,7 +506,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
+            <h3 className="font-semibold mb-5" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
 
             {/* Profile Picture */}
             <div className="flex items-stretch gap-5 mb-4">
@@ -509,7 +539,9 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
                   className="text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
-                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px', fontSize: '0.9rem', fontWeight: 300 }}
+                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px', fontSize: '0.9rem', fontWeight: 300, transition: 'background-color 0.15s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#e5e7eb'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
                 >
                   {isUploadingPicture ? 'Uploading...' : 'Edit'}
                 </button>
@@ -521,7 +553,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               {/* Name + Email */}
               <div className="flex-1 space-y-2.5">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-5">
                     <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>First Name</label>
                     <div className="relative flex-1">
                       <input
@@ -530,14 +562,14 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         onChange={(e) => setSettingsForm({ ...settingsForm, firstName: e.target.value })}
                         onBlur={() => handleFieldBlur('firstName')}
                         className="w-full bg-gray-100 text-black py-2 focus:outline-none"
-                        style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
+                        style={{ borderRadius: '0.3rem', paddingLeft: '0.75rem', paddingRight: '0.75rem', fontWeight: 300 }}
                       />
                       {savedField === 'firstName' && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-5">
                     <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Last Name</label>
                     <div className="relative flex-1">
                       <input
@@ -546,7 +578,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         onChange={(e) => setSettingsForm({ ...settingsForm, lastName: e.target.value })}
                         onBlur={() => handleFieldBlur('lastName')}
                         className="w-full bg-gray-100 text-black py-2 focus:outline-none"
-                        style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
+                        style={{ borderRadius: '0.3rem', paddingLeft: '0.75rem', paddingRight: '0.75rem', fontWeight: 300 }}
                       />
                       {savedField === 'lastName' && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
@@ -555,7 +587,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-5">
                   <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Email</label>
                   <div className="relative flex-1">
                     <input
@@ -564,7 +596,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                       onBlur={() => handleFieldBlur('email')}
                       className="w-full bg-gray-100 text-black py-2 focus:outline-none"
-                      style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
+                      style={{ borderRadius: '0.3rem', paddingLeft: '0.75rem', paddingRight: '0.75rem', fontWeight: 300 }}
                     />
                     {savedField === 'email' && (
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
@@ -573,7 +605,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 </div>
 
                 {/* Linked Accounts */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-5">
                   <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Accounts</label>
                   <div className="grid grid-cols-2 gap-3 flex-1">
                   <button
@@ -619,7 +651,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 Try Ignite Insider for free
               </h4>
               <div className="flex gap-4">
-                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '550px' }}>
+                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '70%' }}>
                   <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
@@ -634,18 +666,18 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     ))}
                   </ul>
                 </div>
-                <div className="flex flex-col items-center justify-center text-center" style={{ minWidth: '160px' }}>
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-                  <p style={{ fontWeight: 500, fontSize: '1rem' }}>Two weeks free</p>
-                  <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem' }}>then 99p/week</p>
+                  <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
+                  <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>then 99p/week</p>
                   <button
                     onClick={handleStartCheckout}
                     className="text-white px-5 py-2 hover:opacity-90 transition"
-                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 500 }}
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 400 }}
                   >
                     Get your free trial
                   </button>
-                  <p className="text-black mt-1.5" style={{ fontSize: '1rem', fontWeight: 300 }}>All Ignite features. Cancel anytime.</p>
+                  <p className="text-black mt-1.5" style={{ fontSize: '0.9rem', fontWeight: 300 }}>Access all Ignite features. Cancel anytime.</p>
                 </div>
               </div>
               </>
@@ -713,14 +745,14 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               <div className="mb-4">
                 <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Current</h4>
                 <div className="flex gap-4">
-                  <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '550px' }}>
+                  <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '70%' }}>
                     <p className="mb-1" style={{ fontSize: '1.3rem', fontWeight: 500 }}>{enrolledCourseData.title || enrolledCourseData.name}</p>
                     <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300 }}>
                       {getTwoSentences(enrolledCourseData.description) || 'Explore this course on Ignite.'}
                     </p>
                   </div>
-                  <div className="flex items-center text-center" style={{ minWidth: '120px' }}>
-                    <p style={{ fontSize: '1.3rem' }}>
+                  <div className="flex-1 flex items-center justify-center text-center">
+                    <p style={{ fontSize: '1.3rem', lineHeight: 1.2 }}>
                       You're <span className="font-bold text-green-600">{progressPercentage}%</span>
                       <br />through the
                       <br />course

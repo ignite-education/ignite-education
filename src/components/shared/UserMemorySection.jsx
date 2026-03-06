@@ -106,11 +106,12 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Memory</h3>
       </div>
       <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300 }}>
-        We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts. Your memory is completely private and secure. It is never used for ads or shared.
+        We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts.<br />
+        Your memory is completely private and secure. It is never used for ads or shared.
       </p>
 
       {importError && (
@@ -125,53 +126,55 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
         <p className="text-sm text-gray-400 py-2">Loading...</p>
       ) : (
         <div className="flex gap-4">
-          <div>
+          <div style={{ width: '70%' }}>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               maxLength={MAX_LENGTH}
               className="bg-gray-50 text-black py-2 focus:outline-none resize-none"
-              style={{ borderRadius: '0.3rem', height: '250px', width: '550px', overflowY: 'auto', fontWeight: 300, paddingLeft: '1.25rem', paddingRight: '1.25rem' }}
+              style={{ borderRadius: '0.3rem', height: '250px', width: '100%', overflowY: 'auto', fontWeight: 300, paddingLeft: '1.25rem', paddingRight: '1.25rem' }}
               placeholder={"e.g. I'm a Product Manager at a fintech startup with 5 years of experience. Previously worked in consulting.\n\nCurrently learning Python and data science. Building a budgeting app with React Native as a side project.\n\nInterested in AI, machine learning, and product strategy."}
             />
-            <div className="flex items-center justify-between" style={{ width: '550px' }}>
-              <span className="text-xs text-gray-400">{text.length}/{MAX_LENGTH}</span>
-            </div>
           </div>
 
           {/* Import & Delete buttons */}
-          <div className="flex flex-col gap-2" style={{ minWidth: '150px' }}>
-            <button
-              type="button"
-              onClick={() => alert('Import from Claude coming soon!')}
-              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
-              style={{ borderRadius: '0.3rem' }}
-            >
-              Import from Claude
-            </button>
-            <button
-              type="button"
-              onClick={() => alert('Import from ChatGPT coming soon!')}
-              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
-              style={{ borderRadius: '0.3rem' }}
-            >
-              Import from ChatGPT
-            </button>
-            <button
-              type="button"
-              onClick={() => alert('Import from Gemini coming soon!')}
-              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
-              style={{ borderRadius: '0.3rem' }}
-            >
-              Import from Gemini
-            </button>
+          <div className="flex flex-col justify-between" style={{ minWidth: '150px' }}>
+            <div className="flex flex-col gap-2">
+              {[
+                { name: 'Claude', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png' },
+                { name: 'ChatGPT', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png' },
+                { name: 'Gemini', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg' },
+              ].map(({ name, logo }) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => alert(`Import from ${name} coming soon!`)}
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-black"
+                  style={{
+                    backgroundColor: 'white',
+                    fontSize: '12px',
+                    letterSpacing: '-0.02em',
+                    boxShadow: '0 0 6px rgba(103,103,103,0.25)',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
+                  onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.25)'}
+                >
+                  Import from {name}
+                  <img src={logo} alt={name} width={16} height={16} />
+                </button>
+              ))}
+            </div>
             {text && (
               <button
                 type="button"
                 onClick={handleDeleteMemory}
                 disabled={isDeleting}
-                className="text-xs font-medium px-3 py-1.5 text-white hover:opacity-90 transition disabled:opacity-50"
-                style={{ borderRadius: '0.3rem', backgroundColor: '#EF6C00' }}
+                className="flex items-center gap-2 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-white hover:opacity-90 disabled:opacity-50"
+                style={{
+                  backgroundColor: '#EF6C00',
+                  fontSize: '12px',
+                  letterSpacing: '-0.02em',
+                }}
               >
                 {isDeleting ? 'Deleting...' : 'Delete Memory'}
               </button>
