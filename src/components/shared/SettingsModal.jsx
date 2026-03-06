@@ -506,7 +506,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-5" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
+            <h3 className="font-semibold mb-2.5" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
 
             {/* Profile Picture */}
             <div className="flex items-stretch gap-5 mb-4">
@@ -642,7 +642,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== ACCOUNT / SUBSCRIPTION ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Account</h3>
+            <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em', marginBottom: '5px', paddingTop: '5px' }}>Account</h3>
 
             {!isAdFree ? (
               /* Upsell Card */
@@ -658,17 +658,17 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   <button
                     onClick={handleStartCheckout}
                     className="text-white px-5 py-2 hover:opacity-90 transition"
-                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 400 }}
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 500 }}
                   >
                     Get {firstName ? `${firstName}'s` : 'your'} Free Trial
                   </button>
-                  <p className="text-black mt-1.5" style={{ fontSize: '0.9rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
+                  <p className="text-black mt-1.5 leading-snug" style={{ fontSize: '0.85rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
                 </div>
-                <div className="p-4 bg-gray-50 flex flex-col items-center justify-center text-center" style={{ borderRadius: '0.3rem', width: '70%' }}>
-                  <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
+                <div className="p-4 bg-gray-50 flex flex-col items-center justify-center text-center" style={{ borderRadius: '0.3rem', width: '65%' }}>
+                  <p className="text-black mb-3 text-balance" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
-                  <ul className="space-y-1.5 text-black" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
+                  <ul className="space-y-1.5 text-black inline-flex flex-col items-center" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
                     {['1:1 Office Hours with industry professionals', 'Weekly hand-pick job opportunities', 'AI Tool Prompt highlights'].map((item) => (
                       <li key={item} className="flex items-center gap-2">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8200EA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
@@ -720,14 +720,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 { key: 'igniteUpdates', label: 'Ignite Updates' },
                 { key: 'trialPromotions', label: 'Trial & Promotions' },
               ].map(({ key, label }) => (
-                <label key={key} className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={emailPrefs[key]}
-                    onChange={(e) => setEmailPrefs(prev => ({ ...prev, [key]: e.target.checked }))}
-                    className="w-4 h-4 accent-purple-600 cursor-pointer"
-                  />
+                <label key={key} className="flex items-center gap-2 cursor-pointer select-none" onClick={() => setEmailPrefs(prev => ({ ...prev, [key]: !prev[key] }))}>
                   <span style={{ fontSize: '1rem', fontWeight: 300 }}>{label}</span>
+                  <div className="flex items-center justify-center" style={{ width: '16px', height: '16px', borderRadius: '3px', backgroundColor: '#f9fafb' }}>
+                    {emailPrefs[key] && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#8200EA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
                 </label>
               ))}
             </div>
@@ -735,7 +736,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== COURSES ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Courses</h3>
+            <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em', marginBottom: '5px', paddingTop: '5px' }}>Courses</h3>
 
             {/* Current enrolled course */}
             {enrolledCourseData && (

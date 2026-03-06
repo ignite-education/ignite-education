@@ -106,8 +106,8 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Memory</h3>
+      <div className="flex items-center justify-between" style={{ marginBottom: '5px' }}>
+        <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em', paddingTop: '5px' }}>Memory</h3>
       </div>
       <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300 }}>
         We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts.<br />
@@ -143,7 +143,6 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
               {[
                 { name: 'Claude', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png' },
                 { name: 'ChatGPT', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png' },
-                { name: 'Gemini', logo: 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg' },
               ].map(({ name, logo }) => (
                 <button
                   key={name}
@@ -152,7 +151,7 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
                   className="flex items-center justify-between px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-black"
                   style={{
                     backgroundColor: 'white',
-                    fontSize: '1rem',
+                    fontSize: '0.9rem',
                     letterSpacing: '-0.02em',
                     boxShadow: '0 0 6px rgba(103,103,103,0.25)',
                   }}
@@ -171,9 +170,9 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
                 disabled={isDeleting}
                 className="flex items-center gap-2 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-white hover:opacity-90 disabled:opacity-50"
                 style={{
-                  backgroundColor: '#EF6C00',
-                  fontSize: '12px',
-                  letterSpacing: '-0.02em',
+                  backgroundColor: '#dc2626',
+                  fontSize: '0.9rem',
+                  fontWeight: 300,
                 }}
               >
                 {isDeleting ? 'Deleting...' : 'Delete Memory'}

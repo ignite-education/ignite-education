@@ -502,7 +502,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
                 { label: "You're a late", value: 'night learner', image: '/moon.png' },
-                { label: '134 learners', value: 'in the UK', image: '/big-ben.png' },
+                { label: '134 learners', value: 'in the UK', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_ol7649ol7649ol76.png' },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (
