@@ -225,7 +225,7 @@ const ProgressHubV2 = () => {
       {/* Section 5: Footer */}
       <Footer />
 
-      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} />
+      <SettingsModal isOpen={showSettings} onClose={() => setShowSettings(false)} progressPercentage={progressPercentage} courseData={courseData} />
 
       <CreatePostModal
         isOpen={showPostModal}

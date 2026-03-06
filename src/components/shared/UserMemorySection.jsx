@@ -11,6 +11,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [importError, setImportError] = useState(null);
   const textareaRef = useRef(null);
@@ -62,7 +63,6 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
   };
 
   const handleSave = async () => {
-    // Nothing to save if empty and no existing text to clear
     if (!draft.trim() && !text) {
       setIsEditing(false);
       return;
@@ -111,42 +111,39 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
     }
   };
 
+  const handleDeleteMemory = async () => {
+    if (!text || isDeleting) return;
+    if (!confirm('Are you sure you want to delete your memory? This cannot be undone.')) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await saveUserMemoryText(userId, '');
+      setText('');
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error deleting memory:', err);
+      setError('Failed to delete memory.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="border-t border-gray-200 pt-3 mt-3">
+    <div>
       <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2">
-          <Brain size={16} className="text-purple-600" />
-          <h3 className="font-semibold">Memory</h3>
-        </div>
-        <div className="flex items-center gap-1">
-          {!isLoading && linkedinUrl && (
-            <button
-              type="button"
-              onClick={handleImportLinkedIn}
-              disabled={isImporting || isEditing}
-              className="flex items-center gap-1 px-2 py-1 text-xs hover:bg-blue-50 transition disabled:opacity-40 disabled:cursor-not-allowed"
-              style={{ borderRadius: '0.2rem', color: '#0077B5' }}
-              title="Import professional info from LinkedIn"
-            >
-              <svg className="w-3.5 h-3.5" fill="#0077B5" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-              </svg>
-              {isImporting ? 'Importing...' : 'Import'}
-            </button>
-          )}
-          {!isLoading && !isEditing && (
-            <button
-              type="button"
-              onClick={handleEdit}
-              className="p-1 text-gray-400 hover:text-purple-600 transition"
-            >
-              <Pencil size={14} />
-            </button>
-          )}
-        </div>
+        <h3 className="font-semibold text-lg">Memory</h3>
+        {!isLoading && !isEditing && text && (
+          <button
+            type="button"
+            onClick={handleEdit}
+            className="p-1 text-gray-400 hover:text-purple-600 transition"
+          >
+            <Pencil size={14} />
+          </button>
+        )}
       </div>
-      <p className="text-xs text-gray-500 mb-3">
-        Tell Ignite about yourself — your job, projects, skills, and interests.
+      <p className="text-sm text-gray-500 mb-3">
+        We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts. Your memory is completely private and secure. It is never used for ads or shared.
       </p>
 
       {importError && (
@@ -192,22 +189,67 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
             </div>
           </div>
         </div>
-      ) : text ? (
-        <div
-          className="text-sm text-gray-700 bg-gray-50 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
-          style={{ borderRadius: '0.3rem', whiteSpace: 'pre-wrap' }}
-          onClick={handleEdit}
-        >
-          {text}
-        </div>
       ) : (
-        <button
-          type="button"
-          onClick={handleEdit}
-          className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-        >
-          + Add memory
-        </button>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            {text ? (
+              <div
+                className="text-sm text-gray-700 bg-gray-50 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
+                style={{ borderRadius: '0.3rem', whiteSpace: 'pre-wrap' }}
+                onClick={handleEdit}
+              >
+                {text}
+              </div>
+            ) : (
+              <div
+                className="text-sm text-gray-400 bg-gray-50 px-3 py-3 cursor-pointer hover:bg-gray-100 transition"
+                style={{ borderRadius: '0.3rem', minHeight: '80px' }}
+                onClick={handleEdit}
+              >
+                Click to add your memory...
+              </div>
+            )}
+          </div>
+
+          {/* Import & Delete buttons */}
+          <div className="flex flex-col gap-2" style={{ minWidth: '150px' }}>
+            <button
+              type="button"
+              onClick={() => alert('Import from Claude coming soon!')}
+              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
+              style={{ borderRadius: '0.3rem' }}
+            >
+              Import from Claude
+            </button>
+            <button
+              type="button"
+              onClick={() => alert('Import from ChatGPT coming soon!')}
+              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
+              style={{ borderRadius: '0.3rem' }}
+            >
+              Import from ChatGPT
+            </button>
+            <button
+              type="button"
+              onClick={() => alert('Import from Gemini coming soon!')}
+              className="text-xs font-medium px-3 py-1.5 bg-gray-100 hover:bg-gray-200 transition text-black"
+              style={{ borderRadius: '0.3rem' }}
+            >
+              Import from Gemini
+            </button>
+            {text && (
+              <button
+                type="button"
+                onClick={handleDeleteMemory}
+                disabled={isDeleting}
+                className="text-xs font-medium px-3 py-1.5 text-white hover:opacity-90 transition disabled:opacity-50"
+                style={{ borderRadius: '0.3rem', backgroundColor: '#EF6C00' }}
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Memory'}
+              </button>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
