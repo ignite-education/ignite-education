@@ -1,7 +1,16 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
+import ComplexityIcon from './ComplexityIcon'
+
+const TOOL_LOGOS: Record<string, string> = {
+  'Claude': '/logos/claude.svg',
+  'Co-Pilot': '/logos/copilot.svg',
+  'ChatGPT': '/logos/chatgpt.svg',
+  'Gemini': '/logos/gemini.svg',
+}
 
 interface PromptFiltersProps {
   professions: string[]
@@ -189,6 +198,12 @@ export default function PromptFilters({
                           </svg>
                         )}
                       </span>
+                      {type === 'tool' && TOOL_LOGOS[option] && (
+                        <Image src={TOOL_LOGOS[option]} alt="" width={16} height={16} />
+                      )}
+                      {type === 'complexity' && (
+                        <ComplexityIcon level={option as 'Low' | 'Mid' | 'High'} />
+                      )}
                       <span className="text-black">{option}</span>
                     </button>
                   )

@@ -47,8 +47,8 @@ export default function PromptCard({ prompt }: PromptCardProps) {
               className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-[5px]"
               style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '0.8rem', letterSpacing: '-0.01em' }}
             >
-              {prompt.complexity}
               <ComplexityIcon level={prompt.complexity as 'Low' | 'Mid' | 'High'} />
+              {prompt.complexity}
             </span>
           </div>
           <div className="flex items-center gap-3 mt-2">

@@ -1157,6 +1157,27 @@ export async function saveUserMemoryText(userId, content) {
   }
 }
 
+/**
+ * Import LinkedIn profile data and generate a memory entry.
+ * @param {string} linkedinUrl - The user's LinkedIn profile URL
+ * @returns {Promise<{ success: boolean, memoryText: string }>}
+ */
+export async function importLinkedInMemory(linkedinUrl) {
+  const response = await fetch(`${API_URL}/api/linkedin/profile`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ linkedinUrl }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to import LinkedIn profile');
+  }
+
+  return data;
+}
+
 // =====================================================
 // JOBS FUNCTIONS
 // =====================================================

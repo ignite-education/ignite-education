@@ -61,6 +61,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     marketingEmails: true
   });
   const [availableCourses, setAvailableCourses] = useState([]);
+  const [linkedinUrl, setLinkedinUrl] = useState(null);
 
   // Initialize form and fetch courses when modal opens
   useEffect(() => {
@@ -83,11 +84,12 @@ const SettingsModal = ({ isOpen, onClose }) => {
       try {
         const { data: userData } = await supabase
           .from('users')
-          .select('enrolled_course')
+          .select('enrolled_course, linkedin_url')
           .eq('id', authUser.id)
           .single();
 
         const enrolledSlug = userData?.enrolled_course || '';
+        setLinkedinUrl(userData?.linkedin_url || null);
 
         if (enrolledSlug) {
           setSettingsForm(prev => ({
@@ -573,7 +575,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Memory Section */}
-              <UserMemorySection userId={authUser?.id} />
+              <UserMemorySection userId={authUser?.id} linkedinUrl={linkedinUrl} />
 
               <button
                 type="submit"

@@ -65,7 +65,12 @@
       "Bash(git check-ignore:*)",
       "Bash(npx tsc --noEmit)",
       "Bash(npx tsc --noEmit --pretty)",
-      "Bash(xargs -I {} basename {})"
+      "Bash(xargs -I {} basename {})",
+      "WebFetch(domain:docs.brightdata.com)",
+      "WebFetch(domain:nubela.co)",
+      "WebFetch(domain:www.netrows.com)",
+      "WebFetch(domain:docs.apollo.io)",
+      "WebFetch(domain:dev.to)"
     ],
     "deny": [],
     "ask": []

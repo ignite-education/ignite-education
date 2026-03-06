@@ -26,6 +26,17 @@ const stripFormattingMarkers = normalizeTextForSmartNotes;
 // No offset - using raw ElevenLabs timestamps for perfect sync (matches BlogPostPage)
 const HIGHLIGHT_LAG_OFFSET = 0;
 
+// Measure text width using Canvas API to dynamically size cards
+const getTextWidth = (() => {
+  let canvas;
+  return (text, fontSizePx, fontWeight = 'normal') => {
+    if (!canvas) canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight} ${fontSizePx}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    return ctx.measureText(text).width;
+  };
+})();
+
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -62,7 +73,7 @@ const LearningHub = () => {
   const [chatMessages, setChatMessages] = useState([
     {
       type: 'assistant',
-      text: 'Hello, I\'m Will.\nI\'m here to answer any questions you may have on course content. Ask me to dive deeper into a topic or to phrase something differently.',
+      text: 'Feel free to ask any questions you may have on course content. You can dive deeper into a topic or get something explained differently.',
       isComplete: false
     }
   ]);
@@ -1406,6 +1417,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setIsScrolling(false);
   };
 
+  const getCardWidth = useCallback((lesson) => {
+    const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+    const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+    const isCurrent = upcomingLessonsToShow.indexOf(lesson) === firstIncompleteIndex;
+    if (!isCompleted && !isCurrent) return 368;
+
+    const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
+    const titleWidth = getTextWidth(titleText, 17.6, '500');
+    const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
+    const maxBulletWidth = bulletPoints.length > 0
+      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
+      : 0;
+    const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
+    const neededWidth = Math.ceil(maxContentWidth + 114);
+    return Math.max(416, neededWidth);
+  }, [upcomingLessonsToShow, isLessonCompleted]);
+
   const handleScroll = () => {
     // Skip if programmatic scroll in progress
     if (isProgrammaticScrollRef.current) return;
@@ -1415,17 +1443,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     const gap = 16; // Gap between cards (gap-4 = 1rem = 16px)
 
     // Calculate which card is currently visible based on scroll position
-    // Need to account for variable widths (completed lessons are slightly wider)
     let cumulativeWidth = 0;
     let index = 0;
 
     for (let i = 0; i < upcomingLessonsToShow.length; i++) {
       const lesson = upcomingLessonsToShow[i];
-      const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-      // Find the first incomplete lesson (this is the current lesson)
-      const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-      const lessonIsCurrentLesson = i === firstIncompleteIndex;
-      const cardWidth = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06;
+      const cardWidth = getCardWidth(lesson);
 
       // Check if the scroll position is within this card's range
       if (scrollPosition < cumulativeWidth + cardWidth / 2) {
@@ -1460,9 +1483,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Calculate position based on all previous cards accounting for variable widths
       for (let i = 0; i < currentLessonIndex; i++) {
         const lesson = upcomingLessonsToShow[i];
-        const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-        const isCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || isCurrentLesson) ? 390 : 346.06;
+        const width = getCardWidth(lesson);
         scrollPosition += width + gap;
       }
 
@@ -1652,9 +1673,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       // Sum up widths of all cards before the current lesson
       for (let i = 0; i < currentLessonIndex; i++) {
         const lesson = upcomingLessonsToShow[i];
-        const lessonIsCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-        const lessonIsCurrentLesson = i === currentLessonIndex;
-        const width = (lessonIsCompleted || lessonIsCurrentLesson) ? 390 : 346.06;
+        const width = getCardWidth(lesson);
         scrollPosition += width + gap;
       }
 
@@ -1692,7 +1711,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setIsCarouselReady(true);
       isCarouselReadyRef.current = true;
     }
-  }, [upcomingLessonsToShow, currentModule, currentLesson, loading]);
+  }, [upcomingLessonsToShow, currentModule, currentLesson, loading, getCardWidth]);
 
   // Track container width for dynamic padding
   useEffect(() => {
@@ -2587,12 +2606,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               )}
             </div>
           </div>
-          <h2 className="font-semibold" style={{ letterSpacing: '0.011em', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
+          <h2 className="font-semibold" style={{ letterSpacing: '-1%', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
         </div>
 
         {/* Upcoming Lessons */}
         <div className="flex-shrink-0 px-8 relative" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
-          <h3 className="font-semibold" style={{ fontSize: '19px', marginBottom: '2px', position: 'relative', height: '1.5em' }}>
+          <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
             {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => {
               const activeLesson = upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length ? upcomingLessonsToShow[activeCardIndex] : null;
               const isCompleted = activeLesson ? isLessonCompleted(activeLesson.module_number, activeLesson.lesson_number) : false;
@@ -2620,7 +2639,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 </span>
               );
             })}
-          </h3>
+          </h2>
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto overflow-y-hidden select-none"
@@ -2641,17 +2660,13 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             onMouseLeave={handleScrollMouseLeave}
             onScroll={handleScroll}
           >
-            <div className="flex gap-4" style={{
-              minHeight: '100px',
-              height: '100px',
-              paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - 390 - 16)}px` : '0px'
-            }}>
+            <div className="flex gap-4 items-stretch">
               {upcomingLessonsToShow.length > 0 ? (
                 upcomingLessonsToShow.map((lesson, index) => {
                   const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-                  // Find the first incomplete lesson (this is the current lesson)
                   const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
                   const isCurrentLesson = index === firstIncompleteIndex;
+                  const cardWidth = getCardWidth(lesson);
 
                   return (
                     <div
@@ -2659,16 +2674,15 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       ref={(el) => (cardRefs.current[index] = el)}
                       className="relative flex items-center gap-3"
                       style={{
-                        width: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
-                        minWidth: (isCompleted || isCurrentLesson) ? '390px' : '346.06px',
+                        width: `${cardWidth}px`,
+                        minWidth: `${cardWidth}px`,
                         flexShrink: 0,
-                        paddingTop: '4px',
-                        paddingRight: '5.618px',
-                        paddingBottom: '5.618px',
-                        paddingLeft: '14px',
+                        paddingTop: '0.85rem',
+                        paddingRight: '1rem',
+                        paddingBottom: '0.85rem',
+                        paddingLeft: '1.4rem',
                         borderRadius: '0.3rem',
                         background: '#7714E0',
-                        height: '90px',
                         scrollSnapAlign: 'start',
                         scrollSnapStop: 'always'
                       }}
@@ -2677,28 +2691,27 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         <div
                           style={{
                             position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            backgroundColor: index !== activeCardIndex ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0)',
-                            backdropFilter: index !== activeCardIndex ? 'blur(0.75px)' : 'blur(0px)',
-                            WebkitBackdropFilter: index !== activeCardIndex ? 'blur(0.75px)' : 'blur(0px)',
+                            top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            backdropFilter: 'blur(0.75px)',
+                            WebkitBackdropFilter: 'blur(0.75px)',
                             borderRadius: '0.3rem',
                             pointerEvents: 'none',
-                            transition: 'background-color 0.3s ease-in-out, backdrop-filter 0.3s ease-in-out, -webkit-backdrop-filter 0.3s ease-in-out'
+                            opacity: index !== activeCardIndex ? 1 : 0,
+                            transition: 'opacity 0.3s ease-in-out',
+                            willChange: 'opacity',
                           }}
                         />
-                        <div className="flex-1">
-                          <h4 className="font-semibold truncate text-white" style={{ marginBottom: '3px', fontSize: '13px' }}>
+                        <div className="flex-1" style={{ minWidth: 0 }}>
+                          <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                             {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                           </h4>
-                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.01rem' }}>
+                          <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                             {(lesson.bullet_points || [])
                               .slice(0, 3)
                               .map((bulletPoint, idx) => (
-                                <li key={idx} className="text-xs flex items-start gap-2 text-purple-100">
-                                  <span className="mt-0.5 text-purple-200">•</span>
+                                <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
+                                  <span className="mt-0.5 text-white">•</span>
                                   <span>{bulletPoint}</span>
                                 </li>
                               ))}
@@ -2715,8 +2728,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              borderRadius: '0.3rem',
-                              marginRight: '10px'
+                              borderRadius: '0.3rem'
                             }}
                             onClick={() => {
                               navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`);
@@ -2734,6 +2746,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 <div className="flex-1 bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg flex items-center justify-center" style={{ padding: '7.398px' }}>
                   <p className="text-purple-200 text-sm">No more upcoming lessons</p>
                 </div>
+              )}
+              {/* Spacer to allow last card to scroll fully to start position */}
+              {upcomingLessonsToShow.length > 0 && containerWidth > 0 && (
+                <div style={{ width: `${Math.max(0, containerWidth - getCardWidth(upcomingLessonsToShow[upcomingLessonsToShow.length - 1]))}px`, flexShrink: 0 }} />
               )}
             </div>
           </div>
@@ -2761,7 +2777,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                 style={{
                   right: '42px',
                   top: '50%',
-                  transform: 'translateY(calc(-35% - 3px))',
+                  transform: 'translateY(-50%)',
                   width: '40px',
                   height: '40px',
                   borderRadius: '0.3rem',
@@ -2818,7 +2834,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
         {/* Chat with Will Section - Scrollable */}
         <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
-          <h3 className="flex-shrink-0 font-semibold" style={{ fontSize: '19px', marginBottom: '1px' }}>Chat with Will</h3>
           <div className="flex-1 flex flex-col overflow-hidden">
             <div ref={chatContainerRef} onScroll={handleChatScroll} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
               <div className="flex-1" />
@@ -3047,7 +3062,7 @@ ${currentLessonSections.map((section) => {
                       setTypingMessageIndex(newMessageIndex);
                     }
                   }}
-                  className="flex-shrink-0 w-full text-white px-4 py-2 font-medium transition overflow-hidden"
+                  className="flex-shrink-0 w-full text-white px-4 py-2 font-normal transition overflow-hidden"
                   style={{ borderRadius: '0.3rem', fontSize: '0.85rem', backgroundColor: '#7714E0', hover: { backgroundColor: '#6610C7' } }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#6610C7'}
                   onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#7714E0'}

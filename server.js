@@ -4899,6 +4899,129 @@ Return ONLY the description text, no other commentary.`;
 // ============================================================================
 
 // ============================================================================
+// LINKEDIN PROFILE IMPORT (USER MEMORY)
+// ============================================================================
+
+app.post('/api/linkedin/profile', async (req, res) => {
+  try {
+    const { linkedinUrl } = req.body;
+
+    if (!linkedinUrl || typeof linkedinUrl !== 'string') {
+      return res.status(400).json({ error: 'LinkedIn URL is required' });
+    }
+
+    const linkedinRegex = /^https?:\/\/(www\.)?linkedin\.com\/in\/[\w-]+\/?$/;
+    if (!linkedinRegex.test(linkedinUrl)) {
+      return res.status(400).json({ error: 'Invalid LinkedIn profile URL format' });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
+    // Fetch the LinkedIn public profile page
+    let pageHtml;
+    try {
+      const response = await axios.get(linkedinUrl, {
+        timeout: 10000,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        maxRedirects: 3,
+      });
+      pageHtml = response.data;
+    } catch (fetchError) {
+      console.error('LinkedIn fetch error:', fetchError.message);
+      return res.status(422).json({
+        error: 'Could not fetch LinkedIn profile. LinkedIn may be blocking this request. Try again later or enter your details manually.',
+      });
+    }
+
+    // Parse meta tags from HTML
+    const extractMeta = (html, property) => {
+      const regex = new RegExp(
+        `<meta[^>]*(?:property|name)=["']${property}["'][^>]*content=["']([^"']*)["']|<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']${property}["']`,
+        'i'
+      );
+      const match = html.match(regex);
+      return match ? (match[1] || match[2] || '').trim() : '';
+    };
+
+    const ogTitle = extractMeta(pageHtml, 'og:title');
+    const ogDescription = extractMeta(pageHtml, 'og:description');
+    const description = extractMeta(pageHtml, 'description');
+    const titleMatch = pageHtml.match(/<title>([^<]*)<\/title>/i);
+    const title = extractMeta(pageHtml, 'title') || (titleMatch ? titleMatch[1].trim() : '');
+
+    // Try to extract JSON-LD Person data
+    let jsonLdData = '';
+    const jsonLdMatches = pageHtml.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+    if (jsonLdMatches) {
+      for (const scriptBlock of jsonLdMatches) {
+        const content = scriptBlock.replace(/<\/?script[^>]*>/gi, '');
+        try {
+          const parsed = JSON.parse(content);
+          if (parsed['@type'] === 'Person' || parsed['@type'] === 'ProfilePage') {
+            jsonLdData = JSON.stringify(parsed);
+            break;
+          }
+        } catch {}
+      }
+    }
+
+    // Check if we got any useful data (detect login walls)
+    const extractedData = [ogTitle, ogDescription, description, title, jsonLdData].filter(Boolean);
+    if (extractedData.length === 0 || /sign\s*up|log\s*in|linkedin\s*login/i.test(ogTitle)) {
+      return res.status(422).json({
+        error: 'LinkedIn returned a login page instead of profile data. The profile may be private or LinkedIn is blocking the request. Please enter your details manually.',
+      });
+    }
+
+    // Use Claude to generate a memory entry from the extracted data
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 500,
+      temperature: 0.3,
+      messages: [{
+        role: 'user',
+        content: `Based on the following LinkedIn profile metadata, generate a concise personal memory entry (in first person) that captures the person's professional identity. Include their current role/title, company, industry, and any other relevant professional details you can extract.
+
+og:title: ${ogTitle}
+og:description: ${ogDescription}
+page description: ${description}
+page title: ${title}
+${jsonLdData ? `JSON-LD data: ${jsonLdData}` : ''}
+
+Rules:
+- Write in first person ("I am...", "I work at...")
+- Keep it under 500 characters
+- Only include information that is clearly present in the data
+- If the data is very limited, just include what you can
+- Do not fabricate or assume details not present in the data
+- Format as a brief paragraph, not bullet points
+- Do not include the LinkedIn URL itself
+
+Return ONLY the memory text, no other commentary.`
+      }]
+    });
+
+    const memoryText = message.content[0].text.trim();
+
+    res.json({ success: true, memoryText });
+
+  } catch (error) {
+    console.error('LinkedIn profile import error:', error);
+    res.status(500).json({ error: 'Failed to process LinkedIn profile. Please try again.' });
+  }
+});
+
+// ============================================================================
+// END LINKEDIN PROFILE IMPORT
+// ============================================================================
+
+// ============================================================================
 // PROMPT AUTOCOMPLETE
 // ============================================================================
 
