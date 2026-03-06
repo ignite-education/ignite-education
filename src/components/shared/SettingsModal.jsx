@@ -40,6 +40,12 @@ const resizeProfileImage = (file) => {
   });
 };
 
+const getTwoSentences = (description) => {
+  if (!description) return '';
+  const sentences = description.match(/[^.!?]*[.!?]+/g) || [description];
+  return sentences.slice(0, 2).join('').trim();
+};
+
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -457,7 +463,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
         >
           <style>{`
             .settings-scroll::-webkit-scrollbar { display: none; }
-            .settings-toggle::after { border-radius: 3px !important; }
+            .settings-toggle::after { border-radius: 6px !important; }
           `}</style>
 
           {/* Close button */}
@@ -473,8 +479,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
 
             {/* Profile Picture */}
-            <div className="flex items-start gap-5 mb-4">
-              <div className="flex flex-col items-center gap-1.5">
+            <div className="flex items-stretch gap-5 mb-4">
+              <div className="flex flex-col items-center justify-between">
                 {profilePicture ? (
                   <img
                     src={profilePicture}
@@ -502,8 +508,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
-                  className="font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
-                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px', fontSize: '0.9rem' }}
+                  className="text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
+                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px', fontSize: '0.9rem', fontWeight: 300 }}
                 >
                   {isUploadingPicture ? 'Uploading...' : 'Edit'}
                 </button>
@@ -523,8 +529,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         value={settingsForm.firstName}
                         onChange={(e) => setSettingsForm({ ...settingsForm, firstName: e.target.value })}
                         onBlur={() => handleFieldBlur('firstName')}
-                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
-                        style={{ borderRadius: '0.3rem' }}
+                        className="w-full bg-gray-100 text-black py-2 focus:outline-none"
+                        style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
                       />
                       {savedField === 'firstName' && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
@@ -539,8 +545,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         value={settingsForm.lastName}
                         onChange={(e) => setSettingsForm({ ...settingsForm, lastName: e.target.value })}
                         onBlur={() => handleFieldBlur('lastName')}
-                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
-                        style={{ borderRadius: '0.3rem' }}
+                        className="w-full bg-gray-100 text-black py-2 focus:outline-none"
+                        style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
                       />
                       {savedField === 'lastName' && (
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
@@ -557,8 +563,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       value={settingsForm.email}
                       onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                       onBlur={() => handleFieldBlur('email')}
-                      className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
-                      style={{ borderRadius: '0.3rem' }}
+                      className="w-full bg-gray-100 text-black py-2 focus:outline-none"
+                      style={{ borderRadius: '0.3rem', paddingLeft: '1.25rem', paddingRight: '1.25rem', fontWeight: 300 }}
                     />
                     {savedField === 'email' && (
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-green-500 text-xs">Saved</span>
@@ -613,7 +619,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 Try Ignite Insider for free
               </h4>
               <div className="flex gap-4">
-                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '225px' }}>
+                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '550px' }}>
                   <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
@@ -634,8 +640,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem' }}>then 99p/week</p>
                   <button
                     onClick={handleStartCheckout}
-                    className="text-white font-semibold text-sm px-5 py-2 hover:opacity-90 transition"
-                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA' }}
+                    className="text-white px-5 py-2 hover:opacity-90 transition"
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 500 }}
                   >
                     Get your free trial
                   </button>
@@ -683,7 +689,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 { key: 'trialPromotions', label: 'Trial & Promotions' },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center gap-2">
-                  <span className="text-sm">{label}</span>
+                  <span style={{ fontSize: '1rem', fontWeight: 300 }}>{label}</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
@@ -691,7 +697,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       onChange={(e) => setEmailPrefs(prev => ({ ...prev, [key]: e.target.checked }))}
                       className="sr-only peer"
                     />
-                    <div className="settings-toggle w-9 h-5 bg-gray-300 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600" style={{ borderRadius: '3px' }}></div>
+                    <div className="settings-toggle w-9 h-5 bg-gray-300 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600" style={{ borderRadius: '6px' }}></div>
                   </label>
                 </div>
               ))}
@@ -706,15 +712,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             {enrolledCourseData && (
               <div className="mb-4">
                 <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Current</h4>
-                <div className="flex gap-4 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
-                  <div className="flex-1">
-                    <p className="font-bold mb-1">{enrolledCourseData.title || enrolledCourseData.name}</p>
-                    <p className="text-sm text-gray-600 line-clamp-3">
-                      {enrolledCourseData.description || 'Explore this course on Ignite.'}
+                <div className="flex gap-4">
+                  <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '550px' }}>
+                    <p className="mb-1" style={{ fontSize: '1.3rem', fontWeight: 500 }}>{enrolledCourseData.title || enrolledCourseData.name}</p>
+                    <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300 }}>
+                      {getTwoSentences(enrolledCourseData.description) || 'Explore this course on Ignite.'}
                     </p>
                   </div>
                   <div className="flex items-center text-center" style={{ minWidth: '120px' }}>
-                    <p className="text-sm">
+                    <p style={{ fontSize: '1.3rem' }}>
                       You're <span className="font-bold text-green-600">{progressPercentage}%</span>
                       <br />through the
                       <br />course
@@ -736,7 +742,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       style={{ borderRadius: '0.3rem', minWidth: '200px' }}
                     >
                       <div className="flex-1">
-                        <p className="font-bold text-sm">{course.title || course.name}</p>
+                        <p style={{ fontSize: '1.3rem', fontWeight: 500 }}>{course.title || course.name}</p>
                         {course.status === 'coming_soon' && (
                           <p className="text-xs text-gray-400">Coming Soon</p>
                         )}
