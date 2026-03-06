@@ -1417,23 +1417,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setIsScrolling(false);
   };
 
-  const getCardWidth = useCallback((lesson) => {
-    const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-    const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-    const isCurrent = upcomingLessonsToShow.indexOf(lesson) === firstIncompleteIndex;
-    if (!isCompleted && !isCurrent) return 368;
-
-    const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
-    const titleWidth = getTextWidth(titleText, 17.6, '500');
-    const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
-    const maxBulletWidth = bulletPoints.length > 0
-      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
-      : 0;
-    const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
-    const neededWidth = Math.ceil(maxContentWidth + 114);
-    return Math.max(416, neededWidth);
-  }, [upcomingLessonsToShow, isLessonCompleted]);
-
   const handleScroll = () => {
     // Skip if programmatic scroll in progress
     if (isProgrammaticScrollRef.current) return;
@@ -1637,6 +1620,23 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       return a.lesson_number - b.lesson_number;
     });
   }, [lessonsMetadata, groupedLessons]);
+
+  const getCardWidth = useCallback((lesson) => {
+    const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
+    const firstIncompleteIndex = upcomingLessonsToShow.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
+    const isCurrent = upcomingLessonsToShow.indexOf(lesson) === firstIncompleteIndex;
+    if (!isCompleted && !isCurrent) return 368;
+
+    const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
+    const titleWidth = getTextWidth(titleText, 17.6, '500');
+    const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
+    const maxBulletWidth = bulletPoints.length > 0
+      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
+      : 0;
+    const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
+    const neededWidth = Math.ceil(maxContentWidth + 114);
+    return Math.max(416, neededWidth);
+  }, [upcomingLessonsToShow, isLessonCompleted]);
 
   // Scroll to current lesson on initial load
   useEffect(() => {

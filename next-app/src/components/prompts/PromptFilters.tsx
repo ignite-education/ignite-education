@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 import ComplexityIcon from './ComplexityIcon'
 
 const TOOL_LOGOS: Record<string, string> = {
-  'Claude': '/logos/claude.svg',
-  'Co-Pilot': '/logos/copilot.svg',
-  'ChatGPT': '/logos/chatgpt.svg',
-  'Gemini': '/logos/gemini.svg',
+  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
+  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
 
 interface PromptFiltersProps {
@@ -199,7 +198,7 @@ export default function PromptFilters({
                         )}
                       </span>
                       {type === 'tool' && TOOL_LOGOS[option] && (
-                        <Image src={TOOL_LOGOS[option]} alt="" width={16} height={16} />
+                        <img src={TOOL_LOGOS[option]} alt="" width={16} height={16} />
                       )}
                       {type === 'complexity' && (
                         <ComplexityIcon level={option as 'Low' | 'Mid' | 'High'} />
@@ -231,14 +230,14 @@ export default function PromptFilters({
           <path
             d="M12 4a8 8 0 1 1-6.3 3.1"
             fill="none"
-            stroke="#9CA3AF"
+            stroke="#000000"
             strokeWidth="2.5"
             strokeLinecap="round"
             className="group-hover:stroke-[#EF0B72] transition-colors duration-300"
           />
           <polygon
             points="12,1 12,7 6,4"
-            fill="#9CA3AF"
+            fill="#000000"
             className="group-hover:fill-[#EF0B72] transition-colors duration-300"
           />
         </svg>
