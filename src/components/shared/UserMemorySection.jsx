@@ -131,7 +131,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold text-lg">Memory</h3>
+        <h3 className="font-semibold" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Memory</h3>
         {!isLoading && !isEditing && text && (
           <button
             type="button"

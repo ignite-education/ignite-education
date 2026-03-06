@@ -438,7 +438,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             animation: isClosing ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem',
             padding: '1.5rem',
-            maxHeight: '90vh',
+            maxHeight: '80vh',
             overflowY: 'auto',
             scrollbarWidth: 'none',
           }}
@@ -454,11 +454,11 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           </button>
 
           {/* Title inside the card */}
-          <h2 className="text-[1.6rem] font-bold text-black leading-tight tracking-[-0.02em] mb-4">Settings</h2>
+          <h2 className="text-[1.6rem] font-bold text-black leading-tight tracking-[-0.02em] mb-4" style={{ fontFamily: 'Geist, sans-serif' }}>Settings</h2>
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold text-lg mb-3">Profile</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Profile</h3>
 
             {/* Profile Picture */}
             <div className="flex items-start gap-5 mb-4">
@@ -589,13 +589,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== ACCOUNT / SUBSCRIPTION ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold text-lg mb-3">Account</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Account</h3>
 
             {!isAdFree ? (
               /* Upsell Card */
               <div className="flex gap-4 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
                 <div className="flex-1">
-                  <h4 className="font-bold text-purple-700 mb-1.5" style={{ fontSize: '1rem' }}>
+                  <h4 className="font-medium text-purple-700 mb-1.5" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
                     Try Ignite Insider for free
                   </h4>
                   <p className="text-sm text-gray-600 mb-3">
@@ -653,7 +653,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== EMAIL PREFERENCES ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold text-lg mb-3">Email Preferences</h3>
+            <h3 className="font-medium mb-3" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Email Preferences</h3>
             <div className="flex items-center gap-6">
               {[
                 { key: 'profileUpdates', label: 'Profile Updates' },
@@ -678,12 +678,12 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== COURSES ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold text-lg mb-3">Courses</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Courses</h3>
 
             {/* Current enrolled course */}
             {enrolledCourseData && (
               <div className="mb-4">
-                <h4 className="font-semibold text-sm mb-2">Current</h4>
+                <h4 className="font-medium mb-2" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Current</h4>
                 <div className="flex gap-4 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
                   <div className="flex-1">
                     <p className="font-bold mb-1">{enrolledCourseData.title || enrolledCourseData.name}</p>
@@ -705,7 +705,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             {/* Saved courses */}
             {savedCourses.length > 0 && (
               <div>
-                <h4 className="font-semibold text-sm mb-2">Saved</h4>
+                <h4 className="font-medium mb-2" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Saved</h4>
                 <div className="flex gap-3 flex-wrap">
                   {savedCourses.map((course) => (
                     <div
