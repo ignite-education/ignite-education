@@ -126,6 +126,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
   const [authorLinkedin, setAuthorLinkedin] = useState('')
   const [authorImage, setAuthorImage] = useState(() => preloadedUser ? extractAvatar(preloadedUser) : '')
 
+  const titleRef = useRef<HTMLInputElement>(null)
   const promptRef = useRef<HTMLDivElement>(null)
   const linkedinRef = useRef<HTMLInputElement>(null)
 
@@ -600,10 +601,12 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     </label>
                   </div>
                   <input
+                    ref={titleRef}
                     type="text"
                     value={title}
                     onChange={(e) => { setTitle(e.target.value); clearError('title') }}
                     placeholder=""
+                    autoFocus
                     className={INPUT_CLASS}
                     style={{ ...FONT, backgroundColor: FIELD_BG, ...errorOutline('title') }}
                   />

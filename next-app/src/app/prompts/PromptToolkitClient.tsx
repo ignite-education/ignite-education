@@ -364,10 +364,10 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
             <button
               type="button"
               onClick={() => setShowContributeModal(true)}
-              className="flex-shrink-0 bg-white rounded-xl flex items-center justify-center cursor-pointer"
-              style={{ width: '48px', height: '48px', boxShadow: '0 0 10px rgba(103,103,103,0.6)' }}
+              className="group flex-shrink-0 bg-white rounded-xl flex items-center justify-center cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.6)] hover:shadow-[0_0_10px_rgba(103,103,103,0.75)] transition-shadow"
+              style={{ width: '48px', height: '48px' }}
             >
-              <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black hover:text-[#EF0B72] transition-colors">
+              <svg width="18.7" height="18.7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black group-hover:text-[#EF0B72] transition-colors">
                 <path d="M4 13.5V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2h-5.5" />
                 <polyline points="14 2 14 8 20 8" />
                 <path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.96 5.42-5.43Z" />
