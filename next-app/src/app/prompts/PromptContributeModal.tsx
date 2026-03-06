@@ -76,7 +76,7 @@ function InfoTooltip({ text }: { text: string }) {
           viewBox="4 2 16 20"
           fill="none"
           stroke="#FFFFFF"
-          strokeWidth="3"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
@@ -702,7 +702,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                           style={{
                             maxHeight: '102px',
                             scrollbarWidth: 'none',
-                            overscrollBehavior: 'contain',
+                            overscrollBehavior: 'none',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             opacity: professionOpen ? 1 : 0,
                             transform: professionOpen ? 'scaleY(1)' : 'scaleY(0.95)',

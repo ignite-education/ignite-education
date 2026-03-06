@@ -1450,31 +1450,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     setActiveCardIndex(prev => prev === index ? prev : index);
   };
 
-  const scrollToCurrentLesson = () => {
-    if (!scrollContainerRef.current || upcomingLessonsToShow.length === 0) return;
-
-    // Find the index of the first incomplete lesson (current lesson)
-    const currentLessonIndex = upcomingLessonsToShow.findIndex(
-      lesson => !isLessonCompleted(lesson.module_number, lesson.lesson_number)
-    );
-
-    if (currentLessonIndex !== -1) {
-      // Calculate the scroll position to show the current lesson card
-      const gap = 16; // gap-4 = 16px
-      let scrollPosition = 0;
-
-      // Calculate position based on all previous cards accounting for variable widths
-      for (let i = 0; i < currentLessonIndex; i++) {
-        const lesson = upcomingLessonsToShow[i];
-        const width = getCardWidth(lesson);
-        scrollPosition += width + gap;
-      }
-
-      scrollContainerRef.current.scrollTo({ left: scrollPosition, behavior: 'smooth' });
-      setActiveCardIndex(currentLessonIndex);
-    }
-  };
-
   const handleCloseUpgradeModal = () => {
     setIsClosingModal(true);
     setTimeout(() => {
@@ -1628,14 +1603,14 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     if (!isCompleted && !isCurrent) return 368;
 
     const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
-    const titleWidth = getTextWidth(titleText, 17.6, '500');
+    const titleWidth = getTextWidth(titleText, 16, '500');
     const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
     const maxBulletWidth = bulletPoints.length > 0
-      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
+      ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 12.8) + 16))
       : 0;
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
     const neededWidth = Math.ceil(maxContentWidth + 114);
-    return Math.max(416, neededWidth);
+    return neededWidth;
   }, [upcomingLessonsToShow, isLessonCompleted]);
 
   // Scroll to current lesson on initial load
@@ -2610,7 +2585,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         </div>
 
         {/* Upcoming Lessons */}
-        <div className="flex-shrink-0 px-8" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
+        <div className="flex-shrink-0 px-8" style={{ paddingTop: '0px', paddingBottom: '1rem' }}>
           <h2 className="font-semibold text-white" style={{ fontSize: '1.4rem', letterSpacing: '0%', marginBottom: '0.25rem', position: 'relative', height: '1.5em' }}>
             {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => {
               const activeLesson = upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length ? upcomingLessonsToShow[activeCardIndex] : null;
@@ -2678,9 +2653,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                         width: `${cardWidth}px`,
                         minWidth: `${cardWidth}px`,
                         flexShrink: 0,
-                        paddingTop: '0.75rem',
+                        paddingTop: '0.65rem',
                         paddingRight: '1rem',
-                        paddingBottom: '0.75rem',
+                        paddingBottom: '0.65rem',
                         paddingLeft: '1.3rem',
                         borderRadius: '0.3rem',
                         background: '#7714E0',
@@ -2755,82 +2730,6 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
             </div>
           </div>
 
-          {/* Back to Current Lesson Button - Hide when viewing current lesson or when all lessons are completed */}
-          {(() => {
-            // Check if all lessons in the course are completed
-            const allLessonsCompleted = completedLessons.length === upcomingLessonsToShow.length && upcomingLessonsToShow.length > 0;
-
-            // Find the index of the first incomplete lesson (current lesson)
-            const currentLessonIndex = upcomingLessonsToShow.findIndex(
-              l => !isLessonCompleted(l.module_number, l.lesson_number)
-            );
-            // Show button only when NOT viewing the current lesson
-            const isNotViewingCurrentLesson = activeCardIndex !== currentLessonIndex;
-            // Determine if viewing a completed lesson (left of current) or upcoming lesson (right of current)
-            const isViewingCompletedLesson = activeCardIndex < currentLessonIndex;
-            // Should the button be visible?
-            const showButton = isNotViewingCurrentLesson && !allLessonsCompleted;
-
-            return (
-              <button
-                onClick={scrollToCurrentLesson}
-                className="absolute bg-white text-black hover:bg-purple-50"
-                style={{
-                  right: '42px',
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '0.3rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  zIndex: 10,
-                  opacity: showButton ? 0.7 : 0,
-                  pointerEvents: showButton ? 'auto' : 'none',
-                  transition: 'opacity 0.3s ease-in-out'
-                }}
-              >
-                {/* Right-pointing arrow */}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{
-                    position: 'absolute',
-                    opacity: isViewingCompletedLesson ? 1 : 0,
-                    transition: 'opacity 0.3s ease-in-out'
-                  }}
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-                {/* Left-pointing arrow */}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{
-                    position: 'absolute',
-                    opacity: isViewingCompletedLesson ? 0 : 1,
-                    transition: 'opacity 0.3s ease-in-out'
-                  }}
-                >
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-              </button>
-            );
-          })()}
           </div>
         </div>
 
