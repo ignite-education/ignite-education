@@ -71,12 +71,12 @@ function InfoTooltip({ text }: { text: string }) {
         style={{ width: '16px', height: '16px', padding: 0, borderRadius: '3px', backgroundColor: '#D4D4D4', overflow: 'visible' }}
       >
         <svg
-          width="15"
-          height="15"
+          width="17"
+          height="17"
           viewBox="4 2 16 20"
           fill="none"
           stroke="#FFFFFF"
-          strokeWidth="3.5"
+          strokeWidth="3"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
