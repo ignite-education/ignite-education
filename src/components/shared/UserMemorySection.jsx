@@ -125,8 +125,8 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
       {isLoading ? (
         <p className="text-sm text-gray-400 py-2">Loading...</p>
       ) : (
-        <div className="flex gap-4">
-          <div style={{ width: '70%' }}>
+        <div className="flex justify-between gap-4">
+          <div className="flex-1">
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -149,10 +149,10 @@ const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
                   key={name}
                   type="button"
                   onClick={() => alert(`Import from ${name} coming soon!`)}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-black"
+                  className="flex items-center justify-between px-2 py-1.5 rounded-lg font-normal transition-all cursor-pointer text-black"
                   style={{
                     backgroundColor: 'white',
-                    fontSize: '12px',
+                    fontSize: '1rem',
                     letterSpacing: '-0.02em',
                     boxShadow: '0 0 6px rgba(103,103,103,0.25)',
                   }}

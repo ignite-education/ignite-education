@@ -446,7 +446,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             }}
           >
             <button onClick={handleClose} className="absolute top-4 right-4 text-gray-600 hover:text-black z-10">
-              <X size={24} />
+              <X size={20} strokeWidth={2} />
             </button>
             {upgradingToAdFree ? (
               <div className="flex items-center justify-center py-16">
@@ -498,7 +498,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* Close button */}
           <button onClick={handleClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors z-10">
-            <X size={24} />
+            <X size={20} strokeWidth={2} />
           </button>
 
           {/* Title inside the card */}
@@ -651,7 +651,20 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 Try Ignite Insider for free
               </h4>
               <div className="flex gap-4">
-                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '70%' }}>
+                <div className="flex-1 flex flex-col items-center justify-center text-center">
+                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+                  <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
+                  <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>then 99p/week</p>
+                  <button
+                    onClick={handleStartCheckout}
+                    className="text-white px-5 py-2 hover:opacity-90 transition"
+                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 400 }}
+                  >
+                    Get {firstName ? `${firstName}'s` : 'your'} Free Trial
+                  </button>
+                  <p className="text-black mt-1.5" style={{ fontSize: '0.9rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
+                </div>
+                <div className="p-4 bg-gray-50 flex flex-col items-center justify-center text-center" style={{ borderRadius: '0.3rem', width: '70%' }}>
                   <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
@@ -665,19 +678,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       </li>
                     ))}
                   </ul>
-                </div>
-                <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-                  <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
-                  <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>then 99p/week</p>
-                  <button
-                    onClick={handleStartCheckout}
-                    className="text-white px-5 py-2 hover:opacity-90 transition"
-                    style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 400 }}
-                  >
-                    Get your free trial
-                  </button>
-                  <p className="text-black mt-1.5" style={{ fontSize: '0.9rem', fontWeight: 300 }}>Access all Ignite features. Cancel anytime.</p>
                 </div>
               </div>
               </>
@@ -714,24 +714,21 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           {/* ==================== EMAIL PREFERENCES ==================== */}
           <div className="mb-6">
             <h3 className="font-medium mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Email Preferences</h3>
-            <div className="flex items-center gap-6">
+            <div className="flex items-center justify-center gap-6">
               {[
                 { key: 'profileUpdates', label: 'Profile Updates' },
                 { key: 'igniteUpdates', label: 'Ignite Updates' },
                 { key: 'trialPromotions', label: 'Trial & Promotions' },
               ].map(({ key, label }) => (
-                <div key={key} className="flex items-center gap-2">
+                <label key={key} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailPrefs[key]}
+                    onChange={(e) => setEmailPrefs(prev => ({ ...prev, [key]: e.target.checked }))}
+                    className="w-4 h-4 accent-purple-600 cursor-pointer"
+                  />
                   <span style={{ fontSize: '1rem', fontWeight: 300 }}>{label}</span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={emailPrefs[key]}
-                      onChange={(e) => setEmailPrefs(prev => ({ ...prev, [key]: e.target.checked }))}
-                      className="sr-only peer"
-                    />
-                    <div className="settings-toggle w-9 h-5 bg-gray-300 peer-focus:outline-none peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600" style={{ borderRadius: '6px' }}></div>
-                  </label>
-                </div>
+                </label>
               ))}
             </div>
           </div>
@@ -814,15 +811,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <button
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="text-white font-semibold text-sm px-6 py-2 hover:opacity-90 transition disabled:opacity-50"
-              style={{ borderRadius: '0.3rem', backgroundColor: '#EF6C00' }}
+              className="text-white px-6 py-2 hover:opacity-90 transition disabled:opacity-50"
+              style={{ borderRadius: '0.3rem', backgroundColor: '#EF6C00', fontSize: '1rem', fontWeight: 500 }}
             >
               Log Out
             </button>
             <button
               onClick={handleDeleteAccount}
-              className="font-semibold text-sm px-6 py-2 bg-gray-100 text-black hover:bg-gray-200 transition"
-              style={{ borderRadius: '0.3rem' }}
+              className="px-6 py-2 bg-gray-100 text-black hover:bg-gray-200 transition"
+              style={{ borderRadius: '0.3rem', fontSize: '1rem', fontWeight: 500 }}
             >
               Delete Account
             </button>
