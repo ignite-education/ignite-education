@@ -49,6 +49,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
   const checkoutRef = useRef(null);
+  const memoryRef = useRef(null);
 
   const [isClosing, setIsClosing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -209,6 +210,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   };
 
   const handleClose = () => {
+    memoryRef.current?.save();
     setIsClosing(true);
     setShowCheckout(false);
     setClientSecret(null);
@@ -464,11 +466,11 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           </button>
 
           {/* Title inside the card */}
-          <h2 className="text-[1.6rem] text-black leading-tight mb-4" style={{ fontFamily: 'Geist, sans-serif', letterSpacing: '-1%', fontWeight: 600 }}>Settings</h2>
+          <h2 className="text-[1.7rem] text-black leading-tight mb-4" style={{ fontFamily: 'Geist, sans-serif', letterSpacing: '-1%', fontWeight: 600 }}>Settings</h2>
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Profile</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Profile</h3>
 
             {/* Profile Picture */}
             <div className="flex items-start gap-5 mb-4">
@@ -500,8 +502,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
-                  className="text-xs font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
-                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px' }}
+                  className="font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
+                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '100px', height: '35px', fontSize: '0.9rem' }}
                 >
                   {isUploadingPicture ? 'Uploading...' : 'Edit'}
                 </button>
@@ -513,8 +515,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               {/* Name + Email */}
               <div className="flex-1 space-y-2.5">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>First Name</label>
+                  <div className="flex items-center gap-4">
+                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>First Name</label>
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -529,8 +531,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Last Name</label>
+                  <div className="flex items-center gap-4">
+                    <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Last Name</label>
                     <div className="relative flex-1">
                       <input
                         type="text"
@@ -547,8 +549,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Email</label>
+                <div className="flex items-center gap-4">
+                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Email</label>
                   <div className="relative flex-1">
                     <input
                       type="email"
@@ -565,8 +567,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 </div>
 
                 {/* Linked Accounts */}
-                <div className="flex items-center gap-2">
-                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-1%', minWidth: '80px' }}>Accounts</label>
+                <div className="flex items-center gap-4">
+                  <label className="whitespace-nowrap shrink-0" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%', minWidth: '80px' }}>Accounts</label>
                   <div className="grid grid-cols-2 gap-3 flex-1">
                   <button
                     type="button"
@@ -602,29 +604,34 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== ACCOUNT / SUBSCRIPTION ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Account</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Account</h3>
 
             {!isAdFree ? (
               /* Upsell Card */
               <>
-              <h4 className="font-medium text-purple-700 mb-1.5" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>
+              <h4 className="font-medium text-purple-700 mb-1.5" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
                 Try Ignite Insider for free
               </h4>
               <div className="flex gap-4">
-                <div className="flex-1 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
-                  <p className="text-gray-600 mb-3" style={{ fontSize: '1rem' }}>
+                <div className="p-4 bg-gray-50" style={{ borderRadius: '0.3rem', width: '225px' }}>
+                  <p className="text-black mb-3" style={{ fontSize: '1rem', fontWeight: 300, letterSpacing: '-1%' }}>
                     Start building real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
-                  <ul className="space-y-1.5 font-semibold text-black" style={{ fontSize: '1rem' }}>
-                    <li>1:1 Office Hours with industry professionals</li>
-                    <li>Weekly hand-pick job opportunities</li>
-                    <li>AI Tool Prompt highlights</li>
+                  <ul className="space-y-1.5 text-black" style={{ fontSize: '1rem', fontWeight: 500, letterSpacing: '-1%' }}>
+                    {['1:1 Office Hours with industry professionals', 'Weekly hand-pick job opportunities', 'AI Tool Prompt highlights'].map((item) => (
+                      <li key={item} className="flex items-center gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8200EA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {item}
+                      </li>
+                    ))}
                   </ul>
                 </div>
                 <div className="flex flex-col items-center justify-center text-center" style={{ minWidth: '160px' }}>
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-                  <p className="font-bold text-sm">Two weeks free</p>
-                  <p className="text-xs text-gray-500 mb-2">then 99p/week</p>
+                  <p style={{ fontWeight: 500, fontSize: '1rem' }}>Two weeks free</p>
+                  <p className="text-black mb-2" style={{ fontWeight: 300, fontSize: '1rem' }}>then 99p/week</p>
                   <button
                     onClick={handleStartCheckout}
                     className="text-white font-semibold text-sm px-5 py-2 hover:opacity-90 transition"
@@ -632,7 +639,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   >
                     Get your free trial
                   </button>
-                  <p className="text-xs text-gray-400 mt-1.5">All Ignite features. Cancel anytime.</p>
+                  <p className="text-black mt-1.5" style={{ fontSize: '1rem', fontWeight: 300 }}>All Ignite features. Cancel anytime.</p>
                 </div>
               </div>
               </>
@@ -668,7 +675,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== EMAIL PREFERENCES ==================== */}
           <div className="mb-6">
-            <h3 className="font-medium mb-3" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Email Preferences</h3>
+            <h3 className="font-medium mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Email Preferences</h3>
             <div className="flex items-center gap-6">
               {[
                 { key: 'profileUpdates', label: 'Profile Updates' },
@@ -693,12 +700,12 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== COURSES ==================== */}
           <div className="mb-6">
-            <h3 className="font-semibold mb-3" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Courses</h3>
+            <h3 className="font-semibold mb-3" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Courses</h3>
 
             {/* Current enrolled course */}
             {enrolledCourseData && (
               <div className="mb-4">
-                <h4 className="font-medium mb-2" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Current</h4>
+                <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Current</h4>
                 <div className="flex gap-4 p-4 bg-gray-50" style={{ borderRadius: '0.3rem' }}>
                   <div className="flex-1">
                     <p className="font-bold mb-1">{enrolledCourseData.title || enrolledCourseData.name}</p>
@@ -720,7 +727,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             {/* Saved courses */}
             {savedCourses.length > 0 && (
               <div>
-                <h4 className="font-medium mb-2" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Saved</h4>
+                <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Saved</h4>
                 <div className="flex gap-3 flex-wrap">
                   {savedCourses.map((course) => (
                     <div
@@ -761,7 +768,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
           {/* ==================== MEMORY ==================== */}
           <div className="mb-6">
-            <UserMemorySection userId={authUser?.id} linkedinUrl={linkedinUrl} />
+            <UserMemorySection ref={memoryRef} userId={authUser?.id} linkedinUrl={linkedinUrl} />
           </div>
 
           {/* ==================== BOTTOM ACTIONS ==================== */}
@@ -776,7 +783,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             </button>
             <button
               onClick={handleDeleteAccount}
-              className="font-semibold text-sm px-6 py-2 border border-gray-300 text-black hover:bg-gray-50 transition"
+              className="font-semibold text-sm px-6 py-2 bg-gray-100 text-black hover:bg-gray-200 transition"
               style={{ borderRadius: '0.3rem' }}
             >
               Delete Account

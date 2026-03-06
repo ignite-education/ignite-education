@@ -1,20 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Pencil, Brain, Check, X } from 'lucide-react';
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import { Brain } from 'lucide-react';
 import { getUserMemoryText, saveUserMemoryText, importLinkedInMemory } from '../../lib/api';
 
 const MAX_LENGTH = 2000;
 
-const UserMemorySection = ({ userId, linkedinUrl }) => {
+const UserMemorySection = forwardRef(({ userId, linkedinUrl }, ref) => {
   const [text, setText] = useState('');
-  const [draft, setDraft] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState(null);
   const [importError, setImportError] = useState(null);
-  const textareaRef = useRef(null);
+  const lastSavedRef = useRef('');
 
   useEffect(() => {
     if (!userId) return;
@@ -25,7 +23,10 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
         setIsLoading(true);
         setError(null);
         const data = await getUserMemoryText(userId);
-        if (!cancelled) setText(data);
+        if (!cancelled) {
+          setText(data);
+          lastSavedRef.current = data;
+        }
       } catch (err) {
         console.error('Error fetching user memory:', err);
         if (!cancelled) setError('Failed to load memory.');
@@ -38,41 +39,13 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
     return () => { cancelled = true; };
   }, [userId]);
 
-  const autoResize = useCallback(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight}px`;
-  }, []);
-
-  useEffect(() => {
-    if (isEditing) autoResize();
-  }, [isEditing, draft, autoResize]);
-
-  const handleEdit = () => {
-    setDraft(text);
-    setIsEditing(true);
-    setError(null);
-    setImportError(null);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setDraft('');
-    setError(null);
-  };
-
-  const handleSave = async () => {
-    if (!draft.trim() && !text) {
-      setIsEditing(false);
-      return;
-    }
+  const save = async () => {
+    if (text === lastSavedRef.current) return;
     setIsSaving(true);
     setError(null);
     try {
-      await saveUserMemoryText(userId, draft);
-      setText(draft.trim());
-      setIsEditing(false);
+      await saveUserMemoryText(userId, text);
+      lastSavedRef.current = text;
     } catch (err) {
       console.error('Error saving user memory:', err);
       setError(err?.message || 'Failed to save memory.');
@@ -80,6 +53,8 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
       setIsSaving(false);
     }
   };
+
+  useImperativeHandle(ref, () => ({ save }), [text, userId]);
 
   const handleImportLinkedIn = async () => {
     if (!linkedinUrl || isImporting) return;
@@ -103,6 +78,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
 
       await saveUserMemoryText(userId, finalText);
       setText(finalText.trim());
+      lastSavedRef.current = finalText.trim();
     } catch (err) {
       console.error('LinkedIn import error:', err);
       setImportError(err.message || 'Failed to import from LinkedIn.');
@@ -119,7 +95,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
     try {
       await saveUserMemoryText(userId, '');
       setText('');
-      setIsEditing(false);
+      lastSavedRef.current = '';
     } catch (err) {
       console.error('Error deleting memory:', err);
       setError('Failed to delete memory.');
@@ -131,16 +107,7 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <h3 className="font-semibold" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Memory</h3>
-        {!isLoading && !isEditing && text && (
-          <button
-            type="button"
-            onClick={handleEdit}
-            className="p-1 text-gray-400 hover:text-purple-600 transition"
-          >
-            <Pencil size={14} />
-          </button>
-        )}
+        <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em' }}>Memory</h3>
       </div>
       <p className="text-black mb-3" style={{ fontSize: '1rem' }}>
         We use memory to personalise your experience from bespoke learning explanations to pre-filled AI prompts. Your memory is completely private and secure. It is never used for ads or shared.
@@ -156,59 +123,20 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
 
       {isLoading ? (
         <p className="text-sm text-gray-400 py-2">Loading...</p>
-      ) : isEditing ? (
-        <div className="space-y-2">
-          <textarea
-            ref={textareaRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            maxLength={MAX_LENGTH}
-            rows={4}
-            className="w-full bg-gray-100 text-black text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-none"
-            style={{ borderRadius: '0.3rem', minHeight: '350px', minWidth: '300px' }}
-            placeholder={"e.g. I'm a Product Manager at a fintech startup with 5 years of experience. Previously worked in consulting.\n\nCurrently learning Python and data science. Building a budgeting app with React Native as a side project.\n\nInterested in AI, machine learning, and product strategy."}
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-400">{draft.length}/{MAX_LENGTH}</span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={isSaving}
-                className="p-1 text-green-600 hover:text-green-700 disabled:opacity-40"
-              >
-                <Check size={16} />
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="p-1 text-gray-400 hover:text-gray-600"
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
       ) : (
         <div className="flex gap-4">
-          <div className="flex-1">
-            {text ? (
-              <div
-                className="text-sm text-gray-700 bg-gray-50 px-3 py-2 cursor-pointer hover:bg-gray-100 transition"
-                style={{ borderRadius: '0.3rem', whiteSpace: 'pre-wrap', minHeight: '350px', minWidth: '300px' }}
-                onClick={handleEdit}
-              >
-                {text}
-              </div>
-            ) : (
-              <div
-                className="text-sm text-gray-400 bg-gray-50 px-3 py-3 cursor-pointer hover:bg-gray-100 transition"
-                style={{ borderRadius: '0.3rem', minHeight: '350px', minWidth: '300px' }}
-                onClick={handleEdit}
-              >
-                Click to add your memory...
-              </div>
-            )}
+          <div>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              maxLength={MAX_LENGTH}
+              className="bg-gray-50 text-black text-sm px-3 py-2 focus:outline-none resize-none"
+              style={{ borderRadius: '0.3rem', height: '250px', width: '200px', overflowY: 'auto' }}
+              placeholder={"e.g. I'm a Product Manager at a fintech startup with 5 years of experience. Previously worked in consulting.\n\nCurrently learning Python and data science. Building a budgeting app with React Native as a side project.\n\nInterested in AI, machine learning, and product strategy."}
+            />
+            <div className="flex items-center justify-between" style={{ width: '200px' }}>
+              <span className="text-xs text-gray-400">{text.length}/{MAX_LENGTH}</span>
+            </div>
           </div>
 
           {/* Import & Delete buttons */}
@@ -253,6 +181,6 @@ const UserMemorySection = ({ userId, linkedinUrl }) => {
       )}
     </div>
   );
-};
+});
 
 export default UserMemorySection;
