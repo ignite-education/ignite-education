@@ -73,7 +73,7 @@ const LearningHub = () => {
   const [chatMessages, setChatMessages] = useState([
     {
       type: 'assistant',
-      text: 'Feel free to ask any questions you may have on course content. You can dive deeper into a topic or get something explained differently.',
+      text: 'Ask me any questions you may have on course content. You can dive deeper into a topic or get something explained differently.',
       isComplete: false
     }
   ]);
@@ -2606,12 +2606,12 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               )}
             </div>
           </div>
-          <h2 className="font-semibold" style={{ letterSpacing: '-1%', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
+          <h2 className="font-semibold" style={{ letterSpacing: '0%', fontSize: '27px', marginBottom: '0.72px' }}>{userCourseName}</h2>
         </div>
 
         {/* Upcoming Lessons */}
-        <div className="flex-shrink-0 px-8 relative" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
-          <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
+        <div className="flex-shrink-0 px-8" style={{ paddingTop: '0px', paddingBottom: '4px' }}>
+          <h2 className="font-semibold text-white" style={{ fontSize: '1.4rem', letterSpacing: '0%', marginBottom: '0.25rem', position: 'relative', height: '1.5em' }}>
             {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => {
               const activeLesson = upcomingLessonsToShow.length > 0 && activeCardIndex < upcomingLessonsToShow.length ? upcomingLessonsToShow[activeCardIndex] : null;
               const isCompleted = activeLesson ? isLessonCompleted(activeLesson.module_number, activeLesson.lesson_number) : false;
@@ -2640,6 +2640,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               );
             })}
           </h2>
+          <div className="relative">
           <div
             ref={scrollContainerRef}
             className="overflow-x-auto overflow-y-hidden select-none"
@@ -2830,6 +2831,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
               </button>
             );
           })()}
+          </div>
         </div>
 
         {/* Chat with Will Section - Scrollable */}

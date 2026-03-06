@@ -197,13 +197,13 @@ export default function PromptFilters({
                           </svg>
                         )}
                       </span>
+                      <span className="text-black">{option}</span>
                       {type === 'tool' && TOOL_LOGOS[option] && (
                         <img src={TOOL_LOGOS[option]} alt="" width={16} height={16} />
                       )}
                       {type === 'complexity' && (
-                        <ComplexityIcon level={option as 'Low' | 'Mid' | 'High'} />
+                        <span className="ml-auto"><ComplexityIcon level={option as 'Low' | 'Mid' | 'High'} /></span>
                       )}
-                      <span className="text-black">{option}</span>
                     </button>
                   )
                 })}

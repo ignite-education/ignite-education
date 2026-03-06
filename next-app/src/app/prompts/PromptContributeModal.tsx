@@ -68,11 +68,11 @@ function InfoTooltip({ text }: { text: string }) {
     <span className="relative group/tip inline-flex items-center ml-[6px]">
       <span
         className="inline-flex items-center justify-center"
-        style={{ width: '16px', height: '16px', borderRadius: '3px', backgroundColor: '#D4D4D4' }}
+        style={{ width: '16px', height: '16px', padding: 0, borderRadius: '3px', backgroundColor: '#D4D4D4', overflow: 'visible' }}
       >
         <svg
-          width="12"
-          height="12"
+          width="15"
+          height="15"
           viewBox="4 2 16 20"
           fill="none"
           stroke="#FFFFFF"
