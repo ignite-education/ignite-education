@@ -82,6 +82,16 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
 
   // Initialize form and fetch courses when modal opens
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -437,9 +447,10 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           style={{
             animation: isClosing ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem',
-            padding: '1.5rem',
-            maxHeight: '80vh',
+            padding: '2rem 2.25rem 1.5rem 2.25rem',
+            maxHeight: '75vh',
             overflowY: 'auto',
+            overscrollBehavior: 'contain',
             scrollbarWidth: 'none',
           }}
           onClick={(e) => e.stopPropagation()}
@@ -454,7 +465,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           </button>
 
           {/* Title inside the card */}
-          <h2 className="text-[1.6rem] font-bold text-black leading-tight tracking-[-0.02em] mb-4" style={{ fontFamily: 'Geist, sans-serif' }}>Settings</h2>
+          <h2 className="text-[1.6rem] text-black leading-tight mb-4" style={{ fontFamily: 'Geist, sans-serif', letterSpacing: '-1%', fontWeight: 600 }}>Settings</h2>
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
@@ -468,13 +479,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     src={profilePicture}
                     alt="Profile"
                     className="object-cover"
-                    style={{ width: '80px', height: '80px', borderRadius: '0.25rem' }}
+                    style={{ width: '90px', height: '90px', borderRadius: '0.25rem' }}
                     referrerPolicy="no-referrer"
                   />
                 ) : (
                   <div
                     className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                    style={{ width: '80px', height: '80px', fontSize: '24px', borderRadius: '0.25rem' }}
+                    style={{ width: '90px', height: '90px', fontSize: '24px', borderRadius: '0.25rem' }}
                   >
                     {(firstName || 'U')[0].toUpperCase()}
                   </div>
@@ -490,8 +501,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   type="button"
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
-                  className="text-xs font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 px-3 py-1"
-                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6' }}
+                  className="text-xs font-medium text-black hover:bg-gray-200 transition disabled:opacity-50 py-1"
+                  style={{ borderRadius: '0.25rem', backgroundColor: '#f3f4f6', width: '90px' }}
                 >
                   {isUploadingPicture ? 'Uploading...' : 'Edit'}
                 </button>
@@ -511,7 +522,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         value={settingsForm.firstName}
                         onChange={(e) => setSettingsForm({ ...settingsForm, firstName: e.target.value })}
                         onBlur={() => handleFieldBlur('firstName')}
-                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
                         style={{ borderRadius: '0.3rem' }}
                       />
                       {savedField === 'firstName' && (
@@ -527,7 +538,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         value={settingsForm.lastName}
                         onChange={(e) => setSettingsForm({ ...settingsForm, lastName: e.target.value })}
                         onBlur={() => handleFieldBlur('lastName')}
-                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                        className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
                         style={{ borderRadius: '0.3rem' }}
                       />
                       {savedField === 'lastName' && (
@@ -545,7 +556,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       value={settingsForm.email}
                       onChange={(e) => setSettingsForm({ ...settingsForm, email: e.target.value })}
                       onBlur={() => handleFieldBlur('email')}
-                      className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none focus:ring-1 focus:ring-pink-500"
+                      className="w-full bg-gray-100 text-black px-3 py-2 focus:outline-none"
                       style={{ borderRadius: '0.3rem' }}
                     />
                     {savedField === 'email' && (
