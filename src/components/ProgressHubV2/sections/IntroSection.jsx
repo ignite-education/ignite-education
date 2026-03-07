@@ -380,6 +380,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         position: 'relative',
         height: '70vh',
         minHeight: '500px',
+        maxHeight: '550px',
         padding: '30px 40px 0 40px',
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
@@ -389,7 +390,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo */}
-          <a href="/welcome" style={{ marginBottom: '55px', display: 'block', width: 'fit-content' }}>
+          <a href="/welcome" style={{ marginBottom: '55px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -413,7 +414,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </a>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '30px', marginLeft: '6px', position: 'relative', width: '150px', height: '150px' }}>
+          <div style={{ marginBottom: '30px', position: 'relative', width: '150px', height: '150px' }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
