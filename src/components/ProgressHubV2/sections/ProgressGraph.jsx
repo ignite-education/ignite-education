@@ -282,7 +282,7 @@ const ProgressGraph = ({
         ref={graphRef}
         onMouseMove={handleGraphMouseMove}
         onMouseLeave={handleGraphMouseLeave}
-        style={{ position: 'relative', height: '120px', cursor: 'pointer', width: '90%', maxWidth: '1000px', margin: '0 auto' }}
+        style={{ position: 'relative', height: '120px', cursor: 'pointer', width: '90%', maxWidth: '1500px', margin: '0 auto' }}
       >
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
@@ -458,7 +458,7 @@ const ProgressGraph = ({
       </div>
 
       {/* HTML module labels — absolutely positioned at midpoint of each module's dots */}
-      <div style={{ position: 'relative', marginTop: '8px', height: '2.4em', width: '90%', maxWidth: '1000px', margin: '8px auto 0' }}>
+      <div style={{ position: 'relative', marginTop: '8px', height: '2.4em', width: '90%', maxWidth: '1500px', margin: '8px auto 0' }}>
         {moduleRanges.map((mod, idx) => {
           const lines = formatModuleName(mod.name);
           return (

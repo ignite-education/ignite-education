@@ -195,7 +195,7 @@ const ShareButton = () => {
   const handleShare = async () => {
     const shareData = {
       title: 'My Progress | Ignite Education',
-      url: window.location.href,
+      url: 'https://ignite.education/welcome',
     };
     if (navigator.share) {
       try {
