@@ -137,6 +137,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
+    // In local dev, skip auth redirect so we can preview UI changes
+    if (import.meta.env.DEV && window.location.hostname === 'localhost') {
+      return children;
+    }
     window.location.href = '/welcome';
     return null;
   }
