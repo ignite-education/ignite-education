@@ -3,6 +3,55 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import LoadingScreen from './LoadingScreen';
 
+// Minimal sign-in form for local development only
+const DevSignIn = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setError(error.message);
+    setLoading(false);
+  };
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/progress` },
+    });
+    if (error) setError(error.message);
+    setLoading(false);
+  };
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#1a1a1a' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '320px', padding: '32px', background: '#2a2a2a', borderRadius: '12px' }}>
+        <h2 style={{ color: '#fff', margin: 0, fontSize: '18px', textAlign: 'center' }}>Dev Sign In</h2>
+        <button type="button" onClick={handleGoogle} disabled={loading}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#fff', color: '#333', cursor: 'pointer', fontWeight: 500 }}>
+          Sign in with Google
+        </button>
+        <div style={{ textAlign: 'center', color: '#888', fontSize: '12px' }}>or</div>
+        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#333', color: '#fff' }} />
+        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid #444', background: '#333', color: '#fff' }} />
+        <button type="submit" disabled={loading}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: '#EF0B72', color: '#fff', cursor: 'pointer', fontWeight: 600 }}>
+          {loading ? 'Signing in...' : 'Sign In'}
+        </button>
+        {error && <p style={{ color: '#ff6b6b', fontSize: '13px', margin: 0, textAlign: 'center' }}>{error}</p>}
+      </form>
+    </div>
+  );
+};
+
 const ENROLLMENT_CACHE_KEY = 'enrollment_status_cache';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const DB_TIMEOUT = 30000; // 30 seconds to handle Supabase cold starts
@@ -137,9 +186,9 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!user) {
-    // In local dev, skip auth redirect so we can preview UI changes
+    // In local dev, show a sign-in form instead of redirecting to Next.js
     if (import.meta.env.DEV && window.location.hostname === 'localhost') {
-      return children;
+      return <DevSignIn />;
     }
     window.location.href = '/welcome';
     return null;
