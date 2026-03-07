@@ -192,8 +192,25 @@ const ShareButton = () => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#000000';
 
+  const handleShare = async () => {
+    const shareData = {
+      title: 'My Progress | Ignite Education',
+      url: window.location.href,
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error('Share failed:', err);
+      }
+    } else {
+      await navigator.clipboard.writeText(shareData.url);
+    }
+  };
+
   return (
     <div
+      onClick={handleShare}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="flex items-center justify-center rounded-[4px]"

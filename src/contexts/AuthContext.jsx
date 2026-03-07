@@ -227,6 +227,7 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         if (error.message?.includes('Auth session missing') || error.status === 403) {
           console.log('Session already invalid, clearing auth state...');
+          setUser(null);
           clearSupabaseCookies();
           sessionStorage.clear();
           window.location.href = '/';
@@ -234,6 +235,8 @@ export const AuthProvider = ({ children }) => {
         }
         throw error;
       }
+      // Clear user state immediately so navbar updates before navigation
+      setUser(null);
     } catch (err) {
       console.error('Error during logout:', err);
       clearSupabaseCookies();
