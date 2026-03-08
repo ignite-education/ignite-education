@@ -88,6 +88,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   const handleOpenUpgradeModal = async () => {
     if (!authUser) return;
     setShowUpgradeModal(true);
+    document.body.style.overflow = 'hidden';
     setUpgradingToInsider(true);
     try {
       const response = await fetch(`${API_URL}/api/create-checkout-session`, {
@@ -114,6 +115,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
     setTimeout(() => {
       setShowUpgradeModal(false);
       setIsClosingModal(false);
+      document.body.style.overflow = '';
       setClientSecret(null);
       setUpgradingToInsider(false);
     }, 200);
@@ -289,7 +291,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                     Build real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
                   </p>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.5rem' }}>
                     <p className="text-gray-800 font-normal m-0 flex items-center gap-2" style={{ fontSize: '1rem' }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12" /></svg>
                       1:1 Office Hours with industry professionals
@@ -336,14 +338,15 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
               </div>
 
               {/* Right side - Stripe checkout */}
-              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
+              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-start justify-center">
                 <div
                   key={clientSecret}
                   ref={checkoutRef}
                   style={{
                     minHeight: '350px',
                     paddingTop: '10px',
-                    paddingBottom: '10px'
+                    paddingBottom: '10px',
+                    width: '100%'
                   }}
                 />
               </div>
