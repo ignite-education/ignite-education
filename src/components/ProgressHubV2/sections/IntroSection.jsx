@@ -505,7 +505,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
 
         {/* Right Column: Progress Summary + Stats */}
-        <div className="flex flex-col" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
+        <div className="flex flex-col items-center" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
           <div style={{ maxWidth: '550px' }}>
             {/* Progress Summary */}
             <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
