@@ -170,7 +170,7 @@ export default function TestimonialsSection() {
         scrollSnapAlign: 'none'
       }}
     >
-      <div className="auth-section-5-content w-full text-left">
+      <div className="auth-section-5-content w-full text-left" style={{ maxWidth: '1500px', margin: '0 auto' }}>
         {/* Title Container */}
         <div className="auth-section-5-title-container max-w-4xl mx-auto px-4">
           <h3

@@ -115,6 +115,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const maxRows = Math.max(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)
   const sectionHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
   const sectionMinHeight = maxRows >= 3 ? '600px' : maxRows === 2 ? '500px' : maxRows === 1 ? '400px' : '350px'
+  const sectionMaxHeight = maxRows >= 3 ? '750px' : maxRows === 2 ? '650px' : maxRows === 1 ? '550px' : '450px'
 
   return (
     <section
@@ -122,7 +123,8 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
       style={{
         height: isExpanded ? 'auto' : sectionHeight,
         minHeight: isExpanded ? 'auto' : sectionMinHeight,
-        transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+        maxHeight: isExpanded ? 'none' : sectionMaxHeight,
+        transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden'
       }}
     >

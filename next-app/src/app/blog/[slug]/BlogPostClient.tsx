@@ -2,7 +2,6 @@
 
 import { useState, useRef, useMemo } from 'react'
 import Link from 'next/link'
-import useTypingAnimation from '@/hooks/useTypingAnimation'
 import { extractTextFromHtml, splitIntoWords } from '@/lib/textNormalization'
 import type { BlogPost, BlogPostAudio } from '@/types/blog'
 import BlogNarration from './BlogNarration'
@@ -27,11 +26,6 @@ export default function BlogPostClient({ post, audioData }: BlogPostClientProps)
   const [isReading, setIsReading] = useState(false)
   const articleRef = useRef<HTMLElement>(null)
   const contentContainerRef = useRef<HTMLDivElement>(null)
-
-  const { displayText: typedTitle, isComplete: isTypingComplete } = useTypingAnimation(
-    post.title,
-    { charDelay: 75, startDelay: 1000, enabled: true }
-  )
 
   // Parse content into words for narration (must match backend word counting)
   const contentWords = useMemo(() => {
@@ -121,15 +115,9 @@ export default function BlogPostClient({ post, audioData }: BlogPostClientProps)
               <span className="truncate max-w-md" style={{ color: '#F0F0F2' }}>{post.title}</span>
             </nav>
 
-            {/* Title with typing animation */}
-            <div className="relative">
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left invisible" aria-hidden="true">
-                {post.title}
-              </h1>
-              <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left absolute top-0 left-0 right-0">
-                {typedTitle}
-              </h1>
-            </div>
+            <h1 className="text-5xl font-bold text-white mb-3.5 leading-tight text-left">
+              {post.title}
+            </h1>
 
             {/* Excerpt */}
             <p className="text-xl text-[#EF0B72] mb-3.5 leading-relaxed text-left">

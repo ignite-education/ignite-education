@@ -84,8 +84,8 @@ export default function EducationSection() {
   return (
     <section
       ref={sectionRef}
-      className="min-h-screen flex items-center justify-center px-8 relative auth-section-2"
-      style={{ background: 'black' }}
+      className="flex items-center justify-center px-8 relative auth-section-2"
+      style={{ background: 'black', minHeight: '500px', maxHeight: '800px', height: '100vh', maxWidth: '1500px', margin: '0 auto' }}
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}

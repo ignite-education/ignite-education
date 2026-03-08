@@ -38,10 +38,12 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
   }, [])
 
   return (
-    <section className="min-h-screen flex items-center justify-center bg-black">
+    <section className="flex items-center justify-center bg-black" style={{ height: '100vh', minHeight: '500px', maxHeight: '800px' }}>
       <div
         className="w-full text-white"
         style={{
+          maxWidth: '1600px',
+          margin: '0 auto',
           paddingLeft: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 99px + 10px)',
           paddingRight: isMobile ? '2rem' : isTablet ? '1rem' : 'calc(40px + 85px)',
         }}

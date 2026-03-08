@@ -104,7 +104,7 @@ export default function MerchSection() {
         paddingBottom: '5rem'
       }}
     >
-      <div className="auth-section-merch-content w-full text-left">
+      <div className="auth-section-merch-content w-full text-left" style={{ maxWidth: '1600px', margin: '0 auto' }}>
         {/* Title Container */}
         <div className="auth-section-merch-title-container max-w-4xl mx-auto px-4">
           <h3
