@@ -44,7 +44,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.on
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
-  const { user: authUser, updateProfile, signOut, isAdFree, profilePicture, firstName } = useAuth();
+  const { user: authUser, updateProfile, signOut, isInsider, profilePicture, firstName } = useAuth();
   const navigate = useNavigate();
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
@@ -72,17 +72,18 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [enrolledCourse, setEnrolledCourse] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState(null);
 
-  // Email preference placeholders (UI only, not persisted)
+  // Email preferences (synced with backend)
   const [emailPrefs, setEmailPrefs] = useState({
     profileUpdates: true,
     igniteUpdates: true,
     trialPromotions: true,
   });
+  const [originalEmailPrefs, setOriginalEmailPrefs] = useState(null);
 
   // Stripe upgrade state
   const [showCheckout, setShowCheckout] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
-  const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
+  const [upgradingToInsider, setUpgradingToInsider] = useState(false);
 
   // Preload upsell image so it's ready when modal opens
   useEffect(() => {
@@ -180,8 +181,20 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             setAvailableCourses(coursesData);
           }
         }
+        // Fetch email preferences
+        const prefsRes = await fetch(`${API_URL}/api/email-preferences/${authUser.id}`);
+        if (prefsRes.ok) {
+          const { preferences } = await prefsRes.json();
+          const mapped = {
+            profileUpdates: preferences.profile_updates !== false,
+            igniteUpdates: preferences.ignite_updates !== false,
+            trialPromotions: preferences.trial_promotions !== false,
+          };
+          setEmailPrefs(mapped);
+          setOriginalEmailPrefs(mapped);
+        }
       } catch (error) {
-        console.error('Error fetching courses:', error);
+        console.error('Error fetching settings data:', error);
       }
     })();
   }, [isOpen]);
@@ -197,7 +210,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           checkout.mount(checkoutRef.current);
         } catch (error) {
           console.error('Error mounting Stripe checkout:', error);
-          setUpgradingToAdFree(false);
+          setUpgradingToInsider(false);
         }
       }
     };
@@ -257,6 +270,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       changed.email = true;
     }
 
+    // Check if email preferences changed
+    const emailPrefsChanged = originalEmailPrefs && (
+      emailPrefs.profileUpdates !== originalEmailPrefs.profileUpdates ||
+      emailPrefs.igniteUpdates !== originalEmailPrefs.igniteUpdates ||
+      emailPrefs.trialPromotions !== originalEmailPrefs.trialPromotions
+    );
+
     try {
       if (changed.name) {
         await updateProfile({
@@ -266,6 +286,20 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       }
       if (changed.email) {
         await supabase.auth.updateUser({ email: settingsForm.email });
+      }
+      if (emailPrefsChanged) {
+        await fetch(`${API_URL}/api/email-preferences`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authUser.id,
+            preferences: {
+              profile_updates: emailPrefs.profileUpdates,
+              ignite_updates: emailPrefs.igniteUpdates,
+              trial_promotions: emailPrefs.trialPromotions,
+            },
+          }),
+        });
       }
     } catch (error) {
       console.error('Error saving profile on close:', error);
@@ -278,7 +312,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     setTimeout(() => {
       setIsClosing(false);
       onClose();
-    }, 200);
+    }, 250);
   };
 
 
@@ -340,7 +374,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const handleStartCheckout = async () => {
     if (!authUser) return;
     setShowCheckout(true);
-    setUpgradingToAdFree(true);
+    setUpgradingToInsider(true);
     try {
       const response = await fetch(`${API_URL}/api/create-checkout-session`, {
         method: 'POST',
@@ -351,7 +385,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         localStorage.setItem('pendingPaymentRefresh', Date.now().toString());
-        setUpgradingToAdFree(false);
+        setUpgradingToInsider(false);
       } else {
         throw new Error('Failed to create checkout session');
       }
@@ -359,7 +393,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       console.error('Error creating checkout session:', error);
       setShowCheckout(false);
       setClientSecret(null);
-      setUpgradingToAdFree(false);
+      setUpgradingToInsider(false);
     }
   };
 
@@ -496,7 +530,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <button onClick={handleClose} className="absolute top-4 right-4 text-gray-600 hover:text-black z-10">
               <X size={20} strokeWidth={2} />
             </button>
-            {upgradingToAdFree ? (
+            {upgradingToInsider ? (
               <div className="flex items-center justify-center py-16">
                 <div className="text-center">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3"></div>
@@ -528,7 +562,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
         {/* Settings Card */}
         <div
           ref={scrollRef}
-          className={`bg-white text-black relative ${isClosing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
+          className={`bg-white text-black relative ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
           style={{
             borderRadius: '0.3rem',
             padding: '2rem 2.25rem 1.5rem 2.25rem',
@@ -550,7 +584,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           </button>
 
           {/* Title inside the card */}
-          <h2 className="text-[1.7rem] text-black leading-tight mb-4" style={{ fontFamily: 'Geist, sans-serif', letterSpacing: '-1%', fontWeight: 600 }}>Settings</h2>
+          <h2 className="text-[1.85rem] text-black leading-tight mb-4" style={{ fontFamily: 'Geist, sans-serif', letterSpacing: '-1%', fontWeight: 600 }}>Settings</h2>
 
           {/* ==================== PROFILE ==================== */}
           <div className="mb-6">
@@ -690,7 +724,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
           <div className="mb-8">
             <h3 className="font-semibold" style={{ fontSize: '1.5rem', letterSpacing: '-0.01em', marginBottom: '2px', paddingTop: '10px' }}>Account</h3>
 
-            {!isAdFree ? (
+            {!isInsider ? (
               /* Upsell Card */
               <>
               <h4 className="font-medium text-purple-700 mb-[10px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
@@ -699,8 +733,8 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt="Free trial" className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-                  <p style={{ fontWeight: 500, fontSize: '1.1rem', lineHeight: 1.2 }}>Two weeks free</p>
-                  <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1.1rem', lineHeight: 1.2 }}>then 99p/week</p>
+                  <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
+                  <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>then 99p/week</p>
                   <button
                     onClick={handleStartCheckout}
                     className="text-white px-5 py-2 transition cursor-pointer"
@@ -900,8 +934,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               onClick={handleDeleteAccount}
               className="px-6 py-2 bg-gray-100 text-black transition cursor-pointer hover:opacity-100"
               style={{ borderRadius: '0.3rem', fontSize: '1rem', fontWeight: 300 }}
-              onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
-              onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
             >
               Delete Account
             </button>

@@ -57,7 +57,7 @@ const MobileBlockScreen = ({ onSignOut }) => {
 };
 
 const ProgressHubV2 = () => {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 850);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 950);
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
@@ -67,7 +67,7 @@ const ProgressHubV2 = () => {
     loading,
     firstName,
     authUser,
-    isAdFree,
+    isInsider,
     profilePicture,
     hasHighQualityAvatar,
     signOut,
@@ -99,7 +99,7 @@ const ProgressHubV2 = () => {
 
   // Track viewport size for mobile blocking
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 850);
+    const handleResize = () => setIsMobile(window.innerWidth < 950);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -187,12 +187,14 @@ const ProgressHubV2 = () => {
         courseTitle={courseTitle}
         joinedAt={authUser?.created_at}
         totalCompletedLessons={totalCompletedLessons}
+        isInsider={isInsider}
         userId={authUser?.id}
         onSettingsClick={() => setShowSettings(true)}
         completedLessons={completedLessons}
         lessonsMetadata={lessonsMetadata}
         userLessonScores={userLessonScores}
         upcomingLessons={upcomingLessons}
+        userRole={userRole}
       />
 
       {/* Section 2: Course Details */}
@@ -213,7 +215,7 @@ const ProgressHubV2 = () => {
             <ResourcesSlider resources={resources} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={() => setShowMyPostsModal(true)} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
       />
 
       {/* Section 3: Merchandise */}

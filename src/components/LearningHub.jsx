@@ -40,7 +40,7 @@ const getTextWidth = (() => {
 const LearningHub = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { firstName, lastName, user, isAdFree, userRole, isInitialized } = useAuth();
+  const { firstName, lastName, user, isInsider, userRole, isInitialized } = useAuth();
   const { lottieData } = useAnimation();
 
   // Helper function to get user's enrolled course
@@ -88,7 +88,7 @@ const LearningHub = () => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
-  const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
+  const [upgradingToInsider, setUpgradingToInsider] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
   const [showKnowledgeCheck, setShowKnowledgeCheck] = useState(false);
   const [showLinkedInModal, setShowLinkedInModal] = useState(false);
@@ -1456,7 +1456,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
       setShowUpgradeModal(false);
       setIsClosingModal(false);
       setClientSecret(null);
-      setUpgradingToAdFree(false);
+      setUpgradingToInsider(false);
     }, 200);
   };
 
@@ -1467,7 +1467,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     }
 
     setShowUpgradeModal(true);
-    setUpgradingToAdFree(true);
+    setUpgradingToInsider(true);
 
     try {
       const response = await fetch(`${API_URL}/api/create-checkout-session`, {
@@ -1484,7 +1484,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
 
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
-        setUpgradingToAdFree(false);
+        setUpgradingToInsider(false);
       } else {
         throw new Error('Failed to create checkout session');
       }
@@ -1511,7 +1511,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
           checkout.mount(checkoutRef.current);
         } catch (error) {
           console.error('Error mounting Stripe checkout:', error);
-          setUpgradingToAdFree(false);
+          setUpgradingToInsider(false);
           alert('Failed to load payment form. Please try again.');
         }
       }
@@ -2734,7 +2734,7 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
         </div>
 
         {/* Chat with Will Section - Scrollable */}
-        <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isAdFree ? '8px' : '17.6px' }}>
+        <div className="flex-1 flex flex-col px-8 overflow-hidden" style={{ paddingTop: '0px', paddingBottom: isInsider ? '8px' : '17.6px' }}>
           <div className="flex-1 flex flex-col overflow-hidden">
             <div ref={chatContainerRef} onScroll={handleChatScroll} className="bg-white overflow-y-auto hide-scrollbar flex flex-col" style={{ borderRadius: '0.3rem 0.3rem 0 0', marginBottom: '0px', scrollbarWidth: 'none', msOverflowStyle: 'none', flex: '0.98', minHeight: '0', padding: '1.5rem 1rem 0.8rem 1rem' }}>
               <div className="flex-1" />

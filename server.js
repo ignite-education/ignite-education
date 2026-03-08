@@ -83,8 +83,18 @@ function verifyUnsubscribeToken(token) {
   }
 }
 
-// Define which email types are marketing (respect preference) vs transactional (always send)
-const MARKETING_EMAIL_TYPES = ['inactivity_reminder', 'promotional'];
+// Map each email type to its preference category
+const EMAIL_CATEGORY_MAP = {
+  welcome: 'profile_updates',
+  first_lesson: 'profile_updates',
+  module_complete: 'profile_updates',
+  course_complete: 'profile_updates',
+  inactivity_reminder: 'ignite_updates',
+  course_launch: 'ignite_updates',
+  subscription_confirm: 'trial_promotions',
+  subscription_cancelled: 'trial_promotions',
+  promotional: 'trial_promotions',
+};
 
 // Base URL for the API (use env var in production)
 const API_BASE_URL = process.env.API_BASE_URL || 'https://ignite.education';
@@ -3063,17 +3073,28 @@ app.post('/api/send-email', async (req, res) => {
     const userEmail = authUser.email;
     const firstName = user?.first_name || 'there';
 
-    // Check if this is a marketing email and if user has unsubscribed
-    const isMarketingEmail = MARKETING_EMAIL_TYPES.includes(type);
-    const marketingEmailsEnabled = authUser.user_metadata?.marketing_emails !== false;
+    // Check if user has opted out of this email category
+    const category = EMAIL_CATEGORY_MAP[type];
+    const emailPrefs = authUser.user_metadata?.email_preferences;
+    const legacyMarketingOff = authUser.user_metadata?.marketing_emails === false;
 
-    if (isMarketingEmail && !marketingEmailsEnabled) {
-      console.log(`📧 Skipping ${type} email - user ${userId} has unsubscribed from marketing emails`);
-      return res.json({
-        success: true,
-        message: 'User has unsubscribed from marketing emails',
-        skipped: true
-      });
+    if (category) {
+      let categoryEnabled = true;
+      if (emailPrefs && emailPrefs[category] === false) {
+        categoryEnabled = false;
+      } else if (!emailPrefs && legacyMarketingOff && category !== 'profile_updates') {
+        // Backward compat: legacy marketing_emails=false disables ignite_updates + trial_promotions
+        categoryEnabled = false;
+      }
+
+      if (!categoryEnabled) {
+        console.log(`📧 Skipping ${type} email - user ${userId} has disabled ${category}`);
+        return res.json({
+          success: true,
+          message: `User has disabled ${category} emails`,
+          skipped: true
+        });
+      }
     }
 
     // Prepare email based on type
@@ -3193,7 +3214,8 @@ app.post('/api/send-email', async (req, res) => {
       emailOptions.bcc = 'ignite.education+768155c8df@invite.trustpilot.com';
     }
 
-    // Add List-Unsubscribe headers for marketing emails (RFC 8058 compliant)
+    // Add List-Unsubscribe headers for marketing/promotional emails (RFC 8058 compliant)
+    const isMarketingEmail = category === 'ignite_updates' || category === 'trial_promotions';
     if (isMarketingEmail) {
       emailOptions.headers = {
         'List-Unsubscribe': `<${unsubscribeUrl}>`,
@@ -3217,6 +3239,62 @@ app.post('/api/send-email', async (req, res) => {
       success: false,
       error: error.message
     });
+  }
+});
+
+// ============================================================================
+// EMAIL PREFERENCES ENDPOINTS
+// ============================================================================
+
+// Get email preferences for a user
+app.get('/api/email-preferences/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { data: { user }, error } = await supabase.auth.admin.getUserById(userId);
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const prefs = user.user_metadata?.email_preferences;
+    const legacyMarketingOff = user.user_metadata?.marketing_emails === false;
+
+    // Return stored preferences, or derive defaults from legacy flag
+    const preferences = prefs || {
+      profile_updates: true,
+      ignite_updates: !legacyMarketingOff,
+      trial_promotions: !legacyMarketingOff,
+    };
+
+    res.json({ success: true, preferences });
+  } catch (error) {
+    console.error('❌ Error fetching email preferences:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update email preferences for a user
+app.patch('/api/email-preferences', async (req, res) => {
+  try {
+    const { userId, preferences } = req.body;
+
+    if (!userId || !preferences) {
+      return res.status(400).json({ error: 'Missing userId or preferences' });
+    }
+
+    const { error } = await supabase.auth.admin.updateUserById(userId, {
+      user_metadata: { email_preferences: preferences }
+    });
+
+    if (error) {
+      throw new Error(`Failed to update preferences: ${error.message}`);
+    }
+
+    console.log(`✅ Email preferences updated for user ${userId}:`, preferences);
+    res.json({ success: true, preferences });
+  } catch (error) {
+    console.error('❌ Error updating email preferences:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -3257,9 +3335,12 @@ app.get('/api/unsubscribe', async (req, res) => {
       `);
     }
 
-    // Update user's marketing_emails preference to false
+    // Update user's email preferences — disable all categories
     const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
-      user_metadata: { marketing_emails: false }
+      user_metadata: {
+        marketing_emails: false,
+        email_preferences: { profile_updates: false, ignite_updates: false, trial_promotions: false }
+      }
     });
 
     if (error) {
@@ -3324,9 +3405,12 @@ app.post('/api/unsubscribe', express.urlencoded({ extended: true }), async (req,
       return res.status(400).json({ error: 'Invalid or expired token' });
     }
 
-    // Update user's marketing_emails preference to false
+    // Update user's email preferences — disable all categories
     const { error } = await supabase.auth.admin.updateUserById(payload.userId, {
-      user_metadata: { marketing_emails: false }
+      user_metadata: {
+        marketing_emails: false,
+        email_preferences: { profile_updates: false, ignite_updates: false, trial_promotions: false }
+      }
     });
 
     if (error) {

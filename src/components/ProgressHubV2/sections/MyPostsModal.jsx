@@ -47,7 +47,7 @@ const MyPostsModal = ({ isOpen, onClose }) => {
     setTimeout(() => {
       setIsClosing(false);
       onClose();
-    }, 200);
+    }, 250);
   };
 
   const handleDisconnect = () => {
@@ -61,13 +61,12 @@ const MyPostsModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center"
+      className={`fixed inset-0 flex items-center justify-center ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
       style={{
         backdropFilter: 'blur(2.4px)',
         WebkitBackdropFilter: 'blur(2.4px)',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
         zIndex: 9999,
-        animation: isClosing ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
       }}
       onClick={handleClose}
     >
@@ -77,9 +76,8 @@ const MyPostsModal = ({ isOpen, onClose }) => {
         </h2>
 
         <div
-          className="bg-white text-black relative"
+          className={`bg-white text-black relative ${isClosing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
           style={{
-            animation: isClosing ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem',
             padding: '2rem 2rem 1rem 2rem',
             maxHeight: '68vh',

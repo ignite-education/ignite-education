@@ -296,7 +296,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -500,6 +500,29 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                 {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
                 {showConfetti && <ConfettiBurst />}
               </span>
+            )}
+
+            {/* Insider Tag */}
+            {isInsider && (
+              <span
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
+              >
+                Insider
+              </span>
+            )}
+
+            {/* Admin/Teacher Tag */}
+            {(userRole === 'admin' || userRole === 'teacher') && (
+              <a
+                href="https://admin.ignite.education"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block px-[8px] py-[3px] text-white bg-[#7714E0] rounded-[4px] font-normal hover:bg-[#5E10B3] transition-colors"
+                style={{ fontSize: '12px', letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}
+              >
+                {userRole === 'admin' ? 'Admin' : 'Teacher'}
+              </a>
             )}
           </div>
         </div>

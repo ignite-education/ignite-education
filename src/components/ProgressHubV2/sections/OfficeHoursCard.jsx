@@ -25,13 +25,13 @@ const CalendlyLoadingSpinner = () => {
 };
 
 const OfficeHoursCard = ({ coaches, calendlyLink }) => {
-  const { user: authUser, isAdFree } = useAuth();
+  const { user: authUser, isInsider } = useAuth();
   const [showCalendlyModal, setShowCalendlyModal] = useState(false);
   const [isClosingCalendlyModal, setIsClosingCalendlyModal] = useState(false);
   const [calendlyLoaded, setCalendlyLoaded] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
-  const [upgradingToAdFree, setUpgradingToAdFree] = useState(false);
+  const [upgradingToInsider, setUpgradingToInsider] = useState(false);
   const [clientSecret, setClientSecret] = useState(null);
   const checkoutRef = useRef(null);
 
@@ -59,7 +59,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
           checkout.mount(checkoutRef.current);
         } catch (error) {
           console.error('Error mounting Stripe checkout:', error);
-          setUpgradingToAdFree(false);
+          setUpgradingToInsider(false);
         }
       }
     };
@@ -68,7 +68,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   }, [clientSecret]);
 
   const handleOpenCalendly = async () => {
-    if (!isAdFree) {
+    if (!isInsider) {
       await handleOpenUpgradeModal();
     } else {
       setCalendlyLoaded(false);
@@ -88,7 +88,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   const handleOpenUpgradeModal = async () => {
     if (!authUser) return;
     setShowUpgradeModal(true);
-    setUpgradingToAdFree(true);
+    setUpgradingToInsider(true);
     try {
       const response = await fetch(`${API_URL}/api/create-checkout-session`, {
         method: 'POST',
@@ -99,7 +99,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
       if (data.clientSecret) {
         setClientSecret(data.clientSecret);
         localStorage.setItem('pendingPaymentRefresh', Date.now().toString());
-        setUpgradingToAdFree(false);
+        setUpgradingToInsider(false);
       } else {
         throw new Error('Failed to create checkout session');
       }
@@ -115,7 +115,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
       setShowUpgradeModal(false);
       setIsClosingModal(false);
       setClientSecret(null);
-      setUpgradingToAdFree(false);
+      setUpgradingToInsider(false);
     }, 200);
   };
 

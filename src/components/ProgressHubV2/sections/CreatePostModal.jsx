@@ -41,7 +41,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, initialPostData, onPos
       setIsClosingModal(false);
       setNewPost({ title: '', content: '', flair: '' });
       onClose();
-    }, 200);
+    }, 250);
   };
 
   const handleSubmitPost = async (e) => {
@@ -88,13 +88,12 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, initialPostData, onPos
 
   return (
     <div
-      className="fixed inset-0 flex items-center justify-center animate-fadeIn"
+      className={`fixed inset-0 flex items-center justify-center ${isClosingModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
       style={{
         backdropFilter: 'blur(2.4px)',
         WebkitBackdropFilter: 'blur(2.4px)',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
         zIndex: 9999,
-        animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
       }}
       onClick={handleCloseModal}
     >
@@ -102,9 +101,8 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, initialPostData, onPos
         <h2 className="font-semibold text-white pl-1" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.15rem' }}>What's on your mind?</h2>
 
         <div
-          className="bg-white text-black relative"
+          className={`bg-white text-black relative ${isClosingModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
           style={{
-            animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
             borderRadius: '0.3rem',
             padding: '1.5rem',
             maxHeight: '85vh',

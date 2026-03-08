@@ -321,7 +321,7 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     firstName: (user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || '').trim() || null,
     lastName: (user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || '').trim() || null,
-    isAdFree: user?.user_metadata?.is_ad_free || false,
+    isInsider: user?.user_metadata?.is_ad_free || false,
     profilePicture: getHighResProfilePicture(
       user?.user_metadata?.custom_avatar_url
       || user?.user_metadata?.avatar_url
