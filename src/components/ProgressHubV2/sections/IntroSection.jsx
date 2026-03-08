@@ -518,7 +518,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                 href="https://admin.ignite.education"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block px-[8px] py-[3px] text-white bg-[#7714E0] rounded-[4px] font-normal hover:bg-[#5E10B3] transition-colors"
+                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal hover:text-[#EF0B72] transition-colors"
                 style={{ fontSize: '12px', letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}
               >
                 {userRole === 'admin' ? 'Admin' : 'Teacher'}

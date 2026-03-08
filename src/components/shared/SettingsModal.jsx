@@ -399,8 +399,14 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
   const handleLinkProvider = async (provider) => {
     try {
-      const { error } = await supabase.auth.linkIdentity({ provider });
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider,
+        options: { skipBrowserRedirect: true },
+      });
       if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
     } catch (error) {
       console.error(`Error linking ${provider}:`, error);
       alert(`Failed to link ${provider} account: ${error.message}`);
