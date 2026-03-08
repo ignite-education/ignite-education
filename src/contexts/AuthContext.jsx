@@ -322,6 +322,7 @@ export const AuthProvider = ({ children }) => {
     firstName: (user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || '').trim() || null,
     lastName: (user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || '').trim() || null,
     isInsider: user?.user_metadata?.is_ad_free || false,
+    hasUsedTrial: user?.user_metadata?.has_used_trial || false,
     profilePicture: getHighResProfilePicture(
       user?.user_metadata?.custom_avatar_url
       || user?.user_metadata?.avatar_url

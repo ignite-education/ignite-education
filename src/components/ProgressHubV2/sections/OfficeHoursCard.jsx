@@ -25,7 +25,7 @@ const CalendlyLoadingSpinner = () => {
 };
 
 const OfficeHoursCard = ({ coaches, calendlyLink }) => {
-  const { user: authUser, isInsider } = useAuth();
+  const { user: authUser, isInsider, hasUsedTrial, firstName } = useAuth();
   const [showCalendlyModal, setShowCalendlyModal] = useState(false);
   const [isClosingCalendlyModal, setIsClosingCalendlyModal] = useState(false);
   const [calendlyLoaded, setCalendlyLoaded] = useState(false);
@@ -105,7 +105,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      handleCloseUpgradeModal();
+      setUpgradingToInsider(false);
     }
   };
 
@@ -254,7 +254,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
               className="bg-white relative flex"
               style={{
                 width: '850px',
-                height: '65vh',
+                height: '80vh',
                 minHeight: '100px',
                 padding: '0px',
                 animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
@@ -271,59 +271,72 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
               </button>
 
               {/* Left side - Features section */}
-              <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
-                <div style={{ marginTop: '-10px' }}>
-                  <h3 className="text-white text-2xl font-medium" style={{ lineHeight: '1', marginBottom: '1.3rem' }}>
-                    <span className="font-light text-lg">For just 99p a week,</span><br />
-                    <span style={{ fontSize: '1.4rem', color: '#FFFFFF' }}>get exclusive access to</span>
+              <div style={{ width: '50%' }} className="p-8 flex flex-col justify-center">
+                <div>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png"
+                      alt=""
+                      style={{ width: '120px', height: '120px', objectFit: 'contain' }}
+                    />
+                  </div>
+
+                  <h3 style={{ color: '#7714E0', fontSize: '1.5rem', fontWeight: 600, lineHeight: '1.2', marginBottom: '0.75rem', letterSpacing: '-0.01em' }}>
+                    {hasUsedTrial ? 'Upgrade to Ignite Insider' : 'Try Ignite Insider for free'}
                   </h3>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.4s', opacity: 0, animationFillMode: 'forwards' }}>
-                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Office Hours</h4>
-                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Get personalised support from<br />course leaders when you need it.</p>
-                      </div>
-                    </div>
+                  <p className="text-black font-light" style={{ fontSize: '1rem', lineHeight: '1.5', marginBottom: '1.25rem' }}>
+                    Build real, career-ready skills with access to professional office hours, job notifications and AI-powered learning tools.
+                  </p>
 
-                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.1s', opacity: 0, animationFillMode: 'forwards' }}>
-                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Completely Ad-Free</h4>
-                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>Learn without distractions with<br />a completely ad-free experience.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3" style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.8s', opacity: 0, animationFillMode: 'forwards' }}>
-                      <div className="bg-white rounded p-1.5 flex-shrink-0" style={{ transform: 'scale(0.8)' }}>
-                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={5} d="M5 13l4 4L19 7" />
-                        </svg>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-lg mb-0" style={{ color: '#EF0B72' }}>Weekly Handpicked Roles</h4>
-                        <p className="text-white text-sm opacity-90 m-0" style={{ marginTop: '-3px', lineHeight: '1.3' }}>We'll send you the top career<br />opportunities to you every week.</p>
-                      </div>
-                    </div>
-
-                    <p className="text-white text-sm mt-6" style={{ animation: 'fadeIn 1.5s ease-out', animationDelay: '4.2s', opacity: 0, animationFillMode: 'forwards' }}>
-                      Billed weekly. Cancel anytime.
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+                    <p className="text-gray-800 font-normal m-0 flex items-center gap-2" style={{ fontSize: '1rem' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12" /></svg>
+                      1:1 Office Hours with industry professionals
                     </p>
+                    <p className="text-gray-800 font-normal m-0 flex items-center gap-2" style={{ fontSize: '1rem' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12" /></svg>
+                      Weekly hand-pick job opportunities
+                    </p>
+                    <p className="text-gray-800 font-normal m-0 flex items-center gap-2" style={{ fontSize: '1rem' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12" /></svg>
+                      AI Tool Prompt highlights
+                    </p>
+
                   </div>
+
+                  <div
+                    style={{
+                      backgroundColor: '#7714E0',
+                      color: 'white',
+                      fontWeight: 500,
+                      fontSize: '0.95rem',
+                      padding: '0.75rem 1.5rem',
+                      borderRadius: '10px',
+                      textAlign: 'center',
+                      width: '90%',
+                      margin: '0 auto',
+                      boxShadow: '0 0 10px rgba(103,103,103,0.4)'
+                    }}
+                  >
+                    {hasUsedTrial
+                      ? 'Get Ignite Insider'
+                      : `Two weeks free${firstName ? ` for ${firstName}` : ''}`
+                    }
+                  </div>
+
+                  <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
+                    {hasUsedTrial ? 'just 99p week' : 'then just 99p week'}
+                  </p>
+
+                  <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.75rem', lineHeight: '1.4' }}>
+                    Includes all Ignite Insider features.<br />Billed four weekly. Cancel anytime.
+                  </p>
                 </div>
               </div>
 
               {/* Right side - Stripe checkout */}
-              <div style={{ width: '54.4%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
+              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto">
                 <div
                   key={clientSecret}
                   ref={checkoutRef}

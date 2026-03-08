@@ -152,18 +152,30 @@ app.post('/api/webhook/stripe', express.raw({type: 'application/json'}), async (
     }
 
     try {
+      // Retrieve the subscription to check if it's a trial
+      const subscription = await stripe.subscriptions.retrieve(session.subscription);
+      const isTrialing = subscription.status === 'trialing';
+
       console.log('🔄 Attempting to update user in Supabase...');
       console.log('🔄 User ID:', userId);
       console.log('🔄 Setting is_ad_free: true');
+      console.log('🔄 Is trialing:', isTrialing);
+
+      const trialMetadata = isTrialing ? {
+        has_used_trial: true,
+        trial_redeemed_at: new Date().toISOString(),
+        trial_end_date: new Date(subscription.trial_end * 1000).toISOString(),
+      } : {};
 
       const { data, error } = await supabase.auth.admin.updateUserById(
         userId,
         {
-          user_metadata: { 
+          user_metadata: {
             is_ad_free: true,
             stripe_customer_id: session.customer,
             stripe_subscription_id: session.subscription,
-            subscription_status: 'active'
+            subscription_status: isTrialing ? 'trialing' : 'active',
+            ...trialMetadata
           }
         }
       );
@@ -1502,23 +1514,39 @@ app.post('/api/create-checkout-session', async (req, res) => {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      ui_mode: 'embedded', // Enable embedded checkout
+    // Check if user has already used their free trial
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+    if (userError) {
+      console.error('Error fetching user for trial check:', userError);
+      return res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+
+    const hasUsedTrial = userData.user?.user_metadata?.has_used_trial === true;
+
+    const sessionConfig = {
+      ui_mode: 'embedded',
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'price_1SUC1vRxlg2WD2fjH3QYiayu', // Your recurring price ID
+          price: 'price_1SUC1vRxlg2WD2fjH3QYiayu',
           quantity: 1,
         },
       ],
-      mode: 'subscription', // Changed from 'payment' to 'subscription'
+      mode: 'subscription',
       return_url: `${req.headers.origin || 'http://localhost:5173'}/progress?payment=success`,
       metadata: {
         userId: userId,
       },
-    });
+    };
 
-    res.json({ clientSecret: session.client_secret });
+    // Only offer 14-day free trial if user hasn't used it before
+    if (!hasUsedTrial) {
+      sessionConfig.subscription_data = { trial_period_days: 14 };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    res.json({ clientSecret: session.client_secret, hasTrial: !hasUsedTrial });
   } catch (error) {
     console.error('Error creating checkout session:', error);
     res.status(500).json({ error: error.message });
