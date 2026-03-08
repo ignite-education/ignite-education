@@ -35,6 +35,12 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   const [clientSecret, setClientSecret] = useState(null);
   const checkoutRef = useRef(null);
 
+  // Preload upgrade modal image
+  useEffect(() => {
+    const img = new Image();
+    img.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
+  }, []);
+
   // Calendly event listener
   useEffect(() => {
     const handleCalendlyEvent = (e) => {
@@ -338,7 +344,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
               </div>
 
               {/* Right side - Stripe checkout */}
-              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-start justify-center">
+              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-center justify-center">
                 <div
                   key={clientSecret}
                   ref={checkoutRef}
