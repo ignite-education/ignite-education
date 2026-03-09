@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Video, VideoOff, Clock, Users, ExternalLink } from 'lucide-react';
+import { Video, VideoOff, Clock, Users, ExternalLink, CalendarPlus, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -9,18 +9,25 @@ const OfficeHours = () => {
   const { user } = useAuth();
   const [activeSession, setActiveSession] = useState(null);
   const [pastSessions, setPastSessions] = useState([]);
+  const [scheduledSlots, setScheduledSlots] = useState([]);
   const [loading, setLoading] = useState(false);
   const [starting, setStarting] = useState(false);
   const [ending, setEnding] = useState(false);
   const [error, setError] = useState('');
   const [elapsed, setElapsed] = useState(0);
 
+  // Schedule form state
+  const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleStartTime, setScheduleStartTime] = useState('');
+  const [scheduleEndTime, setScheduleEndTime] = useState('');
+  const [addingSlot, setAddingSlot] = useState(false);
+
   const getAuthToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     return session?.access_token;
   };
 
-  // Fetch current status and history
+  // Fetch current status, history, and schedule
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -28,10 +35,12 @@ const OfficeHours = () => {
         const token = await getAuthToken();
         if (!token) return;
 
-        // Fetch history (which includes active sessions)
-        const historyRes = await fetch(`${API_URL}/api/office-hours/history`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
+        const headers = { 'Authorization': `Bearer ${token}` };
+
+        const [historyRes, scheduleRes] = await Promise.all([
+          fetch(`${API_URL}/api/office-hours/history`, { headers }),
+          fetch(`${API_URL}/api/office-hours/schedule`, { headers }),
+        ]);
 
         if (historyRes.ok) {
           const data = await historyRes.json();
@@ -39,6 +48,11 @@ const OfficeHours = () => {
           const active = sessions.find(s => s.status === 'live' || s.status === 'occupied');
           setActiveSession(active || null);
           setPastSessions(sessions.filter(s => s.status === 'ended').slice(0, 20));
+        }
+
+        if (scheduleRes.ok) {
+          const data = await scheduleRes.json();
+          setScheduledSlots(data.slots || []);
         }
       } catch (err) {
         console.error('Error fetching office hours data:', err);
@@ -110,8 +124,8 @@ const OfficeHours = () => {
       const data = await res.json();
       setActiveSession(data.session);
 
-      // Open video chat in a new tab
-      window.open(`https://ignite.education/office-hours/${data.session.id}?token=${data.token}`, '_blank');
+      // Open video chat in a new tab (pass roomUrl so VideoChat doesn't need an extra API call)
+      window.open(`https://ignite.education/office-hours/${data.session.id}?token=${data.token}&roomUrl=${encodeURIComponent(data.session.daily_room_url)}`, '_blank');
     } catch (err) {
       console.error('Error starting office hours:', err);
       setError('Failed to start session. Please try again.');
@@ -148,6 +162,65 @@ const OfficeHours = () => {
     }
   };
 
+  const handleAddSlot = async () => {
+    if (!scheduleDate || !scheduleStartTime || !scheduleEndTime) {
+      setError('Please fill in date, start time, and end time');
+      return;
+    }
+
+    const startsAt = new Date(`${scheduleDate}T${scheduleStartTime}`).toISOString();
+    const endsAt = new Date(`${scheduleDate}T${scheduleEndTime}`).toISOString();
+
+    if (new Date(endsAt) <= new Date(startsAt)) {
+      setError('End time must be after start time');
+      return;
+    }
+
+    setAddingSlot(true);
+    setError('');
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`${API_URL}/api/office-hours/schedule`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ startsAt, endsAt }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Failed to schedule');
+        return;
+      }
+
+      const data = await res.json();
+      setScheduledSlots(prev => [...prev, data.slot].sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at)));
+      setScheduleDate('');
+      setScheduleStartTime('');
+      setScheduleEndTime('');
+    } catch (err) {
+      console.error('Error scheduling:', err);
+      setError('Failed to schedule. Please try again.');
+    } finally {
+      setAddingSlot(false);
+    }
+  };
+
+  const handleDeleteSlot = async (slotId) => {
+    try {
+      const token = await getAuthToken();
+      await fetch(`${API_URL}/api/office-hours/schedule/${slotId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      setScheduledSlots(prev => prev.filter(s => s.id !== slotId));
+    } catch (err) {
+      console.error('Error deleting slot:', err);
+    }
+  };
+
   const formatDuration = (seconds) => {
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -163,11 +236,23 @@ const OfficeHours = () => {
     });
   };
 
+  const formatScheduleSlot = (slot) => {
+    const start = new Date(slot.starts_at);
+    const end = new Date(slot.ends_at);
+    const dateStr = start.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const startTime = start.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const endTime = end.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    return `${dateStr}, ${startTime} - ${endTime}`;
+  };
+
   const getSessionDuration = (session) => {
     if (!session.ended_at || !session.started_at) return '-';
     const diff = Math.floor((new Date(session.ended_at) - new Date(session.started_at)) / 1000);
     return formatDuration(diff);
   };
+
+  // Get today's date as YYYY-MM-DD for the min attribute
+  const todayStr = new Date().toISOString().split('T')[0];
 
   if (loading) {
     return (
@@ -197,7 +282,7 @@ const OfficeHours = () => {
                   activeSession.status === 'occupied' ? 'bg-yellow-400' : 'bg-green-500 animate-pulse'
                 }`} />
                 <span className="text-lg font-medium">
-                  {activeSession.status === 'occupied' ? 'In Session with Student' : 'Live — Waiting for Student'}
+                  {activeSession.status === 'occupied' ? 'In Session with Student' : 'Live \u2014 Waiting for Student'}
                 </span>
               </div>
               <span className="text-gray-400 font-mono text-lg">{formatDuration(elapsed)}</span>
@@ -238,6 +323,77 @@ const OfficeHours = () => {
               <Video size={18} />
               {starting ? 'Starting...' : 'Go Live'}
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Upcoming Schedule */}
+      <div className="mb-8">
+        <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+          <CalendarPlus size={18} className="text-gray-400" />
+          Upcoming Schedule
+        </h2>
+
+        {/* Add slot form */}
+        <div className="flex items-end gap-3 mb-4">
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Date</label>
+            <input
+              type="date"
+              value={scheduleDate}
+              min={todayStr}
+              onChange={(e) => setScheduleDate(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">Start</label>
+            <input
+              type="time"
+              value={scheduleStartTime}
+              onChange={(e) => setScheduleStartTime(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-400 mb-1">End</label>
+            <input
+              type="time"
+              value={scheduleEndTime}
+              onChange={(e) => setScheduleEndTime(e.target.value)}
+              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500"
+            />
+          </div>
+          <button
+            onClick={handleAddSlot}
+            disabled={addingSlot}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            <CalendarPlus size={15} />
+            {addingSlot ? 'Adding...' : 'Add'}
+          </button>
+        </div>
+
+        {/* Scheduled slots list */}
+        {scheduledSlots.length === 0 ? (
+          <p className="text-gray-500 text-sm">No upcoming sessions scheduled.</p>
+        ) : (
+          <div className="space-y-2">
+            {scheduledSlots.map((slot) => (
+              <div
+                key={slot.id}
+                className="flex items-center justify-between px-4 py-3 rounded-lg border border-gray-700/50 bg-gray-800/30"
+              >
+                <span className="text-sm text-gray-300">{formatScheduleSlot(slot)}</span>
+                <button
+                  onClick={() => handleDeleteSlot(slot.id)}
+                  className="text-gray-500 hover:text-red-400 transition-colors p-1"
+                  title="Remove"
+                >
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
           </div>
         )}
       </div>

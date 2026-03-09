@@ -787,7 +787,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   </div>
                   <div className="flex flex-col items-center" style={{ width: '35%' }}>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni.png"
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
                       alt="Ignite Insider"
                       style={{ width: '177px', height: '177px', objectFit: 'contain' }}
                     />

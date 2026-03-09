@@ -281,7 +281,7 @@ const ProgressGraph = ({
 
       <style>{`
         @keyframes pulse-dot {
-          0% { box-shadow: 0 0 0 0 rgba(239, 11, 114, 0.65); }
+          0% { box-shadow: 0 0 0 0 rgba(239, 11, 114, 0.75); }
           100% { box-shadow: 0 0 6px 8px rgba(239, 11, 114, 0); }
         }
       `}</style>

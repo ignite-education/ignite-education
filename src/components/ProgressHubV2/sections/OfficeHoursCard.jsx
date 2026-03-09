@@ -7,9 +7,27 @@ import { supabase } from '../../../lib/supabase';
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
+const formatUpcomingTime = (dateStr) => {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const timeStr = date.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase().replace(' ', '');
+
+  if (targetDay.getTime() === today.getTime()) return `Today at ${timeStr}`;
+  if (targetDay.getTime() === tomorrow.getTime()) return `Tomorrow at ${timeStr}`;
+
+  const dayMonth = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return `${dayMonth} at ${timeStr}`;
+};
+
 const OfficeHoursCard = ({ coaches, courseId }) => {
   const { user: authUser, isInsider, hasUsedTrial, firstName } = useAuth();
   const [liveSession, setLiveSession] = useState(null); // { id, status, coach }
+  const [nextUpcoming, setNextUpcoming] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [upgradingToInsider, setUpgradingToInsider] = useState(false);
@@ -33,6 +51,9 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
         if (data.live && data.sessions?.length > 0) {
           const s = data.sessions[0];
           setLiveSession({ id: s.id, status: s.status, coach: s.coach, startedAt: s.startedAt });
+        }
+        if (data.upcoming?.length > 0) {
+          setNextUpcoming(data.upcoming[0].starts_at);
         }
       })
       .catch(err => console.error('Error fetching office hours status:', err));
@@ -219,6 +240,11 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               backgroundColor: '#fbbf24',
                             }} />
                             <span style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 500 }}>In Session</span>
+                          </div>
+                        ) : nextUpcoming ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginTop: '6px' }}>
+                            <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 500 }}>Available</span>
+                            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
                           </div>
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>

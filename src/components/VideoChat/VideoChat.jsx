@@ -369,7 +369,35 @@ const VideoChat = () => {
           return;
         }
 
-        // Try joining as student first
+        // Check for coach token in URL params (passed from admin app "Go Live")
+        const urlParams = new URLSearchParams(window.location.search);
+        const coachToken = urlParams.get('token');
+
+        if (coachToken) {
+          // Coach flow — use token + roomUrl from URL params (passed from admin "Go Live")
+          const roomUrl = urlParams.get('roomUrl');
+          if (!roomUrl) {
+            setError('Missing room URL. Please go live again from the admin app.');
+            setState('error');
+            return;
+          }
+
+          setUserName(firstName || 'Coach');
+          setIsCoach(true);
+
+          const newCallObject = DailyIframe.createCallObject({
+            url: roomUrl,
+            token: coachToken,
+          });
+          setCallObject(newCallObject);
+          setState('joining');
+
+          await newCallObject.join();
+          setState('joined');
+          return;
+        }
+
+        // Student flow — call /join to claim the session
         const joinRes = await fetch(`${API_URL}/api/office-hours/join`, {
           method: 'POST',
           headers: {

@@ -25,3 +25,15 @@ ALTER TABLE coaches ADD COLUMN IF NOT EXISTS user_id UUID UNIQUE;
 
 -- Enable Supabase Realtime on this table
 ALTER PUBLICATION supabase_realtime ADD TABLE office_hours_sessions;
+
+-- Scheduled office hours (coaches set upcoming availability)
+CREATE TABLE IF NOT EXISTS office_hours_schedule (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  coach_id UUID NOT NULL REFERENCES coaches(id) ON DELETE CASCADE,
+  course_id TEXT NOT NULL,
+  starts_at TIMESTAMPTZ NOT NULL,
+  ends_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ohs_schedule_course ON office_hours_schedule (course_id, starts_at);

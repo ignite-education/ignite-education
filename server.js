@@ -1929,7 +1929,16 @@ app.get('/api/office-hours/status/:courseId', async (req, res) => {
       coach: s.coaches,
     }));
 
-    res.json({ live: liveSessions.length > 0, sessions: liveSessions });
+    // Also fetch upcoming scheduled sessions
+    const { data: upcoming } = await supabase
+      .from('office_hours_schedule')
+      .select('id, starts_at, ends_at')
+      .eq('course_id', courseId)
+      .gte('ends_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(5);
+
+    res.json({ live: liveSessions.length > 0, sessions: liveSessions, upcoming: upcoming || [] });
   } catch (error) {
     console.error('Error in office hours status:', error);
     res.status(500).json({ error: 'Failed to fetch status' });
@@ -1968,6 +1977,111 @@ app.get('/api/office-hours/history', verifyTeacherOrAdmin, async (req, res) => {
   }
 });
 
+
+// POST /api/office-hours/schedule — Add a scheduled office hours slot
+app.post('/api/office-hours/schedule', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { startsAt, endsAt } = req.body;
+    if (!startsAt || !endsAt) {
+      return res.status(400).json({ error: 'startsAt and endsAt are required' });
+    }
+
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id, course_id')
+      .eq('user_id', req.user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { data: slot, error } = await supabase
+      .from('office_hours_schedule')
+      .insert({
+        coach_id: coach.id,
+        course_id: coach.course_id,
+        starts_at: startsAt,
+        ends_at: endsAt,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating schedule:', error);
+      return res.status(500).json({ error: 'Failed to create schedule' });
+    }
+
+    res.json({ slot });
+  } catch (error) {
+    console.error('Error scheduling office hours:', error);
+    res.status(500).json({ error: 'Failed to schedule' });
+  }
+});
+
+// DELETE /api/office-hours/schedule/:id — Remove a scheduled slot
+app.delete('/api/office-hours/schedule/:id', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { error } = await supabase
+      .from('office_hours_schedule')
+      .delete()
+      .eq('id', req.params.id)
+      .eq('coach_id', coach.id);
+
+    if (error) {
+      console.error('Error deleting schedule:', error);
+      return res.status(500).json({ error: 'Failed to delete' });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting schedule:', error);
+    res.status(500).json({ error: 'Failed to delete' });
+  }
+});
+
+// GET /api/office-hours/schedule — Coach's upcoming scheduled slots
+app.get('/api/office-hours/schedule', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { data: slots, error } = await supabase
+      .from('office_hours_schedule')
+      .select('id, starts_at, ends_at')
+      .eq('coach_id', coach.id)
+      .gte('ends_at', new Date().toISOString())
+      .order('starts_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching schedule:', error);
+      return res.status(500).json({ error: 'Failed to fetch schedule' });
+    }
+
+    res.json({ slots: slots || [] });
+  } catch (error) {
+    console.error('Error fetching schedule:', error);
+    res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
 
 // Text-to-speech endpoint using ElevenLabs
 app.post('/api/text-to-speech', async (req, res) => {
