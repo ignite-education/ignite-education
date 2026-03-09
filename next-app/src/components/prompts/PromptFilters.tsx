@@ -112,7 +112,7 @@ export default function PromptFilters({
             <button
               type="button"
               onClick={() => setOpenFilter(isOpen ? null : type)}
-              className="text-white text-sm font-semibold rounded-[5px] transition-all cursor-pointer"
+              className="text-white text-sm font-medium rounded-[5px] transition-all cursor-pointer"
               style={{
                 backgroundColor: '#8200EA',
                 fontFamily: 'var(--font-geist-sans), sans-serif',

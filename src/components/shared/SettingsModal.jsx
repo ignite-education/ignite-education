@@ -85,10 +85,12 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [clientSecret, setClientSecret] = useState(null);
   const [upgradingToInsider, setUpgradingToInsider] = useState(false);
 
-  // Preload upsell image so it's ready when modal opens
+  // Preload upsell + insider images so they're ready when modal opens
   useEffect(() => {
     const img = new Image();
     img.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
+    const img2 = new Image();
+    img2.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png';
   }, []);
 
   // Lock body scroll and prevent overscroll bounce inside modal
@@ -615,7 +617,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   onClick={() => imageInputRef.current?.click()}
                   disabled={isUploadingPicture}
                   className="text-black transition disabled:opacity-50 py-1 cursor-pointer"
-                  style={{ borderRadius: '0.3rem', backgroundColor: 'white', width: '100px', height: '35px', fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
+                  style={{ borderRadius: '0.3rem', backgroundColor: 'white', width: '100px', height: '35px', fontSize: '0.9rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
                   onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
                   onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
                 >
@@ -787,7 +789,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     <button
                       onClick={handleManageSubscription}
                       className="text-black transition cursor-pointer"
-                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)', marginTop: '16px', alignSelf: 'flex-start' }}
+                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '0.9rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)', marginTop: '16px', marginBottom: '3px', alignSelf: 'flex-start' }}
                       onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
                       onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
                     >
@@ -836,7 +838,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <div className="flex gap-6 items-start">
               {/* Current enrolled course */}
               {enrolledCourseData && (
-                <div className="shrink-0" style={{ minWidth: '30%' }}>
+                <div className="shrink-0" style={{ minWidth: '35%' }}>
                   <h4 className="font-medium mb-2" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Current</h4>
                   <div className="p-4" style={{ borderRadius: '0.3rem', backgroundColor: '#F6F6F6' }}>
                     <p className="mb-1" style={{ fontSize: '1.1rem', fontWeight: 500 }}>{enrolledCourseData.title || enrolledCourseData.name}</p>
@@ -937,7 +939,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               onClick={handleLogout}
               disabled={isLoggingOut}
               className="text-white px-6 py-2 transition disabled:opacity-50 cursor-pointer"
-              style={{ borderRadius: '0.3rem', backgroundColor: '#FFAF00', fontSize: '1rem', fontWeight: 400 }}
+              style={{ borderRadius: '0.3rem', backgroundColor: '#FFAF00', fontSize: '0.9rem', fontWeight: 400 }}
               onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
               onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
             >
@@ -946,7 +948,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             <button
               onClick={handleDeleteAccount}
               className="px-6 py-2 bg-gray-100 text-black transition cursor-pointer hover:opacity-100"
-              style={{ borderRadius: '0.3rem', fontSize: '1rem', fontWeight: 300 }}
+              style={{ borderRadius: '0.3rem', fontSize: '0.9rem', fontWeight: 300 }}
             >
               Delete Account
             </button>

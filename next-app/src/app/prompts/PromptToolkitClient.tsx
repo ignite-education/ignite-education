@@ -10,6 +10,7 @@ import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { Prompt } from '@/data/placeholderPrompts'
 import PromptColumn from '@/components/prompts/PromptColumn'
 import PromptFilters from '@/components/prompts/PromptFilters'
+import AllPromptsSection from '@/components/prompts/AllPromptsSection'
 import PromptContributeModal from './PromptContributeModal'
 
 interface PromptToolkitClientProps {
@@ -264,6 +265,13 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
     }
   }, [filteredPrompts])
 
+  // All prompts for the "All Prompts" section — unaffected by search/filters
+  const allPromptsForSection = useMemo(() => {
+    return initialProfession
+      ? prompts.filter(p => p.profession === initialProfession)
+      : prompts
+  }, [prompts, initialProfession])
+
   return (
     <div className="bg-white pb-12">
       <div className="max-w-[1330px] mx-auto px-6">
@@ -414,9 +422,14 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
         {/* Prompt Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <PromptColumn type="most-used" prompts={mostUsed} />
-          <PromptColumn type="highly-rated" prompts={highlyRated} />
-          <PromptColumn type="most-recent" prompts={mostRecent} />
+          <PromptColumn type="most-used" prompts={mostUsed.slice(0, 3)} />
+          <PromptColumn type="highly-rated" prompts={highlyRated.slice(0, 3)} />
+          <PromptColumn type="most-recent" prompts={mostRecent.slice(0, 3)} />
+        </div>
+
+        {/* All Prompts - full width list below columns */}
+        <div className="mt-16">
+          <AllPromptsSection prompts={allPromptsForSection} />
         </div>
       </div>
 

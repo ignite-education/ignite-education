@@ -19,14 +19,14 @@ export default function PromptCard({ prompt }: PromptCardProps) {
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
           <h3
-            className="text-black font-semibold tracking-[-0.01em] mb-1"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1.1rem' }}
+            className="text-black font-semibold tracking-[-0.01em] mb-0.5"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '1rem' }}
           >
             {prompt.title}
           </h3>
           <p
-            className="text-black text-sm font-light leading-snug mb-3 line-clamp-3"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.9rem', letterSpacing: '-0.01em' }}
+            className="text-black text-sm font-light leading-snug mb-3 line-clamp-2 overflow-hidden"
+            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', fontSize: '0.8rem', letterSpacing: '-0.01em', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2 }}
           >
             {prompt.description}
           </p>
