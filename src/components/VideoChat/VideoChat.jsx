@@ -369,16 +369,29 @@ const VideoChat = () => {
   const [state, setState] = useState('loading'); // loading | joining | joined | error | ended
   const [error, setError] = useState('');
   const [callObject, setCallObject] = useState(null);
+  const callObjectRef = useRef(null);
   const [isCoach, setIsCoach] = useState(false);
   const [userName, setUserName] = useState('');
 
   useEffect(() => {
     if (!sessionId || !user) return;
 
+    // Destroy any previous Daily instance before creating a new one
+    if (callObjectRef.current) {
+      callObjectRef.current.leave().catch(() => {});
+      callObjectRef.current.destroy().catch(() => {});
+      callObjectRef.current = null;
+      setCallObject(null);
+    }
+
+    let cancelled = false;
+
     const joinSession = async () => {
       try {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session: authSession } } = await supabase.auth.getSession();
+
+        if (cancelled) return;
 
         if (!authSession?.access_token) {
           setError('Authentication required');
@@ -406,10 +419,13 @@ const VideoChat = () => {
             url: roomUrl,
             token: coachToken,
           });
+          callObjectRef.current = newCallObject;
           setCallObject(newCallObject);
           setState('joining');
 
+          if (cancelled) { newCallObject.destroy().catch(() => {}); return; }
           await newCallObject.join();
+          if (cancelled) return;
           setState('joined');
           return;
         }
@@ -424,6 +440,8 @@ const VideoChat = () => {
           body: JSON.stringify({ sessionId }),
         });
 
+        if (cancelled) return;
+
         if (joinRes.ok) {
           const data = await joinRes.json();
           setUserName(firstName || 'Student');
@@ -433,10 +451,13 @@ const VideoChat = () => {
             url: data.roomUrl,
             token: data.token,
           });
+          callObjectRef.current = newCallObject;
           setCallObject(newCallObject);
           setState('joining');
 
+          if (cancelled) { newCallObject.destroy().catch(() => {}); return; }
           await newCallObject.join();
+          if (cancelled) return;
           setState('joined');
           return;
         }
@@ -459,6 +480,7 @@ const VideoChat = () => {
         setError(joinError.error || 'Failed to join session');
         setState('error');
       } catch (err) {
+        if (cancelled) return;
         console.error('Error joining video chat:', err);
         setError('Failed to connect. Please try again.');
         setState('error');
@@ -468,20 +490,23 @@ const VideoChat = () => {
     joinSession();
 
     return () => {
-      if (callObject) {
-        callObject.leave().catch(() => {});
-        callObject.destroy().catch(() => {});
+      cancelled = true;
+      if (callObjectRef.current) {
+        callObjectRef.current.leave().catch(() => {});
+        callObjectRef.current.destroy().catch(() => {});
+        callObjectRef.current = null;
       }
     };
   }, [sessionId, user]);
 
   const handleLeave = useCallback(() => {
     setState('ended');
-    if (callObject) {
-      callObject.destroy().catch(() => {});
+    if (callObjectRef.current) {
+      callObjectRef.current.destroy().catch(() => {});
+      callObjectRef.current = null;
       setCallObject(null);
     }
-  }, [callObject]);
+  }, []);
 
   // Loading state
   if (state === 'loading' || state === 'joining') {

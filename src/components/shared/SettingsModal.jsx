@@ -770,7 +770,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               <div>
                 <h4 className="font-medium text-purple-700 mb-[2px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Ignite Insider</h4>
                 <div className="flex gap-4">
-                  <div style={{ width: '65%' }}>
+                  <div style={{ width: '70%' }}>
                     <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300, marginBottom: '20px' }}>
                       You have exclusive access to Ignite Insider features to accelerate your learning.
                     </p>
@@ -794,7 +794,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       Manage
                     </button>
                   </div>
-                  <div className="flex flex-col items-center" style={{ width: '35%' }}>
+                  <div className="flex flex-col items-center justify-center" style={{ width: '30%' }}>
                     <img
                       src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
                       alt="Ignite Insider"

@@ -225,21 +225,38 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
   const showContributeButton = filteredPrompts.length === 0 && searchQuery.trim().length > 0
 
-  // Sort prompts for each column
-  const mostUsed = useMemo(
-    () => [...filteredPrompts].sort((a, b) => b.usageCount - a.usageCount),
-    [filteredPrompts]
-  )
+  // Sort prompts for each column, deduplicating so each prompt appears only in its best-ranked column
+  const { mostUsed, highlyRated, mostRecent } = useMemo(() => {
+    const byUsage = [...filteredPrompts].sort((a, b) => b.usageCount - a.usageCount)
+    const byRating = [...filteredPrompts].sort((a, b) => b.rating - a.rating || b.usageCount - a.usageCount)
+    const byRecent = [...filteredPrompts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-  const highlyRated = useMemo(
-    () => [...filteredPrompts].sort((a, b) => b.rating - a.rating || b.usageCount - a.usageCount),
-    [filteredPrompts]
-  )
+    const usageRank = new Map(byUsage.map((p, i) => [p.id, i]))
+    const ratingRank = new Map(byRating.map((p, i) => [p.id, i]))
+    const recentRank = new Map(byRecent.map((p, i) => [p.id, i]))
 
-  const mostRecent = useMemo(
-    () => [...filteredPrompts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [filteredPrompts]
-  )
+    const usageSet = new Set<string>()
+    const ratingSet = new Set<string>()
+    const recentSet = new Set<string>()
+
+    for (const prompt of filteredPrompts) {
+      const u = usageRank.get(prompt.id)!
+      const r = ratingRank.get(prompt.id)!
+      const t = recentRank.get(prompt.id)!
+      const best = Math.min(u, r, t)
+
+      // Tiebreak priority: most-used > highly-rated > most-recent
+      if (u === best) usageSet.add(prompt.id)
+      else if (r === best) ratingSet.add(prompt.id)
+      else recentSet.add(prompt.id)
+    }
+
+    return {
+      mostUsed: byUsage.filter(p => usageSet.has(p.id)),
+      highlyRated: byRating.filter(p => ratingSet.has(p.id)),
+      mostRecent: byRecent.filter(p => recentSet.has(p.id)),
+    }
+  }, [filteredPrompts])
 
   return (
     <div className="bg-white pb-12">

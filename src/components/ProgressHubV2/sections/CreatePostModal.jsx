@@ -1,36 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { isRedditAuthenticated, initiateRedditAuth, postToReddit, getRedditUsername, SUBREDDIT_FLAIRS } from '../../../lib/reddit';
-
-const SUBMIT_MESSAGES = ['Building', 'Doing the work', 'Compounding'];
+import { SUBREDDIT_FLAIRS } from '../../../lib/reddit';
 
 const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPostData, onPostCreated }) => {
   const [newPost, setNewPost] = useState({ title: '', content: '', flair: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submittingStep, setSubmittingStep] = useState(0);
-  const submittingStepRef = useRef(0);
   const titleInputRef = useRef(null);
   const [isClosingModal, setIsClosingModal] = useState(false);
-  const [redditAuthenticated, setRedditAuthenticated] = useState(false);
-  const [redditUsername, setRedditUsername] = useState(null);
+  const [isPosting, setIsPosting] = useState(false);
   const [invalidFields, setInvalidFields] = useState(new Set());
 
-  // Check Reddit auth status on mount and restore pending post data
+  // Restore pending post data
   useEffect(() => {
     if (!isOpen) return;
-
-    const checkAuth = async () => {
-      if (isRedditAuthenticated()) {
-        setRedditAuthenticated(true);
-        try {
-          const username = await getRedditUsername();
-          setRedditUsername(username);
-        } catch {
-          setRedditAuthenticated(false);
-        }
-      }
-    };
-    checkAuth();
 
     if (initialPostData) {
       setNewPost({
@@ -67,8 +48,9 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
     }, 250);
   };
 
-  const handleSubmitPost = async (e) => {
+  const handleSubmitPost = (e) => {
     e.preventDefault();
+    if (isPosting) return;
     const missing = new Set();
     if (!newPost.title.trim()) missing.add('title');
     if (!newPost.content.trim()) missing.add('content');
@@ -78,43 +60,25 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
       return;
     }
 
-    setIsSubmitting(true);
-    setSubmittingStep(0);
-    submittingStepRef.current = 0;
-    const stepInterval = setInterval(() => {
-      submittingStepRef.current += 1;
-      if (submittingStepRef.current < SUBMIT_MESSAGES.length) {
-        setSubmittingStep(submittingStepRef.current);
-      }
-    }, 2500);
-    try {
-      if (!isRedditAuthenticated()) {
-        localStorage.setItem('pending_reddit_post', JSON.stringify({
-          title: newPost.title,
-          content: newPost.content,
-          flair: newPost.flair,
-        }));
-        localStorage.setItem('reopen_post_modal', 'true');
-        localStorage.setItem('reddit_return_path', '/progress');
-        initiateRedditAuth();
-        return;
-      }
+    setIsPosting(true);
 
-      const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
-      const redditResult = await postToReddit(postSubreddit, newPost.title, newPost.content, newPost.flair || null);
+    const postSubreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
+    const params = new URLSearchParams({
+      type: 'self',
+      title: newPost.title,
+      text: newPost.content,
+    });
+    if (newPost.flair) params.set('flair_name', newPost.flair);
 
-      window.open(redditResult.url, '_blank');
+    setTimeout(() => {
+      window.open(`https://www.reddit.com/r/${postSubreddit}/submit?${params.toString()}`, '_blank');
       localStorage.setItem('hasPostedToReddit', 'true');
 
+      setIsPosting(false);
       setNewPost({ title: '', content: '', flair: '' });
       handleCloseModal();
-      if (onPostCreated) await onPostCreated();
-    } catch (error) {
-      alert(`Failed to post: ${error.message || 'Please try again.'}`);
-    } finally {
-      clearInterval(stepInterval);
-      setIsSubmitting(false);
-    }
+      if (onPostCreated) onPostCreated();
+    }, 1500);
   };
 
   if (!isOpen) return null;
@@ -147,8 +111,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
           style={{
             borderRadius: '0.3rem',
             padding: '2rem 2.25rem 1.5rem 2.25rem',
-            height: '65vh',
-            maxHeight: '75vh',
+            height: '60vh',
             overflowY: 'auto',
             overscrollBehavior: 'none',
             scrollbarWidth: 'none',
@@ -177,9 +140,8 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                   value={newPost.title}
                   onChange={(e) => { setNewPost({ ...newPost, title: e.target.value }); clearError('title'); }}
                   className="w-full bg-gray-100 text-black px-4 py-3 focus:outline-none focus:ring-0"
-                  style={{ borderRadius: '0.3rem', caretWidth: 'thin', ...errorOutline('title') }}
+                  style={{ borderRadius: '0.3rem', caretWidth: 'thin', fontWeight: 300, ...errorOutline('title') }}
                   placeholder=""
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -189,9 +151,8 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                   value={newPost.content}
                   onChange={(e) => { setNewPost({ ...newPost, content: e.target.value }); clearError('content'); }}
                   className="w-full bg-gray-100 text-black px-4 py-3 focus:outline-none focus:ring-0 resize-none"
-                  style={{ height: '120px', borderRadius: '0.3rem', caretWidth: 'thin', ...errorOutline('content') }}
+                  style={{ height: '200px', borderRadius: '0.3rem', caretWidth: 'thin', fontWeight: 300, ...errorOutline('content') }}
                   placeholder=""
-                  disabled={isSubmitting}
                 />
               </div>
 
@@ -210,7 +171,6 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                       paddingRight: '2rem',
                       backgroundPosition: 'right calc(0.5rem + 20px) center',
                     }}
-                    disabled={isSubmitting}
                     required
                   >
                     <option value="" style={{ color: '#6B7280' }}>
@@ -233,27 +193,19 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                       <path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/>
                     </svg>
                   </span>
-                  {redditAuthenticated && (
-                    <span className="text-xs text-green-600 flex items-center gap-1">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Connected as u/{redditUsername}
-                    </span>
-                  )}
                 </div>
               </div>
 
               <div className="flex gap-3 justify-end mt-4">
                 <button
                   type="submit"
-                  className="px-6 py-2 text-white font-medium transition disabled:opacity-50 shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.36)]"
+                  className="px-6 py-2 text-white font-medium transition shadow-none hover:shadow-[0_0_12px_rgba(60,60,60,0.36)]"
                   style={{ borderRadius: '0.3rem', backgroundColor: '#EF0B72', fontFamily: 'Geist, sans-serif', fontSize: '0.9rem', transition: 'box-shadow 0.3s ease' }}
-                  disabled={isSubmitting}
+                  disabled={isPosting}
                 >
-                  {isSubmitting ? (
-                    <span className="inline-flex items-center" key={submittingStep}>
-                      {(SUBMIT_MESSAGES[submittingStep] + '...').split('').map((char, i) => (
+                  {isPosting ? (
+                    <span className="inline-flex items-center">
+                      {'Posting...'.split('').map((char, i) => (
                         <span
                           key={i}
                           style={{

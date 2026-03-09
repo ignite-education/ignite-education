@@ -17,7 +17,6 @@ import MerchandiseSection from './sections/MerchandiseSection';
 import BlogSection from './sections/BlogSection';
 import SettingsModal from '../shared/SettingsModal';
 import SEO from '../SEO';
-import { isRedditAuthenticated, getRedditUsername } from '../../lib/reddit';
 import { blockRedditPost } from '../../lib/api';
 
 // Mobile Block Screen
@@ -61,7 +60,6 @@ const ProgressHubV2 = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
-  const [pendingPostData, setPendingPostData] = useState(null);
 
   const {
     loading,
@@ -119,28 +117,6 @@ const ProgressHubV2 = () => {
     };
   }, []);
 
-  // Check Reddit auth and reopen post modal after OAuth callback
-  useEffect(() => {
-    const checkRedditAuth = async () => {
-      if (!isRedditAuthenticated()) return;
-
-      const shouldReopenModal = localStorage.getItem('reopen_post_modal');
-      const pendingPost = localStorage.getItem('pending_reddit_post');
-
-      if (shouldReopenModal && pendingPost) {
-        try {
-          const postData = JSON.parse(pendingPost);
-          setPendingPostData(postData);
-          setShowPostModal(true);
-        } catch {
-          // Ignore parse errors
-        }
-        localStorage.removeItem('reopen_post_modal');
-        localStorage.removeItem('pending_reddit_post');
-      }
-    };
-    checkRedditAuth();
-  }, []);
 
   // Refresh user session after successful payment
   useEffect(() => {
@@ -230,10 +206,9 @@ const ProgressHubV2 = () => {
 
       <CreatePostModal
         isOpen={showPostModal}
-        onClose={() => { setShowPostModal(false); setPendingPostData(null); }}
+        onClose={() => setShowPostModal(false)}
         courseReddit={courseReddit}
         courseName={courseTitle}
-        initialPostData={pendingPostData}
         onPostCreated={refetchCommunityPosts}
       />
 

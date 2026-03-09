@@ -2577,10 +2577,10 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
                       }, 4000);
                     }
                   }}
-                  style={{ width: 43, height: 43 }}
+                  style={{ width: 47, height: 47 }}
                 />
               ) : (
-                <div style={{ width: 43, height: 43 }} />
+                <div style={{ width: 47, height: 47 }} />
               )}
             </div>
           </div>
@@ -3111,7 +3111,7 @@ ${currentLessonSections.map((section) => {
                     return (
                       <div className="bg-black text-white flex items-center mb-2" style={{ borderRadius: '0.2rem', paddingTop: '0.35rem', paddingBottom: '0.35rem', paddingLeft: '0.5rem', paddingRight: '0.5rem', maxWidth: '750px', width: 'fit-content', marginTop: '3rem' }}>
                         {React.createElement(HeadingTag, {
-                          className: 'font-medium',
+                          className: 'font-normal',
                           style: { fontSize: '1.4rem' }
                         }, renderHeadingText(text, 0))}
                       </div>
@@ -3119,7 +3119,7 @@ ${currentLessonSections.map((section) => {
                   }
 
                   return React.createElement(HeadingTag, {
-                    className: `${sizes[level]} font-bold mt-8 mb-2`
+                    className: `${sizes[level]} font-semibold mt-8 mb-2`
                   }, renderHeadingText(text, 0));
                 }
 
