@@ -1,34 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { InlineWidget } from 'react-calendly';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '../../../contexts/AuthContext';
-import { useAnimation } from '../../../contexts/AnimationContext';
-import Lottie from 'lottie-react';
+import { supabase } from '../../../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const CalendlyLoadingSpinner = () => {
-  const { lottieData } = useAnimation();
-  return (
-    <div style={{
-      display: 'flex', justifyContent: 'center', alignItems: 'center',
-      height: '100%', width: '100%', backgroundColor: 'white',
-      position: 'absolute', top: 0, left: 0, zIndex: 10
-    }}>
-      {lottieData && Object.keys(lottieData).length > 0 ? (
-        <Lottie animationData={lottieData} loop autoplay style={{ width: 125, height: 125 }} />
-      ) : null}
-    </div>
-  );
-};
-
-const OfficeHoursCard = ({ coaches, calendlyLink }) => {
+const OfficeHoursCard = ({ coaches, courseId }) => {
   const { user: authUser, isInsider, hasUsedTrial, firstName } = useAuth();
-  const [showCalendlyModal, setShowCalendlyModal] = useState(false);
-  const [isClosingCalendlyModal, setIsClosingCalendlyModal] = useState(false);
-  const [calendlyLoaded, setCalendlyLoaded] = useState(false);
+  const [liveSession, setLiveSession] = useState(null); // { id, status, coach }
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [upgradingToInsider, setUpgradingToInsider] = useState(false);
@@ -41,18 +22,52 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
     img.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
   }, []);
 
-  // Calendly event listener
+  // Fetch initial live status + subscribe to realtime updates
   useEffect(() => {
-    const handleCalendlyEvent = (e) => {
-      if (e.data.event && e.data.event.indexOf('calendly') === 0) {
-        if (e.data.event === 'calendly.event_type_viewed') {
-          setCalendlyLoaded(true);
+    if (!courseId) return;
+
+    // Initial fetch
+    fetch(`${API_URL}/api/office-hours/status/${encodeURIComponent(courseId)}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.live && data.sessions?.length > 0) {
+          const s = data.sessions[0];
+          setLiveSession({ id: s.id, status: s.status, coach: s.coach, startedAt: s.startedAt });
         }
-      }
-    };
-    window.addEventListener('message', handleCalendlyEvent);
-    return () => window.removeEventListener('message', handleCalendlyEvent);
-  }, []);
+      })
+      .catch(err => console.error('Error fetching office hours status:', err));
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('office-hours-live')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'office_hours_sessions',
+        filter: `course_id=eq.${courseId}`,
+      }, (payload) => {
+        const row = payload.new;
+        if (!row) {
+          setLiveSession(null);
+          return;
+        }
+        if (row.status === 'live') {
+          setLiveSession(prev => ({
+            id: row.id,
+            status: 'live',
+            coach: prev?.coach || null,
+            startedAt: row.started_at,
+          }));
+        } else if (row.status === 'occupied') {
+          setLiveSession(prev => prev?.id === row.id ? { ...prev, status: 'occupied' } : prev);
+        } else if (row.status === 'ended') {
+          setLiveSession(prev => prev?.id === row.id ? null : prev);
+        }
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [courseId]);
 
   // Mount Stripe Checkout
   useEffect(() => {
@@ -76,22 +91,15 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
     return () => { cancelled = true; if (checkout) checkout.destroy(); };
   }, [clientSecret]);
 
-  const handleOpenCalendly = async () => {
+  const handleJoinOfficeHours = async () => {
     if (!isInsider) {
       await handleOpenUpgradeModal();
-    } else {
-      setCalendlyLoaded(false);
-      setShowCalendlyModal(true);
+      return;
     }
-  };
 
-  const handleCloseCalendly = () => {
-    setIsClosingCalendlyModal(true);
-    setTimeout(() => {
-      setShowCalendlyModal(false);
-      setIsClosingCalendlyModal(false);
-      setCalendlyLoaded(false);
-    }, 200);
+    if (liveSession && liveSession.status === 'live') {
+      window.open(`/office-hours/${liveSession.id}`, '_blank');
+    }
   };
 
   const handleOpenUpgradeModal = async () => {
@@ -130,26 +138,99 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
     }, 200);
   };
 
+  const isLive = liveSession?.status === 'live';
+  const isOccupied = liveSession?.status === 'occupied';
+
   return (
     <>
       <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
         <h2 className="font-semibold text-white leading-snug" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
-        <div className="rounded-lg flex items-center group" style={{ padding: '1rem', minHeight: '100px', background: '#7714E0', cursor: 'pointer' }} onClick={handleOpenCalendly}>
-          {coaches || calendlyLink ? (
+        <div
+          className="rounded-lg flex items-center group"
+          style={{
+            padding: '1rem',
+            minHeight: '100px',
+            background: '#7714E0',
+            cursor: isLive ? 'pointer' : 'default',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+          onClick={isLive ? handleJoinOfficeHours : undefined}
+        >
+          {coaches ? (
             <div className="flex gap-2.5 w-full items-center">
               {/* Single coach layout */}
-              {coaches && coaches.length === 1 ? (
-                <div className="flex-1 flex items-center cursor-pointer" style={{ gap: '1.5rem' }} onClick={handleOpenCalendly}>
+              {coaches.length === 1 ? (
+                <div className="flex-1 flex items-center" style={{ gap: '1.5rem' }}>
                       <div className="flex flex-col items-center flex-shrink-0" style={{ marginLeft: '0' }}>
-                        {coaches[0].image_url ? (
-                          <img src={coaches[0].image_url} alt={coaches[0].name} style={{ width: '4.8rem', height: '4.8rem' }} className="rounded object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                        ) : (
-                          <div className="rounded bg-white/10" style={{ width: '4.8rem', height: '4.8rem' }} />
-                        )}
-                        <p className="text-white leading-snug" style={{ fontSize: '0.8rem', fontWeight: 400, marginTop: '5px' }}>Available</p>
-                        <div className="bg-white rounded" style={{ padding: '4px 6px', marginTop: '5px', textAlign: 'center' }}>
-                          <p className="text-black leading-snug" style={{ fontSize: '0.8rem', fontWeight: 400, letterSpacing: '-1%' }}>Tomorrow at 4PM</p>
+                        <div style={{ position: 'relative' }}>
+                          {coaches[0].image_url ? (
+                            <img
+                              src={coaches[0].image_url}
+                              alt={coaches[0].name}
+                              style={{
+                                width: '4.8rem',
+                                height: '4.8rem',
+                                border: isLive ? '2.5px solid #22c55e' : '2.5px solid transparent',
+                                transition: 'border-color 0.3s',
+                              }}
+                              className="rounded object-cover"
+                              onError={(e) => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div className="rounded bg-white/10" style={{ width: '4.8rem', height: '4.8rem' }} />
+                          )}
                         </div>
+                        {/* Live/Offline status */}
+                        {isLive ? (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            marginTop: '6px',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(34,197,94,0.2)',
+                          }}>
+                            <div style={{
+                              width: '7px',
+                              height: '7px',
+                              borderRadius: '50%',
+                              backgroundColor: '#22c55e',
+                              boxShadow: '0 0 6px #22c55e',
+                              animation: 'pulse-green 1.5s ease-in-out infinite',
+                            }} />
+                            <span style={{ color: '#22c55e', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em' }}>LIVE</span>
+                          </div>
+                        ) : isOccupied ? (
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            marginTop: '6px',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            backgroundColor: 'rgba(251,191,36,0.15)',
+                          }}>
+                            <div style={{
+                              width: '7px',
+                              height: '7px',
+                              borderRadius: '50%',
+                              backgroundColor: '#fbbf24',
+                            }} />
+                            <span style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 500 }}>In Session</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>
+                            <div style={{
+                              width: '7px',
+                              height: '7px',
+                              borderRadius: '50%',
+                              backgroundColor: 'rgba(255,255,255,0.35)',
+                            }} />
+                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: 400 }}>Offline</span>
+                          </div>
+                        )}
                       </div>
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
                         {coaches[0].linkedin_url ? (
@@ -172,7 +253,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                       displayCoaches.push(coaches && coaches[i] ? coaches[i] : null);
                     }
                     return displayCoaches.map((coach, index) => (
-                      <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group cursor-pointer" onClick={handleOpenCalendly}>
+                      <div key={coach?.id || `placeholder-${index}`} className="flex flex-col items-center text-center group">
                         <div className="transition-transform duration-200 group-hover:scale-[1.02] flex flex-col items-center text-center">
                           {coach ? (
                             <>
@@ -203,52 +284,48 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                   })()}
                 </div>
               )}
-              {calendlyLink && (
-                <div className="flex items-center" style={{ paddingRight: '2px' }}>
+              {/* Join / Status button */}
+              <div className="flex items-center" style={{ paddingRight: '2px' }}>
+                {isLive ? (
                   <button
-                    onClick={handleOpenCalendly}
+                    onClick={handleJoinOfficeHours}
                     className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                     style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.3rem' }}
-                    title="Book Office Hours"
+                    title="Join Office Hours"
                   >
                     <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                   </button>
-                </div>
-              )}
+                ) : !isInsider ? (
+                  <button
+                    onClick={handleOpenUpgradeModal}
+                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                    style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.3rem' }}
+                    title="Upgrade to Insider"
+                  >
+                    <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ) : null}
+              </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-full">
-              <button
-                onClick={handleOpenCalendly}
-                className="bg-white hover:bg-gray-100 text-black font-semibold py-3 px-6 rounded-lg transition"
-              >
-                Book Office Hours
-              </button>
+            <div className="flex items-center justify-center h-full w-full">
+              <p className="text-white/60" style={{ fontSize: '0.9rem' }}>No coaches assigned yet</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Calendly Modal */}
-      {showCalendlyModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)' }}
-          onClick={handleCloseCalendly}
-        >
-          <div
-            className={`bg-white rounded-xl relative ${isClosingCalendlyModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
-            style={{ width: '90vw', maxWidth: '600px', height: '700px' }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button onClick={handleCloseCalendly} className="absolute top-3 right-3 z-20 text-gray-500 hover:text-gray-700" style={{ fontSize: '24px' }}>×</button>
-            {!calendlyLoaded && <CalendlyLoadingSpinner />}
-            <InlineWidget url={calendlyLink} styles={{ height: '100%', borderRadius: '0.75rem', overflow: 'hidden' }} />
-          </div>
-        </div>
-      )}
+      {/* Pulse animation for live indicator */}
+      <style>{`
+        @keyframes pulse-green {
+          0%, 100% { opacity: 1; box-shadow: 0 0 6px #22c55e; }
+          50% { opacity: 0.5; box-shadow: 0 0 12px #22c55e; }
+        }
+      `}</style>
 
       {/* Upgrade Modal */}
       {showUpgradeModal && (

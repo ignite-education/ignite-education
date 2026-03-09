@@ -77,7 +77,6 @@ const ProgressHubV2 = () => {
     completedLessons,
     totalCompletedLessons,
     coaches,
-    calendlyLink,
     userCertificate,
     courseReddit,
     communityPosts,
@@ -211,7 +210,7 @@ const ProgressHubV2 = () => {
               currentModule={currentModule}
               currentLesson={currentLesson}
             />
-            <OfficeHoursCard coaches={coaches} calendlyLink={calendlyLink} />
+            <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />
             <ResourcesSlider resources={resources} />
           </>
         }

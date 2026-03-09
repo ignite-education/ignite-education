@@ -31,6 +31,7 @@
     { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" },
 
     { "source": "/progress", "destination": "/index.html" },
+    { "source": "/office-hours/:path*", "destination": "/index.html" },
     { "source": "/learning", "destination": "/index.html" },
     { "source": "/admin/:path*", "destination": "https://admin.ignite.education/:path*" },
     { "source": "/auth/:path*", "destination": "/index.html" },
@@ -39,6 +40,15 @@
   "trailingSlash": false,
   "cleanUrls": true,
   "headers": [
+    {
+      "source": "/office-hours/:path*",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=()"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

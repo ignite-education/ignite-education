@@ -2913,7 +2913,7 @@ const Auth = () => {
                 <div className="mb-8 grid grid-cols-3 gap-4 auth-course-modal-benefits">
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-2">
-                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="32" height="32" style={{ objectFit: 'contain' }} />
+                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="77" height="77" style={{ objectFit: 'contain' }} />
                     </div>
                     <span className="text-sm text-black leading-tight">Certificate upon<br/>completion</span>
                   </div>

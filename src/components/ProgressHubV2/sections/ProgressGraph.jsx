@@ -281,7 +281,7 @@ const ProgressGraph = ({
 
       <style>{`
         @keyframes pulse-dot {
-          0% { box-shadow: 0 0 0 0 rgba(239, 11, 114, 0.45); }
+          0% { box-shadow: 0 0 0 0 rgba(239, 11, 114, 0.65); }
           100% { box-shadow: 0 0 6px 8px rgba(239, 11, 114, 0); }
         }
       `}</style>
@@ -381,7 +381,7 @@ const ProgressGraph = ({
                 backgroundColor: pinkColor,
                 borderRadius: '1px',
                 pointerEvents: 'none',
-                ...(i === lastScoredIdx && { animation: 'pulse-dot 2s ease-in-out infinite' }),
+                ...(i === lastScoredIdx && animationProgress >= 1 && { animation: 'pulse-dot 2s ease-in-out infinite' }),
               }}
             />
           ) : null

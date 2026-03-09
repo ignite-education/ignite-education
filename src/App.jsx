@@ -27,6 +27,7 @@ const RedditCallback = lazy(() => import('./components/RedditCallback'))
 const LinkedInCallback = lazy(() => import('./components/LinkedInCallback'))
 const LearningHub = lazy(() => import('./components/LearningHub'))
 const ProgressHubV2 = lazy(() => import('./components/ProgressHubV2'))
+const VideoChat = lazy(() => import('./components/VideoChat/VideoChat'))
 const NotFound = lazy(() => import('./components/NotFound'))
 
 function App() {
@@ -50,6 +51,11 @@ function App() {
             <Route path="/progress" element={
               <ProtectedRoute>
                 <ProgressHubV2 />
+              </ProtectedRoute>
+            } />
+            <Route path="/office-hours/:sessionId" element={
+              <ProtectedRoute>
+                <VideoChat />
               </ProtectedRoute>
             } />
             <Route path="/learning" element={

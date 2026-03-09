@@ -9,6 +9,7 @@ import {
   Lightbulb,
   FileText,
   Link2,
+  Video,
   LogOut,
   ExternalLink,
   Menu,
@@ -17,6 +18,7 @@ import {
 
 const navItems = [
   { path: '/curriculum', label: 'Curriculum', icon: FileEdit, roles: ['admin', 'teacher'] },
+  { path: '/office-hours', label: 'Office Hours', icon: Video, roles: ['admin', 'teacher'] },
   { path: '/analytics', label: 'Analytics', icon: BarChart3, roles: ['admin'] },
   { path: '/courses', label: 'Courses', icon: BookOpen, roles: ['admin'] },
   { path: '/blog', label: 'Blog', icon: Newspaper, roles: ['admin'] },

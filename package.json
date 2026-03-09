@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.65.0",
+    "@daily-co/daily-react": "^0.24.0",
     "@elevenlabs/elevenlabs-js": "^2.25.0",
     "@react-email/components": "^0.5.7",
     "@stripe/stripe-js": "^8.0.0",

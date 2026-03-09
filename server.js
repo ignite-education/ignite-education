@@ -1605,6 +1605,370 @@ app.post('/api/create-billing-portal-session', async (req, res) => {
 });
 
 
+// ============================================================
+// OFFICE HOURS - Live Video Chat (Daily.co)
+// ============================================================
+
+const DAILY_API_KEY = process.env.DAILY_API_KEY;
+const DAILY_API_URL = 'https://api.daily.co/v1';
+
+async function dailyApiRequest(path, method = 'GET', body = null) {
+  const options = {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${DAILY_API_KEY}`,
+    },
+  };
+  if (body) options.body = JSON.stringify(body);
+  const res = await fetch(`${DAILY_API_URL}${path}`, options);
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(`Daily.co API error: ${res.status} ${error}`);
+  }
+  return res.json();
+}
+
+// Middleware: verify teacher or admin role
+const verifyTeacherOrAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (userError || !userData || !['admin', 'teacher'].includes(userData.role)) {
+      return res.status(403).json({ error: 'Teacher or admin access required' });
+    }
+
+    req.user = user;
+    req.userRole = userData.role;
+    next();
+  } catch (error) {
+    console.error('Teacher/admin verification error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
+
+// Middleware: verify authenticated user
+const verifyAuth = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing authorization token' });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    console.error('Auth verification error:', error);
+    res.status(500).json({ error: 'Authentication failed' });
+  }
+};
+
+// POST /api/office-hours/start — Coach starts a live session
+app.post('/api/office-hours/start', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    // Find coach record linked to this user
+    const { data: coach, error: coachError } = await supabase
+      .from('coaches')
+      .select('id, name, course_id, image_url')
+      .eq('user_id', req.user.id)
+      .eq('is_active', true)
+      .single();
+
+    if (coachError || !coach) {
+      return res.status(403).json({ error: 'Not a registered coach. Link your user account to a coach profile first.' });
+    }
+
+    // Check for existing live/occupied session
+    const { data: existing } = await supabase
+      .from('office_hours_sessions')
+      .select('id, daily_room_url, status')
+      .eq('coach_id', coach.id)
+      .in('status', ['live', 'occupied'])
+      .single();
+
+    if (existing) {
+      // Return existing session (idempotent)
+      const token = await dailyApiRequest('/meeting-tokens', 'POST', {
+        properties: {
+          room_name: existing.daily_room_url.split('/').pop(),
+          is_owner: true,
+          user_name: coach.name,
+          user_id: req.user.id,
+          exp: Math.floor(Date.now() / 1000) + 7200,
+        },
+      });
+      return res.json({ session: existing, token: token.token });
+    }
+
+    // Create Daily.co room
+    const roomName = `oh-${coach.id.slice(0, 8)}-${Date.now()}`;
+    const room = await dailyApiRequest('/rooms', 'POST', {
+      name: roomName,
+      properties: {
+        exp: Math.floor(Date.now() / 1000) + 7200,
+        max_participants: 2,
+        enable_chat: true,
+        enable_screenshare: true,
+        enable_knocking: false,
+        start_video_off: false,
+        start_audio_off: false,
+      },
+    });
+
+    // Insert session record
+    const { data: session, error: sessionError } = await supabase
+      .from('office_hours_sessions')
+      .insert({
+        coach_id: coach.id,
+        course_id: coach.course_id,
+        daily_room_name: room.name,
+        daily_room_url: room.url,
+        status: 'live',
+      })
+      .select()
+      .single();
+
+    if (sessionError) {
+      // Clean up Daily room on DB failure
+      await dailyApiRequest(`/rooms/${room.name}`, 'DELETE').catch(() => {});
+      console.error('Error creating office hours session:', sessionError);
+      return res.status(500).json({ error: 'Failed to create session' });
+    }
+
+    // Generate coach meeting token
+    const token = await dailyApiRequest('/meeting-tokens', 'POST', {
+      properties: {
+        room_name: room.name,
+        is_owner: true,
+        user_name: coach.name,
+        user_id: req.user.id,
+        exp: Math.floor(Date.now() / 1000) + 7200,
+      },
+    });
+
+    console.log(`📹 Office hours started by coach ${coach.name} (session ${session.id})`);
+    res.json({ session, token: token.token });
+  } catch (error) {
+    console.error('Error starting office hours:', error);
+    res.status(500).json({ error: 'Failed to start office hours session' });
+  }
+});
+
+// POST /api/office-hours/join — Student joins a live session
+app.post('/api/office-hours/join', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Verify insider status
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(req.user.id);
+    if (userError) {
+      return res.status(500).json({ error: 'Failed to verify membership' });
+    }
+
+    if (!userData.user?.user_metadata?.is_ad_free) {
+      return res.status(403).json({ error: 'Ignite Insider membership required' });
+    }
+
+    // Atomically claim the session
+    const { data: session, error: claimError } = await supabase
+      .from('office_hours_sessions')
+      .update({ status: 'occupied', student_id: req.user.id })
+      .eq('id', sessionId)
+      .eq('status', 'live')
+      .select()
+      .single();
+
+    if (claimError || !session) {
+      return res.status(409).json({ error: 'Session is not available. It may be full or has ended.' });
+    }
+
+    // Get student name for display
+    const firstName = userData.user?.user_metadata?.first_name || 'Student';
+
+    // Generate student meeting token
+    const token = await dailyApiRequest('/meeting-tokens', 'POST', {
+      properties: {
+        room_name: session.daily_room_name,
+        is_owner: false,
+        user_name: firstName,
+        user_id: req.user.id,
+        exp: Math.floor(Date.now() / 1000) + 7200,
+      },
+    });
+
+    console.log(`📹 Student ${firstName} joined office hours session ${sessionId}`);
+    res.json({ token: token.token, roomUrl: session.daily_room_url });
+  } catch (error) {
+    console.error('Error joining office hours:', error);
+    res.status(500).json({ error: 'Failed to join session' });
+  }
+});
+
+// POST /api/office-hours/end — Coach ends a session
+app.post('/api/office-hours/end', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Verify this coach owns the session
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    const { data: session, error: endError } = await supabase
+      .from('office_hours_sessions')
+      .update({ status: 'ended', ended_at: new Date().toISOString() })
+      .eq('id', sessionId)
+      .eq('coach_id', coach?.id)
+      .in('status', ['live', 'occupied'])
+      .select()
+      .single();
+
+    if (endError || !session) {
+      return res.status(404).json({ error: 'Session not found or already ended' });
+    }
+
+    // Delete Daily.co room
+    await dailyApiRequest(`/rooms/${session.daily_room_name}`, 'DELETE').catch((err) => {
+      console.error('Failed to delete Daily room:', err.message);
+    });
+
+    console.log(`📹 Office hours session ${sessionId} ended`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error ending office hours:', error);
+    res.status(500).json({ error: 'Failed to end session' });
+  }
+});
+
+// POST /api/office-hours/leave — Student leaves a session (reopens for next student)
+app.post('/api/office-hours/leave', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    const { data: session, error: leaveError } = await supabase
+      .from('office_hours_sessions')
+      .update({ status: 'live', student_id: null })
+      .eq('id', sessionId)
+      .eq('student_id', req.user.id)
+      .eq('status', 'occupied')
+      .select()
+      .single();
+
+    if (leaveError || !session) {
+      return res.status(404).json({ error: 'Session not found or you are not in this session' });
+    }
+
+    console.log(`📹 Student left office hours session ${sessionId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error leaving office hours:', error);
+    res.status(500).json({ error: 'Failed to leave session' });
+  }
+});
+
+// GET /api/office-hours/status/:courseId — Check if any coach is live
+app.get('/api/office-hours/status/:courseId', async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const { data: sessions, error } = await supabase
+      .from('office_hours_sessions')
+      .select(`
+        id, status, started_at,
+        coaches (id, name, image_url, position)
+      `)
+      .eq('course_id', courseId)
+      .in('status', ['live', 'occupied']);
+
+    if (error) {
+      console.error('Error fetching office hours status:', error);
+      return res.status(500).json({ error: 'Failed to fetch status' });
+    }
+
+    const liveSessions = (sessions || []).map(s => ({
+      id: s.id,
+      status: s.status,
+      startedAt: s.started_at,
+      coach: s.coaches,
+    }));
+
+    res.json({ live: liveSessions.length > 0, sessions: liveSessions });
+  } catch (error) {
+    console.error('Error in office hours status:', error);
+    res.status(500).json({ error: 'Failed to fetch status' });
+  }
+});
+
+// GET /api/office-hours/history — Coach's past sessions
+app.get('/api/office-hours/history', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (!coach) {
+      return res.status(403).json({ error: 'Not a registered coach' });
+    }
+
+    const { data: sessions, error } = await supabase
+      .from('office_hours_sessions')
+      .select('id, status, started_at, ended_at, student_id')
+      .eq('coach_id', coach.id)
+      .order('started_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error fetching office hours history:', error);
+      return res.status(500).json({ error: 'Failed to fetch history' });
+    }
+
+    res.json({ sessions: sessions || [] });
+  } catch (error) {
+    console.error('Error in office hours history:', error);
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
+
+
 // Text-to-speech endpoint using ElevenLabs
 app.post('/api/text-to-speech', async (req, res) => {
   try {

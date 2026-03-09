@@ -364,7 +364,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       });
       const data = await response.json();
       if (data.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
       } else {
         throw new Error(data.error || 'Failed to create billing portal session');
       }
@@ -768,9 +768,9 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             ) : (
               /* Ignite Insider Card */
               <div>
-                <h4 className="font-medium text-purple-700 mb-[10px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Ignite Insider</h4>
+                <h4 className="font-medium text-purple-700 mb-[2px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>Ignite Insider</h4>
                 <div className="flex gap-4">
-                  <div style={{ width: '60%' }}>
+                  <div style={{ width: '65%' }}>
                     <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300, marginBottom: '20px' }}>
                       You have exclusive access to Ignite Insider features to accelerate your learning.
                     </p>
@@ -785,11 +785,11 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                       ))}
                     </ul>
                   </div>
-                  <div className="flex flex-col items-center justify-center" style={{ width: '40%' }}>
+                  <div className="flex flex-col items-center" style={{ width: '35%' }}>
                     <img
                       src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni.png"
                       alt="Ignite Insider"
-                      style={{ width: '161px', height: '161px', objectFit: 'contain', marginBottom: '12px' }}
+                      style={{ width: '177px', height: '177px', objectFit: 'contain' }}
                     />
                     <button
                       onClick={handleManageSubscription}
