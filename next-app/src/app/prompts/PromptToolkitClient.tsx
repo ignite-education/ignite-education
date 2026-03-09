@@ -417,6 +417,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
             onProfessionsChange={setSelectedProfessions}
             onToolsChange={setSelectedTools}
             onComplexitiesChange={setSelectedComplexities}
+            hideProfession={!!initialProfession}
           />
         </div>
 
@@ -429,7 +430,7 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
         {/* All Prompts - full width list below columns */}
         <div className="mt-16">
-          <AllPromptsSection prompts={allPromptsForSection} />
+          <AllPromptsSection prompts={allPromptsForSection} hideSortOptions={!!initialProfession} />
         </div>
       </div>
 

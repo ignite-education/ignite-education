@@ -21,9 +21,10 @@ const COMPLEXITY_ORDER: Record<string, number> = { Low: 0, Mid: 1, High: 2 }
 
 interface AllPromptsSectionProps {
   prompts: Prompt[]
+  hideSortOptions?: boolean
 }
 
-export default function AllPromptsSection({ prompts }: AllPromptsSectionProps) {
+export default function AllPromptsSection({ prompts, hideSortOptions }: AllPromptsSectionProps) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [sortBy, setSortBy] = useState<SortOption>('title')
   const [sortAsc, setSortAsc] = useState(true)
@@ -129,13 +130,15 @@ export default function AllPromptsSection({ prompts }: AllPromptsSectionProps) {
       >
         All Prompts
       </h2>
-      <div className="flex items-center gap-2 mb-4">
-        {renderSortButton('title')}
-        {renderSortButton('profession')}
-        {renderSortButton('complexity')}
-        {renderSortButton('copies')}
-        {renderSortButton('likes')}
-      </div>
+      {!hideSortOptions && (
+        <div className="flex items-center gap-2 mb-4">
+          {renderSortButton('title')}
+          {renderSortButton('profession')}
+          {renderSortButton('complexity')}
+          {renderSortButton('copies')}
+          {renderSortButton('likes')}
+        </div>
+      )}
       <div className="space-y-3">
         {visiblePrompts.map((prompt) => (
           <PromptListCard key={prompt.id} prompt={prompt} />

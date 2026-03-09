@@ -240,7 +240,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
 
     setSubmitting(false)
     setClosing(true)
-    setTimeout(onClose, 300)
+    setTimeout(onClose, 250)
   }, [title, description, fullPrompt, profession, llmTools, complexity, authorName, authorImage, authorJobTitle, authorLinkedin, onClose])
 
   const handleFormSubmit = async () => {
@@ -503,7 +503,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
 
   const handleClose = () => {
     setClosing(true)
-    setTimeout(onClose, 300)
+    setTimeout(onClose, 250)
   }
 
   useEffect(() => {
@@ -550,7 +550,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
       onClick={handleClose}
     >
       <div
-        className={`relative bg-white ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
+        className={`relative bg-white ${closing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
         style={{
           width: phase === 'thank-you' ? '540px' : '975px',
           maxWidth: '90vw',

@@ -20,6 +20,7 @@ interface PromptFiltersProps {
   onToolsChange: (value: string[]) => void
   onComplexitiesChange: (value: string[]) => void
   onResetAll?: () => void
+  hideProfession?: boolean
 }
 
 type FilterType = 'profession' | 'tool' | 'complexity'
@@ -39,6 +40,7 @@ export default function PromptFilters({
   onToolsChange,
   onComplexitiesChange,
   onResetAll,
+  hideProfession,
 }: PromptFiltersProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
 
@@ -85,7 +87,7 @@ export default function PromptFilters({
     }
   }
 
-  const filterTypes: FilterType[] = ['profession', 'tool', 'complexity']
+  const filterTypes: FilterType[] = hideProfession ? ['tool', 'complexity'] : ['profession', 'tool', 'complexity']
   const hasAnyFilter = selectedProfessions.length > 0 || selectedTools.length > 0 || selectedComplexities.length > 0
 
   const handleResetAll = () => {
