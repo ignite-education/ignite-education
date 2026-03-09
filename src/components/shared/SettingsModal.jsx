@@ -784,22 +784,22 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                         </li>
                       ))}
                     </ul>
-                  </div>
-                  <div className="flex flex-col items-center" style={{ width: '35%' }}>
-                    <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
-                      alt="Ignite Insider"
-                      style={{ width: '177px', height: '177px', objectFit: 'contain' }}
-                    />
                     <button
                       onClick={handleManageSubscription}
                       className="text-black transition cursor-pointer"
-                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
+                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)', marginTop: '16px', alignSelf: 'flex-start' }}
                       onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
                       onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
                     >
                       Manage
                     </button>
+                  </div>
+                  <div className="flex flex-col items-center" style={{ width: '35%' }}>
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
+                      alt="Ignite Insider"
+                      style={{ width: '150px', height: '150px', objectFit: 'contain' }}
+                    />
                   </div>
                 </div>
               </div>

@@ -13,6 +13,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
   const [isClosingModal, setIsClosingModal] = useState(false);
   const [redditAuthenticated, setRedditAuthenticated] = useState(false);
   const [redditUsername, setRedditUsername] = useState(null);
+  const [invalidFields, setInvalidFields] = useState(new Set());
 
   // Check Reddit auth status on mount and restore pending post data
   useEffect(() => {
@@ -68,8 +69,12 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
-    if (!newPost.title.trim() || !newPost.content.trim()) {
-      alert('Please fill in both title and content');
+    const missing = new Set();
+    if (!newPost.title.trim()) missing.add('title');
+    if (!newPost.content.trim()) missing.add('content');
+    if (missing.size > 0) {
+      setInvalidFields(missing);
+      setTimeout(() => setInvalidFields(new Set()), 1300);
       return;
     }
 
@@ -117,6 +122,13 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
   const subreddit = (courseReddit.postChannel || courseReddit.channel).replace(/^r\//, '');
   const availableFlairs = SUBREDDIT_FLAIRS[subreddit];
 
+  const errorOutline = (field) => ({
+    outline: '0.5px solid',
+    outlineColor: invalidFields.has(field) ? '#EF0B72' : 'transparent',
+    transition: 'outline-color 0.6s ease',
+  });
+  const clearError = (field) => { if (invalidFields.has(field)) setInvalidFields(prev => { const next = new Set(prev); next.delete(field); return next; }); };
+
   return (
     <div
       className={`fixed inset-0 flex items-center justify-center ${isClosingModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
@@ -129,12 +141,13 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
       }}
       onClick={handleCloseModal}
     >
-      <div className="relative" style={{ width: '975px', maxWidth: '60vw' }}>
+      <div className="relative" style={{ width: '55vw' }}>
         <div
           className={`bg-white text-black relative ${isClosingModal ? 'animate-fadeOut' : 'animate-fadeIn'}`}
           style={{
             borderRadius: '0.3rem',
             padding: '2rem 2.25rem 1.5rem 2.25rem',
+            height: '65vh',
             maxHeight: '75vh',
             overflowY: 'auto',
             overscrollBehavior: 'none',
@@ -162,9 +175,9 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                   ref={titleInputRef}
                   type="text"
                   value={newPost.title}
-                  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+                  onChange={(e) => { setNewPost({ ...newPost, title: e.target.value }); clearError('title'); }}
                   className="w-full bg-gray-100 text-black px-4 py-3 focus:outline-none focus:ring-0"
-                  style={{ borderRadius: '0.3rem', caretWidth: 'thin' }}
+                  style={{ borderRadius: '0.3rem', caretWidth: 'thin', ...errorOutline('title') }}
                   placeholder=""
                   disabled={isSubmitting}
                 />
@@ -174,9 +187,9 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                 <label className="text-black tracking-[-0.01em] flex-shrink-0" style={{ fontFamily: 'Geist, sans-serif', fontSize: '1.1rem', fontWeight: 500, width: '70px', paddingTop: 'calc(0.75rem - 16px)' }}>Content</label>
                 <textarea
                   value={newPost.content}
-                  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+                  onChange={(e) => { setNewPost({ ...newPost, content: e.target.value }); clearError('content'); }}
                   className="w-full bg-gray-100 text-black px-4 py-3 focus:outline-none focus:ring-0 resize-none"
-                  style={{ height: '120px', borderRadius: '0.3rem', caretWidth: 'thin' }}
+                  style={{ height: '120px', borderRadius: '0.3rem', caretWidth: 'thin', ...errorOutline('content') }}
                   placeholder=""
                   disabled={isSubmitting}
                 />

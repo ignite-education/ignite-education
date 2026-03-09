@@ -1701,7 +1701,27 @@ app.post('/api/office-hours/start', verifyTeacherOrAdmin, async (req, res) => {
       return res.status(403).json({ error: 'Not a registered coach. Link your user account to a coach profile first.' });
     }
 
-    // Check for existing live/occupied session
+    // Clean up stale sessions (Daily.co rooms expire after 2 hours)
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    const { data: staleSessions } = await supabase
+      .from('office_hours_sessions')
+      .select('id, daily_room_name')
+      .eq('coach_id', coach.id)
+      .in('status', ['live', 'occupied'])
+      .lt('started_at', twoHoursAgo);
+
+    if (staleSessions?.length > 0) {
+      for (const stale of staleSessions) {
+        await supabase
+          .from('office_hours_sessions')
+          .update({ status: 'ended', ended_at: new Date().toISOString() })
+          .eq('id', stale.id);
+        await dailyApiRequest(`/rooms/${stale.daily_room_name}`, 'DELETE').catch(() => {});
+      }
+      console.log(`Cleaned up ${staleSessions.length} stale office hours session(s)`);
+    }
+
+    // Check for existing live/occupied session (after cleanup)
     const { data: existing } = await supabase
       .from('office_hours_sessions')
       .select('id, daily_room_url, status')

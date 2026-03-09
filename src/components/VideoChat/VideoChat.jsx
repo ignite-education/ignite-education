@@ -33,6 +33,7 @@ const VideoRoom = ({ sessionId, onLeave, isCoach, userName }) => {
   const [remoteLeft, setRemoteLeft] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const joinTimeRef = useRef(Date.now());
+  const authTokenRef = useRef(null);
 
   // Track call duration
   useEffect(() => {
@@ -119,14 +120,30 @@ const VideoRoom = ({ sessionId, onLeave, isCoach, userName }) => {
     daily.leave();
   }, [daily, sessionId, isCoach]);
 
-  // Cleanup on tab close
+  // Cache auth token for use in beforeunload (which must be synchronous)
+  useEffect(() => {
+    import('../../lib/supabase').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        authTokenRef.current = session?.access_token || null;
+      });
+    });
+  }, []);
+
+  // Cleanup on tab close — use fetch+keepalive instead of sendBeacon (supports auth headers)
   useEffect(() => {
     const handleBeforeUnload = () => {
+      const token = authTokenRef.current;
+      if (!token) return;
       const endpoint = isCoach ? '/api/office-hours/end' : '/api/office-hours/leave';
-      navigator.sendBeacon(
-        `${API_URL}${endpoint}`,
-        JSON.stringify({ sessionId })
-      );
+      fetch(`${API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ sessionId }),
+        keepalive: true,
+      }).catch(() => {});
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

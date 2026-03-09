@@ -826,6 +826,18 @@ const CurriculumUpload = () => {
 
         if (updateError) throw updateError;
 
+        // Also sync lesson_name in lessons table so the learning hub right panel stays in sync
+        const { error: syncError } = await supabase
+          .from('lessons')
+          .update({ lesson_name: lessonName })
+          .eq('course_id', selectedCourseId)
+          .eq('module_number', selectedModuleNumber)
+          .eq('lesson_number', selectedLessonNumber);
+
+        if (syncError) {
+          console.error('Warning: Failed to sync lesson name to lessons table:', syncError);
+        }
+
         alert('Lesson metadata saved successfully!');
         await loadCourses(); // Reload courses to get updated module_structure
       } else {

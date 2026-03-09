@@ -830,7 +830,10 @@ const LearningHub = () => {
   };
 
   const currentLessonSections = useMemo(() => getCurrentLessonData(), [groupedLessons, currentModule, currentLesson]);
-  const lessonName = currentLessonSections.lessonName || `Lesson ${currentLesson}`;
+  const lessonNameFromMetadata = lessonsMetadata.find(
+    m => m.module_number === currentModule && m.lesson_number === currentLesson
+  )?.lesson_name;
+  const lessonName = lessonNameFromMetadata || currentLessonSections.lessonName || `Lesson ${currentLesson}`;
 
   // Keep ref in sync with memoized value for stable observer access
   React.useEffect(() => {
@@ -3226,7 +3229,7 @@ ${currentLessonSections.map((section) => {
                             const element = (
                               <div key={idx} className="flex items-start gap-2 mb-1">
                                 <span className="text-black leading-relaxed">•</span>
-                                <span className="text-base leading-relaxed flex-1">
+                                <span className="text-base font-light leading-relaxed flex-1">
                                   {renderTextWithBold(bulletText, currentWordOffset)}
                                 </span>
                               </div>
@@ -3244,7 +3247,7 @@ ${currentLessonSections.map((section) => {
                             const lineWordCount = splitIntoWords(normalizeTextForNarration(cleanLineText)).length;
 
                             const element = (
-                              <p key={idx} className="text-base leading-relaxed mb-2">
+                              <p key={idx} className="text-base font-light leading-relaxed mb-2">
                                 {renderTextWithBold(line, currentWordOffset)}
                               </p>
                             );
@@ -3262,7 +3265,7 @@ ${currentLessonSections.map((section) => {
                   }
 
                   return (
-                    <p className="text-base leading-relaxed mb-6">
+                    <p className="text-base font-light leading-relaxed mb-6">
                       {renderTextWithBold(text, 0)}
                     </p>
                   );

@@ -196,8 +196,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               style={{
                                 width: '4.8rem',
                                 height: '4.8rem',
-                                border: isLive ? '2.5px solid #22c55e' : '2.5px solid transparent',
-                                transition: 'border-color 0.3s',
+                                border: '2.5px solid transparent',
                               }}
                               className="rounded object-cover"
                               onError={(e) => { e.target.style.display = 'none'; }}
@@ -213,9 +212,9 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                             alignItems: 'center',
                             gap: '5px',
                             marginTop: '6px',
-                            padding: '3px 8px',
+                            padding: '4px 10px',
                             borderRadius: '6px',
-                            backgroundColor: 'rgba(34,197,94,0.2)',
+                            backgroundColor: 'white',
                           }}>
                             <div style={{
                               width: '7px',
@@ -225,7 +224,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               boxShadow: '0 0 6px #22c55e',
                               animation: 'pulse-green 1.5s ease-in-out infinite',
                             }} />
-                            <span style={{ color: '#22c55e', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em' }}>LIVE</span>
+                            <span style={{ color: 'black', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.05em' }}>Live</span>
                           </div>
                         ) : isOccupied ? (
                           <div style={{
@@ -246,9 +245,8 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                             <span style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 500 }}>In Session</span>
                           </div>
                         ) : nextUpcoming ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', marginTop: '6px', backgroundColor: 'white', borderRadius: '6px', padding: '4px 10px' }}>
-                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 600 }}>Available</span>
-                            <span style={{ color: 'rgba(0,0,0,0.55)', fontSize: '0.65rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', marginTop: '6px', backgroundColor: 'white', borderRadius: '6px', padding: '4px 10px' }}>
+                            <span style={{ color: 'black', fontSize: '0.65rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
                           </div>
                         ) : null}
                       </div>

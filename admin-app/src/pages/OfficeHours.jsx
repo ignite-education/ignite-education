@@ -156,9 +156,29 @@ const OfficeHours = () => {
     }
   };
 
-  const handleRejoin = () => {
-    if (activeSession) {
-      window.open(`https://ignite.education/office-hours/${activeSession.id}`, '_blank');
+  const handleRejoin = async () => {
+    if (!activeSession) return;
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`${API_URL}/api/office-hours/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        window.open(
+          `https://ignite.education/office-hours/${data.session.id}?token=${data.token}&roomUrl=${encodeURIComponent(data.session.daily_room_url)}`,
+          '_blank'
+        );
+      } else {
+        setError('Failed to rejoin session. Try ending and starting a new one.');
+      }
+    } catch (err) {
+      console.error('Error rejoining office hours:', err);
+      setError('Failed to rejoin. Please try again.');
     }
   };
 
