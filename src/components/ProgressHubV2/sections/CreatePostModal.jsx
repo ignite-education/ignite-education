@@ -151,7 +151,7 @@ const CreatePostModal = ({ isOpen, onClose, courseReddit, courseName, initialPos
                   value={newPost.content}
                   onChange={(e) => { setNewPost({ ...newPost, content: e.target.value }); clearError('content'); }}
                   className="w-full bg-gray-100 text-black px-4 py-3 focus:outline-none focus:ring-0 resize-none"
-                  style={{ height: '200px', borderRadius: '0.3rem', caretWidth: 'thin', fontWeight: 300, ...errorOutline('content') }}
+                  style={{ height: '195px', borderRadius: '0.3rem', caretWidth: 'thin', fontWeight: 300, ...errorOutline('content') }}
                   placeholder=""
                 />
               </div>

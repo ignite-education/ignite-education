@@ -225,31 +225,37 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
   const showContributeButton = filteredPrompts.length === 0 && searchQuery.trim().length > 0
 
-  // Sort prompts for each column, deduplicating so each prompt appears only in its best-ranked column
+  // Sort prompts for each column, deduplicating so each prompt appears only once across columns.
+  // Uses a round-robin draft: at each rank position, each column claims its top unclaimed prompt.
   const { mostUsed, highlyRated, mostRecent } = useMemo(() => {
     const byUsage = [...filteredPrompts].sort((a, b) => b.usageCount - a.usageCount)
     const byRating = [...filteredPrompts].sort((a, b) => b.rating - a.rating || b.usageCount - a.usageCount)
     const byRecent = [...filteredPrompts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-    const usageRank = new Map(byUsage.map((p, i) => [p.id, i]))
-    const ratingRank = new Map(byRating.map((p, i) => [p.id, i]))
-    const recentRank = new Map(byRecent.map((p, i) => [p.id, i]))
+    const claimed = new Set<string>()
+    const usageIds: string[] = []
+    const ratingIds: string[] = []
+    const recentIds: string[] = []
 
-    const usageSet = new Set<string>()
-    const ratingSet = new Set<string>()
-    const recentSet = new Set<string>()
+    const columns = [
+      { sorted: byUsage, ids: usageIds },
+      { sorted: byRating, ids: ratingIds },
+      { sorted: byRecent, ids: recentIds },
+    ]
 
-    for (const prompt of filteredPrompts) {
-      const u = usageRank.get(prompt.id)!
-      const r = ratingRank.get(prompt.id)!
-      const t = recentRank.get(prompt.id)!
-      const best = Math.min(u, r, t)
-
-      // Tiebreak priority: most-used > highly-rated > most-recent
-      if (u === best) usageSet.add(prompt.id)
-      else if (r === best) ratingSet.add(prompt.id)
-      else recentSet.add(prompt.id)
+    // Draft pick: iterate rank positions, each column claims its best unclaimed prompt
+    for (let rank = 0; claimed.size < filteredPrompts.length && rank < filteredPrompts.length; rank++) {
+      for (const col of columns) {
+        if (rank < col.sorted.length && !claimed.has(col.sorted[rank].id)) {
+          claimed.add(col.sorted[rank].id)
+          col.ids.push(col.sorted[rank].id)
+        }
+      }
     }
+
+    const usageSet = new Set(usageIds)
+    const ratingSet = new Set(ratingIds)
+    const recentSet = new Set(recentIds)
 
     return {
       mostUsed: byUsage.filter(p => usageSet.has(p.id)),
