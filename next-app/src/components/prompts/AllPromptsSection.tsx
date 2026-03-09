@@ -130,15 +130,13 @@ export default function AllPromptsSection({ prompts, hideSortOptions }: AllPromp
       >
         All Prompts
       </h2>
-      {!hideSortOptions && (
-        <div className="flex items-center gap-2 mb-4">
-          {renderSortButton('title')}
-          {renderSortButton('profession')}
-          {renderSortButton('complexity')}
-          {renderSortButton('copies')}
-          {renderSortButton('likes')}
-        </div>
-      )}
+      <div className="flex items-center gap-2 mb-4">
+        {renderSortButton('title')}
+        {!hideSortOptions && renderSortButton('profession')}
+        {renderSortButton('complexity')}
+        {renderSortButton('copies')}
+        {renderSortButton('likes')}
+      </div>
       <div className="space-y-3">
         {visiblePrompts.map((prompt) => (
           <PromptListCard key={prompt.id} prompt={prompt} />
