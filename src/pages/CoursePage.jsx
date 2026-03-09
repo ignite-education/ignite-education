@@ -743,11 +743,7 @@ const CoursePage = () => {
               <div className="mb-8 grid grid-cols-3 gap-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#EF0B72" strokeWidth="1.5">
-                      <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                      <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                    </svg>
+                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="32" height="32" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Certificate upon<br/>completion</span>
                 </div>
