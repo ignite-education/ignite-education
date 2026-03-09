@@ -232,6 +232,7 @@ const ProgressHubV2 = () => {
         isOpen={showPostModal}
         onClose={() => { setShowPostModal(false); setPendingPostData(null); }}
         courseReddit={courseReddit}
+        courseName={courseTitle}
         initialPostData={pendingPostData}
         onPostCreated={refetchCommunityPosts}
       />

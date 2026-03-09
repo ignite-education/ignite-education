@@ -15,13 +15,17 @@ const formatUpcomingTime = (dateStr) => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   const targetDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-  const timeStr = date.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toUpperCase().replace(' ', '');
+  const hour = date.getHours();
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const h = hour % 12 || 12;
+  const timeStr = `${h}${period}`;
 
   if (targetDay.getTime() === today.getTime()) return `Today at ${timeStr}`;
   if (targetDay.getTime() === tomorrow.getTime()) return `Tomorrow at ${timeStr}`;
 
-  const dayMonth = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-  return `${dayMonth} at ${timeStr}`;
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en-GB', { month: 'short' });
+  return `${day}-${month} at ${timeStr}`;
 };
 
 const OfficeHoursCard = ({ coaches, courseId }) => {
@@ -242,21 +246,11 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                             <span style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 500 }}>In Session</span>
                           </div>
                         ) : nextUpcoming ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', marginTop: '6px' }}>
-                            <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 500 }}>Available</span>
-                            <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', marginTop: '6px', backgroundColor: 'white', borderRadius: '6px', padding: '4px 10px' }}>
+                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 600 }}>Available</span>
+                            <span style={{ color: 'rgba(0,0,0,0.55)', fontSize: '0.65rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
                           </div>
-                        ) : (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '6px' }}>
-                            <div style={{
-                              width: '7px',
-                              height: '7px',
-                              borderRadius: '50%',
-                              backgroundColor: 'rgba(255,255,255,0.35)',
-                            }} />
-                            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.75rem', fontWeight: 400 }}>Offline</span>
-                          </div>
-                        )}
+                        ) : null}
                       </div>
                       <div className="flex-1 min-w-0" style={{ maxWidth: '75%' }}>
                         {coaches[0].linkedin_url ? (

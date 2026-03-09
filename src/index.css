@@ -221,6 +221,11 @@ body {
   animation: colorFade 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+@keyframes letterFadeIn {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes letterSlideUp {
   from {
     opacity: 0;
