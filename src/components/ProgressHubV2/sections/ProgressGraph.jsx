@@ -207,6 +207,8 @@ const ProgressGraph = ({
     };
   });
 
+  const lastScoredIdx = userPoints.reduce((last, pt, i) => pt.hasData ? i : last, -1);
+
   // Generate separate paths per module (no lines across module boundaries)
   const globalPaths = moduleRanges.map((mod) => {
     const points = globalPoints.slice(mod.startIdx, mod.endIdx + 1).filter((p) => p.hasData);
@@ -276,6 +278,13 @@ const ProgressGraph = ({
           {userName}'s Progress
         </h3>
       )}
+
+      <style>{`
+        @keyframes pulse-dot {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239, 11, 114, 0.5); }
+          50% { box-shadow: 0 0 0 4px rgba(239, 11, 114, 0); }
+        }
+      `}</style>
 
       {/* Graph container — SVG lines + HTML dots overlay */}
       <div
@@ -372,6 +381,7 @@ const ProgressGraph = ({
                 backgroundColor: pinkColor,
                 borderRadius: '1px',
                 pointerEvents: 'none',
+                ...(i === lastScoredIdx && { animation: 'pulse-dot 2s ease-in-out infinite' }),
               }}
             />
           ) : null

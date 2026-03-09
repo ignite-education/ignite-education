@@ -2609,7 +2609,7 @@ const Auth = () => {
                   },
                   {
                     question: 'How much does Ignite cost?',
-                    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.'
+                    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just £4.99/month.'
                   },
                   {
                     question: 'What can I learn on Ignite?',

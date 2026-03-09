@@ -3579,7 +3579,7 @@ ${currentLessonSections.map((section) => {
               <div style={{ width: '45.6%' }} className="bg-black p-8 flex flex-col justify-center">
                 <div style={{ marginTop: '-10px' }}>
                 <h3 className="text-white text-2xl font-medium" style={{ lineHeight: '1', marginBottom: '1.3rem' }}>
-                  <span className="font-light text-lg">For just 99p a week,</span><br />
+                  <span className="font-light text-lg">For just £4.99/month,</span><br />
                   <span style={{ fontSize: '1.4rem', color: '#FFFFFF' }}>get exclusive access to</span>
                 </h3>
 

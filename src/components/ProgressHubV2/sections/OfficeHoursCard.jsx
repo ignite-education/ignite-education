@@ -57,11 +57,14 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
   // Mount Stripe Checkout
   useEffect(() => {
     let checkout = null;
+    let cancelled = false;
     const mountCheckout = async () => {
       if (clientSecret && checkoutRef.current) {
         try {
           const stripe = await stripePromise;
+          if (cancelled) return;
           checkout = await stripe.initEmbeddedCheckout({ clientSecret });
+          if (cancelled) { checkout.destroy(); return; }
           checkout.mount(checkoutRef.current);
         } catch (error) {
           console.error('Error mounting Stripe checkout:', error);
@@ -70,7 +73,7 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
       }
     };
     mountCheckout();
-    return () => { if (checkout) checkout.destroy(); };
+    return () => { cancelled = true; if (checkout) checkout.destroy(); };
   }, [clientSecret]);
 
   const handleOpenCalendly = async () => {
@@ -334,11 +337,11 @@ const OfficeHoursCard = ({ coaches, calendlyLink }) => {
                   </div>
 
                   <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.5rem' }}>
-                    {hasUsedTrial ? 'just 99p week' : 'then just 99p week'}
+                    {hasUsedTrial ? '£4.99/month' : 'then £4.99/month'}
                   </p>
 
                   <p className="text-black text-center m-0 font-light" style={{ fontSize: '0.9rem', marginTop: '0.75rem', lineHeight: '1.4' }}>
-                    Includes all Ignite Insider features.<br />Billed four weekly. Cancel anytime.
+                    Includes all Ignite Insider features.<br />Billed monthly. Cancel anytime.
                   </p>
                 </div>
               </div>

@@ -202,11 +202,14 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   // Mount Stripe Checkout
   useEffect(() => {
     let checkout = null;
+    let cancelled = false;
     const mountCheckout = async () => {
       if (clientSecret && checkoutRef.current) {
         try {
           const stripe = await stripePromise;
+          if (cancelled) return;
           checkout = await stripe.initEmbeddedCheckout({ clientSecret });
+          if (cancelled) { checkout.destroy(); return; }
           checkout.mount(checkoutRef.current);
         } catch (error) {
           console.error('Error mounting Stripe checkout:', error);
@@ -215,7 +218,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       }
     };
     mountCheckout();
-    return () => { if (checkout) checkout.destroy(); };
+    return () => { cancelled = true; if (checkout) checkout.destroy(); };
   }, [clientSecret]);
 
   const handleProfilePictureUpload = async (e) => {
@@ -681,7 +684,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     onMouseEnter={(e) => { if (!isGoogleLinked) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'; }}
                     onMouseLeave={(e) => { if (!isGoogleLinked) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                   >
-                    <span style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', color: isGoogleLinked ? 'white' : undefined }}>{isGoogleLinked ? 'Connected with Google' : 'Connect with Google'}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', color: isGoogleLinked ? 'black' : undefined }}>{isGoogleLinked ? 'Connected with Google' : 'Connect with Google'}</span>
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                       <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -702,7 +705,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     onMouseEnter={(e) => { if (!isLinkedInLinked) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'; }}
                     onMouseLeave={(e) => { if (!isLinkedInLinked) e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
                   >
-                    <span style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', color: isLinkedInLinked ? 'white' : undefined }}>{isLinkedInLinked ? 'Connected with LinkedIn' : 'Connect with LinkedIn'}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', color: isLinkedInLinked ? 'black' : undefined }}>{isLinkedInLinked ? 'Connected with LinkedIn' : 'Connect with LinkedIn'}</span>
                     <svg className="w-4 h-4" fill="#0077B5" viewBox="0 0 24 24">
                       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                     </svg>
@@ -727,11 +730,11 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt={hasUsedTrial ? 'Subscribe' : 'Free trial'} className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
                   {hasUsedTrial ? (
-                    <p className="text-black mb-3" style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>99p/week, billed weekly</p>
+                    <p className="text-black mb-3" style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
                   ) : (
                     <>
                       <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
-                      <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>then 99p/week</p>
+                      <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '0.9rem', lineHeight: 1.2 }}>then £4.99/month</p>
                     </>
                   )}
                   <button
@@ -741,7 +744,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 8px rgba(103,103,103,0.55)'}
                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
                   >
-                    {hasUsedTrial ? 'Subscribe — 99p/week' : `Get ${firstName ? `${firstName}'s` : 'your'} Free Trial`}
+                    {hasUsedTrial ? 'Subscribe — £4.99/month' : `Get ${firstName ? `${firstName}'s` : 'your'} Free Trial`}
                   </button>
                   <p className="text-black mt-2.5 leading-snug" style={{ fontSize: '0.85rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
                 </div>
@@ -763,31 +766,38 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               </div>
               </>
             ) : (
-              /* Premium Subscriber Card */
-              <div className="space-y-4">
-                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200" style={{ borderRadius: '0.3rem' }}>
-                  <h4 className="font-semibold text-purple-900 mb-1">Premium Subscriber</h4>
-                  <p className="text-sm text-purple-700 mb-2">
-                    You have access to exclusive features including office hours and ad-free learning.
-                  </p>
-                  <div className="flex flex-col gap-1 text-xs text-purple-600">
-                    {['Ad-free experience', 'Book office hours with industry experts', 'Priority support'].map(feature => (
-                      <div key={feature} className="flex items-center gap-1.5">
-                        <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span>{feature}</span>
-                      </div>
-                    ))}
+              /* Ignite Insider Card */
+              <div>
+                <h4 className="font-bold text-[#7714E0]" style={{ fontSize: '1.4rem', letterSpacing: '-0.01em', marginBottom: '6px' }}>Ignite Insider</h4>
+                <hr style={{ border: 'none', borderTop: '1px solid #E5E5E5', marginBottom: '10px' }} />
+                <div className="flex items-start justify-between gap-6">
+                  <div>
+                    <p className="text-black" style={{ fontSize: '1rem', fontWeight: 300, marginBottom: '20px' }}>
+                      You have exclusive access to Ignite Insider features to accelerate your learning.
+                    </p>
+                    <div className="flex flex-col gap-2.5" style={{ paddingLeft: '8px' }}>
+                      {['1:1 Office Hours with industry professionals', 'Weekly hand-pick job opportunities', 'AI Tool Prompt highlights'].map(feature => (
+                        <p key={feature} className="text-black" style={{ fontSize: '1rem', fontWeight: 600 }}>{feature}</p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end justify-between shrink-0" style={{ minHeight: '160px' }}>
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni.png"
+                      alt="Ignite Insider"
+                      style={{ width: '140px', height: '140px', objectFit: 'contain' }}
+                    />
+                    <button
+                      onClick={handleManageSubscription}
+                      className="text-black transition cursor-pointer"
+                      style={{ borderRadius: '0.3rem', backgroundColor: 'white', padding: '6px 24px', fontSize: '1rem', fontWeight: 400, letterSpacing: '-0.02em', boxShadow: '0 0 6px rgba(103,103,103,0.35)' }}
+                      onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.45)'}
+                      onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'}
+                    >
+                      Manage
+                    </button>
                   </div>
                 </div>
-                <button
-                  onClick={handleManageSubscription}
-                  className="w-full bg-purple-600 text-white px-5 py-2.5 text-sm font-semibold hover:bg-purple-700 transition"
-                  style={{ borderRadius: '0.3rem' }}
-                >
-                  Manage Subscription
-                </button>
               </div>
             )}
           </div>
