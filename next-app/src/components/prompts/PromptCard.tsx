@@ -71,14 +71,14 @@ export default function PromptCard({ prompt }: PromptCardProps) {
         >
           <ComplexityIcon level={prompt.complexity as 'Low' | 'Mid' | 'High'} />
         </span>
-        <span className="flex items-center gap-1 text-xs text-black ml-auto" style={{ letterSpacing: '-0.02em' }}>
+        <span className="flex items-center gap-1 text-xs text-black" style={{ letterSpacing: '-0.02em' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
             <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
           </svg>
           {prompt.usageCount}
         </span>
-        <span className="flex items-center gap-1 text-xs text-black -ml-2" style={{ letterSpacing: '-0.02em' }}>
+        <span className="flex items-center gap-1 text-xs text-black" style={{ letterSpacing: '-0.02em' }}>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M7 22V11l5-9 1.5.5c1 .33 1.5 1.5 1 2.5L13 11h7a2 2 0 012 2v2a6 6 0 01-.34 2l-1.42 4.27A2 2 0 0118.36 23H9a2 2 0 01-2-1z" />
             <path d="M2 13h2v8H2z" />

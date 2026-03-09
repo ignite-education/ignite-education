@@ -246,7 +246,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                           </div>
                         ) : nextUpcoming ? (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '6px', gap: '3px' }}>
-                            <span style={{ color: 'white', fontSize: '0.75rem', fontWeight: 300, letterSpacing: '0.05em' }}>Available</span>
+                            <span style={{ color: 'white', fontSize: '0.85rem', fontWeight: 300, letterSpacing: '0' }}>Available</span>
                             <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', borderRadius: '6px', padding: '4px 10px' }}>
                               <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>{formatUpcomingTime(nextUpcoming)}</span>
                             </div>
