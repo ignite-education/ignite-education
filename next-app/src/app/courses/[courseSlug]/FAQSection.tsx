@@ -11,7 +11,7 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
   const [expandedFAQ, setExpandedFAQ] = useState(0)
 
   return (
-    <div className="mt-9 mb-8 faq-section">
+    <div className="mt-11 md:mt-9 mb-8 faq-section">
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         FAQs
       </h2>

@@ -18,7 +18,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
       </div>
 
       <div className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center" style={{ paddingTop: '75px' }}>
+        <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center pt-12 md:pt-[75px]">
           <div className="w-full text-center" style={{ maxWidth: '700px' }}>
             {/* Category Tag */}
             <Link
@@ -31,7 +31,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
 
             {/* Title */}
             <h1
-              className="text-[38px] font-bold text-black mb-[15px] leading-tight"
+              className="text-[2rem] md:text-[38px] font-bold text-black mb-[15px] leading-tight"
               style={{ letterSpacing: '-0.02em' }}
             >
               {course.title}
@@ -47,8 +47,8 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
 
             {/* Description */}
             <p
-              className="text-black text-lg leading-relaxed font-light course-description"
-              style={{ letterSpacing: '-0.02em', marginBottom: '30px', textWrap: 'balance' }}
+              className="text-black text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light course-description px-4 md:px-0 mb-2 md:mb-[30px]"
+              style={{ letterSpacing: '-0.02em', textWrap: 'balance' }}
             >
               {getTwoSentences(course.description)}
             </p>
@@ -57,7 +57,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             <div className="mb-8 grid grid-cols-3 gap-4">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2">
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
+                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
                 <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Certificate upon<br />completion
@@ -65,7 +65,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2">
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
+                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
                 <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Built by<br />industry experts
@@ -73,7 +73,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
               </div>
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2">
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
+                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
                 <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Self-paced<br />learning

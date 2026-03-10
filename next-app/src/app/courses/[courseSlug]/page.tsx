@@ -146,7 +146,7 @@ export default async function CoursePage({ params }: PageProps) {
             isComingSoon={isComingSoon}
           />
 
-          <div className="max-w-4xl mx-auto px-6 pb-12 flex justify-center">
+          <div className="max-w-4xl mx-auto px-6 pb-4 md:pb-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
               <CourseCurriculum
                 moduleStructure={course.module_structure}

@@ -9,7 +9,7 @@ interface CourseLeadersProps {
 
 export default function CourseLeaders({ coaches, courseTitle }: CourseLeadersProps) {
   return (
-    <div className="mt-9 mb-8">
+    <div className="mt-11 md:mt-9 mb-8">
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Course Leaders
       </h2>
