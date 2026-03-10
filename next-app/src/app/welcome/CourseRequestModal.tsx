@@ -369,7 +369,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                   style={{ width: '100%', height: '40px' }}
                 >
                   Continue with LinkedIn
-                  <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-4px' }}>
+                  <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-1px' }}>
                     <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
                   </svg>
                 </button>
@@ -401,8 +401,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 className="flex flex-col justify-between tracking-[-0.02em] leading-tight"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                <p className="text-[#009600] text-[1.35rem] font-medium">Thank you, {userName}</p>
-                <p className="text-black text-[1rem] font-normal">
+                <p className="text-[#009600] text-[1.35rem] font-semibold tracking-[-0.01em]">Thank you, {userName}</p>
+                <p className="text-black text-[1.05rem] font-normal tracking-[-0.01em]">
                   We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available
                 </p>
               </div>

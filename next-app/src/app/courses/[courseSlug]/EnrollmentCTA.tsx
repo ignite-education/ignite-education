@@ -34,6 +34,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [firstName, setFirstName] = useState<string | null>(null)
   const [isSaved, setIsSaved] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [savingAction, setSavingAction] = useState<'adding' | 'removing' | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [authLoaded, setAuthLoaded] = useState(false)
 
@@ -184,6 +185,18 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     autoPrompt: true,
   })
 
+  // Handle Google OAuth redirect fallback (when One Tap is blocked)
+  const handleGoogleOAuthFallback = useCallback(async () => {
+    sessionStorage.setItem('pendingEnrollCourse', courseSlug)
+    const supabase = createClient()
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href,
+      },
+    })
+  }, [courseSlug])
+
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
     sessionStorage.setItem('pendingEnrollCourse', courseSlug)
@@ -249,11 +262,15 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
   const handleSaveToggle = async () => {
     if (!user) return
+    const action = isSaved ? 'removing' : 'adding'
+    setSavingAction(action)
     setIsSaving(true)
+
+    const minDelay = new Promise(resolve => setTimeout(resolve, 750))
 
     try {
       const supabase = createClient()
-      if (isSaved) {
+      if (action === 'removing') {
         // Check if this is the user's currently enrolled course
         const { data: userData } = await supabase
           .from('users')
@@ -263,14 +280,19 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
         if (userData?.enrolled_course === courseSlug) {
           alert('This is your current course. Switch to a different course in Settings first.')
+          setIsSaving(false)
+          setSavingAction(null)
           return
         }
 
-        await supabase
-          .from('saved_courses')
-          .delete()
-          .eq('user_id', user.id)
-          .eq('course_id', courseSlug)
+        await Promise.all([
+          supabase
+            .from('saved_courses')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('course_id', courseSlug),
+          minDelay,
+        ])
         setIsSaved(false)
 
         // Remove waitlist entry for coming-soon courses
@@ -283,9 +305,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         }
       } else {
         // Save the course
-        await supabase
-          .from('saved_courses')
-          .insert({ user_id: user.id, course_id: courseSlug })
+        await Promise.all([
+          supabase
+            .from('saved_courses')
+            .insert({ user_id: user.id, course_id: courseSlug }),
+          minDelay,
+        ])
         setIsSaved(true)
 
         // Register interest for coming-soon courses
@@ -332,6 +357,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       console.error('Error toggling save status:', err)
     } finally {
       setIsSaving(false)
+      setSavingAction(null)
     }
   }
 
@@ -343,7 +369,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
             <div className="space-y-2 w-[85%] mx-auto mb-4">
               {/* Continue with Google button */}
               <button
-                onClick={() => triggerPrompt()}
+                onClick={() => triggerPrompt(handleGoogleOAuthFallback)}
                 className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
                 style={{ width: '100%', height: '40px' }}
               >
@@ -380,6 +406,10 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
                     ? 'bg-[#9E9E9E] text-white'
+                    : isSaving
+                    ? savingAction === 'removing'
+                      ? 'bg-[#009600] text-white'
+                      : 'bg-[#EF0B72] text-white'
                     : isSaved
                     ? 'bg-[#009600] text-white'
                     : 'bg-[#EF0B72] text-white'
@@ -392,23 +422,29 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     <span className="text-[1rem] font-normal" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
                   </span>
                 ) : isSaving ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-normal" style={{ letterSpacing: '-0.02em' }}>
-                      {isSaved ? 'Removing...' : 'Saving...'}
-                    </span>
+                  <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    {(savingAction === 'removing' ? 'Removing...' : 'Adding...').split('').map((char, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          animation: 'letterFadeIn 0.4s ease forwards',
+                          animationDelay: `${i * 0.03}s`,
+                          opacity: 0,
+                        }}
+                      >{char === ' ' ? '\u00A0' : char}</span>
+                    ))}
                   </span>
                 ) : isSaved ? (
                   <span className="flex items-center justify-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
-                    <span className="text-[1rem] font-normal truncate" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
                       Saved to Account
                     </span>
                   </span>
                 ) : (
-                  <span className="text-[1rem] font-normal truncate" style={{ letterSpacing: '-0.02em' }}>
+                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
                     Add to {firstName || 'your'}&apos;s Account
                   </span>
                 )}

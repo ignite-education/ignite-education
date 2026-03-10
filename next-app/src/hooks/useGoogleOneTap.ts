@@ -175,11 +175,36 @@ export default function useGoogleOneTap({
       onBlocked?.()
       return
     }
-    window.google!.accounts.id.prompt((notification: GooglePromptNotification) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        onBlocked?.()
-      }
-    })
+
+    // Cancel any active FedCM prompt so prompt() is not a no-op
+    window.google!.accounts.id.cancel()
+
+    // Brief delay for FedCM teardown before re-prompting
+    setTimeout(() => {
+      let resolved = false
+
+      // Safety timeout: if prompt() silently fails, fall back
+      const safetyTimer = setTimeout(() => {
+        if (!resolved) {
+          resolved = true
+          onBlocked?.()
+        }
+      }, 1500)
+
+      window.google!.accounts.id.prompt((notification: GooglePromptNotification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          if (!resolved) {
+            resolved = true
+            clearTimeout(safetyTimer)
+            onBlocked?.()
+          }
+        } else {
+          // Prompt is displaying — clear safety timer
+          resolved = true
+          clearTimeout(safetyTimer)
+        }
+      })
+    }, 100)
   }, [isLoaded, isInitialized])
 
   return {
