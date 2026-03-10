@@ -24,9 +24,10 @@ const COLUMN_CONFIG: Record<ColumnType, { title: string; description: string }> 
 interface PromptColumnProps {
   type: ColumnType
   prompts: Prompt[]
+  columnIndex?: number
 }
 
-export default function PromptColumn({ type, prompts }: PromptColumnProps) {
+export default function PromptColumn({ type, prompts, columnIndex = 0 }: PromptColumnProps) {
   const config = COLUMN_CONFIG[type]
   const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
 
@@ -45,8 +46,18 @@ export default function PromptColumn({ type, prompts }: PromptColumnProps) {
         {config.description}
       </p>
       <div ref={animateRef} className="space-y-3">
-        {prompts.map((prompt) => (
-          <PromptCard key={prompt.id} prompt={prompt} />
+        {prompts.map((prompt, index) => (
+          <div
+            key={prompt.id}
+            style={{
+              animation: 'fadeInUp 0.6s ease-out',
+              animationDelay: `${columnIndex * 0.1 + index * 0.15}s`,
+              opacity: 0,
+              animationFillMode: 'forwards',
+            }}
+          >
+            <PromptCard prompt={prompt} />
+          </div>
         ))}
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Edit2, Trash2, Save, X } from 'lucide-react';
-import { generateCourseDescription } from '../lib/claude';
+import { generateCourseDescription, generateCourseContent } from '../lib/claude';
 
 const CourseManagement = () => {
   const [courses, setCourses] = useState([]);
@@ -11,6 +11,7 @@ const CourseManagement = () => {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [saving, setSaving] = useState(false);
   const [generatingDescription, setGeneratingDescription] = useState(false);
+  const [generatingContent, setGeneratingContent] = useState(false);
 
   // Form states for new/edit course
   const [formData, setFormData] = useState({
@@ -580,7 +581,68 @@ const CourseManagement = () => {
               {formData.structure_type === 'lessons_only' ? (
                 // Lessons Only Mode
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">Lessons</label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!formData.title.trim()) {
+                          alert('Please enter a course title first');
+                          return;
+                        }
+                        const lessonCount = formData.modules[0]?.lessons.length || 0;
+                        if (lessonCount === 0) {
+                          alert('Please add at least one lesson slot first');
+                          return;
+                        }
+                        const hasContent = formData.modules[0]?.lessons.some(l =>
+                          l.name || l.description || (l.bullet_points || []).some(bp => bp)
+                        );
+                        if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
+                          return;
+                        }
+                        try {
+                          setGeneratingContent(true);
+                          const result = await generateCourseContent(
+                            formData.title,
+                            formData.course_type || 'skill',
+                            lessonCount
+                          );
+                          const newModules = [...formData.modules];
+                          newModules[0].lessons = result.lessons.map(generated => ({
+                            name: generated.name,
+                            description: generated.description,
+                            bullet_points: generated.bullet_points
+                          }));
+                          setFormData({
+                            ...formData,
+                            description: result.description,
+                            modules: newModules
+                          });
+                        } catch (error) {
+                          alert(error.message || 'Failed to generate content');
+                        } finally {
+                          setGeneratingContent(false);
+                        }
+                      }}
+                      disabled={generatingContent || generatingDescription}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {generatingContent ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Auto-Generate All with AI
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
                       <div key={lessonIndex} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
@@ -1031,7 +1093,68 @@ const CourseManagement = () => {
               {formData.structure_type === 'lessons_only' ? (
                 // Lessons Only Mode
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">Lessons</label>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!formData.title.trim()) {
+                          alert('Please enter a course title first');
+                          return;
+                        }
+                        const lessonCount = formData.modules[0]?.lessons.length || 0;
+                        if (lessonCount === 0) {
+                          alert('Please add at least one lesson slot first');
+                          return;
+                        }
+                        const hasContent = formData.modules[0]?.lessons.some(l =>
+                          l.name || l.description || (l.bullet_points || []).some(bp => bp)
+                        );
+                        if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
+                          return;
+                        }
+                        try {
+                          setGeneratingContent(true);
+                          const result = await generateCourseContent(
+                            formData.title,
+                            formData.course_type || 'skill',
+                            lessonCount
+                          );
+                          const newModules = [...formData.modules];
+                          newModules[0].lessons = result.lessons.map(generated => ({
+                            name: generated.name,
+                            description: generated.description,
+                            bullet_points: generated.bullet_points
+                          }));
+                          setFormData({
+                            ...formData,
+                            description: result.description,
+                            modules: newModules
+                          });
+                        } catch (error) {
+                          alert(error.message || 'Failed to generate content');
+                        } finally {
+                          setGeneratingContent(false);
+                        }
+                      }}
+                      disabled={generatingContent || generatingDescription}
+                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {generatingContent ? (
+                        <>
+                          <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                          Auto-Generate All with AI
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
                       <div key={lessonIndex} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">

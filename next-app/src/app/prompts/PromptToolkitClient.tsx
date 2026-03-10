@@ -423,9 +423,9 @@ export default function PromptToolkitClient({ professions, prompts, initialProfe
 
         {/* Prompt Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <PromptColumn type="most-used" prompts={mostUsed.slice(0, 3)} />
-          <PromptColumn type="highly-rated" prompts={highlyRated.slice(0, 3)} />
-          <PromptColumn type="most-recent" prompts={mostRecent.slice(0, 3)} />
+          <PromptColumn type="most-used" prompts={mostUsed.slice(0, 3)} columnIndex={0} />
+          <PromptColumn type="highly-rated" prompts={highlyRated.slice(0, 3)} columnIndex={1} />
+          <PromptColumn type="most-recent" prompts={mostRecent.slice(0, 3)} columnIndex={2} />
         </div>
 
         {/* All Prompts - full width list below columns */}

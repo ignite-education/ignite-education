@@ -5509,6 +5509,123 @@ Return ONLY the description text, no other commentary.`;
 // ============================================================================
 
 // ============================================================================
+// COURSE CONTENT GENERATION (LESSONS-ONLY COURSES)
+// ============================================================================
+
+app.post('/api/generate-course-content', async (req, res) => {
+  try {
+    const { courseTitle, courseType, lessonCount } = req.body;
+
+    if (!courseTitle || !courseType || !lessonCount || lessonCount < 1) {
+      return res.status(400).json({ error: 'Invalid request: courseTitle, courseType, and lessonCount (>=1) are required' });
+    }
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return res.status(500).json({ error: 'Anthropic API key not configured on server' });
+    }
+
+    const typeContext = {
+      'specialism': 'a career-focused course designed to prepare learners for a specific profession',
+      'skill': 'a skill-building course focused on developing a particular ability or competency',
+      'subject': 'an academic subject course covering theoretical and practical knowledge in a topic area'
+    };
+
+    const prompt = `Generate complete course content for "${courseTitle}", which is ${typeContext[courseType] || typeContext['skill']}.
+
+The course has ${lessonCount} lessons (no modules — flat structure).
+
+Return a JSON object with this exact structure:
+{
+  "description": "Course description (max 250 characters, focus on learning outcomes, professional tone, no marketing fluff)",
+  "lessons": [
+    {
+      "name": "Lesson name (concise, descriptive)",
+      "description": "1-2 sentence lesson description explaining what the learner will cover",
+      "bullet_points": ["Key point 1", "Key point 2", "Key point 3"]
+    }
+  ]
+}
+
+Requirements:
+- Use British English throughout
+- The course description MUST be under 250 characters
+- Generate exactly ${lessonCount} lessons
+- Lessons should follow a logical learning progression from foundational to advanced
+- Lesson names should be concise and descriptive (3-8 words)
+- Lesson descriptions should be 1-2 sentences explaining what the learner will cover
+- Each lesson must have exactly 3 bullet points highlighting specific skills or knowledge gained
+- Bullet points should be concise (under 80 characters each)
+- Be specific and practical, not generic
+
+Return ONLY valid JSON, no other text or markdown.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: Math.min(4096, 300 + (lessonCount * 200)),
+      temperature: 0.7,
+      messages: [{
+        role: 'user',
+        content: prompt
+      }]
+    });
+
+    const responseText = message.content[0].text.trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(responseText);
+    } catch (parseError) {
+      // Try extracting JSON from markdown code block
+      const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        parsed = JSON.parse(jsonMatch[1].trim());
+      } else {
+        throw new Error('Failed to parse AI response as JSON');
+      }
+    }
+
+    // Validate and sanitise
+    if (!parsed.description || !Array.isArray(parsed.lessons)) {
+      throw new Error('Invalid response structure from AI');
+    }
+
+    if (parsed.description.length > 250) {
+      parsed.description = parsed.description.substring(0, 247) + '...';
+    }
+
+    // Ensure correct lesson count
+    while (parsed.lessons.length < lessonCount) {
+      parsed.lessons.push({
+        name: `Lesson ${parsed.lessons.length + 1}`,
+        description: '',
+        bullet_points: ['', '', '']
+      });
+    }
+    parsed.lessons = parsed.lessons.slice(0, lessonCount);
+
+    // Ensure each lesson has exactly 3 bullet points
+    parsed.lessons = parsed.lessons.map(lesson => ({
+      name: lesson.name || '',
+      description: lesson.description || '',
+      bullet_points: [
+        (lesson.bullet_points?.[0] || ''),
+        (lesson.bullet_points?.[1] || ''),
+        (lesson.bullet_points?.[2] || '')
+      ]
+    }));
+
+    res.json({ description: parsed.description, lessons: parsed.lessons });
+
+  } catch (error) {
+    console.error('Error generating course content:', error);
+    res.status(500).json({ error: 'Failed to generate course content. Please try again.' });
+  }
+});
+
+// ============================================================================
+// END COURSE CONTENT GENERATION
+// ============================================================================
+
+// ============================================================================
 // LINKEDIN PROFILE IMPORT (USER MEMORY)
 // ============================================================================
 

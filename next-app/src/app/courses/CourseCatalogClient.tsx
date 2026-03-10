@@ -143,9 +143,9 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
 
         {/* Course Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <CourseTypeColumn type="specialism" courses={filteredSpecialism} />
-          <CourseTypeColumn type="skill" courses={filteredSkill} />
-          <CourseTypeColumn type="subject" courses={filteredSubject} />
+          <CourseTypeColumn type="specialism" courses={filteredSpecialism} cardStaggerBase={0.15} />
+          <CourseTypeColumn type="skill" courses={filteredSkill} cardStaggerBase={0.15} />
+          <CourseTypeColumn type="subject" courses={filteredSubject} cardStaggerBase={0.15} />
         </div>
       </div>
 
