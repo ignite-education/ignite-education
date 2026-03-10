@@ -352,7 +352,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
             ) : (
             <>
               {/* Sign-in buttons */}
-              <div className="space-y-2" style={{ width: '380px', maxWidth: '100%' }}>
+              <div className="space-y-2" style={{ width: '375px', maxWidth: '100%' }}>
                 <button
                   onClick={handleGoogleClick}
                   className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
@@ -380,29 +380,29 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 className="text-black text-center mt-6 text-[0.9rem] font-normal tracking-[-0.01em]"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                Register and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
+                Register now and we&rsquo;ll let you know<br />when <span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> launches
               </p>
             </>
             )
           ) : (
             /* Thank-you phase */
-            <div className="flex items-center gap-5 animate-fadeIn">
+            <div className="flex gap-5 animate-fadeIn" style={{ height: '75px' }}>
               {userAvatar && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={userAvatar}
                   alt=""
                   className="object-cover flex-shrink-0"
-                  style={{ width: '100px', height: '100px', borderRadius: '6px' }}
+                  style={{ width: '75px', height: '75px', borderRadius: '6px' }}
                   referrerPolicy="no-referrer"
                 />
               )}
               <div
-                className="tracking-[-0.02em] leading-tight"
+                className="flex flex-col justify-between tracking-[-0.02em] leading-tight"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                <p className="text-[#009600] text-[1.35rem] font-bold">Thank you, {userName}</p>
-                <p className="text-black text-[1rem] font-normal mt-1.5">
+                <p className="text-[#009600] text-[1.35rem] font-medium">Thank you, {userName}</p>
+                <p className="text-black text-[1rem] font-normal">
                   We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available
                 </p>
               </div>

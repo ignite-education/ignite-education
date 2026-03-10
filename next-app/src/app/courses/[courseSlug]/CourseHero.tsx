@@ -48,7 +48,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             {/* Description */}
             <p
               className="text-black text-lg leading-relaxed font-light course-description"
-              style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+              style={{ letterSpacing: '-0.02em', marginBottom: '30px', textWrap: 'balance' }}
             >
               {getTwoSentences(course.description)}
             </p>

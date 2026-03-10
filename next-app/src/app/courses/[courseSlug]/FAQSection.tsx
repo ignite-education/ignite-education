@@ -49,7 +49,7 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
               <div style={{ overflow: 'hidden' }}>
                 <p
                   className="text-black font-light leading-snug"
-                  style={{ fontSize: '1rem', letterSpacing: '-0.01em', marginTop: 'calc(0.1rem + 2px)', paddingBottom: '0' }}
+                  style={{ fontSize: '1rem', letterSpacing: '-0.01em', marginTop: '6px', paddingBottom: '0' }}
                 >
                   {faq.answer}
                 </p>

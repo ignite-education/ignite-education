@@ -359,7 +359,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 style={{ width: '100%', height: '40px' }}
               >
                 Continue with LinkedIn
-                <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-4px' }}>
+                <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-2px' }}>
                   <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
                 </svg>
               </button>
@@ -389,12 +389,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 {checkingStatus ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[0.95rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                    <span className="text-[1rem] font-normal" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
                   </span>
                 ) : isSaving ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[0.95rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[1rem] font-normal" style={{ letterSpacing: '-0.02em' }}>
                       {isSaved ? 'Removing...' : 'Saving...'}
                     </span>
                   </span>
@@ -403,26 +403,22 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
-                    <span className="text-[0.95rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[1rem] font-normal truncate" style={{ letterSpacing: '-0.02em' }}>
                       Saved to Account
                     </span>
                   </span>
                 ) : (
-                  <span className="text-[0.95rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                  <span className="text-[1rem] font-normal truncate" style={{ letterSpacing: '-0.02em' }}>
                     Add to {firstName || 'your'}&apos;s Account
                   </span>
                 )}
               </button>
 
-              <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
+              <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
                 {!checkingStatus && (
                   isSaved
                     ? isComingSoon
-                      ? <>
-                          <span className="font-medium">Thank you, {firstName}.</span>
-                          <br />
-                          <span style={{ textWrap: 'balance' }}>We&apos;ll notify you when {courseTitle} is available.</span>
-                        </>
+                      ? `We'll notify you when ${courseTitle} is available`
                       : 'Course saved to your account'
                     : isComingSoon
                       ? 'Join the course waitlist'
