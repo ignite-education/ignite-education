@@ -37,7 +37,7 @@ export default function EducationSection() {
           observer.disconnect()
         }
       },
-      { threshold: 0.3 }
+      { threshold: 0.5 }
     )
 
     observer.observe(section)
@@ -106,7 +106,7 @@ export default function EducationSection() {
     <section
       ref={sectionRef}
       className="flex items-center justify-center px-8 relative auth-section-2"
-      style={{ background: 'black', minHeight: '500px', maxHeight: '800px', height: '100vh', maxWidth: '1500px', margin: '0 auto' }}
+      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '3.25rem' : undefined, paddingBottom: isMobile ? '4rem' : undefined }}
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}

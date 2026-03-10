@@ -344,7 +344,14 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                           >
                             <CourseCard
                               course={course}
-                              onClick={() => setSelectedCourse(course)}
+                              onClick={() => {
+                                if (isMobile) {
+                                  const slug = course.name?.toLowerCase().replace(/\s+/g, '-')
+                                  window.open(`/courses/${slug}`, '_blank')
+                                } else {
+                                  setSelectedCourse(course)
+                                }
+                              }}
                             />
                           </div>
                         )

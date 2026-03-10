@@ -177,7 +177,7 @@ export default function WelcomeScrollManager({
   }, [calculateLogoClip])
 
   return (
-    <div>
+    <div className="overflow-x-hidden">
       {/* Sticky Navbar — transparent, section backgrounds show through */}
       <div className="sticky top-0 z-50">
         <Navbar

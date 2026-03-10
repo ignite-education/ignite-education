@@ -195,7 +195,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
             />
           </Link>
           <h1
-            className="text-[30px] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
+            className="text-[1.7rem] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
             What do you want to learn?

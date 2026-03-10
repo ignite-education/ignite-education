@@ -38,6 +38,39 @@ const features = [
 export default function LearningModelSection() {
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [visibleFeatures, setVisibleFeatures] = useState<Set<number>>(new Set())
+  const featureTextRefs = useRef<(HTMLDivElement | null)[]>([])
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLElement).dataset.featureIdx)
+            setVisibleFeatures((prev) => new Set(prev).add(idx))
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.3 }
+    )
+
+    featureTextRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => observer.disconnect()
+  }, [isMobile])
 
   const { displayText: typedText } = useTypingAnimation(
     'Building a smarter, \nmore personalised era of education.',
@@ -107,10 +140,10 @@ export default function LearningModelSection() {
       style={{ background: 'black' }}
     >
       <div className="max-w-4xl mx-auto text-white text-left">
-        <div className="px-4 auth-section-4-content">
+        <div className="px-0 md:px-4 auth-section-4-content">
           <h3
             className="font-bold text-white text-left auth-section-4-title"
-            style={{ fontSize: '3rem', lineHeight: '1.2', minHeight: '120px', marginBottom: '1.5rem', marginTop: '2rem' }}
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '1rem' : '1.5rem', marginTop: isMobile ? '3rem' : '2rem' }}
           >
             {renderTypedTagline()}
           </h3>
@@ -123,15 +156,23 @@ export default function LearningModelSection() {
                 style={{
                   marginTop: idx === 0 ? undefined : '3rem',
                   display: 'grid',
-                  gridTemplateColumns: '1fr 1fr',
-                  gap: '3rem',
+                  gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                  gap: isMobile ? '1.5rem' : '3rem',
                   alignItems: 'center'
                 }}
               >
-                <div>
+                <div
+                  ref={(el) => { featureTextRefs.current[idx] = el }}
+                  data-feature-idx={idx}
+                  style={isMobile ? {
+                    opacity: visibleFeatures.has(idx) ? 1 : 0,
+                    transform: visibleFeatures.has(idx) ? 'translateY(0)' : 'translateY(20px)',
+                    transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
+                  } : undefined}
+                >
                   <h4
                     className="font-semibold text-white leading-tight"
-                    style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}
+                    style={{ fontSize: isMobile ? '1.6rem' : '1.75rem', marginBottom: '0.5rem', textWrap: isMobile ? 'balance' : undefined }}
                   >
                     {feature.title}
                   </h4>
