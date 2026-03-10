@@ -36,6 +36,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [isSaving, setIsSaving] = useState(false)
   const [savingAction, setSavingAction] = useState<'adding' | 'removing' | null>(null)
   const [checkingStatus, setCheckingStatus] = useState(true)
+  const [showButton, setShowButton] = useState(false)
   const [authLoaded, setAuthLoaded] = useState(false)
 
   // Save course for a given user
@@ -207,6 +208,17 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   // Initial auth check + OAuth callback detection
   useEffect(() => {
     const supabase = createClient()
+    const loadStart = Date.now()
+
+    const finishLoading = () => {
+      const elapsed = Date.now() - loadStart
+      const remaining = Math.max(0, 750 - elapsed)
+      setTimeout(() => {
+        setCheckingStatus(false)
+        // Small delay before showing button for fade-in effect
+        requestAnimationFrame(() => setShowButton(true))
+      }, remaining)
+    }
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user)
@@ -218,7 +230,8 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         if (pendingSlug === courseSlug) {
           sessionStorage.removeItem('pendingEnrollCourse')
           await enrollUserInCourse(user.id, user)
-          setCheckingStatus(false)
+          finishLoading()
+          setAuthLoaded(true)
           return
         }
 
@@ -230,9 +243,9 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .eq('course_id', courseSlug)
           .maybeSingle()
         setIsSaved(!!data)
-        setCheckingStatus(false)
+        finishLoading()
       } else {
-        setCheckingStatus(false)
+        finishLoading()
       }
       setAuthLoaded(true)
     })
@@ -393,9 +406,9 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               <button
                 onClick={handleSaveToggle}
                 disabled={isSaving || checkingStatus}
-                className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
+                className={`w-full px-4 shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
-                    ? 'bg-[#EF0B72] text-white'
+                    ? 'bg-white text-black'
                     : isSaving
                     ? savingAction === 'removing'
                       ? 'bg-[#009600] text-white'
@@ -403,8 +416,16 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     : isSaved
                     ? 'bg-[#009600] text-white'
                     : 'bg-[#EF0B72] text-white'
-                } disabled:cursor-not-allowed`}
-                style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
+                } disabled:cursor-not-allowed transition-all duration-500 ease-in-out`}
+                style={{
+                  paddingTop: '0.575rem',
+                  paddingBottom: '0.575rem',
+                  borderRadius: '8px',
+                  ...(!checkingStatus && !isSaving ? {
+                    opacity: showButton ? 1 : 0,
+                    transform: showButton ? 'translateY(0)' : 'translateY(4px)',
+                  } : {}),
+                }}
               >
                 {checkingStatus ? (
                   <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>

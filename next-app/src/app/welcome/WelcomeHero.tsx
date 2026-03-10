@@ -113,7 +113,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
     && filteredSkill.length === 0
     && filteredSubject.length === 0
 
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState<boolean | null>(null) // null = pre-hydration
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
@@ -126,48 +126,46 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const sectionMinHeight = maxRows >= 3 ? '600px' : maxRows === 2 ? '500px' : maxRows === 1 ? '400px' : '350px'
   const sectionMaxHeight = maxRows >= 3 ? '750px' : maxRows === 2 ? '650px' : maxRows === 1 ? '550px' : '450px'
 
-  // Mobile: measure actual content height + 1rem padding
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [contentHeight, setContentHeight] = useState<number>(0)
+  // Mobile: fixed computed height based on card counts (no DOM measurement)
+  const CARD_HEIGHT = 59    // py-3 (24px) + 35px icon content
+  const CARD_GAP = 12       // space-y-3
+  const COLUMN_GAP = 12     // gap-3 on mobile (matches card gap)
+  const FIXED_OVERHEAD = 280 // padding-top(36) + logo(88) + logo-mb(29) + h1-mt(-12) + h1(34) + header-mb(7) + search(48) + search-mb(32) + padding-bottom(16) + buffer(2)
 
-  useEffect(() => {
-    if (!isMobile || !contentRef.current) return
-    const el = contentRef.current
-    // Temporarily remove height constraint to measure natural content height
-    const section = el.parentElement
-    const prevOverflow = section?.style.overflow
-    const prevHeight = section?.style.height
-    if (section) {
-      section.style.overflow = 'visible'
-      section.style.height = 'auto'
-    }
-    el.style.height = 'auto'
-    const measured = el.scrollHeight + 16 // +1rem bottom padding
-    // Restore
-    el.style.height = ''
-    if (section) {
-      section.style.overflow = prevOverflow || ''
-      section.style.height = prevHeight || ''
-    }
-    setContentHeight(measured)
-  }, [isMobile, filteredSpecialism.length, filteredSkill.length, filteredSubject.length, isExpanded])
+  const computeMobileHeight = (spec: Course[], skill: Course[], subj: Course[]) => {
+    const total = spec.length + skill.length + subj.length
+    const cols = [spec, skill, subj].filter(c => c.length > 0).length
+    if (total === 0) return 285
+    if (total === 1) return 360
+    if (total === 2) return 430
+    if (total === 3) return 500
+    if (total === 4) return 570
+    return FIXED_OVERHEAD + total * CARD_HEIGHT + Math.max(0, total - cols) * CARD_GAP + Math.max(0, cols - 1) * COLUMN_GAP
+  }
 
-  const maxMobilePx = typeof window !== 'undefined' ? window.innerHeight * 0.85 : 9999
-  const mobileSectionHeight = contentHeight > 0 ? `${Math.min(contentHeight, maxMobilePx)}px` : 'auto'
+  const totalCards = filteredSpecialism.length + filteredSkill.length + filteredSubject.length
+  const mobileSectionHeight = `${computeMobileHeight(filteredSpecialism, filteredSkill, filteredSubject)}px`
+
+  // Initial mobile height from unfiltered courses — used in CSS media query to avoid hydration flash
+  const initialMobileHeight = computeMobileHeight(coursesByType.specialism, coursesByType.skill, coursesByType.subject)
 
   return (
-    <section
-      className="relative bg-white auth-section-1"
-      style={{
-        height: isExpanded ? 'auto' : (isMobile ? mobileSectionHeight : sectionHeight),
-        minHeight: isExpanded ? 'auto' : (isMobile ? undefined : sectionMinHeight),
-        maxHeight: isExpanded ? 'none' : (isMobile ? '85vh' : sectionMaxHeight),
-        transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-        overflow: 'hidden'
-      }}
-    >
+    <>
+      {/* Pre-hydration mobile height — prevents flash before JS knows isMobile */}
+      {isMobile === null && (
+        <style>{`@media(max-width:767px){.auth-section-1--initial{height:${initialMobileHeight}px!important;max-height:85vh!important;min-height:auto!important}}`}</style>
+      )}
+      <section
+        className={`relative bg-white auth-section-1${isMobile === null ? ' auth-section-1--initial' : ''}`}
+        style={{
+          height: isExpanded ? 'auto' : (isMobile ? mobileSectionHeight : sectionHeight),
+          minHeight: isExpanded ? 'auto' : (isMobile ? undefined : sectionMinHeight),
+          maxHeight: isExpanded ? 'none' : (isMobile ? '85vh' : sectionMaxHeight),
+          transition: isMobile === null ? 'none' : 'height 0.5s cubic-bezier(0.33, 1, 0.68, 1), min-height 0.5s cubic-bezier(0.33, 1, 0.68, 1), max-height 0.5s cubic-bezier(0.33, 1, 0.68, 1)',
+          overflow: 'hidden'
+        }}
+      >
       <div
-        ref={contentRef}
         className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto px-6"
         style={{
           paddingTop: '2.25rem',
@@ -228,7 +226,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         </div>
 
         {/* Course Columns - 3 column grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-[35px]">
           {(() => {
             const columns = [
               { type: 'specialism' as const, courses: filteredSpecialism },
@@ -241,7 +239,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
                 ? 0.15 + cardOffset * 0.1
                 : 0.15
               const el = (
-                <div key={type}>
+                <div key={type} className={courses.length === 0 ? 'hidden md:block' : ''}>
                   <CourseTypeColumn type={type} courses={courses} hideHeader cardStaggerBase={baseDelay} />
                 </div>
               )
@@ -257,7 +255,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
         style={{
           background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
-          opacity: !isExpanded && (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 1 : 0,
+          opacity: !isExpanded && (isMobile ? totalCards >= 7 : maxRows >= 3) ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
       />
@@ -284,8 +282,8 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
           letterSpacing: '-0.01em',
           borderRadius: '0.25rem',
           width: '85px',
-          opacity: (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 1 : 0,
-          pointerEvents: (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 'auto' : 'none',
+          opacity: (isMobile ? totalCards >= 7 : maxRows >= 3) ? 1 : 0,
+          pointerEvents: (isMobile ? totalCards >= 7 : maxRows >= 3) ? 'auto' : 'none',
           transition: 'opacity 0.3s ease',
         }}
       >
@@ -300,5 +298,6 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         />
       )}
     </section>
+    </>
   )
 }

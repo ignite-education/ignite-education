@@ -130,37 +130,35 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
           </Link>
         )}
 
-        {/* Right side - Sign In button or Profile (invisible placeholder until auth loads) */}
+        {/* Right side - Sign In button by default, swaps to avatar once auth confirms signed in */}
         <div style={{ width: '85px', height: '41px' }} className="flex items-center justify-end">
-          {authLoaded && (
-            user ? (
-              <Link href="/progress" className="inline-block">
-                {profilePicture ? (
-                  <img
-                    src={profilePicture}
-                    alt="Profile"
-                    className="object-cover rounded-sm"
-                    style={{ width: '41px', height: '41px' }}
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div
-                    className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
-                    style={{ width: '41px', height: '41px' }}
-                  >
-                    {firstName?.charAt(0).toUpperCase() || '?'}
-                  </div>
-                )}
-              </Link>
-            ) : (
-              <Link
-                href="/sign-in"
-                className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-                style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', display: 'inline-block', textAlign: 'center' }}
-              >
-                Sign In
-              </Link>
-            )
+          {authLoaded && user ? (
+            <Link href="/progress" className="inline-block">
+              {profilePicture ? (
+                <img
+                  src={profilePicture}
+                  alt="Profile"
+                  className="object-cover rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div
+                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
+                  style={{ width: '41px', height: '41px' }}
+                >
+                  {firstName?.charAt(0).toUpperCase() || '?'}
+                </div>
+              )}
+            </Link>
+          ) : (
+            <Link
+              href="/sign-in"
+              className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
+              style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', display: 'inline-block', textAlign: 'center' }}
+            >
+              Sign In
+            </Link>
           )}
         </div>
       </div>

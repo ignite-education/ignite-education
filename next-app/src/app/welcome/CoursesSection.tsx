@@ -314,7 +314,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
           >
             <div
               ref={scrollRef}
-              className="overflow-x-auto overflow-y-visible auth-course-cards-scroll hide-scrollbar"
+              className="overflow-x-auto overflow-y-hidden auth-course-cards-scroll hide-scrollbar"
               style={{
                 scrollSnapType: 'x mandatory',
                 paddingLeft: isMobile ? '0' : '30px',

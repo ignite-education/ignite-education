@@ -18,13 +18,13 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
       </div>
 
       <div className="bg-white">
-        <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center pt-12 md:pt-[75px]">
+        <div className="max-w-4xl mx-auto px-6 pb-[38px] flex justify-center pt-10 md:pt-[75px]">
           <div className="w-full text-center" style={{ maxWidth: '700px' }}>
             {/* Category Tag */}
             <Link
               href="/courses"
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-normal"
-              style={{ letterSpacing: '-0.01em', marginBottom: '30px' }}
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-normal mb-6 md:mb-[30px]"
+              style={{ letterSpacing: '-0.01em' }}
             >
               {getCourseTypeLabel(course)}
             </Link>
