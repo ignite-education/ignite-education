@@ -785,32 +785,59 @@ const CoursePage = () => {
                     {/* Left Column - Curriculum Content */}
                     <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
                       <div className="space-y-6">
-                        {course.module_structure.map((module, moduleIndex) => (
-                          <div key={moduleIndex}>
-                            {/* Module Title */}
-                            <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}>
-                              Module {moduleIndex + 1} - {module.name}
-                            </h3>
-
-                            {/* Module Description and Lessons */}
-                            <div>
-                              {/* Module Intro - uses stored description or falls back to generated */}
-                              <p className="text-gray-900 mb-3" style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>
-                                {module.description || generateModuleIntro(module)}
-                              </p>
-
-                              {/* Lesson List */}
-                              <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
-                                {(module.lessons || []).map((lesson, lessonIndex) => (
-                                  <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
-                                    <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                                    <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.01em' }}>{lesson.name}</span>
-                                  </li>
-                                ))}
-                              </ul>
+                        {course.structure_type === 'lessons_only' ? (
+                          (course.module_structure[0]?.lessons || []).map((lesson, lessonIndex) => (
+                            <div key={lessonIndex}>
+                              <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}>
+                                {lesson.name}
+                              </h3>
+                              <div>
+                                {lesson.description && (
+                                  <p className="text-gray-900 mb-3" style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>
+                                    {lesson.description}
+                                  </p>
+                                )}
+                                {lesson.bullet_points && lesson.bullet_points.length > 0 && (
+                                  <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
+                                    {lesson.bullet_points.map((point, pointIndex) => (
+                                      <li key={pointIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                                        <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
+                                        <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.01em' }}>{point}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))
+                        ) : (
+                          course.module_structure.map((module, moduleIndex) => (
+                            <div key={moduleIndex}>
+                              {/* Module Title */}
+                              <h3 className="font-semibold mb-1" style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}>
+                                Module {moduleIndex + 1} - {module.name}
+                              </h3>
+
+                              {/* Module Description and Lessons */}
+                              <div>
+                                {/* Module Intro - uses stored description or falls back to generated */}
+                                <p className="text-gray-900 mb-3" style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>
+                                  {module.description || generateModuleIntro(module)}
+                                </p>
+
+                                {/* Lesson List */}
+                                <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
+                                  {(module.lessons || []).map((lesson, lessonIndex) => (
+                                    <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                                      <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
+                                      <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.01em' }}>{lesson.name}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
 

@@ -150,6 +150,7 @@ export default async function CoursePage({ params }: PageProps) {
             <div className="w-full" style={{ maxWidth: '762px' }}>
               <CourseCurriculum
                 moduleStructure={course.module_structure}
+                structureType={course.structure_type}
                 courseSlug={courseSlug}
                 courseTitle={course.title}
                 isComingSoon={isComingSoon}

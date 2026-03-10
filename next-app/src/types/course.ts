@@ -17,6 +17,7 @@ export interface Course {
   description: string
   status: 'live' | 'coming_soon'
   course_type: 'specialism' | 'skill' | 'subject'
+  structure_type?: 'modules_and_lessons' | 'lessons_only'
   category: string
   image_url: string
   og_image?: string

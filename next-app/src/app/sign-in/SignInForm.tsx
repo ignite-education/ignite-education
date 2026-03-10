@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { X } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { createUserRecord, addToResendAudience } from '@/lib/auth'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
 import Footer from '@/components/Footer'
 
@@ -13,19 +11,8 @@ export default function SignInForm() {
   const searchParams = useSearchParams()
   const supabase = createClient()
 
-  // Form state
-  const [isLogin, setIsLogin] = useState(true)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  // Reset password modal state
-  const [showResetPassword, setShowResetPassword] = useState(false)
-  const [resetEmail, setResetEmail] = useState('')
-  const [resetSuccess, setResetSuccess] = useState(false)
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(false)
@@ -83,64 +70,6 @@ export default function SignInForm() {
     )
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    const redirectParam = searchParams.get('redirect')
-
-    try {
-      if (isLogin) {
-        const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-
-        // Check role + enrollment to decide redirect destination
-        if (signInData.user) {
-          const { data: userData } = await supabase
-            .from('users')
-            .select('enrolled_course, role')
-            .eq('id', signInData.user.id)
-            .maybeSingle()
-
-          // Admin redirect: send admin/teacher to admin portal, students to welcome
-          if (redirectParam === 'admin') {
-            if (userData?.role === 'admin' || userData?.role === 'teacher') {
-              window.location.href = 'https://admin.ignite.education'
-              return
-            }
-            window.location.href = '/welcome'
-            return
-          }
-
-          if (userData?.enrolled_course) {
-            window.location.href = '/progress'
-            return
-          }
-        }
-      } else {
-        const trimmedFirst = firstName.trim()
-        const trimmedLast = lastName.trim()
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: { data: { first_name: trimmedFirst, last_name: trimmedLast } },
-        })
-        if (error) throw error
-
-        if (data.user) {
-          await createUserRecord(supabase, data.user, trimmedFirst, trimmedLast)
-          addToResendAudience(email, trimmedFirst, trimmedLast)
-        }
-      }
-      router.push('/courses')
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An error occurred'
-      setError(message)
-      setLoading(false)
-    }
-  }
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
 
   const handleOAuthSignIn = async (provider: 'google' | 'linkedin_oidc') => {
@@ -162,25 +91,6 @@ export default function SignInForm() {
       if (error) throw error
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred with OAuth sign in'
-      setError(message)
-      setLoading(false)
-    }
-  }
-
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${siteUrl}/reset-password`,
-      })
-      if (error) throw error
-      setResetSuccess(true)
-      setLoading(false)
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An error occurred sending reset email'
       setError(message)
       setLoading(false)
     }
@@ -226,26 +136,27 @@ export default function SignInForm() {
 
             <div className="w-full">
               {/* Form Card */}
-              <div className="bg-white text-black px-5 pt-4 pb-3 rounded-md">
-                {error && !showResetPassword && (
+              <div className="bg-white text-black px-5 pt-4 pb-4 rounded-md">
+                {error && (
                   <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                     {error}
                   </div>
                 )}
 
                 {/* OAuth Buttons */}
-                <div className="space-y-2 mb-3">
+                <div className="space-y-2">
                   <button
                     type="button"
                     onClick={() => handleOAuthSignIn('google')}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-gray-50 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ height: '40px' }}
                   >
-                    <span className="truncate">Continue with Google</span>
+                    Continue with Google
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
                       alt="Google"
-                      className="w-5 h-5 flex-shrink-0 object-contain"
+                      style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
                     />
                   </button>
 
@@ -253,130 +164,14 @@ export default function SignInForm() {
                     type="button"
                     onClick={() => handleOAuthSignIn('linkedin_oidc')}
                     disabled={loading}
-                    className="w-full flex items-center justify-center bg-[#0a66c2] text-white rounded-md px-3 py-2 text-[1rem] tracking-[-0.02em] hover:bg-[#084d93] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_12px_rgba(103,103,103,0.25)]"
+                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{ height: '40px' }}
                   >
                     Continue with LinkedIn
+                    <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-2px' }}>
+                      <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
+                    </svg>
                   </button>
-                </div>
-
-                {/* Divider */}
-                <div className="relative" style={{ marginBottom: '0.625rem' }}>
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-300"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-2 bg-white text-gray-500">Or</span>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                  {/* Name fields - only visible in signup mode */}
-                  <div
-                    className={`grid grid-cols-2 gap-2 transition-all duration-200 ${
-                      isLogin ? 'opacity-0 h-0 overflow-hidden pointer-events-none' : 'opacity-100'
-                    }`}
-                  >
-                    <div>
-                      <label className="block text-sm font-medium mb-0.5">First Name</label>
-                      <input
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        required={!isLogin}
-                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                        placeholder="Alan"
-                        disabled={isLogin}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-0.5">Last Name</label>
-                      <input
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        required={!isLogin}
-                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                        placeholder="Turing"
-                        disabled={isLogin}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-sm font-medium mb-0.5">Email</label>
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-0.5">Password</label>
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        minLength={6}
-                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-pink-500 rounded-md"
-                        placeholder="••••••••"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLogin ? 'Sign In' : 'Sign Up'}
-                  </button>
-                </form>
-
-                {/* Account Toggle */}
-                <div className="text-center" style={{ marginTop: '0.5625rem' }}>
-                  {isLogin ? (
-                    <div className="flex items-center justify-center gap-4">
-                      <button
-                        onClick={() => {
-                          setIsLogin(false)
-                          setError('')
-                        }}
-                        className="text-black hover:text-[#EF0B72] transition"
-                        style={{ fontSize: '0.85em' }}
-                      >
-                        Don&apos;t have an account?
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowResetPassword(true)
-                          setResetEmail(email)
-                          setResetSuccess(false)
-                          setError('')
-                        }}
-                        className="text-black hover:text-[#EF0B72] transition"
-                        style={{ fontSize: '0.85em' }}
-                      >
-                        Reset password
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setIsLogin(true)
-                        setError('')
-                      }}
-                      className="text-black hover:text-[#EF0B72] transition"
-                      style={{ fontSize: '0.85em' }}
-                    >
-                      Already have an account?
-                    </button>
-                  )}
                 </div>
               </div>
 
@@ -394,90 +189,6 @@ export default function SignInForm() {
         {/* Footer */}
         <Footer />
       </div>
-
-      {/* Password Reset Modal */}
-      {showResetPassword && (
-        <div
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
-          style={{ background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))' }}
-          onClick={() => {
-            setShowResetPassword(false)
-            setResetSuccess(false)
-            setError('')
-          }}
-        >
-          <div className="relative">
-            <h2 className="text-xl font-semibold text-white pl-1" style={{ marginBottom: '0.15rem' }}>
-              Reset Password
-            </h2>
-
-            <div
-              className="bg-white relative"
-              style={{ width: '450px', maxWidth: '90vw', padding: '2rem' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => {
-                  setShowResetPassword(false)
-                  setResetSuccess(false)
-                  setError('')
-                }}
-                className="absolute top-4 right-4 text-gray-600 hover:text-black"
-              >
-                <X size={24} />
-              </button>
-
-              {!resetSuccess ? (
-                <>
-                  <p className="text-gray-700 mb-4 text-sm">
-                    Enter your email address and we&apos;ll send you a link to reset your password.
-                  </p>
-
-                  {error && (
-                    <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4 text-sm">
-                      {error}
-                    </div>
-                  )}
-
-                  <form onSubmit={handleResetPassword}>
-                    <div className="mb-4">
-                      <label className="block text-sm font-medium mb-1 text-black">Email</label>
-                      <input
-                        type="email"
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                        required
-                        className="w-full bg-gray-100 text-black px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 rounded-lg"
-                        placeholder="you@example.com"
-                      />
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="w-full bg-[#EF0B72] text-white rounded-lg px-4 py-2 text-[0.9rem] tracking-[-0.02em] font-semibold hover:bg-[#D50A65] transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {loading ? 'Sending...' : 'Send Reset Link'}
-                    </button>
-                  </form>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-black mb-2">Check Your Email</h3>
-                  <p className="text-gray-700 text-sm mb-4">
-                    We&apos;ve sent a password reset link to <strong>{resetEmail}</strong>
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

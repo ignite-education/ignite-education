@@ -169,11 +169,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
       // Auto-enroll in the course
       await enrollUserInCourse(data.user.id, data.user)
-
-      // Redirect to progress hub for live courses
-      if (!isComingSoon) {
-        window.location.href = '/progress'
-      }
     } catch (err) {
       console.error('[EnrollmentCTA] Unexpected error:', err)
     }
@@ -224,11 +219,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           sessionStorage.removeItem('pendingEnrollCourse')
           await enrollUserInCourse(user.id, user)
           setCheckingStatus(false)
-
-          // Redirect to progress hub for live courses
-          if (!isComingSoon) {
-            window.location.href = '/progress'
-          }
           return
         }
 
@@ -459,7 +449,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               </button>
 
               <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
-                {!checkingStatus && (
+                {!checkingStatus && !isSaving && (
                   isSaved
                     ? isComingSoon
                       ? `We'll notify you when ${courseTitle} is available`

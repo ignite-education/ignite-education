@@ -581,39 +581,71 @@ const CourseManagement = () => {
                 // Lessons Only Mode
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
-                      <div key={lessonIndex} className="flex gap-2">
-                        <input
-                          type="text"
-                          value={lesson.name}
-                          onChange={(e) => {
-                            const newModules = [...formData.modules];
-                            newModules[0].lessons[lessonIndex].name = e.target.value;
-                            setFormData({ ...formData, modules: newModules });
-                          }}
-                          placeholder={`Lesson ${lessonIndex + 1} name`}
-                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
-                        />
-                        {formData.modules[0].lessons.length > 1 && (
-                          <button
-                            onClick={() => {
+                      <div key={lessonIndex} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={lesson.name}
+                            onChange={(e) => {
                               const newModules = [...formData.modules];
-                              newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
+                              newModules[0].lessons[lessonIndex].name = e.target.value;
                               setFormData({ ...formData, modules: newModules });
                             }}
-                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
-                            title="Remove lesson"
-                          >
-                            <Trash2 size={20} />
-                          </button>
-                        )}
+                            placeholder={`Lesson ${lessonIndex + 1} name`}
+                            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                          />
+                          {formData.modules[0].lessons.length > 1 && (
+                            <button
+                              onClick={() => {
+                                const newModules = [...formData.modules];
+                                newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
+                                setFormData({ ...formData, modules: newModules });
+                              }}
+                              className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Remove lesson"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          )}
+                        </div>
+                        <textarea
+                          value={lesson.description || ''}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons[lessonIndex].description = e.target.value;
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          placeholder="Lesson description"
+                          rows={2}
+                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm mb-2"
+                        />
+                        <div className="space-y-1">
+                          <label className="block text-xs font-medium text-gray-500">Bullet Points</label>
+                          {(lesson.bullet_points || ['', '', '']).map((bp, bpIndex) => (
+                            <input
+                              key={bpIndex}
+                              type="text"
+                              value={bp}
+                              onChange={(e) => {
+                                const newModules = [...formData.modules];
+                                const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
+                                bulletPoints[bpIndex] = e.target.value;
+                                newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
+                                setFormData({ ...formData, modules: newModules });
+                              }}
+                              placeholder={`Bullet point ${bpIndex + 1}`}
+                              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
+                            />
+                          ))}
+                        </div>
                       </div>
                     ))}
                     <button
                       onClick={() => {
                         const newModules = [...formData.modules];
-                        newModules[0].lessons.push({ name: '' });
+                        newModules[0].lessons.push({ name: '', description: '', bullet_points: ['', '', ''] });
                         setFormData({ ...formData, modules: newModules });
                       }}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
@@ -1000,39 +1032,71 @@ const CourseManagement = () => {
                 // Lessons Only Mode
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Lessons</label>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
-                      <div key={lessonIndex} className="flex gap-2">
-                        <input
-                          type="text"
-                          value={lesson.name}
-                          onChange={(e) => {
-                            const newModules = [...formData.modules];
-                            newModules[0].lessons[lessonIndex].name = e.target.value;
-                            setFormData({ ...formData, modules: newModules });
-                          }}
-                          placeholder={`Lesson ${lessonIndex + 1} name`}
-                          className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
-                        />
-                        {formData.modules[0].lessons.length > 1 && (
-                          <button
-                            onClick={() => {
+                      <div key={lessonIndex} className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                        <div className="flex gap-2 mb-2">
+                          <input
+                            type="text"
+                            value={lesson.name}
+                            onChange={(e) => {
                               const newModules = [...formData.modules];
-                              newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
+                              newModules[0].lessons[lessonIndex].name = e.target.value;
                               setFormData({ ...formData, modules: newModules });
                             }}
-                            className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
-                            title="Remove lesson"
-                          >
-                            <Trash2 size={20} />
-                          </button>
-                        )}
+                            placeholder={`Lesson ${lessonIndex + 1} name`}
+                            className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900"
+                          />
+                          {formData.modules[0].lessons.length > 1 && (
+                            <button
+                              onClick={() => {
+                                const newModules = [...formData.modules];
+                                newModules[0].lessons = newModules[0].lessons.filter((_, i) => i !== lessonIndex);
+                                setFormData({ ...formData, modules: newModules });
+                              }}
+                              className="p-3 text-red-600 hover:bg-red-50 rounded-lg transition"
+                              title="Remove lesson"
+                            >
+                              <Trash2 size={20} />
+                            </button>
+                          )}
+                        </div>
+                        <textarea
+                          value={lesson.description || ''}
+                          onChange={(e) => {
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons[lessonIndex].description = e.target.value;
+                            setFormData({ ...formData, modules: newModules });
+                          }}
+                          placeholder="Lesson description"
+                          rows={2}
+                          className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm mb-2"
+                        />
+                        <div className="space-y-1">
+                          <label className="block text-xs font-medium text-gray-500">Bullet Points</label>
+                          {(lesson.bullet_points || ['', '', '']).map((bp, bpIndex) => (
+                            <input
+                              key={bpIndex}
+                              type="text"
+                              value={bp}
+                              onChange={(e) => {
+                                const newModules = [...formData.modules];
+                                const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
+                                bulletPoints[bpIndex] = e.target.value;
+                                newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
+                                setFormData({ ...formData, modules: newModules });
+                              }}
+                              placeholder={`Bullet point ${bpIndex + 1}`}
+                              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
+                            />
+                          ))}
+                        </div>
                       </div>
                     ))}
                     <button
                       onClick={() => {
                         const newModules = [...formData.modules];
-                        newModules[0].lessons.push({ name: '' });
+                        newModules[0].lessons.push({ name: '', description: '', bullet_points: ['', '', ''] });
                         setFormData({ ...formData, modules: newModules });
                       }}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-pink-100 border-2 border-pink-500 text-pink-600 rounded-lg hover:bg-pink-200 transition text-sm font-medium"
