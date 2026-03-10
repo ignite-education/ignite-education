@@ -1,7 +1,27 @@
 'use client'
 
+import { useRef, useEffect } from 'react'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
+import type { AutoAnimationPlugin } from '@formkit/auto-animate'
 import CourseCard from './CourseCard'
+
+// Custom auto-animate plugin: override 'add' to fade in-place (no fly-in),
+// keep default remove/remain behavior for smooth repositioning
+const noFlyIn: AutoAnimationPlugin = (el, action) => {
+  if (action === 'add') {
+    return new KeyframeEffect(el, [
+      { opacity: 0 },
+      { opacity: 1 },
+    ], { duration: 300, easing: 'ease-out' })
+  }
+  if (action === 'remove') {
+    return new KeyframeEffect(el, [
+      { opacity: 1 },
+      { opacity: 0 },
+    ], { duration: 200, easing: 'ease-in' })
+  }
+  return new KeyframeEffect(el, [], { duration: 0 })
+}
 
 export const COURSE_TYPE_CONFIG: Record<string, { title: string; description: string }> = {
   specialism: {
@@ -37,7 +57,27 @@ export default function CourseTypeColumn({
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
-  const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
+
+  // Disable auto-animate during initial stagger, enable after stagger completes
+  const initialRenderRef = useRef(true)
+  const useStagger = initialRenderRef.current && cardStaggerBase > 0
+  const [animateRef, enableAutoAnimate] = useAutoAnimate(noFlyIn)
+
+  useEffect(() => {
+    if (!useStagger) {
+      enableAutoAnimate(true)
+      return
+    }
+    // Keep auto-animate off during stagger, enable after longest delay + animation duration
+    enableAutoAnimate(false)
+    const longestDelay = cardStaggerBase + (displayCourses.length - 1) * 0.1
+    const timer = setTimeout(() => {
+      initialRenderRef.current = false
+      enableAutoAnimate(true)
+    }, (longestDelay + 0.6) * 1000)
+    return () => clearTimeout(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
@@ -59,7 +99,7 @@ export default function CourseTypeColumn({
         {displayCourses.map((course, idx) => (
           <div
             key={course.id || course.name}
-            style={cardStaggerBase > 0 ? {
+            style={useStagger ? {
               animation: 'fadeInUpSmall 0.6s ease-out forwards',
               animationDelay: `${cardStaggerBase + idx * 0.1}s`,
               opacity: 0,

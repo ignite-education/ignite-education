@@ -1,28 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import useTypingAnimation from '@/hooks/useTypingAnimation'
+import Lottie from 'lottie-react'
+import type { LottieRefCurrentProps } from 'lottie-react'
+import lottieData from '../../../public/icon-animation.json'
 import Footer from '@/components/Footer'
 
 export default function SignInForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // Mobile detection
-  const [isMobile, setIsMobile] = useState(false)
+  const lottieRef = useRef<LottieRefCurrentProps>(null)
+  const loopCountRef = useRef(0)
+  const [lottieReady, setLottieReady] = useState(false)
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768)
-    handleResize()
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
+    if (lottieRef.current) {
+      setTimeout(() => lottieRef.current?.play(), 300)
+    }
+  }, [lottieReady])
 
   // Show error from OAuth callback failure
   useEffect(() => {
@@ -30,45 +31,6 @@ export default function SignInForm() {
       setError('Authentication failed. Please try again.')
     }
   }, [searchParams])
-
-  // Typing animation for tagline
-  const taglineText = "Upskill. Reskill.Get ready for what's next."
-  const { displayText: typedTagline } = useTypingAnimation(taglineText, {
-    charDelay: 90,
-    startDelay: 700,
-    pausePoints: [
-      { after: 8, duration: 500 },
-      { after: 17, duration: 500 },
-      { after: taglineText.length, duration: 500 },
-    ],
-    enabled: true,
-  })
-
-  const renderTypedTagline = () => {
-    const fullFirstLine = 'Upskill. Reskill.'
-    const fullSecondLine = "Get ready for what's next."
-    const pinkStart = fullFirstLine.length
-
-    const firstLineTypedLength = Math.min(typedTagline.length, fullFirstLine.length)
-    const secondLineTypedLength = typedTagline.length > pinkStart ? typedTagline.length - pinkStart : 0
-
-    return (
-      <>
-        <span style={{ display: 'block', color: 'white' }}>
-          {fullFirstLine.substring(0, firstLineTypedLength)}
-          {firstLineTypedLength < fullFirstLine.length && (
-            <span style={{ visibility: 'hidden' }}>{fullFirstLine.substring(firstLineTypedLength)}</span>
-          )}
-        </span>
-        <span style={{ display: 'block', color: '#EF0B72' }}>
-          {fullSecondLine.substring(0, secondLineTypedLength)}
-          {secondLineTypedLength < fullSecondLine.length && (
-            <span style={{ visibility: 'hidden' }}>{fullSecondLine.substring(secondLineTypedLength)}</span>
-          )}
-        </span>
-      </>
-    )
-  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
 
@@ -99,38 +61,56 @@ export default function SignInForm() {
   return (
     <>
       <div
-        className="fixed inset-0 overflow-y-auto"
-        style={{ zIndex: 50, backgroundColor: '#000' }}
+        className="fixed inset-0 overflow-y-auto flex flex-col"
+        style={{ zIndex: 50, backgroundColor: '#fff' }}
       >
         {/* Auth Form Section */}
         <div
-          className="min-h-screen flex items-center justify-center px-8 relative"
+          className="flex-1 flex items-center justify-center px-8 relative"
           style={{
-            backgroundImage: !isMobile
-              ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)'
-              : 'url(https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20design%20%281%29.png)',
-            backgroundSize: isMobile ? '100% 100%' : 'auto 97%',
-            backgroundPosition: isMobile ? 'center center' : 'left center',
-            backgroundRepeat: 'no-repeat',
-            backgroundColor: '#000',
+            backgroundColor: '#fff',
           }}
         >
-          <div className="relative w-full flex flex-col items-center" style={{ maxWidth: '533px' }}>
-            {/* Logo */}
-            <img
-              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png"
-              alt="Ignite Education"
-              className="object-contain"
-              style={{ width: '120px', height: '40px', marginBottom: '0.5rem' }}
-            />
+          <div className="relative w-full flex flex-col items-center py-[5rem] lg:py-0" style={{ maxWidth: '533px' }}>
+            {/* Logo Animation */}
+            <div className="w-[75px] h-[75px] md:w-[88px] md:h-[88px] relative" style={{ marginBottom: '0.5rem' }}>
+              {!lottieReady && (
+                <svg
+                  viewBox="0 0 600 600"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                >
+                  <rect x="92.5" y="92.5" width="415" height="415" fill="#EF0B72" />
+                  <rect x="92.5" y="231.5" width="277" height="277" fill="#B30FA9" />
+                  <rect x="93" y="370" width="138" height="138" fill="#7714E0" />
+                </svg>
+              )}
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={lottieData}
+                loop={true}
+                autoplay={false}
+                onDOMLoaded={() => setLottieReady(true)}
+                onLoopComplete={() => {
+                  loopCountRef.current += 1
+                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                    lottieRef.current.pause()
+                    setTimeout(() => {
+                      lottieRef.current?.goToAndPlay(0)
+                    }, 4000)
+                  }
+                }}
+                style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}
+              />
+            </div>
 
             {/* Tagline */}
-            <div style={{ paddingTop: '0.25rem', paddingBottom: '0.25rem', marginBottom: 'clamp(0.75rem, 2vh, 1.25rem)' }}>
+            <div className="mb-[0.875rem] md:mb-[1.75rem]" style={{ paddingTop: '0.25rem', paddingBottom: '0' }}>
               <h1
-                className="text-xl font-semibold text-white px-2"
-                style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center' }}
+                className="text-xl font-semibold px-2"
+                style={{ lineHeight: '1.2', fontSize: 'clamp(18.9px, 4.2vw, 27.3px)', textAlign: 'center', letterSpacing: '-0.02em' }}
               >
-                {renderTypedTagline()}
+                <span style={{ display: 'block', color: '#000' }}>Upskill. Reskill.</span>
+                <span style={{ display: 'block', color: '#EF0B72' }}>Get ready for what&apos;s next.</span>
               </h1>
             </div>
 
@@ -176,7 +156,7 @@ export default function SignInForm() {
               </div>
 
               {/* Terms and Privacy */}
-              <p className="text-xs text-white text-center mt-3">
+              <p className="text-xs text-black text-center mt-4">
                 By signing in, you agree to Ignite&apos;s<br />
                 <a href="/terms" className="underline hover:text-[#EF0B72]">Terms of Service</a>
                 {' '}and{' '}

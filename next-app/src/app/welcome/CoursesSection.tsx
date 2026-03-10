@@ -48,12 +48,12 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
   return (
     <div
       className="relative cursor-pointer flex-shrink-0 auth-course-card w-[270px] h-[270px] md:w-[249px] md:h-[249px]"
-      style={{ overflow: 'visible' }}
+      style={{ overflow: 'visible', transform: 'translateZ(0)' }}
       onClick={onClick}
     >
       <div
-        className="absolute inset-0 text-black rounded-[8px] transition-all duration-300 ease-in-out flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner hover:scale-[1.015] hover:shadow-xl"
-        style={{ backgroundColor: '#F6F6F6', transformOrigin: 'center', zIndex: 1 }}
+        className="absolute inset-0 text-black rounded-[8px] flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner hover:scale-[1.015] hover:shadow-xl"
+        style={{ backgroundColor: '#F6F6F6', transformOrigin: 'center', zIndex: 1, transition: 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out', transform: 'translateZ(0)' }}
       >
         <div
           className="flex flex-col h-full auth-course-card-content"
@@ -119,7 +119,6 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
-  const [blurredCards, setBlurredCards] = useState<number[]>([])
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -157,37 +156,31 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     return () => observer.disconnect()
   }, [])
 
-  // Detect card visibility for blur effect on course grid
+  // Detect card visibility for blur effect on course grid (DOM-based to avoid re-renders)
   useEffect(() => {
     const scrollContainer = scrollRef.current
     if (!scrollContainer || courses.length === 0) return
 
+    let rafId = 0
+
     const updateCardBlur = () => {
-      const cards = scrollContainer.querySelectorAll('[data-course-card]')
-      const newBlurredCards: number[] = []
-      const containerRect = scrollContainer.getBoundingClientRect()
-      const containerLeft = containerRect.left
-      const isMobile = window.innerWidth < 768
-      const viewportWidth = window.innerWidth
+      cancelAnimationFrame(rafId)
+      rafId = requestAnimationFrame(() => {
+        const cards = scrollContainer.querySelectorAll<HTMLElement>('[data-course-card]')
+        const containerRect = scrollContainer.getBoundingClientRect()
+        const containerLeft = containerRect.left
+        const mobile = window.innerWidth < 768
+        const viewportWidth = window.innerWidth
 
-      cards.forEach((card, globalIndex) => {
-        const cardRect = card.getBoundingClientRect()
-        const cardLeft = cardRect.left
+        cards.forEach((card) => {
+          const cardLeft = card.getBoundingClientRect().left
+          const shouldBlur = mobile
+            ? cardLeft > viewportWidth / 2
+            : cardLeft - containerLeft > 520
 
-        if (isMobile) {
-          const halfViewport = viewportWidth / 2
-          if (cardLeft > halfViewport) {
-            newBlurredCards.push(globalIndex)
-          }
-        } else {
-          const relativeLeft = cardLeft - containerLeft
-          if (relativeLeft > 520) {
-            newBlurredCards.push(globalIndex)
-          }
-        }
+          card.style.filter = shouldBlur ? 'blur(1px) brightness(0.95)' : 'none'
+        })
       })
-
-      setBlurredCards(newBlurredCards)
     }
 
     updateCardBlur()
@@ -198,10 +191,11 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
       resizeTimeout = setTimeout(updateCardBlur, 100)
     }
 
-    scrollContainer.addEventListener('scroll', updateCardBlur)
+    scrollContainer.addEventListener('scroll', updateCardBlur, { passive: true })
     window.addEventListener('resize', debouncedResize)
 
     return () => {
+      cancelAnimationFrame(rafId)
       clearTimeout(resizeTimeout)
       scrollContainer.removeEventListener('scroll', updateCardBlur)
       window.removeEventListener('resize', debouncedResize)
@@ -302,7 +296,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 width={576}
                 height={144}
                 loading="lazy"
-                style={{ maxWidth: '113px', height: 'auto', marginTop: '15px' }}
+                style={{ maxWidth: isMobile ? '107px' : '113px', height: 'auto', marginTop: '15px' }}
               />
             </div>
           </div>
@@ -337,16 +331,14 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                         overflow: 'visible'
                       }}
                     >
-                      {pageCourses.map((course, localIndex) => {
-                        const globalIndex = pageIndex * 4 + localIndex
-                        const isBlurred = blurredCards.includes(globalIndex)
+                      {pageCourses.map((course) => {
                         return (
                           <div
                             key={course.name}
                             data-course-card
                             style={{
-                              filter: isBlurred ? 'blur(1px) brightness(0.95)' : 'none',
-                              transition: 'filter 200ms ease-out'
+                              transition: 'filter 200ms ease-out',
+                              willChange: 'filter'
                             }}
                           >
                             <CourseCard

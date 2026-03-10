@@ -408,7 +408,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 disabled={isSaving || checkingStatus}
                 className={`w-full px-4 shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
-                    ? 'bg-white text-black'
+                    ? 'bg-white text-[#888]'
                     : isSaving
                     ? savingAction === 'removing'
                       ? 'bg-[#009600] text-white'
@@ -416,11 +416,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     : isSaved
                     ? 'bg-[#009600] text-white'
                     : 'bg-[#EF0B72] text-white'
-                } disabled:cursor-not-allowed transition-all duration-500 ease-in-out`}
+                } disabled:cursor-not-allowed`}
                 style={{
                   paddingTop: '0.575rem',
                   paddingBottom: '0.575rem',
                   borderRadius: '8px',
+                  transition: 'opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease-in-out',
                   ...(!checkingStatus && !isSaving ? {
                     opacity: showButton ? 1 : 0,
                     transform: showButton ? 'translateY(0)' : 'translateY(4px)',

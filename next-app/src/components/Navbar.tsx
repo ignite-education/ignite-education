@@ -132,7 +132,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
 
         {/* Right side - Sign In button by default, swaps to avatar once auth confirms signed in */}
         <div style={{ width: '85px', height: '41px' }} className="flex items-center justify-end">
-          {authLoaded && user ? (
+          {authLoaded && (user ? (
             <Link href="/progress" className="inline-block">
               {profilePicture ? (
                 <img
@@ -159,7 +159,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
             >
               Sign In
             </Link>
-          )}
+          ))}
         </div>
       </div>
     </div>
