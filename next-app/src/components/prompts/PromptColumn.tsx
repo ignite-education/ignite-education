@@ -51,7 +51,7 @@ export default function PromptColumn({ type, prompts, columnIndex = 0 }: PromptC
             key={prompt.id}
             style={{
               animation: 'fadeInUp 0.6s ease-out',
-              animationDelay: `${columnIndex * 0.1 + index * 0.15}s`,
+              animationDelay: `${index * 0.15}s`,
               opacity: 0,
               animationFillMode: 'forwards',
             }}

@@ -5480,7 +5480,7 @@ Requirements:
 Return ONLY the description text, no other commentary.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-5-20250514',
       max_tokens: 150,
       temperature: 0.7,
       messages: [{
@@ -5560,7 +5560,7 @@ Requirements:
 Return ONLY valid JSON, no other text or markdown.`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'claude-sonnet-4-5-20250514',
       max_tokens: Math.min(4096, 300 + (lessonCount * 200)),
       temperature: 0.7,
       messages: [{

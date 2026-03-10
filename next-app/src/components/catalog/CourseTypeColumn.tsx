@@ -44,6 +44,7 @@ interface CourseTypeColumnProps {
   showDescription?: boolean
   hideHeader?: boolean
   cardStaggerBase?: number
+  cardStaggerIncrement?: number
   maxCourses?: number
 }
 
@@ -53,6 +54,7 @@ export default function CourseTypeColumn({
   showDescription = true,
   hideHeader = false,
   cardStaggerBase = 0,
+  cardStaggerIncrement = 0.1,
   maxCourses,
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
@@ -70,7 +72,7 @@ export default function CourseTypeColumn({
     }
     // Keep auto-animate off during stagger, enable after longest delay + animation duration
     enableAutoAnimate(false)
-    const longestDelay = cardStaggerBase + (displayCourses.length - 1) * 0.1
+    const longestDelay = cardStaggerBase + (displayCourses.length - 1) * cardStaggerIncrement
     const timer = setTimeout(() => {
       initialRenderRef.current = false
       enableAutoAnimate(true)
@@ -101,7 +103,7 @@ export default function CourseTypeColumn({
             key={course.id || course.name}
             style={useStagger ? {
               animation: 'fadeInUpSmall 0.6s ease-out forwards',
-              animationDelay: `${cardStaggerBase + idx * 0.1}s`,
+              animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
               opacity: 0,
             } : undefined}
           >
