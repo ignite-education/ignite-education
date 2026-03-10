@@ -17,6 +17,11 @@ function extractFirstName(user: { user_metadata?: Record<string, string>; email?
     || 'there'
 }
 
+function extractAvatar(user: { user_metadata?: Record<string, string> }) {
+  const meta = user.user_metadata ?? {}
+  return meta.custom_avatar_url || meta.avatar_url || meta.picture || ''
+}
+
 export default function CourseRequestModal({ courseName, onClose, initialPhase = 'sign-in', initialUserName }: CourseRequestModalProps) {
   const [closing, setClosing] = useState(false)
   const [phase, setPhase] = useState<'sign-in' | 'thank-you'>(initialPhase)
@@ -26,6 +31,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
   const [savedCourseName, setSavedCourseName] = useState(courseName)
   const [isEditing, setIsEditing] = useState(false)
   const [signingIn, setSigningIn] = useState(false)
+  const [userAvatar, setUserAvatar] = useState('')
   const editInputRef = useRef<HTMLInputElement>(null)
   const measureRef = useRef<HTMLSpanElement>(null)
   const [inputWidth, setInputWidth] = useState<number | undefined>(undefined)
@@ -62,6 +68,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       }
       setCheckingAuth(false)
       setUserName(extractFirstName(user))
+      setUserAvatar(extractAvatar(user))
       setPhase('thank-you')
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,9 +78,10 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
     setSigningIn(true)
   }, [])
 
-  const lockAndTransition = (firstName: string) => {
+  const lockAndTransition = (firstName: string, avatar: string) => {
     setCheckingAuth(false)
     setUserName(firstName)
+    setUserAvatar(avatar)
     setPhase('thank-you')
   }
 
@@ -136,7 +144,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
           course_name: editedCourseName,
   
         })
-        lockAndTransition(extractFirstName(user))
+        lockAndTransition(extractFirstName(user), extractAvatar(user))
       }
     }, 500)
   }, [editedCourseName])
@@ -173,7 +181,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         console.log('[CourseRequest] Insert succeeded for:', editedCourseName)
       }
 
-      lockAndTransition(extractFirstName(data.user))
+      lockAndTransition(extractFirstName(data.user), extractAvatar(data.user))
     } catch (err) {
       console.error('[CourseRequest] Unexpected error:', err)
     }
@@ -215,7 +223,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
 
   const handleClose = () => {
     setClosing(true)
-    setTimeout(onClose, 300)
+    setTimeout(onClose, 250)
   }
 
   useEffect(() => {
@@ -235,7 +243,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
       onClick={handleClose}
     >
       <div
-        className={`relative bg-white flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'}`}
+        className={`relative bg-white flex flex-col ${closing ? 'animate-fadeOut' : 'animate-fadeIn'}`}
         style={{
           width: 'fit-content',
           height: '350px',
@@ -378,17 +386,26 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
             )
           ) : (
             /* Thank-you phase */
-            <div className="flex flex-col items-center animate-fadeIn">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="mb-4">
-                <circle cx="12" cy="12" r="11" stroke="#009600" strokeWidth="2" />
-                <path d="M7 12.5l3 3 7-7" stroke="#009600" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <p
-                className="text-[#009600] text-center text-[1rem] font-semibold tracking-[-0.02em] leading-tight"
+            <div className="flex items-center gap-5 animate-fadeIn">
+              {userAvatar && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={userAvatar}
+                  alt=""
+                  className="object-cover flex-shrink-0"
+                  style={{ width: '100px', height: '100px', borderRadius: '6px' }}
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <div
+                className="tracking-[-0.02em] leading-tight"
                 style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
               >
-                <span className="text-[1.2rem]">Thank you, {userName}</span><br /><span className="font-normal text-black" style={{ marginTop: '10px', display: 'inline-block' }}>We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available</span>
-              </p>
+                <p className="text-[#009600] text-[1.35rem] font-bold">Thank you, {userName}</p>
+                <p className="text-black text-[1rem] font-normal mt-1.5">
+                  We&rsquo;ll notify you when<br /><span className="font-semibold">{savedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span> is available
+                </p>
+              </div>
             </div>
           )}
         </div>

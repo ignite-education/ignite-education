@@ -377,7 +377,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               <button
                 onClick={handleSaveToggle}
                 disabled={isSaving || checkingStatus}
-                className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-[0_0_10px_rgba(103,103,103,0.4)] hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
+                className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
                     ? 'bg-[#9E9E9E] text-white'
                     : isSaved
@@ -418,9 +418,15 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 {!checkingStatus && (
                   isSaved
                     ? isComingSoon
-                      ? `Thank you, ${firstName}. We'll notify you when ${courseTitle} is available.`
+                      ? <>
+                          <span className="font-medium">Thank you, {firstName}.</span>
+                          <br />
+                          <span style={{ textWrap: 'balance' }}>We&apos;ll notify you when {courseTitle} is available.</span>
+                        </>
                       : 'Course saved to your account'
-                    : "We'll save this course to start later"
+                    : isComingSoon
+                      ? 'Join the course waitlist'
+                      : "We'll save this course to start later"
                 )}
               </p>
             </div>
