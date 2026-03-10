@@ -5514,11 +5514,13 @@ Return ONLY the description text, no other commentary.`;
 
 app.post('/api/generate-course-content', async (req, res) => {
   try {
-    const { courseTitle, courseType, lessonCount } = req.body;
+    const { courseTitle, courseType, lessonCount, complexity } = req.body;
 
     if (!courseTitle || !courseType || !lessonCount || lessonCount < 1) {
       return res.status(400).json({ error: 'Invalid request: courseTitle, courseType, and lessonCount (>=1) are required' });
     }
+
+    const validComplexity = ['beginner', 'intermediate', 'advanced'].includes(complexity) ? complexity : 'intermediate';
 
     if (!process.env.ANTHROPIC_API_KEY) {
       return res.status(500).json({ error: 'Anthropic API key not configured on server' });
@@ -5530,9 +5532,31 @@ app.post('/api/generate-course-content', async (req, res) => {
       'subject': 'an academic subject course covering theoretical and practical knowledge in a topic area'
     };
 
+    const complexityGuidance = {
+      'beginner': `- Target audience: complete beginners with no prior knowledge
+- Use simple, accessible language — avoid jargon and technical terms
+- Lesson names should be welcoming and non-intimidating (e.g., "Getting Started with..." or "Your First...")
+- Descriptions should emphasise building confidence and foundational understanding
+- Bullet points should cover basic concepts, simple definitions, and introductory skills
+- Focus on "what" and "why" rather than "how" at a deep level`,
+      'intermediate': `- Target audience: learners with some existing knowledge looking to deepen skills
+- Use professional but clear language — technical terms are fine with context
+- Lesson names should be descriptive and action-oriented (e.g., "Applying..." or "Building...")
+- Descriptions should balance theory with practical application
+- Bullet points should cover applied skills, frameworks, and real-world scenarios
+- Assume basic familiarity with the subject area`,
+      'advanced': `- Target audience: experienced practitioners looking to master the subject
+- Use expert-level language — technical terminology and industry jargon expected
+- Lesson names should reflect depth and sophistication (e.g., "Advanced Strategies for..." or "Optimising...")
+- Descriptions should focus on nuance, edge cases, and strategic thinking
+- Bullet points should cover advanced techniques, complex problem-solving, and leadership-level insights
+- Assume strong foundational knowledge and practical experience`
+    };
+
     const prompt = `Generate complete course content for "${courseTitle}", which is ${typeContext[courseType] || typeContext['skill']}.
 
 The course has ${lessonCount} lessons (no modules — flat structure).
+Complexity level: ${validComplexity}
 
 Return a JSON object with this exact structure:
 {
@@ -5546,11 +5570,14 @@ Return a JSON object with this exact structure:
   ]
 }
 
+Complexity guidance for ${validComplexity} level:
+${complexityGuidance[validComplexity]}
+
 Requirements:
 - Use British English throughout
 - The course description MUST be under 250 characters
 - Generate exactly ${lessonCount} lessons
-- Lessons should follow a logical learning progression from foundational to advanced
+- Lessons should follow a logical learning progression appropriate for the ${validComplexity} level
 - Lesson names should be concise and descriptive (3-8 words)
 - Lesson descriptions should be 1-2 sentences explaining what the learner will cover
 - Each lesson must have exactly 3 bullet points highlighting specific skills or knowledge gained

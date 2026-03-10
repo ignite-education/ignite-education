@@ -48,9 +48,10 @@ export async function generateCourseDescription(courseTitle, courseType, modules
  * @param {string} courseTitle - The course title
  * @param {string} courseType - The course type (skill/subject)
  * @param {number} lessonCount - Number of lessons to generate
+ * @param {string} complexity - Complexity level: 'beginner', 'intermediate', or 'advanced'
  * @returns {Promise<{description: string, lessons: Array<{name: string, description: string, bullet_points: string[]}>}>}
  */
-export async function generateCourseContent(courseTitle, courseType, lessonCount) {
+export async function generateCourseContent(courseTitle, courseType, lessonCount, complexity = 'intermediate') {
   const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
   if (isLocalhost) {
@@ -68,7 +69,8 @@ export async function generateCourseContent(courseTitle, courseType, lessonCount
       body: JSON.stringify({
         courseTitle,
         courseType,
-        lessonCount
+        lessonCount,
+        complexity
       })
     });
 

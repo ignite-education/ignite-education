@@ -12,6 +12,7 @@ const CourseManagement = () => {
   const [saving, setSaving] = useState(false);
   const [generatingDescription, setGeneratingDescription] = useState(false);
   const [generatingContent, setGeneratingContent] = useState(false);
+  const [contentComplexity, setContentComplexity] = useState('intermediate');
 
   // Form states for new/edit course
   const [formData, setFormData] = useState({
@@ -583,65 +584,88 @@ const CourseManagement = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-gray-700">Lessons</label>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!formData.title.trim()) {
-                          alert('Please enter a course title first');
-                          return;
-                        }
-                        const lessonCount = formData.modules[0]?.lessons.length || 0;
-                        if (lessonCount === 0) {
-                          alert('Please add at least one lesson slot first');
-                          return;
-                        }
-                        const hasContent = formData.modules[0]?.lessons.some(l =>
-                          l.name || l.description || (l.bullet_points || []).some(bp => bp)
-                        );
-                        if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
-                          return;
-                        }
-                        try {
-                          setGeneratingContent(true);
-                          const result = await generateCourseContent(
-                            formData.title,
-                            formData.course_type || 'skill',
-                            lessonCount
+                    <div className="flex items-center gap-2">
+                      <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                        {[
+                          { value: 'beginner', label: 'Beginner' },
+                          { value: 'intermediate', label: 'Intermediate' },
+                          { value: 'advanced', label: 'Advanced' }
+                        ].map((level) => (
+                          <button
+                            key={level.value}
+                            type="button"
+                            onClick={() => setContentComplexity(level.value)}
+                            className={`px-2.5 py-1 text-xs font-medium transition ${
+                              contentComplexity === level.value
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                            } ${level.value !== 'beginner' ? 'border-l border-gray-300' : ''}`}
+                          >
+                            {level.label}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!formData.title.trim()) {
+                            alert('Please enter a course title first');
+                            return;
+                          }
+                          const lessonCount = formData.modules[0]?.lessons.length || 0;
+                          if (lessonCount === 0) {
+                            alert('Please add at least one lesson slot first');
+                            return;
+                          }
+                          const hasContent = formData.modules[0]?.lessons.some(l =>
+                            l.name || l.description || (l.bullet_points || []).some(bp => bp)
                           );
-                          const newModules = [...formData.modules];
-                          newModules[0].lessons = result.lessons.map(generated => ({
-                            name: generated.name,
-                            description: generated.description,
-                            bullet_points: generated.bullet_points
-                          }));
-                          setFormData({
-                            ...formData,
-                            description: result.description,
-                            modules: newModules
-                          });
-                        } catch (error) {
-                          alert(error.message || 'Failed to generate content');
-                        } finally {
-                          setGeneratingContent(false);
-                        }
-                      }}
-                      disabled={generatingContent || generatingDescription}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {generatingContent ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          Auto-Generate All with AI
-                        </>
-                      )}
-                    </button>
+                          if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
+                            return;
+                          }
+                          try {
+                            setGeneratingContent(true);
+                            const result = await generateCourseContent(
+                              formData.title,
+                              formData.course_type || 'skill',
+                              lessonCount,
+                              contentComplexity
+                            );
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons = result.lessons.map(generated => ({
+                              name: generated.name,
+                              description: generated.description,
+                              bullet_points: generated.bullet_points
+                            }));
+                            setFormData({
+                              ...formData,
+                              description: result.description,
+                              modules: newModules
+                            });
+                          } catch (error) {
+                            alert(error.message || 'Failed to generate content');
+                          } finally {
+                            setGeneratingContent(false);
+                          }
+                        }}
+                        disabled={generatingContent || generatingDescription}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {generatingContent ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Auto-Generate All with AI
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
@@ -1095,65 +1119,88 @@ const CourseManagement = () => {
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <label className="block text-sm font-medium text-gray-700">Lessons</label>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!formData.title.trim()) {
-                          alert('Please enter a course title first');
-                          return;
-                        }
-                        const lessonCount = formData.modules[0]?.lessons.length || 0;
-                        if (lessonCount === 0) {
-                          alert('Please add at least one lesson slot first');
-                          return;
-                        }
-                        const hasContent = formData.modules[0]?.lessons.some(l =>
-                          l.name || l.description || (l.bullet_points || []).some(bp => bp)
-                        );
-                        if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
-                          return;
-                        }
-                        try {
-                          setGeneratingContent(true);
-                          const result = await generateCourseContent(
-                            formData.title,
-                            formData.course_type || 'skill',
-                            lessonCount
+                    <div className="flex items-center gap-2">
+                      <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+                        {[
+                          { value: 'beginner', label: 'Beginner' },
+                          { value: 'intermediate', label: 'Intermediate' },
+                          { value: 'advanced', label: 'Advanced' }
+                        ].map((level) => (
+                          <button
+                            key={level.value}
+                            type="button"
+                            onClick={() => setContentComplexity(level.value)}
+                            className={`px-2.5 py-1 text-xs font-medium transition ${
+                              contentComplexity === level.value
+                                ? 'bg-purple-600 text-white'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                            } ${level.value !== 'beginner' ? 'border-l border-gray-300' : ''}`}
+                          >
+                            {level.label}
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!formData.title.trim()) {
+                            alert('Please enter a course title first');
+                            return;
+                          }
+                          const lessonCount = formData.modules[0]?.lessons.length || 0;
+                          if (lessonCount === 0) {
+                            alert('Please add at least one lesson slot first');
+                            return;
+                          }
+                          const hasContent = formData.modules[0]?.lessons.some(l =>
+                            l.name || l.description || (l.bullet_points || []).some(bp => bp)
                           );
-                          const newModules = [...formData.modules];
-                          newModules[0].lessons = result.lessons.map(generated => ({
-                            name: generated.name,
-                            description: generated.description,
-                            bullet_points: generated.bullet_points
-                          }));
-                          setFormData({
-                            ...formData,
-                            description: result.description,
-                            modules: newModules
-                          });
-                        } catch (error) {
-                          alert(error.message || 'Failed to generate content');
-                        } finally {
-                          setGeneratingContent(false);
-                        }
-                      }}
-                      disabled={generatingContent || generatingDescription}
-                      className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {generatingContent ? (
-                        <>
-                          <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                          Auto-Generate All with AI
-                        </>
-                      )}
-                    </button>
+                          if (hasContent && !confirm('This will overwrite all existing lesson content and the course description. Continue?')) {
+                            return;
+                          }
+                          try {
+                            setGeneratingContent(true);
+                            const result = await generateCourseContent(
+                              formData.title,
+                              formData.course_type || 'skill',
+                              lessonCount,
+                              contentComplexity
+                            );
+                            const newModules = [...formData.modules];
+                            newModules[0].lessons = result.lessons.map(generated => ({
+                              name: generated.name,
+                              description: generated.description,
+                              bullet_points: generated.bullet_points
+                            }));
+                            setFormData({
+                              ...formData,
+                              description: result.description,
+                              modules: newModules
+                            });
+                          } catch (error) {
+                            alert(error.message || 'Failed to generate content');
+                          } finally {
+                            setGeneratingContent(false);
+                          }
+                        }}
+                        disabled={generatingContent || generatingDescription}
+                        className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-purple-600 bg-purple-50 border border-purple-300 rounded-lg hover:bg-purple-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {generatingContent ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-purple-600 border-t-transparent rounded-full animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Auto-Generate All with AI
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-4">
                     {formData.modules[0]?.lessons.map((lesson, lessonIndex) => (
