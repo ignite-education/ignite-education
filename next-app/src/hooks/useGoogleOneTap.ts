@@ -162,6 +162,13 @@ export default function useGoogleOneTap({
     })
   }, [isLoaded, isInitialized])
 
+  // Cancel prompt when disabled (e.g., user signed in via LinkedIn)
+  useEffect(() => {
+    if (!enabled && window.google?.accounts?.id) {
+      window.google.accounts.id.cancel()
+    }
+  }, [enabled])
+
   useEffect(() => {
     return () => {
       if (window.google?.accounts?.id) {

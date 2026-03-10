@@ -405,7 +405,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 disabled={isSaving || checkingStatus}
                 className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
-                    ? 'bg-[#9E9E9E] text-white'
+                    ? 'bg-[#EF0B72] text-white'
                     : isSaving
                     ? savingAction === 'removing'
                       ? 'bg-[#009600] text-white'
@@ -413,13 +413,21 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     : isSaved
                     ? 'bg-[#009600] text-white'
                     : 'bg-[#EF0B72] text-white'
-                } ${checkingStatus ? 'disabled:opacity-50' : ''} disabled:cursor-not-allowed`}
+                } disabled:cursor-not-allowed`}
                 style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
               >
                 {checkingStatus ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-normal" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                  <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    {'Loading...'.split('').map((char, i) => (
+                      <span
+                        key={i}
+                        style={{
+                          animation: 'letterFadeIn 0.4s ease forwards',
+                          animationDelay: `${i * 0.03}s`,
+                          opacity: 0,
+                        }}
+                      >{char === ' ' ? '\u00A0' : char}</span>
+                    ))}
                   </span>
                 ) : isSaving ? (
                   <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
@@ -450,7 +458,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 )}
               </button>
 
-              <p className="text-center text-black text-base font-normal mt-3 min-h-[3rem] flex items-center justify-center" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
+              <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
                 {!checkingStatus && (
                   isSaved
                     ? isComingSoon

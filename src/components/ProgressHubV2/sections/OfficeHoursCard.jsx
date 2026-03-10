@@ -160,7 +160,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
       document.body.style.overflow = '';
       setClientSecret(null);
       setUpgradingToInsider(false);
-    }, 200);
+    }, 250);
   };
 
   const isLive = liveSession?.status === 'live';
@@ -366,7 +366,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                 height: '80vh',
                 minHeight: '100px',
                 padding: '0px',
-                animation: isClosingModal ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
+                animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
                 borderRadius: '0.3rem',
                 overflow: 'hidden'
               }}
