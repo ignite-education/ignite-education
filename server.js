@@ -5617,7 +5617,7 @@ Return ONLY valid JSON, no other text or markdown.`;
 
   } catch (error) {
     console.error('Error generating course content:', error);
-    res.status(500).json({ error: 'Failed to generate course content. Please try again.' });
+    res.status(500).json({ error: `Failed to generate course content: ${error.message}` });
   }
 });
 
