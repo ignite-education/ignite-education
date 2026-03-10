@@ -35,13 +35,13 @@ const MerchandiseSection = () => {
       <p className="text-black font-light" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', marginBottom: '12px' }}>
         Discover official Ignite merchandise, with all profit supporting education and social mobility projects across the UK.
       </p>
-      <div className="flex justify-between items-center gap-3" style={{ height: '225px' }}>
+      <div className="flex gap-3 overflow-hidden">
         {PRODUCTS.map((product) => (
           <img
             key={product.alt}
             src={product.src}
             alt={product.alt}
-            className="h-full object-cover rounded transition-transform duration-200 hover:scale-[1.015] cursor-pointer min-w-0 flex-1"
+            className="flex-[1_0_0%] min-w-[200px] rounded transition-transform duration-200 hover:scale-[1.015] cursor-pointer"
             onClick={() => window.open(product.url, '_blank', 'noopener,noreferrer')}
           />
         ))}
