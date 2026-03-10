@@ -132,11 +132,11 @@ export default function EducationSection() {
     <section
       ref={sectionRef}
       className="flex items-center justify-center px-8 relative auth-section-2"
-      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '3.25rem' : undefined, paddingBottom: isMobile ? '4rem' : undefined }}
+      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '5rem' : undefined, paddingBottom: isMobile ? '5rem' : undefined }}
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}
-        <div className="w-full max-w-3xl mx-auto px-4 pt-4 md:pt-0 pb-4 md:pb-0">
+        <div className="w-full max-w-3xl mx-auto px-4">
           <h2
             className="text-4xl md:text-5xl font-bold leading-tight text-center w-full auth-education-heading"
             style={{ minHeight: '240px' }}

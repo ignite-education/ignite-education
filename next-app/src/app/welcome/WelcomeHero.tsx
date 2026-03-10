@@ -191,7 +191,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
                   }, 4000)
                 }
               }}
-              style={{ width: 80, height: 80, margin: '0 auto' }}
+              style={{ width: isMobile ? 88 : 80, height: isMobile ? 88 : 80, margin: '0 auto' }}
             />
           </Link>
           <h1
@@ -203,7 +203,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         </div>
 
         {/* Search */}
-        <div className="mb-10">
+        <div className="mb-8 md:mb-10">
           <CourseSearch
             value={searchQuery}
             onChange={setSearchQuery}
@@ -214,9 +214,26 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
 
         {/* Course Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <CourseTypeColumn type="specialism" courses={filteredSpecialism} />
-          <CourseTypeColumn type="skill" courses={filteredSkill} />
-          <CourseTypeColumn type="subject" courses={filteredSubject} />
+          {(() => {
+            const columns = [
+              { type: 'specialism' as const, courses: filteredSpecialism },
+              { type: 'skill' as const, courses: filteredSkill },
+              { type: 'subject' as const, courses: filteredSubject },
+            ]
+            let cardOffset = 0
+            return columns.map(({ type, courses }, colIndex) => {
+              const baseDelay = isMobile
+                ? 0.15 + cardOffset * 0.1
+                : 0.15
+              const el = (
+                <div key={type}>
+                  <CourseTypeColumn type={type} courses={courses} hideHeader={isMobile} cardStaggerBase={baseDelay} />
+                </div>
+              )
+              cardOffset += courses.length
+              return el
+            })
+          })()}
         </div>
       </div>
 

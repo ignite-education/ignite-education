@@ -22,6 +22,8 @@ interface CourseTypeColumnProps {
   type: string
   courses: Array<{ id?: string; name: string; title?: string }>
   showDescription?: boolean
+  hideHeader?: boolean
+  cardStaggerBase?: number
   maxCourses?: number
 }
 
@@ -29,6 +31,8 @@ export default function CourseTypeColumn({
   type,
   courses,
   showDescription = true,
+  hideHeader = false,
+  cardStaggerBase = 0,
   maxCourses,
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
@@ -38,22 +42,31 @@ export default function CourseTypeColumn({
   return (
     <div className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
       <h2
-        className="text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em]"
+        className={`text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em] ${hideHeader ? 'hidden md:block' : ''}`}
         style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
       >
         {config.title}
       </h2>
       {showDescription && (
         <p
-          className="text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line"
+          className={`text-black text-sm mb-6 min-h-[40px] text-center font-light whitespace-pre-line ${hideHeader ? 'hidden md:block' : ''}`}
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           {config.description}
         </p>
       )}
       <div ref={animateRef} className="space-y-3">
-        {displayCourses.map((course) => (
-          <CourseCard key={course.id || course.name} course={course} />
+        {displayCourses.map((course, idx) => (
+          <div
+            key={course.id || course.name}
+            style={cardStaggerBase > 0 ? {
+              animation: 'fadeInUpSmall 0.6s ease-out forwards',
+              animationDelay: `${cardStaggerBase + idx * 0.1}s`,
+              opacity: 0,
+            } : undefined}
+          >
+            <CourseCard course={course} />
+          </div>
         ))}
       </div>
     </div>

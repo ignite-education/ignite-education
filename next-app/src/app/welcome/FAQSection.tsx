@@ -59,35 +59,39 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
               {faqs.map((faq, idx) => (
                 <div
                   key={idx}
-                  className="rounded cursor-pointer transition-all duration-300"
+                  className="rounded cursor-pointer"
                   onClick={() => setExpandedFAQ(expandedFAQ === idx ? -1 : idx)}
                   style={{
                     backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                     padding: expandedFAQ === idx ? '1rem 1rem 1.2rem 1.2rem' : '1rem 1rem 1rem 1.2rem',
+                    transition: 'background-color 0.4s ease, padding 0.4s ease',
                   }}
-                  onMouseEnter={() => setExpandedFAQ(idx)}
+                  onMouseEnter={isMobile ? undefined : () => setExpandedFAQ(idx)}
                 >
                   <h4
-                    className="font-semibold leading-tight transition-all duration-300"
+                    className="font-semibold leading-tight"
                     style={{
                       fontSize: '20px',
-                      color: expandedFAQ === idx ? '#7714E0' : '#000000'
+                      color: expandedFAQ === idx ? '#7714E0' : '#000000',
+                      transition: 'color 0.4s ease',
                     }}
                   >
                     {faq.question}
                   </h4>
                   <div
-                    className="grid transition-all duration-300"
+                    className="grid"
                     style={{
                       gridTemplateRows: expandedFAQ === idx ? '1fr' : '0fr',
+                      transition: 'grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
                     <div className="overflow-hidden">
                       <p
-                        className="text-black text-sm mt-1 pb-1 transition-opacity duration-200"
+                        className="text-black text-sm mt-1 pb-1"
                         style={{
                           opacity: expandedFAQ === idx ? 1 : 0,
-                          transitionDelay: expandedFAQ === idx ? '100ms' : '0ms'
+                          transition: 'opacity 0.3s ease',
+                          transitionDelay: expandedFAQ === idx ? '150ms' : '0ms'
                         }}
                       >
                         {faq.answer}
@@ -119,7 +123,22 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
         {/* Get Started Button */}
         <div className="flex justify-center">
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => {
+              if (isMobile) {
+                const start = window.scrollY
+                const startTime = performance.now()
+                const duration = 1800
+                const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+                const step = (now: number) => {
+                  const progress = Math.min((now - startTime) / duration, 1)
+                  window.scrollTo(0, start * (1 - ease(progress)))
+                  if (progress < 1) requestAnimationFrame(step)
+                }
+                requestAnimationFrame(step)
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }
+            }}
             className="bg-[#EF0B72] hover:bg-[#D50A65] text-white font-semibold py-3 px-8 rounded transition"
           >
             Get Started

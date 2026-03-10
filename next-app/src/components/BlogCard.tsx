@@ -13,8 +13,7 @@ export default function BlogCard({ post, className = '' }: BlogCardProps) {
         <div className="rounded overflow-hidden cursor-pointer group">
           {post.featured_image && (
             <div
-              className="w-full overflow-hidden flex items-center justify-center"
-              style={{ height: '387px' }}
+              className="w-full overflow-hidden flex items-center justify-center h-[250px] md:h-[387px]"
             >
               <img
                 src={post.featured_image}

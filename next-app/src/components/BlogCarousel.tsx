@@ -56,7 +56,7 @@ export default function BlogCarousel({ posts }: BlogCarouselProps) {
         <div className="transition-all duration-500 ease-in-out">
           <BlogCard
             post={posts[currentIndex]}
-            className="min-h-[500px]"
+            className="min-h-0 md:min-h-[500px]"
           />
         </div>
 

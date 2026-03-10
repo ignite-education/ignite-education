@@ -278,7 +278,7 @@ export default function TestimonialsSection() {
                 <div
                   className="auth-testimonial-card"
                   style={{
-                    marginTop: '1rem',
+                    marginTop: isMobile ? '0' : '1rem',
                     padding: isMobile ? '0' : '0 1.5rem',
                     boxSizing: 'border-box',
                     backgroundColor: 'transparent',

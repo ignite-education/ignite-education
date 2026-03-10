@@ -274,7 +274,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 style={{
                   fontSize: isMobile ? '2.1rem' : '2.5rem',
                   lineHeight: '1.2',
-                  minHeight: '6rem',
+                  minHeight: isMobile ? '7.5rem' : '6rem',
                   marginBottom: isMobile ? '0.5rem' : '1rem',
                   color: 'black'
                 }}
@@ -317,7 +317,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 WebkitOverflowScrolling: 'touch'
               }}
             >
-              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: isMobile ? '0' : '320px' }}>
+              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: isMobile ? '2rem' : '320px' }}>
                 {pages.length > 0 ? (
                   pages.map((pageCourses, pageIndex) => (
                     <div
