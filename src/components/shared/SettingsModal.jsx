@@ -326,7 +326,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     setIsLoggingOut(true);
     try {
       await signOut();
-      navigate('/auth');
+      navigate('/welcome');
     } catch (error) {
       console.error('Error logging out:', error);
       setIsLoggingOut(false);
@@ -347,7 +347,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
       if (response.ok) {
         await signOut();
-        navigate('/auth');
+        navigate('/welcome');
       } else {
         throw new Error('Failed to delete account');
       }

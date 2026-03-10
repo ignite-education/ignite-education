@@ -447,7 +447,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
             )}
-            {!hasHighQualityAvatar && (
+            {(!hasHighQualityAvatar || !profilePicture) && (
               <button
                 onClick={onSettingsClick}
                 className="absolute flex items-center justify-center transition-colors group"

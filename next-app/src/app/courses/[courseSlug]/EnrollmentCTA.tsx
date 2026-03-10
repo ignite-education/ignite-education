@@ -413,7 +413,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     : isSaved
                     ? 'bg-[#009600] text-white'
                     : 'bg-[#EF0B72] text-white'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                } ${checkingStatus ? 'disabled:opacity-50' : ''} disabled:cursor-not-allowed`}
                 style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
               >
                 {checkingStatus ? (
@@ -450,7 +450,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 )}
               </button>
 
-              <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
+              <p className="text-center text-black text-base font-normal mt-3 min-h-[3rem] flex items-center justify-center" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
                 {!checkingStatus && (
                   isSaved
                     ? isComingSoon
