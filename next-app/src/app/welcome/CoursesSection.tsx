@@ -47,8 +47,8 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
 
   return (
     <div
-      className="relative cursor-pointer flex-shrink-0 auth-course-card"
-      style={{ width: '249px', height: '249px', overflow: 'visible' }}
+      className="relative cursor-pointer flex-shrink-0 auth-course-card w-[270px] h-[270px] md:w-[249px] md:h-[249px]"
+      style={{ overflow: 'visible' }}
       onClick={onClick}
     >
       <div
@@ -74,16 +74,16 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
           </h4>
           {course.description && (
             <p
-              className="text-xs text-black mb-2 auth-course-card-description"
-              style={{ lineHeight: '1.4' }}
+              className="text-black mb-2 auth-course-card-description"
+              style={{ fontSize: '0.85rem', lineHeight: '1.4' }}
             >
               {getFirstSentence(course.description)}
             </p>
           )}
           {course.module_names && (
             <div className="pb-8 auth-course-card-modules">
-              <p className="text-xs text-black font-semibold mb-1">Modules:</p>
-              <ul className="text-xs text-black space-y-0.5">
+              <p className="text-black font-semibold mb-1" style={{ fontSize: '0.85rem' }}>Modules:</p>
+              <ul className="text-black space-y-0" style={{ fontSize: '0.85rem' }}>
                 {course.module_names.split(', ').slice(0, (course.title || course.name).length > 25 ? 4 : 5).map((moduleName, idx) => (
                   <li key={idx} className="flex items-start">
                     <span className="mr-1.5">•</span>
@@ -129,7 +129,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  const { displayText: typedText, isComplete } = useTypingAnimation(
+  const { isComplete, charIndex } = useTypingAnimation(
     'The best courses.\nFor the best students.',
     {
       charDelay: 75,
@@ -209,29 +209,36 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   }, [courses])
 
   const renderTypedTitle = () => {
+    const fullText = 'The best courses.\nFor the best students.'
     const firstLineLength = 'The best courses.'.length
     const result: React.ReactNode[] = []
 
-    for (let i = 0; i < typedText.length; i++) {
-      if (typedText[i] === '\n') {
+    for (let i = 0; i < fullText.length; i++) {
+      if (fullText[i] === '\n') {
         result.push(<br key={`br-${i}`} />)
         continue
       }
 
       const isSecondLine = i > firstLineLength
-      let end = typedText.length
-      for (let j = i; j < typedText.length; j++) {
-        if (typedText[j] === '\n') {
+      let end = fullText.length
+      for (let j = i; j < fullText.length; j++) {
+        if (fullText[j] === '\n') {
           end = j
           break
         }
       }
 
-      const chunk = typedText.substring(i, end)
+      const chunk = fullText.substring(i, end)
       if (chunk) {
+        const typedCount = Math.max(0, Math.min(charIndex - i, chunk.length))
+        const typedPart = chunk.substring(0, typedCount)
+        const untypedPart = chunk.substring(typedCount)
+        const color = isSecondLine ? '#EF0B72' : 'black'
+
         result.push(
-          <span key={`${isSecondLine ? 'pink' : 'black'}-${i}`} style={{ color: isSecondLine ? '#EF0B72' : 'black' }}>
-            {chunk}
+          <span key={`chunk-${i}`}>
+            {typedPart && <span style={{ color }}>{typedPart}</span>}
+            {untypedPart && <span style={{ color: 'transparent' }}>{untypedPart}</span>}
           </span>
         )
         i = end - 1
@@ -240,7 +247,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
 
     if (!isComplete) {
       result.push(
-        <span key="cursor" className="animate-blink font-thin" style={{ color: 'white' }}>|</span>
+        <span key="cursor" className="animate-blink font-thin" style={{ color: 'white', marginLeft: '-0.1em' }}>|</span>
       )
     }
 
@@ -275,14 +282,14 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                   fontSize: isMobile ? '2.1rem' : '2.5rem',
                   lineHeight: '1.2',
                   minHeight: isMobile ? '7.5rem' : '6rem',
-                  marginBottom: isMobile ? '0.5rem' : '1rem',
+                  marginBottom: isMobile ? '1rem' : '1rem',
                   color: 'black'
                 }}
               >
                 {renderTypedTitle()}
               </h3>
               <p
-                className="text-lg max-w-2xl text-left auth-section-3-description"
+                className="text-base md:text-lg max-w-2xl text-left auth-section-3-description"
                 style={{ lineHeight: '1.425', color: 'black', marginBottom: 0 }}
               >
                 We work backwards from industry professionals to build bespoke courses.
@@ -311,22 +318,22 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
               style={{
                 scrollSnapType: 'x mandatory',
                 paddingLeft: isMobile ? '0' : '30px',
-                paddingRight: isMobile ? '2rem' : '315px',
+                paddingRight: isMobile ? '3rem' : '315px',
                 paddingTop: isMobile ? '15px' : '30px',
                 paddingBottom: isMobile ? '0' : '30px',
                 WebkitOverflowScrolling: 'touch'
               }}
             >
-              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: isMobile ? '2rem' : '320px' }}>
+              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: isMobile ? '0' : '320px' }}>
                 {pages.length > 0 ? (
                   pages.map((pageCourses, pageIndex) => (
                     <div
                       key={`page-${pageIndex}`}
                       className="grid grid-cols-2 gap-3 flex-shrink-0 auth-course-cards-grid"
                       style={{
-                        width: '510px',
-                        minWidth: '510px',
-                        maxWidth: '510px',
+                        width: isMobile ? '552px' : '510px',
+                        minWidth: isMobile ? '552px' : '510px',
+                        maxWidth: isMobile ? '552px' : '510px',
                         overflow: 'visible'
                       }}
                     >
@@ -362,13 +369,13 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                   // Skeleton cards while loading
                   <div
                     className="grid grid-cols-2 gap-3 flex-shrink-0"
-                    style={{ width: '510px' }}
+                    style={{ width: isMobile ? '552px' : '510px' }}
                   >
                     {[...Array(4)].map((_, i) => (
                       <div
                         key={i}
-                        className="bg-[#F6F6F6] rounded-[8px] aspect-square flex flex-col justify-start overflow-hidden animate-pulse"
-                        style={{ padding: '16px', width: '249px', height: '249px' }}
+                        className="bg-[#F6F6F6] rounded-[8px] aspect-square flex flex-col justify-start overflow-hidden animate-pulse w-[270px] h-[270px] md:w-[249px] md:h-[249px]"
+                        style={{ padding: '16px' }}
                       >
                         <div className="h-6 bg-gray-300 rounded w-3/4 mb-2" />
                         <div className="h-4 bg-gray-300 rounded w-full mb-1" />
@@ -378,6 +385,8 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                     ))}
                   </div>
                 )}
+                {/* Spacer to ensure right-side gap when scrolled to end */}
+                {isMobile && <div className="flex-shrink-0" style={{ width: '2rem' }} />}
               </div>
             </div>
           </div>

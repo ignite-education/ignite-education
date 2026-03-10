@@ -64,7 +64,9 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
                   style={{
                     backgroundColor: expandedFAQ === idx ? '#FFFFFF' : '#F0F0F2',
                     padding: expandedFAQ === idx ? '1rem 1rem 1.2rem 1.2rem' : '1rem 1rem 1rem 1.2rem',
-                    transition: 'background-color 0.4s ease, padding 0.4s ease',
+                    transition: isMobile
+                      ? 'background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), padding 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+                      : 'background-color 0.4s ease, padding 0.4s ease',
                   }}
                   onMouseEnter={isMobile ? undefined : () => setExpandedFAQ(idx)}
                 >
@@ -73,7 +75,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
                     style={{
                       fontSize: '20px',
                       color: expandedFAQ === idx ? '#7714E0' : '#000000',
-                      transition: 'color 0.4s ease',
+                      transition: isMobile ? 'color 0.8s cubic-bezier(0.16, 1, 0.3, 1)' : 'color 0.4s ease',
                     }}
                   >
                     {faq.question}
@@ -82,7 +84,9 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
                     className="grid"
                     style={{
                       gridTemplateRows: expandedFAQ === idx ? '1fr' : '0fr',
-                      transition: 'grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                      transition: isMobile
+                        ? 'grid-template-rows 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+                        : 'grid-template-rows 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
                     <div className="overflow-hidden">
@@ -90,8 +94,8 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
                         className="text-black text-sm mt-1 pb-1"
                         style={{
                           opacity: expandedFAQ === idx ? 1 : 0,
-                          transition: 'opacity 0.3s ease',
-                          transitionDelay: expandedFAQ === idx ? '150ms' : '0ms'
+                          transition: isMobile ? 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1)' : 'opacity 0.3s ease',
+                          transitionDelay: expandedFAQ === idx ? (isMobile ? '200ms' : '150ms') : '0ms'
                         }}
                       >
                         {faq.answer}

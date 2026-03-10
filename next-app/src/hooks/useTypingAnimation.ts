@@ -102,5 +102,5 @@ export default function useTypingAnimation(fullText: string, config: TypingAnima
     }
   }, [fullText, charDelay, startDelay, JSON.stringify(pausePoints), enabled])
 
-  return { displayText, isComplete }
+  return { displayText, isComplete, charIndex: displayText.length }
 }

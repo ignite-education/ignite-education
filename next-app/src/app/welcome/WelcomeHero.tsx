@@ -34,6 +34,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const [modalUserName, setModalUserName] = useState('')
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
+  const [lottieReady, setLottieReady] = useState(false)
 
   useEffect(() => {
     if (lottieRef.current) {
@@ -177,22 +178,36 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         {/* Header with Logo */}
         <div className="text-center mb-[7px]">
           <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
-            <Lottie
-              lottieRef={lottieRef}
-              animationData={lottieData}
-              loop={true}
-              autoplay={false}
-              onLoopComplete={() => {
-                loopCountRef.current += 1
-                if (loopCountRef.current % 3 === 0 && lottieRef.current) {
-                  lottieRef.current.pause()
-                  setTimeout(() => {
-                    lottieRef.current?.goToAndPlay(0)
-                  }, 4000)
-                }
-              }}
-              style={{ width: isMobile ? 88 : 80, height: isMobile ? 88 : 80, margin: '0 auto' }}
-            />
+            <div className="w-[88px] h-[88px] md:w-[80px] md:h-[80px] mx-auto relative">
+              {/* Static first-frame placeholder — visible instantly, hidden once Lottie renders */}
+              {!lottieReady && (
+                <svg
+                  viewBox="0 0 600 600"
+                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+                >
+                  <rect x="92.5" y="92.5" width="415" height="415" fill="#EF0B72" />
+                  <rect x="92.5" y="231.5" width="277" height="277" fill="#B30FA9" />
+                  <rect x="93" y="370" width="138" height="138" fill="#7714E0" />
+                </svg>
+              )}
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={lottieData}
+                loop={true}
+                autoplay={false}
+                onDOMLoaded={() => setLottieReady(true)}
+                onLoopComplete={() => {
+                  loopCountRef.current += 1
+                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                    lottieRef.current.pause()
+                    setTimeout(() => {
+                      lottieRef.current?.goToAndPlay(0)
+                    }, 4000)
+                  }
+                }}
+                style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}
+              />
+            </div>
           </Link>
           <h1
             className="text-[1.7rem] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
@@ -227,7 +242,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
                 : 0.15
               const el = (
                 <div key={type}>
-                  <CourseTypeColumn type={type} courses={courses} hideHeader={isMobile} cardStaggerBase={baseDelay} />
+                  <CourseTypeColumn type={type} courses={courses} hideHeader cardStaggerBase={baseDelay} />
                 </div>
               )
               cardOffset += courses.length

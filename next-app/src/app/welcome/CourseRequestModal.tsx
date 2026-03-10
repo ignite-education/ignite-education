@@ -268,14 +268,14 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         {/* Top section — 35% height, vertically centered */}
         <div className="flex items-end justify-center" style={{ flex: '0 0 35%' }}>
         <h3
-          className="text-[1.3rem] md:text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
+          className="text-[1.5rem] md:text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           <span className="md:whitespace-nowrap">We&rsquo;ve added{' '}
             {/* Hidden span to measure exact text width */}
             <span
               ref={measureRef}
-              className="text-[1.3rem] md:text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
+              className="text-[1.5rem] md:text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif', position: 'absolute', visibility: 'hidden', whiteSpace: 'pre' }}
             >{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
             <span className="relative inline-flex items-baseline" style={{ height: '2.0625rem', verticalAlign: 'baseline' }}>

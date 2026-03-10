@@ -50,8 +50,19 @@ export default function LearningModelSection() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  const { displayText: typedText, isComplete: typingComplete } = useTypingAnimation(
+    'Building a smarter, \nmore personalised era of education.',
+    {
+      charDelay: 75,
+      startDelay: isMobile ? 300 : 1000,
+      pausePoints: [{ after: 19, duration: 700 }],
+      enabled: typingEnabled
+    }
+  )
+
   useEffect(() => {
     if (!isMobile) return
+    if (!typingComplete) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -71,17 +82,7 @@ export default function LearningModelSection() {
     })
 
     return () => observer.disconnect()
-  }, [isMobile])
-
-  const { displayText: typedText } = useTypingAnimation(
-    'Building a smarter, \nmore personalised era of education.',
-    {
-      charDelay: 75,
-      startDelay: 1000,
-      pausePoints: [{ after: 19, duration: 700 }],
-      enabled: typingEnabled
-    }
-  )
+  }, [isMobile, typingComplete])
 
   useEffect(() => {
     const target = isMobile ? titleRef.current : sectionRef.current
@@ -94,7 +95,7 @@ export default function LearningModelSection() {
           observer.disconnect()
         }
       },
-      { threshold: isMobile ? 0.4 : 0.3 }
+      { threshold: isMobile ? 0.1 : 0.3, rootMargin: isMobile ? '0px 0px 150px 0px' : '0px' }
     )
 
     observer.observe(target)
@@ -145,7 +146,7 @@ export default function LearningModelSection() {
           <h3
             ref={titleRef}
             className="font-bold text-white text-left auth-section-4-title"
-            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '1rem' : '1.5rem', marginTop: '2rem' }}
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '0' : '1.5rem', marginTop: '2rem' }}
           >
             {renderTypedTagline()}
           </h3>

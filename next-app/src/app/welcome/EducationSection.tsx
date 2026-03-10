@@ -46,28 +46,38 @@ export default function EducationSection() {
     return () => observer.disconnect()
   }, [isMobile])
 
-  // Mobile: observe each promise individually for staggered fade-in
+  // Mobile: sequential fade-in — wait for each promise's transition to complete before starting the next
   useEffect(() => {
     if (!isMobile) return
+
+    const timers: ReturnType<typeof setTimeout>[] = []
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const idx = Number((entry.target as HTMLElement).dataset.promiseIdx)
-            setVisiblePromises((prev) => new Set(prev).add(idx))
-            observer.unobserve(entry.target)
+            // First promise visible — trigger sequential chain
+            const transitionDuration = 1000 // delay between each promise animation
+            for (let i = 0; i < 3; i++) {
+              const timer = setTimeout(() => {
+                setVisiblePromises((prev) => new Set(prev).add(i))
+              }, i * transitionDuration)
+              timers.push(timer)
+            }
+            observer.disconnect()
           }
         })
       },
-      { threshold: 0.4 }
+      { threshold: 0.2 }
     )
 
-    promiseRefs.current.forEach((ref) => {
-      if (ref) observer.observe(ref)
-    })
+    const firstRef = promiseRefs.current[0]
+    if (firstRef) observer.observe(firstRef)
 
-    return () => observer.disconnect()
+    return () => {
+      observer.disconnect()
+      timers.forEach(clearTimeout)
+    }
   }, [isMobile])
 
   // Render the heading with pink highlighted words and explicit line breaks
@@ -132,14 +142,14 @@ export default function EducationSection() {
     <section
       ref={sectionRef}
       className="flex items-center justify-center px-8 relative auth-section-2"
-      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '5rem' : undefined, paddingBottom: isMobile ? '5rem' : undefined }}
+      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '7rem' : undefined, paddingBottom: isMobile ? '8rem' : undefined }}
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}
         <div className="w-full max-w-3xl mx-auto px-4">
           <h2
             className="text-4xl md:text-5xl font-bold leading-tight text-center w-full auth-education-heading"
-            style={{ minHeight: '240px' }}
+            style={{ minHeight: '240px', marginBottom: isMobile ? '4rem' : undefined }}
           >
             <span style={{ display: 'inline', whiteSpace: 'normal' }}>
               {renderHeading()}
@@ -159,7 +169,7 @@ export default function EducationSection() {
         >
           <div
             className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
-            style={{ width: '100%', gap: isMobile ? '2rem' : '0.5rem' }}
+            style={{ width: '100%', gap: isMobile ? '3rem' : '0.5rem' }}
           >
             {(isMobile || showFeatures) && (
               <>
@@ -174,9 +184,9 @@ export default function EducationSection() {
                     data-promise-idx={idx}
                     className="flex flex-col items-center"
                     style={isMobile ? {
-                      opacity: visiblePromises.has(idx) ? 1 : 0,
-                      transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(20px)',
-                      transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
+                      opacity: visiblePromises.has(idx) ? 1 : 0.15,
+                      transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(10px)',
+                      transition: 'opacity 2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1)'
                     } : {
                       animation: 'fadeInUp 1.5s ease-out',
                       animationDelay: `${1 + idx * 0.8}s`,
