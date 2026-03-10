@@ -298,8 +298,8 @@ button:hover .filter-knob-bottom {
     padding-right: 2rem !important;
     height: auto !important;
     overflow: visible !important;
-    padding-top: 3rem !important;
-    padding-bottom: 0 !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
   }
   .auth-section-5-content {
     display: flex !important;
@@ -406,8 +406,8 @@ button:hover .filter-knob-bottom {
 
 @media (max-width: 767px) {
   .auth-section-merch {
-    padding-top: 3rem !important;
-    padding-bottom: 3rem !important;
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
     padding-left: 1rem !important;
     padding-right: 1rem !important;
   }

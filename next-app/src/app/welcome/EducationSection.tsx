@@ -7,6 +7,8 @@ export default function EducationSection() {
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
+  const [visiblePromises, setVisiblePromises] = useState<Set<number>>(new Set())
+  const promiseRefs = useRef<(HTMLDivElement | null)[]>([])
 
   useEffect(() => {
     const update = () => {
@@ -37,12 +39,36 @@ export default function EducationSection() {
           observer.disconnect()
         }
       },
-      { threshold: 0.5 }
+      { threshold: isMobile ? 0.1 : 0.5 }
     )
 
     observer.observe(section)
     return () => observer.disconnect()
-  }, [])
+  }, [isMobile])
+
+  // Mobile: observe each promise individually for staggered fade-in
+  useEffect(() => {
+    if (!isMobile) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const idx = Number((entry.target as HTMLElement).dataset.promiseIdx)
+            setVisiblePromises((prev) => new Set(prev).add(idx))
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.4 }
+    )
+
+    promiseRefs.current.forEach((ref) => {
+      if (ref) observer.observe(ref)
+    })
+
+    return () => observer.disconnect()
+  }, [isMobile])
 
   // Render the heading with pink highlighted words and explicit line breaks
   const renderHeading = () => {
@@ -135,55 +161,37 @@ export default function EducationSection() {
             className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
             style={{ width: '100%', gap: isMobile ? '2rem' : '0.5rem' }}
           >
-            {showFeatures && (
+            {(isMobile || showFeatures) && (
               <>
-                <div
-                  className="flex flex-col items-center"
-                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}
-                >
-                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
-                    Built by Industry Experts
+                {[
+                  { title: 'Built by Industry Experts', desc: <>Our courses are built with<br />industry experts to ensure you<br />get the latest area expertise.</> },
+                  { title: 'Ignite is Free', desc: <>All of our courses are<br />free. Always have been<br />and always will be.</> },
+                  { title: 'No Educational Prerequisite', desc: <>You don&apos;t need any experience<br />to study. Our curricula is built<br />for all backgrounds.</> }
+                ].map((promise, idx) => (
+                  <div
+                    key={idx}
+                    ref={(el) => { promiseRefs.current[idx] = el }}
+                    data-promise-idx={idx}
+                    className="flex flex-col items-center"
+                    style={isMobile ? {
+                      opacity: visiblePromises.has(idx) ? 1 : 0,
+                      transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(20px)',
+                      transition: 'opacity 0.6s ease-out, transform 0.6s ease-out'
+                    } : {
+                      animation: 'fadeInUp 1.5s ease-out',
+                      animationDelay: `${1 + idx * 0.8}s`,
+                      opacity: 0,
+                      animationFillMode: 'forwards'
+                    }}
+                  >
+                    <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
+                      {promise.title}
+                    </div>
+                    <div className="text-base text-white font-normal">
+                      {promise.desc}
+                    </div>
                   </div>
-                  <div className="text-base text-white font-normal">
-                    Our courses are built with
-                    <br />
-                    industry experts to ensure you
-                    <br />
-                    get the latest area expertise.
-                  </div>
-                </div>
-
-                <div
-                  className="flex flex-col items-center"
-                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}
-                >
-                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
-                    Ignite is Free
-                  </div>
-                  <div className="text-base text-white font-normal">
-                    All of our courses are
-                    <br />
-                    free. Always have been
-                    <br />
-                    and always will be.
-                  </div>
-                </div>
-
-                <div
-                  className="flex flex-col items-center"
-                  style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}
-                >
-                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
-                    No Educational Prerequisite
-                  </div>
-                  <div className="text-base text-white font-normal">
-                    You don&apos;t need any experience
-                    <br />
-                    to study. Our curricula is built
-                    <br />
-                    for all backgrounds.
-                  </div>
-                </div>
+                ))}
               </>
             )}
           </div>

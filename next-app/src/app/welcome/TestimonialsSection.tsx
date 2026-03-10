@@ -166,7 +166,7 @@ export default function TestimonialsSection() {
       ref={sectionRef}
       className="auth-section-5 flex items-start justify-center px-8"
       style={{
-        background: isMobile ? 'black' : 'white',
+        background: 'white',
         scrollSnapAlign: 'none'
       }}
     >
@@ -176,9 +176,10 @@ export default function TestimonialsSection() {
           <h3
             className="auth-section-5-title font-bold text-left"
             style={{
-              fontSize: '2.5rem',
+              fontSize: isMobile ? 'clamp(2.1rem, 5vw, 3rem)' : '2.5rem',
               lineHeight: '1.2',
               minHeight: isMobile ? '10rem' : '7.5rem',
+              marginTop: 0,
               marginBottom: '1.5rem'
             }}
           >
@@ -297,7 +298,7 @@ export default function TestimonialsSection() {
                         className={`transition-all duration-300 ${
                           currentTestimonial === idx
                             ? 'bg-[#EF0B72]'
-                            : isMobile ? 'bg-white hover:bg-gray-300' : 'bg-[#F0F0F2] hover:bg-gray-300'
+                            : 'bg-[#F0F0F2] hover:bg-gray-300'
                         }`}
                         style={{
                           width: currentTestimonial === idx ? '2rem' : '0.625rem',

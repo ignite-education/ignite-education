@@ -112,7 +112,7 @@ export default function MerchSection() {
             style={{
               fontSize: '2.5rem',
               lineHeight: '1.2',
-              marginTop: '1rem',
+              marginTop: isMobile ? 0 : '1rem',
               marginBottom: isMobile ? '0.6rem' : '1rem',
               minHeight: isMobile ? '5rem' : '3rem'
             }}

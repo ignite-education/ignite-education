@@ -258,7 +258,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     <section
       ref={sectionRef}
       className="flex items-start justify-center px-8 md:px-10 relative auth-section-3"
-      style={{ background: 'white', overflow: 'visible', paddingTop: '3rem', paddingBottom: '3rem' }}
+      style={{ background: 'white', overflow: 'visible', paddingTop: isMobile ? '2rem' : '3rem', paddingBottom: isMobile ? '2rem' : '3rem' }}
     >
       <div className="w-full text-white">
         {/* Two Column Layout */}
@@ -311,13 +311,13 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
               style={{
                 scrollSnapType: 'x mandatory',
                 paddingLeft: isMobile ? '0' : '30px',
-                paddingRight: '315px',
+                paddingRight: isMobile ? '2rem' : '315px',
                 paddingTop: isMobile ? '15px' : '30px',
-                paddingBottom: '30px',
+                paddingBottom: isMobile ? '0' : '30px',
                 WebkitOverflowScrolling: 'touch'
               }}
             >
-              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: '320px' }}>
+              <div className="flex gap-3 auth-course-cards-container" style={{ marginRight: isMobile ? '0' : '320px' }}>
                 {pages.length > 0 ? (
                   pages.map((pageCourses, pageIndex) => (
                     <div

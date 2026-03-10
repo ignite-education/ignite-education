@@ -41,6 +41,7 @@ export default function LearningModelSection() {
   const [isMobile, setIsMobile] = useState(false)
   const [visibleFeatures, setVisibleFeatures] = useState<Set<number>>(new Set())
   const featureTextRefs = useRef<(HTMLDivElement | null)[]>([])
+  const titleRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -62,7 +63,7 @@ export default function LearningModelSection() {
           }
         })
       },
-      { threshold: 0.3 }
+      { threshold: 0.4 }
     )
 
     featureTextRefs.current.forEach((ref) => {
@@ -83,8 +84,8 @@ export default function LearningModelSection() {
   )
 
   useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
+    const target = isMobile ? titleRef.current : sectionRef.current
+    if (!target) return
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -93,12 +94,12 @@ export default function LearningModelSection() {
           observer.disconnect()
         }
       },
-      { threshold: 0.3 }
+      { threshold: isMobile ? 0.4 : 0.3 }
     )
 
-    observer.observe(section)
+    observer.observe(target)
     return () => observer.disconnect()
-  }, [])
+  }, [isMobile])
 
   const renderTypedTagline = () => {
     const firstLineLength = 'Building a smarter,'.length
@@ -136,14 +137,15 @@ export default function LearningModelSection() {
   return (
     <section
       ref={sectionRef}
-      className="min-h-screen flex items-center justify-center px-8 auth-section-4"
-      style={{ background: 'black' }}
+      className={`${isMobile ? '' : 'min-h-screen'} flex items-center justify-center px-8 auth-section-4`}
+      style={{ background: 'black', paddingBottom: isMobile ? '2rem' : undefined }}
     >
       <div className="max-w-4xl mx-auto text-white text-left">
         <div className="px-0 md:px-4 auth-section-4-content">
           <h3
+            ref={titleRef}
             className="font-bold text-white text-left auth-section-4-title"
-            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '1rem' : '1.5rem', marginTop: isMobile ? '3rem' : '2rem' }}
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '1rem' : '1.5rem', marginTop: '2rem' }}
           >
             {renderTypedTagline()}
           </h3>
