@@ -112,27 +112,65 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
     && filteredSkill.length === 0
     && filteredSubject.length === 0
 
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   const maxRows = Math.max(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)
   const sectionHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
   const sectionMinHeight = maxRows >= 3 ? '600px' : maxRows === 2 ? '500px' : maxRows === 1 ? '400px' : '350px'
   const sectionMaxHeight = maxRows >= 3 ? '750px' : maxRows === 2 ? '650px' : maxRows === 1 ? '550px' : '450px'
 
+  // Mobile: measure actual content height + 1rem padding
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [contentHeight, setContentHeight] = useState<number>(0)
+
+  useEffect(() => {
+    if (!isMobile || !contentRef.current) return
+    const el = contentRef.current
+    // Temporarily remove height constraint to measure natural content height
+    const section = el.parentElement
+    const prevOverflow = section?.style.overflow
+    const prevHeight = section?.style.height
+    if (section) {
+      section.style.overflow = 'visible'
+      section.style.height = 'auto'
+    }
+    el.style.height = 'auto'
+    const measured = el.scrollHeight + 16 // +1rem bottom padding
+    // Restore
+    el.style.height = ''
+    if (section) {
+      section.style.overflow = prevOverflow || ''
+      section.style.height = prevHeight || ''
+    }
+    setContentHeight(measured)
+  }, [isMobile, filteredSpecialism.length, filteredSkill.length, filteredSubject.length, isExpanded])
+
+  const maxMobilePx = typeof window !== 'undefined' ? window.innerHeight * 0.85 : 9999
+  const mobileSectionHeight = contentHeight > 0 ? `${Math.min(contentHeight, maxMobilePx)}px` : 'auto'
+
   return (
     <section
       className="relative bg-white auth-section-1"
       style={{
-        height: isExpanded ? 'auto' : sectionHeight,
-        minHeight: isExpanded ? 'auto' : sectionMinHeight,
-        maxHeight: isExpanded ? 'none' : sectionMaxHeight,
+        height: isExpanded ? 'auto' : (isMobile ? mobileSectionHeight : sectionHeight),
+        minHeight: isExpanded ? 'auto' : (isMobile ? undefined : sectionMinHeight),
+        maxHeight: isExpanded ? 'none' : (isMobile ? '85vh' : sectionMaxHeight),
         transition: 'height 0.4s cubic-bezier(0.16, 1, 0.3, 1), min-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         overflow: 'hidden'
       }}
     >
       <div
+        ref={contentRef}
         className="relative w-full h-full flex flex-col max-w-[1267px] mx-auto px-6"
         style={{
           paddingTop: '2.25rem',
-          paddingBottom: isExpanded ? '2rem' : '1rem',
+          paddingBottom: isExpanded ? '4rem' : '1rem',
           overflow: isExpanded ? 'visible' : 'hidden'
         }}
       >
@@ -157,7 +195,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
             />
           </Link>
           <h1
-            className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
+            className="text-[30px] md:text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em] hero-text"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
           >
             What do you want to learn?
@@ -187,21 +225,35 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
         style={{
           background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
-          opacity: !isExpanded && maxRows >= 3 ? 1 : 0,
+          opacity: !isExpanded && (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 1 : 0,
           transition: 'opacity 0.3s ease',
         }}
       />
 
       {/* Expand/Collapse Button - fades in/out based on row count */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute bottom-4 right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center z-20"
+        onClick={() => {
+          if (isExpanded && isMobile) {
+            const start = window.scrollY
+            const startTime = performance.now()
+            const duration = 800
+            const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+            const step = (now: number) => {
+              const progress = Math.min((now - startTime) / duration, 1)
+              window.scrollTo(0, start * (1 - ease(progress)))
+              if (progress < 1) requestAnimationFrame(step)
+            }
+            requestAnimationFrame(step)
+          }
+          setIsExpanded(!isExpanded)
+        }}
+        className="absolute bottom-4 right-6 md:right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center z-20"
         style={{
           letterSpacing: '-0.01em',
           borderRadius: '0.25rem',
           width: '85px',
-          opacity: maxRows >= 3 ? 1 : 0,
-          pointerEvents: maxRows >= 3 ? 'auto' : 'none',
+          opacity: (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 1 : 0,
+          pointerEvents: (isMobile ? contentHeight > maxMobilePx : maxRows >= 3) ? 'auto' : 'none',
           transition: 'opacity 0.3s ease',
         }}
       >

@@ -449,15 +449,16 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               </button>
 
               <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
-                {!checkingStatus && !isSaving && (
-                  isSaved
+                {!checkingStatus && (() => {
+                  const effectivelySaved = isSaving ? savingAction === 'removing' : isSaved
+                  return effectivelySaved
                     ? isComingSoon
                       ? `We'll notify you when ${courseTitle} is available`
                       : 'Course saved to your account'
                     : isComingSoon
                       ? 'Join the course waitlist'
                       : "We'll save this course to start later"
-                )}
+                })()}
               </p>
             </div>
           </>

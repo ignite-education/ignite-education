@@ -186,7 +186,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
       style={{ backdropFilter: 'blur(2.4px)', WebkitBackdropFilter: 'blur(2.4px)', background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.3))', zIndex: 9999 }}
       onClick={handleClose}
     >
-      <div className="relative auth-course-modal-container">
+      <div className="relative auth-course-modal-container" style={{ width: 'min(720px, 94vw)' }}>
         {/* Close button */}
         <button
           onClick={handleClose}
@@ -200,11 +200,11 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
 
         <div
           className={`relative flex flex-col ${closing ? 'animate-scaleDown' : 'animate-scaleUp'} auth-course-modal overflow-y-auto`}
-          style={{ width: '720px', height: '70vh', borderRadius: '6px', scrollbarWidth: 'none' }}
+          style={{ width: 'min(720px, 94vw)', height: 'min(70vh, 85vh)', borderRadius: '6px', scrollbarWidth: 'none' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Black Header */}
-          <div className="bg-black relative text-center" style={{ paddingTop: '2.4rem', paddingBottom: '2.5rem', paddingLeft: '3rem', paddingRight: '3rem' }}>
+          <div className="bg-black relative text-center px-5 md:px-12" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
             {/* Course Type Tag */}
             <span
               className="inline-block px-2 py-1 text-sm bg-white rounded-sm font-medium text-gray-600"
@@ -214,7 +214,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </span>
 
             {/* Course Title */}
-            <h2 className="font-bold text-white" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em', marginBottom: '10px', lineHeight: 'tight' }}>
+            <h2 className="font-bold text-white text-[1.6rem] md:text-[2.3rem]" style={{ letterSpacing: '-0.02em', marginBottom: '10px', lineHeight: 'tight' }}>
               <span style={{ display: 'inline-block', textAlign: 'left' }}>
                 {typedTitle}
                 {typedTitle.length < (course.title || course.name).length && (
@@ -224,13 +224,13 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
             </h2>
 
             {/* Dynamic Tagline */}
-            <p className="text-[#EF0B72] font-semibold leading-relaxed" style={{ fontSize: '1.1rem', letterSpacing: '-0.02em' }}>
+            <p className="text-[#EF0B72] font-semibold leading-relaxed text-[0.9rem] md:text-[1.1rem]" style={{ letterSpacing: '-0.02em' }}>
               {tagline}
             </p>
           </div>
 
           {/* White Content */}
-          <div className="bg-white px-8" style={{ paddingTop: '1.5rem', paddingBottom: '1.25rem' }}>
+          <div className="bg-white px-5 md:px-8" style={{ paddingTop: '1.5rem', paddingBottom: '1.25rem' }}>
             <div>
               {/* Description - first 2 sentences (matches course page) */}
               {twoSentences && (
@@ -253,19 +253,19 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
               <div className="mb-8 grid grid-cols-3 gap-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" className="w-[70px] h-[70px] md:w-[100px] md:h-[100px]" style={{ objectFit: 'contain' }} />
                   </div>
-                  <span className="text-sm text-black leading-tight">Certificate upon<br />completion</span>
+                  <span className="text-xs md:text-sm text-black leading-tight">Certificate upon<br />completion</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" className="w-[70px] h-[70px] md:w-[100px] md:h-[100px]" style={{ objectFit: 'contain' }} />
                   </div>
-                  <span className="text-sm text-black leading-tight">Built by<br />industry experts</span>
+                  <span className="text-xs md:text-sm text-black leading-tight">Built by<br />industry experts</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" className="w-[70px] h-[70px] md:w-[100px] md:h-[100px]" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-black leading-tight">Self-paced<br />learning</span>
                 </div>
@@ -277,7 +277,7 @@ export default function CourseModal({ course, coaches, onClose }: CourseModalPro
                   <h3 className="font-semibold text-gray-900" style={{ fontSize: '22px', marginBottom: '0.5rem' }}>
                     Curriculum
                   </h3>
-                  <div style={{ marginLeft: '-2rem', marginRight: '-2rem', backgroundColor: '#F0F0F2', paddingTop: '1.2rem', paddingRight: '2rem', paddingBottom: '2rem', paddingLeft: '2rem' }}>
+                  <div className="-mx-5 md:-mx-8 px-5 md:px-8" style={{ backgroundColor: '#F0F0F2', paddingTop: '1.2rem', paddingBottom: '2rem' }}>
                     <div className="space-y-6">
                       {course.module_structure.map((module, moduleIndex) => (
                         <div key={moduleIndex}>

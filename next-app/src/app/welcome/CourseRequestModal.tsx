@@ -247,9 +247,9 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         style={{
           width: 'fit-content',
           height: '350px',
-          minWidth: '575px',
-          maxWidth: '90vw',
-          padding: '0 2.75rem',
+          minWidth: 'min(575px, 92vw)',
+          maxWidth: '92vw',
+          padding: '0 clamp(1.25rem, 5vw, 2.75rem)',
           borderRadius: '6px',
         }}
         onClick={(e) => e.stopPropagation()}
@@ -268,14 +268,14 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
         {/* Top section — 35% height, vertically centered */}
         <div className="flex items-end justify-center" style={{ flex: '0 0 35%' }}>
         <h3
-          className="text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
+          className="text-[1.3rem] md:text-[1.65rem] font-bold text-black text-center leading-tight tracking-[-0.02em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
-          <span className="whitespace-nowrap">We&rsquo;ve added{' '}
+          <span className="md:whitespace-nowrap">We&rsquo;ve added{' '}
             {/* Hidden span to measure exact text width */}
             <span
               ref={measureRef}
-              className="text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
+              className="text-[1.3rem] md:text-[1.65rem] font-bold leading-tight tracking-[-0.02em]"
               style={{ fontFamily: 'var(--font-geist-sans), sans-serif', position: 'absolute', visibility: 'hidden', whiteSpace: 'pre' }}
             >{editedCourseName.replace(/\b\w/g, c => c.toUpperCase())}</span>
             <span className="relative inline-flex items-baseline" style={{ height: '2.0625rem', verticalAlign: 'baseline' }}>
@@ -289,8 +289,8 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleEditSave()
                     }}
-                    className="text-[#EF0B72] text-[1.65rem] font-bold leading-[0.9] tracking-[-0.02em] bg-gray-200/40 rounded outline-none text-center"
-                    style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', paddingLeft: '0.4rem', paddingRight: '0.4rem', paddingTop: '0.15rem', paddingBottom: '0.15rem', height: 'auto' }}
+                    className="text-[#EF0B72] text-[1.3rem] md:text-[1.65rem] font-bold leading-tight tracking-[-0.02em] bg-gray-200/40 rounded outline-none text-center"
+                    style={{ fontFamily: 'var(--font-geist-sans), sans-serif', width: inputWidth ? `calc(${inputWidth}px + 1rem)` : 'auto', padding: 0, margin: 0, border: 'none', verticalAlign: 'baseline' }}
                   />
                   <button
                     onClick={handleEditSave}
@@ -326,7 +326,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
               )}
             </span>
           </span>
-          <br /><span className="whitespace-nowrap">to our upcoming course list</span>
+          <br /><span className="md:whitespace-nowrap"> to our upcoming course list</span>
         </h3>
         </div>
 

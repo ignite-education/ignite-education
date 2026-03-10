@@ -41,12 +41,29 @@ export default function CourseSearch({
         }}
         placeholder={placeholder}
         autoFocus={autoFocus}
-        className="course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all"
+        className={`course-search-input w-full bg-white rounded-xl px-6 py-3 text-gray-900 caret-[#EF0B72] focus:outline-none transition-all ${!showRequestButton ? 'pr-11 md:pr-6' : ''}`}
         style={{
           boxShadow: '0 0 10px rgba(103,103,103,0.6)',
-          paddingRight: showRequestButton ? '160px' : '24px',
+          paddingRight: showRequestButton ? '160px' : undefined,
         }}
       />
+      {/* Search icon (decorative) */}
+      {!showRequestButton && (
+        <svg
+          className="absolute right-4 top-0 bottom-0 my-auto text-[#C5C5C5] pointer-events-none md:hidden"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="M21 21l-4.35-4.35" />
+        </svg>
+      )}
       <button
         type="button"
         onClick={onRequestClick}

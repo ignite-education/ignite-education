@@ -120,6 +120,14 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   const [typingEnabled, setTypingEnabled] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
   const [blurredCards, setBlurredCards] = useState<number[]>([])
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const { displayText: typedText, isComplete } = useTypingAnimation(
     'The best courses.\nFor the best students.',
@@ -249,25 +257,25 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   <>
     <section
       ref={sectionRef}
-      className="flex items-start justify-center px-10 relative auth-section-3"
+      className="flex items-start justify-center px-8 md:px-10 relative auth-section-3"
       style={{ background: 'white', overflow: 'visible', paddingTop: '3rem', paddingBottom: '3rem' }}
     >
       <div className="w-full text-white">
         {/* Two Column Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto items-center auth-section-3-grid">
+        <div className={`grid grid-cols-1 md:grid-cols-2 ${isMobile ? 'gap-[25px]' : 'gap-12'} max-w-6xl mx-auto items-center auth-section-3-grid`}>
           {/* Left Column - Description */}
           <div
-            className="flex items-center justify-center auth-section-3-left"
-            style={{ paddingLeft: '2rem', paddingRight: '1rem' }}
+            className="flex items-center justify-start md:justify-center auth-section-3-left"
+            style={{ paddingLeft: isMobile ? '0' : '2rem', paddingRight: isMobile ? '0' : '1rem' }}
           >
             <div className="flex flex-col items-start">
               <h3
                 className="font-bold text-left auth-section-3-title"
                 style={{
-                  fontSize: '2.5rem',
+                  fontSize: isMobile ? '2.1rem' : '2.5rem',
                   lineHeight: '1.2',
                   minHeight: '6rem',
-                  marginBottom: '1rem',
+                  marginBottom: isMobile ? '0.5rem' : '1rem',
                   color: 'black'
                 }}
               >
@@ -302,9 +310,9 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
               className="overflow-x-auto overflow-y-visible auth-course-cards-scroll hide-scrollbar"
               style={{
                 scrollSnapType: 'x mandatory',
-                paddingLeft: '30px',
+                paddingLeft: isMobile ? '0' : '30px',
                 paddingRight: '315px',
-                paddingTop: '30px',
+                paddingTop: isMobile ? '15px' : '30px',
                 paddingBottom: '30px',
                 WebkitOverflowScrolling: 'touch'
               }}

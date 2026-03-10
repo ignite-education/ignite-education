@@ -46,39 +46,60 @@ export default function EducationSection() {
 
   // Render the heading with pink highlighted words and explicit line breaks
   const renderHeading = () => {
-    // Line break structure matches Vite original
-    const lines = [
+    // Desktop line breaks (md+)
+    const desktopLines = [
       { text: 'Education should be ', highlights: [] as string[] },
       { text: 'accessible, personalised ', highlights: ['accessible', 'personalised'] },
-      { text: 'and integrated for everyone.', highlights: ['integrated'] }
+      { text: 'and integrated for everyone', highlights: ['integrated'] }
     ]
 
-    return lines.map((line, lineIdx) => {
-      let result: React.ReactNode[] = []
-      let remaining = line.text
+    // Mobile line breaks
+    const mobileLines = [
+      { text: 'Education should', highlights: [] as string[] },
+      { text: 'be accessible,', highlights: ['accessible,'] },
+      { text: 'personalised and', highlights: ['personalised'] },
+      { text: 'integrated for', highlights: ['integrated'] },
+      { text: 'everyone', highlights: [] as string[] }
+    ]
 
-      for (const word of line.highlights) {
-        const start = remaining.indexOf(word)
-        if (start > 0) {
-          result.push(<span key={`${lineIdx}-pre-${word}`}>{remaining.slice(0, start)}</span>)
+    const renderLines = (lines: typeof desktopLines) => {
+      return lines.map((line, lineIdx) => {
+        let result: React.ReactNode[] = []
+        let remaining = line.text
+
+        for (const word of line.highlights) {
+          const start = remaining.indexOf(word)
+          if (start > 0) {
+            result.push(<span key={`${lineIdx}-pre-${word}`}>{remaining.slice(0, start)}</span>)
+          }
+          // Strip trailing comma/punctuation from highlight class, keep it in text
+          const cleanWord = word.replace(/[,.]$/, '')
+          const trailingPunct = word.slice(cleanWord.length)
+          result.push(
+            <span key={`${lineIdx}-${word}`}><span className="text-[#EF0B72]">{cleanWord}</span>{trailingPunct}</span>
+          )
+          remaining = remaining.slice(start + word.length)
         }
-        result.push(
-          <span key={`${lineIdx}-${word}`} className="text-[#EF0B72]">{word}</span>
+
+        if (remaining) {
+          result.push(<span key={`${lineIdx}-end`}>{remaining}</span>)
+        }
+
+        return (
+          <span key={lineIdx}>
+            {lineIdx > 0 && <br />}
+            {result}
+          </span>
         )
-        remaining = remaining.slice(start + word.length)
-      }
+      })
+    }
 
-      if (remaining) {
-        result.push(<span key={`${lineIdx}-end`}>{remaining}</span>)
-      }
-
-      return (
-        <span key={lineIdx}>
-          {lineIdx > 0 && <br />}
-          {result}
-        </span>
-      )
-    })
+    return (
+      <>
+        <span className="hidden md:inline">{renderLines(desktopLines)}</span>
+        <span className="md:hidden">{renderLines(mobileLines)}</span>
+      </>
+    )
   }
 
   return (
@@ -89,7 +110,7 @@ export default function EducationSection() {
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}
-        <div className="w-full max-w-3xl mx-auto px-4">
+        <div className="w-full max-w-3xl mx-auto px-4 pt-4 md:pt-0 pb-4 md:pb-0">
           <h2
             className="text-4xl md:text-5xl font-bold leading-tight text-center w-full auth-education-heading"
             style={{ minHeight: '240px' }}
@@ -112,7 +133,7 @@ export default function EducationSection() {
         >
           <div
             className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
-            style={{ width: '100%', gap: '0.5rem' }}
+            style={{ width: '100%', gap: isMobile ? '2rem' : '0.5rem' }}
           >
             {showFeatures && (
               <>
@@ -120,7 +141,7 @@ export default function EducationSection() {
                   className="flex flex-col items-center"
                   style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1s', opacity: 0, animationFillMode: 'forwards' }}
                 >
-                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
                     Built by Industry Experts
                   </div>
                   <div className="text-base text-white font-normal">
@@ -136,7 +157,7 @@ export default function EducationSection() {
                   className="flex flex-col items-center"
                   style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '1.8s', opacity: 0, animationFillMode: 'forwards' }}
                 >
-                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
                     Ignite is Free
                   </div>
                   <div className="text-base text-white font-normal">
@@ -152,7 +173,7 @@ export default function EducationSection() {
                   className="flex flex-col items-center"
                   style={{ animation: 'fadeInUp 1.5s ease-out', animationDelay: '2.6s', opacity: 0, animationFillMode: 'forwards' }}
                 >
-                  <div className="text-xl font-semibold text-white mb-4" style={{ whiteSpace: 'nowrap' }}>
+                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
                     No Educational Prerequisite
                   </div>
                   <div className="text-base text-white font-normal">

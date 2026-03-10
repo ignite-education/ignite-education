@@ -36,7 +36,7 @@ export default function CourseTypeColumn({
   const [animateRef] = useAutoAnimate({ duration: 150, easing: 'ease-out' })
 
   return (
-    <div className="flex flex-col">
+    <div className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
       <h2
         className="text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em]"
         style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
