@@ -23,8 +23,8 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             {/* Category Tag */}
             <Link
               href="/courses"
-              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-medium"
-              style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
+              className="inline-block px-[11px] py-[6px] text-sm text-black bg-[#F0F0F0] rounded-[6px] font-normal"
+              style={{ letterSpacing: '-0.01em', marginBottom: '30px' }}
             >
               {getCourseTypeLabel(course)}
             </Link>
@@ -40,14 +40,14 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             {/* Tagline */}
             <p
               className="text-xl text-[#7714E0] font-semibold leading-relaxed"
-              style={{ letterSpacing: '-0.02em', marginBottom: '6px' }}
+              style={{ letterSpacing: '-0.02em', marginBottom: '17px', textWrap: 'balance' }}
             >
               {getCourseTagline(course)}
             </p>
 
             {/* Description */}
             <p
-              className="text-black text-lg leading-relaxed font-normal course-description"
+              className="text-black text-lg leading-relaxed font-light course-description"
               style={{ letterSpacing: '-0.02em', marginBottom: '30px' }}
             >
               {getTwoSentences(course.description)}
@@ -59,7 +59,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
                 </div>
-                <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>
+                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Certificate upon<br />completion
                 </span>
               </div>
@@ -67,7 +67,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
                 </div>
-                <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>
+                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Built by<br />industry experts
                 </span>
               </div>
@@ -75,7 +75,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
                 </div>
-                <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>
+                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Self-paced<br />learning
                 </span>
               </div>

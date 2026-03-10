@@ -35,7 +35,7 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
           >
             <h4
               className="font-semibold leading-tight transition-all duration-500"
-              style={{ fontSize: '20px', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}
+              style={{ fontSize: '1.2rem', letterSpacing: '-0.01em', color: expandedFAQ === idx ? '#7714E0' : '#000000' }}
             >
               {faq.question}
             </h4>
@@ -48,8 +48,8 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
             >
               <div style={{ overflow: 'hidden' }}>
                 <p
-                  className="text-black text-sm"
-                  style={{ marginTop: 'calc(0.1rem + 2px)', paddingBottom: '0' }}
+                  className="text-black font-light leading-snug"
+                  style={{ fontSize: '1rem', letterSpacing: '-0.01em', marginTop: 'calc(0.1rem + 2px)', paddingBottom: '0' }}
                 >
                   {faq.answer}
                 </p>

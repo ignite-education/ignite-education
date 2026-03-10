@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { X } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
@@ -37,11 +36,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [isSaving, setIsSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [authLoaded, setAuthLoaded] = useState(false)
-  const [showInterestModal, setShowInterestModal] = useState(false)
-  const [interestEmail, setInterestEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const googleBtnRef = useRef<HTMLDivElement>(null)
 
   // Save course for a given user
   const saveCourseForUser = useCallback(async (userId: string) => {
@@ -61,12 +55,28 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     setIsSaved(true)
   }, [courseSlug])
 
+  // Register interest in a coming-soon course
+  const registerInterestForUser = useCallback(async (userId: string) => {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('course_requests')
+      .insert({ user_id: userId, course_name: courseSlug, status: 'upcoming' })
+    if (error && error.code !== '23505') {
+      console.error('[EnrollmentCTA] Failed to register interest:', error)
+    }
+  }, [courseSlug])
+
   // Enroll user in a course: save + set enrolled_course + welcome email + audience sync
   const enrollUserInCourse = useCallback(async (userId: string, authUser: User) => {
     const supabase = createClient()
 
     // Always save to saved_courses
     await saveCourseForUser(userId)
+
+    // Auto-register interest for coming-soon courses
+    if (isComingSoon) {
+      await registerInterestForUser(userId)
+    }
 
     // Only set enrolled_course for live courses
     if (!isComingSoon) {
@@ -135,7 +145,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         }).catch(err => console.error('[EnrollmentCTA] Add to course audience failed:', err))
       }
     }
-  }, [courseSlug, courseTitle, isComingSoon, saveCourseForUser])
+  }, [courseSlug, courseTitle, isComingSoon, saveCourseForUser, registerInterestForUser])
 
   // Handle Google sign-in success (direct, no redirect)
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
@@ -168,25 +178,11 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     }
   }, [enrollUserInCourse, isComingSoon])
 
-  const { isLoaded, renderButton } = useGoogleOneTap({
+  const { triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
     enabled: authLoaded && !user,
     autoPrompt: true,
   })
-
-  // Render Google GIS button when ready
-  useEffect(() => {
-    if (!user && isLoaded && googleBtnRef.current) {
-      const containerWidth = googleBtnRef.current.offsetWidth
-      renderButton(googleBtnRef.current, {
-        width: containerWidth,
-        theme: 'outline',
-        size: 'large',
-        shape: 'rectangular',
-        text: 'continue_with',
-      })
-    }
-  }, [user, isLoaded, renderButton])
 
   // Handle LinkedIn sign-in (OAuth redirect)
   const handleLinkedInClick = useCallback(async () => {
@@ -276,12 +272,26 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .eq('user_id', user.id)
           .eq('course_id', courseSlug)
         setIsSaved(false)
+
+        // Remove waitlist entry for coming-soon courses
+        if (isComingSoon) {
+          await supabase
+            .from('course_requests')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('course_name', courseSlug)
+        }
       } else {
         // Save the course
         await supabase
           .from('saved_courses')
           .insert({ user_id: user.id, course_id: courseSlug })
         setIsSaved(true)
+
+        // Register interest for coming-soon courses
+        if (isComingSoon) {
+          await registerInterestForUser(user.id)
+        }
 
         // Auto-enroll if user has no enrolled course and this is a live course
         if (!isComingSoon) {
@@ -325,63 +335,38 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     }
   }
 
-  const handleRegisterInterest = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!user) return
-    setSubmitting(true)
-
-    try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('course_requests')
-        .insert({ user_id: user.id, course_name: courseSlug })
-
-      if (error && error.code !== '23505') {
-        console.error('Error registering interest:', error)
-        alert('Something went wrong. Please try again.')
-      } else {
-        setSubmitted(true)
-      }
-    } catch (err) {
-      console.error('Error:', err)
-      alert('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const closeModal = () => {
-    setShowInterestModal(false)
-    setInterestEmail('')
-    setSubmitted(false)
-  }
-
   return (
-    <>
-      <div className="w-full">
+    <div className="w-full">
         {!user ? (
           <>
             {/* Sign-in buttons */}
-            <div className="space-y-2 w-[90%] mx-auto mb-3">
-              {/* Standard GIS "Continue with Google" button */}
-              <div
-                ref={googleBtnRef}
-                className="mx-auto rounded overflow-hidden"
-                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-              />
+            <div className="space-y-2 w-[85%] mx-auto mb-4">
+              {/* Continue with Google button */}
+              <button
+                onClick={() => triggerPrompt()}
+                className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                style={{ width: '100%', height: '40px' }}
+              >
+                Continue with Google
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png" alt="Google" width="17.5" height="17.5" style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }} />
+              </button>
 
               {/* LinkedIn Sign In Button */}
               <button
                 onClick={handleLinkedInClick}
-                className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
-                style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                style={{ width: '100%', height: '40px' }}
               >
                 Continue with LinkedIn
+                <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-4px' }}>
+                  <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
+                </svg>
               </button>
             </div>
 
             {/* Status Text */}
-            <p className="text-center text-black text-sm font-normal mb-4" style={{ letterSpacing: '-0.02em' }}>
+            <p className="text-center text-black text-base font-normal mb-4" style={{ letterSpacing: '-0.03em' }}>
               {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
             </p>
           </>
@@ -392,24 +377,24 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               <button
                 onClick={handleSaveToggle}
                 disabled={isSaving || checkingStatus}
-                className={`w-full px-4 transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                className={`w-full px-4 transition-shadow duration-350 ease-in-out shadow-[0_0_10px_rgba(103,103,103,0.4)] hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
                   checkingStatus
                     ? 'bg-[#9E9E9E] text-white'
                     : isSaved
-                    ? 'bg-[#009600] text-white hover:bg-[#007D00]'
-                    : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                    ? 'bg-[#009600] text-white'
+                    : 'bg-[#EF0B72] text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
                 style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
               >
                 {checkingStatus ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
+                    <span className="text-[0.95rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
                   </span>
                 ) : isSaving ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[0.95rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
                       {isSaved ? 'Removing...' : 'Saving...'}
                     </span>
                   </span>
@@ -418,19 +403,25 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                     </svg>
-                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                    <span className="text-[0.95rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
                       Saved to Account
                     </span>
                   </span>
                 ) : (
-                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                  <span className="text-[0.95rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
                     Add to {firstName || 'your'}&apos;s Account
                   </span>
                 )}
               </button>
 
               <p className="text-center text-black text-sm font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                {!checkingStatus && (isSaved ? 'Course saved to your account' : "We'll save this course to start later")}
+                {!checkingStatus && (
+                  isSaved
+                    ? isComingSoon
+                      ? `Thank you, ${firstName}. We'll notify you when ${courseTitle} is available.`
+                      : 'Course saved to your account'
+                    : "We'll save this course to start later"
+                )}
               </p>
             </div>
           </>
@@ -438,79 +429,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
         {/* Share Buttons Row */}
         <ShareButtons courseSlug={courseSlug} courseTitle={courseTitle} />
-      </div>
-
-      {/* Register Interest Modal (for coming_soon courses) */}
-      {showInterestModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
-          style={{
-            background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
-            animation: 'fadeIn 0.2s ease-out',
-          }}
-          onClick={closeModal}
-        >
-          <div className="relative px-4 sm:px-0" style={{ width: '100%', maxWidth: '484px' }}>
-            <h3 className="font-semibold text-white pl-1" style={{ marginBottom: '0.15rem', fontSize: '1.35rem' }}>
-              Register Interest
-            </h3>
-
-            <div
-              className="bg-white rounded-lg w-full relative"
-              style={{ padding: '1.8rem 2rem' }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={closeModal}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={24} />
-              </button>
-
-              {submitted ? (
-                <div className="text-center py-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-2">You&apos;re on the list!</h4>
-                  <p className="text-sm text-gray-600">
-                    We&apos;ll notify you when {courseTitle} launches.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <p className="mb-5 text-sm" style={{ color: '#000000' }}>
-                    Be the first to know when <strong>{courseTitle}</strong> launches. Enter your email to get notified.
-                  </p>
-
-                  <form onSubmit={handleRegisterInterest} className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1" style={{ color: '#000000' }}>Email</label>
-                      <input
-                        type="email"
-                        required
-                        value={interestEmail}
-                        onChange={(e) => setInterestEmail(e.target.value)}
-                        placeholder="you@example.com"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#EF0B72] focus:border-transparent"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="w-full py-2.5 bg-[#EF0B72] hover:bg-[#D10A64] text-white font-semibold rounded-lg transition-colors mt-1 disabled:opacity-50"
-                    >
-                      {submitting ? 'Submitting...' : 'Notify Me'}
-                    </button>
-                  </form>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   )
 }

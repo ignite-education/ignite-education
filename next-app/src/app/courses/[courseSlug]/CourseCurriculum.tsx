@@ -38,15 +38,15 @@ export default function CourseCurriculum({
                 </h3>
 
                 <div>
-                  <p className="text-gray-900 mb-3" style={{ fontSize: '15px', letterSpacing: '-0.01em' }}>
+                  <p className="text-gray-900 mb-3 font-light" style={{ fontSize: '0.9rem', letterSpacing: '-0.01em' }}>
                     {module.description || generateModuleIntro(module)}
                   </p>
 
                   <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
                     {(module.lessons || []).map((lesson, lessonIndex) => (
-                      <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '14px' }}>
+                      <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '0.9rem' }}>
                         <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                        <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.01em' }}>
+                        <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.02em' }}>
                           {lesson.name}
                         </span>
                       </li>

@@ -26,19 +26,19 @@ interface PageProps {
 const COURSE_FAQS: FAQ[] = [
   {
     question: 'What is Ignite?',
-    answer: "Ignite gives you free, expert-led courses in high-demand careers like Product Management and Cybersecurity, so you can build the skills that actually get you hired in today's competitive job market.",
+    answer: "Ignite gives you free, expert-built courses in high-demand careers so you can build the skills that actually get you hired in today's job market. Ignite courses are free with the ability to get additional career tips and support with Ignite Insider.",
   },
   {
     question: 'Who is Ignite for?',
-    answer: 'Ignite is for anyone ready to level up their career, especially students, recent graduates, and young professionals looking to break into competitive fields, switch careers, or gain new skills quickly.',
+    answer: 'Ignite is for anyone ready to level up their career. It is especially useful for young professionals looking to break into competitive fields, people looking to switch careers, re-enter the job market or those looking to gain new skills entirely.',
   },
   {
     question: 'How much does Ignite cost?',
-    answer: 'Ignite courses are completely free, supported by limited advertising. Want an ad-free experience plus exclusive access to industry professionals and curated job opportunities? Upgrade for just 99p/week.',
+    answer: 'All Ignite courses and resources are completely free. In addition, we offer Ignite Insider which offers 1:1 access to industry professionals and curated job opportunity notifications.',
   },
   {
     question: 'What can I learn on Ignite?',
-    answer: 'We offer comprehensive courses in Product Management and Cyber Security, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV.',
+    answer: "We offer comprehensive courses across Product Management, Cyber Security and Marketing, with more fields launching soon. Each course includes interactive lessons, knowledge checks and certification to boost your CV. You can submit a request for a new course if we don't yet offer it.",
   },
   {
     question: 'Can I learn at my own pace?',
@@ -46,7 +46,7 @@ const COURSE_FAQS: FAQ[] = [
   },
   {
     question: 'What makes Ignite different?',
-    answer: 'Unlike other platforms, Ignite is completely free with no paywalls or hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.',
+    answer: 'Unlike other platforms, Ignite courses are completely free with no hidden costs. We focus on practical, industry-relevant skills that employers actually want, not just theory. Our courses get you job-ready, fast.',
   },
 ]
 

@@ -1,6 +1,6 @@
-import Image from 'next/image'
 import type { Coach } from '@/types/course'
 import CourseLeaderModal from './CourseLeaderModal'
+import CoachAvailability from './CoachAvailability'
 
 interface CourseLeadersProps {
   coaches: Coach[]
@@ -17,31 +17,26 @@ export default function CourseLeaders({ coaches, courseTitle }: CourseLeadersPro
         {coaches.map((coach) => {
           const content = (
             <>
-              {coach.image_url ? (
-                <Image
-                  src={coach.image_url}
-                  alt={`${coach.name}${coach.position ? `, ${coach.position}` : ''} - Course instructor at Ignite Education`}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 rounded object-cover object-center flex-shrink-0"
-                />
-              ) : (
-                <div className="w-20 h-20 rounded bg-gray-200 flex-shrink-0" />
-              )}
+              <CoachAvailability
+                courseId={coach.course_id}
+                imageUrl={coach.image_url}
+                coachName={coach.name}
+                coachPosition={coach.position}
+              />
               <div className="flex-1 min-w-0">
                 <h4
-                  className="font-semibold text-gray-900 group-hover:text-[#EF0B72] transition-colors"
-                  style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '2px' }}
+                  className="font-medium text-gray-900 group-hover:text-[#EF0B72] transition-colors"
+                  style={{ fontSize: '1.1rem', lineHeight: '1.3', marginBottom: '2px', letterSpacing: '-0.01em' }}
                 >
                   {coach.name}
                 </h4>
                 {coach.position && (
-                  <p className="text-gray-900 font-medium" style={{ fontSize: '15px', lineHeight: '1.3', marginBottom: '4px' }}>
+                  <p className="text-gray-900 font-medium" style={{ fontSize: '1rem', lineHeight: '1.3', marginBottom: '4px', letterSpacing: '-0.01em' }}>
                     {coach.position}
                   </p>
                 )}
                 {coach.description && (
-                  <p className="text-gray-900" style={{ fontSize: '15px', lineHeight: '1.5' }}>
+                  <p className="text-gray-900 font-light" style={{ fontSize: '1rem', lineHeight: '1.5', textWrap: 'balance' }}>
                     {coach.description}
                   </p>
                 )}
@@ -50,18 +45,18 @@ export default function CourseLeaders({ coaches, courseTitle }: CourseLeadersPro
           )
 
           return (
-            <div key={coach.id} className="flex gap-4 items-start group cursor-pointer">
+            <div key={coach.id} className="flex gap-4 items-center group cursor-pointer">
               {coach.linkedin_url ? (
                 <a
                   href={coach.linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex gap-4 items-start flex-1"
+                  className="flex gap-7 items-center flex-1"
                 >
                   {content}
                 </a>
               ) : (
-                <div className="flex gap-4 items-start flex-1">
+                <div className="flex gap-7 items-center flex-1">
                   {content}
                 </div>
               )}

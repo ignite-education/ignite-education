@@ -11,7 +11,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         Feedback
       </h2>
       <div className="bg-[#F0F0F2] p-6 rounded-lg">
-        <p className="text-black text-lg font-medium">
+        <p className="text-black font-medium" style={{ fontSize: '1.2rem', letterSpacing: '-0.01em' }}>
           &ldquo;The {courseTitle} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community&rdquo;
         </p>
       </div>
@@ -20,7 +20,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
         alt="Trustpilot"
         width={576}
         height={144}
-        className="mt-3"
+        className="mt-4"
         style={{ maxWidth: '107px', height: 'auto' }}
       />
     </div>
