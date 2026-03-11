@@ -3,22 +3,25 @@ import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
 
-const useCountUp = (target, duration = 1200) => {
+const useCountUp = (target, duration = 1200, delay = 500) => {
   const [value, setValue] = useState(0);
   const rafRef = useRef(null);
+  const timerRef = useRef(null);
 
   useEffect(() => {
     if (target == null || target === 0) { setValue(0); return; }
-    const start = performance.now();
-    const tick = (now) => {
-      const t = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      setValue(Math.round(eased * target));
-      if (t < 1) rafRef.current = requestAnimationFrame(tick);
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [target, duration]);
+    timerRef.current = setTimeout(() => {
+      const start = performance.now();
+      const tick = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        setValue(Math.round(eased * target));
+        if (t < 1) rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }, delay);
+    return () => { clearTimeout(timerRef.current); if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration, delay]);
 
   return value;
 };
@@ -603,7 +606,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: communityCount != null ? `${animatedCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center flex flex-col items-center">
+                <div key={idx} className="text-center flex flex-col items-center" style={{ width: '160px', flexShrink: 0 }}>
                   {stat.image ? (
                     <img src={stat.image} alt="" style={{ width: '68px', height: '68px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
