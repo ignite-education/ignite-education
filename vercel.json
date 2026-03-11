@@ -27,6 +27,7 @@
     { "source": "/auth/callback", "destination": "https://next.ignite.education/auth/callback" },
     { "source": "/certificate/:path*", "destination": "https://next.ignite.education/certificate/:path*" },
     { "source": "/prompts", "destination": "https://next.ignite.education/prompts" },
+    { "source": "/prompts/:professionSlug/:promptSlug", "destination": "https://next.ignite.education/prompts/:professionSlug/:promptSlug" },
     { "source": "/prompts/:slug", "destination": "https://next.ignite.education/prompts/:slug" },
     { "source": "/_next/:path*", "destination": "https://next.ignite.education/_next/:path*" },
 

@@ -12,7 +12,7 @@ export default function PromptListCard({ prompt }: PromptListCardProps) {
 
   return (
     <Link
-      href={`/prompts/${prompt.slug}`}
+      href={`/prompts/${prompt.professionSlug}/${prompt.slug}`}
       target="_blank"
       className="group block w-full text-left bg-[#F6F6F6] rounded-[8px] pl-5 py-3"
     >

@@ -1,11 +1,10 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import { getAllPromptSlugs, getPromptBySlug, getAllPrompts } from '@/data/placeholderPrompts'
+import { getPromptBySlug, getAllPrompts } from '@/data/placeholderPrompts'
 import { getCoursesByType } from '@/lib/courseData'
 import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
-import PromptDetailClient from './PromptDetailClient'
 import PromptToolkitClient from '../PromptToolkitClient'
 
 export const revalidate = 60
@@ -17,15 +16,8 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  const [professionSlugs, promptSlugs] = await Promise.all([
-    getAllProfessionSlugs(),
-    getAllPromptSlugs(),
-  ])
-
-  return [
-    ...professionSlugs.map((slug) => ({ slug })),
-    ...promptSlugs.map((slug) => ({ slug })),
-  ]
+  const professionSlugs = await getAllProfessionSlugs()
+  return professionSlugs.map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -61,37 +53,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
-  // Fall back to prompt detail metadata
-  const prompt = await getPromptBySlug(slug)
-  if (!prompt) {
-    return { title: 'Prompt Not Found' }
-  }
-
-  const title = `${prompt.title} — Free AI Prompt Template | Ignite`
-  const description = prompt.description.slice(0, 160)
-  const url = `${BASE_URL}/prompts/${slug}`
-
-  return {
-    title,
-    description,
-    alternates: {
-      canonical: url,
-    },
-    openGraph: {
-      title: `${prompt.title} | Ignite Prompt Toolkit`,
-      description,
-      url,
-      siteName: 'Ignite Education',
-      images: [{ url: `${BASE_URL}/og-image.png` }],
-      type: 'article',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${prompt.title} | Ignite Prompt Toolkit`,
-      description,
-      images: [`${BASE_URL}/og-image.png`],
-    },
-  }
+  // Old prompt URL — redirect will happen in the page component
+  return { title: 'Redirecting...' }
 }
 
 export default async function PromptSlugPage({ params }: PageProps) {
@@ -152,54 +115,11 @@ export default async function PromptSlugPage({ params }: PageProps) {
     )
   }
 
-  // Fall back to prompt detail
+  // Redirect old prompt URLs to new format: /prompts/{professionSlug}/{promptSlug}
   const prompt = await getPromptBySlug(slug)
-
-  if (!prompt) {
-    notFound()
+  if (prompt) {
+    redirect(`/prompts/${prompt.professionSlug}/${slug}`)
   }
 
-  const structuredData = [
-    {
-      '@context': 'https://schema.org',
-      '@type': 'HowTo',
-      'name': prompt.title,
-      'description': prompt.description,
-      'url': `${BASE_URL}/prompts/${slug}`,
-    },
-    {
-      '@context': 'https://schema.org',
-      '@type': 'BreadcrumbList',
-      'itemListElement': [
-        { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
-        { '@type': 'ListItem', 'position': 2, 'name': 'Prompt Toolkit', 'item': `${BASE_URL}/prompts` },
-        { '@type': 'ListItem', 'position': 3, 'name': prompt.title, 'item': `${BASE_URL}/prompts/${slug}` },
-      ],
-    },
-  ]
-
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
-
-      <div className="flex flex-col min-h-screen bg-white">
-        <div className="sticky top-0 z-50">
-          <Navbar variant="black" />
-        </div>
-
-        <div className="flex-1">
-          <div className="max-w-4xl mx-auto px-6 py-20 pb-16 flex justify-center">
-            <div className="w-full" style={{ maxWidth: '762px' }}>
-              <PromptDetailClient prompt={prompt} slug={slug} isPending={prompt.status === 'pending'} />
-            </div>
-          </div>
-        </div>
-
-        <Footer />
-      </div>
-    </>
-  )
+  notFound()
 }

@@ -11,6 +11,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api
 
 interface PromptDetailClientProps {
   prompt: Prompt
+  professionSlug: string
   slug: string
   isPending?: boolean
 }
@@ -173,7 +174,7 @@ function useCountUp(target: number, duration = 1200, delay = 300) {
   return value
 }
 
-export default function PromptDetailClient({ prompt, slug, isPending }: PromptDetailClientProps) {
+export default function PromptDetailClient({ prompt, professionSlug, slug, isPending }: PromptDetailClientProps) {
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)
@@ -253,7 +254,7 @@ export default function PromptDetailClient({ prompt, slug, isPending }: PromptDe
   const promptCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autocompleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const shareUrl = `https://ignite.education/prompts/${slug}`
+  const shareUrl = `https://ignite.education/prompts/${professionSlug}/${slug}`
 
   // Handle Google sign-in success (direct, no redirect)
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {

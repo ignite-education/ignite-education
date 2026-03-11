@@ -468,7 +468,7 @@ const PromptsManagement = () => {
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#EF0B72]"
                 />
                 {formData.title && (
-                  <p className="text-xs text-gray-400 mt-1">Slug: /prompts/{generateSlug(formData.title)}</p>
+                  <p className="text-xs text-gray-400 mt-1">Slug: /prompts/{formData.profession ? generateSlug(formData.profession) + '/' : ''}{generateSlug(formData.title)}</p>
                 )}
               </div>
 

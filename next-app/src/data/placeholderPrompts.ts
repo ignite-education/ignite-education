@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { professionToSlug } from '@/lib/professionUtils'
 
 export type Prompt = {
   id: string
@@ -6,6 +7,7 @@ export type Prompt = {
   description: string
   fullPrompt: string
   profession: string
+  professionSlug: string
   llmTools: string[]
   complexity: 'Low' | 'Mid' | 'High'
   usageCount: number
@@ -56,6 +58,7 @@ function mapDbPrompt(row: Record<string, unknown>): Prompt {
     description: row.description as string,
     fullPrompt: row.full_prompt as string,
     profession: row.profession as string,
+    professionSlug: professionToSlug(row.profession as string),
     llmTools: row.llm_tools as string[],
     complexity: row.complexity as 'Low' | 'Mid' | 'High',
     usageCount: Math.max(row.usage_count as number, (row.real_usage_count as number) || 0),
@@ -103,14 +106,17 @@ export async function getPromptBySlug(slug: string): Promise<Prompt | undefined>
 }
 
 /** Fetch all prompt slugs for generateStaticParams */
-export async function getAllPromptSlugs(): Promise<string[]> {
+export async function getAllPromptSlugs(): Promise<{ professionSlug: string; slug: string }[]> {
   const supabase = getSupabase()
   const { data } = await supabase
     .from('prompts')
-    .select('slug')
+    .select('slug, profession')
     .eq('status', 'published')
 
-  return data?.map((p: { slug: string }) => p.slug) || []
+  return data?.map((p: { slug: string; profession: string }) => ({
+    professionSlug: professionToSlug(p.profession),
+    slug: p.slug,
+  })) || []
 }
 
 // Backward compat: empty array for any remaining direct imports

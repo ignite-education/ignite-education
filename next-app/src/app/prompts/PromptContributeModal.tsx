@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { LLM_TOOLS, COMPLEXITIES, promptToSlug } from '@/data/placeholderPrompts'
+import { professionToSlug } from '@/lib/professionUtils'
 
 interface PromptContributeModalProps {
   professions: string[]
@@ -235,7 +236,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     if (openSlug) {
-      window.open(`/prompts/${openSlug}`, '_blank')
+      window.open(`/prompts/${professionToSlug(profession.trim())}/${openSlug}`, '_blank')
     }
 
     setSubmitting(false)

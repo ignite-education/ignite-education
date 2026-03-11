@@ -5164,9 +5164,10 @@ app.get('/sitemap.xml', async (req, res) => {
 
       for (const prompt of prompts) {
         const slug = promptToSlug(prompt.title);
+        const profSlug = toSlug(prompt.profession || '');
         xml += `
   <url>
-    <loc>https://www.ignite.education/prompts/${slug}</loc>
+    <loc>https://www.ignite.education/prompts/${profSlug}/${slug}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>

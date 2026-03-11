@@ -65,7 +65,7 @@ async function generateSitemap() {
   // Fetch published prompts from Supabase
   const { data: prompts, error: promptsError } = await supabase
     .from('prompts')
-    .select('slug, updated_at')
+    .select('slug, profession, updated_at')
     .eq('status', 'published');
 
   if (promptsError) {
@@ -132,7 +132,7 @@ async function generateSitemap() {
   (prompts || []).forEach(prompt => {
     const lastmod = prompt.updated_at?.split('T')[0] || today;
     xml += `  <url>
-    <loc>${baseUrl}/prompts/${prompt.slug}</loc>
+    <loc>${baseUrl}/prompts/${(prompt.profession || '').toLowerCase().replace(/\s+/g, '-')}/${prompt.slug}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
