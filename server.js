@@ -5581,7 +5581,7 @@ Requirements:
 - Lesson names should be concise and descriptive (3-8 words)
 - Lesson descriptions should be 1-2 sentences explaining what the learner will cover
 - Each lesson must have exactly 3 bullet points highlighting specific skills or knowledge gained
-- Bullet points should be concise (under 80 characters each)
+- Bullet points should be concise (under 50 characters each) with the first letter of each word capitalised (Title Case)
 - Be specific and practical, not generic
 
 Return ONLY valid JSON, no other text or markdown.`;

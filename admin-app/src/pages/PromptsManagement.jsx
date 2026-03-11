@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { Plus, Trash2, Save, Check, X, Lightbulb, Users, Eye, Bold } from 'lucide-react';
+import { Plus, Trash2, Save, Check, X, Lightbulb, Users, Eye, Bold, Shuffle } from 'lucide-react';
 
 const LLM_TOOLS = ['Claude', 'Co-Pilot', 'ChatGPT', 'Gemini'];
 const COMPLEXITIES = ['Low', 'Mid', 'High'];
@@ -563,6 +563,22 @@ const PromptsManagement = () => {
               </div>
 
               {/* Metrics row */}
+              <div className="mb-2 flex items-center justify-between">
+                <label className="block text-sm font-medium">Metrics</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const likes = Math.floor(Math.random() * 600);
+                    const usage = likes + 1 + Math.floor(Math.random() * (600 - likes));
+                    handleInputChange('usage_count', usage);
+                    handleInputChange('rating', likes);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white transition-colors"
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  Randomize
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-4 mb-5">
                 <div>
                   <label className="block text-sm font-medium mb-2">Usage Count</label>

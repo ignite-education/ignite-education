@@ -715,12 +715,14 @@ const CourseManagement = () => {
                               type="text"
                               value={bp}
                               onChange={(e) => {
+                                const titleCase = e.target.value.replace(/\b\w/g, c => c.toUpperCase());
                                 const newModules = [...formData.modules];
                                 const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
-                                bulletPoints[bpIndex] = e.target.value;
+                                bulletPoints[bpIndex] = titleCase;
                                 newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
                                 setFormData({ ...formData, modules: newModules });
                               }}
+                              maxLength={50}
                               placeholder={`Bullet point ${bpIndex + 1}`}
                               className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
                             />
@@ -1250,12 +1252,14 @@ const CourseManagement = () => {
                               type="text"
                               value={bp}
                               onChange={(e) => {
+                                const titleCase = e.target.value.replace(/\b\w/g, c => c.toUpperCase());
                                 const newModules = [...formData.modules];
                                 const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
-                                bulletPoints[bpIndex] = e.target.value;
+                                bulletPoints[bpIndex] = titleCase;
                                 newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
                                 setFormData({ ...formData, modules: newModules });
                               }}
+                              maxLength={50}
                               placeholder={`Bullet point ${bpIndex + 1}`}
                               className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 bg-white text-gray-900 text-sm"
                             />
