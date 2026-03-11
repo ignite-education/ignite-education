@@ -5017,6 +5017,27 @@ cron.schedule('0 10 * * *', async () => {
 
 console.log('⏰ Inactivity reminder cron job scheduled: Daily at 10 AM');
 
+// Refresh pre-computed stats tables daily at midnight UTC
+cron.schedule('0 0 * * *', async () => {
+  console.log('⏰ Running daily stats refresh (midnight UTC)');
+  try {
+    const { error: communityError } = await supabase.rpc('refresh_community_stats');
+    if (communityError) console.error('❌ Community stats refresh failed:', communityError.message);
+    else console.log('✅ Community stats refreshed');
+  } catch (error) {
+    console.error('❌ Community stats refresh error:', error);
+  }
+  try {
+    const { error: percentileError } = await supabase.rpc('refresh_achievement_percentile_stats');
+    if (percentileError) console.error('❌ Achievement percentile refresh failed:', percentileError.message);
+    else console.log('✅ Achievement percentile stats refreshed');
+  } catch (error) {
+    console.error('❌ Achievement percentile refresh error:', error);
+  }
+});
+
+console.log('⏰ Daily stats refresh cron job scheduled: Midnight UTC');
+
 // ============================================================================
 // END LINKEDIN ENDPOINTS
 // ============================================================================

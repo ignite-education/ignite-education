@@ -373,8 +373,7 @@ const useProgressData = () => {
             const scoredLessons = Object.values(userScoresResult);
             const acedCount = scoredLessons.filter(s => s.total > 0 && s.correct === s.total).length;
             if (acedCount >= 1) {
-              const acedPct = Math.round((acedCount / scoredLessons.length) * 100);
-              candidates.push({ label: `You've aced ${acedPct}%`, value: 'of lessons with 100%', image: '/achievement-aced.png' });
+              candidates.push({ label: `You've aced ${acedCount}`, value: 'lessons with 100%', image: '/achievement-aced.png' });
             }
 
             // Weekly: completions since Monday 00:00 (ISO week)
