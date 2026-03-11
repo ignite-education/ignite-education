@@ -19,6 +19,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [showButton, setShowButton] = useState(false);
 
   const isComingSoon = courseStatus === 'coming_soon';
   const shareUrl = `https://ignite.education/courses/${courseSlug}`;
@@ -62,6 +63,13 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
   const handleSubstackShare = () => {
     window.open(`https://substack.com/note?url=${encodeURIComponent(shareUrl)}`, '_blank');
   };
+
+  // Trigger fade-in after checkingStatus resolves
+  useEffect(() => {
+    if (!checkingStatus) {
+      requestAnimationFrame(() => setShowButton(true));
+    }
+  }, [checkingStatus]);
 
   // Check if course is saved on mount
   useEffect(() => {
@@ -182,49 +190,74 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
             <>
               {/* Save to Account Button for authenticated users */}
               <div className="w-[80%] mx-auto mb-4">
-                <button
-                  onClick={handleSaveToggle}
-                  disabled={isSaving || checkingStatus}
-                  className={`w-full px-4 rounded-lg transition-all duration-200 shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
-                    checkingStatus
-                      ? 'bg-[#9E9E9E] text-white'
-                      : isSaved
-                      ? 'bg-gray-200 text-black hover:bg-gray-300'
-                      : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
-                  } disabled:opacity-50 disabled:cursor-not-allowed`}
-                  style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px' }}
-                >
-                  {checkingStatus ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>Loading...</span>
-                    </span>
-                  ) : isSaving ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
-                        {isSaved ? 'Removing...' : 'Saving...'}
+                <div style={{ minHeight: '40px' }}>
+                  <button
+                    onClick={handleSaveToggle}
+                    disabled={isSaving || checkingStatus}
+                    className={`w-full px-4 rounded-lg shadow-[0_0_10px_rgba(103,103,103,0.4)] ${
+                      isSaved
+                        ? 'bg-gray-200 text-black hover:bg-gray-300'
+                        : 'bg-[#EF0B72] text-white hover:bg-[#D10A64]'
+                    } disabled:cursor-not-allowed`}
+                    style={{
+                      paddingTop: '0.575rem',
+                      paddingBottom: '0.575rem',
+                      borderRadius: '8px',
+                      transition: 'opacity 0.3s ease, transform 0.3s ease, background-color 0.2s ease',
+                      opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
+                      transform: checkingStatus ? 'translateY(4px)' : (showButton || isSaving ? 'translateY(0)' : 'translateY(4px)'),
+                    }}
+                  >
+                    {isSaving ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                          {isSaved ? 'Removing...' : 'Saving...'}
+                        </span>
                       </span>
-                    </span>
-                  ) : isSaved ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                      </svg>
+                    ) : isSaved ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                        </svg>
+                        <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                          Saved to Account
+                        </span>
+                      </span>
+                    ) : (
                       <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                        Saved to Account
+                        Add to {firstName || 'your'}'s Account
                       </span>
-                    </span>
-                  ) : (
-                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                      Add to {firstName || 'your'}'s Account
-                    </span>
-                  )}
-                </button>
+                    )}
+                  </button>
+                </div>
 
-                <p className="text-center text-black text-sm font-light mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.02em' }}>
-                  {!checkingStatus && (isSaving ? (isSaved ? 'We\'ll save this course to start later' : 'Course saved to your account') : (isSaved ? 'Course saved to your account' : 'We\'ll save this course to start later'))}
-                </p>
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateRows: !checkingStatus ? '1fr' : '0fr',
+                    transition: 'grid-template-rows 0.3s ease',
+                  }}
+                >
+                  <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                    <p
+                      className="text-center text-black text-sm font-light mt-3"
+                      style={{
+                        letterSpacing: '-0.02em',
+                        opacity: showButton ? 1 : 0,
+                        transition: 'opacity 0.3s ease',
+                      }}
+                    >
+                      {isSaving
+                        ? (isSaved ? 'We\'ll save this course to start later' : 'Course saved to your account')
+                        : (isSaved
+                          ? (isComingSoon ? `We'll notify you when ${courseTitle} is available` : 'Course saved to your account')
+                          : (isComingSoon ? 'Join the course waitlist' : 'We\'ll save this course to start later')
+                        )
+                      }
+                    </p>
+                  </div>
+                </div>
               </div>
             </>
           )}

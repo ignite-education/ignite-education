@@ -52,7 +52,7 @@ export default function PromptCard({ prompt }: PromptCardProps) {
         </div>
       </div>
       {/* Bottom section: tags + counts inline */}
-      <div className="flex items-center gap-2 flex-wrap mt-3">
+      <div className="flex items-center gap-2 flex-nowrap overflow-hidden mt-3">
         <span
           className="inline-block text-xs font-semibold px-2.5 py-1 rounded-[5px]"
           style={{ backgroundColor: '#FFFFFF', color: '#7500F1', fontSize: '0.8rem', letterSpacing: '-0.01em' }}

@@ -205,20 +205,16 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     })
   }, [courseSlug])
 
+  // Trigger fade-in after checkingStatus resolves
+  useEffect(() => {
+    if (!checkingStatus) {
+      requestAnimationFrame(() => setShowButton(true))
+    }
+  }, [checkingStatus])
+
   // Initial auth check + OAuth callback detection
   useEffect(() => {
     const supabase = createClient()
-    const loadStart = Date.now()
-
-    const finishLoading = () => {
-      const elapsed = Date.now() - loadStart
-      const remaining = Math.max(0, 750 - elapsed)
-      setTimeout(() => {
-        setCheckingStatus(false)
-        // Small delay before showing button for fade-in effect
-        requestAnimationFrame(() => setShowButton(true))
-      }, remaining)
-    }
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user)
@@ -230,7 +226,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
         if (pendingSlug === courseSlug) {
           sessionStorage.removeItem('pendingEnrollCourse')
           await enrollUserInCourse(user.id, user)
-          finishLoading()
+          setCheckingStatus(false)
           setAuthLoaded(true)
           return
         }
@@ -243,9 +239,9 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           .eq('course_id', courseSlug)
           .maybeSingle()
         setIsSaved(!!data)
-        finishLoading()
+        setCheckingStatus(false)
       } else {
-        finishLoading()
+        setCheckingStatus(false)
       }
       setAuthLoaded(true)
     })
@@ -403,85 +399,88 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
           <>
             {/* Save to Account Button for authenticated users */}
             <div className="w-[80%] mx-auto mb-4">
-              <button
-                onClick={handleSaveToggle}
-                disabled={isSaving || checkingStatus}
-                className={`w-full px-4 shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
-                  checkingStatus
-                    ? 'bg-white text-[#888]'
-                    : isSaving
-                    ? savingAction === 'removing'
+              <div style={{ minHeight: '40px' }}>
+                <button
+                  onClick={handleSaveToggle}
+                  disabled={isSaving || checkingStatus}
+                  className={`w-full px-4 shadow-none hover:shadow-[0_0_14px_rgba(103,103,103,0.6)] ${
+                    isSaving
+                      ? savingAction === 'removing'
+                        ? 'bg-[#009600] text-white'
+                        : 'bg-[#EF0B72] text-white'
+                      : isSaved
                       ? 'bg-[#009600] text-white'
                       : 'bg-[#EF0B72] text-white'
-                    : isSaved
-                    ? 'bg-[#009600] text-white'
-                    : 'bg-[#EF0B72] text-white'
-                } disabled:cursor-not-allowed`}
+                  } disabled:cursor-not-allowed`}
+                  style={{
+                    paddingTop: '0.575rem',
+                    paddingBottom: '0.575rem',
+                    borderRadius: '8px',
+                    transition: 'opacity 0.3s ease, transform 0.3s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
+                    opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
+                    transform: checkingStatus ? 'translateY(4px)' : (showButton || isSaving ? 'translateY(0)' : 'translateY(4px)'),
+                  }}
+                >
+                  {isSaving ? (
+                    <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
+                      {(savingAction === 'removing' ? 'Removing...' : 'Adding...').split('').map((char, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            animation: 'letterFadeIn 0.4s ease forwards',
+                            animationDelay: `${i * 0.03}s`,
+                            opacity: 0,
+                          }}
+                        >{char === ' ' ? '\u00A0' : char}</span>
+                      ))}
+                    </span>
+                  ) : isSaved ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                      </svg>
+                      <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                        Saved to Account
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
+                      Add to {firstName || 'your'}&apos;s Account
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <div
                 style={{
-                  paddingTop: '0.575rem',
-                  paddingBottom: '0.575rem',
-                  borderRadius: '8px',
-                  transition: 'opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease-in-out',
-                  ...(!checkingStatus && !isSaving ? {
-                    opacity: showButton ? 1 : 0,
-                    transform: showButton ? 'translateY(0)' : 'translateY(4px)',
-                  } : {}),
+                  display: 'grid',
+                  gridTemplateRows: !checkingStatus ? '1fr' : '0fr',
+                  transition: 'grid-template-rows 0.3s ease',
                 }}
               >
-                {checkingStatus ? (
-                  <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
-                    {'Loading...'.split('').map((char, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          animation: 'letterFadeIn 0.4s ease forwards',
-                          animationDelay: `${i * 0.03}s`,
-                          opacity: 0,
-                        }}
-                      >{char === ' ' ? '\u00A0' : char}</span>
-                    ))}
-                  </span>
-                ) : isSaving ? (
-                  <span className="inline-flex items-center justify-center text-[1rem] font-medium" style={{ letterSpacing: '-0.02em' }}>
-                    {(savingAction === 'removing' ? 'Removing...' : 'Adding...').split('').map((char, i) => (
-                      <span
-                        key={i}
-                        style={{
-                          animation: 'letterFadeIn 0.4s ease forwards',
-                          animationDelay: `${i * 0.03}s`,
-                          opacity: 0,
-                        }}
-                      >{char === ' ' ? '\u00A0' : char}</span>
-                    ))}
-                  </span>
-                ) : isSaved ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                      Saved to Account
-                    </span>
-                  </span>
-                ) : (
-                  <span className="text-[1rem] font-medium truncate" style={{ letterSpacing: '-0.02em' }}>
-                    Add to {firstName || 'your'}&apos;s Account
-                  </span>
-                )}
-              </button>
-
-              <p className="text-center text-black text-base font-normal mt-3 min-h-[1.25rem]" style={{ letterSpacing: '-0.03em', textWrap: 'balance' }}>
-                {!checkingStatus && (() => {
-                  const effectivelySaved = isSaving ? savingAction === 'removing' : isSaved
-                  return effectivelySaved
-                    ? isComingSoon
-                      ? `We'll notify you when ${courseTitle} is available`
-                      : 'Course saved to your account'
-                    : isComingSoon
-                      ? 'Join the course waitlist'
-                      : "We'll save this course to start later"
-                })()}
-              </p>
+                <div style={{ overflow: 'hidden', minHeight: 0 }}>
+                  <p
+                    className="text-center text-black text-base font-normal mt-3"
+                    style={{
+                      letterSpacing: '-0.03em',
+                      textWrap: 'balance',
+                      opacity: showButton ? 1 : 0,
+                      transition: 'opacity 0.3s ease',
+                    }}
+                  >
+                    {(() => {
+                      const effectivelySaved = isSaving ? savingAction === 'removing' : isSaved
+                      return effectivelySaved
+                        ? isComingSoon
+                          ? `We'll notify you when ${courseTitle} is available`
+                          : 'Course saved to your account'
+                        : isComingSoon
+                          ? 'Join the course waitlist'
+                          : "We'll save this course to start later"
+                    })()}
+                  </p>
+                </div>
+              </div>
             </div>
           </>
         )}
