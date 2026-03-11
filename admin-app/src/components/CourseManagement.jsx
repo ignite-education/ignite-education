@@ -715,10 +715,9 @@ const CourseManagement = () => {
                               type="text"
                               value={bp}
                               onChange={(e) => {
-                                const titleCase = e.target.value.replace(/\b\w/g, c => c.toUpperCase());
                                 const newModules = [...formData.modules];
                                 const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
-                                bulletPoints[bpIndex] = titleCase;
+                                bulletPoints[bpIndex] = e.target.value;
                                 newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
                                 setFormData({ ...formData, modules: newModules });
                               }}
@@ -1252,10 +1251,9 @@ const CourseManagement = () => {
                               type="text"
                               value={bp}
                               onChange={(e) => {
-                                const titleCase = e.target.value.replace(/\b\w/g, c => c.toUpperCase());
                                 const newModules = [...formData.modules];
                                 const bulletPoints = [...(newModules[0].lessons[lessonIndex].bullet_points || ['', '', ''])];
-                                bulletPoints[bpIndex] = titleCase;
+                                bulletPoints[bpIndex] = e.target.value;
                                 newModules[0].lessons[lessonIndex].bullet_points = bulletPoints;
                                 setFormData({ ...formData, modules: newModules });
                               }}
