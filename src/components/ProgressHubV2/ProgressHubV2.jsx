@@ -85,6 +85,7 @@ const ProgressHubV2 = () => {
     userRole,
     userCountry,
     communityCount,
+    behaviourStat,
   } = useProgressData();
 
   const {
@@ -174,6 +175,7 @@ const ProgressHubV2 = () => {
         userRole={userRole}
         userCountry={userCountry}
         communityCount={communityCount}
+        behaviourStat={behaviourStat}
       />
 
       {/* Section 2: Course Details */}

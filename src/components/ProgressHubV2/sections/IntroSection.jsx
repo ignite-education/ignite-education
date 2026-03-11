@@ -3,6 +3,26 @@ import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
 
+const useCountUp = (target, duration = 1200) => {
+  const [value, setValue] = useState(0);
+  const rafRef = useRef(null);
+
+  useEffect(() => {
+    if (target == null || target === 0) { setValue(0); return; }
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      setValue(Math.round(eased * target));
+      if (t < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return value;
+};
+
 const COUNTRY_CONFIG = {
   GB: { label: 'in the UK', image: '/community-gb.png' },
   US: { label: 'in the USA', image: '/community-us.png' },
@@ -307,7 +327,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -316,12 +336,15 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const [statImagesLoaded, setStatImagesLoaded] = useState(false);
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
+  const animatedCount = useCountUp(statImagesLoaded ? communityCount : null);
+
+  const behaviourImage = behaviourStat?.image || '/behaviour-calendar.png';
 
   // Preload all stat images so they appear together
   useEffect(() => {
     const urls = [
       '/trophy.png',
-      '/moon.png',
+      behaviourImage,
       communityConfig.image,
     ];
     let loaded = 0;
@@ -335,7 +358,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       img.onerror = onLoad; // don't block if one fails
       img.src = url;
     });
-  }, [communityConfig.image]);
+  }, [communityConfig.image, behaviourImage]);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -576,8 +599,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: statImagesLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}>
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
-                { label: "You're a late", value: 'night learner', image: '/moon.png' },
-                { label: communityCount != null ? `${communityCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
+                behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
+                { label: communityCount != null ? `${animatedCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (

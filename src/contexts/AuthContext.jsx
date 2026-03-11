@@ -73,6 +73,10 @@ export const AuthProvider = ({ children }) => {
           .update({ last_active_at: new Date().toISOString() })
           .eq('id', session.user.id)
           .then(({ error }) => { if (error) console.error('Failed to update last_active_at:', error); });
+        supabase
+          .from('sign_in_history')
+          .insert({ user_id: session.user.id })
+          .then(({ error }) => { if (error) console.error('Failed to log sign-in:', error); });
       }
     });
 

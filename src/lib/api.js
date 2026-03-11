@@ -847,22 +847,38 @@ export async function getPostLikeCount(postId) {
 const SUPPORTED_COMMUNITY_COUNTRIES = ['GB', 'US', 'IN', 'FR', 'DE', 'IT', 'ES'];
 
 /**
- * Get count of learners by country (or all learners if unsupported/missing country)
+ * Get pre-computed learner count from community_stats table (refreshed daily by pg_cron)
  * @param {string|null} country - ISO country code
  * @returns {Promise<number>}
  */
 export async function getCommunityLearnerCount(country) {
-  const query = supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true });
+  const key = country && SUPPORTED_COMMUNITY_COUNTRIES.includes(country) ? country : 'global';
 
-  if (country && SUPPORTED_COMMUNITY_COUNTRIES.includes(country)) {
-    query.eq('country', country);
-  }
+  const { data, error } = await supabase
+    .from('community_stats')
+    .select('learner_count')
+    .eq('country', key)
+    .single();
 
-  const { count, error } = await query;
   if (error) throw error;
-  return count || 0;
+  return data?.learner_count || 0;
+}
+
+/**
+ * Get recent sign-in timestamps for behaviour analysis
+ * @param {string} userId
+ * @param {number} limit
+ * @returns {Promise<Array<{signed_in_at: string}>>}
+ */
+export async function getRecentSignIns(userId, limit = 3) {
+  const { data, error } = await supabase
+    .from('sign_in_history')
+    .select('signed_in_at')
+    .eq('user_id', userId)
+    .order('signed_in_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return data || [];
 }
 
 // =====================================================

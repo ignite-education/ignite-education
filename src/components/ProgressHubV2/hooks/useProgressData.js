@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount, getRecentSignIns } from '../../../lib/api';
 import { trackPageVisit } from '../../../lib/tracking';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
@@ -51,6 +51,7 @@ const useProgressData = () => {
   const [userRole, setUserRole] = useState('student');
   const [userCountry, setUserCountry] = useState(null);
   const [communityCount, setCommunityCount] = useState(null);
+  const [behaviourStat, setBehaviourStat] = useState(null);
   const hasInitialDataFetchRef = useRef(false);
   const courseDataResultRef = useRef(null);
 
@@ -211,6 +212,7 @@ const useProgressData = () => {
         }
 
         // Fetch total completed lessons for enrolled course
+        let completedCount = 0;
         try {
           const { count, error: countError } = await supabase
             .from('lesson_completions')
@@ -218,8 +220,9 @@ const useProgressData = () => {
             .eq('user_id', userId)
             .eq('course_id', courseId);
 
-          if (!countError && isMounted) {
-            setTotalCompletedLessons(count || 0);
+          if (!countError) {
+            completedCount = count || 0;
+            if (isMounted) setTotalCompletedLessons(completedCount);
           }
         } catch {
           // Not critical
@@ -250,30 +253,68 @@ const useProgressData = () => {
           // Scores not critical — graph will render without data
         }
 
-        // Fetch community learner count (cached for 24h)
+        // Fetch community learner count (pre-computed daily in community_stats table)
         try {
-          const country = userData.country || null;
-          const cacheKey = `community_count_${country || 'global'}`;
-          const cached = localStorage.getItem(cacheKey);
-          let useCached = false;
-          if (cached) {
-            try {
-              const { count: cachedCount, timestamp } = JSON.parse(cached);
-              if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
-                if (isMounted) setCommunityCount(cachedCount);
-                useCached = true;
-              }
-            } catch {
-              // Invalid cache, fetch fresh
-            }
-          }
-          if (!useCached) {
-            const count = await getCommunityLearnerCount(country);
-            if (isMounted) setCommunityCount(count);
-            localStorage.setItem(cacheKey, JSON.stringify({ count, timestamp: Date.now() }));
-          }
+          const count = await getCommunityLearnerCount(userData.country || null);
+          if (isMounted) setCommunityCount(count);
         } catch {
           // Community count not critical
+        }
+
+        // Compute behaviour stat
+        try {
+          if (completedCount === 0) {
+            // Welcome message with join month
+            const joinDate = new Date(authUser.created_at);
+            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
+            if (isMounted) setBehaviourStat({ label: 'Welcome to the', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+          } else {
+            const signIns = await getRecentSignIns(userId);
+            if (signIns.length > 0) {
+              // Compute mode of time-of-day buckets
+              const getTimeBucket = (dateStr) => {
+                const hour = new Date(dateStr).getHours();
+                if (hour >= 5 && hour < 12) return 'morning';
+                if (hour >= 12 && hour < 18) return 'afternoon';
+                return 'evening';
+              };
+              const buckets = signIns.map(s => getTimeBucket(s.signed_in_at));
+              const bucketCounts = {};
+              buckets.forEach(b => { bucketCounts[b] = (bucketCounts[b] || 0) + 1; });
+              const topBucket = Object.entries(bucketCounts).sort((a, b) => b[1] - a[1])[0][0];
+
+              // Compute mode of day-of-week
+              const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+              const dayCounts = {};
+              signIns.forEach(s => {
+                const day = days[new Date(s.signed_in_at).getDay()];
+                dayCounts[day] = (dayCounts[day] || 0) + 1;
+              });
+              const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0][0];
+
+              const timeConfig = {
+                morning: { label: "You're an early morning", value: 'learner', image: '/behaviour-morning.png' },
+                afternoon: { label: "You're an afternoon", value: 'learner', image: '/behaviour-afternoon.png' },
+                evening: { label: "You're an evening", value: 'learner', image: '/behaviour-evening.png' },
+              };
+
+              // Random per session: time-of-day or day-of-week
+              if (Math.random() < 0.5) {
+                if (isMounted) setBehaviourStat(timeConfig[topBucket]);
+              } else {
+                if (isMounted) setBehaviourStat({ label: "You're most active on", value: `${topDay}s`, image: '/behaviour-calendar.png' });
+              }
+            } else {
+              // No sign-in history yet — show welcome fallback
+              const joinDate = new Date(authUser.created_at);
+              const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+              const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
+              if (isMounted) setBehaviourStat({ label: 'Welcome to the', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+            }
+          }
+        } catch {
+          // Behaviour stat not critical
         }
 
         await imagePromise;
@@ -319,6 +360,7 @@ const useProgressData = () => {
     userRole,
     userCountry,
     communityCount,
+    behaviourStat,
   };
 };
 
