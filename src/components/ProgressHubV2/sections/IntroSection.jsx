@@ -327,7 +327,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -339,11 +339,12 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const animatedCount = useCountUp(statImagesLoaded ? communityCount : null);
 
   const behaviourImage = behaviourStat?.image || '/behaviour-calendar.png';
+  const achievementImage = achievementStat?.image || '/achievement-start.png';
 
   // Preload all stat images so they appear together
   useEffect(() => {
     const urls = [
-      '/trophy.png',
+      achievementImage,
       behaviourImage,
       communityConfig.image,
     ];
@@ -358,7 +359,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       img.onerror = onLoad; // don't block if one fails
       img.src = url;
     });
-  }, [communityConfig.image, behaviourImage]);
+  }, [communityConfig.image, behaviourImage, achievementImage]);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -598,7 +599,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             {/* Stats Row */}
             <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: statImagesLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}>
               {[
-                { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
+                achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: communityCount != null ? `${animatedCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (

@@ -881,6 +881,17 @@ export async function getRecentSignIns(userId, limit = 3) {
   return data || [];
 }
 
+export async function getUserAchievementPercentile(userId, courseId) {
+  const { data, error } = await supabase
+    .from('achievement_percentile_stats')
+    .select('percentile')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .single();
+  if (error) return null;
+  return data?.percentile || null;
+}
+
 // =====================================================
 // POST COMMENTS FUNCTIONS
 // =====================================================

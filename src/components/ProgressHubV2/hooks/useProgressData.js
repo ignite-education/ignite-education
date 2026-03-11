@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount, getRecentSignIns } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount, getRecentSignIns, getUserAchievementPercentile } from '../../../lib/api';
 import { trackPageVisit } from '../../../lib/tracking';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
@@ -52,6 +52,7 @@ const useProgressData = () => {
   const [userCountry, setUserCountry] = useState(null);
   const [communityCount, setCommunityCount] = useState(null);
   const [behaviourStat, setBehaviourStat] = useState(null);
+  const [achievementStat, setAchievementStat] = useState(null);
   const hasInitialDataFetchRef = useRef(false);
   const courseDataResultRef = useRef(null);
 
@@ -204,8 +205,9 @@ const useProgressData = () => {
         }
 
         // Fetch completed lessons
+        let completedLessonsData = [];
         try {
-          const completedLessonsData = await getCompletedLessons(userId, courseId);
+          completedLessonsData = await getCompletedLessons(userId, courseId);
           if (isMounted) setCompletedLessons(completedLessonsData);
         } catch {
           if (isMounted) setCompletedLessons([]);
@@ -240,11 +242,13 @@ const useProgressData = () => {
         }
 
         // Fetch lesson scores (user + global)
+        let userScoresResult = {};
         try {
           const [userScores, globalScores] = await Promise.all([
             getLessonScores(userId, courseId),
             getGlobalLessonScores(courseId),
           ]);
+          userScoresResult = userScores || {};
           if (isMounted) {
             setUserLessonScores(userScores);
             setGlobalLessonScores(globalScores);
@@ -294,16 +298,16 @@ const useProgressData = () => {
               const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0][0];
 
               const timeConfig = {
-                morning: { label: "You're an early morning", value: 'learner', image: '/behaviour-morning.png' },
-                afternoon: { label: "You're an afternoon", value: 'learner', image: '/behaviour-afternoon.png' },
-                evening: { label: "You're an evening", value: 'learner', image: '/behaviour-evening.png' },
+                morning: { label: "You're an early", value: 'morning learner', image: '/behaviour-morning.png' },
+                afternoon: { label: "You're an", value: 'afternoon learner', image: '/behaviour-afternoon.png' },
+                evening: { label: "You're an", value: 'evening learner', image: '/behaviour-evening.png' },
               };
 
               // Random per session: time-of-day or day-of-week
               if (Math.random() < 0.5) {
                 if (isMounted) setBehaviourStat(timeConfig[topBucket]);
               } else {
-                if (isMounted) setBehaviourStat({ label: "You're most active on", value: `${topDay}s`, image: '/behaviour-calendar.png' });
+                if (isMounted) setBehaviourStat({ label: 'Most active on', value: `${topDay}s`, image: '/behaviour-calendar.png' });
               }
             } else {
               // No sign-in history yet — show welcome fallback
@@ -315,6 +319,90 @@ const useProgressData = () => {
           }
         } catch {
           // Behaviour stat not critical
+        }
+
+        // Compute achievement stat
+        try {
+          if (completedCount === 0) {
+            if (isMounted) setAchievementStat({ label: 'Start your', value: 'first lesson', image: '/achievement-start.png' });
+          } else {
+            const candidates = [];
+
+            const formatDateStr = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+            // Streak: consecutive days with completions
+            const completionDates = completedLessonsData
+              .map(c => c.completed_at).filter(Boolean)
+              .map(d => formatDateStr(new Date(d)));
+            const uniqueDays = [...new Set(completionDates)].sort().reverse();
+            if (uniqueDays.length >= 2) {
+              const today = new Date();
+              const todayStr = formatDateStr(today);
+              const yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+              const yesterdayStr = formatDateStr(yesterday);
+
+              let startDate;
+              if (uniqueDays.includes(todayStr)) {
+                startDate = new Date(today);
+              } else if (uniqueDays.includes(yesterdayStr)) {
+                startDate = new Date(yesterday);
+              } else {
+                startDate = null;
+              }
+
+              if (startDate) {
+                let streak = 1;
+                const daySet = new Set(uniqueDays);
+                const check = new Date(startDate);
+                while (true) {
+                  check.setDate(check.getDate() - 1);
+                  if (daySet.has(formatDateStr(check))) {
+                    streak++;
+                  } else {
+                    break;
+                  }
+                }
+                if (streak >= 2) {
+                  candidates.push({ label: "You're on a", value: `${streak} day streak`, image: '/achievement-streak.png' });
+                }
+              }
+            }
+
+            // Aced: lessons with 100% score
+            const scoredLessons = Object.values(userScoresResult);
+            const acedCount = scoredLessons.filter(s => s.total > 0 && s.correct === s.total).length;
+            if (acedCount >= 1) {
+              const acedPct = Math.round((acedCount / scoredLessons.length) * 100);
+              candidates.push({ label: `You've aced ${acedPct}%`, value: 'of lessons with 100%', image: '/achievement-aced.png' });
+            }
+
+            // Weekly: completions since Monday 00:00 (ISO week)
+            const now = new Date();
+            const dow = now.getDay();
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1));
+            monday.setHours(0, 0, 0, 0);
+            const weekCount = completedLessonsData.filter(c => c.completed_at && new Date(c.completed_at) >= monday).length;
+            if (weekCount >= 1) {
+              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} completed`, value: 'this week', image: '/achievement-weekly.png' });
+            }
+
+            // Percentile: from pre-computed table
+            const percentile = await getUserAchievementPercentile(userId, courseId);
+            if (percentile != null && percentile <= 40) {
+              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: '/achievement-top.png' });
+            }
+
+            // Random pick or fallback
+            if (candidates.length > 0) {
+              if (isMounted) setAchievementStat(candidates[Math.floor(Math.random() * candidates.length)]);
+            } else {
+              if (isMounted) setAchievementStat({ label: `${completedCount} lessons`, value: 'completed', image: '/achievement-start.png' });
+            }
+          }
+        } catch {
+          // Achievement stat not critical
         }
 
         await imagePromise;
@@ -361,6 +449,7 @@ const useProgressData = () => {
     userCountry,
     communityCount,
     behaviourStat,
+    achievementStat,
   };
 };
 
