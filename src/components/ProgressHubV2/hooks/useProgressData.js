@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
-import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores } from '../../../lib/api';
+import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount } from '../../../lib/api';
 import { trackPageVisit } from '../../../lib/tracking';
 
-const PRELOAD_IMAGES = ['/trophy.png', '/moon.png', '/big-ben.png'];
+const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -49,6 +49,8 @@ const useProgressData = () => {
   const [globalLessonScores, setGlobalLessonScores] = useState({});
   const [resources, setResources] = useState([]);
   const [userRole, setUserRole] = useState('student');
+  const [userCountry, setUserCountry] = useState(null);
+  const [communityCount, setCommunityCount] = useState(null);
   const hasInitialDataFetchRef = useRef(false);
   const courseDataResultRef = useRef(null);
 
@@ -116,7 +118,7 @@ const useProgressData = () => {
         // Fetch enrolled course
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('enrolled_course, role')
+          .select('enrolled_course, role, country')
           .eq('id', userId)
           .single();
 
@@ -125,7 +127,10 @@ const useProgressData = () => {
           return;
         }
 
-        if (isMounted) setUserRole(userData.role || 'student');
+        if (isMounted) {
+          setUserRole(userData.role || 'student');
+          setUserCountry(userData.country || null);
+        }
         const courseId = userData.enrolled_course;
 
         // Fetch course details
@@ -245,6 +250,32 @@ const useProgressData = () => {
           // Scores not critical — graph will render without data
         }
 
+        // Fetch community learner count (cached for 24h)
+        try {
+          const country = userData.country || null;
+          const cacheKey = `community_count_${country || 'global'}`;
+          const cached = localStorage.getItem(cacheKey);
+          let useCached = false;
+          if (cached) {
+            try {
+              const { count: cachedCount, timestamp } = JSON.parse(cached);
+              if (Date.now() - timestamp < 24 * 60 * 60 * 1000) {
+                if (isMounted) setCommunityCount(cachedCount);
+                useCached = true;
+              }
+            } catch {
+              // Invalid cache, fetch fresh
+            }
+          }
+          if (!useCached) {
+            const count = await getCommunityLearnerCount(country);
+            if (isMounted) setCommunityCount(count);
+            localStorage.setItem(cacheKey, JSON.stringify({ count, timestamp: Date.now() }));
+          }
+        } catch {
+          // Community count not critical
+        }
+
         await imagePromise;
         if (isMounted) {
           hasInitialDataFetchRef.current = true;
@@ -286,6 +317,8 @@ const useProgressData = () => {
     globalLessonScores,
     resources,
     userRole,
+    userCountry,
+    communityCount,
   };
 };
 

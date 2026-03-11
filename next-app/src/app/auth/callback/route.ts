@@ -26,7 +26,8 @@ export async function GET(request: Request) {
         const metadata = user.user_metadata || {}
         const firstName = (metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || '').trim()
         const lastName = (metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || '').trim()
-        await createUserRecord(supabase, user, firstName, lastName)
+        const country = request.headers.get('x-vercel-ip-country') || null
+        await createUserRecord(supabase, user, firstName, lastName, country)
 
         // Add to Resend audience (non-blocking, safe for returning users)
         if (user.email) {

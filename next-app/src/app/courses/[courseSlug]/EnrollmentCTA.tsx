@@ -416,9 +416,8 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     paddingTop: '0.575rem',
                     paddingBottom: '0.575rem',
                     borderRadius: '8px',
-                    transition: 'opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
+                    transition: 'opacity 0.5s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
                     opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
-                    transform: checkingStatus ? 'translateY(4px)' : (showButton || isSaving ? 'translateY(0)' : 'translateY(4px)'),
                   }}
                 >
                   {isSaving ? (

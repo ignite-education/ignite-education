@@ -844,6 +844,27 @@ export async function getPostLikeCount(postId) {
   return count || 0;
 }
 
+const SUPPORTED_COMMUNITY_COUNTRIES = ['GB', 'US', 'IN', 'FR', 'DE', 'IT', 'ES'];
+
+/**
+ * Get count of learners by country (or all learners if unsupported/missing country)
+ * @param {string|null} country - ISO country code
+ * @returns {Promise<number>}
+ */
+export async function getCommunityLearnerCount(country) {
+  const query = supabase
+    .from('users')
+    .select('*', { count: 'exact', head: true });
+
+  if (country && SUPPORTED_COMMUNITY_COUNTRIES.includes(country)) {
+    query.eq('country', country);
+  }
+
+  const { count, error } = await query;
+  if (error) throw error;
+  return count || 0;
+}
+
 // =====================================================
 // POST COMMENTS FUNCTIONS
 // =====================================================

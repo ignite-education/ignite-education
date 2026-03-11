@@ -169,6 +169,18 @@ export const AuthProvider = ({ children }) => {
 
     // Create user record in public.users table (fallback if trigger doesn't exist)
     if (data.user) {
+      // Capture country from Vercel geo headers (non-blocking)
+      let country = null;
+      try {
+        const geoRes = await fetch('/api/geo');
+        if (geoRes.ok) {
+          const geo = await geoRes.json();
+          country = geo.country || null;
+        }
+      } catch {
+        // Geo fetch failed — proceed without country
+      }
+
       try {
         const { error: insertError } = await supabase
           .from('users')
@@ -177,7 +189,8 @@ export const AuthProvider = ({ children }) => {
             first_name: firstName,
             last_name: lastName,
             onboarding_completed: false,
-            role: 'student'
+            role: 'student',
+            ...(country ? { country } : {}),
           });
 
         // Ignore conflict errors (user already exists from trigger)

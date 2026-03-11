@@ -83,6 +83,8 @@ const ProgressHubV2 = () => {
     globalLessonScores,
     resources,
     userRole,
+    userCountry,
+    communityCount,
   } = useProgressData();
 
   const {
@@ -170,6 +172,8 @@ const ProgressHubV2 = () => {
         userLessonScores={userLessonScores}
         upcomingLessons={upcomingLessons}
         userRole={userRole}
+        userCountry={userCountry}
+        communityCount={communityCount}
       />
 
       {/* Section 2: Course Details */}

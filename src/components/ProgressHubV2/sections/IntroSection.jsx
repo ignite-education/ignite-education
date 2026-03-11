@@ -3,6 +3,17 @@ import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
 
+const COUNTRY_CONFIG = {
+  GB: { label: 'in the UK', image: '/community-gb.png' },
+  US: { label: 'in the USA', image: '/community-us.png' },
+  IN: { label: 'in India', image: '/community-in.png' },
+  FR: { label: 'in France', image: '/community-fr.png' },
+  DE: { label: 'in Germany', image: '/community-de.png' },
+  IT: { label: 'in Italy', image: '/community-it.png' },
+  ES: { label: 'in Spain', image: '/community-es.png' },
+};
+const DEFAULT_COMMUNITY = { label: 'around the world', image: '/community-globe.png' };
+
 // Seed-based random to avoid flicker on re-renders (changes daily)
 const seededRandom = (seed) => {
   const x = Math.sin(seed) * 10000;
@@ -296,7 +307,7 @@ const SettingsCog = ({ onClick }) => {
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount }) => {
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -304,12 +315,14 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const [showConfetti, setShowConfetti] = useState(false);
   const [statImagesLoaded, setStatImagesLoaded] = useState(false);
 
+  const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
+
   // Preload all stat images so they appear together
   useEffect(() => {
     const urls = [
       '/trophy.png',
       '/moon.png',
-      'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_ol7649ol7649ol76.png',
+      communityConfig.image,
     ];
     let loaded = 0;
     const onLoad = () => {
@@ -322,7 +335,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       img.onerror = onLoad; // don't block if one fails
       img.src = url;
     });
-  }, []);
+  }, [communityConfig.image]);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -564,7 +577,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               {[
                 { label: "You're in the top", value: '15% of learners', image: '/trophy.png' },
                 { label: "You're a late", value: 'night learner', image: '/moon.png' },
-                { label: '134 learners', value: 'in the UK', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_ol7649ol7649ol76.png' },
+                { label: communityCount != null ? `${communityCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center">
                   {stat.image ? (

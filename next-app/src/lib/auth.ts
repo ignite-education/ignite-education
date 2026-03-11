@@ -11,7 +11,8 @@ export async function createUserRecord(
   supabase: SupabaseClient,
   user: User,
   firstName: string,
-  lastName: string
+  lastName: string,
+  country?: string | null
 ) {
   const { error } = await supabase
     .from('users')
@@ -21,6 +22,7 @@ export async function createUserRecord(
       last_name: lastName.trim(),
       onboarding_completed: false,
       role: 'student',
+      ...(country ? { country } : {}),
     })
 
   if (error && !error.message.includes('duplicate key')) {
