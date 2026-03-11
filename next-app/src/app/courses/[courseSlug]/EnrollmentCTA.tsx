@@ -416,7 +416,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                     paddingTop: '0.575rem',
                     paddingBottom: '0.575rem',
                     borderRadius: '8px',
-                    transition: 'opacity 0.3s ease, transform 0.3s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
+                    transition: 'opacity 0.5s ease, transform 0.5s ease, box-shadow 0.35s ease-in-out, background-color 0.3s ease',
                     opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
                     transform: checkingStatus ? 'translateY(4px)' : (showButton || isSaving ? 'translateY(0)' : 'translateY(4px)'),
                   }}
@@ -451,36 +451,27 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                 </button>
               </div>
 
-              <div
+              <p
+                className="text-center text-black text-base font-normal mt-3"
                 style={{
-                  display: 'grid',
-                  gridTemplateRows: !checkingStatus ? '1fr' : '0fr',
-                  transition: 'grid-template-rows 0.3s ease',
+                  letterSpacing: '-0.03em',
+                  textWrap: 'balance',
+                  minHeight: '1.5em',
+                  opacity: showButton ? 1 : 0,
+                  transition: 'opacity 0.5s ease',
                 }}
               >
-                <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                  <p
-                    className="text-center text-black text-base font-normal mt-3"
-                    style={{
-                      letterSpacing: '-0.03em',
-                      textWrap: 'balance',
-                      opacity: showButton ? 1 : 0,
-                      transition: 'opacity 0.3s ease',
-                    }}
-                  >
-                    {(() => {
-                      const effectivelySaved = isSaving ? savingAction === 'removing' : isSaved
-                      return effectivelySaved
-                        ? isComingSoon
-                          ? `We'll notify you when ${courseTitle} is available`
-                          : 'Course saved to your account'
-                        : isComingSoon
-                          ? 'Join the course waitlist'
-                          : "We'll save this course to start later"
-                    })()}
-                  </p>
-                </div>
-              </div>
+                {(() => {
+                  const effectivelySaved = isSaving ? savingAction === 'removing' : isSaved
+                  return effectivelySaved
+                    ? isComingSoon
+                      ? `We'll notify you when ${courseTitle} is available`
+                      : 'Course saved to your account'
+                    : isComingSoon
+                      ? 'Join the course waitlist'
+                      : "We'll save this course to start later"
+                })()}
+              </p>
             </div>
           </>
         )}

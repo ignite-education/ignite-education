@@ -203,7 +203,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                       paddingTop: '0.575rem',
                       paddingBottom: '0.575rem',
                       borderRadius: '8px',
-                      transition: 'opacity 0.3s ease, transform 0.3s ease, background-color 0.2s ease',
+                      transition: 'opacity 0.5s ease, transform 0.5s ease, background-color 0.2s ease',
                       opacity: checkingStatus ? 0 : (isSaving ? 1 : (showButton ? 1 : 0)),
                       transform: checkingStatus ? 'translateY(4px)' : (showButton || isSaving ? 'translateY(0)' : 'translateY(4px)'),
                     }}
@@ -232,32 +232,23 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                   </button>
                 </div>
 
-                <div
+                <p
+                  className="text-center text-black text-sm font-light mt-3"
                   style={{
-                    display: 'grid',
-                    gridTemplateRows: !checkingStatus ? '1fr' : '0fr',
-                    transition: 'grid-template-rows 0.3s ease',
+                    letterSpacing: '-0.02em',
+                    minHeight: '1.25em',
+                    opacity: showButton ? 1 : 0,
+                    transition: 'opacity 0.5s ease',
                   }}
                 >
-                  <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                    <p
-                      className="text-center text-black text-sm font-light mt-3"
-                      style={{
-                        letterSpacing: '-0.02em',
-                        opacity: showButton ? 1 : 0,
-                        transition: 'opacity 0.3s ease',
-                      }}
-                    >
-                      {isSaving
-                        ? (isSaved ? 'We\'ll save this course to start later' : 'Course saved to your account')
-                        : (isSaved
-                          ? (isComingSoon ? `We'll notify you when ${courseTitle} is available` : 'Course saved to your account')
-                          : (isComingSoon ? 'Join the course waitlist' : 'We\'ll save this course to start later')
-                        )
-                      }
-                    </p>
-                  </div>
-                </div>
+                  {isSaving
+                    ? (isSaved ? 'We\'ll save this course to start later' : 'Course saved to your account')
+                    : (isSaved
+                      ? (isComingSoon ? `We'll notify you when ${courseTitle} is available` : 'Course saved to your account')
+                      : (isComingSoon ? 'Join the course waitlist' : 'We\'ll save this course to start later')
+                    )
+                  }
+                </p>
               </div>
             </>
           )}
