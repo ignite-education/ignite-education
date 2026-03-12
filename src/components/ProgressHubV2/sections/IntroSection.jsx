@@ -27,7 +27,7 @@ const useCountUp = (target, duration = 1200, delay = 500) => {
 };
 
 const COUNTRY_CONFIG = {
-  GB: { label: 'in the UK', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/UK.png' },
+  GB: { label: 'in the UK', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/UK-v2.png' },
   US: { label: 'in the USA', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/USA.png' },
   IN: { label: 'in India', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/IN.png' },
   FR: { label: 'in France', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/FR.png' },
@@ -606,11 +606,11 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: communityCount != null ? `${animatedCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (
-                <div key={idx} className="text-center flex flex-col items-center" style={{ width: '160px', flexShrink: 0 }}>
+                <div key={idx} className="text-center flex flex-col items-center" style={{ flex: '1 1 0', minWidth: 0 }}>
                   {stat.image ? (
-                    <img src={stat.image} alt="" style={{ width: '68px', height: '68px', objectFit: 'contain', marginBottom: '8px' }} />
+                    <img src={stat.image} alt="" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
-                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '68px', height: '68px', marginBottom: '8px' }} />
+                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '80px', height: '80px', marginBottom: '8px' }} />
                   )}
                   <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
