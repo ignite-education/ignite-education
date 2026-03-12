@@ -1855,6 +1855,307 @@ app.post('/api/office-hours/join', verifyAuth, async (req, res) => {
   }
 });
 
+// POST /api/office-hours/queue/join — Student joins the queue for a session
+app.post('/api/office-hours/queue/join', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId, topic, question } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Verify insider status
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(req.user.id);
+    if (userError) {
+      return res.status(500).json({ error: 'Failed to verify membership' });
+    }
+
+    if (!userData.user?.user_metadata?.is_ad_free) {
+      return res.status(403).json({ error: 'Ignite Insider membership required' });
+    }
+
+    // Verify session exists and is not ended
+    const { data: session, error: sessionError } = await supabase
+      .from('office_hours_sessions')
+      .select('id, status')
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionError || !session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    if (session.status === 'ended') {
+      return res.status(409).json({ error: 'Session has ended' });
+    }
+
+    // Check if student already has a waiting entry
+    const { data: existing } = await supabase
+      .from('office_hours_queue')
+      .select('id, position, status')
+      .eq('session_id', sessionId)
+      .eq('user_id', req.user.id)
+      .in('status', ['waiting', 'connecting'])
+      .single();
+
+    if (existing) {
+      // Calculate display position
+      const { count } = await supabase
+        .from('office_hours_queue')
+        .select('id', { count: 'exact', head: true })
+        .eq('session_id', sessionId)
+        .in('status', ['waiting', 'connecting'])
+        .lt('position', existing.position);
+
+      return res.json({
+        queueEntryId: existing.id,
+        position: (count || 0) + 1,
+        autoConnect: existing.status === 'connecting',
+      });
+    }
+
+    // Get next position
+    const { data: maxRow } = await supabase
+      .from('office_hours_queue')
+      .select('position')
+      .eq('session_id', sessionId)
+      .order('position', { ascending: false })
+      .limit(1)
+      .single();
+
+    const nextPosition = (maxRow?.position || 0) + 1;
+
+    // Insert queue entry
+    const { data: entry, error: insertError } = await supabase
+      .from('office_hours_queue')
+      .insert({
+        session_id: sessionId,
+        user_id: req.user.id,
+        topic: topic || null,
+        question: question || null,
+        position: nextPosition,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error inserting queue entry:', insertError);
+      return res.status(500).json({ error: 'Failed to join queue' });
+    }
+
+    // Check if this student should auto-connect (session is live and they are first in queue)
+    const { count: waitingAhead } = await supabase
+      .from('office_hours_queue')
+      .select('id', { count: 'exact', head: true })
+      .eq('session_id', sessionId)
+      .in('status', ['waiting', 'connecting'])
+      .lt('position', nextPosition);
+
+    const isFirst = (waitingAhead || 0) === 0;
+
+    if (isFirst && session.status === 'live') {
+      // Set to connecting immediately
+      await supabase
+        .from('office_hours_queue')
+        .update({ status: 'connecting' })
+        .eq('id', entry.id);
+
+      console.log(`📹 Student queued and auto-connecting for session ${sessionId}`);
+      return res.json({ queueEntryId: entry.id, position: 1, autoConnect: true });
+    }
+
+    console.log(`📹 Student queued at position ${(waitingAhead || 0) + 1} for session ${sessionId}`);
+    res.json({ queueEntryId: entry.id, position: (waitingAhead || 0) + 1, autoConnect: false });
+  } catch (error) {
+    console.error('Error joining queue:', error);
+    res.status(500).json({ error: 'Failed to join queue' });
+  }
+});
+
+// GET /api/office-hours/queue/:sessionId — Get current queue for a session
+app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: entries, error } = await supabase
+      .from('office_hours_queue')
+      .select('id, user_id, topic, position, status, created_at')
+      .eq('session_id', sessionId)
+      .in('status', ['waiting', 'connecting'])
+      .order('position', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching queue:', error);
+      return res.status(500).json({ error: 'Failed to fetch queue' });
+    }
+
+    // Fetch user details for each entry
+    const userIds = (entries || []).map(e => e.user_id);
+    let usersMap = {};
+
+    if (userIds.length > 0) {
+      const { data: users } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, country, profile_picture')
+        .in('id', userIds);
+
+      (users || []).forEach(u => { usersMap[u.id] = u; });
+    }
+
+    const queue = (entries || []).map(e => {
+      const user = usersMap[e.user_id] || {};
+      return {
+        id: e.id,
+        userId: e.user_id,
+        firstName: user.first_name || 'Student',
+        lastName: user.last_name || '',
+        country: user.country || null,
+        profilePicture: user.profile_picture || null,
+        topic: e.topic,
+        status: e.status,
+      };
+    });
+
+    res.json({ queue });
+  } catch (error) {
+    console.error('Error fetching queue:', error);
+    res.status(500).json({ error: 'Failed to fetch queue' });
+  }
+});
+
+// POST /api/office-hours/queue/connect — Student connects when it's their turn
+app.post('/api/office-hours/queue/connect', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId, queueEntryId } = req.body;
+
+    if (!sessionId || !queueEntryId) {
+      return res.status(400).json({ error: 'Session ID and queue entry ID are required' });
+    }
+
+    // Verify this queue entry belongs to the user and is in connecting status
+    const { data: entry, error: entryError } = await supabase
+      .from('office_hours_queue')
+      .select('id, topic, question, status')
+      .eq('id', queueEntryId)
+      .eq('user_id', req.user.id)
+      .eq('session_id', sessionId)
+      .single();
+
+    if (entryError || !entry) {
+      return res.status(404).json({ error: 'Queue entry not found' });
+    }
+
+    if (entry.status !== 'connecting') {
+      return res.status(409).json({ error: 'Not your turn yet' });
+    }
+
+    // Atomically claim the session
+    const updatePayload = { status: 'occupied', student_id: req.user.id };
+    if (entry.topic) updatePayload.topic = entry.topic;
+    if (entry.question) updatePayload.question = entry.question;
+
+    const { data: session, error: claimError } = await supabase
+      .from('office_hours_sessions')
+      .update(updatePayload)
+      .eq('id', sessionId)
+      .eq('status', 'live')
+      .select()
+      .single();
+
+    if (claimError || !session) {
+      // Revert to waiting
+      await supabase
+        .from('office_hours_queue')
+        .update({ status: 'waiting' })
+        .eq('id', queueEntryId);
+      return res.status(409).json({ error: 'Session is not available right now. Please wait.' });
+    }
+
+    // Update queue entry to connected
+    await supabase
+      .from('office_hours_queue')
+      .update({ status: 'connected', connected_at: new Date().toISOString() })
+      .eq('id', queueEntryId);
+
+    // Get student name for display
+    const { data: userData } = await supabase.auth.admin.getUserById(req.user.id);
+    const firstName = userData?.user?.user_metadata?.first_name || 'Student';
+
+    // Generate student meeting token
+    const token = await dailyApiRequest('/meeting-tokens', 'POST', {
+      properties: {
+        room_name: session.daily_room_name,
+        is_owner: false,
+        user_name: firstName,
+        user_id: req.user.id,
+        exp: Math.floor(Date.now() / 1000) + 7200,
+      },
+    });
+
+    console.log(`📹 Student ${firstName} connected from queue to session ${sessionId}`);
+    res.json({ token: token.token, roomUrl: session.daily_room_url });
+  } catch (error) {
+    console.error('Error connecting from queue:', error);
+    res.status(500).json({ error: 'Failed to connect' });
+  }
+});
+
+// POST /api/office-hours/queue/leave — Student leaves the queue
+app.post('/api/office-hours/queue/leave', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Find and update the student's queue entry
+    const { data: entry, error: updateError } = await supabase
+      .from('office_hours_queue')
+      .update({ status: 'left' })
+      .eq('session_id', sessionId)
+      .eq('user_id', req.user.id)
+      .in('status', ['waiting', 'connecting'])
+      .select('id, status')
+      .single();
+
+    if (updateError || !entry) {
+      return res.json({ success: true }); // Already left or not in queue
+    }
+
+    // If they were connecting, advance the queue
+    const { data: session } = await supabase
+      .from('office_hours_sessions')
+      .select('status')
+      .eq('id', sessionId)
+      .single();
+
+    if (session?.status === 'live') {
+      const { data: next } = await supabase
+        .from('office_hours_queue')
+        .select('id')
+        .eq('session_id', sessionId)
+        .eq('status', 'waiting')
+        .order('position', { ascending: true })
+        .limit(1)
+        .single();
+
+      if (next) {
+        await supabase
+          .from('office_hours_queue')
+          .update({ status: 'connecting' })
+          .eq('id', next.id);
+      }
+    }
+
+    console.log(`📹 Student left queue for session ${sessionId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error leaving queue:', error);
+    res.status(500).json({ error: 'Failed to leave queue' });
+  }
+});
+
 // POST /api/office-hours/end — Coach ends a session
 app.post('/api/office-hours/end', verifyTeacherOrAdmin, async (req, res) => {
   try {
@@ -1883,6 +2184,13 @@ app.post('/api/office-hours/end', verifyTeacherOrAdmin, async (req, res) => {
     if (endError || !session) {
       return res.status(404).json({ error: 'Session not found or already ended' });
     }
+
+    // Clear all remaining queue entries
+    await supabase
+      .from('office_hours_queue')
+      .update({ status: 'left' })
+      .eq('session_id', sessionId)
+      .in('status', ['waiting', 'connecting']);
 
     // Delete Daily.co room
     await dailyApiRequest(`/rooms/${session.daily_room_name}`, 'DELETE').catch((err) => {
@@ -1917,6 +2225,31 @@ app.post('/api/office-hours/leave', verifyAuth, async (req, res) => {
 
     if (leaveError || !session) {
       return res.status(404).json({ error: 'Session not found or you are not in this session' });
+    }
+
+    // Mark departing student's queue entry as left
+    await supabase
+      .from('office_hours_queue')
+      .update({ status: 'left' })
+      .eq('session_id', sessionId)
+      .eq('user_id', req.user.id)
+      .in('status', ['connecting', 'connected']);
+
+    // Advance the queue — set next waiting student to connecting
+    const { data: next } = await supabase
+      .from('office_hours_queue')
+      .select('id')
+      .eq('session_id', sessionId)
+      .eq('status', 'waiting')
+      .order('position', { ascending: true })
+      .limit(1)
+      .single();
+
+    if (next) {
+      await supabase
+        .from('office_hours_queue')
+        .update({ status: 'connecting' })
+        .eq('id', next.id);
     }
 
     console.log(`📹 Student left office hours session ${sessionId}`);
@@ -2155,6 +2488,86 @@ app.get('/api/office-hours/schedule', verifyTeacherOrAdmin, async (req, res) => 
   } catch (error) {
     console.error('Error fetching schedule:', error);
     res.status(500).json({ error: 'Failed to fetch schedule' });
+  }
+});
+
+// POST /api/office-hours/feedback — Student submits session feedback
+app.post('/api/office-hours/feedback', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId, rating, comment } = req.body;
+
+    if (!sessionId || !['positive', 'negative'].includes(rating)) {
+      return res.status(400).json({ error: 'sessionId and rating (positive/negative) are required' });
+    }
+
+    const { error } = await supabase
+      .from('office_hours_sessions')
+      .update({
+        rating,
+        feedback_comment: comment || null,
+      })
+      .eq('id', sessionId)
+      .eq('student_id', req.user.id);
+
+    if (error) {
+      console.error('Error saving feedback:', error);
+      return res.status(500).json({ error: 'Failed to save feedback' });
+    }
+
+    console.log(`📹 Feedback (${rating}) from user ${req.user.id} for session ${sessionId}${comment ? ': ' + comment : ''}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving office hours feedback:', error);
+    res.status(500).json({ error: 'Failed to save feedback' });
+  }
+});
+
+// POST /api/office-hours/chat-log — Persist chat messages when session ends
+app.post('/api/office-hours/chat-log', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId, messages } = req.body;
+
+    if (!sessionId || !Array.isArray(messages)) {
+      return res.status(400).json({ error: 'sessionId and messages array are required' });
+    }
+
+    const { error } = await supabase
+      .from('office_hours_sessions')
+      .update({ chat_log: messages })
+      .eq('id', sessionId);
+
+    if (error) {
+      console.error('Error saving chat log:', error);
+      return res.status(500).json({ error: 'Failed to save chat log' });
+    }
+
+    console.log(`📹 Chat log saved for session ${sessionId} (${messages.length} messages)`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving office hours chat log:', error);
+    res.status(500).json({ error: 'Failed to save chat log' });
+  }
+});
+
+// GET /api/office-hours/feedback — Admin view of all feedback
+app.get('/api/office-hours/feedback', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { data: feedback, error } = await supabase
+      .from('office_hours_sessions')
+      .select('id, student_id, rating, feedback_comment, ended_at')
+      .not('rating', 'is', null)
+      .order('ended_at', { ascending: false })
+      .limit(200);
+
+    if (error) {
+      console.error('Error fetching feedback:', error);
+      return res.status(500).json({ error: 'Failed to fetch feedback' });
+    }
+
+    res.json({ feedback: feedback || [] });
+  } catch (error) {
+    console.error('Error fetching office hours feedback:', error);
+    res.status(500).json({ error: 'Failed to fetch feedback' });
   }
 });
 

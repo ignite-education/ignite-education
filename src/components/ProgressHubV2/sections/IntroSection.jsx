@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
+import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const useCountUp = (target, duration = 1200, delay = 500) => {
   const [value, setValue] = useState(0);
@@ -26,16 +27,6 @@ const useCountUp = (target, duration = 1200, delay = 500) => {
   return value;
 };
 
-const COUNTRY_CONFIG = {
-  GB: { label: 'in the UK', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/UK-v2.png' },
-  US: { label: 'in the USA', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/USA.png' },
-  IN: { label: 'in India', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/IN.png' },
-  FR: { label: 'in France', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/FR.png' },
-  DE: { label: 'in Germany', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/DE.png' },
-  IT: { label: 'in Italy', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/IT.png' },
-  ES: { label: 'in Spain', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/ES.png' },
-};
-const DEFAULT_COMMUNITY = { label: 'around the world', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/WW.png' };
 
 // Seed-based random to avoid flicker on re-renders (changes daily)
 const seededRandom = (seed) => {
@@ -600,7 +591,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: statImagesLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}>
+            <div className="flex items-start justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: statImagesLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}>
               {[
                 achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },

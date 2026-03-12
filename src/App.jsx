@@ -29,7 +29,7 @@ const LearningHub = lazy(() => import('./components/LearningHub'))
 const ProgressHubV2 = lazy(() => import('./components/ProgressHubV2'))
 const VideoChat = lazy(() => import('./components/VideoChat/VideoChat'))
 const NotFound = lazy(() => import('./components/NotFound'))
-const LobbyPreview = lazy(() => import('./components/VideoChat/LobbyPreview'))
+const OfficeHoursPreview = lazy(() => import('./components/VideoChat/OfficeHoursPreview'))
 
 function App() {
   // Signal to prerenderer that the page is ready
@@ -66,7 +66,7 @@ function App() {
             } />
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />
             <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
-            <Route path="/dev/lobby" element={<LobbyPreview />} />
+            <Route path="/dev/lobby" element={<OfficeHoursPreview />} />
             <Route path="/admin/*" element={<AdminRedirect />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

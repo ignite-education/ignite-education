@@ -1,376 +1,20 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  DailyProvider,
-  useDaily,
-  useLocalSessionId,
-  useParticipantIds,
-  useScreenShare,
-  useDailyEvent,
-  useLocalParticipant,
-} from '@daily-co/daily-react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import DailyIframe from '@daily-co/daily-js';
 import { useAuth } from '../../contexts/AuthContext';
-import VideoTile from './VideoTile';
-import ControlBar from './ControlBar';
-import ChatSidebar from './ChatSidebar';
-import Lobby from './Lobby';
+import OfficeHours from './OfficeHours';
 import CameraPreview from './CameraPreview';
 import { getLessonsMetadata, getCoachesForCourse } from '../../lib/api';
 import { Video } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
-// Inner component that uses Daily hooks (must be inside DailyProvider)
-const VideoRoom = ({ sessionId, onLeave, isCoach, userName }) => {
-  const daily = useDaily();
-  const localSessionId = useLocalSessionId();
-  const participantIds = useParticipantIds({ filter: 'remote' });
-  const localParticipant = useLocalParticipant();
-  const { screens } = useScreenShare();
-
-  const [isMuted, setIsMuted] = useState(false);
-  const [isCameraOff, setIsCameraOff] = useState(false);
-  const [isScreenSharing, setIsScreenSharing] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [remoteLeft, setRemoteLeft] = useState(false);
-  const [callDuration, setCallDuration] = useState(0);
-  const joinTimeRef = useRef(Date.now());
-  const authTokenRef = useRef(null);
-
-  // Track call duration
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCallDuration(Math.floor((Date.now() - joinTimeRef.current) / 1000));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const formatDuration = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  // Handle remote participant leaving
-  useDailyEvent('participant-left', useCallback((event) => {
-    if (event.participant && !event.participant.local) {
-      setRemoteLeft(true);
-    }
-  }, []));
-
-  // Handle meeting end
-  useDailyEvent('left-meeting', useCallback(() => {
-    onLeave();
-  }, [onLeave]));
-
-  const toggleMute = useCallback(() => {
-    if (!daily) return;
-    const newMuted = !isMuted;
-    daily.setLocalAudio(!newMuted);
-    setIsMuted(newMuted);
-  }, [daily, isMuted]);
-
-  const toggleCamera = useCallback(() => {
-    if (!daily) return;
-    const newOff = !isCameraOff;
-    daily.setLocalVideo(!newOff);
-    setIsCameraOff(newOff);
-  }, [daily, isCameraOff]);
-
-  const toggleScreenShare = useCallback(() => {
-    if (!daily) return;
-    if (isScreenSharing) {
-      daily.stopScreenShare();
-      setIsScreenSharing(false);
-    } else {
-      daily.startScreenShare();
-      setIsScreenSharing(true);
-    }
-  }, [daily, isScreenSharing]);
-
-  const handleLeave = useCallback(async () => {
-    if (!daily) return;
-    // Notify backend
-    const token = (await import('../../lib/supabase')).supabase.auth.session?.()?.access_token;
-    try {
-      const supabaseMod = await import('../../lib/supabase');
-      const { data: { session: authSession } } = await supabaseMod.supabase.auth.getSession();
-      if (authSession?.access_token) {
-        if (isCoach) {
-          await fetch(`${API_URL}/api/office-hours/end`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authSession.access_token}`,
-            },
-            body: JSON.stringify({ sessionId }),
-          });
-        } else {
-          await fetch(`${API_URL}/api/office-hours/leave`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${authSession.access_token}`,
-            },
-            body: JSON.stringify({ sessionId }),
-          });
-        }
-      }
-    } catch (err) {
-      console.error('Error notifying backend on leave:', err);
-    }
-    daily.leave();
-  }, [daily, sessionId, isCoach]);
-
-  // Cache auth token for use in beforeunload (which must be synchronous)
-  useEffect(() => {
-    import('../../lib/supabase').then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        authTokenRef.current = session?.access_token || null;
-      });
-    });
-  }, []);
-
-  // Cleanup on tab close — use fetch+keepalive instead of sendBeacon (supports auth headers)
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      const token = authTokenRef.current;
-      if (!token) return;
-      const endpoint = isCoach ? '/api/office-hours/end' : '/api/office-hours/leave';
-      fetch(`${API_URL}${endpoint}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ sessionId }),
-        keepalive: true,
-      }).catch(() => {});
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [sessionId, isCoach]);
-
-  const remoteId = participantIds[0];
-  const hasScreenShare = screens.length > 0;
-
-  if (remoteLeft) {
-    return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#0d0d1a',
-        gap: '20px',
-      }}>
-        <div style={{
-          width: '80px',
-          height: '80px',
-          borderRadius: '50%',
-          backgroundColor: 'rgba(119,20,224,0.15)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Video size={36} color="#7714E0" />
-        </div>
-        <h2 style={{ color: 'white', fontSize: '24px', fontWeight: 600 }}>
-          {isCoach ? 'The student has left' : 'The coach has disconnected'}
-        </h2>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px' }}>
-          Session duration: {formatDuration(callDuration)}
-        </p>
-        <button
-          onClick={() => window.close()}
-          style={{
-            marginTop: '8px',
-            padding: '12px 32px',
-            borderRadius: '10px',
-            border: 'none',
-            backgroundColor: '#7714E0',
-            color: 'white',
-            fontSize: '15px',
-            fontWeight: 500,
-            cursor: 'pointer',
-          }}
-        >
-          Close
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#0d0d1a',
-      overflow: 'hidden',
-    }}>
-      {/* Header */}
-      <div style={{
-        padding: '12px 24px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            backgroundColor: '#22c55e',
-            boxShadow: '0 0 6px #22c55e',
-          }} />
-          <span style={{ color: 'white', fontSize: '15px', fontWeight: 500 }}>
-            Office Hours
-          </span>
-        </div>
-        <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: 'monospace' }}>
-          {formatDuration(callDuration)}
-        </span>
-      </div>
-
-      {/* Video area */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          padding: '16px',
-          gap: '12px',
-        }}>
-          {/* Main video grid */}
-          <div style={{
-            flex: 1,
-            display: 'grid',
-            gridTemplateColumns: remoteId ? (hasScreenShare ? '1fr' : '1fr 1fr') : '1fr',
-            gap: '12px',
-            minHeight: 0,
-          }}>
-            {/* Screen share takes priority */}
-            {hasScreenShare && (
-              <div style={{ gridColumn: '1 / -1', height: '60%' }}>
-                <VideoTile
-                  sessionId={screens[0].session_id}
-                  isLocal={screens[0].local}
-                  userName="Screen Share"
-                  isLarge
-                />
-              </div>
-            )}
-
-            {/* Remote participant (or waiting state) */}
-            {remoteId ? (
-              <VideoTile
-                sessionId={remoteId}
-                isLocal={false}
-                userName=""
-                isLarge={!hasScreenShare}
-              />
-            ) : (
-              <div style={{
-                borderRadius: '16px',
-                backgroundColor: '#1a1a2e',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '16px',
-              }}>
-                <div className="animate-pulse" style={{
-                  width: '64px',
-                  height: '64px',
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(119,20,224,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Video size={28} color="#7714E0" />
-                </div>
-                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '15px' }}>
-                  {isCoach ? 'Waiting for a student to join...' : 'Connecting...'}
-                </p>
-              </div>
-            )}
-
-            {/* Local participant (small when screen sharing) */}
-            {localSessionId && (
-              <div style={hasScreenShare ? {
-                position: 'absolute',
-                bottom: '100px',
-                right: isChatOpen ? '340px' : '24px',
-                width: '200px',
-                height: '150px',
-                zIndex: 10,
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-                transition: 'right 0.2s',
-              } : {}}>
-                <VideoTile
-                  sessionId={localSessionId}
-                  isLocal
-                  userName={userName}
-                  isLarge={!hasScreenShare && !remoteId}
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Control bar */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            paddingBottom: '8px',
-          }}>
-            <ControlBar
-              isMuted={isMuted}
-              isCameraOff={isCameraOff}
-              isScreenSharing={isScreenSharing}
-              isChatOpen={isChatOpen}
-              onToggleMute={toggleMute}
-              onToggleCamera={toggleCamera}
-              onToggleScreenShare={toggleScreenShare}
-              onToggleChat={() => setIsChatOpen(prev => !prev)}
-              onLeave={handleLeave}
-              isCoach={isCoach}
-            />
-          </div>
-        </div>
-
-        {/* Chat sidebar */}
-        {isChatOpen && (
-          <ChatSidebar
-            onClose={() => setIsChatOpen(false)}
-            localUserName={userName}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
-
-// Outer component that handles joining logic and wraps with DailyProvider
 const VideoChat = () => {
   const { sessionId } = useParams();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, isInsider, firstName } = useAuth();
 
-  const [state, setState] = useState('loading'); // loading | lobby | joining | joined | error | ended
+  const [state, setState] = useState('loading'); // loading | lobby | queued | joining | joined | error | ended
   const [error, setError] = useState('');
   const [callObject, setCallObject] = useState(null);
   const callObjectRef = useRef(null);
@@ -381,6 +25,10 @@ const VideoChat = () => {
   const [coaches, setCoaches] = useState([]);
   const [lessons, setLessons] = useState([]);
   const [sessionEndTime, setSessionEndTime] = useState(null);
+
+  // Queue data
+  const [queueEntryId, setQueueEntryId] = useState(null);
+  const queueEntryIdRef = useRef(null);
 
   // Initial setup: coach flow goes straight to call, student flow loads lobby data
   useEffect(() => {
@@ -508,10 +156,9 @@ const VideoChat = () => {
     };
   }, [sessionId, user]);
 
-  // Handle join from lobby
-  const handleJoinFromLobby = useCallback(async (topic, question) => {
+  // Connect to Daily.co call (used by both direct auto-connect and queue auto-connect)
+  const connectToCall = useCallback(async (entryId) => {
     try {
-      // Stop camera preview stream before Daily.co takes over
       if (CameraPreview.stopStream) CameraPreview.stopStream();
 
       const { supabase } = await import('../../lib/supabase');
@@ -523,17 +170,17 @@ const VideoChat = () => {
         return;
       }
 
-      const joinRes = await fetch(`${API_URL}/api/office-hours/join`, {
+      const connectRes = await fetch(`${API_URL}/api/office-hours/queue/connect`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${authSession.access_token}`,
         },
-        body: JSON.stringify({ sessionId, topic, question }),
+        body: JSON.stringify({ sessionId, queueEntryId: entryId }),
       });
 
-      if (joinRes.ok) {
-        const data = await joinRes.json();
+      if (connectRes.ok) {
+        const data = await connectRes.json();
         setUserName(firstName || 'Student');
         setIsCoach(false);
 
@@ -550,6 +197,58 @@ const VideoChat = () => {
         return;
       }
 
+      const connectError = await connectRes.json();
+      if (connectRes.status === 409) {
+        // Not our turn yet or session busy — stay in queue
+        console.log('Connect failed (409), staying in queue:', connectError.error);
+        return;
+      }
+
+      setError(connectError.error || 'Failed to connect');
+      setState('error');
+    } catch (err) {
+      console.error('Error connecting to call:', err);
+      setError('Failed to connect. Please try again.');
+      setState('error');
+    }
+  }, [sessionId, firstName]);
+
+  // Handle join from lobby — enters the queue
+  const handleJoinFromLobby = useCallback(async (topic, question) => {
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+
+      if (!authSession?.access_token) {
+        setError('Authentication required');
+        setState('error');
+        return;
+      }
+
+      const joinRes = await fetch(`${API_URL}/api/office-hours/queue/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({ sessionId, topic, question }),
+      });
+
+      if (joinRes.ok) {
+        const data = await joinRes.json();
+        setQueueEntryId(data.queueEntryId);
+        queueEntryIdRef.current = data.queueEntryId;
+
+        if (data.autoConnect) {
+          // First in line and coach is free — connect immediately
+          await connectToCall(data.queueEntryId);
+        } else {
+          // Enter queue view
+          setState('queued');
+        }
+        return;
+      }
+
       const joinError = await joinRes.json();
 
       if (joinRes.status === 403) {
@@ -559,20 +258,52 @@ const VideoChat = () => {
       }
 
       if (joinRes.status === 409) {
-        setError(joinError.error || 'This session is no longer available. The coach may be with another student.');
+        setError(joinError.error || 'This session is no longer available.');
         setState('error');
         return;
       }
 
-      setError(joinError.error || 'Failed to join session');
+      setError(joinError.error || 'Failed to join queue');
       setState('error');
     } catch (err) {
-      console.error('Error joining video chat:', err);
+      console.error('Error joining queue:', err);
       setError('Failed to connect. Please try again.');
       setState('error');
       throw err; // Re-throw so Lobby can reset its joining state
     }
-  }, [sessionId, firstName]);
+  }, [sessionId, connectToCall]);
+
+  // Auto-connect callback — called by Lobby when realtime signals it's this student's turn
+  const handleAutoConnect = useCallback(() => {
+    const entryId = queueEntryIdRef.current;
+    if (entryId) {
+      connectToCall(entryId);
+    }
+  }, [connectToCall]);
+
+  // Leave queue on unmount or tab close
+  useEffect(() => {
+    const leaveQueue = () => {
+      const token = authTokenRef.current;
+      if (queueEntryIdRef.current && sessionId && token) {
+        fetch(`${API_URL}/api/office-hours/queue/leave`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ sessionId }),
+          keepalive: true,
+        }).catch(() => {});
+      }
+    };
+
+    window.addEventListener('beforeunload', leaveQueue);
+    return () => {
+      window.removeEventListener('beforeunload', leaveQueue);
+      leaveQueue();
+    };
+  }, [sessionId]);
 
   const handleLeave = useCallback(() => {
     setState('ended');
@@ -612,14 +343,24 @@ const VideoChat = () => {
     );
   }
 
-  // Lobby state — student pre-join screen
-  if (state === 'lobby') {
+  // Office Hours page — lobby, queued, and connected states
+  if (state === 'lobby' || state === 'queued' || (state === 'joined' && callObject)) {
     return (
-      <Lobby
+      <OfficeHours
         coaches={coaches}
         lessons={lessons}
         sessionEndTime={sessionEndTime}
         onJoin={handleJoinFromLobby}
+        queued={state === 'queued'}
+        queueEntryId={queueEntryId}
+        sessionId={sessionId}
+        currentUserId={user?.id}
+        onAutoConnect={handleAutoConnect}
+        connected={state === 'joined'}
+        callObject={callObject}
+        onLeave={handleLeave}
+        isCoach={isCoach}
+        userName={userName}
       />
     );
   }
@@ -717,20 +458,6 @@ const VideoChat = () => {
           Close
         </button>
       </div>
-    );
-  }
-
-  // Joined — render video room
-  if (state === 'joined' && callObject) {
-    return (
-      <DailyProvider callObject={callObject}>
-        <VideoRoom
-          sessionId={sessionId}
-          onLeave={handleLeave}
-          isCoach={isCoach}
-          userName={userName}
-        />
-      </DailyProvider>
     );
   }
 
