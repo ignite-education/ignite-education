@@ -354,7 +354,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
           className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm"
           style={{
             background: 'linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.6))',
-            animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out'
+            animation: isClosingModal ? 'fadeOut 0.2s ease-out forwards' : 'fadeIn 0.2s ease-out'
           }}
           onClick={handleCloseUpgradeModal}
         >
@@ -366,7 +366,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                 height: '80vh',
                 minHeight: '100px',
                 padding: '0px',
-                animation: isClosingModal ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
+                animation: isClosingModal ? 'fadeOut 0.2s ease-out forwards' : 'fadeIn 0.2s ease-out',
                 borderRadius: '0.3rem',
                 overflow: 'hidden'
               }}
@@ -445,7 +445,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
               </div>
 
               {/* Right side - Stripe checkout */}
-              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-center justify-center">
+              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-start justify-center">
                 <div
                   key={clientSecret}
                   ref={checkoutRef}

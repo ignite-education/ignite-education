@@ -1508,7 +1508,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
 // Create Stripe checkout session for ad-free upgrade
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, hosted } = req.body;
 
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
@@ -1522,9 +1522,9 @@ app.post('/api/create-checkout-session', async (req, res) => {
     }
 
     const hasUsedTrial = userData.user?.user_metadata?.has_used_trial === true;
+    const origin = req.headers.origin || 'http://localhost:5173';
 
     const sessionConfig = {
-      ui_mode: 'embedded',
       payment_method_types: ['card'],
       line_items: [
         {
@@ -1533,11 +1533,19 @@ app.post('/api/create-checkout-session', async (req, res) => {
         },
       ],
       mode: 'subscription',
-      return_url: `${req.headers.origin || 'http://localhost:5173'}/progress?payment=success`,
       metadata: {
         userId: userId,
       },
     };
+
+    // Use hosted checkout (new tab) for returning subscribers, embedded for new trials
+    if (hosted) {
+      sessionConfig.success_url = `${origin}/progress?payment=success`;
+      sessionConfig.cancel_url = `${origin}/progress`;
+    } else {
+      sessionConfig.ui_mode = 'embedded';
+      sessionConfig.return_url = `${origin}/progress?payment=success`;
+    }
 
     // Only offer 14-day free trial if user hasn't used it before
     if (!hasUsedTrial) {
@@ -1546,7 +1554,11 @@ app.post('/api/create-checkout-session', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
-    res.json({ clientSecret: session.client_secret, hasTrial: !hasUsedTrial });
+    if (hosted) {
+      res.json({ url: session.url });
+    } else {
+      res.json({ clientSecret: session.client_secret, hasTrial: !hasUsedTrial });
+    }
   } catch (error) {
     console.error('Error creating checkout session:', error);
     res.status(500).json({ error: error.message });

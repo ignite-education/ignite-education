@@ -385,6 +385,33 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     }
   };
 
+  const handleJoinInsider = async () => {
+    if (!authUser) return;
+    try {
+      const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: authUser.id, hosted: true }),
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.open(data.url, '_blank');
+        localStorage.setItem('pendingPaymentRefresh', Date.now().toString());
+        const onVisible = async () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            await refreshSession();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Error creating checkout session:', error);
+    }
+  };
+
   const handleStartCheckout = async () => {
     if (!authUser) return;
     setShowCheckout(true);
@@ -735,13 +762,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               /* Upsell Card — trial or re-subscribe */
               <>
               <h4 className="font-medium text-purple-700 mb-[10px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
-                {hasUsedTrial ? 'Subscribe to Ignite Insider' : 'Try Ignite Insider for free'}
+                {hasUsedTrial ? 'Join Ignite Insider' : 'Try Ignite Insider for free'}
               </h4>
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt={hasUsedTrial ? 'Subscribe' : 'Free trial'} className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
                   {hasUsedTrial ? (
-                    <p className="text-black mb-3" style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
+                    <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
                   ) : (
                     <>
                       <p style={{ fontWeight: 500, fontSize: '1rem', lineHeight: 1.2 }}>Two weeks free</p>
@@ -749,13 +776,13 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     </>
                   )}
                   <button
-                    onClick={handleStartCheckout}
+                    onClick={hasUsedTrial ? handleJoinInsider : handleStartCheckout}
                     className="text-white px-5 py-2 transition cursor-pointer"
                     style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 500 }}
                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 8px rgba(103,103,103,0.55)'}
                     onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'none'}
                   >
-                    {hasUsedTrial ? 'Subscribe — £4.99/month' : `Get ${firstName ? `${firstName}'s` : 'your'} Free Trial`}
+                    {hasUsedTrial ? 'Join Ignite Insider' : `Get ${firstName ? `${firstName}'s` : 'your'} Free Trial`}
                   </button>
                   <p className="text-black mt-2.5 leading-snug" style={{ fontSize: '0.85rem', fontWeight: 300 }}>Access all Ignite features.<br />Cancel anytime.</p>
                 </div>
