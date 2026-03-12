@@ -1603,6 +1603,37 @@ export async function getCourseRequestAnalytics() {
   }
 }
 
+/**
+ * Get course requests grouped by user
+ * Returns a map of user_id -> most recent course_name requested
+ * Used to show waitlisted course when a user has no enrolled_course
+ */
+export async function getCourseRequestsByUser() {
+  try {
+    const { data, error } = await supabase
+      .from('course_requests')
+      .select('user_id, course_name, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching course requests by user:', error);
+      return {};
+    }
+
+    // Build map: user_id -> most recent course_name
+    const userCourseMap = {};
+    (data || []).forEach(req => {
+      if (!userCourseMap[req.user_id]) {
+        userCourseMap[req.user_id] = req.course_name;
+      }
+    });
+    return userCourseMap;
+  } catch (err) {
+    console.error('Exception in getCourseRequestsByUser:', err);
+    return {};
+  }
+}
+
 // ============================================================================
 // COACHES FUNCTIONS
 // ============================================================================

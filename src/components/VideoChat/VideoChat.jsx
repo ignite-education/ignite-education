@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   DailyProvider,
   useDaily,
@@ -14,6 +14,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import VideoTile from './VideoTile';
 import ControlBar from './ControlBar';
 import ChatSidebar from './ChatSidebar';
+import Lobby from './Lobby';
+import CameraPreview from './CameraPreview';
+import { getLessonsMetadata, getCoachesForCourse } from '../../lib/api';
 import { Video } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -364,15 +367,22 @@ const VideoRoom = ({ sessionId, onLeave, isCoach, userName }) => {
 const VideoChat = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user, isInsider, firstName } = useAuth();
 
-  const [state, setState] = useState('loading'); // loading | joining | joined | error | ended
+  const [state, setState] = useState('loading'); // loading | lobby | joining | joined | error | ended
   const [error, setError] = useState('');
   const [callObject, setCallObject] = useState(null);
   const callObjectRef = useRef(null);
   const [isCoach, setIsCoach] = useState(false);
   const [userName, setUserName] = useState('');
 
+  // Lobby data
+  const [coaches, setCoaches] = useState([]);
+  const [lessons, setLessons] = useState([]);
+  const [sessionEndTime, setSessionEndTime] = useState(null);
+
+  // Initial setup: coach flow goes straight to call, student flow loads lobby data
   useEffect(() => {
     if (!sessionId || !user) return;
 
@@ -386,7 +396,7 @@ const VideoChat = () => {
 
     let cancelled = false;
 
-    const joinSession = async () => {
+    const init = async () => {
       try {
         const { supabase } = await import('../../lib/supabase');
         const { data: { session: authSession } } = await supabase.auth.getSession();
@@ -400,12 +410,11 @@ const VideoChat = () => {
         }
 
         // Check for coach token in URL params (passed from admin app "Go Live")
-        const urlParams = new URLSearchParams(window.location.search);
-        const coachToken = urlParams.get('token');
+        const coachToken = searchParams.get('token');
 
         if (coachToken) {
-          // Coach flow — use token + roomUrl from URL params (passed from admin "Go Live")
-          const roomUrl = urlParams.get('roomUrl');
+          // Coach flow — bypass lobby, join directly
+          const roomUrl = searchParams.get('roomUrl');
           if (!roomUrl) {
             setError('Missing room URL. Please go live again from the admin app.');
             setState('error');
@@ -430,64 +439,64 @@ const VideoChat = () => {
           return;
         }
 
-        // Student flow — call /join to claim the session
-        const joinRes = await fetch(`${API_URL}/api/office-hours/join`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authSession.access_token}`,
-          },
-          body: JSON.stringify({ sessionId }),
-        });
+        // Student flow — load lobby data
+        let courseId = searchParams.get('courseId');
+
+        // If no courseId in URL, fetch from session endpoint
+        if (!courseId) {
+          const sessionRes = await fetch(`${API_URL}/api/office-hours/session/${sessionId}`);
+          if (cancelled) return;
+          if (sessionRes.ok) {
+            const sessionData = await sessionRes.json();
+            courseId = sessionData.session?.course_id;
+            if (sessionData.endTime) setSessionEndTime(sessionData.endTime);
+            if (sessionData.session?.coach) setCoaches([sessionData.session.coach]);
+          }
+        }
 
         if (cancelled) return;
 
-        if (joinRes.ok) {
-          const data = await joinRes.json();
-          setUserName(firstName || 'Student');
-          setIsCoach(false);
+        if (courseId) {
+          // Fetch lobby data in parallel
+          const [lessonsData, coachesData, statusData] = await Promise.all([
+            getLessonsMetadata(courseId).catch(() => []),
+            getCoachesForCourse(courseId).catch(() => []),
+            fetch(`${API_URL}/api/office-hours/status/${encodeURIComponent(courseId)}`)
+              .then(r => r.json())
+              .catch(() => ({})),
+          ]);
 
-          const newCallObject = DailyIframe.createCallObject({
-            url: data.roomUrl,
-            token: data.token,
-          });
-          callObjectRef.current = newCallObject;
-          setCallObject(newCallObject);
-          setState('joining');
-
-          if (cancelled) { newCallObject.destroy().catch(() => {}); return; }
-          await newCallObject.join();
           if (cancelled) return;
-          setState('joined');
-          return;
+
+          if (lessonsData?.length) setLessons(lessonsData);
+          if (coachesData?.length) setCoaches(coachesData);
+
+          // Get end time from the schedule entry that covers now
+          if (statusData.upcoming?.length > 0) {
+            const now = new Date();
+            const activeSlot = statusData.upcoming.find(s =>
+              new Date(s.starts_at) <= now && new Date(s.ends_at) >= now
+            );
+            if (activeSlot) {
+              setSessionEndTime(activeSlot.ends_at);
+            } else if (!sessionEndTime) {
+              // Use the next upcoming slot's ends_at as fallback
+              setSessionEndTime(statusData.upcoming[0].ends_at);
+            }
+          }
         }
 
-        const joinError = await joinRes.json();
-
-        // If 403 (not insider) or 409 (occupied/ended), show error
-        if (joinRes.status === 403) {
-          setError(joinError.error || 'Ignite Insider membership required');
-          setState('error');
-          return;
-        }
-
-        if (joinRes.status === 409) {
-          setError(joinError.error || 'This session is not available');
-          setState('error');
-          return;
-        }
-
-        setError(joinError.error || 'Failed to join session');
-        setState('error');
+        if (cancelled) return;
+        setState('lobby');
       } catch (err) {
         if (cancelled) return;
-        console.error('Error joining video chat:', err);
+        console.error('Error initializing office hours:', err);
         setError('Failed to connect. Please try again.');
         setState('error');
       }
     };
 
-    joinSession();
+    init();
 
     return () => {
       cancelled = true;
@@ -498,6 +507,72 @@ const VideoChat = () => {
       }
     };
   }, [sessionId, user]);
+
+  // Handle join from lobby
+  const handleJoinFromLobby = useCallback(async (topic, question) => {
+    try {
+      // Stop camera preview stream before Daily.co takes over
+      if (CameraPreview.stopStream) CameraPreview.stopStream();
+
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+
+      if (!authSession?.access_token) {
+        setError('Authentication required');
+        setState('error');
+        return;
+      }
+
+      const joinRes = await fetch(`${API_URL}/api/office-hours/join`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authSession.access_token}`,
+        },
+        body: JSON.stringify({ sessionId, topic, question }),
+      });
+
+      if (joinRes.ok) {
+        const data = await joinRes.json();
+        setUserName(firstName || 'Student');
+        setIsCoach(false);
+
+        const newCallObject = DailyIframe.createCallObject({
+          url: data.roomUrl,
+          token: data.token,
+        });
+        callObjectRef.current = newCallObject;
+        setCallObject(newCallObject);
+        setState('joining');
+
+        await newCallObject.join();
+        setState('joined');
+        return;
+      }
+
+      const joinError = await joinRes.json();
+
+      if (joinRes.status === 403) {
+        setError(joinError.error || 'Ignite Insider membership required');
+        setState('error');
+        return;
+      }
+
+      if (joinRes.status === 409) {
+        setError(joinError.error || 'This session is no longer available. The coach may be with another student.');
+        setState('error');
+        return;
+      }
+
+      setError(joinError.error || 'Failed to join session');
+      setState('error');
+    } catch (err) {
+      console.error('Error joining video chat:', err);
+      setError('Failed to connect. Please try again.');
+      setState('error');
+      throw err; // Re-throw so Lobby can reset its joining state
+    }
+  }, [sessionId, firstName]);
 
   const handleLeave = useCallback(() => {
     setState('ended');
@@ -534,6 +609,18 @@ const VideoChat = () => {
         </p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
+    );
+  }
+
+  // Lobby state — student pre-join screen
+  if (state === 'lobby') {
+    return (
+      <Lobby
+        coaches={coaches}
+        lessons={lessons}
+        sessionEndTime={sessionEndTime}
+        onJoin={handleJoinFromLobby}
+      />
     );
   }
 

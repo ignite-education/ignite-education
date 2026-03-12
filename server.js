@@ -1800,7 +1800,7 @@ app.post('/api/office-hours/start', verifyTeacherOrAdmin, async (req, res) => {
 // POST /api/office-hours/join — Student joins a live session
 app.post('/api/office-hours/join', verifyAuth, async (req, res) => {
   try {
-    const { sessionId } = req.body;
+    const { sessionId, topic, question } = req.body;
 
     if (!sessionId) {
       return res.status(400).json({ error: 'Session ID is required' });
@@ -1817,9 +1817,13 @@ app.post('/api/office-hours/join', verifyAuth, async (req, res) => {
     }
 
     // Atomically claim the session
+    const updatePayload = { status: 'occupied', student_id: req.user.id };
+    if (topic) updatePayload.topic = topic;
+    if (question) updatePayload.question = question;
+
     const { data: session, error: claimError } = await supabase
       .from('office_hours_sessions')
-      .update({ status: 'occupied', student_id: req.user.id })
+      .update(updatePayload)
       .eq('id', sessionId)
       .eq('status', 'live')
       .select()
@@ -1962,6 +1966,57 @@ app.get('/api/office-hours/status/:courseId', async (req, res) => {
   } catch (error) {
     console.error('Error in office hours status:', error);
     res.status(500).json({ error: 'Failed to fetch status' });
+  }
+});
+
+// GET /api/office-hours/session/:sessionId — Get session details (for lobby screen)
+app.get('/api/office-hours/session/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: session, error } = await supabase
+      .from('office_hours_sessions')
+      .select(`
+        id, status, course_id, started_at,
+        coaches (id, name, image_url, position, description)
+      `)
+      .eq('id', sessionId)
+      .single();
+
+    if (error || !session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Find matching schedule entry for end time
+    let endTime = null;
+    if (session.course_id) {
+      const { data: schedule } = await supabase
+        .from('office_hours_schedule')
+        .select('ends_at')
+        .eq('course_id', session.course_id)
+        .lte('starts_at', new Date().toISOString())
+        .gte('ends_at', new Date().toISOString())
+        .order('starts_at', { ascending: false })
+        .limit(1);
+
+      if (schedule?.length > 0) {
+        endTime = schedule[0].ends_at;
+      }
+    }
+
+    res.json({
+      session: {
+        id: session.id,
+        status: session.status,
+        course_id: session.course_id,
+        startedAt: session.started_at,
+        coach: session.coaches,
+      },
+      endTime,
+    });
+  } catch (error) {
+    console.error('Error fetching session details:', error);
+    res.status(500).json({ error: 'Failed to fetch session details' });
   }
 });
 

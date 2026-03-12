@@ -33,7 +33,7 @@ import {
   getEngagementMetrics,
   getRetentionMetrics
 } from '../lib/analytics';
-import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics, getUserProgressDetails, setUserProgress, resetUserProgress, getAllCourses } from '../lib/api';
+import { getAllUsers, updateUserRole, deleteUser, updateUserCourse, getCourseRequestAnalytics, getCourseRequestsByUser, getUserProgressDetails, setUserProgress, resetUserProgress, getAllCourses } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 
@@ -43,15 +43,8 @@ const AnalyticsDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30'); // days
 
-  // Available courses
-  const courses = [
-    'Product Manager',
-    'Software Engineering',
-    'Data Science',
-    'UX Design',
-    'Digital Marketing',
-    'Business Analytics'
-  ];
+  // Waitlist data: user_id -> course_name
+  const [waitlistByUser, setWaitlistByUser] = useState({});
 
   // User metrics
   const [totalUsers, setTotalUsers] = useState(0);
@@ -116,7 +109,18 @@ const AnalyticsDashboard = () => {
     loadCourseRequests();
     loadManagedCourses();
     loadAvailableCourses();
+    loadWaitlistByUser();
   }, []);
+
+  const loadWaitlistByUser = async () => {
+    try {
+      const map = await getCourseRequestsByUser();
+      setWaitlistByUser(map || {});
+    } catch (error) {
+      console.error('Error loading waitlist by user:', error);
+      setWaitlistByUser({});
+    }
+  };
 
   const loadAvailableCourses = async () => {
     try {
@@ -426,6 +430,12 @@ const AnalyticsDashboard = () => {
     } finally {
       setUpdatingUserId(null);
     }
+  };
+
+  const getCourseDisplayName = (slug) => {
+    if (!slug) return null;
+    const course = availableCourses.find(c => c.name === slug);
+    return course ? (course.title || course.name) : slug;
   };
 
   const handleOpenProgressModal = async (user) => {
@@ -1011,15 +1021,27 @@ const AnalyticsDashboard = () => {
                                   value={user.enrolled_course || ''}
                                   onChange={(e) => handleCourseChange(user.id, e.target.value)}
                                   disabled={isUpdating}
-                                  className={`px-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white ${
+                                  className={`px-3 py-1.5 bg-gray-800 border rounded-lg text-sm text-white ${
                                     isUpdating ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                  } ${
+                                    !user.enrolled_course && waitlistByUser[user.id]
+                                      ? 'border-yellow-600'
+                                      : 'border-gray-700'
                                   }`}
                                 >
                                   <option value="" className="bg-gray-900 text-white">No course</option>
-                                  {courses.map(course => (
-                                    <option key={course} value={course} className="bg-gray-900 text-white">{course}</option>
+                                  {availableCourses.map(course => (
+                                    <option key={course.name} value={course.name} className="bg-gray-900 text-white">
+                                      {course.title || course.name}
+                                    </option>
                                   ))}
                                 </select>
+                                {!user.enrolled_course && waitlistByUser[user.id] && (
+                                  <div className="mt-1 flex items-center gap-1 text-xs text-yellow-400">
+                                    <Clock size={12} />
+                                    Waitlisted: {getCourseDisplayName(waitlistByUser[user.id])}
+                                  </div>
+                                )}
                               </td>
                               <td className="px-6 py-4 text-sm">
                                 {user.enrolled_course ? (
@@ -1032,6 +1054,8 @@ const AnalyticsDashboard = () => {
                                   >
                                     Adjust Progress
                                   </button>
+                                ) : waitlistByUser[user.id] ? (
+                                  <span className="text-yellow-500 text-xs">Waitlisted</span>
                                 ) : (
                                   <span className="text-gray-500 text-xs">No course</span>
                                 )}

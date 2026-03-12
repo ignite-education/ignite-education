@@ -123,7 +123,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
     }
 
     if (liveSession && liveSession.status === 'live') {
-      window.open(`/office-hours/${liveSession.id}`, '_blank');
+      window.open(`/office-hours/${liveSession.id}?courseId=${encodeURIComponent(courseId)}`, '_blank');
     }
   };
 
