@@ -272,7 +272,7 @@ const useProgressData = () => {
             const joinDate = new Date(authUser.created_at);
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-            if (isMounted) setBehaviourStat({ label: 'Welcome to the', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+            if (isMounted) setBehaviourStat({ label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
           } else {
             const signIns = await getRecentSignIns(userId);
             if (signIns.length > 0) {
@@ -314,7 +314,7 @@ const useProgressData = () => {
               const joinDate = new Date(authUser.created_at);
               const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-              if (isMounted) setBehaviourStat({ label: 'Welcome to the', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+              if (isMounted) setBehaviourStat({ label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
             }
           }
         } catch {

@@ -44,7 +44,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.on
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
-  const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName } = useAuth();
+  const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName, refreshSession } = useAuth();
   const navigate = useNavigate();
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
@@ -367,6 +367,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
       const data = await response.json();
       if (data.url) {
         window.open(data.url, '_blank');
+
+        // When user returns to this tab, refresh session to pick up subscription changes
+        const onVisible = async () => {
+          if (document.visibilityState === 'visible') {
+            document.removeEventListener('visibilitychange', onVisible);
+            await refreshSession();
+          }
+        };
+        document.addEventListener('visibilitychange', onVisible);
       } else {
         throw new Error(data.error || 'Failed to create billing portal session');
       }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useLayoutEffect, lazy, Suspense } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
 import LoadingScreen from '../LoadingScreen';
@@ -60,6 +61,8 @@ const ProgressHubV2 = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
+
+  const { refreshSession } = useAuth();
 
   const {
     loading,
@@ -134,6 +137,18 @@ const ProgressHubV2 = () => {
     if (hasPaymentSuccess || hasSessionId || hasPendingRefresh) {
       localStorage.removeItem('pendingPaymentRefresh');
       window.history.replaceState({}, '', window.location.pathname);
+
+      // Poll for updated insider status (webhook may still be processing)
+      const refreshInsiderStatus = async () => {
+        for (let i = 0; i < 5; i++) {
+          await refreshSession();
+          // Re-check after refresh — if insider status updated, stop polling
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.user?.user_metadata?.is_ad_free) break;
+          await new Promise(r => setTimeout(r, 2000));
+        }
+      };
+      refreshInsiderStatus();
     }
   }, []);
 

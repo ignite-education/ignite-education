@@ -325,6 +325,11 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const refreshSession = async () => {
+    const { data: { session } } = await supabase.auth.refreshSession();
+    if (session?.user) setUser(session.user);
+  };
+
   const value = useMemo(() => ({
     user,
     loading,
@@ -336,6 +341,7 @@ export const AuthProvider = ({ children }) => {
     signInWithOAuth,
     resetPassword,
     updatePassword,
+    refreshSession,
     firstName: (user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(' ')[0] || '').trim() || null,
     lastName: (user?.user_metadata?.last_name || user?.user_metadata?.full_name?.split(' ')[1] || '').trim() || null,
     isInsider: user?.user_metadata?.is_ad_free || false,
