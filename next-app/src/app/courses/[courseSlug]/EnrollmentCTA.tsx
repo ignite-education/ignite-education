@@ -363,7 +363,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   return (
     <div className="w-full">
         {!authLoaded ? (
-          <div className="w-[80%] mx-auto mb-4" style={{ minHeight: '88px' }} />
+          <div className="w-[80%] mx-auto mb-4" style={{ minHeight: '95px' }} />
         ) : !user ? (
           <>
             {/* Sign-in buttons */}

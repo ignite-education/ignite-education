@@ -79,7 +79,7 @@ export default function CourseSearch({
         }}
       >
         <span
-          className="text-black font-semibold text-sm tracking-[-0.01em]"
+          className="text-black font-medium text-sm tracking-[-0.01em]"
           style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
         >
           Request
