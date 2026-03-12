@@ -762,7 +762,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               /* Upsell Card — trial or re-subscribe */
               <>
               <h4 className="font-medium text-purple-700 mb-[10px]" style={{ fontSize: '1.3rem', letterSpacing: '-0.01em' }}>
-                {hasUsedTrial ? 'Join Ignite Insider' : 'Try Ignite Insider for free'}
+                {hasUsedTrial ? 'Get more with Ignite Insider' : 'Try Ignite Insider for free'}
               </h4>
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">

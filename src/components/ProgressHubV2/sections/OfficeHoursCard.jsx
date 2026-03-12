@@ -445,7 +445,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
               </div>
 
               {/* Right side - Stripe checkout */}
-              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none' }} className="relative overflow-y-auto flex items-start justify-center">
+              <div style={{ width: '50%', scrollbarWidth: 'none', msOverflowStyle: 'none', paddingTop: '1rem', paddingRight: '1rem' }} className="relative overflow-y-auto flex items-start justify-center">
                 <div
                   key={clientSecret}
                   ref={checkoutRef}

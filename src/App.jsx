@@ -9,9 +9,7 @@ const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
 
 // Simple CSS-only loader as fallback while LoadingScreen chunk loads
 const SimpleLoader = () => (
-  <div className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center">
-    <div className="w-12 h-12 border-3 border-[#EF0B72] border-t-transparent rounded-full animate-spin" />
-  </div>
+  <div className="fixed inset-0 bg-black" />
 )
 
 // Redirect old /admin/* routes to admin.ignite.education
