@@ -222,9 +222,9 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               width: '7px',
                               height: '7px',
                               borderRadius: '50%',
-                              backgroundColor: '#22c55e',
-                              boxShadow: '0 0 6px #22c55e',
-                              animation: 'pulse-green 1.5s ease-in-out infinite',
+                              backgroundColor: '#16a34a',
+                              boxShadow: '0 0 5px #16a34a',
+                              animation: 'pulse-green 2s ease-in-out infinite',
                             }} />
                             <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>Live Now</span>
                           </div>
@@ -345,8 +345,9 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
       {/* Pulse animation for live indicator */}
       <style>{`
         @keyframes pulse-green {
-          0%, 100% { opacity: 1; box-shadow: 0 0 6px #22c55e; }
-          50% { opacity: 0.5; box-shadow: 0 0 12px #22c55e; }
+          0%, 25% { opacity: 1; box-shadow: 0 0 6px #16a34a; }
+          37% { opacity: 0.4; box-shadow: 0 0 12px #16a34a; }
+          50%, 100% { opacity: 1; box-shadow: 0 0 6px #16a34a; }
         }
       `}</style>
 

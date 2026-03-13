@@ -37,6 +37,62 @@ const formatDuration = (seconds) => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
+const CoachCard = ({ coach }) => {
+  const [hovered, setHovered] = useState(false);
+  const linkedinUrl = coach.linkedin_url;
+
+  const content = (
+    <div
+      style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', cursor: linkedinUrl ? 'pointer' : 'default' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {coach.image_url && (
+        <img
+          src={coach.image_url}
+          alt={coach.name}
+          style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '4px',
+            objectFit: 'cover',
+            flexShrink: 0,
+          }}
+        />
+      )}
+      <div style={{ minWidth: 0 }}>
+        <p style={{
+          margin: 0, fontSize: '1rem', fontWeight: 600, letterSpacing: '-0.01em', lineHeight: 1,
+          color: hovered && linkedinUrl ? '#EF0B72' : '#000',
+          transition: 'color 0.15s',
+        }}>
+          {coach.name}
+        </p>
+        {coach.position && (
+          <p style={{ margin: '2px 0 0', fontSize: '0.85rem', fontWeight: 400, color: '#000', letterSpacing: '-0.01em' }}>
+            {coach.position}
+          </p>
+        )}
+        {coach.description && (
+          <p style={{ margin: '6px 0 0', fontSize: '0.85rem', fontWeight: 300, color: '#000', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
+            {coach.description}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
+  if (linkedinUrl) {
+    return (
+      <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', color: 'inherit' }}>
+        {content}
+      </a>
+    );
+  }
+
+  return content;
+};
+
 // Read-only display of topic + question during connected state
 // When sessionEnded, replaces End Session button/timer with feedback UI
 const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnded, sessionId, onDone }) => {
@@ -263,7 +319,7 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
 };
 
 // Inner component that uses Daily hooks (must be inside DailyProvider)
-const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, topic, question, coach, endTimeFormatted }) => {
+const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, topic, question, coach, endTimeFormatted, connectedAt }) => {
   const daily = useDaily();
   const localSessionId = useLocalSessionId();
   const participantIds = useParticipantIds({ filter: 'remote' });
@@ -279,7 +335,7 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
   const sessionEndedRef = useRef(false);
   const localVideoRef = useRef(null);
   const localStreamRef = useRef(null);
-  const joinTimeRef = useRef(Date.now());
+  const joinTimeRef = useRef(connectedAt ? new Date(connectedAt).getTime() : Date.now());
   const authTokenRef = useRef(null);
 
   const handleEndSessionRef = useRef(null);
@@ -699,36 +755,7 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
             <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#333', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
               Course Leader
             </h3>
-            <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-              {coach.image_url && (
-                <img
-                  src={coach.image_url}
-                  alt={coach.name}
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    borderRadius: '4px',
-                    objectFit: 'cover',
-                    flexShrink: 0,
-                  }}
-                />
-              )}
-              <div style={{ minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#000', letterSpacing: '-0.01em', lineHeight: 1 }}>
-                  {coach.name}
-                </p>
-                {coach.position && (
-                  <p style={{ margin: '2px 0 0', fontSize: '0.85rem', fontWeight: 400, color: '#000', letterSpacing: '-0.01em' }}>
-                    {coach.position}
-                  </p>
-                )}
-                {coach.description && (
-                  <p style={{ margin: '6px 0 0', fontSize: '0.85rem', fontWeight: 300, color: '#000', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
-                    {coach.description}
-                  </p>
-                )}
-              </div>
-            </div>
+            <CoachCard coach={coach} />
           </div>
         )}
       </div>
@@ -990,7 +1017,7 @@ const OfficeHours = ({
   coaches, lessons, sessionEndTime, onJoin,
   queued, queueEntryId, sessionId, currentUserId,
   onAutoConnect, onLeaveQueue, initialQueue,
-  connected, callObject, onLeave, isCoach, userName,
+  connected, callObject, onLeave, isCoach, userName, connectedAt,
   connectedPreview, feedbackPreview,
 }) => {
   const { lottieData } = useAnimation();
@@ -1210,6 +1237,7 @@ const OfficeHours = ({
               question={submittedQuestion}
               coach={coach}
               endTimeFormatted={endTimeFormatted}
+              connectedAt={connectedAt}
             />
           </DailyProvider>
         ) : (
@@ -1224,36 +1252,7 @@ const OfficeHours = ({
                   <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#333', margin: '0 0 12px', letterSpacing: '-0.01em' }}>
                     Course Leader
                   </h3>
-                  <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                    {coach.image_url && (
-                      <img
-                        src={coach.image_url}
-                        alt={coach.name}
-                        style={{
-                          width: '64px',
-                          height: '64px',
-                          borderRadius: '4px',
-                          objectFit: 'cover',
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <div style={{ minWidth: 0 }}>
-                      <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, color: '#000', letterSpacing: '-0.01em', lineHeight: 1 }}>
-                        {coach.name}
-                      </p>
-                      {coach.position && (
-                        <p style={{ margin: '2px 0 0', fontSize: '0.85rem', fontWeight: 400, color: '#000', letterSpacing: '-0.01em' }}>
-                          {coach.position}
-                        </p>
-                      )}
-                      {coach.description && (
-                        <p style={{ margin: '6px 0 0', fontSize: '0.85rem', fontWeight: 300, color: '#000', lineHeight: 1.4, letterSpacing: '-0.01em' }}>
-                          {coach.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  <CoachCard coach={coach} />
                 </div>
               )}
             </div>

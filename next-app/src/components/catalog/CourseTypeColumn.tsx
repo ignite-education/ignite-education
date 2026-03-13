@@ -76,7 +76,7 @@ export default function CourseTypeColumn({
     const timer = setTimeout(() => {
       initialRenderRef.current = false
       enableAutoAnimate(true)
-    }, (longestDelay + 0.6) * 1000)
+    }, (longestDelay + 1.5) * 1000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -102,7 +102,7 @@ export default function CourseTypeColumn({
           <div
             key={course.id || course.name}
             style={useStagger ? {
-              animation: 'fadeInUpSmall 0.6s ease-out forwards',
+              animation: 'fadeInUp 1.5s ease-out forwards',
               animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
               opacity: 0,
             } : undefined}

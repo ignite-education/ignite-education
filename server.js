@@ -1981,7 +1981,7 @@ app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
 
     const { data: entries, error } = await supabase
       .from('office_hours_queue')
-      .select('id, user_id, topic, question, position, status, created_at')
+      .select('id, user_id, topic, question, position, status, created_at, connected_at')
       .eq('session_id', sessionId)
       .in('status', ['waiting', 'connecting', 'connected'])
       .order('position', { ascending: true });
@@ -2016,6 +2016,7 @@ app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
         topic: e.topic,
         question: e.question,
         status: e.status,
+        connectedAt: e.connected_at,
       };
     });
 
@@ -2033,7 +2034,7 @@ app.get('/api/office-hours/queue/my-entry/:sessionId', verifyAuth, async (req, r
 
     const { data: entry } = await supabase
       .from('office_hours_queue')
-      .select('id, status, topic, question, position')
+      .select('id, status, topic, question, position, connected_at')
       .eq('session_id', sessionId)
       .eq('user_id', req.user.id)
       .in('status', ['waiting', 'connecting', 'connected'])
@@ -2074,7 +2075,7 @@ app.post('/api/office-hours/queue/connect', verifyAuth, async (req, res) => {
     // Verify this queue entry belongs to the user and is in connecting status
     const { data: entry, error: entryError } = await supabase
       .from('office_hours_queue')
-      .select('id, topic, question, status')
+      .select('id, topic, question, status, connected_at')
       .eq('id', queueEntryId)
       .eq('user_id', req.user.id)
       .eq('session_id', sessionId)
@@ -2112,7 +2113,7 @@ app.post('/api/office-hours/queue/connect', verifyAuth, async (req, res) => {
       });
 
       console.log(`📹 Student ${firstName} reconnected to session ${sessionId}`);
-      return res.json({ token: token.token, roomUrl: session.daily_room_url });
+      return res.json({ token: token.token, roomUrl: session.daily_room_url, connectedAt: entry.connected_at });
     }
 
     if (entry.status !== 'connecting') {

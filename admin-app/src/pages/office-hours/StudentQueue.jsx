@@ -9,19 +9,21 @@ const formatDuration = (seconds) => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 };
 
-const SessionTimer = ({ connectedEntryId }) => {
-  const [elapsed, setElapsed] = useState(0);
-  const startTimeRef = useRef(Date.now());
+const SessionTimer = ({ connectedEntryId, connectedAt }) => {
+  const getStartTime = () => connectedAt ? new Date(connectedAt).getTime() : Date.now();
+  const [elapsed, setElapsed] = useState(() => Math.floor((Date.now() - getStartTime()) / 1000));
+  const startTimeRef = useRef(getStartTime());
   const prevEntryIdRef = useRef(connectedEntryId);
 
   // Reset timer when a new student connects
   useEffect(() => {
     if (connectedEntryId !== prevEntryIdRef.current) {
       prevEntryIdRef.current = connectedEntryId;
-      startTimeRef.current = Date.now();
-      setElapsed(0);
+      const t = connectedAt ? new Date(connectedAt).getTime() : Date.now();
+      startTimeRef.current = t;
+      setElapsed(Math.floor((Date.now() - t) / 1000));
     }
-  }, [connectedEntryId]);
+  }, [connectedEntryId, connectedAt]);
 
   useEffect(() => {
     const tick = () => setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
@@ -81,7 +83,7 @@ const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKic
               </button>
             </div>
             <StudentCard entry={connectedEntry} />
-            <SessionTimer connectedEntryId={connectedEntry.id} />
+            <SessionTimer connectedEntryId={connectedEntry.id} connectedAt={connectedEntry.connectedAt} />
           </div>
         )}
 

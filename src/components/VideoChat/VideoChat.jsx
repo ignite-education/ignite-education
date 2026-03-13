@@ -32,6 +32,7 @@ const VideoChat = () => {
   // Queue data
   const [queueEntryId, setQueueEntryId] = useState(null);
   const queueEntryIdRef = useRef(null);
+  const [connectedAt, setConnectedAt] = useState(null);
 
   // Initial setup: coach flow goes straight to call, student flow loads lobby data
   // Use user.id as dependency (not user object) to avoid re-running when Supabase refreshes the session on tab focus
@@ -101,9 +102,18 @@ const VideoChat = () => {
           if (cancelled) return;
           if (sessionRes.ok) {
             const sessionData = await sessionRes.json();
+            // If session has ended, show offline state
+            if (sessionData.session?.status === 'ended') {
+              setState('offline');
+              return;
+            }
             courseId = sessionData.session?.course_id;
             if (sessionData.endTime) setSessionEndTime(sessionData.endTime);
             if (sessionData.session?.coach) setCoaches([sessionData.session.coach]);
+          } else {
+            // Session not found — show offline
+            setState('offline');
+            return;
           }
         }
 
@@ -171,6 +181,7 @@ const VideoChat = () => {
                     const data = await connectRes.json();
                     setUserName(firstName || 'Student');
                     setIsCoach(false);
+                    if (data.connectedAt) setConnectedAt(data.connectedAt);
                     const newCallObject = DailyIframe.createCallObject({
                       url: data.roomUrl,
                       token: data.token,
@@ -226,6 +237,42 @@ const VideoChat = () => {
       }
     };
   }, [sessionId, userId]);
+
+  // Watch for session ending while on lobby/queue (realtime)
+  useEffect(() => {
+    if (!sessionId) return;
+    let channel;
+    const setup = async () => {
+      const { supabase } = await import('../../lib/supabase');
+      channel = supabase
+        .channel(`student-session-${sessionId}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'office_hours_sessions',
+          filter: `id=eq.${sessionId}`,
+        }, (payload) => {
+          if (payload.new.status === 'ended') {
+            setState('offline');
+            if (callObjectRef.current) {
+              callObjectRef.current.leave().catch(() => {});
+              callObjectRef.current.destroy().catch(() => {});
+              callObjectRef.current = null;
+              setCallObject(null);
+            }
+          }
+        })
+        .subscribe();
+    };
+    setup();
+    return () => {
+      if (channel) {
+        import('../../lib/supabase').then(({ supabase }) => {
+          supabase.removeChannel(channel);
+        });
+      }
+    };
+  }, [sessionId]);
 
   // Connect to Daily.co call (used by both direct auto-connect and queue auto-connect)
   const connectToCall = useCallback(async (entryId) => {
@@ -398,6 +445,7 @@ const VideoChat = () => {
         onLeave={handleLeave}
         isCoach={isCoach}
         userName={userName}
+        connectedAt={connectedAt}
       />
     );
   }

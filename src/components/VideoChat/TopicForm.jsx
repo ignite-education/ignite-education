@@ -172,7 +172,7 @@ const TopicForm = ({ lessons, onJoin, disabled, mediaReady, onMediaInvalid, read
           value={question}
           onChange={(e) => { setQuestion(e.target.value); clearError('question'); }}
           placeholder=""
-          rows={5}
+          rows={3}
           style={{
             width: '100%',
             padding: '8px 12px',
