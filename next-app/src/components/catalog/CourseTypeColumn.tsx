@@ -1,27 +1,7 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import { useAutoAnimate } from '@formkit/auto-animate/react'
-import type { AutoAnimationPlugin } from '@formkit/auto-animate'
+import { useRef, useEffect, useState } from 'react'
 import CourseCard from './CourseCard'
-
-// Custom auto-animate plugin: override 'add' to fade in-place (no fly-in),
-// keep default remove/remain behavior for smooth repositioning
-const noFlyIn: AutoAnimationPlugin = (el, action) => {
-  if (action === 'add') {
-    return new KeyframeEffect(el, [
-      { opacity: 0 },
-      { opacity: 1 },
-    ], { duration: 300, easing: 'ease-out' })
-  }
-  if (action === 'remove') {
-    return new KeyframeEffect(el, [
-      { opacity: 1 },
-      { opacity: 0 },
-    ], { duration: 200, easing: 'ease-in' })
-  }
-  return new KeyframeEffect(el, [], { duration: 0 })
-}
 
 export const COURSE_TYPE_CONFIG: Record<string, { title: string; description: string }> = {
   specialism: {
@@ -46,6 +26,7 @@ interface CourseTypeColumnProps {
   cardStaggerBase?: number
   cardStaggerIncrement?: number
   maxCourses?: number
+  searchQuery?: string
 }
 
 export default function CourseTypeColumn({
@@ -56,30 +37,31 @@ export default function CourseTypeColumn({
   cardStaggerBase = 0,
   cardStaggerIncrement = 0.1,
   maxCourses,
+  searchQuery = '',
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
 
-  // Disable auto-animate during initial stagger, enable after stagger completes
+  // Disable CSS transitions during initial stagger, enable after stagger completes
   const initialRenderRef = useRef(true)
   const useStagger = initialRenderRef.current && cardStaggerBase > 0
-  const [animateRef, enableAutoAnimate] = useAutoAnimate(noFlyIn)
+  const [transitionsEnabled, setTransitionsEnabled] = useState(false)
 
   useEffect(() => {
     if (!useStagger) {
-      enableAutoAnimate(true)
+      setTransitionsEnabled(true)
       return
     }
-    // Keep auto-animate off during stagger, enable after longest delay + animation duration
-    enableAutoAnimate(false)
     const longestDelay = cardStaggerBase + (displayCourses.length - 1) * cardStaggerIncrement
     const timer = setTimeout(() => {
       initialRenderRef.current = false
-      enableAutoAnimate(true)
+      setTransitionsEnabled(true)
     }, (longestDelay + 1.5) * 1000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const query = searchQuery.toLowerCase().trim()
 
   return (
     <div className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
@@ -97,19 +79,39 @@ export default function CourseTypeColumn({
           {config.description}
         </p>
       )}
-      <div ref={animateRef} className="space-y-3">
-        {displayCourses.map((course, idx) => (
-          <div
-            key={course.id || course.name}
-            style={useStagger ? {
-              animation: 'fadeInUp 1.5s ease-out forwards',
-              animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
-              opacity: 0,
-            } : undefined}
-          >
-            <CourseCard course={course} />
-          </div>
-        ))}
+      <div className="flex flex-col">
+        {displayCourses.map((course, idx) => {
+          const isVisible = !query ||
+            course.title?.toLowerCase().includes(query) ||
+            course.name?.toLowerCase().includes(query)
+
+          return (
+            <div
+              key={course.id || course.name}
+              style={{
+                display: 'grid',
+                gridTemplateRows: isVisible ? '1fr' : '0fr',
+                opacity: isVisible ? 1 : 0,
+                marginBottom: isVisible ? '12px' : '0px',
+                transition: transitionsEnabled
+                  ? 'grid-template-rows 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 250ms ease, margin-bottom 300ms cubic-bezier(0.33, 1, 0.68, 1)'
+                  : 'none',
+              }}
+            >
+              <div style={{ overflow: 'hidden' }}>
+                <div
+                  style={useStagger ? {
+                    animation: 'fadeInUp 1.5s ease-out forwards',
+                    animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
+                    opacity: 0,
+                  } : undefined}
+                >
+                  <CourseCard course={course} />
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

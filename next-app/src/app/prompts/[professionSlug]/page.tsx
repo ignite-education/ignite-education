@@ -12,25 +12,25 @@ export const revalidate = 60
 const BASE_URL = 'https://ignite.education'
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ professionSlug: string }>
 }
 
 export async function generateStaticParams() {
   const professionSlugs = await getAllProfessionSlugs()
-  return professionSlugs.map((slug) => ({ slug }))
+  return professionSlugs.map((professionSlug) => ({ professionSlug }))
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params
+  const { professionSlug } = await params
 
   // Check profession first
-  const profession = await getProfessionBySlug(slug)
+  const profession = await getProfessionBySlug(professionSlug)
   if (profession) {
     const professionName = profession.title || profession.name
     const plural = pluraliseProfession(professionName)
     const title = `AI Prompt Toolkit for ${plural} | Ignite`
     const description = `Free AI prompt templates for ${plural}. Ready-to-use prompts for ChatGPT, Claude, Co-Pilot and Gemini tailored to ${professionName} workflows.`
-    const url = `${BASE_URL}/prompts/${slug}`
+    const url = `${BASE_URL}/prompts/${professionSlug}`
 
     return {
       title,
@@ -58,10 +58,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PromptSlugPage({ params }: PageProps) {
-  const { slug } = await params
+  const { professionSlug } = await params
 
   // Check profession first
-  const profession = await getProfessionBySlug(slug)
+  const profession = await getProfessionBySlug(professionSlug)
   if (profession) {
     const [coursesByType, prompts] = await Promise.all([getCoursesByType(), getAllPrompts()])
     const professions = coursesByType.specialism.map(c => c.title || c.name)
@@ -74,7 +74,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
         '@type': 'CollectionPage',
         'name': `AI Prompt Toolkit for ${plural}`,
         'description': `Curated LLM prompts for ${plural}.`,
-        'url': `${BASE_URL}/prompts/${slug}`,
+        'url': `${BASE_URL}/prompts/${professionSlug}`,
         'publisher': {
           '@type': 'Organization',
           'name': 'Ignite Education',
@@ -87,7 +87,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
         'itemListElement': [
           { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
           { '@type': 'ListItem', 'position': 2, 'name': 'Prompt Toolkit', 'item': `${BASE_URL}/prompts` },
-          { '@type': 'ListItem', 'position': 3, 'name': plural, 'item': `${BASE_URL}/prompts/${slug}` },
+          { '@type': 'ListItem', 'position': 3, 'name': plural, 'item': `${BASE_URL}/prompts/${professionSlug}` },
         ],
       },
     ]
@@ -116,9 +116,9 @@ export default async function PromptSlugPage({ params }: PageProps) {
   }
 
   // Redirect old prompt URLs to new format: /prompts/{professionSlug}/{promptSlug}
-  const prompt = await getPromptBySlug(slug)
+  const prompt = await getPromptBySlug(professionSlug)
   if (prompt) {
-    redirect(`/prompts/${prompt.professionSlug}/${slug}`)
+    redirect(`/prompts/${prompt.professionSlug}/${professionSlug}`)
   }
 
   notFound()

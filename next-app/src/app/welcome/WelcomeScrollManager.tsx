@@ -33,6 +33,23 @@ export default function WelcomeScrollManager({
     return () => window.removeEventListener('resize', check)
   }, [])
 
+  // Preserve scroll position across tab switches (Supabase auth refresh + HMR can reset it)
+  const savedScrollRef = useRef(0)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        savedScrollRef.current = window.scrollY
+      } else {
+        const saved = savedScrollRef.current
+        if (saved > 0) {
+          requestAnimationFrame(() => window.scrollTo(0, saved))
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
   const logoContainerRef = useRef<HTMLDivElement>(null)
   const educationRef = useRef<HTMLDivElement>(null)
   const coursesRef = useRef<HTMLDivElement>(null)

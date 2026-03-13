@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 
 export default function EducationSection() {
-  const [showFeatures, setShowFeatures] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [isTablet, setIsTablet] = useState(false)
   const sectionRef = useRef<HTMLElement>(null)
@@ -28,56 +27,26 @@ export default function EducationSection() {
     }
   }, [])
 
+  // Each promise triggers independently when it crosses 40% from the bottom
   useEffect(() => {
-    const section = sectionRef.current
-    if (!section) return
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShowFeatures(true)
-          observer.disconnect()
-        }
-      },
-      { threshold: isMobile ? 0.1 : 0.5 }
-    )
-
-    observer.observe(section)
-    return () => observer.disconnect()
-  }, [isMobile])
-
-  // Mobile: sequential fade-in — wait for each promise's transition to complete before starting the next
-  useEffect(() => {
-    if (!isMobile) return
-
-    const timers: ReturnType<typeof setTimeout>[] = []
-
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            // First promise visible — trigger sequential chain
-            const transitionDuration = 1000 // delay between each promise animation
-            for (let i = 0; i < 3; i++) {
-              const timer = setTimeout(() => {
-                setVisiblePromises((prev) => new Set(prev).add(i))
-              }, i * transitionDuration)
-              timers.push(timer)
-            }
-            observer.disconnect()
+            const idx = Number((entry.target as HTMLElement).dataset.promiseIdx)
+            setVisiblePromises((prev) => new Set(prev).add(idx))
+            observer.unobserve(entry.target)
           }
         })
       },
-      { threshold: 0.2 }
+      { rootMargin: isMobile ? '0px 0px -30% 0px' : '0px 0px -40% 0px', threshold: 0 }
     )
 
-    const firstRef = promiseRefs.current[0]
-    if (firstRef) observer.observe(firstRef)
+    promiseRefs.current.forEach((el) => {
+      if (el) observer.observe(el)
+    })
 
-    return () => {
-      observer.disconnect()
-      timers.forEach(clearTimeout)
-    }
+    return () => observer.disconnect()
   }, [isMobile])
 
   // Render the heading with pink highlighted words and explicit line breaks
@@ -171,39 +140,31 @@ export default function EducationSection() {
             className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
             style={{ width: '100%', gap: isMobile ? '3rem' : '0.5rem' }}
           >
-            {(isMobile || showFeatures) && (
-              <>
-                {[
-                  { title: 'Built by Industry Experts', desc: <>Our courses are built with<br />industry experts to ensure you<br />get the latest area expertise.</> },
-                  { title: 'Ignite is Free', desc: <>All of our courses are<br />free. Always have been<br />and always will be.</> },
-                  { title: 'No Educational Prerequisite', desc: <>You don&apos;t need any experience<br />to study. Our curricula is built<br />for all backgrounds.</> }
-                ].map((promise, idx) => (
-                  <div
-                    key={idx}
-                    ref={(el) => { promiseRefs.current[idx] = el }}
-                    data-promise-idx={idx}
-                    className="flex flex-col items-center"
-                    style={isMobile ? {
-                      opacity: visiblePromises.has(idx) ? 1 : 0.15,
-                      transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(10px)',
-                      transition: 'opacity 2s cubic-bezier(0.16, 1, 0.3, 1), transform 2s cubic-bezier(0.16, 1, 0.3, 1)'
-                    } : {
-                      animation: 'fadeInUp 1.5s ease-out',
-                      animationDelay: `${1 + idx * 0.8}s`,
-                      opacity: 0,
-                      animationFillMode: 'forwards'
-                    }}
-                  >
-                    <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
-                      {promise.title}
-                    </div>
-                    <div className="text-base text-white font-normal">
-                      {promise.desc}
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
+            {[
+              { title: 'Built by Industry Experts', desc: <>Our courses are built with<br />industry experts to ensure you<br />get the latest area expertise.</> },
+              { title: 'Ignite is Free', desc: <>All of our courses are<br />free. Always have been<br />and always will be.</> },
+              { title: 'No Educational Prerequisite', desc: <>You don&apos;t need any experience<br />to study. Our curricula is built<br />for all backgrounds.</> }
+            ].map((promise, idx) => (
+              <div
+                key={idx}
+                ref={(el) => { promiseRefs.current[idx] = el }}
+                data-promise-idx={idx}
+                className="flex flex-col items-center"
+                style={{
+                  opacity: visiblePromises.has(idx) ? 1 : 0,
+                  transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
+                  transition: 'opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1), transform 3.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transitionDelay: !isMobile && visiblePromises.has(idx) ? `${idx * 1.5}s` : '0s',
+                }}
+              >
+                <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
+                  {promise.title}
+                </div>
+                <div className="text-base text-white font-normal">
+                  {promise.desc}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

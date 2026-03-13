@@ -163,8 +163,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
     }, 250);
   };
 
-  const isLive = liveSession?.status === 'live';
-  const isOccupied = liveSession?.status === 'occupied';
+  const isLive = liveSession?.status === 'live' || liveSession?.status === 'occupied';
 
   return (
     <>
@@ -227,24 +226,6 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               animation: 'pulse-green 2s ease-in-out infinite',
                             }} />
                             <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>Live Now</span>
-                          </div>
-                        ) : isOccupied ? (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '5px',
-                            marginTop: '6px',
-                            padding: '3px 8px',
-                            borderRadius: '6px',
-                            backgroundColor: 'rgba(251,191,36,0.15)',
-                          }}>
-                            <div style={{
-                              width: '7px',
-                              height: '7px',
-                              borderRadius: '50%',
-                              backgroundColor: '#fbbf24',
-                            }} />
-                            <span style={{ color: '#fbbf24', fontSize: '0.75rem', fontWeight: 500 }}>In Session</span>
                           </div>
                         ) : nextUpcoming ? (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '6px', gap: '3px' }}>

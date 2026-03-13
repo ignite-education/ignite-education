@@ -2,8 +2,10 @@
 
 import Link from 'next/link'
 import { useEffect, useState, type RefObject } from 'react'
+import Lottie from 'lottie-react'
 import { createClient, clearSupabaseCookies } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
+import lottieData from '../../public/icon-animation.json'
 
 interface NavbarProps {
   logoClipPercentage?: number
@@ -77,10 +79,20 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
       <div className={`px-6 md:px-10 pt-[15px] ${noPaddingBottom ? 'pb-0' : 'pb-[15px]'} flex items-center justify-between`}>
         {/* Logo - links to home (hidden on pages with centered logo) */}
         {hideLogo ? (
-          <div style={{ width: '99px' }} />
+          <div className="w-[35px] md:w-[99px]" />
         ) : (
           <Link href="/" className="inline-block">
-            <div ref={logoContainerRef} className="logo-container" style={{ position: 'relative', width: '99px', height: 'auto' }}>
+            {/* Mobile: animated square icon — Lottie canvas is 600x600 with ~15% internal padding, so we overflow-clip it */}
+            <div className="md:hidden w-[35px] h-[35px] overflow-hidden">
+              <Lottie
+                animationData={lottieData}
+                loop
+                autoplay
+                style={{ width: '50px', height: '50px', marginTop: '-8px', marginLeft: '-7px' }}
+              />
+            </div>
+            {/* Desktop: text logo with clip-path transitions */}
+            <div ref={logoContainerRef} className="logo-container hidden md:block" style={{ position: 'relative', width: '99px', height: 'auto' }}>
               {!effectiveInvertLayers ? (
                 <>
                   {/* Standard order for BLACK->WHITE transitions */}
@@ -149,21 +161,19 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         )}
 
         {/* Right side - Sign In button by default, swaps to avatar once auth confirms signed in */}
-        <div style={{ width: '85px', height: '41px' }} className="flex items-center justify-end">
+        <div className="flex items-center justify-end w-[85px] h-[35px] md:h-[41px]">
           {authLoaded && (user ? (
             <Link href="/progress" className="inline-block">
               {profilePicture ? (
                 <img
                   src={profilePicture}
                   alt="Profile"
-                  className="object-cover rounded-sm"
-                  style={{ width: '41px', height: '41px' }}
+                  className="object-cover rounded-sm w-[35px] h-[35px] md:w-[41px] md:h-[41px]"
                   referrerPolicy="no-referrer"
                 />
               ) : (
                 <div
-                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm"
-                  style={{ width: '41px', height: '41px' }}
+                  className="bg-[#8200EA] flex items-center justify-center text-white font-medium rounded-sm w-[35px] h-[35px] md:w-[41px] md:h-[41px]"
                 >
                   {firstName?.charAt(0).toUpperCase() || '?'}
                 </div>
@@ -172,8 +182,8 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
           ) : (
             <Link
               href="/sign-in"
-              className="px-5 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors"
-              style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', display: 'inline-block', textAlign: 'center' }}
+              className="px-5 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors flex items-center justify-center h-[35px] md:h-auto md:py-2"
+              style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', textAlign: 'center' }}
             >
               Sign In
             </Link>

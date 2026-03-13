@@ -161,7 +161,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
           height: isExpanded ? 'auto' : (isMobile ? mobileSectionHeight : sectionHeight),
           minHeight: isExpanded ? 'auto' : (isMobile ? undefined : sectionMinHeight),
           maxHeight: isExpanded ? 'none' : (isMobile ? '85vh' : sectionMaxHeight),
-          transition: isMobile === null ? 'none' : 'height 0.5s cubic-bezier(0.33, 1, 0.68, 1), min-height 0.5s cubic-bezier(0.33, 1, 0.68, 1), max-height 0.5s cubic-bezier(0.33, 1, 0.68, 1)',
+          transition: isMobile === null ? 'none' : 'height 0.8s cubic-bezier(0.25, 1, 0.5, 1), min-height 0.8s cubic-bezier(0.25, 1, 0.5, 1), max-height 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
           overflow: 'hidden'
         }}
       >
@@ -229,21 +229,21 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-[35px]">
           {(() => {
             const columns = [
-              { type: 'specialism' as const, courses: filteredSpecialism },
-              { type: 'skill' as const, courses: filteredSkill },
-              { type: 'subject' as const, courses: filteredSubject },
+              { type: 'specialism' as const, allCourses: coursesByType.specialism, filteredCount: filteredSpecialism.length },
+              { type: 'skill' as const, allCourses: coursesByType.skill, filteredCount: filteredSkill.length },
+              { type: 'subject' as const, allCourses: coursesByType.subject, filteredCount: filteredSubject.length },
             ]
             let cardOffset = 0
-            return columns.map(({ type, courses }, colIndex) => {
+            return columns.map(({ type, allCourses, filteredCount }) => {
               const baseDelay = isMobile
                 ? 0.15 + cardOffset * 0.1
                 : 0.15
               const el = (
-                <div key={type} className={courses.length === 0 ? 'hidden md:block' : ''}>
-                  <CourseTypeColumn type={type} courses={courses} hideHeader cardStaggerBase={baseDelay} />
+                <div key={type} className={filteredCount === 0 && hasSearchQuery ? 'hidden md:block' : ''}>
+                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} hideHeader cardStaggerBase={baseDelay} />
                 </div>
               )
-              cardOffset += courses.length
+              cardOffset += allCourses.length
               return el
             })
           })()}
