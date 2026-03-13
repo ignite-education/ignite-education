@@ -140,6 +140,72 @@ const VideoChat = () => {
         }
 
         if (cancelled) return;
+
+        // Check for existing queue entry (recovery after refresh/tab close)
+        try {
+          const recoveryRes = await fetch(`${API_URL}/api/office-hours/queue/my-entry/${sessionId}`, {
+            headers: { 'Authorization': `Bearer ${authSession.access_token}` },
+          });
+          if (cancelled) return;
+          if (recoveryRes.ok) {
+            const { entry } = await recoveryRes.json();
+            if (entry) {
+              setQueueEntryId(entry.id);
+              queueEntryIdRef.current = entry.id;
+
+              if (entry.status === 'connected' || entry.status === 'connecting') {
+                // Reconnect to the active call
+                setState('joining');
+                try {
+                  if (CameraPreview.stopStream) CameraPreview.stopStream();
+                  const connectRes = await fetch(`${API_URL}/api/office-hours/queue/connect`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${authSession.access_token}`,
+                    },
+                    body: JSON.stringify({ sessionId, queueEntryId: entry.id }),
+                  });
+                  if (cancelled) return;
+                  if (connectRes.ok) {
+                    const data = await connectRes.json();
+                    setUserName(firstName || 'Student');
+                    setIsCoach(false);
+                    const newCallObject = DailyIframe.createCallObject({
+                      url: data.roomUrl,
+                      token: data.token,
+                    });
+                    callObjectRef.current = newCallObject;
+                    setCallObject(newCallObject);
+                    if (cancelled) { newCallObject.destroy().catch(() => {}); return; }
+                    await newCallObject.join();
+                    if (cancelled) return;
+                    setState('joined');
+                    return;
+                  }
+                  // If connect returns 409, entry may no longer be valid — fall to queued
+                  console.warn('Reconnection connect failed, entering queue');
+                  setState('queued');
+                  return;
+                } catch (e) {
+                  if (cancelled) return;
+                  console.warn('Reconnection failed, entering queue:', e);
+                  setState('queued');
+                  return;
+                }
+              }
+
+              if (entry.status === 'waiting') {
+                setState('queued');
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('Recovery check failed:', e);
+        }
+
+        if (cancelled) return;
         setState('lobby');
       } catch (err) {
         if (cancelled) return;
@@ -285,38 +351,29 @@ const VideoChat = () => {
     }
   }, [connectToCall]);
 
-  // Leave queue on unmount or tab close
-  useEffect(() => {
-    const leaveQueue = () => {
-      const token = authTokenRef.current;
-      if (queueEntryIdRef.current && sessionId && token) {
-        fetch(`${API_URL}/api/office-hours/queue/leave`, {
+  const handleLeave = useCallback(async () => {
+    // Explicitly leave the queue/session — only called when user clicks "end session"
+    try {
+      const { supabase } = await import('../../lib/supabase');
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      if (authSession?.access_token && queueEntryIdRef.current && sessionId) {
+        await fetch(`${API_URL}/api/office-hours/queue/leave`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
+            'Authorization': `Bearer ${authSession.access_token}`,
           },
           body: JSON.stringify({ sessionId }),
-          keepalive: true,
         }).catch(() => {});
       }
-    };
-
-    window.addEventListener('beforeunload', leaveQueue);
-    return () => {
-      window.removeEventListener('beforeunload', leaveQueue);
-      leaveQueue();
-    };
-  }, [sessionId]);
-
-  const handleLeave = useCallback(() => {
+    } catch (e) { /* best effort */ }
     setState('ended');
     if (callObjectRef.current) {
       callObjectRef.current.destroy().catch(() => {});
       callObjectRef.current = null;
       setCallObject(null);
     }
-  }, []);
+  }, [sessionId]);
 
   // Loading state
   if (state === 'loading' || state === 'joining') {
@@ -441,7 +498,41 @@ const VideoChat = () => {
     );
   }
 
-  return null;
+  // Offline / fallback state
+  return (
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'white',
+      gap: '16px',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    }}>
+      <a href="/progress" style={{ display: 'block' }}>
+        <img
+          src="https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20Logo%20V2%20-%20Black.png"
+          alt="Ignite"
+          style={{ width: '80px', height: '80px', objectFit: 'contain' }}
+        />
+      </a>
+      <p style={{
+        color: '#666',
+        fontSize: '15px',
+        fontWeight: 400,
+        textAlign: 'center',
+        maxWidth: '360px',
+        lineHeight: 1.5,
+        letterSpacing: '-0.01em',
+      }}>
+        We're offline. Head back to the{' '}
+        <a href="/progress" style={{ color: '#EF0B72', textDecoration: 'none', fontWeight: 500 }}>Progress Hub</a>
+        {' '}to see upcoming Office Hours availability.
+      </p>
+    </div>
+  );
 };
 
 export default VideoChat;

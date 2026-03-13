@@ -193,7 +193,7 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
                   minWidth: 0,
                 }}
               />
-              {feedbackComment.trim() && feedbackSelected && (
+              {feedbackComment.trim() && (
                 <button
                   type="button"
                   onClick={submitFeedback}
@@ -491,16 +491,16 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '12px' }}>
           <div style={{ display: 'flex', gap: '35px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Camera</span>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
                 {!isCameraOff && <Check size={16} color="#16a34a" strokeWidth={3} />}
               </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Camera</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Microphone</span>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
                 {!isMuted && <Check size={16} color="#16a34a" strokeWidth={3} />}
               </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Microphone</span>
             </div>
           </div>
         </div>
@@ -509,7 +509,7 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
         <div style={{
           width: '100%',
           height: '40vh',
-          borderRadius: '8px',
+          borderRadius: '4px',
           overflow: 'hidden',
           backgroundColor: sessionEnded ? '#f5f5f5' : '#1a1a2e',
           position: 'relative',
@@ -553,6 +553,7 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
                 isLocal={screens[0].local}
                 userName="Screen Share"
                 isLarge
+                hideLabel
               />
               {localSessionId && (
                 <div style={{
@@ -561,18 +562,18 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
                   right: '12px',
                   width: '120px',
                   height: '90px',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                   overflow: 'hidden',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
                   zIndex: 2,
                 }}>
-                  <VideoTile sessionId={localSessionId} isLocal userName={userName} />
+                  <VideoTile sessionId={localSessionId} isLocal userName={userName} hideLabel />
                 </div>
               )}
             </>
           ) : remoteId ? (
             <>
-              <VideoTile sessionId={remoteId} isLocal={false} userName="" isLarge />
+              <VideoTile sessionId={remoteId} isLocal={false} userName="" isLarge hideLabel />
               {localSessionId && (
                 <div style={{
                   position: 'absolute',
@@ -580,12 +581,12 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
                   right: '12px',
                   width: '120px',
                   height: '90px',
-                  borderRadius: '6px',
+                  borderRadius: '4px',
                   overflow: 'hidden',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
                   zIndex: 2,
                 }}>
-                  <VideoTile sessionId={localSessionId} isLocal userName={userName} />
+                  <VideoTile sessionId={localSessionId} isLocal userName={userName} hideLabel />
                 </div>
               )}
             </>
@@ -779,16 +780,16 @@ const ConnectedPreview = ({ feedbackPreview = false }) => {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '12px' }}>
           <div style={{ display: 'flex', gap: '35px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Camera</span>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
                 <Check size={16} color="#16a34a" strokeWidth={3} />
               </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Camera</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Microphone</span>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
                 <Check size={16} color="#16a34a" strokeWidth={3} />
               </div>
-              <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>Microphone</span>
             </div>
           </div>
         </div>
@@ -797,7 +798,7 @@ const ConnectedPreview = ({ feedbackPreview = false }) => {
         <div style={{
           width: '100%',
           height: '40vh',
-          borderRadius: '8px',
+          borderRadius: '4px',
           overflow: 'hidden',
           backgroundColor: sessionEnded ? '#f5f5f5' : '#1a1a2e',
           position: 'relative',

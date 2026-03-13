@@ -174,7 +174,7 @@ const ChatPanel = ({ coachName, onMessagesChange }) => {
 };
 
 // --- Main VideoPanel ---
-const VideoPanel = ({ onLeave, coachName, onChatMessagesChange }) => {
+const VideoPanel = ({ onLeave, coachName, onChatMessagesChange, connectedStudent }) => {
   const localParticipant = useLocalParticipant();
   const remoteIds = useParticipantIds({ filter: 'remote' });
   const daily = useDaily();
@@ -195,7 +195,7 @@ const VideoPanel = ({ onLeave, coachName, onChatMessagesChange }) => {
         )}
         {remoteIds.length > 0 ? (
           remoteIds.map(id => (
-            <VideoTile key={id} sessionId={id} userName="Student" isLarge />
+            <VideoTile key={id} sessionId={id} userName={connectedStudent ? `${connectedStudent.firstName} ${connectedStudent.lastName}`.trim() : 'Student'} isLarge />
           ))
         ) : (
           <div className="rounded-xl bg-gray-900 flex items-center justify-center text-gray-600 text-sm">

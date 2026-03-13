@@ -56,10 +56,10 @@ const CameraPreview = ({ onReadyChange, highlight, endTimeFormatted }) => {
 
   const StatusIndicator = ({ label, ready }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>{label}</span>
       <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
         {ready && <Check size={16} color="#16a34a" strokeWidth={3} />}
       </div>
-      <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>{label}</span>
     </div>
   );
 

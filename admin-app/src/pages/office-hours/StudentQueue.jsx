@@ -1,4 +1,47 @@
+import { useState, useEffect, useRef } from 'react';
 import { Users, Play, Square } from 'lucide-react';
+
+const CALL_TIME_LIMIT = 5 * 60; // 5 minutes in seconds
+
+const formatDuration = (seconds) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+};
+
+const SessionTimer = ({ connectedEntryId }) => {
+  const [elapsed, setElapsed] = useState(0);
+  const startTimeRef = useRef(Date.now());
+  const prevEntryIdRef = useRef(connectedEntryId);
+
+  // Reset timer when a new student connects
+  useEffect(() => {
+    if (connectedEntryId !== prevEntryIdRef.current) {
+      prevEntryIdRef.current = connectedEntryId;
+      startTimeRef.current = Date.now();
+      setElapsed(0);
+    }
+  }, [connectedEntryId]);
+
+  useEffect(() => {
+    const tick = () => setElapsed(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const remaining = Math.max(CALL_TIME_LIMIT - elapsed, 0);
+  const minsLeft = Math.ceil(remaining / 60);
+
+  return (
+    <div className="flex items-center justify-between mt-2 pt-2 border-t border-yellow-500/10">
+      <span className="text-xs font-mono text-gray-400">{formatDuration(elapsed)}</span>
+      <span className={`text-xs ${remaining <= 60 ? 'text-red-400' : 'text-gray-500'}`}>
+        {remaining <= 0 ? 'End of allocated time' : `${minsLeft} min${minsLeft !== 1 ? 's' : ''} left`}
+      </span>
+    </div>
+  );
+};
 
 const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKick }) => {
   const connectedEntry = queue.find(e => e.status === 'connected' || e.status === 'connecting');
@@ -38,6 +81,7 @@ const StudentQueue = ({ queue, activeSession, admitting, kicking, onAdmit, onKic
               </button>
             </div>
             <StudentCard entry={connectedEntry} />
+            <SessionTimer connectedEntryId={connectedEntry.id} />
           </div>
         )}
 

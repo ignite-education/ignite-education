@@ -69,6 +69,21 @@ const OfficeHours = () => {
           const active = sessions.find(s => s.status === 'live' || s.status === 'occupied');
           setActiveSession(active || null);
           setPastSessions(sessions.filter(s => s.status === 'ended').slice(0, 20));
+
+          // Auto-rejoin the call if there's an active session (page refresh recovery)
+          if (active) {
+            try {
+              const startRes = await fetch(`${API_URL}/api/office-hours/start`, {
+                method: 'POST', headers,
+              });
+              if (startRes.ok) {
+                const startData = await startRes.json();
+                createCall(startData.session.daily_room_url, startData.token);
+              }
+            } catch (err) {
+              console.error('Error auto-rejoining call:', err);
+            }
+          }
         }
 
         if (scheduleRes.ok) {
@@ -368,6 +383,7 @@ const OfficeHours = () => {
                 <VideoPanel
                   onLeave={handleEndSession}
                   coachName={coachName}
+                  connectedStudent={queue.find(e => e.status === 'connected' || e.status === 'connecting')}
                 />
               </DailyProvider>
             ) : (

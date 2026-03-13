@@ -2026,6 +2026,42 @@ app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
   }
 });
 
+// GET /api/office-hours/queue/my-entry/:sessionId — Student checks for existing queue entry (for reconnection)
+app.get('/api/office-hours/queue/my-entry/:sessionId', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+
+    const { data: entry } = await supabase
+      .from('office_hours_queue')
+      .select('id, status, topic, question, position')
+      .eq('session_id', sessionId)
+      .eq('user_id', req.user.id)
+      .in('status', ['waiting', 'connecting', 'connected'])
+      .single();
+
+    if (!entry) {
+      return res.json({ entry: null });
+    }
+
+    // Calculate display position for waiting entries
+    let displayPosition = null;
+    if (entry.status === 'waiting' || entry.status === 'connecting') {
+      const { count } = await supabase
+        .from('office_hours_queue')
+        .select('id', { count: 'exact', head: true })
+        .eq('session_id', sessionId)
+        .in('status', ['waiting', 'connecting'])
+        .lt('position', entry.position);
+      displayPosition = (count || 0) + 1;
+    }
+
+    res.json({ entry: { ...entry, displayPosition } });
+  } catch (error) {
+    console.error('Error fetching student queue entry:', error);
+    res.status(500).json({ error: 'Failed to check queue status' });
+  }
+});
+
 // POST /api/office-hours/queue/connect — Student connects when it's their turn
 app.post('/api/office-hours/queue/connect', verifyAuth, async (req, res) => {
   try {
@@ -2046,6 +2082,37 @@ app.post('/api/office-hours/queue/connect', verifyAuth, async (req, res) => {
 
     if (entryError || !entry) {
       return res.status(404).json({ error: 'Queue entry not found' });
+    }
+
+    // Allow reconnection if already connected (page refresh scenario)
+    if (entry.status === 'connected') {
+      const { data: session } = await supabase
+        .from('office_hours_sessions')
+        .select('daily_room_name, daily_room_url')
+        .eq('id', sessionId)
+        .eq('student_id', req.user.id)
+        .in('status', ['occupied'])
+        .single();
+
+      if (!session) {
+        return res.status(409).json({ error: 'Session is not available right now.' });
+      }
+
+      const { data: userData } = await supabase.auth.admin.getUserById(req.user.id);
+      const firstName = userData?.user?.user_metadata?.first_name || 'Student';
+
+      const token = await dailyApiRequest('/meeting-tokens', 'POST', {
+        properties: {
+          room_name: session.daily_room_name,
+          is_owner: false,
+          user_name: firstName,
+          user_id: req.user.id,
+          exp: Math.floor(Date.now() / 1000) + 7200,
+        },
+      });
+
+      console.log(`📹 Student ${firstName} reconnected to session ${sessionId}`);
+      return res.json({ token: token.token, roomUrl: session.daily_room_url });
     }
 
     if (entry.status !== 'connecting') {
@@ -2112,13 +2179,13 @@ app.post('/api/office-hours/queue/leave', verifyAuth, async (req, res) => {
       return res.status(400).json({ error: 'Session ID is required' });
     }
 
-    // Find and update the student's queue entry
+    // Find and update the student's queue entry (waiting, connecting, or connected)
     const { data: entry, error: updateError } = await supabase
       .from('office_hours_queue')
       .update({ status: 'left' })
       .eq('session_id', sessionId)
       .eq('user_id', req.user.id)
-      .in('status', ['waiting', 'connecting'])
+      .in('status', ['waiting', 'connecting', 'connected'])
       .select('id, status')
       .single();
 
@@ -2126,7 +2193,16 @@ app.post('/api/office-hours/queue/leave', verifyAuth, async (req, res) => {
       return res.json({ success: true }); // Already left or not in queue
     }
 
-    // If they were connecting, advance the queue
+    // If they were connected, reset the session back to live
+    if (entry.status === 'connected') {
+      await supabase
+        .from('office_hours_sessions')
+        .update({ status: 'live', student_id: null, topic: null, question: null })
+        .eq('id', sessionId)
+        .eq('student_id', req.user.id);
+    }
+
+    // Advance the queue if session is now live
     const { data: session } = await supabase
       .from('office_hours_sessions')
       .select('status')

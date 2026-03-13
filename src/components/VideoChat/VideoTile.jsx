@@ -1,7 +1,7 @@
 import React from 'react';
 import { useVideoTrack, useAudioTrack, useScreenShare } from '@daily-co/daily-react';
 
-const VideoTile = ({ sessionId, isLocal, userName, isLarge }) => {
+const VideoTile = ({ sessionId, isLocal, userName, isLarge, hideLabel }) => {
   const videoTrack = useVideoTrack(sessionId);
   const audioTrack = useAudioTrack(sessionId);
 
@@ -64,20 +64,22 @@ const VideoTile = ({ sessionId, isLocal, userName, isLarge }) => {
 
       {!isLocal && <audio ref={audioRef} autoPlay playsInline />}
 
-      <div style={{
-        position: 'absolute',
-        bottom: '12px',
-        left: '12px',
-        padding: '4px 12px',
-        borderRadius: '8px',
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        backdropFilter: 'blur(4px)',
-        color: 'white',
-        fontSize: '13px',
-        fontWeight: 500,
-      }}>
-        {userName || 'Unknown'}{isLocal ? ' (You)' : ''}
-      </div>
+      {!hideLabel && (
+        <div style={{
+          position: 'absolute',
+          bottom: '12px',
+          left: '12px',
+          padding: '4px 12px',
+          borderRadius: '8px',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(4px)',
+          color: 'white',
+          fontSize: '13px',
+          fontWeight: 500,
+        }}>
+          {userName || 'Unknown'}{isLocal ? ' (You)' : ''}
+        </div>
+      )}
     </div>
   );
 };
