@@ -65,25 +65,8 @@ const CameraPreview = ({ onReadyChange, highlight, endTimeFormatted }) => {
 
   return (
     <div>
-      {/* Status row: Live indicator left, Camera/Microphone right */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        {endTimeFormatted ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '6.4px',
-              height: '6.4px',
-              borderRadius: '50%',
-              backgroundColor: '#16a34a',
-              boxShadow: '0 0 5px #16a34a',
-              position: 'relative',
-              top: '1px',
-              animation: 'pulse-green 2s ease-in-out infinite',
-            }} />
-            <span style={{ fontSize: '0.9rem', color: '#000', fontWeight: 300, letterSpacing: '-0.01em' }}>
-              Live Now till {endTimeFormatted}
-            </span>
-          </div>
-        ) : <div />}
+      {/* Status row: Camera/Microphone indicators */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '12px' }}>
         <div style={{ display: 'flex', gap: '35px' }}>
           <StatusIndicator label="Camera" ready={cameraReady} />
           <StatusIndicator label="Microphone" ready={micReady} />

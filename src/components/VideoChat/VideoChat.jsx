@@ -34,8 +34,10 @@ const VideoChat = () => {
   const queueEntryIdRef = useRef(null);
 
   // Initial setup: coach flow goes straight to call, student flow loads lobby data
+  // Use user.id as dependency (not user object) to avoid re-running when Supabase refreshes the session on tab focus
+  const userId = user?.id;
   useEffect(() => {
-    if (!sessionId || !user) return;
+    if (!sessionId || !userId) return;
 
     // Destroy any previous Daily instance before creating a new one
     if (callObjectRef.current) {
@@ -157,7 +159,7 @@ const VideoChat = () => {
         callObjectRef.current = null;
       }
     };
-  }, [sessionId, user]);
+  }, [sessionId, userId]);
 
   // Connect to Daily.co call (used by both direct auto-connect and queue auto-connect)
   const connectToCall = useCallback(async (entryId) => {

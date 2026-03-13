@@ -226,7 +226,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               boxShadow: '0 0 6px #22c55e',
                               animation: 'pulse-green 1.5s ease-in-out infinite',
                             }} />
-                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>Live</span>
+                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>Live Now</span>
                           </div>
                         ) : isOccupied ? (
                           <div style={{

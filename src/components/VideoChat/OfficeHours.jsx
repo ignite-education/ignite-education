@@ -285,6 +285,11 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
   const handleEndSessionRef = useRef(null);
   const chatMessagesRef = useRef([]);
 
+  // Scroll to top when entering connected view
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Listen for coach kicking this student (queue entry → 'left')
   useEffect(() => {
     if (isCoach || !queueEntryId || sessionEnded) return;
@@ -738,7 +743,7 @@ const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, to
           sessionId={sessionId}
           onDone={onLeave}
         />
-        <div style={{ marginTop: '28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginTop: '28px', height: '300px', display: 'flex', flexDirection: 'column' }}>
           <ChatSidebar
             onClose={() => setIsChatOpen(false)}
             localUserName={userName}
@@ -969,7 +974,7 @@ const ConnectedPreview = ({ feedbackPreview = false }) => {
           sessionId="preview"
           onDone={() => alert('[Preview] Close clicked')}
         />
-        <div style={{ marginTop: '28px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ marginTop: '28px', height: '300px', display: 'flex', flexDirection: 'column' }}>
           <ChatSidebar
             onClose={() => {}}
             localUserName="You"

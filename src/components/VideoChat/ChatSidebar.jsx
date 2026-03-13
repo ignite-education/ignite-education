@@ -9,10 +9,17 @@ const ChatSidebar = ({ onClose, localUserName, onMessagesChange }) => {
   const daily = useDaily();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   };
 
-  useEffect(scrollToBottom, [messages]);
+  // Only auto-scroll when new messages arrive, not on initial mount
+  const hasMessages = useRef(false);
+  useEffect(() => {
+    if (messages.length > 0) {
+      hasMessages.current = true;
+      scrollToBottom();
+    }
+  }, [messages]);
 
   useEffect(() => {
     onMessagesChange?.(messages);
