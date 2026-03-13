@@ -210,9 +210,11 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '5px',
                             marginTop: '6px',
-                            padding: '4px 10px',
+                            width: '4.8rem',
+                            padding: '4px 0',
                             borderRadius: '6px',
                             backgroundColor: 'white',
                           }}>
@@ -224,7 +226,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                               boxShadow: '0 0 6px #22c55e',
                               animation: 'pulse-green 1.5s ease-in-out infinite',
                             }} />
-                            <span style={{ color: 'black', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.05em' }}>Live</span>
+                            <span style={{ color: 'black', fontSize: '0.75rem', fontWeight: 400 }}>Live</span>
                           </div>
                         ) : isOccupied ? (
                           <div style={{

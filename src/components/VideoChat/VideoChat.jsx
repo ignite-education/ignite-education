@@ -6,6 +6,7 @@ import OfficeHours from './OfficeHours';
 import CameraPreview from './CameraPreview';
 import { getLessonsMetadata, getCoachesForCourse } from '../../lib/api';
 import { Video } from 'lucide-react';
+import LoadingScreen from '../LoadingScreen';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
@@ -13,6 +14,8 @@ const VideoChat = () => {
   const { sessionId } = useParams();
   const [searchParams] = useSearchParams();
   const { user, isInsider, firstName } = useAuth();
+
+  useEffect(() => { document.title = 'Office Hours | Ignite'; }, []);
 
   const [state, setState] = useState('loading'); // loading | lobby | queued | joining | joined | error | ended
   const [error, setError] = useState('');
@@ -190,7 +193,6 @@ const VideoChat = () => {
         });
         callObjectRef.current = newCallObject;
         setCallObject(newCallObject);
-        setState('joining');
 
         await newCallObject.join();
         setState('joined');
@@ -316,31 +318,7 @@ const VideoChat = () => {
 
   // Loading state
   if (state === 'loading' || state === 'joining') {
-    return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#0d0d1a',
-        gap: '20px',
-      }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '3px solid rgba(119,20,224,0.3)',
-          borderTopColor: '#7714E0',
-          borderRadius: '50%',
-          animation: 'spin 0.8s linear infinite',
-        }} />
-        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '15px' }}>
-          {state === 'loading' ? 'Connecting to session...' : 'Joining video call...'}
-        </p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Office Hours page — lobby, queued, and connected states

@@ -150,15 +150,20 @@ const OfficeHours = () => {
   };
 
   // --- Daily.co call management ---
-  const createCall = (url, token) => {
+  const createCall = async (url, token) => {
     const newCallObject = DailyIframe.createCallObject({
-      url,
-      token,
       dailyConfig: { experimentalChromeVideoMuteLightOff: true },
     });
     setCallObject(newCallObject);
     setCallToken(token);
     setRoomUrl(url);
+    // Join immediately with audio/video enabled
+    await newCallObject.join({
+      url,
+      token,
+      startVideoOff: false,
+      startAudioOff: false,
+    }).catch(err => console.error('Failed to join Daily call:', err));
   };
 
   const destroyCall = () => {

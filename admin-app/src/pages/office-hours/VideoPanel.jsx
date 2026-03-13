@@ -59,11 +59,11 @@ const ControlBar = ({ onLeave }) => {
   const localParticipant = useLocalParticipant();
   const { isSharingScreen, startScreenShare, stopScreenShare } = useScreenShare();
 
-  const isMuted = !localParticipant?.audio;
-  const isCameraOff = !localParticipant?.video;
+  const isMuted = localParticipant ? !localParticipant.audio : false;
+  const isCameraOff = localParticipant ? !localParticipant.video : false;
 
-  const toggleMute = () => daily?.setLocalAudio(!localParticipant?.audio);
-  const toggleCamera = () => daily?.setLocalVideo(!localParticipant?.video);
+  const toggleMute = () => { if (daily && localParticipant) daily.setLocalAudio(!localParticipant.audio); };
+  const toggleCamera = () => { if (daily && localParticipant) daily.setLocalVideo(!localParticipant.video); };
   const toggleScreen = () => isSharingScreen ? stopScreenShare() : startScreenShare();
 
   const btnClass = (active, danger) =>
@@ -179,12 +179,7 @@ const VideoPanel = ({ onLeave, coachName, onChatMessagesChange }) => {
   const remoteIds = useParticipantIds({ filter: 'remote' });
   const daily = useDaily();
 
-  // Auto-join on mount
-  useEffect(() => {
-    if (daily && daily.meetingState() === 'new') {
-      daily.join().catch(err => console.error('Failed to join call:', err));
-    }
-  }, [daily]);
+  // Call is already joined by createCall() in index.jsx
 
   return (
     <div className="rounded-xl border border-gray-700/50 bg-gray-800/50 overflow-hidden flex flex-col" style={{ height: '520px' }}>

@@ -318,7 +318,7 @@ const useProgressData = () => {
               if (Math.random() < 0.5) {
                 if (isMounted) setBehaviourStat(timeConfig[topBucket]);
               } else {
-                if (isMounted) setBehaviourStat({ label: 'Most active on', value: `${topDay}s`, image: dayImages[topDay] });
+                if (isMounted) setBehaviourStat({ label: 'Most active', value: `on ${topDay}s`, image: dayImages[topDay] });
               }
             } else {
               // No sign-in history yet — show welcome fallback

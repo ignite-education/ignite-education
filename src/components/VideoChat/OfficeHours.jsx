@@ -46,6 +46,16 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
   const [feedbackSent, setFeedbackSent] = useState(false);
   const [feedbackSelected, setFeedbackSelected] = useState(null);
   const [feedbackComment, setFeedbackComment] = useState('');
+  const feedbackInputRef = useRef(null);
+
+  // Auto-focus the feedback input when session ends
+  useEffect(() => {
+    if (sessionEnded && feedbackInputRef.current) {
+      // Small delay to ensure the DOM has transitioned
+      const timer = setTimeout(() => feedbackInputRef.current?.focus({ preventScroll: true }), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [sessionEnded]);
 
   const submitFeedback = async () => {
     if (!feedbackSelected) return;
@@ -164,6 +174,7 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
               minWidth: 0,
             }}>
               <input
+                ref={feedbackInputRef}
                 type="text"
                 value={feedbackComment}
                 onChange={(e) => setFeedbackComment(e.target.value)}
@@ -252,7 +263,7 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
 };
 
 // Inner component that uses Daily hooks (must be inside DailyProvider)
-const ConnectedView = ({ sessionId, onLeave, isCoach, userName, topic, question, coach, endTimeFormatted }) => {
+const ConnectedView = ({ sessionId, queueEntryId, onLeave, isCoach, userName, topic, question, coach, endTimeFormatted }) => {
   const daily = useDaily();
   const localSessionId = useLocalSessionId();
   const participantIds = useParticipantIds({ filter: 'remote' });
@@ -273,6 +284,42 @@ const ConnectedView = ({ sessionId, onLeave, isCoach, userName, topic, question,
 
   const handleEndSessionRef = useRef(null);
   const chatMessagesRef = useRef([]);
+
+  // Listen for coach kicking this student (queue entry → 'left')
+  useEffect(() => {
+    if (isCoach || !queueEntryId || sessionEnded) return;
+    let channel;
+    const setup = async () => {
+      const { supabase } = await import('../../lib/supabase');
+      channel = supabase
+        .channel(`kick-${queueEntryId}`)
+        .on('postgres_changes', {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'office_hours_queue',
+          filter: `id=eq.${queueEntryId}`,
+        }, (payload) => {
+          if (payload.new.status === 'left' && !sessionEndedRef.current) {
+            // Coach ended this student's session — trigger end flow
+            sessionEndedRef.current = true;
+            setSessionEnded(true);
+            setRemoteLeft(true);
+            if (daily) {
+              daily.leave().catch(() => {});
+            }
+          }
+        })
+        .subscribe();
+    };
+    setup();
+    return () => {
+      if (channel) {
+        import('../../lib/supabase').then(({ supabase }) => {
+          supabase.removeChannel(channel);
+        });
+      }
+    };
+  }, [queueEntryId, isCoach, sessionEnded, daily]);
 
   // Track call duration and auto-end at limit
   useEffect(() => {
@@ -435,25 +482,8 @@ const ConnectedView = ({ sessionId, onLeave, isCoach, userName, topic, question,
     <>
       {/* Left column — 45% */}
       <div style={{ flex: '0 0 45%', minWidth: 0 }}>
-        {/* Status row: Live indicator left, Camera/Microphone right */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          {endTimeFormatted ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '6.4px',
-                height: '6.4px',
-                borderRadius: '50%',
-                backgroundColor: '#16a34a',
-                boxShadow: '0 0 5px #16a34a',
-                position: 'relative',
-                top: '1px',
-                animation: 'pulse-green 2s ease-in-out infinite',
-              }} />
-              <span style={{ fontSize: '0.9rem', color: '#000', fontWeight: 300, letterSpacing: '-0.01em' }}>
-                Live Now till {endTimeFormatted}
-              </span>
-            </div>
-          ) : <div />}
+        {/* Status row: Camera/Microphone indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '12px' }}>
           <div style={{ display: 'flex', gap: '35px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
@@ -740,23 +770,8 @@ const ConnectedPreview = ({ feedbackPreview = false }) => {
     <>
       {/* Left column — 45% */}
       <div style={{ flex: '0 0 45%', minWidth: 0 }}>
-        {/* Status row: Live indicator left, Camera/Microphone right */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: '6.4px',
-              height: '6.4px',
-              borderRadius: '50%',
-              backgroundColor: '#16a34a',
-              boxShadow: '0 0 5px #16a34a',
-              position: 'relative',
-              top: '1px',
-              animation: 'pulse-green 2s ease-in-out infinite',
-            }} />
-            <span style={{ fontSize: '0.9rem', color: '#000', fontWeight: 300, letterSpacing: '-0.01em' }}>
-              Live Now till 3PM
-            </span>
-          </div>
+        {/* Status row: Camera/Microphone indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', marginBottom: '12px' }}>
           <div style={{ display: 'flex', gap: '35px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '16px', height: '16px', flexShrink: 0 }}>
@@ -1123,7 +1138,7 @@ const OfficeHours = ({
       flexDirection: 'column',
     }}>
       {/* Header */}
-      <div style={{ padding: '30px 40px 0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ padding: '30px 40px 0', display: 'flex', alignItems: 'flex-start', gap: '16px' }}>
         {/* Lottie Logo */}
         <a href="/progress" style={{ display: 'block', width: 'fit-content', marginLeft: '-9px', flexShrink: 0 }}>
           {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -1147,10 +1162,25 @@ const OfficeHours = ({
             <div style={{ width: 61, height: 61 }} />
           )}
         </a>
-        <div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#111', margin: 0, lineHeight: 1, letterSpacing: '-0.02em' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '61px' }}>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 600, color: '#111', margin: 0, lineHeight: 1, letterSpacing: '-0.02em', marginTop: '6px' }}>
             Office Hours
           </h1>
+          {endTimeFormatted && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <div style={{
+                width: '6.4px',
+                height: '6.4px',
+                borderRadius: '50%',
+                backgroundColor: '#16a34a',
+                boxShadow: '0 0 5px #16a34a',
+                animation: 'pulse-green 2s ease-in-out infinite',
+              }} />
+              <span style={{ fontSize: '0.9rem', color: '#000', fontWeight: 300, letterSpacing: '-0.01em' }}>
+                Live Now
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1166,6 +1196,7 @@ const OfficeHours = ({
           <DailyProvider callObject={callObject}>
             <ConnectedView
               sessionId={sessionId}
+              queueEntryId={queueEntryId}
               onLeave={onLeave}
               isCoach={isCoach}
               userName={userName}

@@ -44,12 +44,9 @@ const OfficeHoursPreview = () => {
   const [mode, setMode] = useState('connected'); // 'join' | 'queued' | 'connected' | 'feedback'
   const prevModeRef = useRef(mode);
 
-  // Scroll to top after React re-renders with the new mode
+  // Always scroll to top on mount and mode changes
   useEffect(() => {
-    if (prevModeRef.current !== mode) {
-      prevModeRef.current = mode;
-      requestAnimationFrame(() => window.scrollTo(0, 0));
-    }
+    window.scrollTo(0, 0);
   }, [mode]);
 
   const handleJoin = async (topic, question) => {
