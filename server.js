@@ -2203,30 +2203,7 @@ app.post('/api/office-hours/queue/leave', verifyAuth, async (req, res) => {
         .eq('student_id', req.user.id);
     }
 
-    // Advance the queue if session is now live
-    const { data: session } = await supabase
-      .from('office_hours_sessions')
-      .select('status')
-      .eq('id', sessionId)
-      .single();
-
-    if (session?.status === 'live') {
-      const { data: next } = await supabase
-        .from('office_hours_queue')
-        .select('id')
-        .eq('session_id', sessionId)
-        .eq('status', 'waiting')
-        .order('position', { ascending: true })
-        .limit(1)
-        .single();
-
-      if (next) {
-        await supabase
-          .from('office_hours_queue')
-          .update({ status: 'connecting' })
-          .eq('id', next.id);
-      }
-    }
+    // Coach controls all admissions — do not auto-advance the queue
 
     console.log(`📹 Student left queue for session ${sessionId}`);
     res.json({ success: true });
@@ -2411,7 +2388,7 @@ app.post('/api/office-hours/leave', verifyAuth, async (req, res) => {
 
     const { data: session, error: leaveError } = await supabase
       .from('office_hours_sessions')
-      .update({ status: 'live', student_id: null })
+      .update({ status: 'live', student_id: null, topic: null, question: null })
       .eq('id', sessionId)
       .eq('student_id', req.user.id)
       .eq('status', 'occupied')
@@ -2430,22 +2407,7 @@ app.post('/api/office-hours/leave', verifyAuth, async (req, res) => {
       .eq('user_id', req.user.id)
       .in('status', ['connecting', 'connected']);
 
-    // Advance the queue — set next waiting student to connecting
-    const { data: next } = await supabase
-      .from('office_hours_queue')
-      .select('id')
-      .eq('session_id', sessionId)
-      .eq('status', 'waiting')
-      .order('position', { ascending: true })
-      .limit(1)
-      .single();
-
-    if (next) {
-      await supabase
-        .from('office_hours_queue')
-        .update({ status: 'connecting' })
-        .eq('id', next.id);
-    }
+    // Coach controls all admissions — do not auto-advance the queue
 
     console.log(`📹 Student left office hours session ${sessionId}`);
     res.json({ success: true });

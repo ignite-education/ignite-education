@@ -218,67 +218,75 @@ const TopicSummary = ({ topic, question, onEndSession, callDuration, sessionEnde
           >
             <ThumbsDown size={18} strokeWidth={1.5} color={feedbackSelected === 'negative' ? '#EF0B72' : '#333'} style={{ transition: 'color 0.15s' }} />
           </button>
-          {!feedbackSent ? (
-            <div style={{
-              flex: 0.8,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 4px 4px 12px',
-              borderRadius: '8px',
-              backgroundColor: '#F6F6F6',
-              minWidth: 0,
-            }}>
-              <input
-                ref={feedbackInputRef}
-                type="text"
-                value={feedbackComment}
-                onChange={(e) => setFeedbackComment(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitFeedback(); } }}
-                placeholder=""
-                style={{
-                  flex: 1,
-                  padding: '4px 0',
-                  fontSize: '0.875rem',
-                  border: 'none',
-                  backgroundColor: 'transparent',
-                  color: '#000',
-                  fontWeight: 300,
-                  outline: 'none',
-                  caretColor: '#EF0B72',
-                  minWidth: 0,
-                }}
-              />
-              {feedbackComment.trim() && (
-                <button
-                  type="button"
-                  onClick={submitFeedback}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = 'black'; }}
+          <div style={{
+            flex: 0.8,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 4px 4px 12px',
+            borderRadius: '8px',
+            backgroundColor: '#F6F6F6',
+            minWidth: 0,
+          }}>
+            {feedbackSent ? (
+              <span style={{
+                flex: 1,
+                padding: '4px 0',
+                fontSize: '0.875rem',
+                color: '#999',
+                fontWeight: 300,
+              }}>
+                Submitted
+              </span>
+            ) : (
+              <>
+                <input
+                  ref={feedbackInputRef}
+                  type="text"
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); submitFeedback(); } }}
+                  placeholder=""
                   style={{
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '6px',
+                    flex: 1,
+                    padding: '4px 0',
+                    fontSize: '0.875rem',
                     border: 'none',
                     backgroundColor: 'transparent',
-                    color: 'black',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'color 0.15s',
-                    flexShrink: 0,
+                    color: '#000',
+                    fontWeight: 300,
+                    outline: 'none',
+                    caretColor: '#EF0B72',
+                    minWidth: 0,
                   }}
-                >
-                  <ArrowUp size={16} strokeWidth={2.5} />
-                </button>
-              )}
-            </div>
-          ) : (
-            <span style={{ fontSize: '0.9rem', fontWeight: 300, color: '#333', letterSpacing: '-0.01em' }}>
-              Thanks for your feedback
-            </span>
-          )}
+                />
+                {feedbackComment.trim() && (
+                  <button
+                    type="button"
+                    onClick={submitFeedback}
+                    onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.color = 'black'; }}
+                    style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      backgroundColor: 'transparent',
+                      color: 'black',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'color 0.15s',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <ArrowUp size={16} strokeWidth={2.5} />
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginLeft: '92px' }}>
