@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState, type RefObject } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, clearSupabaseCookies } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
 interface NavbarProps {
@@ -36,7 +36,22 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         setFirstName(user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0])
       }
       setAuthLoaded(true)
+    }).catch(() => {
+      // Corrupted session cookie (e.g. Invalid UTF-8 sequence) — clear and show Sign In
+      clearSupabaseCookies()
+      setAuthLoaded(true)
     })
+
+    // Catch unhandled Supabase internal errors (e.g. Invalid UTF-8 from corrupted cookies)
+    const handleUnhandledRejection = (e: PromiseRejectionEvent) => {
+      if (e.reason?.message?.includes('Invalid UTF-8')) {
+        e.preventDefault()
+        clearSupabaseCookies()
+        setAuthLoaded(true)
+        setUser(null)
+      }
+    }
+    window.addEventListener('unhandledrejection', handleUnhandledRejection)
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -51,7 +66,10 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      subscription.unsubscribe()
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
   }, [])
 
   return (

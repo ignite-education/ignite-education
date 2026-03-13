@@ -23,6 +23,19 @@ function setAll(cookiesToSet: { name: string; value: string; options?: Record<st
   })
 }
 
+/** Clear all Supabase auth cookies (sb-* prefixed) to recover from corrupted session state. */
+export function clearSupabaseCookies() {
+  if (typeof document === 'undefined') return
+  document.cookie.split(';').forEach(cookie => {
+    const name = cookie.split('=')[0].trim()
+    if (name.startsWith('sb-')) {
+      // Clear on .ignite.education domain and current domain
+      document.cookie = `${name}=; path=/; domain=.ignite.education; max-age=0; secure`
+      document.cookie = `${name}=; path=/; max-age=0`
+    }
+  })
+}
+
 export function createClient() {
   return createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -300,14 +300,25 @@ const useProgressData = () => {
               const timeConfig = {
                 morning: { label: "You're an early", value: 'morning learner', image: '/behaviour-morning.png' },
                 afternoon: { label: "You're an", value: 'afternoon learner', image: '/behaviour-afternoon.png' },
-                evening: { label: "You're an", value: 'evening learner', image: '/behaviour-evening.png' },
+                evening: { label: "You're an", value: 'evening learner', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Evening.png' },
+              };
+
+              const dayImageBase = 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons';
+              const dayImages = {
+                Sunday: `${dayImageBase}/Sunday.png`,
+                Monday: `${dayImageBase}/Monday.png`,
+                Tuesday: `${dayImageBase}/Tuesday.png`,
+                Wednesday: `${dayImageBase}/Wednesday.png`,
+                Thursday: `${dayImageBase}/Thursday.png`,
+                Friday: `${dayImageBase}/Friday.png`,
+                Saturday: `${dayImageBase}/Saturday.png`,
               };
 
               // Random per session: time-of-day or day-of-week
               if (Math.random() < 0.5) {
                 if (isMounted) setBehaviourStat(timeConfig[topBucket]);
               } else {
-                if (isMounted) setBehaviourStat({ label: 'Most active on', value: `${topDay}s`, image: '/behaviour-calendar.png' });
+                if (isMounted) setBehaviourStat({ label: 'Most active on', value: `${topDay}s`, image: dayImages[topDay] });
               }
             } else {
               // No sign-in history yet — show welcome fallback

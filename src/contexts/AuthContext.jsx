@@ -111,14 +111,27 @@ export const AuthProvider = ({ children }) => {
         if (sessionFromListener?.user) {
           safeInitialize(sessionFromListener);
         } else {
+          // Corrupted session cookie — clear so next sign-in works cleanly
+          clearSupabaseCookies();
           safeInitialize(null);
         }
       });
+
+    // Catch unhandled Supabase internal errors (e.g. Invalid UTF-8 from corrupted cookies)
+    const handleUnhandledRejection = (e) => {
+      if (e.reason?.message?.includes('Invalid UTF-8')) {
+        e.preventDefault();
+        clearSupabaseCookies();
+        safeInitialize(null);
+      }
+    };
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
       isSubscribed = false;
       clearTimeout(loadingTimeout);
       subscription.unsubscribe();
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 

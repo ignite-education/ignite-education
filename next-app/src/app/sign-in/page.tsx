@@ -37,9 +37,15 @@ export default async function SignInPage({
   const forceFresh = params.fresh === 'true'
 
   const supabase = await createClient()
-  const { data: { user } } = forceFresh
-    ? { data: { user: null } }
-    : await supabase.auth.getUser()
+  let user = null
+  if (!forceFresh) {
+    try {
+      const { data } = await supabase.auth.getUser()
+      user = data.user
+    } catch {
+      // Corrupted session cookie — treat as unauthenticated and show sign-in form
+    }
+  }
 
   if (user) {
     const redirectParam = typeof params.redirect === 'string' ? params.redirect : undefined
