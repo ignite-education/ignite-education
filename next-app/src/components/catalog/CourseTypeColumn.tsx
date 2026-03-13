@@ -101,7 +101,7 @@ export default function CourseTypeColumn({
               <div style={{ overflow: 'hidden' }}>
                 <div
                   style={useStagger ? {
-                    animation: 'fadeInUp 1.5s ease-out forwards',
+                    animation: 'fadeIn 1.5s ease-out forwards',
                     animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
                     opacity: 0,
                   } : undefined}
