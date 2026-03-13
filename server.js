@@ -1965,17 +1965,7 @@ app.post('/api/office-hours/queue/join', verifyAuth, async (req, res) => {
 
     const isFirst = (waitingAhead || 0) === 0;
 
-    if (isFirst && session.status === 'live') {
-      // Set to connecting immediately
-      await supabase
-        .from('office_hours_queue')
-        .update({ status: 'connecting' })
-        .eq('id', entry.id);
-
-      console.log(`📹 Student queued and auto-connecting for session ${sessionId}`);
-      return res.json({ queueEntryId: entry.id, position: 1, autoConnect: true });
-    }
-
+    // Coach controls all admissions — never auto-connect
     console.log(`📹 Student queued at position ${(waitingAhead || 0) + 1} for session ${sessionId}`);
     res.json({ queueEntryId: entry.id, position: (waitingAhead || 0) + 1, autoConnect: false });
   } catch (error) {
@@ -1991,9 +1981,9 @@ app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
 
     const { data: entries, error } = await supabase
       .from('office_hours_queue')
-      .select('id, user_id, topic, position, status, created_at')
+      .select('id, user_id, topic, question, position, status, created_at')
       .eq('session_id', sessionId)
-      .in('status', ['waiting', 'connecting'])
+      .in('status', ['waiting', 'connecting', 'connected'])
       .order('position', { ascending: true });
 
     if (error) {
@@ -2024,6 +2014,7 @@ app.get('/api/office-hours/queue/:sessionId', async (req, res) => {
         country: user.country || null,
         profilePicture: user.profile_picture || null,
         topic: e.topic,
+        question: e.question,
         status: e.status,
       };
     });
@@ -2165,6 +2156,121 @@ app.post('/api/office-hours/queue/leave', verifyAuth, async (req, res) => {
   } catch (error) {
     console.error('Error leaving queue:', error);
     res.status(500).json({ error: 'Failed to leave queue' });
+  }
+});
+
+// POST /api/office-hours/queue/admit — Coach admits a student from the queue
+app.post('/api/office-hours/queue/admit', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { sessionId, queueEntryId } = req.body;
+
+    if (!sessionId || !queueEntryId) {
+      return res.status(400).json({ error: 'Session ID and queue entry ID are required' });
+    }
+
+    // Verify coach owns the session
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    const { data: session } = await supabase
+      .from('office_hours_sessions')
+      .select('id, status')
+      .eq('id', sessionId)
+      .eq('coach_id', coach?.id)
+      .single();
+
+    if (!session) {
+      return res.status(403).json({ error: 'Not your session' });
+    }
+
+    if (session.status !== 'live') {
+      return res.status(409).json({ error: 'Session is not available — a student may already be connected' });
+    }
+
+    // Verify queue entry is waiting
+    const { data: entry, error: entryError } = await supabase
+      .from('office_hours_queue')
+      .select('id, status')
+      .eq('id', queueEntryId)
+      .eq('session_id', sessionId)
+      .eq('status', 'waiting')
+      .single();
+
+    if (entryError || !entry) {
+      return res.status(404).json({ error: 'Queue entry not found or not in waiting status' });
+    }
+
+    // Set to connecting — student's realtime subscription will pick this up
+    await supabase
+      .from('office_hours_queue')
+      .update({ status: 'connecting' })
+      .eq('id', queueEntryId);
+
+    console.log(`📹 Coach admitted student from queue entry ${queueEntryId} for session ${sessionId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error admitting student:', error);
+    res.status(500).json({ error: 'Failed to admit student' });
+  }
+});
+
+// POST /api/office-hours/queue/kick — Coach ends current student's connection
+app.post('/api/office-hours/queue/kick', verifyTeacherOrAdmin, async (req, res) => {
+  try {
+    const { sessionId, queueEntryId } = req.body;
+
+    if (!sessionId) {
+      return res.status(400).json({ error: 'Session ID is required' });
+    }
+
+    // Verify coach owns the session
+    const { data: coach } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('user_id', req.user.id)
+      .single();
+
+    const { data: session } = await supabase
+      .from('office_hours_sessions')
+      .select('id, status, student_id')
+      .eq('id', sessionId)
+      .eq('coach_id', coach?.id)
+      .eq('status', 'occupied')
+      .single();
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found or not occupied' });
+    }
+
+    // Set session back to live
+    await supabase
+      .from('office_hours_sessions')
+      .update({ status: 'live', student_id: null, topic: null, question: null })
+      .eq('id', sessionId);
+
+    // Mark the connected queue entry as left
+    if (queueEntryId) {
+      await supabase
+        .from('office_hours_queue')
+        .update({ status: 'left' })
+        .eq('id', queueEntryId);
+    } else {
+      // Fallback: mark any connected entries for this session as left
+      await supabase
+        .from('office_hours_queue')
+        .update({ status: 'left' })
+        .eq('session_id', sessionId)
+        .in('status', ['connecting', 'connected']);
+    }
+
+    console.log(`📹 Coach kicked student from session ${sessionId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error kicking student:', error);
+    res.status(500).json({ error: 'Failed to kick student' });
   }
 });
 
@@ -2380,7 +2486,7 @@ app.get('/api/office-hours/history', verifyTeacherOrAdmin, async (req, res) => {
 
     const { data: sessions, error } = await supabase
       .from('office_hours_sessions')
-      .select('id, status, started_at, ended_at, student_id')
+      .select('id, status, started_at, ended_at, student_id, topic, question, chat_log, rating, feedback_comment')
       .eq('coach_id', coach.id)
       .order('started_at', { ascending: false })
       .limit(50);
@@ -2390,7 +2496,27 @@ app.get('/api/office-hours/history', verifyTeacherOrAdmin, async (req, res) => {
       return res.status(500).json({ error: 'Failed to fetch history' });
     }
 
-    res.json({ sessions: sessions || [] });
+    // Enrich with student info
+    const studentIds = (sessions || []).map(s => s.student_id).filter(Boolean);
+    let studentsMap = {};
+    if (studentIds.length > 0) {
+      const { data: students } = await supabase
+        .from('users')
+        .select('id, first_name, last_name, profile_picture')
+        .in('id', [...new Set(studentIds)]);
+      (students || []).forEach(s => { studentsMap[s.id] = s; });
+    }
+
+    const enriched = (sessions || []).map(s => {
+      const student = studentsMap[s.student_id] || {};
+      return {
+        ...s,
+        studentName: student.first_name ? `${student.first_name} ${student.last_name || ''}`.trim() : null,
+        studentPicture: student.profile_picture || null,
+      };
+    });
+
+    res.json({ sessions: enriched });
   } catch (error) {
     console.error('Error in office hours history:', error);
     res.status(500).json({ error: 'Failed to fetch history' });

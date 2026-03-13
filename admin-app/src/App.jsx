@@ -12,7 +12,7 @@ const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
 const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
 const ResourcesManagement = lazy(() => import('./pages/ResourcesManagement'));
-const OfficeHours = lazy(() => import('./pages/OfficeHours'));
+const OfficeHours = lazy(() => import('./pages/office-hours/index'));
 
 const App = () => {
   return (
