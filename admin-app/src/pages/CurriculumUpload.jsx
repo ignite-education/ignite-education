@@ -53,6 +53,10 @@ const CurriculumUpload = () => {
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
+  // SVG generation state
+  const [svgPrompt, setSvgPrompt] = useState('');
+  const [isGeneratingSvg, setIsGeneratingSvg] = useState(false);
+
   // Knowledge check questions state
   const [questionStatus, setQuestionStatus] = useState(null);
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
@@ -1827,6 +1831,32 @@ ${contentBlocks.map((block, index) => {
     });
   };
 
+  const generateSvg = async (blockId, prompt, existingMarkup, colors) => {
+    setIsGeneratingSvg(true);
+    try {
+      const response = await fetch(`${API_URL}/api/admin/generate-svg`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, existingMarkup: existingMarkup || null, colors })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setContentBlocks(prevBlocks => prevBlocks.map(b =>
+          b.id === blockId ? { ...b, content: { ...b.content, markup: data.markup } } : b
+        ));
+        setSvgPrompt('');
+      } else {
+        alert('Failed to generate SVG: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error generating SVG:', error);
+      alert('Error generating SVG. Make sure the backend server is running.');
+    } finally {
+      setIsGeneratingSvg(false);
+    }
+  };
+
   const renderBlockEditor = (block, index) => {
     switch (block.type) {
       case 'heading':
@@ -2276,10 +2306,55 @@ ${contentBlocks.map((block, index) => {
       case 'svg':
         return (
           <div className="space-y-4">
+            {/* AI Prompt */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {block.content.markup ? 'Edit with AI' : 'Generate with AI'}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={svgPrompt}
+                  onChange={(e) => setSvgPrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && svgPrompt.trim() && !isGeneratingSvg) {
+                      generateSvg(block.id, svgPrompt, block.content.markup, block.content.colors);
+                    }
+                  }}
+                  placeholder={block.content.markup
+                    ? 'e.g., "Make it more abstract", "Add a graduation cap", "Change to a circuit board style"'
+                    : 'e.g., "A lightbulb with gears inside", "A brain connected to a network", "A mountain with a flag"'
+                  }
+                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none text-sm"
+                  disabled={isGeneratingSvg}
+                />
+                <button
+                  onClick={() => generateSvg(block.id, svgPrompt, block.content.markup, block.content.colors)}
+                  disabled={!svgPrompt.trim() || isGeneratingSvg}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap transition flex items-center gap-2"
+                >
+                  {isGeneratingSvg ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Generating...
+                    </>
+                  ) : (
+                    block.content.markup ? 'Edit SVG' : 'Generate SVG'
+                  )}
+                </button>
+              </div>
+              {block.content.markup && (
+                <p className="text-xs text-gray-500 mt-1">Describe how you want to change the current SVG — the AI will modify it</p>
+              )}
+            </div>
+
             {/* SVG Templates */}
             {!block.content.markup && (
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Start from a template</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Or start from a template</label>
                 <div className="grid grid-cols-4 gap-3">
                   {[
                     { name: 'Lightbulb', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><circle cx="100" cy="80" r="50" stroke="{{primary}}" stroke-width="4"/><path d="M80 130 h40 v10 a20 20 0 0 1 -40 0z" fill="{{primary}}" opacity="0.3"/><line x1="100" y1="50" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="80" y1="65" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="120" y1="65" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="85" y1="140" x2="115" y2="140" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/><line x1="88" y1="148" x2="112" y2="148" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/></svg>' },

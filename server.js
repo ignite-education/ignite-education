@@ -1514,6 +1514,74 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
   }
 });
 
+// Generate or edit SVG icon from a text prompt
+app.post('/api/admin/generate-svg', async (req, res) => {
+  try {
+    const { prompt, existingMarkup, colors } = req.body;
+
+    if (!prompt) {
+      return res.status(400).json({ success: false, error: 'Prompt is required' });
+    }
+
+    const primary = colors?.primary || '#8200EA';
+    const secondary = colors?.secondary || '#EF0B72';
+
+    const systemPrompt = `You are an expert SVG illustrator creating clean, minimal icons for an educational platform.
+
+RULES:
+- Output ONLY valid SVG markup starting with <svg> and ending with </svg>
+- Use viewBox="0 0 200 200" — the SVG will be rendered at various sizes
+- Use {{primary}} and {{secondary}} as color placeholders (they will be replaced with actual colors at render time)
+- Current primary color: ${primary}, secondary color: ${secondary}
+- Keep designs clean, minimal, and professional — avoid excessive detail
+- Use strokes (2-4px width), simple fills with opacity, and basic shapes
+- No text elements, no external references, no scripts, no style tags
+- No xmlns declaration needed beyond the svg tag
+- Ensure the icon is visually centered in the 200x200 viewBox
+- The icon should work well at sizes from 100px to 400px
+
+${existingMarkup ? `EXISTING SVG (modify based on the user's request):\n${existingMarkup}` : 'Create a new SVG from scratch.'}
+
+Respond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG.`;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: existingMarkup
+            ? `Edit this SVG: ${prompt}`
+            : `Create an SVG icon: ${prompt}`
+        }
+      ],
+    });
+
+    let svgMarkup = message.content[0].text.trim();
+
+    // Clean up any markdown code block wrapping
+    svgMarkup = svgMarkup.replace(/^```(?:xml|svg|html)?\n?/, '').replace(/\n?```$/, '').trim();
+
+    // Validate it starts with <svg
+    if (!svgMarkup.startsWith('<svg')) {
+      // Try to extract svg from response
+      const svgMatch = svgMarkup.match(/<svg[\s\S]*<\/svg>/);
+      if (svgMatch) {
+        svgMarkup = svgMatch[0];
+      } else {
+        return res.status(400).json({ success: false, error: 'AI did not return valid SVG markup' });
+      }
+    }
+
+    res.json({ success: true, markup: svgMarkup });
+
+  } catch (error) {
+    console.error('Error generating SVG:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Generate section question — a comprehension question users must answer before continuing
 app.post('/api/generate-section-question', async (req, res) => {
   try {
