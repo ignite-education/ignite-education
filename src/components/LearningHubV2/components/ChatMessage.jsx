@@ -80,15 +80,13 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
 
   if (isUser) {
     return (
-      <div className="flex justify-end mb-3">
+      <div className="flex justify-end mt-2 mb-6" style={{ marginRight: -30 }}>
         <div
-          className="inline-block px-4 py-2.5 text-sm text-black rounded-lg"
+          className="inline-block px-4 py-2.5 text-base font-light text-black rounded-lg"
           style={{
             backgroundColor: '#F0F0F0',
-            fontWeight: 300,
-            fontSize: '14px',
             letterSpacing: '-0.01em',
-            maxWidth: '85%',
+            maxWidth: '80%',
           }}
         >
           {message.text}
@@ -98,25 +96,39 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
   }
 
   // Assistant message
+  const showCursor = isCurrentlyTyping && !message.isComplete;
+  const cursorEl = showCursor ? (
+    <span
+      className="inline-block ml-1.5"
+      style={{
+        width: 8,
+        height: 8,
+        backgroundColor: '#8200EA',
+        verticalAlign: 'middle',
+        position: 'relative',
+        top: '-1px',
+      }}
+    />
+  ) : null;
+
+  const parsed = parseText(textToShow);
+
+  // Inject cursor into the last <p> element so it sits inline with text
+  const withCursor = cursorEl && parsed.length > 0
+    ? parsed.map((el, i) =>
+        i === parsed.length - 1
+          ? React.cloneElement(el, {}, ...React.Children.toArray(el.props.children), cursorEl)
+          : el
+      )
+    : parsed;
+
   return (
     <div className="mb-3">
       <div
-        className="text-sm leading-relaxed text-black"
-        style={{ fontWeight: 300, fontSize: '14px', letterSpacing: '-0.01em' }}
+        className="text-base font-light leading-relaxed text-black"
+        style={{ letterSpacing: '-0.01em' }}
       >
-        {parseText(textToShow)}
-        {isCurrentlyTyping && !message.isComplete && (
-          <span
-            className="inline-block align-middle ml-0.5"
-            style={{
-              width: 8,
-              height: 8,
-              backgroundColor: '#8200EA',
-              borderRadius: 1,
-              animation: 'pulse 1s ease-in-out infinite',
-            }}
-          />
-        )}
+        {withCursor}
       </div>
     </div>
   );

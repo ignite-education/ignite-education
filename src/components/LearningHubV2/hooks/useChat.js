@@ -63,7 +63,7 @@ const useChat = () => {
         setTypingMessageIndex(null);
         setDisplayedText('');
       }
-    }, 45);
+    }, 33);
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex, chatMessages]);

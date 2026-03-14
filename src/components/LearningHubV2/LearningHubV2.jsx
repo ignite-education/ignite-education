@@ -198,6 +198,16 @@ const LearningHubV2 = () => {
     return last.type === 'user' || last.isComplete;
   }, [chatMessages]);
 
+  // Delayed fade-in for post-chat buttons (same 500ms delay as initial buttons)
+  const [showPostChatButtons, setShowPostChatButtons] = useState(false);
+  useEffect(() => {
+    if (chatMessages.length > 0 && lastAssistantDone) {
+      const timer = setTimeout(() => setShowPostChatButtons(true), 500);
+      return () => clearTimeout(timer);
+    }
+    setShowPostChatButtons(false);
+  }, [chatMessages, lastAssistantDone]);
+
   // Reset chat when lesson changes
   // Reset to first group when lesson changes
   useEffect(() => {
@@ -306,81 +316,152 @@ const LearningHubV2 = () => {
                 ))}
               </div>
 
-              {/* Navigation buttons — shown after typing completes and no pending chat */}
-              {allTypingComplete && lastAssistantDone && (!isLastGroup || currentGroupIndex > 0) && (
-                <div
-                  className="mt-5 mb-4 flex items-center gap-2"
-                  style={{ opacity: showButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
-                >
-                  {!isLastGroup && (
-                    <button
-                      onClick={handleContinue}
-                      className="px-4 py-1.5 text-white transition-colors cursor-pointer"
-                      style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
-                      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-                    >
-                      Continue
-                    </button>
-                  )}
-                  <div className="flex items-center">
-                    {currentGroupIndex > 0 && (
+              {/* Action area — buttons crossfade with chat messages at the same position */}
+              <div className="mt-4 mb-4">
+                {/* Navigation buttons — fade out when chat is active */}
+                {allTypingComplete && (!isLastGroup || currentGroupIndex > 0) && (
+                  <div
+                    className="flex items-center gap-2"
+                    style={{
+                      opacity: showButtons && chatMessages.length === 0 ? 1 : 0,
+                      transition: 'opacity 0.25s ease-in',
+                      height: chatMessages.length > 0 ? 0 : 'auto',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {!isLastGroup && (
                       <button
-                        onClick={handleBack}
+                        onClick={handleContinue}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        Continue
+                      </button>
+                    )}
+                    <div className="flex items-center">
+                      {currentGroupIndex > 0 && (
+                        <button
+                          onClick={handleBack}
+                          className="p-2 text-black cursor-pointer transition-colors"
+                          style={{ transition: 'color 0.15s' }}
+                          aria-label="Back"
+                          onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="M12 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { /* TODO: Phase 4 — wire to narration */ }}
                         className="p-2 text-black cursor-pointer transition-colors"
                         style={{ transition: 'color 0.15s' }}
-                        aria-label="Back"
+                        aria-label="Listen to lesson"
                         onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 12H5" />
-                          <path d="M12 19l-7-7 7-7" />
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
                         </svg>
                       </button>
-                    )}
-                    <button
-                      onClick={() => { /* TODO: Phase 4 — wire to narration */ }}
-                      className="p-2 text-black cursor-pointer transition-colors"
-                      style={{ transition: 'color 0.15s' }}
-                      aria-label="Listen to lesson"
-                      onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                      </svg>
-                    </button>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Chat messages */}
-              {chatMessages.length > 0 && (
-                <div className="mt-4">
-                  {chatMessages.map((msg, idx) => (
-                    <ChatMessage
-                      key={`${idx}-${msg.text?.substring(0, 20)}`}
-                      message={msg}
-                      displayedText={displayedText}
-                      isCurrentlyTyping={typingMessageIndex === idx}
+                {/* Chat messages — fade in at the same position */}
+                {chatMessages.length > 0 && (
+                  <div>
+                    {chatMessages.map((msg, idx) => (
+                      <div
+                        key={`${idx}-${msg.text?.substring(0, 20)}`}
+                        style={{
+                          animation: msg.type === 'user' && idx === chatMessages.length - 1 && !msg._animated
+                            ? 'chatFadeIn 0.3s ease-out' : undefined,
+                        }}
+                      >
+                        <ChatMessage
+                          message={msg}
+                          displayedText={displayedText}
+                          isCurrentlyTyping={typingMessageIndex === idx}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Purple typing cursor while waiting for API response */}
+                {isTyping && (
+                  <div className="mt-3 mb-3">
+                    <span
+                      className="inline-block"
+                      style={{
+                        width: 8,
+                        height: 8,
+                        backgroundColor: '#8200EA',
+                        borderRadius: 1,
+                        animation: 'purplePulse 1.2s ease-in-out infinite',
+                      }}
                     />
-                  ))}
-                </div>
-              )}
-
-              {/* Typing indicator — bouncing dots while waiting for API response */}
-              {isTyping && (
-                <div className="mt-3 mb-3">
-                  <div className="flex gap-1">
-                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: 7, height: 7, animationDelay: '0ms' }} />
-                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: 7, height: 7, animationDelay: '150ms' }} />
-                    <span className="bg-gray-400 rounded-full animate-bounce" style={{ width: 7, height: 7, animationDelay: '300ms' }} />
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* Buttons reappear after assistant finishes typing */}
+                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && (!isLastGroup || currentGroupIndex > 0) && (
+                  <div
+                    className="flex items-center gap-2 mt-3"
+                    style={{ opacity: showPostChatButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
+                  >
+                    {!isLastGroup && (
+                      <button
+                        onClick={handleContinue}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        Continue
+                      </button>
+                    )}
+                    <div className="flex items-center">
+                      {currentGroupIndex > 0 && (
+                        <button
+                          onClick={handleBack}
+                          className="p-2 text-black cursor-pointer transition-colors"
+                          style={{ transition: 'color 0.15s' }}
+                          aria-label="Back"
+                          onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="M12 19l-7-7 7-7" />
+                          </svg>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => { /* TODO: Phase 4 — wire to narration */ }}
+                        className="p-2 text-black cursor-pointer transition-colors"
+                        style={{ transition: 'color 0.15s' }}
+                        aria-label="Listen to lesson"
+                        onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
           </div>
 
           {/* White gradient fade above input */}
@@ -398,9 +479,11 @@ const LearningHubV2 = () => {
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion ? 1 : 0,
-                transition: 'opacity 0.3s ease-in-out',
-                pointerEvents: suggestedQuestion ? 'auto' : 'none',
+                opacity: suggestedQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
+                transition: 'opacity 0.25s ease-in',
+                pointerEvents: suggestedQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
+                height: !suggestedQuestion || chatMessages.length > 0 ? 0 : 'auto',
+                overflow: 'hidden',
               }}
             >
               {suggestedQuestion && (

@@ -484,14 +484,14 @@ app.post('/api/chat', async (req, res) => {
     const { messages, lessonContext } = req.body;
 
     // Build system prompt with lesson context
-    const systemPrompt = `You are Will, a professional AI tutor helping students master Product Management.
+    const systemPrompt = `You are a professional AI tutor helping students master Product Management.
 
 ${lessonContext ? `Current Lesson Context:\n${lessonContext}\n` : ''}
 
 ABOUT IGNITE EDUCATION (use this to answer questions about Ignite):
 - Ignite Education is an online learning platform building a smarter, more personalised era of education
 - Courses are built by industry professionals and feature AI-powered interactive learning
-- Key features include: Chat with Will (AI tutor), Smart Notes, Voice Over narration, Knowledge Checks, and Flashcards - all personalised to each learner
+- Key features include: AI tutor, Smart Notes, Voice Over narration, Knowledge Checks, and Flashcards - all personalised to each learner
 - Office Hours: Premium subscribers can get 1:1 support from course leaders at a time that suits them
 - Courses available include Product Management, Cyber Security, Data Analysis, and UX Design
 - The platform transforms careers through interactive courses, real-world projects, and personalised feedback
@@ -505,6 +505,7 @@ FORMATTING RULES:
 
 BULLET POINT RULES (important):
 - Use bullet points (•) ONLY for actual list items, not for introductory or transitional sentences
+- Maximum 3 bullet points per response — be selective about what to bullet
 - Sentences that introduce a list (e.g., "Common reasons include:") should be regular paragraph text, NOT bulleted
 - Sentences containing examples inline (e.g., "Examples include X and Y") should be regular paragraph text, NOT bulleted
 - Only bullet the specific items being listed, not the context around them
@@ -512,7 +513,8 @@ BULLET POINT RULES (important):
 
 Your role:
 - NEVER reference specific section numbers (e.g., "Section 1", "Section 8") - refer to content by topic or title instead
-- NEVER exceed 600 characters in your response
+- NEVER exceed 300 characters in your response — be concise
+- NEVER refer to yourself by name
 - Provide clear, helpful explanations that aid understanding
 - Use examples from the lesson context when relevant
 - Answer the question directly, then provide supporting detail if helpful`;
@@ -528,7 +530,7 @@ Your role:
 
     const message = await anthropic.messages.create({
       model: modelToUse,
-      max_tokens: 512,
+      max_tokens: 256,
       system: systemPrompt,
       messages: claudeMessages,
     });
@@ -563,6 +565,13 @@ Your role:
     if (responseText.length > 0) {
       responseText = responseText.charAt(0).toUpperCase() + responseText.slice(1);
     }
+
+    // Strip any self-references to "Will"
+    responseText = responseText.replace(/\bI'm Will[.,]?\s*/gi, '');
+    responseText = responseText.replace(/\bMy name is Will[.,]?\s*/gi, '');
+    responseText = responseText.replace(/\bWill here[.,]?\s*/gi, '');
+    responseText = responseText.replace(/\bAs Will[.,]?\s*/gi, '');
+    responseText = responseText.replace(/\bChat with Will\b/gi, 'the AI tutor');
 
     // Convert any dash bullets to dot bullets (•)
     // Match lines starting with - or — followed by space
