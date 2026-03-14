@@ -133,6 +133,22 @@ const LearningHubV2 = () => {
     return () => cancelAnimationFrame(frame);
   }, [targetProgress]);
 
+  // Get suggested question from the current group's H2 heading
+  const suggestedQuestion = useMemo(() => {
+    const h2Section = activeGroup.find(
+      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
+    );
+    return h2Section?.suggested_question?.trim() || null;
+  }, [activeGroup]);
+
+  // Get section question (gating question) from the current group's H2 heading
+  const sectionQuestion = useMemo(() => {
+    const h2Section = activeGroup.find(
+      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
+    );
+    return h2Section?.section_question?.trim() || null;
+  }, [activeGroup]);
+
   // Build lesson context for AI chat — only visible section group (headings + body text)
   const buildLessonContext = useCallback(() => {
     if (!activeGroup || activeGroup.length === 0) return '';
@@ -192,22 +208,6 @@ const LearningHubV2 = () => {
   const handleSectionComplete = useCallback(() => {
     setCompletedSections((prev) => prev + 1);
   }, []);
-
-  // Get suggested question from the current group's H2 heading
-  const suggestedQuestion = useMemo(() => {
-    const h2Section = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    return h2Section?.suggested_question?.trim() || null;
-  }, [activeGroup]);
-
-  // Get section question (gating question) from the current group's H2 heading
-  const sectionQuestion = useMemo(() => {
-    const h2Section = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    return h2Section?.section_question?.trim() || null;
-  }, [activeGroup]);
 
   // Auto-scroll when content grows (typing text or chat messages) and user is near bottom
   useEffect(() => {
