@@ -131,15 +131,39 @@ const LearningHubV2 = () => {
     return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube' && s.content_type !== 'svg');
   }, [activeGroupAll]);
 
-  // Media sections for right column
+  // Media sections for right column (with persistent media support)
   const activeGroupMedia = useMemo(() => {
-    return activeGroupAll.filter(s => s.content_type === 'image' || s.content_type === 'youtube' || s.content_type === 'svg');
-  }, [activeGroupAll]);
+    const MEDIA_TYPES = ['image', 'youtube', 'svg'];
+
+    // Walk groups 0..currentGroupIndex to find the latest persistent media set
+    let persistentMedia = [];
+    for (let i = 0; i <= currentGroupIndex; i++) {
+      const group = allGroups[i] || [];
+      const persistentInGroup = group.filter(
+        s => MEDIA_TYPES.includes(s.content_type) && s.content?.persist
+      );
+      if (persistentInGroup.length > 0) {
+        persistentMedia = persistentInGroup;
+      }
+    }
+
+    // Current group's own media (persistent or not)
+    const currentMedia = activeGroupAll.filter(s => MEDIA_TYPES.includes(s.content_type));
+
+    // Merge: persistent first, then current (excluding duplicates)
+    const currentIds = new Set(currentMedia.map(s => s.id));
+    const carried = persistentMedia.filter(s => !currentIds.has(s.id));
+
+    return [...carried, ...currentMedia];
+  }, [activeGroupAll, allGroups, currentGroupIndex]);
   const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : totalGroups === 1 ? 100 : 0;
   const [lessonProgress, setLessonProgress] = useState(0);
   useEffect(() => {
-    const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
-    return () => cancelAnimationFrame(frame);
+    const timer = setTimeout(() => {
+      const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
+      return () => cancelAnimationFrame(frame);
+    }, 500);
+    return () => clearTimeout(timer);
   }, [targetProgress]);
 
   // Get suggested question from the current group's H2 heading

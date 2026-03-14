@@ -2219,6 +2219,15 @@ ${contentBlocks.map((block, index) => {
                   onChange={(e) => updateBlock(block.id, { ...block.content, caption: e.target.value })}
                   className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                 />
+                <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={block.content.persist || false}
+                    onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
+                    className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+                  />
+                  Keep visible in next sections
+                </label>
               </>
             )}
           </div>
@@ -2252,6 +2261,15 @@ ${contentBlocks.map((block, index) => {
                 />
               </div>
             )}
+            <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={block.content.persist || false}
+                onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+              />
+              Keep visible in next sections
+            </label>
           </div>
         );
 
@@ -2382,6 +2400,15 @@ ${contentBlocks.map((block, index) => {
                 </div>
               </div>
             )}
+            <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={block.content.persist || false}
+                onChange={(e) => updateBlock(block.id, { ...block.content, persist: e.target.checked })}
+                className="w-4 h-4 rounded border-gray-600 text-purple-500 focus:ring-purple-500 bg-gray-800"
+              />
+              Keep visible in next sections
+            </label>
           </div>
         );
 
@@ -2692,7 +2719,10 @@ ${contentBlocks.map((block, index) => {
                       {/* Content Block */}
                       <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-300 capitalize">{block.type}</span>
+                          <span className="text-sm font-medium text-gray-300 capitalize">
+                            {block.type}
+                            {block.content?.persist && <span className="ml-2 text-xs text-purple-400 normal-case">(persistent)</span>}
+                          </span>
                           <div className="flex gap-2">
                             <button onClick={() => moveBlockUp(index)} disabled={index === 0} className="p-1 hover:bg-gray-700 text-gray-300 rounded disabled:opacity-30">
                               <MoveUp size={16} />
