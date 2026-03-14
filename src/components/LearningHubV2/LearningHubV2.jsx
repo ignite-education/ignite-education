@@ -104,6 +104,7 @@ const LearningHubV2 = () => {
 
     if (text && text.length > 0) {
       setChatInput(`Explain '${text}'`);
+      chatInputRef.current?.focus();
     } else if (chatInput.startsWith('Explain \'')) {
       setChatInput('');
     }

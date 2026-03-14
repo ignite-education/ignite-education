@@ -327,33 +327,9 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const loopCountRef = useRef(0);
 
   const [showConfetti, setShowConfetti] = useState(false);
-  const [statImagesLoaded, setStatImagesLoaded] = useState(false);
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
-  const animatedCount = useCountUp(statImagesLoaded ? communityCount : null);
-
-  const behaviourImage = behaviourStat?.image || '/behaviour-calendar.png';
-  const achievementImage = achievementStat?.image || '/achievement-start.png';
-
-  // Preload all stat images so they appear together
-  useEffect(() => {
-    const urls = [
-      achievementImage,
-      behaviourImage,
-      communityConfig.image,
-    ];
-    let loaded = 0;
-    const onLoad = () => {
-      loaded++;
-      if (loaded === urls.length) setStatImagesLoaded(true);
-    };
-    urls.forEach((url) => {
-      const img = new Image();
-      img.onload = onLoad;
-      img.onerror = onLoad; // don't block if one fails
-      img.src = url;
-    });
-  }, [communityConfig.image, behaviourImage, achievementImage]);
+  const animatedCount = useCountUp(communityCount);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -591,7 +567,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             </p>
 
             {/* Stats Row */}
-            <div className="flex items-start justify-between" style={{ paddingLeft: '25px', paddingRight: '50px', opacity: statImagesLoaded ? 1 : 0, transition: 'opacity 0.2s ease' }}>
+            <div className="flex items-start justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
               {[
                 achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },

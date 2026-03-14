@@ -3,8 +3,10 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import { getLessonsByModule, getLessonsMetadata, getCompletedLessons, getCoachesForCourse, getUserCertificates, getRedditPosts, getBlockedRedditPosts, getLessonScores, getGlobalLessonScores, getCommunityLearnerCount, getRecentSignIns, getUserAchievementPercentile } from '../../../lib/api';
 import { trackPageVisit } from '../../../lib/tracking';
+import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
+const DEFAULT_STAT_IMAGES = ['/behaviour-calendar.png', '/achievement-start.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -114,7 +116,7 @@ const useProgressData = () => {
       // Fire-and-forget: track this page visit with geo data
       trackPageVisit(userId, 'progress');
 
-      const imagePromise = preloadImages(PRELOAD_IMAGES);
+      // imagePromise will be replaced by stat-aware preload before setLoading(false)
 
       try {
         // Fetch enrolled course
@@ -266,13 +268,14 @@ const useProgressData = () => {
         }
 
         // Compute behaviour stat
+        let behaviourStatValue = null;
         try {
           if (completedCount === 0) {
             // Welcome message with join month
             const joinDate = new Date(authUser.created_at);
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-            if (isMounted) setBehaviourStat({ label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' };
           } else {
             const signIns = await getRecentSignIns(userId);
             if (signIns.length > 0) {
@@ -316,26 +319,28 @@ const useProgressData = () => {
 
               // Random per session: time-of-day or day-of-week
               if (Math.random() < 0.5) {
-                if (isMounted) setBehaviourStat(timeConfig[topBucket]);
+                behaviourStatValue = timeConfig[topBucket];
               } else {
-                if (isMounted) setBehaviourStat({ label: 'Most active', value: `on ${topDay}s`, image: dayImages[topDay] });
+                behaviourStatValue = { label: 'Most active', value: `on ${topDay}s`, image: dayImages[topDay] };
               }
             } else {
               // No sign-in history yet — show welcome fallback
               const joinDate = new Date(authUser.created_at);
               const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-              if (isMounted) setBehaviourStat({ label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' });
+              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: '/behaviour-calendar.png' };
             }
           }
+          if (isMounted) setBehaviourStat(behaviourStatValue);
         } catch {
           // Behaviour stat not critical
         }
 
         // Compute achievement stat
+        let achievementStatValue = null;
         try {
           if (completedCount === 0) {
-            if (isMounted) setAchievementStat({ label: 'Start your', value: 'first lesson', image: '/achievement-start.png' });
+            achievementStatValue = { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' };
           } else {
             const candidates = [];
 
@@ -406,16 +411,26 @@ const useProgressData = () => {
 
             // Random pick or fallback
             if (candidates.length > 0) {
-              if (isMounted) setAchievementStat(candidates[Math.floor(Math.random() * candidates.length)]);
+              achievementStatValue = candidates[Math.floor(Math.random() * candidates.length)];
             } else {
-              if (isMounted) setAchievementStat({ label: `${completedCount} lessons`, value: 'completed', image: '/achievement-start.png' });
+              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: '/achievement-start.png' };
             }
           }
+          if (isMounted) setAchievementStat(achievementStatValue);
         } catch {
           // Achievement stat not critical
         }
 
-        await imagePromise;
+        // Preload stat images so they're visible immediately when loading finishes
+        const communityImage = (COUNTRY_CONFIG[userData.country] || DEFAULT_COMMUNITY).image;
+        const statImages = [
+          behaviourStatValue?.image,
+          achievementStatValue?.image,
+          communityImage,
+        ].filter(Boolean);
+        const allImages = [...new Set([...PRELOAD_IMAGES, ...statImages])];
+        await preloadImages(allImages);
+
         if (isMounted) {
           hasInitialDataFetchRef.current = true;
           setLoading(false);
