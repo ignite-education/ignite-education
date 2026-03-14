@@ -55,8 +55,8 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
     const lastIdx = rendered.length - 1;
     const lastPart = parts[lastIdx];
     if (lastPart) {
-      // Unclosed bold: **text (no closing **)
-      const unclosedBold = lastPart.match(/^(.*)\*\*([^*]+)$/s);
+      // Unclosed bold: **text (no closing **) — [^*]* allows zero chars so ** alone doesn't flash
+      const unclosedBold = lastPart.match(/^(.*)\*\*([^*]*)$/s);
       if (unclosedBold) {
         rendered[lastIdx] = (
           <span key={lastIdx}>
@@ -67,7 +67,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
         return rendered;
       }
       // Unclosed underline: __text (no closing __)
-      const unclosedUnderline = lastPart.match(/^(.*)__([^_]+)$/s);
+      const unclosedUnderline = lastPart.match(/^(.*)__([^_]*)$/s);
       if (unclosedUnderline) {
         rendered[lastIdx] = (
           <span key={lastIdx}>
@@ -78,7 +78,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
         return rendered;
       }
       // Unclosed italic: *text (no closing *, and not **)
-      const unclosedItalic = lastPart.match(/^(.*?)(?<!\*)\*(?!\*)([^*]+)$/s);
+      const unclosedItalic = lastPart.match(/^(.*?)(?<!\*)\*(?!\*)([^*]*)$/s);
       if (unclosedItalic) {
         rendered[lastIdx] = (
           <span key={lastIdx}>

@@ -127,14 +127,14 @@ const LearningHubV2 = () => {
 
   // Text sections for left column (typing animation)
   const activeGroup = useMemo(() => {
-    return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube');
+    return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube' && s.content_type !== 'svg');
   }, [activeGroupAll]);
 
   // Media sections for right column
   const activeGroupMedia = useMemo(() => {
-    return activeGroupAll.filter(s => s.content_type === 'image' || s.content_type === 'youtube');
+    return activeGroupAll.filter(s => s.content_type === 'image' || s.content_type === 'youtube' || s.content_type === 'svg');
   }, [activeGroupAll]);
-  const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 100;
+  const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : totalGroups === 1 ? 100 : 0;
   const [lessonProgress, setLessonProgress] = useState(0);
   useEffect(() => {
     const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
@@ -213,6 +213,18 @@ const LearningHubV2 = () => {
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
+
+  // Right column fade — opacity transition when switching groups
+  const [mediaVisible, setMediaVisible] = useState(true);
+  const prevGroupIndexRef = useRef(currentGroupIndex);
+  useEffect(() => {
+    if (prevGroupIndexRef.current !== currentGroupIndex) {
+      prevGroupIndexRef.current = currentGroupIndex;
+      setMediaVisible(false);
+      const timer = setTimeout(() => setMediaVisible(true), 30);
+      return () => clearTimeout(timer);
+    }
+  }, [currentGroupIndex]);
   const allTypingComplete = completedSections >= activeGroup.length;
   const [showButtons, setShowButtons] = useState(false);
 
@@ -618,7 +630,7 @@ const LearningHubV2 = () => {
 
         {/* Right column — media panel */}
         <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
-          <div className="w-full">
+          <div className="w-full" style={{ opacity: mediaVisible ? 1 : 0, transition: 'opacity 300ms ease-in-out' }}>
             <MediaPanel sections={activeGroupMedia} />
           </div>
         </div>

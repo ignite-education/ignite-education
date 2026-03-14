@@ -1,13 +1,14 @@
 import React, { useMemo } from 'react';
 import SectionImage from './SectionImage';
 import SectionYouTube from './SectionYouTube';
+import SectionSVG from './SectionSVG';
 
 const MediaPanel = ({ sections }) => {
-  // Filter to only media sections (image, youtube)
+  // Filter to only media sections (image, youtube, svg)
   const mediaSections = useMemo(() => {
     if (!Array.isArray(sections)) return [];
     return sections.filter(
-      s => s.content_type === 'image' || s.content_type === 'youtube'
+      s => s.content_type === 'image' || s.content_type === 'youtube' || s.content_type === 'svg'
     );
   }, [sections]);
 
@@ -27,6 +28,9 @@ const MediaPanel = ({ sections }) => {
         }
         if (section.content_type === 'youtube') {
           return <SectionYouTube key={section.id || idx} section={section} />;
+        }
+        if (section.content_type === 'svg') {
+          return <SectionSVG key={section.id || idx} section={section} />;
         }
         return null;
       })}

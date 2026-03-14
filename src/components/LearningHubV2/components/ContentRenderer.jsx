@@ -26,9 +26,10 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
     case 'bulletlist':
       return <SectionList section={section} />;
 
-    // Images and YouTube are rendered in the right column by MediaPanel
+    // Images, YouTube, and SVGs are rendered in the right column by MediaPanel
     case 'image':
     case 'youtube':
+    case 'svg':
       return null;
 
     default:
