@@ -1548,6 +1548,89 @@ Respond with ONLY the question text, nothing else.`,
   }
 });
 
+// Generate 3 section questions — student is randomly presented one
+app.post('/api/generate-section-questions', async (req, res) => {
+  try {
+    const { sectionContent } = req.body;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 600,
+      system: `You generate comprehension questions for educational content. Given a section of lesson content, create THREE distinct open-ended questions that test whether the student understood the key concepts.
+
+Section Content:
+${sectionContent}
+
+Rules:
+- Each question should test a DIFFERENT aspect or concept from the section
+- Questions should be answerable from the section content
+- Ask about understanding, not recall of specific facts
+- Keep each question conversational and natural
+- 1-2 sentences max per question
+- Do NOT start with "Based on what you just read" or similar meta-references
+- Use British English throughout
+
+Respond with EXACTLY 3 questions, one per line, numbered 1-3. Nothing else.`,
+      messages: [{ role: 'user', content: 'Generate 3 section comprehension questions.' }],
+    });
+
+    const raw = message.content[0].text.trim();
+    const questions = raw
+      .split('\n')
+      .map(line => line.replace(/^\d+[\.\)]\s*/, '').trim())
+      .filter(Boolean)
+      .slice(0, 3);
+
+    // Pad to exactly 3 if AI returned fewer
+    while (questions.length < 3) {
+      questions.push('');
+    }
+
+    res.json({ success: true, questions });
+  } catch (error) {
+    console.error('Error generating section questions:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Generate a single replacement section question (for individual regeneration)
+app.post('/api/generate-single-section-question', async (req, res) => {
+  try {
+    const { sectionContent, existingQuestions } = req.body;
+
+    const avoidList = (existingQuestions || []).filter(Boolean).map((q, i) => `${i + 1}. ${q}`).join('\n');
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 200,
+      system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
+
+Section Content:
+${sectionContent}
+
+${avoidList ? `These questions already exist — generate something DIFFERENT:\n${avoidList}\n` : ''}
+Rules:
+- The question should be answerable from the section content
+- Ask about understanding, not recall of specific facts
+- Keep it conversational and natural
+- 1-2 sentences max
+- Do NOT start with "Based on what you just read" or similar meta-references
+- Do NOT duplicate any existing question
+- Use British English throughout
+
+Respond with ONLY the question text, nothing else.`,
+      messages: [{ role: 'user', content: 'Generate a section comprehension question.' }],
+    });
+
+    const question = message.content[0].text.trim();
+
+    res.json({ success: true, question });
+  } catch (error) {
+    console.error('Error generating single section question:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Create Stripe checkout session for ad-free upgrade
 app.post('/api/create-checkout-session', async (req, res) => {
   try {

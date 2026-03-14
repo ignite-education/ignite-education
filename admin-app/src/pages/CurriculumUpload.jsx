@@ -383,7 +383,18 @@ const CurriculumUpload = () => {
             type: section.content_type || 'paragraph',
             content: blockContent,
             suggestedQuestion: section.suggested_question || '', // Load suggested question from database
-            sectionQuestion: section.section_question || '' // Load section question from database
+            sectionQuestion: (() => { // Load section questions (3-question array or legacy single string)
+              const raw = section.section_question || '';
+              if (!raw) return ['', '', ''];
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  while (parsed.length < 3) parsed.push('');
+                  return parsed.slice(0, 3);
+                }
+              } catch {}
+              return [raw, '', '']; // Legacy single question → slot into first position
+            })()
           };
         });
 
@@ -391,7 +402,7 @@ const CurriculumUpload = () => {
       } else {
         // No existing content, reset to default
         setContentBlocks([
-          { id: Date.now(), type: 'heading', content: { text: '', level: 2 }, suggestedQuestion: '', sectionQuestion: '' }
+          { id: Date.now(), type: 'heading', content: { text: '', level: 2 }, suggestedQuestion: '', sectionQuestion: ['', '', ''] }
         ]);
       }
     } catch (error) {
@@ -879,7 +890,7 @@ const CurriculumUpload = () => {
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } : '',
       suggestedQuestion: '',
-      sectionQuestion: ''
+      sectionQuestion: ['', '', '']
     };
     setContentBlocks(prevBlocks => [...prevBlocks, newBlock]);
   };
@@ -894,7 +905,7 @@ const CurriculumUpload = () => {
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } : '',
       suggestedQuestion: '',
-      sectionQuestion: ''
+      sectionQuestion: ['', '', '']
     };
     setContentBlocks(prevBlocks => {
       const newBlocks = [...prevBlocks];
@@ -987,13 +998,13 @@ const CurriculumUpload = () => {
   };
 
   // Generate a section question for an H2 heading based on content between H2s
-  const generateSectionQuestion = async (h2Index) => {
+  // Helper to extract section content text from an H2 block index
+  const getSectionContent = (h2Index) => {
     const h2Block = contentBlocks[h2Index];
     if (!h2Block || h2Block.type !== 'heading' || h2Block.content?.level !== 2) {
       return '';
     }
 
-    // Find all content blocks between this H2 and the next H2 (or end)
     let nextH2Index = contentBlocks.findIndex((block, idx) =>
       idx > h2Index && block.type === 'heading' && block.content?.level === 2
     );
@@ -1001,7 +1012,7 @@ const CurriculumUpload = () => {
 
     const sectionBlocks = contentBlocks.slice(h2Index, nextH2Index);
 
-    const sectionContent = sectionBlocks.map(block => {
+    return sectionBlocks.map(block => {
       if (block.type === 'heading') {
         const level = block.content?.level || 2;
         const text = block.content?.text || '';
@@ -1017,12 +1028,44 @@ const CurriculumUpload = () => {
       }
       return '';
     }).filter(Boolean).join('\n\n');
+  };
+
+  // Generate all 3 section questions at once
+  const generateSectionQuestions = async (h2Index) => {
+    const sectionContent = getSectionContent(h2Index);
+    if (!sectionContent) return ['', '', ''];
 
     try {
-      const response = await fetch(`${API_URL}/api/generate-section-question`, {
+      const response = await fetch(`${API_URL}/api/generate-section-questions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sectionContent })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return data.questions;
+      } else {
+        alert('Failed to generate questions: ' + (data.error || 'Unknown error'));
+        return ['', '', ''];
+      }
+    } catch (error) {
+      console.error('Error generating section questions:', error);
+      alert('Error generating questions. Make sure the backend server is running.');
+      return ['', '', ''];
+    }
+  };
+
+  // Generate a single replacement section question
+  const generateSingleSectionQuestion = async (h2Index, existingQuestions) => {
+    const sectionContent = getSectionContent(h2Index);
+    if (!sectionContent) return '';
+
+    try {
+      const response = await fetch(`${API_URL}/api/generate-single-section-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionContent, existingQuestions })
       });
 
       const data = await response.json();
@@ -1211,7 +1254,9 @@ const CurriculumUpload = () => {
                      block.type === 'bulletlist' && block.content.items ? block.content.items.join(', ') : '',
         order_index: index,
         suggested_question: block.suggestedQuestion || null, // Save suggested question
-        section_question: block.sectionQuestion || null // Save section question
+        section_question: Array.isArray(block.sectionQuestion) && block.sectionQuestion.some(q => q)
+          ? JSON.stringify(block.sectionQuestion)
+          : null // Save section questions as JSON array
       }));
 
       const { data, error } = await supabase
@@ -2558,39 +2603,64 @@ ${contentBlocks.map((block, index) => {
                             This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
                           </p>
 
-                          {/* Section Question */}
+                          {/* Section Questions (3 variants) */}
                           <div className="mt-4 pt-4 border-t border-gray-700">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center justify-between mb-3">
                               <label className="block text-sm font-medium text-gray-300">
-                                Section Question
+                                Section Questions <span className="text-gray-500 font-normal">(3 variants — student sees one randomly)</span>
                               </label>
                               <button
                                 type="button"
                                 onClick={async () => {
-                                  const questionText = await generateSectionQuestion(index);
+                                  const questions = await generateSectionQuestions(index);
                                   setContentBlocks(prevBlocks => prevBlocks.map(b =>
-                                    b.id === block.id ? { ...b, sectionQuestion: questionText } : b
+                                    b.id === block.id ? { ...b, sectionQuestion: questions } : b
                                   ));
                                 }}
                                 className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition"
                               >
-                                Auto-generate
+                                Auto-generate All
                               </button>
                             </div>
-                            <textarea
-                              value={block.sectionQuestion || ''}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                setContentBlocks(prevBlocks => prevBlocks.map(b =>
-                                  b.id === block.id ? { ...b, sectionQuestion: value } : b
-                                ));
-                              }}
-                              placeholder="e.g., Based on what you just read, what is the primary role of a product manager?"
-                              rows={2}
-                              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-none"
-                            />
+                            {[0, 1, 2].map(qIdx => (
+                              <div key={qIdx} className="mb-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs text-gray-400 font-medium">Question {qIdx + 1}</span>
+                                  <button
+                                    type="button"
+                                    onClick={async () => {
+                                      const currentQuestions = Array.isArray(block.sectionQuestion) ? [...block.sectionQuestion] : ['', '', ''];
+                                      const newQ = await generateSingleSectionQuestion(index, currentQuestions);
+                                      currentQuestions[qIdx] = newQ;
+                                      setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                                        b.id === block.id ? { ...b, sectionQuestion: currentQuestions } : b
+                                      ));
+                                    }}
+                                    className="text-xs px-2 py-0.5 text-purple-400 hover:text-purple-300 transition"
+                                    title="Regenerate this question"
+                                  >
+                                    ↻
+                                  </button>
+                                </div>
+                                <textarea
+                                  value={(Array.isArray(block.sectionQuestion) ? block.sectionQuestion[qIdx] : '') || ''}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setContentBlocks(prevBlocks => prevBlocks.map(b => {
+                                      if (b.id !== block.id) return b;
+                                      const updated = Array.isArray(b.sectionQuestion) ? [...b.sectionQuestion] : ['', '', ''];
+                                      updated[qIdx] = value;
+                                      return { ...b, sectionQuestion: updated };
+                                    }));
+                                  }}
+                                  placeholder={`Question ${qIdx + 1}...`}
+                                  rows={2}
+                                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-none"
+                                />
+                              </div>
+                            ))}
                             <p className="text-xs text-gray-500 mt-1">
-                              Users must answer this question before continuing to the next section
+                              Users must answer one of these questions before continuing to the next section
                             </p>
                           </div>
                         </div>

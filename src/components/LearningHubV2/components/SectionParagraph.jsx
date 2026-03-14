@@ -2,10 +2,12 @@ import React from 'react';
 import useTypewriter from '../hooks/useTypewriter';
 
 // Parse bold (**), underline (__), italic (*), and link [text](url) formatting
-const renderFormattedText = (text) => {
+// When inProgress is true, unclosed markers at the end of the string are rendered
+// in their intended style immediately (e.g. "*partial" renders italic while typing)
+const renderFormattedText = (text, { inProgress = false } = {}) => {
   const parts = text.split(/(\*\*.+?\*\*[:\.,;!?]?|__.+?__[:\.,;!?]?|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*)[:\.,;!?]?)/g);
 
-  return parts.map((part, i) => {
+  const rendered = parts.map((part, i) => {
     if (part === undefined) return null;
 
     // Link: [text](url)
@@ -47,6 +49,49 @@ const renderFormattedText = (text) => {
 
     return <span key={i}>{part}</span>;
   });
+
+  // During typing, handle unclosed formatting markers at the end of the string
+  if (inProgress && rendered.length > 0) {
+    const lastIdx = rendered.length - 1;
+    const lastPart = parts[lastIdx];
+    if (lastPart) {
+      // Unclosed bold: **text (no closing **)
+      const unclosedBold = lastPart.match(/^(.*)\*\*([^*]+)$/s);
+      if (unclosedBold) {
+        rendered[lastIdx] = (
+          <span key={lastIdx}>
+            {unclosedBold[1] && <span>{unclosedBold[1]}</span>}
+            <strong className="font-semibold">{unclosedBold[2]}</strong>
+          </span>
+        );
+        return rendered;
+      }
+      // Unclosed underline: __text (no closing __)
+      const unclosedUnderline = lastPart.match(/^(.*)__([^_]+)$/s);
+      if (unclosedUnderline) {
+        rendered[lastIdx] = (
+          <span key={lastIdx}>
+            {unclosedUnderline[1] && <span>{unclosedUnderline[1]}</span>}
+            <u>{unclosedUnderline[2]}</u>
+          </span>
+        );
+        return rendered;
+      }
+      // Unclosed italic: *text (no closing *, and not **)
+      const unclosedItalic = lastPart.match(/^(.*?)(?<!\*)\*(?!\*)([^*]+)$/s);
+      if (unclosedItalic) {
+        rendered[lastIdx] = (
+          <span key={lastIdx}>
+            {unclosedItalic[1] && <span>{unclosedItalic[1]}</span>}
+            <em>{unclosedItalic[2]}</em>
+          </span>
+        );
+        return rendered;
+      }
+    }
+  }
+
+  return rendered;
 };
 
 const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) => {
@@ -98,14 +143,14 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) =>
               <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
                 <span className="text-black leading-relaxed">•</span>
                 <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em' }}>
-                  {renderFormattedText(bulletText)}{isLast && cursor}
+                  {renderFormattedText(bulletText, { inProgress: isLast && !isComplete })}{isLast && cursor}
                 </span>
               </div>
             );
           } else if (trimmedLine) {
             return (
               <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em' }}>
-                {renderFormattedText(line)}{isLast && cursor}
+                {renderFormattedText(line, { inProgress: isLast && !isComplete })}{isLast && cursor}
               </p>
             );
           } else if (isLast && !isComplete) {
@@ -126,7 +171,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) =>
 
   return (
     <p className="text-base font-light leading-relaxed mb-6 text-black" style={{ letterSpacing: '-0.01em' }}>
-      {renderFormattedText(revealedText)}{cursor}
+      {renderFormattedText(revealedText, { inProgress: !isComplete })}{cursor}
     </p>
   );
 };

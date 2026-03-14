@@ -115,17 +115,25 @@ const LearningHubV2 = () => {
     return () => document.removeEventListener('selectionchange', listener);
   }, []);
 
-  // Filter sections into text (left) and media (right)
-  const textSections = useMemo(() => {
+  // Group ALL sections (including media) by h2 headings
+  const allGroups = useMemo(() => {
     if (!Array.isArray(currentLessonSections)) return [];
-    return currentLessonSections.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube');
+    return groupSectionsByHeading(currentLessonSections);
   }, [currentLessonSections]);
 
-  // Group text sections by h2 headings
-  const sectionGroups = useMemo(() => groupSectionsByHeading(textSections), [textSections]);
-  const totalGroups = sectionGroups.length;
+  const totalGroups = allGroups.length;
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
-  const activeGroup = sectionGroups[currentGroupIndex] || [];
+  const activeGroupAll = allGroups[currentGroupIndex] || [];
+
+  // Text sections for left column (typing animation)
+  const activeGroup = useMemo(() => {
+    return activeGroupAll.filter(s => s.content_type !== 'image' && s.content_type !== 'youtube');
+  }, [activeGroupAll]);
+
+  // Media sections for right column
+  const activeGroupMedia = useMemo(() => {
+    return activeGroupAll.filter(s => s.content_type === 'image' || s.content_type === 'youtube');
+  }, [activeGroupAll]);
   const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 100;
   const [lessonProgress, setLessonProgress] = useState(0);
   useEffect(() => {
@@ -142,11 +150,22 @@ const LearningHubV2 = () => {
   }, [activeGroup]);
 
   // Get section question (gating question) from the current group's H2 heading
+  // Supports both legacy single string and new JSON array of 3 questions (picks one randomly)
   const sectionQuestion = useMemo(() => {
     const h2Section = activeGroup.find(
       s => s.content_type === 'heading' && (s.content?.level || 2) === 2
     );
-    return h2Section?.section_question?.trim() || null;
+    const raw = h2Section?.section_question?.trim();
+    if (!raw) return null;
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        const valid = parsed.filter(q => q && q.trim());
+        if (valid.length === 0) return null;
+        return valid[Math.floor(Math.random() * valid.length)];
+      }
+    } catch {}
+    return raw; // Legacy single question string
   }, [activeGroup]);
 
   // Build lesson context for AI chat — only visible section group (headings + body text)
@@ -182,7 +201,7 @@ const LearningHubV2 = () => {
     if (firstSection.content_type !== 'heading' || level === 2) return null;
     // Look backwards through previous groups for the most recent H2
     for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = sectionGroups[i];
+      const group = allGroups[i];
       for (let j = group.length - 1; j >= 0; j--) {
         if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
           return group[j];
@@ -190,7 +209,7 @@ const LearningHubV2 = () => {
       }
     }
     return null;
-  }, [sectionGroups, currentGroupIndex, activeGroup]);
+  }, [allGroups, currentGroupIndex, activeGroup]);
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
@@ -600,7 +619,7 @@ const LearningHubV2 = () => {
         {/* Right column — media panel */}
         <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
           <div className="w-full">
-            <MediaPanel sections={currentLessonSections} />
+            <MediaPanel sections={activeGroupMedia} />
           </div>
         </div>
       </div>
