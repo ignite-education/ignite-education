@@ -16,7 +16,7 @@ const parseText = (text) => {
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           <span>{bulletMatchColon[0].charAt(0)} </span>
-          <strong className="font-semibold">{titleText}:</strong>
+          <strong className="font-medium">{titleText}:</strong>
           <span> {contentText}</span>
         </p>
       );
@@ -26,7 +26,7 @@ const parseText = (text) => {
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           <span>{bulletMatchDash[0].charAt(0)} </span>
-          <strong className="font-semibold">{titleText}</strong>
+          <strong className="font-medium">{titleText}</strong>
           <span> - {contentText}</span>
         </p>
       );
@@ -36,7 +36,7 @@ const parseText = (text) => {
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           <span>{numberedMatchColon[1]}. </span>
-          <strong className="font-semibold">{titleText}:</strong>
+          <strong className="font-medium">{titleText}:</strong>
           <span> {contentText}</span>
         </p>
       );
@@ -46,18 +46,22 @@ const parseText = (text) => {
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           <span>{numberedMatchDash[1]}. </span>
-          <strong className="font-semibold">{titleText}</strong>
+          <strong className="font-medium">{titleText}</strong>
           <span> - {contentText}</span>
         </p>
       );
     } else {
       // Regular text with inline bold
-      const parts = line.split(/(\*\*.*?\*\*)/g);
+      const parts = line.split(/(\*\*.*?\*\*|\*\*[^*]*$)/g);
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           {parts.map((part, j) => {
             if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-              return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
+              return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
+            }
+            // Unclosed bold — still typing, render as bold without the leading **
+            if (part.startsWith('**') && part.length > 2) {
+              return <strong key={j} className="font-medium">{part.slice(2)}</strong>;
             }
             return <span key={j}>{part}</span>;
           })}

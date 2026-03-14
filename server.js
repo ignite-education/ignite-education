@@ -504,12 +504,11 @@ FORMATTING RULES:
 - Keep paragraphs short and scannable
 
 BULLET POINT RULES (important):
-- Use bullet points (•) ONLY for actual list items, not for introductory or transitional sentences
-- Maximum 3 bullet points per response — be selective about what to bullet
-- Sentences that introduce a list (e.g., "Common reasons include:") should be regular paragraph text, NOT bulleted
-- Sentences containing examples inline (e.g., "Examples include X and Y") should be regular paragraph text, NOT bulleted
-- Only bullet the specific items being listed, not the context around them
-- Closing/summary sentences should be regular paragraph text, NOT bulleted
+- Prefer plain prose over bullet points — only use bullets when listing 3 or more distinct, parallel items
+- Maximum 3 bullet points per response
+- Most responses should be a short paragraph with no bullets at all
+- NEVER bullet a single idea that could be a sentence
+- Introductory, transitional, and closing sentences must be regular paragraph text, NOT bulleted
 
 Your role:
 - NEVER reference specific section numbers (e.g., "Section 1", "Section 8") - refer to content by topic or title instead

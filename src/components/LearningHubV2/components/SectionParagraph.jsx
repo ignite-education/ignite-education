@@ -70,11 +70,11 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) =>
     </>
   ) : null;
 
-  // Show cursor immediately during delay, before text starts
+  // Show pulsing cursor during delay, before text starts
   if (!revealedText && !isComplete) {
     return (
       <p className="text-base font-light leading-relaxed mb-6 text-black" style={{ letterSpacing: '-0.01em' }}>
-        {cursor}
+        <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }} />
       </p>
     );
   }

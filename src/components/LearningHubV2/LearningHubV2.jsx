@@ -86,11 +86,19 @@ const LearningHubV2 = () => {
     goToNextLesson,
   } = useLessonNavigation({ groupedLessons, lessonsMetadata, completedLessons });
 
-  // Build lesson context for AI chat
+  // Build lesson context for AI chat — only visible section group (headings + body text)
   const buildLessonContext = useCallback(() => {
-    if (!currentLessonSections || currentLessonSections.length === 0) return '';
-    return `Lesson: ${lessonName}\nModule: ${currentModule}\n\nSections:\n${currentLessonSections.map(section => `\nTitle: ${section.title}\nContent: ${typeof section.content === 'string' ? section.content : JSON.stringify(section.content)}\n`).join('\n---\n')}`.trim();
-  }, [currentLessonSections, lessonName, currentModule]);
+    if (!activeGroup || activeGroup.length === 0) return '';
+    const visibleText = activeGroup
+      .filter(s => s.content_type === 'heading' || s.content_type === 'paragraph' || s.content_type === 'list' || s.content_type === 'bulletlist')
+      .map(s => {
+        const text = typeof s.content === 'string' ? s.content : s.content?.text || s.content_text || '';
+        if (s.content_type === 'heading') return `## ${text}`;
+        return text;
+      })
+      .join('\n\n');
+    return `Lesson: ${lessonName}\nModule: ${currentModule}\n\n${visibleText}`.trim();
+  }, [activeGroup, lessonName, currentModule]);
 
   const handleChatSubmit = useCallback((text) => {
     const lessonContext = buildLessonContext();
@@ -219,21 +227,23 @@ const LearningHubV2 = () => {
   const handleContinue = useCallback(() => {
     setCompletedSections(0);
     setCurrentGroupIndex((prev) => prev + 1);
+    resetChat();
     requestAnimationFrame(() => {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     });
     chatInputRef.current?.focus();
-  }, []);
+  }, [resetChat]);
 
   // Handle Back — go to previous section group
   const handleBack = useCallback(() => {
     setCompletedSections(0);
     setCurrentGroupIndex((prev) => Math.max(prev - 1, 0));
+    resetChat();
     requestAnimationFrame(() => {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     });
     chatInputRef.current?.focus();
-  }, []);
+  }, [resetChat]);
 
   if (loading) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
@@ -317,7 +327,7 @@ const LearningHubV2 = () => {
               </div>
 
               {/* Action area — buttons crossfade with chat messages at the same position */}
-              <div className="mt-4 mb-4">
+              <div className="mt-3 mb-4">
                 {/* Navigation buttons — fade out when chat is active */}
                 {allTypingComplete && (!isLastGroup || currentGroupIndex > 0) && (
                   <div
