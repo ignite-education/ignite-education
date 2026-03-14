@@ -382,7 +382,8 @@ const CurriculumUploadNew = () => {
             id: section.id || Date.now() + index,
             type: section.content_type || 'paragraph',
             content: blockContent,
-            suggestedQuestion: section.suggested_question || '' // Load suggested question from database
+            suggestedQuestion: section.suggested_question || '', // Load suggested question from database
+            sectionQuestion: section.section_question || '' // Load section question from database
           };
         });
 
@@ -1142,7 +1143,8 @@ const CurriculumUploadNew = () => {
                      block.type === 'youtube' && block.content.title ? block.content.title :
                      block.type === 'bulletlist' && block.content.items ? block.content.items.join(', ') : '',
         order_index: index,
-        suggested_question: block.suggestedQuestion || null // Save suggested question
+        suggested_question: block.suggestedQuestion || null, // Save suggested question
+        section_question: block.sectionQuestion || null // Save section question
       }));
 
       const { data, error } = await supabase

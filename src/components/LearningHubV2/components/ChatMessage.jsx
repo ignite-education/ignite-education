@@ -52,16 +52,25 @@ const parseText = (text) => {
       );
     } else {
       // Regular text with inline bold
-      const parts = line.split(/(\*\*.*?\*\*|\*\*[^*]*$)/g);
+      const parts = line.split(/(\*\*.*?\*\*|\*\*[^*]*$|(?<!\*)\*(?!\*).*?(?<!\*)\*(?!\*)|(?<!\*)\*(?!\*)[^*]*$)/g);
       return (
         <p key={i} className={i > 0 ? 'mt-2' : ''}>
           {parts.map((part, j) => {
+            if (!part) return null;
             if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
               return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
             }
             // Unclosed bold — still typing, render as bold without the leading **
             if (part.startsWith('**') && part.length > 2) {
               return <strong key={j} className="font-medium">{part.slice(2)}</strong>;
+            }
+            // Italic: *text* (single asterisks, not double)
+            if (/^(?<!\*)\*(?!\*)(.+)\*(?!\*)$/.test(part)) {
+              return <em key={j}>{part.slice(1, -1)}</em>;
+            }
+            // Unclosed italic — still typing
+            if (/^(?<!\*)\*(?!\*)/.test(part) && !part.startsWith('**') && part.length > 1) {
+              return <em key={j}>{part.slice(1)}</em>;
             }
             return <span key={j}>{part}</span>;
           })}

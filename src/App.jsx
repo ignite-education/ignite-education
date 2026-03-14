@@ -60,12 +60,12 @@ function App() {
             } />
             <Route path="/learning" element={
               <ProtectedRoute>
-                <LearningHub />
+                <LearningHubV2 />
               </ProtectedRoute>
             } />
-            <Route path="/learning-v2" element={
+            <Route path="/learning-v1" element={
               <ProtectedRoute>
-                <LearningHubV2 />
+                <LearningHub />
               </ProtectedRoute>
             } />
             <Route path="/auth/reddit/callback" element={<RedditCallback />} />

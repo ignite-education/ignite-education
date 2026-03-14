@@ -499,6 +499,7 @@ ABOUT IGNITE EDUCATION (use this to answer questions about Ignite):
 FORMATTING RULES:
 - NEVER use emojis or emoticons of any kind
 - NEVER use exclamation points (!)
+- NEVER use em dashes (—) — use commas instead
 - ALWAYS use British English spelling and vocabulary (organise, colour, analyse, realise, etc.)
 - Use **bold** for key terms and important concepts
 - Keep paragraphs short and scannable
@@ -1510,6 +1511,40 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
       success: false,
       error: error.message
     });
+  }
+});
+
+// Generate section question — a comprehension question users must answer before continuing
+app.post('/api/generate-section-question', async (req, res) => {
+  try {
+    const { sectionContent } = req.body;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 200,
+      system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
+
+Section Content:
+${sectionContent}
+
+Rules:
+- The question should be answerable from the section content
+- Ask about understanding, not recall of specific facts
+- Keep it conversational and natural
+- 1-2 sentences max
+- Do NOT start with "Based on what you just read" or similar meta-references
+- Focus on the most important concept in the section
+
+Respond with ONLY the question text, nothing else.`,
+      messages: [{ role: 'user', content: 'Generate a section comprehension question.' }],
+    });
+
+    const question = message.content[0].text.trim();
+
+    res.json({ success: true, question });
+  } catch (error) {
+    console.error('Error generating section question:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
+import { markLessonComplete } from '../../lib/api';
 import LoadingScreen from '../LoadingScreen';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
@@ -36,11 +38,13 @@ const groupSectionsByHeading = (sections) => {
 };
 
 const LearningHubV2 = () => {
-  const { firstName } = useAuth();
+  const { user, firstName } = useAuth();
+  const navigate = useNavigate();
   const { lottieData } = useAnimation();
   const [chatInput, setChatInput] = useState('');
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const contentScrollRef = useRef(null);
+  const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
   const groupRefs = useRef([]);
   const lottieRef = useRef(null);
@@ -86,27 +90,6 @@ const LearningHubV2 = () => {
     goToNextLesson,
   } = useLessonNavigation({ groupedLessons, lessonsMetadata, completedLessons });
 
-  // Build lesson context for AI chat — only visible section group (headings + body text)
-  const buildLessonContext = useCallback(() => {
-    if (!activeGroup || activeGroup.length === 0) return '';
-    const visibleText = activeGroup
-      .filter(s => s.content_type === 'heading' || s.content_type === 'paragraph' || s.content_type === 'list' || s.content_type === 'bulletlist')
-      .map(s => {
-        const text = typeof s.content === 'string' ? s.content : s.content?.text || s.content_text || '';
-        if (s.content_type === 'heading') return `## ${text}`;
-        return text;
-      })
-      .join('\n\n');
-    return `Lesson: ${lessonName}\nModule: ${currentModule}\n\n${visibleText}`.trim();
-  }, [activeGroup, lessonName, currentModule]);
-
-  const handleChatSubmit = useCallback((text) => {
-    const lessonContext = buildLessonContext();
-    sendMessage(text, lessonContext);
-    setChatInput('');
-    window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage]);
-
   // Text selection → "Explain '...'" in chat input
   const handleSelectionRef = useRef(null);
   handleSelectionRef.current = () => {
@@ -143,7 +126,37 @@ const LearningHubV2 = () => {
   const totalGroups = sectionGroups.length;
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
   const activeGroup = sectionGroups[currentGroupIndex] || [];
-  const lessonProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 100;
+  const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 100;
+  const [lessonProgress, setLessonProgress] = useState(0);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
+    return () => cancelAnimationFrame(frame);
+  }, [targetProgress]);
+
+  // Build lesson context for AI chat — only visible section group (headings + body text)
+  const buildLessonContext = useCallback(() => {
+    if (!activeGroup || activeGroup.length === 0) return '';
+    const visibleText = activeGroup
+      .filter(s => s.content_type === 'heading' || s.content_type === 'paragraph' || s.content_type === 'list' || s.content_type === 'bulletlist')
+      .map(s => {
+        const text = typeof s.content === 'string' ? s.content : s.content?.text || s.content_text || '';
+        if (s.content_type === 'heading') return `## ${text}`;
+        return text;
+      })
+      .join('\n\n');
+    return `Lesson: ${lessonName}\nModule: ${currentModule}\n\n${visibleText}`.trim();
+  }, [activeGroup, lessonName, currentModule]);
+
+  const handleChatSubmit = useCallback((text) => {
+    let lessonContext = buildLessonContext();
+    // If answering a section question, prepend it to context so Claude can evaluate
+    if (sectionQuestion && chatMessages.length === 0) {
+      lessonContext = `SECTION QUESTION: ${sectionQuestion}\n\nThe student is answering the above question. Evaluate their answer based on the lesson content below. Give brief, encouraging feedback. If correct, confirm and add a small insight. If incorrect or incomplete, gently guide them toward the right answer.\n\n${lessonContext}`;
+    }
+    sendMessage(text, lessonContext);
+    setChatInput('');
+    window.getSelection()?.removeAllRanges();
+  }, [buildLessonContext, sendMessage, sectionQuestion, chatMessages.length]);
 
   // If current group starts with H3, find the parent H2 to display above it
   const parentH2 = useMemo(() => {
@@ -188,16 +201,31 @@ const LearningHubV2 = () => {
     return h2Section?.suggested_question?.trim() || null;
   }, [activeGroup]);
 
-  // Auto-scroll content area when chat messages change
+  // Get section question (gating question) from the current group's H2 heading
+  const sectionQuestion = useMemo(() => {
+    const h2Section = activeGroup.find(
+      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
+    );
+    return h2Section?.section_question?.trim() || null;
+  }, [activeGroup]);
+
+  // Auto-scroll when content grows (typing text or chat messages) and user is near bottom
   useEffect(() => {
-    if (chatMessages.length > 0 || isTyping) {
-      setTimeout(() => {
-        if (contentScrollRef.current) {
-          contentScrollRef.current.scrollTop = contentScrollRef.current.scrollHeight;
-        }
-      }, 50);
-    }
-  }, [chatMessages, displayedText, isTyping]);
+    const scrollEl = contentScrollRef.current;
+    const innerEl = contentInnerRef.current;
+    if (!scrollEl || !innerEl) return;
+
+    const observer = new ResizeObserver(() => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollEl;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
+      if (isNearBottom) {
+        scrollEl.scrollTop = scrollHeight;
+      }
+    });
+
+    observer.observe(innerEl);
+    return () => observer.disconnect();
+  }, [currentGroupIndex]);
 
   // Check if the last assistant message just finished typing
   const lastAssistantDone = useMemo(() => {
@@ -244,6 +272,16 @@ const LearningHubV2 = () => {
     });
     chatInputRef.current?.focus();
   }, [resetChat]);
+
+  // End Lesson — mark complete and navigate to progress hub
+  const handleEndLesson = useCallback(async () => {
+    try {
+      await markLessonComplete(user?.id, userCourseId, currentModule, currentLesson);
+    } catch (err) {
+      console.error('Error marking lesson complete:', err);
+    }
+    navigate('/progress');
+  }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
 
   if (loading) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
@@ -292,7 +330,7 @@ const LearningHubV2 = () => {
                 style={{
                   width: `${lessonProgress}%`,
                   backgroundColor: '#EF0B72',
-                  transition: 'width 0.6s ease-in-out',
+                  transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
               />
             </div>
@@ -304,6 +342,7 @@ const LearningHubV2 = () => {
             className="flex-1 overflow-y-auto pb-8 hide-scrollbar"
             style={{ paddingLeft: '40px', paddingRight: '70px' }}
           >
+            <div ref={contentInnerRef}>
               {/* Render sections sequentially — each starts typing after the previous finishes */}
               <div key={currentGroupIndex}>
                 {parentH2 && (
@@ -328,8 +367,26 @@ const LearningHubV2 = () => {
 
               {/* Action area — buttons crossfade with chat messages at the same position */}
               <div className="mt-3 mb-4">
-                {/* Navigation buttons — fade out when chat is active */}
-                {allTypingComplete && (!isLastGroup || currentGroupIndex > 0) && (
+                {/* Section question prompt — shown after content finishes typing */}
+                {allTypingComplete && sectionQuestion && chatMessages.length === 0 && (
+                  <div
+                    className="mt-2 mb-4"
+                    style={{
+                      opacity: showButtons ? 1 : 0,
+                      transition: 'opacity 0.25s ease-in',
+                    }}
+                  >
+                    <p
+                      className="text-base font-light leading-relaxed text-black"
+                      style={{ letterSpacing: '-0.01em' }}
+                    >
+                      {sectionQuestion}
+                    </p>
+                  </div>
+                )}
+
+                {/* Navigation buttons — fade out when chat is active, hidden when section question is unanswered */}
+                {allTypingComplete && !sectionQuestion && (
                   <div
                     className="flex items-center gap-2"
                     style={{
@@ -339,7 +396,17 @@ const LearningHubV2 = () => {
                       overflow: 'hidden',
                     }}
                   >
-                    {!isLastGroup && (
+                    {isLastGroup ? (
+                      <button
+                        onClick={handleEndLesson}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        End Lesson
+                      </button>
+                    ) : (
                       <button
                         onClick={handleContinue}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
@@ -422,12 +489,22 @@ const LearningHubV2 = () => {
                 )}
 
                 {/* Buttons reappear after assistant finishes typing */}
-                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && (!isLastGroup || currentGroupIndex > 0) && (
+                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ opacity: showPostChatButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
                   >
-                    {!isLastGroup && (
+                    {isLastGroup ? (
+                      <button
+                        onClick={handleEndLesson}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        End Lesson
+                      </button>
+                    ) : (
                       <button
                         onClick={handleContinue}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
@@ -472,6 +549,7 @@ const LearningHubV2 = () => {
                   </div>
                 )}
               </div>
+            </div>
           </div>
 
           {/* White gradient fade above input */}
@@ -489,10 +567,10 @@ const LearningHubV2 = () => {
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
+                opacity: suggestedQuestion && !sectionQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
-                height: !suggestedQuestion || chatMessages.length > 0 ? 0 : 'auto',
+                pointerEvents: suggestedQuestion && !sectionQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
+                height: !suggestedQuestion || sectionQuestion || chatMessages.length > 0 ? 0 : 'auto',
                 overflow: 'hidden',
               }}
             >

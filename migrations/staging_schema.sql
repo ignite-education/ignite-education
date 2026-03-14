@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS lessons (
   content_type TEXT NOT NULL,
   content JSONB,
   suggested_question TEXT,
+  section_question TEXT,
   order_index INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()

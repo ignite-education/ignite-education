@@ -382,7 +382,8 @@ const CurriculumUpload = () => {
             id: section.id || Date.now() + index,
             type: section.content_type || 'paragraph',
             content: blockContent,
-            suggestedQuestion: section.suggested_question || '' // Load suggested question from database
+            suggestedQuestion: section.suggested_question || '', // Load suggested question from database
+            sectionQuestion: section.section_question || '' // Load section question from database
           };
         });
 
@@ -390,7 +391,7 @@ const CurriculumUpload = () => {
       } else {
         // No existing content, reset to default
         setContentBlocks([
-          { id: Date.now(), type: 'heading', content: { text: '', level: 2 }, suggestedQuestion: '' }
+          { id: Date.now(), type: 'heading', content: { text: '', level: 2 }, suggestedQuestion: '', sectionQuestion: '' }
         ]);
       }
     } catch (error) {
@@ -877,7 +878,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } : '',
-      suggestedQuestion: ''
+      suggestedQuestion: '',
+      sectionQuestion: ''
     };
     setContentBlocks(prevBlocks => [...prevBlocks, newBlock]);
   };
@@ -891,7 +893,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } : '',
-      suggestedQuestion: ''
+      suggestedQuestion: '',
+      sectionQuestion: ''
     };
     setContentBlocks(prevBlocks => {
       const newBlocks = [...prevBlocks];
@@ -978,6 +981,59 @@ const CurriculumUpload = () => {
       }
     } catch (error) {
       console.error('Error generating question:', error);
+      alert('Error generating question. Make sure the backend server is running.');
+      return '';
+    }
+  };
+
+  // Generate a section question for an H2 heading based on content between H2s
+  const generateSectionQuestion = async (h2Index) => {
+    const h2Block = contentBlocks[h2Index];
+    if (!h2Block || h2Block.type !== 'heading' || h2Block.content?.level !== 2) {
+      return '';
+    }
+
+    // Find all content blocks between this H2 and the next H2 (or end)
+    let nextH2Index = contentBlocks.findIndex((block, idx) =>
+      idx > h2Index && block.type === 'heading' && block.content?.level === 2
+    );
+    if (nextH2Index === -1) nextH2Index = contentBlocks.length;
+
+    const sectionBlocks = contentBlocks.slice(h2Index, nextH2Index);
+
+    const sectionContent = sectionBlocks.map(block => {
+      if (block.type === 'heading') {
+        const level = block.content?.level || 2;
+        const text = block.content?.text || '';
+        return `${'#'.repeat(level)} ${text}`;
+      } else if (block.type === 'paragraph') {
+        return block.content || '';
+      } else if (block.type === 'bulletlist') {
+        return block.content?.items?.map(item => `• ${item}`).join('\n') || '';
+      } else if (block.type === 'youtube') {
+        return `[Video: ${block.content?.title || 'YouTube video'}]`;
+      } else if (block.type === 'image') {
+        return `[Image: ${block.content?.caption || block.content?.alt || 'Image'}]`;
+      }
+      return '';
+    }).filter(Boolean).join('\n\n');
+
+    try {
+      const response = await fetch(`${API_URL}/api/generate-section-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionContent })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return data.question;
+      } else {
+        alert('Failed to generate question: ' + (data.error || 'Unknown error'));
+        return '';
+      }
+    } catch (error) {
+      console.error('Error generating section question:', error);
       alert('Error generating question. Make sure the backend server is running.');
       return '';
     }
@@ -1154,7 +1210,8 @@ const CurriculumUpload = () => {
                      block.type === 'youtube' && block.content.title ? block.content.title :
                      block.type === 'bulletlist' && block.content.items ? block.content.items.join(', ') : '',
         order_index: index,
-        suggested_question: block.suggestedQuestion || null // Save suggested question
+        suggested_question: block.suggestedQuestion || null, // Save suggested question
+        section_question: block.sectionQuestion || null // Save section question
       }));
 
       const { data, error } = await supabase
@@ -2500,6 +2557,42 @@ ${contentBlocks.map((block, index) => {
                           <p className="text-xs text-gray-500 mt-1">
                             This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
                           </p>
+
+                          {/* Section Question */}
+                          <div className="mt-4 pt-4 border-t border-gray-700">
+                            <div className="flex items-center justify-between mb-2">
+                              <label className="block text-sm font-medium text-gray-300">
+                                Section Question
+                              </label>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const questionText = await generateSectionQuestion(index);
+                                  setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                                    b.id === block.id ? { ...b, sectionQuestion: questionText } : b
+                                  ));
+                                }}
+                                className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition"
+                              >
+                                Auto-generate
+                              </button>
+                            </div>
+                            <textarea
+                              value={block.sectionQuestion || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                                  b.id === block.id ? { ...b, sectionQuestion: value } : b
+                                ));
+                              }}
+                              placeholder="e.g., Based on what you just read, what is the primary role of a product manager?"
+                              rows={2}
+                              className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-none"
+                            />
+                            <p className="text-xs text-gray-500 mt-1">
+                              Users must answer this question before continuing to the next section
+                            </p>
+                          </div>
                         </div>
                       )}
                       </div>
