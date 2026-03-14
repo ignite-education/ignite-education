@@ -524,7 +524,7 @@ Your role:
     }));
 
     // Call Claude API - trying multiple models
-    let modelToUse = 'claude-3-5-haiku-20241022';
+    let modelToUse = 'claude-haiku-4-5-20251001';
 
     const message = await anthropic.messages.create({
       model: modelToUse,

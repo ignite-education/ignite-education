@@ -194,10 +194,14 @@ const ProtectedRoute = ({ children }) => {
     return null;
   }
 
-  // Redirect unenrolled users to course catalog
+  // Redirect unenrolled users to course catalog (skip on localhost for dev)
   if (hasEnrolledCourse === false) {
-    window.location.href = '/courses';
-    return null;
+    if (import.meta.env.DEV && window.location.hostname === 'localhost') {
+      // Allow access on localhost even without enrollment
+    } else {
+      window.location.href = '/courses';
+      return null;
+    }
   }
 
   return children;
