@@ -1,5 +1,85 @@
 import React from 'react';
 import useTypewriter from '../hooks/useTypewriter';
+import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
+
+// Render text with each word wrapped in a data-word-index span for narration highlighting.
+// Preserves bold/italic/underline formatting while splitting into individual word spans.
+const renderNarrationText = (text, wordIndexOffset) => {
+  if (!text) return null;
+  const normalized = normalizeTextForNarration(text);
+  const words = splitIntoWords(normalized);
+
+  // We render the full original text but wrap each normalized word in a span.
+  // Split by formatting markers first, then split each segment into words.
+  const parts = text.split(/(\*\*.+?\*\*[:\.,;!?]?|__.+?__[:\.,;!?]?|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*)[:\.,;!?]?)/g);
+
+  let wordCounter = 0;
+  const wordStyle = { padding: '2px', margin: '-2px', borderRadius: '2px' };
+
+  const wrapWords = (str, WrapTag) => {
+    // Normalize this segment the same way to get accurate word count
+    const segNormalized = normalizeTextForNarration(str);
+    const segWords = splitIntoWords(segNormalized);
+
+    // Split the visible string by spaces to assign indices
+    const visibleWords = str.split(/(\s+)/);
+    return visibleWords.map((part, j) => {
+      if (/^\s+$/.test(part)) return <span key={`sp-${j}`}>{part}</span>;
+      if (!part) return null;
+
+      // This visible word maps to a normalized word
+      const idx = wordIndexOffset + wordCounter;
+      wordCounter++;
+
+      const span = (
+        <span key={`w-${idx}`} data-word-index={idx} style={wordStyle}>
+          {part}
+        </span>
+      );
+
+      return WrapTag ? <WrapTag key={`f-${idx}`}>{span}</WrapTag> : span;
+    });
+  };
+
+  const elements = parts.map((part, i) => {
+    if (part === undefined) return null;
+
+    // Link: [text](url)
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (linkMatch) {
+      return (
+        <a key={i} href={linkMatch[2]} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">
+          {wrapWords(linkMatch[1])}
+        </a>
+      );
+    }
+
+    // Bold
+    if (part.startsWith('**') && part.match(/\*\*[:\.,;!?]?$/)) {
+      const innerText = part.replace(/^\*\*/, '').replace(/\*\*[:\.,;!?]?$/, '');
+      const trailingPunct = part.match(/\*\*([:\.,;!?])$/)?.[1] || '';
+      return <strong key={i} className="font-semibold">{wrapWords(innerText + trailingPunct)}</strong>;
+    }
+
+    // Underline
+    if (part.startsWith('__') && part.match(/__[:\.,;!?]?$/)) {
+      const innerText = part.replace(/^__/, '').replace(/__[:\.,;!?]?$/, '');
+      const trailingPunct = part.match(/__([:\.,;!?])$/)?.[1] || '';
+      return <u key={i}>{wrapWords(innerText + trailingPunct)}</u>;
+    }
+
+    // Italic
+    if (part.match(/^(?<!\*)\*(?!\*)(.+)\*(?!\*)[:\.,;!?]?$/)) {
+      const innerText = part.replace(/^\*/, '').replace(/\*[:\.,;!?]?$/, '');
+      const trailingPunct = part.match(/\*([:\.,;!?])$/)?.[1] || '';
+      return <em key={i}>{wrapWords(innerText + trailingPunct)}</em>;
+    }
+
+    return <span key={i}>{wrapWords(part)}</span>;
+  });
+
+  return elements;
+};
 
 // Parse bold (**), underline (__), italic (*), and link [text](url) formatting
 // When inProgress is true, unclosed markers at the end of the string are rendered
@@ -94,7 +174,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
   return rendered;
 };
 
-const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) => {
+const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0 }) => {
   const text = typeof section.content === 'string'
     ? section.content
     : section.content?.text || section.content_text;
@@ -106,6 +186,61 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete }) =>
     onComplete,
   });
 
+  // --- Narration mode: render full text with word-index spans ---
+  if (narrationActive) {
+    if (!text) return null;
+    const lines = text.split('\n');
+    const fullLines = text.split('\n');
+    const hasBullets = fullLines.some(line => /^[•\-]\s/.test(line.trim()));
+    const hasMultipleLines = fullLines.filter(line => line.trim()).length > 1;
+
+    // Track word offset across lines
+    let lineWordOffset = wordIndexOffset;
+
+    if (hasBullets || hasMultipleLines) {
+      return (
+        <div className="mb-6">
+          {lines.map((line, idx) => {
+            const trimmedLine = line.trim();
+            if (/^[•\-]\s/.test(trimmedLine)) {
+              const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
+              const el = (
+                <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
+                  <span className="text-black leading-relaxed">•</span>
+                  <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em' }}>
+                    {renderNarrationText(bulletText, lineWordOffset)}
+                  </span>
+                </div>
+              );
+              const normalized = normalizeTextForNarration(bulletText);
+              lineWordOffset += splitIntoWords(normalized).length;
+              return el;
+            } else if (trimmedLine) {
+              const el = (
+                <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em' }}>
+                  {renderNarrationText(line, lineWordOffset)}
+                </p>
+              );
+              const normalized = normalizeTextForNarration(line);
+              lineWordOffset += splitIntoWords(normalized).length;
+              return el;
+            } else if (hasMultipleLines) {
+              return <div key={idx} className="h-2" />;
+            }
+            return null;
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <p className="text-base font-light leading-relaxed mb-6 text-black" style={{ letterSpacing: '-0.01em' }}>
+        {renderNarrationText(text, wordIndexOffset)}
+      </p>
+    );
+  }
+
+  // --- Normal mode: typewriter animation ---
   const cursorDot = <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
   // Invisible rest-of-word keeps the word together for line-break calculation
   const cursor = !isComplete ? (

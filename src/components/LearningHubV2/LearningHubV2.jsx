@@ -7,6 +7,8 @@ import { markLessonComplete } from '../../lib/api';
 import LoadingScreen from '../LoadingScreen';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
+import useNarration from './hooks/useNarration';
+import { normalizeTextForNarration, splitIntoWords } from '../../utils/textNormalization';
 import LessonHeader from './components/LessonHeader';
 import ContentRenderer from './components/ContentRenderer';
 import MediaPanel from './components/MediaPanel';
@@ -159,11 +161,8 @@ const LearningHubV2 = () => {
   const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : totalGroups === 1 ? 100 : 0;
   const [lessonProgress, setLessonProgress] = useState(0);
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
-      return () => cancelAnimationFrame(frame);
-    }, 500);
-    return () => clearTimeout(timer);
+    const frame = requestAnimationFrame(() => setLessonProgress(targetProgress));
+    return () => cancelAnimationFrame(frame);
   }, [targetProgress]);
 
   // Get suggested question from the current group's H2 heading
@@ -240,6 +239,44 @@ const LearningHubV2 = () => {
   const [completedSections, setCompletedSections] = useState(0);
 
   const allTypingComplete = completedSections >= activeGroup.length;
+
+  // Narration — word highlighting & audio playback
+  const {
+    isReading,
+    isPaused,
+    audioReady,
+    narrationActive,
+    toggleNarration,
+    contentContainerRef,
+  } = useNarration({
+    courseId: userCourseId,
+    currentModule,
+    currentLesson,
+    allGroups,
+    currentGroupIndex,
+    allTypingComplete,
+  });
+
+  // Compute per-section word index offsets within the active group (for narration)
+  const sectionWordOffsets = useMemo(() => {
+    if (!narrationActive) return [];
+    const offsets = [];
+    let cursor = 0;
+    for (const section of activeGroup) {
+      offsets.push(cursor);
+      const rawText = typeof section.content === 'string'
+        ? section.content
+        : section.content?.text || section.content_text || '';
+      let text = rawText;
+      if ((section.content_type === 'list' || section.content_type === 'bulletlist') && section.content?.items) {
+        text = section.content.items.join(' ');
+      }
+      const normalized = normalizeTextForNarration(text);
+      cursor += splitIntoWords(normalized).length;
+    }
+    return offsets;
+  }, [narrationActive, activeGroup]);
+
   const [showButtons, setShowButtons] = useState(false);
 
   useEffect(() => {
@@ -375,7 +412,7 @@ const LearningHubV2 = () => {
                 style={{
                   width: `${lessonProgress}%`,
                   backgroundColor: '#EF0B72',
-                  transition: 'width 1s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transition: 'width 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
                 }}
               />
             </div>
@@ -387,7 +424,7 @@ const LearningHubV2 = () => {
             className="flex-1 overflow-y-auto pb-8 hide-scrollbar"
             style={{ paddingLeft: '40px', paddingRight: '70px' }}
           >
-            <div ref={contentInnerRef}>
+            <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
               {/* Render sections sequentially — each starts typing after the previous finishes */}
               <div key={currentGroupIndex}>
                 {parentH2 && (
@@ -405,6 +442,8 @@ const LearningHubV2 = () => {
                       isActive={sIdx === completedSections}
                       prevSectionType={sIdx > 0 ? activeGroup[sIdx - 1]?.content_type : null}
                       onComplete={handleSectionComplete}
+                      narrationActive={narrationActive}
+                      wordIndexOffset={sectionWordOffsets[sIdx] || 0}
                     />
                   </div>
                 ))}
@@ -479,18 +518,31 @@ const LearningHubV2 = () => {
                         </button>
                       )}
                       <button
-                        onClick={() => { /* TODO: Phase 4 — wire to narration */ }}
-                        className="p-2 text-black cursor-pointer transition-colors"
-                        style={{ transition: 'color 0.15s' }}
-                        aria-label="Listen to lesson"
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                        onClick={toggleNarration}
+                        className="p-2 cursor-pointer transition-colors"
+                        style={{
+                          transition: 'color 0.15s',
+                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF',
+                          opacity: audioReady ? 1 : 0.4,
+                        }}
+                        disabled={!audioReady}
+                        aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
+                        title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
+                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF'; }}
                       >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                        </svg>
+                        {isReading && !isPaused ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="6" y="4" width="4" height="16" />
+                            <rect x="14" y="4" width="4" height="16" />
+                          </svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -577,18 +629,31 @@ const LearningHubV2 = () => {
                         </button>
                       )}
                       <button
-                        onClick={() => { /* TODO: Phase 4 — wire to narration */ }}
-                        className="p-2 text-black cursor-pointer transition-colors"
-                        style={{ transition: 'color 0.15s' }}
-                        aria-label="Listen to lesson"
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                        onClick={toggleNarration}
+                        className="p-2 cursor-pointer transition-colors"
+                        style={{
+                          transition: 'color 0.15s',
+                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF',
+                          opacity: audioReady ? 1 : 0.4,
+                        }}
+                        disabled={!audioReady}
+                        aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
+                        title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
+                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF'; }}
                       >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                        </svg>
+                        {isReading && !isPaused ? (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="6" y="4" width="4" height="16" />
+                            <rect x="14" y="4" width="4" height="16" />
+                          </svg>
+                        ) : (
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>

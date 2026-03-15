@@ -5,7 +5,7 @@ import SectionList from './SectionList';
 
 // ContentRenderer only renders text-based sections (left column).
 // Image and YouTube sections are handled by MediaPanel (right column).
-const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete }) => {
+const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0 }) => {
   // Add a 750ms gap after a heading before the next section starts typing
   const startDelay = (prevSectionType === 'heading' || sectionIdx === 0) ? 1200 : 0;
   // Auto-complete non-animated section types immediately
@@ -17,14 +17,14 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
 
   switch (section.content_type) {
     case 'heading':
-      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} />;
+      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
 
     case 'paragraph':
-      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} />;
+      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
 
     case 'list':
     case 'bulletlist':
-      return <SectionList section={section} />;
+      return <SectionList section={section} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
 
     // Images, YouTube, and SVGs are rendered in the right column by MediaPanel
     case 'image':
