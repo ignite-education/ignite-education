@@ -232,6 +232,8 @@ const LearningHubV2 = () => {
     return `Lesson: ${lessonName}\nModule: ${currentModule}\n\n${visibleText}`.trim();
   }, [activeGroup, lessonName, currentModule]);
 
+  const [pendingUserQuestion, setPendingUserQuestion] = useState(null);
+
   const handleChatSubmit = useCallback((text) => {
     let lessonContext = buildLessonContext();
     // If answering a section question, prepend it to context so Claude can evaluate
@@ -274,7 +276,6 @@ const LearningHubV2 = () => {
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
-  const [pendingUserQuestion, setPendingUserQuestion] = useState(null);
   const activeGroupRef = useRef(activeGroup);
   activeGroupRef.current = activeGroup;
 
