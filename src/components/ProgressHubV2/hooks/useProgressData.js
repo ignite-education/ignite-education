@@ -6,7 +6,7 @@ import { trackPageVisit } from '../../../lib/tracking';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
-const DEFAULT_STAT_IMAGES = ['/behaviour-calendar.png', '/achievement-start.png'];
+const DEFAULT_STAT_IMAGES = ['/behaviour-calendar.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -340,7 +340,7 @@ const useProgressData = () => {
         let achievementStatValue = null;
         try {
           if (completedCount === 0) {
-            achievementStatValue = { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' };
+            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png' };
           } else {
             const candidates = [];
 
@@ -380,7 +380,7 @@ const useProgressData = () => {
                   }
                 }
                 if (streak >= 2) {
-                  candidates.push({ label: "You're on a", value: `${streak} day streak`, image: '/achievement-streak.png' });
+                  candidates.push({ label: "You're on a", value: `${streak} day streak`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Flame.png' });
                 }
               }
             }
@@ -406,14 +406,14 @@ const useProgressData = () => {
             // Percentile: from pre-computed table
             const percentile = await getUserAchievementPercentile(userId, courseId);
             if (percentile != null && percentile <= 40) {
-              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: '/achievement-top.png' });
+              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Trophy.png' });
             }
 
             // Random pick or fallback
             if (candidates.length > 0) {
               achievementStatValue = candidates[Math.floor(Math.random() * candidates.length)];
             } else {
-              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: '/achievement-start.png' };
+              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png' };
             }
           }
           if (isMounted) setAchievementStat(achievementStatValue);
