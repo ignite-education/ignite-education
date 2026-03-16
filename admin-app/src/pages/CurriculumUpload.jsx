@@ -387,6 +387,7 @@ const CurriculumUpload = () => {
             type: section.content_type || 'paragraph',
             content: blockContent,
             suggestedQuestion: section.suggested_question || '', // Load suggested question from database
+            userQuestion: section.user_question || '', // Load user question from database
             sectionQuestion: (() => { // Load section questions (3-question array or legacy single string)
               const raw = section.section_question || '';
               if (!raw) return ['', '', ''];
@@ -1262,7 +1263,8 @@ const CurriculumUpload = () => {
         suggested_question: block.suggestedQuestion || null, // Save suggested question
         section_question: Array.isArray(block.sectionQuestion) && block.sectionQuestion.some(q => q)
           ? JSON.stringify(block.sectionQuestion)
-          : null // Save section questions as JSON array
+          : null, // Save section questions as JSON array
+        user_question: block.userQuestion || null
       }));
 
       const { data, error } = await supabase
@@ -2145,6 +2147,23 @@ ${contentBlocks.map((block, index) => {
               <div className="text-gray-400">
                 Use **text** for <strong>bold</strong> • Use *text* for <em>italic</em> • Use __text__ for <u>underline</u> • Use [text](url) for <a href="#" className="text-blue-600 underline">links</a> • Use • or - for bullet points
               </div>
+            </div>
+            {/* User Question — optional ungraded question shown after this paragraph */}
+            <div className="mt-3 pt-3 border-t border-gray-700">
+              <label className="text-sm font-medium text-gray-300 block mb-1">User Question (Optional)</label>
+              <input
+                type="text"
+                value={block.userQuestion || ''}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                    b.id === block.id ? { ...b, userQuestion: value } : b
+                  ));
+                }}
+                placeholder="e.g., What do you think this means for product managers?"
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">Ungraded question to engage the user — they must answer before the lesson continues</p>
             </div>
           </div>
         );

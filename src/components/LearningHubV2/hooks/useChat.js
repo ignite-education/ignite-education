@@ -43,15 +43,17 @@ const useChat = () => {
 
         // Pause before newline
         if (currentIndex + 1 < fullText.length && fullText[currentIndex + 1] === '\n') {
-          pauseCounter = 15; // ~675ms
+          pauseCounter = 15; // ~500ms (matches body text typewriter)
           pendingNewline = true;
           currentIndex++;
           return;
         }
 
-        // Pause after sentence-ending punctuation
-        if ('.!?'.includes(fullText[currentIndex])) {
-          pauseCounter = 7; // ~300ms
+        // Pause after punctuation (matches body text typewriter: 400ms for . , ; : ! ?)
+        const ch = fullText[currentIndex];
+        const next = fullText[currentIndex + 1];
+        if ('.,;:!?'.includes(ch) && (next === ' ' || next === '\n' || currentIndex + 1 === fullText.length)) {
+          pauseCounter = 12; // ~400ms at 33ms interval
         }
 
         currentIndex++;

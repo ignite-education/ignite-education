@@ -93,32 +93,55 @@ const LearningHubV2 = () => {
   } = useLessonNavigation({ groupedLessons, lessonsMetadata, completedLessons });
 
   // Text selection → "Explain '...'" in chat input
-  const justSetExplainRef = useRef(false);
-  const handleSelectionRef = useRef(null);
-  handleSelectionRef.current = () => {
+  // selectionchange updates live as user drags; mouseup saves range, focuses input, then restores highlight
+  const savedRangeRef = useRef(null);
+  const restoringSelectionRef = useRef(false);
+  const selectionChangeRef = useRef(null);
+  selectionChangeRef.current = () => {
+    if (restoringSelectionRef.current) return;
     const selection = window.getSelection();
     const text = selection?.toString().trim();
     const anchorNode = selection?.anchorNode;
     const isInputSelection = anchorNode?.parentElement?.tagName === 'INPUT' ||
       anchorNode?.parentElement?.tagName === 'TEXTAREA' ||
       anchorNode?.parentElement?.isContentEditable;
-
     if (isInputSelection) return;
 
     if (text && text.length > 0) {
       setChatInput(`Explain '${text}'`);
-      justSetExplainRef.current = true;
-      chatInputRef.current?.focus();
-      setTimeout(() => { justSetExplainRef.current = false; }, 200);
-    } else if (chatInput.startsWith('Explain \'') && !justSetExplainRef.current) {
+    } else if (chatInput.startsWith('Explain \'') && !savedRangeRef.current) {
       setChatInput('');
     }
   };
 
+  const mouseUpRef = useRef(null);
+  mouseUpRef.current = () => {
+    const selection = window.getSelection();
+    const text = selection?.toString().trim();
+    if (text && text.length > 0 && selection.rangeCount > 0) {
+      // Save the selection range before focus collapses it
+      savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+      restoringSelectionRef.current = true;
+      chatInputRef.current?.focus();
+      // Restore the highlight after focus
+      requestAnimationFrame(() => {
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(savedRangeRef.current);
+        restoringSelectionRef.current = false;
+      });
+    }
+  };
+
   useEffect(() => {
-    const listener = () => handleSelectionRef.current?.();
-    document.addEventListener('selectionchange', listener);
-    return () => document.removeEventListener('selectionchange', listener);
+    const onSelectionChange = () => selectionChangeRef.current?.();
+    const onMouseUp = () => mouseUpRef.current?.();
+    document.addEventListener('selectionchange', onSelectionChange);
+    document.addEventListener('mouseup', onMouseUp);
+    return () => {
+      document.removeEventListener('selectionchange', onSelectionChange);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
   }, []);
 
   // Group ALL sections (including media) by h2 headings
@@ -215,10 +238,21 @@ const LearningHubV2 = () => {
     if (sectionQuestion && chatMessages.length === 0) {
       lessonContext = `SECTION QUESTION: ${sectionQuestion}\n\nThe student is answering the above question. Evaluate their answer based on the lesson content below. Give brief, encouraging feedback. If correct, confirm and add a small insight. If incorrect or incomplete, gently guide them toward the right answer.\n\n${lessonContext}`;
     }
+    // If answering a user question (ungraded, per-paragraph engagement question)
+    if (pendingUserQuestion && chatMessages.length === 0) {
+      lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Give brief, encouraging feedback that contextualises their answer within the lesson. Keep it conversational and supportive.\n\n${lessonContext}`;
+    }
     sendMessage(text, lessonContext);
     setChatInput('');
+    savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage, sectionQuestion, chatMessages.length]);
+  }, [buildLessonContext, sendMessage, sectionQuestion, pendingUserQuestion, chatMessages.length]);
+
+  const handleUserQuestionContinue = useCallback(() => {
+    setPendingUserQuestion(null);
+    setCompletedSections((prev) => prev + 1);
+    resetChat();
+  }, [resetChat]);
 
   // If current group starts with H3, find the parent H2 to display above it
   const parentH2 = useMemo(() => {
@@ -240,8 +274,11 @@ const LearningHubV2 = () => {
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
+  const [pendingUserQuestion, setPendingUserQuestion] = useState(null);
+  const activeGroupRef = useRef(activeGroup);
+  activeGroupRef.current = activeGroup;
 
-  const allTypingComplete = completedSections >= activeGroup.length;
+  const allTypingComplete = completedSections >= activeGroup.length && !pendingUserQuestion;
 
   // Narration — word highlighting & audio playback
   const {
@@ -291,26 +328,51 @@ const LearningHubV2 = () => {
   }, [allTypingComplete, currentGroupIndex]);
 
   const handleSectionComplete = useCallback(() => {
-    setCompletedSections((prev) => prev + 1);
+    setCompletedSections((prev) => {
+      const section = activeGroupRef.current?.[prev];
+      if (section?.user_question?.trim()) {
+        queueMicrotask(() => setPendingUserQuestion(section.user_question.trim()));
+        return prev; // Don't advance — wait for user to answer
+      }
+      return prev + 1;
+    });
   }, []);
 
-  // Auto-scroll when content grows (typing text or chat messages) and user is near bottom
+  // Auto-scroll: continuously lerp toward bottom of content
+  const userScrolledUpRef = useRef(false);
+
+  // Detect manual scroll-up via wheel events
   useEffect(() => {
-    const scrollEl = contentScrollRef.current;
-    const innerEl = contentInnerRef.current;
-    if (!scrollEl || !innerEl) return;
-
-    const observer = new ResizeObserver(() => {
-      const { scrollTop, scrollHeight, clientHeight } = scrollEl;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 150;
-      if (isNearBottom) {
-        scrollEl.scrollTop = scrollHeight;
+    const onWheel = (e) => {
+      if (contentScrollRef.current?.contains(e.target) && e.deltaY < 0) {
+        userScrolledUpRef.current = true;
       }
-    });
+    };
+    document.addEventListener('wheel', onWheel, { passive: true });
+    return () => document.removeEventListener('wheel', onWheel);
+  }, []);
 
-    observer.observe(innerEl);
-    return () => observer.disconnect();
+  useEffect(() => {
+    userScrolledUpRef.current = false;
   }, [currentGroupIndex]);
+
+  // Continuous scroll loop — runs for lifetime of component
+  useEffect(() => {
+    let rafId;
+    const tick = () => {
+      const el = contentScrollRef.current;
+      if (el && !userScrolledUpRef.current) {
+        const target = el.scrollHeight - el.clientHeight;
+        const diff = target - el.scrollTop;
+        if (diff > 0.5) {
+          el.scrollTop += diff * 0.08;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   // Check if the last assistant message just finished typing
   const lastAssistantDone = useMemo(() => {
@@ -318,6 +380,9 @@ const LearningHubV2 = () => {
     const last = chatMessages[chatMessages.length - 1];
     return last.type === 'user' || last.isComplete;
   }, [chatMessages]);
+
+  // User question answered — Claude has responded, show Continue button
+  const userQuestionAnswered = pendingUserQuestion && chatMessages.length >= 2 && lastAssistantDone && !isTyping;
 
   // Delayed fade-in for post-chat buttons (same 500ms delay as initial buttons)
   const [showPostChatButtons, setShowPostChatButtons] = useState(false);
@@ -333,12 +398,14 @@ const LearningHubV2 = () => {
   // Reset to first group when lesson changes
   useEffect(() => {
     setCurrentGroupIndex(0);
+    setPendingUserQuestion(null);
     resetChat();
   }, [currentModule, currentLesson]);
 
   // Handle Continue — replace current group with the next one
   const handleContinue = useCallback(() => {
     setCompletedSections(0);
+    setPendingUserQuestion(null);
     setCurrentGroupIndex((prev) => prev + 1);
     resetChat();
     requestAnimationFrame(() => {
@@ -350,6 +417,7 @@ const LearningHubV2 = () => {
   // Handle Back — go to previous section group
   const handleBack = useCallback(() => {
     setCompletedSections(0);
+    setPendingUserQuestion(null);
     setCurrentGroupIndex((prev) => Math.max(prev - 1, 0));
     resetChat();
     requestAnimationFrame(() => {
@@ -415,7 +483,7 @@ const LearningHubV2 = () => {
                 style={{
                   width: `${lessonProgress}%`,
                   backgroundColor: '#EF0B72',
-                  transition: 'width 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                  transition: 'width 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
                 }}
               />
             </div>
@@ -452,6 +520,18 @@ const LearningHubV2 = () => {
                 ))}
               </div>
 
+              {/* User question — shown after a paragraph section finishes typing, gates next section */}
+              {pendingUserQuestion && chatMessages.length === 0 && (
+                <div className="mt-2 mb-4" style={{ animation: 'chatFadeIn 0.3s ease-out' }}>
+                  <p
+                    className="text-base font-medium leading-relaxed text-black"
+                    style={{ letterSpacing: '-0.01em' }}
+                  >
+                    {pendingUserQuestion}
+                  </p>
+                </div>
+              )}
+
               {/* Action area — buttons crossfade with chat messages at the same position */}
               <div className="mt-3 mb-4">
                 {/* Section question prompt — shown after content finishes typing */}
@@ -464,7 +544,7 @@ const LearningHubV2 = () => {
                     }}
                   >
                     <p
-                      className="text-base font-light leading-relaxed text-black"
+                      className="text-base font-medium leading-relaxed text-black"
                       style={{ letterSpacing: '-0.01em' }}
                     >
                       {sectionQuestion}
@@ -525,19 +605,19 @@ const LearningHubV2 = () => {
                         className="p-2 cursor-pointer transition-colors"
                         style={{
                           transition: 'color 0.15s',
-                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF',
+                          color: isReading && !isPaused ? '#EF0B72' : audioReady ? '#000' : '#9CA3AF',
                           opacity: audioReady ? 1 : 0.4,
                         }}
                         disabled={!audioReady}
                         aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
                         title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
-                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#D10A64'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF'; }}
+                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#EF0B72' : audioReady ? '#000' : '#9CA3AF'; }}
                       >
                         {isReading && !isPaused ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <rect x="6" y="4" width="4" height="16" rx="1" />
+                            <rect x="14" y="4" width="4" height="16" rx="1" />
                           </svg>
                         ) : (
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -588,6 +668,24 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
+                {/* User question answered — Continue button to advance to next section */}
+                {userQuestionAnswered && (
+                  <div
+                    className="flex items-center gap-2 mt-3"
+                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                  >
+                    <button
+                      onClick={handleUserQuestionContinue}
+                      className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                      style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                )}
+
                 {/* Buttons reappear after assistant finishes typing */}
                 {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && (
                   <div
@@ -615,50 +713,21 @@ const LearningHubV2 = () => {
                         Continue
                       </button>
                     )}
-                    <div className="flex items-center">
-                      {currentGroupIndex > 0 && (
-                        <button
-                          onClick={handleBack}
-                          className="p-2 text-black cursor-pointer transition-colors"
-                          style={{ transition: 'color 0.15s' }}
-                          aria-label="Back"
-                          onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                          onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M19 12H5" />
-                            <path d="M12 19l-7-7 7-7" />
-                          </svg>
-                        </button>
-                      )}
+                    {currentGroupIndex > 0 && (
                       <button
-                        onClick={toggleNarration}
-                        className="p-2 cursor-pointer transition-colors"
-                        style={{
-                          transition: 'color 0.15s',
-                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF',
-                          opacity: audioReady ? 1 : 0.4,
-                        }}
-                        disabled={!audioReady}
-                        aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
-                        title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
-                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#D10A64'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF'; }}
+                        onClick={handleBack}
+                        className="p-2 text-black cursor-pointer transition-colors"
+                        style={{ transition: 'color 0.15s' }}
+                        aria-label="Back"
+                        onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
                       >
-                        {isReading && !isPaused ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="6" y="4" width="4" height="16" />
-                            <rect x="14" y="4" width="4" height="16" />
-                          </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                            <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                            <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                          </svg>
-                        )}
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M19 12H5" />
+                          <path d="M12 19l-7-7 7-7" />
+                        </svg>
                       </button>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
