@@ -153,14 +153,28 @@ const useChat = () => {
       setIsTyping(false);
 
       if (data.success) {
+        // Extract clean feedback — handle cases where API returns raw JSON or code-fenced JSON
+        let feedback = data.feedback || '';
+        let score = data.score;
+        // Strip markdown code fences
+        feedback = feedback.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
+        // If feedback looks like a JSON object, extract the feedback field from it
+        if (feedback.startsWith('{') && feedback.includes('"feedback"')) {
+          try {
+            const parsed = JSON.parse(feedback);
+            feedback = parsed.feedback || feedback;
+            if (parsed.score != null) score = parsed.score;
+          } catch (_) { /* use as-is */ }
+        }
+
         const newMessageIndex = newMessages.length;
         setChatMessages(prev => [...prev, {
           type: 'assistant',
-          text: data.feedback,
+          text: feedback,
           isComplete: false,
         }]);
         setTypingMessageIndex(newMessageIndex);
-        return { score: data.score, feedback: data.feedback };
+        return { score, feedback };
       } else {
         throw new Error(data.error || 'Failed to score answer');
       }

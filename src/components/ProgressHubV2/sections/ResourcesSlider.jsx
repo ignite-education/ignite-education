@@ -1,7 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-const CARD_WIDTH = 416;
+const MIN_CARD_WIDTH = 450;
 const CARD_GAP = 16;
+
+// Measure text width using Canvas API to dynamically size cards
+const getTextWidth = (() => {
+  let canvas;
+  return (text, fontSizePx, fontWeight = 'normal') => {
+    if (!canvas) canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight} ${fontSizePx}px ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    return ctx.measureText(text).width;
+  };
+})();
 
 const ResourcesSlider = ({ resources = [] }) => {
   const scrollContainerRef = useRef(null);
@@ -27,6 +38,13 @@ const ResourcesSlider = ({ resources = [] }) => {
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
+  }, []);
+
+  const getCardWidth = useCallback((resource) => {
+    const titleWidth = getTextWidth(resource.title || '', 17.6, '500');
+    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1.5rem≈24) + buffer
+    const neededWidth = Math.ceil(titleWidth + 122);
+    return Math.max(MIN_CARD_WIDTH, neededWidth);
   }, []);
 
   // Drag scroll handlers
@@ -57,11 +75,12 @@ const ResourcesSlider = ({ resources = [] }) => {
       let index = 0;
 
       for (let i = 0; i < resources.length; i++) {
-        if (scrollPosition < cumulativeWidth + CARD_WIDTH / 2) {
+        const cardWidth = getCardWidth(resources[i]);
+        if (scrollPosition < cumulativeWidth + cardWidth / 2) {
           index = i;
           break;
         }
-        cumulativeWidth += CARD_WIDTH + CARD_GAP;
+        cumulativeWidth += cardWidth + CARD_GAP;
         if (i === resources.length - 1) index = i;
       }
 
@@ -97,76 +116,78 @@ const ResourcesSlider = ({ resources = [] }) => {
         onMouseLeave={handleMouseLeave}
         onScroll={handleScroll}
       >
-        <div
-          className="flex gap-4 items-stretch"
-          style={{
-            paddingRight: containerWidth > 0 ? `${Math.max(0, containerWidth - CARD_WIDTH - CARD_GAP)}px` : '0px',
-          }}
-        >
-          {resources.map((resource, index) => (
-            <div
-              key={resource.id}
-              className="relative flex items-center gap-3 group"
-              style={{
-                width: `${CARD_WIDTH}px`,
-                minWidth: `${CARD_WIDTH}px`,
-                flexShrink: 0,
-                paddingTop: '0.7rem',
-                paddingRight: '1.5rem',
-                paddingBottom: '0.7rem',
-                paddingLeft: '1.4rem',
-                borderRadius: '0.3rem',
-                background: '#7714E0',
-                scrollSnapAlign: 'start',
-                scrollSnapStop: 'always',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
-              }}
-            >
-              {/* Blur overlay for non-snapped cards */}
+        <div className="flex gap-4 items-stretch">
+          {resources.map((resource, index) => {
+            const cardWidth = getCardWidth(resource);
+            return (
               <div
+                key={resource.id}
+                className="relative flex items-center gap-3 group"
                 style={{
-                  position: 'absolute',
-                  top: 0, left: 0, right: 0, bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  backdropFilter: 'blur(0.75px)',
-                  WebkitBackdropFilter: 'blur(0.75px)',
+                  width: `${cardWidth}px`,
+                  minWidth: `${cardWidth}px`,
+                  flexShrink: 0,
+                  paddingTop: '0.7rem',
+                  paddingRight: '1.5rem',
+                  paddingBottom: '0.7rem',
+                  paddingLeft: '1.4rem',
                   borderRadius: '0.3rem',
-                  pointerEvents: 'none',
-                  opacity: index !== snappedCardIndex ? 1 : 0,
-                  transition: 'opacity 0.3s ease-in-out',
-                  willChange: 'opacity',
+                  background: '#7714E0',
+                  scrollSnapAlign: 'start',
+                  scrollSnapStop: 'always',
+                  cursor: 'pointer',
                 }}
-              />
-              <div className="flex-1" style={{ minWidth: 0 }}>
-                <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
-                  {resource.title}
-                </h4>
-                <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
-                  {resource.description}
-                </p>
-              </div>
-
-              <button
-                className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
-                style={{
-                  width: '48px', height: '48px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '0.3rem'
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
                 }}
               >
-                <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          ))}
+                {/* Blur overlay for non-snapped cards */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    backdropFilter: 'blur(0.75px)',
+                    WebkitBackdropFilter: 'blur(0.75px)',
+                    borderRadius: '0.3rem',
+                    pointerEvents: 'none',
+                    opacity: index !== snappedCardIndex ? 1 : 0,
+                    transition: 'opacity 0.3s ease-in-out',
+                    willChange: 'opacity',
+                  }}
+                />
+                <div className="flex-1" style={{ minWidth: 0 }}>
+                  <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', whiteSpace: 'nowrap' }}>
+                    {resource.title}
+                  </h4>
+                  <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
+                    {resource.description}
+                  </p>
+                </div>
+
+                <button
+                  className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                  style={{
+                    width: '48px', height: '48px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: '0.3rem'
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (resource.url) window.open(resource.url, '_blank', 'noopener,noreferrer');
+                  }}
+                >
+                  <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            );
+          })}
+          {/* Spacer to allow last card to scroll fully to start position */}
+          {resources.length > 0 && containerWidth > 0 && (
+            <div style={{ width: `${Math.max(0, containerWidth - getCardWidth(resources[resources.length - 1]))}px`, flexShrink: 0 }} />
+          )}
         </div>
       </div>
     </div>

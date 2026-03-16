@@ -48,11 +48,13 @@ const LearningHubV2 = () => {
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
+  const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
   const [scoredQuestionPool, setScoredQuestionPool] = useState([]);
   const [scoredQuestionIndex, setScoredQuestionIndex] = useState(0);
   const [scoredAttemptCount, setScoredAttemptCount] = useState(0);
   const [scoredResult, setScoredResult] = useState(null);
   const [scoredSectionContent, setScoredSectionContent] = useState('');
+  const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
@@ -60,6 +62,7 @@ const LearningHubV2 = () => {
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
   const chatInputRef = useRef(null);
+  const prevSuggestedQuestionRef = useRef(null);
 
   // Start logo animation after a short delay (matches ProgressHubV2 behavior)
   useEffect(() => {
@@ -111,10 +114,16 @@ const LearningHubV2 = () => {
     const selection = window.getSelection();
     const text = selection?.toString().trim();
     const anchorNode = selection?.anchorNode;
-    const isInputSelection = anchorNode?.parentElement?.tagName === 'INPUT' ||
-      anchorNode?.parentElement?.tagName === 'TEXTAREA' ||
-      anchorNode?.parentElement?.isContentEditable;
-    if (isInputSelection) return;
+
+    // Only trigger for selections within the lesson content area
+    const isInContent = anchorNode && contentInnerRef.current?.contains(anchorNode);
+    if (!isInContent) {
+      // Clear "Explain" if selection moved outside content
+      if (chatInput.startsWith('Explain \'') && !savedRangeRef.current) {
+        setChatInput('');
+      }
+      return;
+    }
 
     if (text && text.length > 0) {
       setChatInput(`Explain '${text}'`);
@@ -127,7 +136,9 @@ const LearningHubV2 = () => {
   mouseUpRef.current = () => {
     const selection = window.getSelection();
     const text = selection?.toString().trim();
-    if (text && text.length > 0 && selection.rangeCount > 0) {
+    const anchorNode = selection?.anchorNode;
+    const isInContent = anchorNode && contentInnerRef.current?.contains(anchorNode);
+    if (text && text.length > 0 && selection.rangeCount > 0 && isInContent) {
       // Save the selection range before focus collapses it
       savedRangeRef.current = selection.getRangeAt(0).cloneRange();
       restoringSelectionRef.current = true;
@@ -200,13 +211,38 @@ const LearningHubV2 = () => {
     return () => cancelAnimationFrame(frame);
   }, [targetProgress]);
 
-  // Get suggested question from the current group's H2 heading
+  // Get suggested question — persists from parent H2 across H3 sub-sections
   const suggestedQuestion = useMemo(() => {
-    const h2Section = activeGroup.find(
+    // Check current group for its own H2
+    const h2InGroup = activeGroup.find(
       s => s.content_type === 'heading' && (s.content?.level || 2) === 2
     );
-    return h2Section?.suggested_question?.trim() || null;
-  }, [activeGroup]);
+    if (h2InGroup) {
+      return h2InGroup.suggested_question?.trim() || null;
+    }
+
+    // H3 sub-group — walk backwards to find the parent H2's suggested question
+    for (let i = currentGroupIndex - 1; i >= 0; i--) {
+      const group = allGroups[i] || [];
+      for (let j = group.length - 1; j >= 0; j--) {
+        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
+          return group[j].suggested_question?.trim() || null;
+        }
+      }
+    }
+    return null;
+  }, [activeGroup, allGroups, currentGroupIndex]);
+
+  // Track whether the suggested question persisted unchanged across a group transition
+  // so the chip doesn't flicker off and back on during H3 transitions
+  const suggestedQuestionPersisted = suggestedQuestion && suggestedQuestion === prevSuggestedQuestionRef.current;
+  useEffect(() => {
+    // Reset dismissed state when the suggested question changes (new H2 section)
+    if (suggestedQuestion !== prevSuggestedQuestionRef.current) {
+      setSuggestedQuestionDismissed(false);
+    }
+    prevSuggestedQuestionRef.current = suggestedQuestion;
+  }, [suggestedQuestion]);
 
   // Build lesson context from sections up to a given index (for scored question evaluation)
   const buildGroupContentUpTo = useCallback((sectionIndex) => {
@@ -248,7 +284,7 @@ const LearningHubV2 = () => {
 
   const handleChatSubmit = useCallback(async (text) => {
     // Scored question mode — use /api/score-answer instead of regular chat
-    if (showingScoredQuestion) {
+    if (showingScoredQuestion && !scoredIntroPhase) {
       const userMessage = text.trim();
       if (!userMessage) return;
       setChatInput('');
@@ -275,7 +311,7 @@ const LearningHubV2 = () => {
     setChatInput('');
     savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage, sendScoredMessage, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent]);
+  }, [buildLessonContext, sendMessage, sendScoredMessage, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent]);
 
   // If current group starts with H3, find the parent H2 to display above it
   const parentH2 = useMemo(() => {
@@ -294,6 +330,36 @@ const LearningHubV2 = () => {
     }
     return null;
   }, [allGroups, currentGroupIndex, activeGroup]);
+
+  // Get H2 section name for scored question intro
+  const currentH2Name = useMemo(() => {
+    const h2InGroup = activeGroup.find(
+      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
+    );
+    if (h2InGroup) return h2InGroup.content?.text || h2InGroup.title || '';
+    if (parentH2) return parentH2.content?.text || parentH2.title || '';
+    return '';
+  }, [activeGroup, parentH2]);
+
+  // Scored question intro text — persists across both phases so it stays visible when question appears
+  const scoredIntroFullText = showingScoredQuestion
+    ? `${firstName || 'there'}, I'll now ask you a question based on the content in ${currentH2Name || 'this section'} that we've reviewed together. Ensure your answer is thorough and you answer the question asked.\nReady to proceed?`
+    : '';
+  // Only animate during intro phase; once past intro, text is rendered statically
+  const scoredIntroAnimateText = scoredIntroPhase ? scoredIntroFullText : '';
+  const { revealedText: scoredIntroRevealed, isComplete: scoredIntroDone } = useTypewriter(
+    scoredIntroAnimateText,
+    { speed: 33, delay: 800, enabled: !!scoredIntroAnimateText }
+  );
+
+  // Scored question text with typewriter animation (after intro phase)
+  const scoredQuestionText = showingScoredQuestion && !scoredIntroPhase
+    ? (scoredQuestionPool[scoredQuestionIndex] || '')
+    : '';
+  const { revealedText: scoredQuestionRevealed, isComplete: scoredQuestionDone } = useTypewriter(
+    scoredQuestionText,
+    { speed: 33, delay: 800, enabled: !!scoredQuestionText }
+  );
 
   // Sequential typing — track how many sections have finished animating
   const [completedSections, setCompletedSections] = useState(0);
@@ -362,6 +428,7 @@ const LearningHubV2 = () => {
 
         queueMicrotask(() => {
           setShowingScoredQuestion(true);
+          setScoredIntroPhase(true);
           setScoredQuestionPool(questions);
           setScoredQuestionIndex(0);
           setScoredAttemptCount(0);
@@ -553,14 +620,39 @@ const LearningHubV2 = () => {
     }
   }, [resetChat, isLastGroup, handleEndLesson]);
 
+  // Scored question intro → show the actual question underneath
+  const handleScoredIntroComplete = useCallback(() => {
+    setScoredIntroPhase(false);
+    // Focus chat input after question finishes typing — handled via effect
+  }, []);
+
   // Scored question — pass (advance past the block)
   const handleScoredQuestionPass = useCallback(() => {
     setShowingScoredQuestion(false);
+    setScoredIntroPhase(true);
     setScoredResult(null);
     setScoredQuestionPool([]);
     resetChat();
-    setCompletedSections((prev) => prev + 1);
-  }, [resetChat]);
+
+    const groupLen = activeGroupRef.current?.length || 0;
+    const currentCompleted = completedSectionsRef.current;
+
+    if (currentCompleted + 1 >= groupLen) {
+      // Scored question was last section — advance to next group directly
+      if (isLastGroup) {
+        handleEndLesson();
+      } else {
+        setCompletedSections(0);
+        setCurrentGroupIndex((prev) => prev + 1);
+        requestAnimationFrame(() => {
+          contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        chatInputRef.current?.focus();
+      }
+    } else {
+      setCompletedSections((prev) => prev + 1);
+    }
+  }, [resetChat, isLastGroup, handleEndLesson]);
 
   // Scored question — retry same question
   const handleScoredQuestionRetry = useCallback(() => {
@@ -580,8 +672,16 @@ const LearningHubV2 = () => {
     setScoredQuestionIndex(nextIndex);
     setScoredAttemptCount(0);
     setScoredResult(null);
+    setScoredIntroPhase(false); // skip intro for subsequent questions
     resetChat();
   }, [resetChat, scoredQuestionIndex, scoredQuestionPool.length, handleScoredQuestionPass]);
+
+  // Auto-focus chat input when scored question finishes typing
+  useEffect(() => {
+    if (showingScoredQuestion && !scoredIntroPhase && scoredQuestionDone) {
+      chatInputRef.current?.focus();
+    }
+  }, [showingScoredQuestion, scoredIntroPhase, scoredQuestionDone]);
 
   // Determine scored question button state
   const scoredQuestionAnswered = showingScoredQuestion && scoredResult && lastAssistantDone && !isTyping;
@@ -642,19 +742,111 @@ const LearningHubV2 = () => {
           {/* Scrollable content area */}
           <div
             ref={contentScrollRef}
-            className="flex-1 overflow-y-auto pb-8 hide-scrollbar"
+            className="flex-1 overflow-y-auto pb-24 hide-scrollbar"
             style={{ paddingLeft: '40px', paddingRight: '70px' }}
           >
             <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
-              {/* Scored question screen — blank left panel with the question */}
+              {/* Scored question screen — intro text, then question types underneath */}
               {showingScoredQuestion && scoredQuestionPool.length > 0 ? (
-                <div key={`scored-${scoredQuestionIndex}`} style={{ animation: 'chatFadeIn 0.3s ease-out' }}>
-                  <p
-                    className="text-base font-medium leading-relaxed text-black"
-                    style={{ letterSpacing: '-0.01em' }}
+                <div key={`scored-${scoredQuestionIndex}`}>
+                  {/* H2 heading persists at top */}
+                  {currentH2Name && (
+                    <div className="mt-0 mb-3">
+                      <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                        {currentH2Name}
+                      </h2>
+                    </div>
+                  )}
+                  {/* Intro text */}
+                  <div
+                    className="text-base font-light leading-relaxed text-black"
+                    style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
                   >
-                    {scoredQuestionPool[scoredQuestionIndex]}
-                  </p>
+                    {scoredIntroPhase ? (
+                      <>
+                        {(() => {
+                          const text = scoredIntroRevealed || '';
+                          const lines = text.split('\n');
+                          return lines.map((line, li) => (
+                            <p key={li} className={li > 0 ? 'mt-3' : ''}>
+                              {line}
+                              {li === lines.length - 1 && !scoredIntroDone && scoredIntroRevealed && (
+                                <span
+                                  className="inline-block ml-1.5"
+                                  style={{
+                                    width: 8,
+                                    height: 8,
+                                    backgroundColor: '#8200EA',
+                                    verticalAlign: 'middle',
+                                    position: 'relative',
+                                    top: '-1px',
+                                  }}
+                                />
+                              )}
+                            </p>
+                          ));
+                        })()}
+                        {!scoredIntroDone && !scoredIntroRevealed && (
+                          <p>
+                            <span
+                              className="inline-block"
+                              style={{
+                                width: 8,
+                                height: 8,
+                                backgroundColor: '#8200EA',
+                                verticalAlign: 'middle',
+                                position: 'relative',
+                                top: '-1px',
+                                animation: 'purplePulse 1.2s ease-in-out infinite',
+                              }}
+                            />
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      /* Static intro text after intro phase */
+                      scoredIntroFullText.split('\n').map((line, li) => (
+                        <p key={li} className={li > 0 ? 'mt-3' : ''}>{line}</p>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Question text — types underneath intro after Continue is clicked */}
+                  {!scoredIntroPhase && (
+                    <p
+                      className="text-base font-semibold leading-relaxed text-black mt-4"
+                      style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
+                    >
+                      {scoredQuestionRevealed}
+                      {!scoredQuestionDone && scoredQuestionRevealed && (
+                        <span
+                          className="inline-block ml-1.5"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            backgroundColor: '#8200EA',
+                            verticalAlign: 'middle',
+                            position: 'relative',
+                            top: '-1px',
+                          }}
+                        />
+                      )}
+                      {!scoredQuestionDone && !scoredQuestionRevealed && (
+                        <span
+                          className="inline-block"
+                          style={{
+                            width: 8,
+                            height: 8,
+                            backgroundColor: '#8200EA',
+                            verticalAlign: 'middle',
+                            position: 'relative',
+                            top: '-1px',
+                            animation: 'purplePulse 1.2s ease-in-out infinite',
+                          }}
+                        />
+                      )}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <>
@@ -853,6 +1045,24 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
+                {/* Scored question intro phase — Continue to proceed to the question */}
+                {showingScoredQuestion && scoredIntroPhase && scoredIntroDone && (
+                  <div
+                    className="flex items-center gap-2 mt-3"
+                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                  >
+                    <button
+                      onClick={handleScoredIntroComplete}
+                      className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                      style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                    >
+                      Continue
+                    </button>
+                  </div>
+                )}
+
                 {/* Scored question answered — show Continue, Try Again, or auto-advance */}
                 {scoredQuestionAnswered && (
                   <div
@@ -956,16 +1166,17 @@ const LearningHubV2 = () => {
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && !showingScoredQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
+                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons)) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !showingScoredQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
-                height: !suggestedQuestion || showingScoredQuestion || chatMessages.length > 0 ? 0 : 'auto',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons)) ? 'auto' : 'none',
+                height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion ? 0 : 'auto',
                 overflow: 'hidden',
               }}
             >
               {suggestedQuestion && (
                 <button
                   onClick={() => {
+                    setSuggestedQuestionDismissed(true);
                     setChatInput(suggestedQuestion);
                     handleChatSubmit(suggestedQuestion);
                     chatInputRef.current?.focus();
@@ -989,7 +1200,7 @@ const LearningHubV2 = () => {
         {/* Right column — media panel */}
         <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
           <div key={activeGroupMedia.map(s => s.id).join('|')} className="w-full" style={{ animation: 'mediaFadeIn 500ms ease-in-out' }}>
-            <MediaPanel sections={activeGroupMedia} />
+            <MediaPanel sections={showingScoredQuestion ? [] : activeGroupMedia} />
           </div>
         </div>
       </div>

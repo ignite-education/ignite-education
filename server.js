@@ -1873,11 +1873,13 @@ Student's Answer: ${answer}
 Evaluate the answer and respond with ONLY a JSON object (no markdown, no code fences):
 {"score": <number 0-10>, "feedback": "<brief feedback text>"}
 
-Scoring guide:
-- 8-10: Strong understanding, covers key concepts
-- 5-7: Adequate understanding, may miss some nuance
-- 3-4: Partial understanding, missing key points
-- 0-2: Does not demonstrate understanding
+Scoring guide (be generous — reward effort and partial understanding):
+- 8-10: Demonstrates understanding of the key concepts, even if not perfectly worded
+- 6-7: Shows reasonable understanding with some gaps
+- 4-5: Partial understanding, missing several key points
+- 0-3: Does not demonstrate understanding
+
+Important: If the student addresses the core idea of the question, even without covering every detail, score 7 or above. Reserve scores below 6 for answers that genuinely miss the point.
 
 Feedback rules:
 - Keep feedback to 1-2 sentences
@@ -1889,7 +1891,9 @@ Feedback rules:
       messages: [{ role: 'user', content: 'Evaluate the student answer.' }],
     });
 
-    const raw = message.content[0].text.trim();
+    let raw = message.content[0].text.trim();
+    // Strip markdown code fences if the model wraps the JSON in them
+    raw = raw.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '').trim();
     try {
       const parsed = JSON.parse(raw);
       res.json({ success: true, score: parsed.score, feedback: parsed.feedback });
