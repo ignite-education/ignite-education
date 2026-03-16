@@ -15,6 +15,7 @@ import MediaPanel from './components/MediaPanel';
 import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
 import useChat from './hooks/useChat';
+import useTypewriter from './hooks/useTypewriter';
 import Footer from '../Footer';
 
 // Group text sections by h2 headings — each h2 starts a new group
@@ -233,6 +234,14 @@ const LearningHubV2 = () => {
   }, [activeGroup, lessonName, currentModule]);
 
   const [pendingUserQuestion, setPendingUserQuestion] = useState(null);
+  const [pendingUserQuestionMeta, setPendingUserQuestionMeta] = useState(null);
+  const userQuestionDisplayText = pendingUserQuestion
+    ? pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || 'there')
+    : '';
+  const { revealedText: userQuestionRevealed, isComplete: userQuestionTypingDone, lookaheadWord: userQuestionLookahead } = useTypewriter(
+    userQuestionDisplayText,
+    { speed: 45, delay: 1000, enabled: !!pendingUserQuestion }
+  );
 
   const handleChatSubmit = useCallback((text) => {
     let lessonContext = buildLessonContext();
@@ -252,6 +261,7 @@ const LearningHubV2 = () => {
 
   const handleUserQuestionContinue = useCallback(() => {
     setPendingUserQuestion(null);
+    setPendingUserQuestionMeta(null);
     setCompletedSections((prev) => prev + 1);
     resetChat();
   }, [resetChat]);
@@ -332,7 +342,16 @@ const LearningHubV2 = () => {
     setCompletedSections((prev) => {
       const section = activeGroupRef.current?.[prev];
       if (section?.user_question?.trim()) {
-        queueMicrotask(() => setPendingUserQuestion(section.user_question.trim()));
+        queueMicrotask(() => {
+          setPendingUserQuestion(section.user_question.trim());
+          setPendingUserQuestionMeta({
+            saveFeedback: section.save_feedback || false,
+            courseId: section.course_id,
+            moduleNumber: section.module_number,
+            lessonNumber: section.lesson_number,
+            sectionNumber: section.section_number,
+          });
+        });
         return prev; // Don't advance — wait for user to answer
       }
       return prev + 1;
@@ -384,6 +403,38 @@ const LearningHubV2 = () => {
 
   // User question answered — Claude has responded, show Continue button
   const userQuestionAnswered = pendingUserQuestion && chatMessages.length >= 2 && lastAssistantDone && !isTyping;
+
+  // Silently save user question response when save_feedback is enabled
+  const savedResponseRef = useRef(false);
+  useEffect(() => {
+    if (!userQuestionAnswered) {
+      savedResponseRef.current = false;
+      return;
+    }
+    if (savedResponseRef.current || !pendingUserQuestionMeta?.saveFeedback) return;
+    if (chatMessages.length < 2) return;
+
+    const userMsg = chatMessages.find(m => m.type === 'user');
+    const assistantMsg = chatMessages.find(m => m.type === 'assistant');
+    if (!userMsg || !assistantMsg) return;
+
+    savedResponseRef.current = true;
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
+    fetch(`${apiUrl}/api/user-question-response`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: user.id,
+        courseId: pendingUserQuestionMeta.courseId,
+        moduleNumber: pendingUserQuestionMeta.moduleNumber,
+        lessonNumber: pendingUserQuestionMeta.lessonNumber,
+        sectionNumber: pendingUserQuestionMeta.sectionNumber,
+        question: pendingUserQuestion,
+        answer: userMsg.text,
+        claudeFeedback: assistantMsg.text,
+      }),
+    }).catch(err => console.error('Failed to save question response:', err));
+  }, [userQuestionAnswered, pendingUserQuestionMeta, pendingUserQuestion, chatMessages, user?.id]);
 
   // Delayed fade-in for post-chat buttons (same 500ms delay as initial buttons)
   const [showPostChatButtons, setShowPostChatButtons] = useState(false);
@@ -522,13 +573,34 @@ const LearningHubV2 = () => {
               </div>
 
               {/* User question — shown after a paragraph section finishes typing, gates next section */}
-              {pendingUserQuestion && chatMessages.length === 0 && (
-                <div className="mt-2 mb-4" style={{ animation: 'chatFadeIn 0.3s ease-out' }}>
+              {pendingUserQuestion && (
+                <div className="mt-2 mb-4">
                   <p
                     className="text-base font-medium leading-relaxed text-black"
-                    style={{ letterSpacing: '-0.01em' }}
+                    style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
                   >
-                    {pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || 'there')}
+                    {chatMessages.length > 0
+                      ? userQuestionDisplayText
+                      : (
+                        <>
+                          {userQuestionRevealed}
+                          {!userQuestionTypingDone && (
+                            <span
+                              className="inline-block ml-1.5"
+                              style={{
+                                width: 8,
+                                height: 8,
+                                backgroundColor: '#8200EA',
+                                verticalAlign: 'middle',
+                                position: 'relative',
+                                top: '-1px',
+                              }}
+                            />
+                          )}
+                          <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{userQuestionDisplayText.slice(userQuestionRevealed.length)}</span>
+                        </>
+                      )
+                    }
                   </p>
                 </div>
               )}

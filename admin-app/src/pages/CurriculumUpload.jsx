@@ -388,6 +388,7 @@ const CurriculumUpload = () => {
             content: blockContent,
             suggestedQuestion: section.suggested_question || '', // Load suggested question from database
             userQuestion: section.user_question || '', // Load user question from database
+            saveFeedback: section.save_feedback || false, // Load save_feedback flag
             sectionQuestion: (() => { // Load section questions (3-question array or legacy single string)
               const raw = section.section_question || '';
               if (!raw) return ['', '', ''];
@@ -1264,7 +1265,8 @@ const CurriculumUpload = () => {
         section_question: Array.isArray(block.sectionQuestion) && block.sectionQuestion.some(q => q)
           ? JSON.stringify(block.sectionQuestion)
           : null, // Save section questions as JSON array
-        user_question: block.userQuestion || null
+        user_question: block.userQuestion || null,
+        save_feedback: block.saveFeedback || false
       }));
 
       const { data, error } = await supabase
@@ -2177,6 +2179,19 @@ ${contentBlocks.map((block, index) => {
                 >
                   + Insert name
                 </button>
+                <label className="flex items-center gap-1.5 text-xs text-gray-400 cursor-pointer ml-auto">
+                  <input
+                    type="checkbox"
+                    checked={block.saveFeedback || false}
+                    onChange={(e) => {
+                      setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                        b.id === block.id ? { ...b, saveFeedback: e.target.checked } : b
+                      ));
+                    }}
+                    className="accent-pink-500"
+                  />
+                  Save to memory
+                </label>
               </div>
             </div>
           </div>

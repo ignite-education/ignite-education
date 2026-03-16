@@ -207,7 +207,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
               const el = (
                 <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
                   <span className="text-black leading-relaxed">•</span>
-                  <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em' }}>
+                  <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
                     {renderNarrationText(bulletText, lineWordOffset)}
                   </span>
                 </div>
@@ -217,7 +217,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
               return el;
             } else if (trimmedLine) {
               const el = (
-                <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em' }}>
+                <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
                   {renderNarrationText(line, lineWordOffset)}
                 </p>
               );
@@ -234,7 +234,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
     }
 
     return (
-      <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em' }}>
+      <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
         {renderNarrationText(text, wordIndexOffset)}
       </p>
     );
@@ -242,18 +242,21 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
 
   // --- Normal mode: typewriter animation ---
   const cursorDot = <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
-  // Invisible rest-of-word keeps the word together for line-break calculation
+  // Invisible remaining text keeps the full layout stable — prevents mid-word line breaks
+  const remainingText = !isComplete && text ? text.slice(revealedText.length) : '';
+  // Extract the current line's remaining text (up to next newline) for inline lookahead
+  const remainingOnLine = remainingText.split('\n')[0] || '';
   const cursor = !isComplete ? (
     <>
       {cursorDot}
-      {lookaheadWord && <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{lookaheadWord}</span>}
+      <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingOnLine}</span>
     </>
   ) : null;
 
   // Show pulsing cursor during delay, before text starts
   if (!revealedText && !isComplete) {
     return (
-      <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em' }}>
+      <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
         <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }} />
       </p>
     );
@@ -277,21 +280,21 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
             return (
               <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
                 <span className="text-black leading-relaxed">•</span>
-                <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em' }}>
+                <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
                   {renderFormattedText(bulletText, { inProgress: isLast && !isComplete })}{isLast && cursor}
                 </span>
               </div>
             );
           } else if (trimmedLine) {
             return (
-              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em' }}>
+              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
                 {renderFormattedText(line, { inProgress: isLast && !isComplete })}{isLast && cursor}
               </p>
             );
           } else if (isLast && !isComplete) {
             // Empty last line during newline pause — show cursor at start of new line
             return (
-              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em' }}>
+              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
                 <span className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
               </p>
             );
@@ -305,7 +308,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
   }
 
   return (
-    <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em' }}>
+    <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
       {renderFormattedText(revealedText, { inProgress: !isComplete })}{cursor}
     </p>
   );

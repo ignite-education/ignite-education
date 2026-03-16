@@ -591,6 +591,157 @@ Your role:
   }
 });
 
+// Save user question response (for memory aggregation)
+app.post('/api/user-question-response', async (req, res) => {
+  try {
+    const { userId, courseId, moduleNumber, lessonNumber, sectionNumber, question, answer, claudeFeedback } = req.body;
+
+    if (!userId || !question || !answer) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    const { error } = await supabase
+      .from('user_question_responses')
+      .insert({
+        user_id: userId,
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        section_number: sectionNumber,
+        question,
+        answer,
+        claude_feedback: claudeFeedback || null,
+      });
+
+    if (error) throw error;
+
+    res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('Error saving user question response:', error);
+    res.status(500).json({ success: false, error: 'Failed to save response' });
+  }
+});
+
+// Weekly memory aggregation cron endpoint (also callable via HTTP for manual trigger)
+app.post('/api/cron/aggregate-memory', async (req, res) => {
+  try {
+    // Verify cron secret
+    const authHeader = req.headers.authorization;
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const result = await aggregateUserMemory();
+    res.json({ success: true, ...result });
+  } catch (error) {
+    console.error('Error in memory aggregation cron:', error);
+    res.status(500).json({ success: false, error: 'Aggregation failed' });
+  }
+});
+
+// Shared aggregation logic (used by both HTTP endpoint and cron schedule)
+async function aggregateUserMemory() {
+  // Find all users with unprocessed responses
+  const { data: users, error: usersError } = await supabase
+    .from('user_question_responses')
+    .select('user_id')
+    .eq('processed', false);
+
+  if (usersError) throw usersError;
+  if (!users || users.length === 0) return { usersProcessed: 0, responsesProcessed: 0 };
+
+  // Deduplicate user IDs
+  const uniqueUserIds = [...new Set(users.map(u => u.user_id))];
+  let totalResponses = 0;
+
+  // Process each user sequentially to avoid Claude API rate limits
+  for (const userId of uniqueUserIds) {
+    // Fetch unprocessed responses for this user
+    const { data: responses, error: respError } = await supabase
+      .from('user_question_responses')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('processed', false)
+      .order('created_at', { ascending: true });
+
+    if (respError || !responses?.length) continue;
+
+    // Fetch current memory
+    const { data: memoryRows } = await supabase
+      .from('user_memory')
+      .select('id, content')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    const existingMemory = memoryRows?.map(r => r.content).join('\n') || '';
+
+    // Format interactions for Claude
+    const interactions = responses.map(r =>
+      `Module ${r.module_number}, Lesson ${r.lesson_number}:\n  Question: ${r.question}\n  Answer: ${r.answer}${r.claude_feedback ? `\n  Tutor feedback: ${r.claude_feedback}` : ''}`
+    ).join('\n\n');
+
+    // Call Claude to regenerate memory
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `You are updating a learner's memory profile. Below is their existing memory (which may be empty) and a set of new question-answer interactions from their recent lessons.
+
+EXISTING MEMORY:
+${existingMemory || 'No existing memory.'}
+
+NEW INTERACTIONS:
+${interactions}
+
+Rewrite the COMPLETE memory text incorporating insights from the new interactions. Preserve all existing information that is still relevant. Add new insights about the learner's:
+- Career goals and aspirations
+- Skills and knowledge level
+- Interests and focus areas
+- Learning style and engagement patterns
+
+Keep the text concise (under 500 words). Write in third person ("The learner..."). Use bullet points grouped by category.
+Return ONLY the memory text, no commentary.`
+      }]
+    });
+
+    const newMemory = message.content[0]?.text?.trim();
+    if (!newMemory) continue;
+
+    // Upsert memory (replicate saveUserMemoryText pattern)
+    if (memoryRows && memoryRows.length > 0) {
+      const [first, ...rest] = memoryRows;
+      await supabase
+        .from('user_memory')
+        .update({ content: newMemory, category: 'general' })
+        .eq('id', first.id);
+
+      if (rest.length > 0) {
+        await supabase
+          .from('user_memory')
+          .delete()
+          .in('id', rest.map(r => r.id));
+      }
+    } else {
+      await supabase
+        .from('user_memory')
+        .insert({ user_id: userId, content: newMemory, category: 'general' });
+    }
+
+    // Mark responses as processed
+    await supabase
+      .from('user_question_responses')
+      .update({ processed: true })
+      .in('id', responses.map(r => r.id));
+
+    totalResponses += responses.length;
+  }
+
+  console.log(`✅ Memory aggregation complete: ${uniqueUserIds.length} users, ${totalResponses} responses`);
+  return { usersProcessed: uniqueUserIds.length, responsesProcessed: totalResponses };
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Claude chat server is running' });
@@ -5876,6 +6027,23 @@ cron.schedule('0 0 * * *', async () => {
 });
 
 console.log('⏰ Daily stats refresh cron job scheduled: Midnight UTC');
+
+/**
+ * Weekly user memory aggregation
+ * Runs every Sunday at 4 AM UTC
+ * Aggregates unprocessed user question responses and regenerates user memory via Claude
+ */
+cron.schedule('0 4 * * 0', async () => {
+  console.log('⏰ Running weekly memory aggregation (Sunday 4 AM UTC)');
+  try {
+    const result = await aggregateUserMemory();
+    console.log(`✅ Weekly memory aggregation complete: ${result.usersProcessed} users, ${result.responsesProcessed} responses`);
+  } catch (error) {
+    console.error('❌ Error in weekly memory aggregation:', error);
+  }
+});
+
+console.log('⏰ Weekly memory aggregation cron job scheduled: Sundays at 4 AM UTC');
 
 // ============================================================================
 // END LINKEDIN ENDPOINTS
