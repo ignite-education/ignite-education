@@ -125,6 +125,59 @@ const useChat = () => {
     }
   }, [chatMessages, typingMessageIndex]);
 
+  // Send a scored question answer — calls /api/score-answer, returns { score, feedback }
+  const sendScoredMessage = useCallback(async (text, question, sectionContent) => {
+    const userMessage = text.trim();
+    if (!userMessage) return null;
+
+    if (typingMessageIndex !== null) {
+      setChatMessages(prev => prev.map((msg, idx) =>
+        idx === typingMessageIndex ? { ...msg, isComplete: true } : msg
+      ));
+      setTypingMessageIndex(null);
+      setDisplayedText('');
+    }
+
+    const newMessages = [...chatMessages, { type: 'user', text: userMessage, isComplete: true }];
+    setChatMessages(newMessages);
+    setIsTyping(true);
+
+    try {
+      const response = await fetch(`${API_URL}/api/score-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, answer: userMessage, sectionContent }),
+      });
+
+      const data = await response.json();
+      setIsTyping(false);
+
+      if (data.success) {
+        const newMessageIndex = newMessages.length;
+        setChatMessages(prev => [...prev, {
+          type: 'assistant',
+          text: data.feedback,
+          isComplete: false,
+        }]);
+        setTypingMessageIndex(newMessageIndex);
+        return { score: data.score, feedback: data.feedback };
+      } else {
+        throw new Error(data.error || 'Failed to score answer');
+      }
+    } catch (error) {
+      console.error('Error scoring answer:', error);
+      setIsTyping(false);
+      const newMessageIndex = newMessages.length;
+      setChatMessages(prev => [...prev, {
+        type: 'assistant',
+        text: 'Sorry, I encountered an error evaluating your answer. Please try again.',
+        isComplete: false,
+      }]);
+      setTypingMessageIndex(newMessageIndex);
+      return null;
+    }
+  }, [chatMessages, typingMessageIndex]);
+
   const resetChat = useCallback(() => {
     setChatMessages([]);
     setIsTyping(false);
@@ -138,6 +191,7 @@ const useChat = () => {
     displayedText,
     typingMessageIndex,
     sendMessage,
+    sendScoredMessage,
     resetChat,
   };
 };

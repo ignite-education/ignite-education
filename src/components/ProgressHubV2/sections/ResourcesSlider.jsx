@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const CARD_WIDTH = 450;
+const CARD_WIDTH = 416;
 const CARD_GAP = 16;
 
 const ResourcesSlider = ({ resources = [] }) => {
@@ -111,9 +111,9 @@ const ResourcesSlider = ({ resources = [] }) => {
                 width: `${CARD_WIDTH}px`,
                 minWidth: `${CARD_WIDTH}px`,
                 flexShrink: 0,
-                paddingTop: '0.85rem',
+                paddingTop: '0.7rem',
                 paddingRight: '1.5rem',
-                paddingBottom: '0.85rem',
+                paddingBottom: '0.7rem',
                 paddingLeft: '1.4rem',
                 borderRadius: '0.3rem',
                 background: '#7714E0',
@@ -140,11 +140,11 @@ const ResourcesSlider = ({ resources = [] }) => {
                   willChange: 'opacity',
                 }}
               />
-              <div className="flex-1">
-                <h4 className="truncate text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
+              <div className="flex-1" style={{ minWidth: 0 }}>
+                <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                   {resource.title}
                 </h4>
-                <p className="text-white leading-snug" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%' }}>
+                <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
                   {resource.description}
                 </p>
               </div>

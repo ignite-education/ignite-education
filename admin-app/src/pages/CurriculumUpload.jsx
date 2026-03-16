@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen } from 'lucide-react';
+import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
 import { getAllCoaches, createCoach, updateCoach, deleteCoach, createLessonBackup, getLessonBackups, restoreLessonFromBackup } from '../lib/api';
 
@@ -895,7 +895,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } :
+              type === 'scored_question' ? { questions: ['', '', ''] } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -911,7 +912,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } :
+              type === 'scored_question' ? { questions: ['', '', ''] } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -1036,6 +1038,92 @@ const CurriculumUpload = () => {
       }
       return '';
     }).filter(Boolean).join('\n\n');
+  };
+
+  // Get all content from the nearest H2 above a block down to (exclusive of) the block itself
+  const getContentBeforeBlock = (blockIndex) => {
+    let h2Index = -1;
+    for (let i = blockIndex - 1; i >= 0; i--) {
+      if (contentBlocks[i].type === 'heading' && contentBlocks[i].content?.level === 2) {
+        h2Index = i;
+        break;
+      }
+    }
+    if (h2Index === -1) h2Index = 0;
+
+    const sectionBlocks = contentBlocks.slice(h2Index, blockIndex);
+    return sectionBlocks.map(block => {
+      if (block.type === 'heading') {
+        const level = block.content?.level || 2;
+        return `${'#'.repeat(level)} ${block.content?.text || ''}`;
+      } else if (block.type === 'paragraph') {
+        return block.content || '';
+      } else if (block.type === 'bulletlist') {
+        return block.content?.items?.map(item => `• ${item}`).join('\n') || '';
+      } else if (block.type === 'youtube') {
+        return `[Video: ${block.content?.title || 'YouTube video'}]`;
+      } else if (block.type === 'image') {
+        return `[Image: ${block.content?.caption || block.content?.alt || 'Image'}]`;
+      }
+      return '';
+    }).filter(Boolean).join('\n\n');
+  };
+
+  // Generate all 3 scored questions from preceding H2 content
+  const generateScoredQuestions = async (blockIndex) => {
+    const sectionContent = getContentBeforeBlock(blockIndex);
+    if (!sectionContent) return;
+
+    try {
+      const response = await fetch(`${API_URL}/api/generate-section-questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionContent })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setContentBlocks(prev => prev.map((b, i) =>
+          i === blockIndex ? { ...b, content: { ...b.content, questions: data.questions } } : b
+        ));
+      } else {
+        alert('Failed to generate questions: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error generating scored questions:', error);
+      alert('Error generating questions. Make sure the backend server is running.');
+    }
+  };
+
+  // Regenerate a single scored question
+  const regenerateSingleScoredQuestion = async (blockIndex, qIdx) => {
+    const sectionContent = getContentBeforeBlock(blockIndex);
+    if (!sectionContent) return;
+
+    const existingQuestions = contentBlocks[blockIndex]?.content?.questions || [];
+
+    try {
+      const response = await fetch(`${API_URL}/api/generate-single-section-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionContent, existingQuestions: existingQuestions.filter(Boolean) })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setContentBlocks(prev => prev.map((b, i) => {
+          if (i !== blockIndex) return b;
+          const newQuestions = [...(b.content?.questions || ['', '', ''])];
+          newQuestions[qIdx] = data.question;
+          return { ...b, content: { ...b.content, questions: newQuestions } };
+        }));
+      } else {
+        alert('Failed to generate question: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error generating scored question:', error);
+      alert('Error generating question. Make sure the backend server is running.');
+    }
   };
 
   // Generate all 3 section questions at once
@@ -2556,6 +2644,48 @@ ${contentBlocks.map((block, index) => {
           </div>
         );
 
+      case 'scored_question': {
+        const questions = block.content?.questions || ['', '', ''];
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-400">Student must score 5/10 to proceed. Questions are drawn from this pool on retry.</p>
+              <button
+                onClick={() => generateScoredQuestions(index)}
+                className="px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-xs font-medium transition"
+              >
+                Auto-generate All
+              </button>
+            </div>
+            {questions.map((q, qIdx) => (
+              <div key={qIdx} className="flex gap-2 items-start">
+                <span className="text-xs text-gray-500 mt-2.5 w-4 shrink-0">{qIdx + 1}.</span>
+                <textarea
+                  value={q}
+                  onChange={(e) => {
+                    const newQuestions = [...questions];
+                    newQuestions[qIdx] = e.target.value;
+                    setContentBlocks(prev => prev.map((b, i) =>
+                      i === index ? { ...b, content: { ...b.content, questions: newQuestions } } : b
+                    ));
+                  }}
+                  placeholder={`Question ${qIdx + 1}`}
+                  rows={2}
+                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none text-sm resize-none"
+                />
+                <button
+                  onClick={() => regenerateSingleScoredQuestion(index, qIdx)}
+                  className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition shrink-0"
+                  title="Regenerate this question"
+                >
+                  <RotateCcw size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
       default:
         return null;
     }
@@ -2761,6 +2891,9 @@ ${contentBlocks.map((block, index) => {
                     <button onClick={() => addBlock('svg')} className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 text-sm flex items-center gap-1 text-white transition">
                       <Pen size={14} /> SVG Icon
                     </button>
+                    <button onClick={() => addBlock('scored_question')} className="px-3 py-2 bg-pink-700 border border-pink-600 rounded-lg hover:bg-pink-600 text-sm flex items-center gap-1 text-white transition">
+                      <HelpCircle size={14} /> Quiz
+                    </button>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -2857,14 +2990,21 @@ ${contentBlocks.map((block, index) => {
                           >
                             + SVG
                           </button>
+                          <button
+                            onClick={() => addBlockAt('scored_question', index)}
+                            className="px-2 py-1 text-xs bg-pink-700 hover:bg-pink-600 text-white rounded transition"
+                            title="Insert Scored Question Above"
+                          >
+                            + Quiz
+                          </button>
                         </div>
                       </div>
 
                       {/* Content Block */}
                       <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <span className="text-sm font-medium text-gray-300 capitalize">
-                            {block.type}
+                          <span className={`text-sm font-medium capitalize ${block.type === 'scored_question' ? 'text-pink-400' : 'text-gray-300'}`}>
+                            {block.type === 'scored_question' ? 'Scored Question' : block.type}
                             {block.content?.persist && <span className="ml-2 text-xs text-purple-400 normal-case">(persistent)</span>}
                           </span>
                           <div className="flex gap-2">
@@ -2919,66 +3059,7 @@ ${contentBlocks.map((block, index) => {
                             This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
                           </p>
 
-                          {/* Section Questions (3 variants) */}
-                          <div className="mt-4 pt-4 border-t border-gray-700">
-                            <div className="flex items-center justify-between mb-3">
-                              <label className="block text-sm font-medium text-gray-300">
-                                Section Questions <span className="text-gray-500 font-normal">(3 variants — student sees one randomly)</span>
-                              </label>
-                              <button
-                                type="button"
-                                onClick={async () => {
-                                  const questions = await generateSectionQuestions(index);
-                                  setContentBlocks(prevBlocks => prevBlocks.map(b =>
-                                    b.id === block.id ? { ...b, sectionQuestion: questions } : b
-                                  ));
-                                }}
-                                className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition"
-                              >
-                                Auto-generate All
-                              </button>
-                            </div>
-                            {[0, 1, 2].map(qIdx => (
-                              <div key={qIdx} className="mb-3">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs text-gray-400 font-medium">Question {qIdx + 1}</span>
-                                  <button
-                                    type="button"
-                                    onClick={async () => {
-                                      const currentQuestions = Array.isArray(block.sectionQuestion) ? [...block.sectionQuestion] : ['', '', ''];
-                                      const newQ = await generateSingleSectionQuestion(index, currentQuestions);
-                                      currentQuestions[qIdx] = newQ;
-                                      setContentBlocks(prevBlocks => prevBlocks.map(b =>
-                                        b.id === block.id ? { ...b, sectionQuestion: currentQuestions } : b
-                                      ));
-                                    }}
-                                    className="text-xs px-2 py-0.5 text-purple-400 hover:text-purple-300 transition"
-                                    title="Regenerate this question"
-                                  >
-                                    ↻
-                                  </button>
-                                </div>
-                                <textarea
-                                  value={(Array.isArray(block.sectionQuestion) ? block.sectionQuestion[qIdx] : '') || ''}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    setContentBlocks(prevBlocks => prevBlocks.map(b => {
-                                      if (b.id !== block.id) return b;
-                                      const updated = Array.isArray(b.sectionQuestion) ? [...b.sectionQuestion] : ['', '', ''];
-                                      updated[qIdx] = value;
-                                      return { ...b, sectionQuestion: updated };
-                                    }));
-                                  }}
-                                  placeholder={`Question ${qIdx + 1}...`}
-                                  rows={2}
-                                  className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-sm text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-none"
-                                />
-                              </div>
-                            ))}
-                            <p className="text-xs text-gray-500 mt-1">
-                              Users must answer one of these questions before continuing to the next section
-                            </p>
-                          </div>
+                          {/* Section Questions removed — use Scored Question block instead */}
                         </div>
                       )}
                       </div>

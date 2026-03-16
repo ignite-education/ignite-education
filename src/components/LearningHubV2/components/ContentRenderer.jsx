@@ -26,6 +26,11 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
     case 'bulletlist':
       return <SectionList section={section} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
 
+    // Scored questions are handled by LearningHubV2 directly (blank screen flow)
+    // Auto-complete triggers handleSectionComplete to enter scored question mode
+    case 'scored_question':
+      return null;
+
     // Images, YouTube, and SVGs are rendered in the right column by MediaPanel
     case 'image':
     case 'youtube':

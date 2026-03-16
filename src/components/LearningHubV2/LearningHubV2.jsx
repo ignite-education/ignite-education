@@ -46,6 +46,13 @@ const LearningHubV2 = () => {
   const { lottieData } = useAnimation();
   const [chatInput, setChatInput] = useState('');
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
+  // Scored question flow state
+  const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
+  const [scoredQuestionPool, setScoredQuestionPool] = useState([]);
+  const [scoredQuestionIndex, setScoredQuestionIndex] = useState(0);
+  const [scoredAttemptCount, setScoredAttemptCount] = useState(0);
+  const [scoredResult, setScoredResult] = useState(null);
+  const [scoredSectionContent, setScoredSectionContent] = useState('');
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
@@ -69,6 +76,7 @@ const LearningHubV2 = () => {
     displayedText,
     typingMessageIndex,
     sendMessage,
+    sendScoredMessage,
     resetChat,
   } = useChat();
 
@@ -200,23 +208,18 @@ const LearningHubV2 = () => {
     return h2Section?.suggested_question?.trim() || null;
   }, [activeGroup]);
 
-  // Get section question (gating question) from the current group's H2 heading
-  // Supports both legacy single string and new JSON array of 3 questions (picks one randomly)
-  const sectionQuestion = useMemo(() => {
-    const h2Section = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    const raw = h2Section?.section_question?.trim();
-    if (!raw) return null;
-    try {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const valid = parsed.filter(q => q && q.trim());
-        if (valid.length === 0) return null;
-        return valid[Math.floor(Math.random() * valid.length)];
-      }
-    } catch {}
-    return raw; // Legacy single question string
+  // Build lesson context from sections up to a given index (for scored question evaluation)
+  const buildGroupContentUpTo = useCallback((sectionIndex) => {
+    if (!activeGroup || activeGroup.length === 0) return '';
+    return activeGroup
+      .slice(0, sectionIndex)
+      .filter(s => s.content_type === 'heading' || s.content_type === 'paragraph' || s.content_type === 'list' || s.content_type === 'bulletlist')
+      .map(s => {
+        const text = typeof s.content === 'string' ? s.content : s.content?.text || s.content_text || '';
+        if (s.content_type === 'heading') return `## ${text}`;
+        return text;
+      })
+      .join('\n\n');
   }, [activeGroup]);
 
   // Build lesson context for AI chat — only visible section group (headings + body text)
@@ -243,12 +246,27 @@ const LearningHubV2 = () => {
     { speed: 45, delay: 1000, enabled: !!pendingUserQuestion }
   );
 
-  const handleChatSubmit = useCallback((text) => {
-    let lessonContext = buildLessonContext();
-    // If answering a section question, prepend it to context so Claude can evaluate
-    if (sectionQuestion && chatMessages.length === 0) {
-      lessonContext = `SECTION QUESTION: ${sectionQuestion}\n\nThe student is answering the above question. Evaluate their answer based on the lesson content below. Give brief, encouraging feedback. If correct, confirm and add a small insight. If incorrect or incomplete, gently guide them toward the right answer.\n\n${lessonContext}`;
+  const handleChatSubmit = useCallback(async (text) => {
+    // Scored question mode — use /api/score-answer instead of regular chat
+    if (showingScoredQuestion) {
+      const userMessage = text.trim();
+      if (!userMessage) return;
+      setChatInput('');
+      savedRangeRef.current = null;
+      window.getSelection()?.removeAllRanges();
+
+      const result = await sendScoredMessage(
+        userMessage,
+        scoredQuestionPool[scoredQuestionIndex],
+        scoredSectionContent
+      );
+      if (result) {
+        setScoredResult({ score: result.score, feedback: result.feedback, passed: result.score >= 5 });
+      }
+      return;
     }
+
+    let lessonContext = buildLessonContext();
     // If answering a user question (ungraded, per-paragraph engagement question)
     if (pendingUserQuestion && chatMessages.length === 0) {
       lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Give brief, encouraging feedback that contextualises their answer within the lesson. Keep it conversational and supportive.\n\n${lessonContext}`;
@@ -257,14 +275,7 @@ const LearningHubV2 = () => {
     setChatInput('');
     savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage, sectionQuestion, pendingUserQuestion, chatMessages.length]);
-
-  const handleUserQuestionContinue = useCallback(() => {
-    setPendingUserQuestion(null);
-    setPendingUserQuestionMeta(null);
-    setCompletedSections((prev) => prev + 1);
-    resetChat();
-  }, [resetChat]);
+  }, [buildLessonContext, sendMessage, sendScoredMessage, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent]);
 
   // If current group starts with H3, find the parent H2 to display above it
   const parentH2 = useMemo(() => {
@@ -288,6 +299,8 @@ const LearningHubV2 = () => {
   const [completedSections, setCompletedSections] = useState(0);
   const activeGroupRef = useRef(activeGroup);
   activeGroupRef.current = activeGroup;
+  const completedSectionsRef = useRef(completedSections);
+  completedSectionsRef.current = completedSections;
 
   const allTypingComplete = completedSections >= activeGroup.length && !pendingUserQuestion;
 
@@ -341,6 +354,25 @@ const LearningHubV2 = () => {
   const handleSectionComplete = useCallback(() => {
     setCompletedSections((prev) => {
       const section = activeGroupRef.current?.[prev];
+
+      // Scored question block — enter scored question flow
+      if (section?.content_type === 'scored_question') {
+        const questions = section.content?.questions?.filter(q => q?.trim()) || [];
+        if (questions.length === 0) return prev + 1; // skip if no questions
+
+        queueMicrotask(() => {
+          setShowingScoredQuestion(true);
+          setScoredQuestionPool(questions);
+          setScoredQuestionIndex(0);
+          setScoredAttemptCount(0);
+          setScoredResult(null);
+          setScoredSectionContent(buildGroupContentUpTo(prev));
+          resetChat();
+        });
+        return prev; // Don't advance — wait for pass
+      }
+
+      // User question — gate progression until answered
       if (section?.user_question?.trim()) {
         queueMicrotask(() => {
           setPendingUserQuestion(section.user_question.trim());
@@ -354,9 +386,10 @@ const LearningHubV2 = () => {
         });
         return prev; // Don't advance — wait for user to answer
       }
+
       return prev + 1;
     });
-  }, []);
+  }, [buildGroupContentUpTo, resetChat]);
 
   // Auto-scroll: continuously lerp toward bottom of content
   const userScrolledUpRef = useRef(false);
@@ -451,13 +484,17 @@ const LearningHubV2 = () => {
   useEffect(() => {
     setCurrentGroupIndex(0);
     setPendingUserQuestion(null);
+    setShowingScoredQuestion(false);
+    setScoredResult(null);
     resetChat();
   }, [currentModule, currentLesson]);
 
-  // Handle Continue — replace current group with the next one
+  // Handle Continue — advance to next group
   const handleContinue = useCallback(() => {
     setCompletedSections(0);
     setPendingUserQuestion(null);
+    setShowingScoredQuestion(false);
+    setScoredResult(null);
     setCurrentGroupIndex((prev) => prev + 1);
     resetChat();
     requestAnimationFrame(() => {
@@ -470,6 +507,8 @@ const LearningHubV2 = () => {
   const handleBack = useCallback(() => {
     setCompletedSections(0);
     setPendingUserQuestion(null);
+    setShowingScoredQuestion(false);
+    setScoredResult(null);
     setCurrentGroupIndex((prev) => Math.max(prev - 1, 0));
     resetChat();
     requestAnimationFrame(() => {
@@ -487,6 +526,65 @@ const LearningHubV2 = () => {
     }
     navigate('/progress');
   }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
+
+  const handleUserQuestionContinue = useCallback(() => {
+    setPendingUserQuestion(null);
+    setPendingUserQuestionMeta(null);
+    resetChat();
+
+    const groupLen = activeGroupRef.current?.length || 0;
+    const currentCompleted = completedSectionsRef.current;
+
+    if (currentCompleted + 1 >= groupLen) {
+      // Last section in group — advance to next group or end lesson
+      if (isLastGroup) {
+        handleEndLesson();
+      } else {
+        setCompletedSections(0);
+        setCurrentGroupIndex((prev) => prev + 1);
+        requestAnimationFrame(() => {
+          contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        chatInputRef.current?.focus();
+      }
+    } else {
+      // More sections remain — reveal the next one
+      setCompletedSections((prev) => prev + 1);
+    }
+  }, [resetChat, isLastGroup, handleEndLesson]);
+
+  // Scored question — pass (advance past the block)
+  const handleScoredQuestionPass = useCallback(() => {
+    setShowingScoredQuestion(false);
+    setScoredResult(null);
+    setScoredQuestionPool([]);
+    resetChat();
+    setCompletedSections((prev) => prev + 1);
+  }, [resetChat]);
+
+  // Scored question — retry same question
+  const handleScoredQuestionRetry = useCallback(() => {
+    setScoredAttemptCount((prev) => prev + 1);
+    setScoredResult(null);
+    resetChat();
+  }, [resetChat]);
+
+  // Scored question — move to next question in pool (after 2 failed attempts)
+  const handleScoredQuestionNext = useCallback(() => {
+    const nextIndex = scoredQuestionIndex + 1;
+    if (nextIndex >= scoredQuestionPool.length) {
+      // Pool exhausted — let them pass gracefully
+      handleScoredQuestionPass();
+      return;
+    }
+    setScoredQuestionIndex(nextIndex);
+    setScoredAttemptCount(0);
+    setScoredResult(null);
+    resetChat();
+  }, [resetChat, scoredQuestionIndex, scoredQuestionPool.length, handleScoredQuestionPass]);
+
+  // Determine scored question button state
+  const scoredQuestionAnswered = showingScoredQuestion && scoredResult && lastAssistantDone && !isTyping;
 
   if (loading) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
@@ -548,85 +646,81 @@ const LearningHubV2 = () => {
             style={{ paddingLeft: '40px', paddingRight: '70px' }}
           >
             <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
-              {/* Render sections sequentially — each starts typing after the previous finishes */}
-              <div key={currentGroupIndex}>
-                {parentH2 && (
-                  <div className="mt-0 mb-3">
-                    <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
-                      {parentH2.content?.text || parentH2.title}
-                    </h2>
-                  </div>
-                )}
-                {activeGroup.slice(0, completedSections + 1).map((section, sIdx) => (
-                  <div key={section.id || sIdx}>
-                    <ContentRenderer
-                      section={section}
-                      sectionIdx={sIdx}
-                      isActive={sIdx === completedSections}
-                      prevSectionType={sIdx > 0 ? activeGroup[sIdx - 1]?.content_type : null}
-                      onComplete={handleSectionComplete}
-                      narrationActive={narrationActive}
-                      wordIndexOffset={sectionWordOffsets[sIdx] || 0}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              {/* User question — shown after a paragraph section finishes typing, gates next section */}
-              {pendingUserQuestion && (
-                <div className="mt-2 mb-4">
+              {/* Scored question screen — blank left panel with the question */}
+              {showingScoredQuestion && scoredQuestionPool.length > 0 ? (
+                <div key={`scored-${scoredQuestionIndex}`} style={{ animation: 'chatFadeIn 0.3s ease-out' }}>
                   <p
                     className="text-base font-medium leading-relaxed text-black"
-                    style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
+                    style={{ letterSpacing: '-0.01em' }}
                   >
-                    {chatMessages.length > 0
-                      ? userQuestionDisplayText
-                      : (
-                        <>
-                          {userQuestionRevealed}
-                          {!userQuestionTypingDone && (
-                            <span
-                              className="inline-block ml-1.5"
-                              style={{
-                                width: 8,
-                                height: 8,
-                                backgroundColor: '#8200EA',
-                                verticalAlign: 'middle',
-                                position: 'relative',
-                                top: '-1px',
-                              }}
-                            />
-                          )}
-                          <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{userQuestionDisplayText.slice(userQuestionRevealed.length)}</span>
-                        </>
-                      )
-                    }
+                    {scoredQuestionPool[scoredQuestionIndex]}
                   </p>
                 </div>
+              ) : (
+                <>
+                  {/* Render sections sequentially — each starts typing after the previous finishes */}
+                  <div key={currentGroupIndex}>
+                    {parentH2 && (
+                      <div className="mt-0 mb-3">
+                        <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                          {parentH2.content?.text || parentH2.title}
+                        </h2>
+                      </div>
+                    )}
+                    {activeGroup.slice(0, completedSections + 1).map((section, sIdx) => (
+                      <div key={section.id || sIdx}>
+                        <ContentRenderer
+                          section={section}
+                          sectionIdx={sIdx}
+                          isActive={sIdx === completedSections}
+                          prevSectionType={sIdx > 0 ? activeGroup[sIdx - 1]?.content_type : null}
+                          onComplete={handleSectionComplete}
+                          narrationActive={narrationActive}
+                          wordIndexOffset={sectionWordOffsets[sIdx] || 0}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* User question — shown after a paragraph section finishes typing, gates next section */}
+                  {pendingUserQuestion && (
+                    <div className="mt-2 mb-4">
+                      <p
+                        className="text-base font-medium leading-relaxed text-black"
+                        style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
+                      >
+                        {chatMessages.length > 0
+                          ? userQuestionDisplayText
+                          : (
+                            <>
+                              {userQuestionRevealed}
+                              {!userQuestionTypingDone && (
+                                <span
+                                  className="inline-block ml-1.5"
+                                  style={{
+                                    width: 8,
+                                    height: 8,
+                                    backgroundColor: '#8200EA',
+                                    verticalAlign: 'middle',
+                                    position: 'relative',
+                                    top: '-1px',
+                                  }}
+                                />
+                              )}
+                              <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{userQuestionDisplayText.slice(userQuestionRevealed.length)}</span>
+                            </>
+                          )
+                        }
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Action area — buttons crossfade with chat messages at the same position */}
               <div className="mt-3 mb-4">
-                {/* Section question prompt — shown after content finishes typing */}
-                {allTypingComplete && sectionQuestion && chatMessages.length === 0 && (
-                  <div
-                    className="mt-2 mb-4"
-                    style={{
-                      opacity: showButtons ? 1 : 0,
-                      transition: 'opacity 0.25s ease-in',
-                    }}
-                  >
-                    <p
-                      className="text-base font-medium leading-relaxed text-black"
-                      style={{ letterSpacing: '-0.01em' }}
-                    >
-                      {sectionQuestion}
-                    </p>
-                  </div>
-                )}
-
-                {/* Navigation buttons — fade out when chat is active, hidden when section question is unanswered */}
-                {allTypingComplete && !sectionQuestion && (
+                {/* Navigation buttons — fade out when chat is active */}
+                {allTypingComplete && !showingScoredQuestion && (
                   <div
                     className="flex items-center gap-2"
                     style={{
@@ -742,7 +836,7 @@ const LearningHubV2 = () => {
                 )}
 
                 {/* User question answered — Continue button to advance to next section */}
-                {userQuestionAnswered && (
+                {userQuestionAnswered && !showingScoredQuestion && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ animation: 'chatFadeIn 0.3s ease-out' }}
@@ -759,8 +853,48 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
-                {/* Buttons reappear after assistant finishes typing */}
-                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && (
+                {/* Scored question answered — show Continue, Try Again, or auto-advance */}
+                {scoredQuestionAnswered && (
+                  <div
+                    className="flex items-center gap-2 mt-3"
+                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                  >
+                    {scoredResult.passed ? (
+                      <button
+                        onClick={handleScoredQuestionPass}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        Continue
+                      </button>
+                    ) : scoredAttemptCount === 0 ? (
+                      <button
+                        onClick={handleScoredQuestionRetry}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        Try Again
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleScoredQuestionNext}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        {scoredQuestionIndex + 1 >= scoredQuestionPool.length ? 'Continue' : 'Try Another Question'}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Buttons reappear after assistant finishes typing (not during scored question flow) */}
+                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && !showingScoredQuestion && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ opacity: showPostChatButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
@@ -822,10 +956,10 @@ const LearningHubV2 = () => {
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && !sectionQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
+                opacity: suggestedQuestion && !showingScoredQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !sectionQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
-                height: !suggestedQuestion || sectionQuestion || chatMessages.length > 0 ? 0 : 'auto',
+                pointerEvents: suggestedQuestion && !showingScoredQuestion && allTypingComplete && showButtons && chatMessages.length === 0 ? 'auto' : 'none',
+                height: !suggestedQuestion || showingScoredQuestion || chatMessages.length > 0 ? 0 : 'auto',
                 overflow: 'hidden',
               }}
             >

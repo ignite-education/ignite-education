@@ -1850,6 +1850,59 @@ Respond with ONLY the question text, nothing else.`,
   }
 });
 
+// Score a student's answer to a scored question (returns score 0-10 + feedback)
+app.post('/api/score-answer', async (req, res) => {
+  try {
+    const { question, answer, sectionContent } = req.body;
+
+    if (!question || !answer) {
+      return res.status(400).json({ success: false, error: 'Question and answer are required' });
+    }
+
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      system: `You are evaluating a student's answer to a comprehension question about educational content.
+
+Section Content:
+${sectionContent || '(no context provided)'}
+
+Question: ${question}
+Student's Answer: ${answer}
+
+Evaluate the answer and respond with ONLY a JSON object (no markdown, no code fences):
+{"score": <number 0-10>, "feedback": "<brief feedback text>"}
+
+Scoring guide:
+- 8-10: Strong understanding, covers key concepts
+- 5-7: Adequate understanding, may miss some nuance
+- 3-4: Partial understanding, missing key points
+- 0-2: Does not demonstrate understanding
+
+Feedback rules:
+- Keep feedback to 1-2 sentences
+- If score >= 5: Confirm what they got right and add a small insight
+- If score < 5: Gently explain what is missing without giving the full answer. Encourage them to think about the key concepts and try again
+- Use British English
+- Do NOT use exclamation marks
+- Be encouraging but honest`,
+      messages: [{ role: 'user', content: 'Evaluate the student answer.' }],
+    });
+
+    const raw = message.content[0].text.trim();
+    try {
+      const parsed = JSON.parse(raw);
+      res.json({ success: true, score: parsed.score, feedback: parsed.feedback });
+    } catch (parseErr) {
+      console.error('Failed to parse score-answer response:', raw);
+      res.json({ success: true, score: 5, feedback: raw });
+    }
+  } catch (error) {
+    console.error('Error scoring answer:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Create Stripe checkout session for ad-free upgrade
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
