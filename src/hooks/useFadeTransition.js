@@ -34,6 +34,6 @@ export default function useFadeTransition(loading, { fadeDuration = 500, minLoad
     showLoading: phase !== 'ready',
     showContent: phase !== 'loading',
     loadingClassName: phase === 'crossfading' ? 'animate-crossfadeOut' : '',
-    contentClassName: phase === 'crossfading' ? 'animate-crossfadeIn' : '',
+    contentClassName: '',
   };
 }

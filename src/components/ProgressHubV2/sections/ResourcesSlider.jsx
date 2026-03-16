@@ -122,14 +122,14 @@ const ResourcesSlider = ({ resources = [] }) => {
             return (
               <div
                 key={resource.id}
-                className="relative flex items-center gap-3 group"
+                className="relative flex items-start gap-3 group"
                 style={{
                   width: `${cardWidth}px`,
                   minWidth: `${cardWidth}px`,
                   flexShrink: 0,
-                  paddingTop: '0.7rem',
+                  paddingTop: '1.25rem',
                   paddingRight: '1.5rem',
-                  paddingBottom: '0.7rem',
+                  paddingBottom: '1.2rem',
                   paddingLeft: '1.4rem',
                   borderRadius: '0.3rem',
                   background: '#7714E0',
@@ -157,7 +157,7 @@ const ResourcesSlider = ({ resources = [] }) => {
                   }}
                 />
                 <div className="flex-1" style={{ minWidth: 0 }}>
-                  <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', whiteSpace: 'nowrap' }}>
+                  <h4 className="text-white" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', whiteSpace: 'nowrap' }}>
                     {resource.title}
                   </h4>
                   <p className="text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
@@ -170,7 +170,8 @@ const ResourcesSlider = ({ resources = [] }) => {
                   style={{
                     width: '48px', height: '48px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderRadius: '0.3rem'
+                    borderRadius: '0.3rem',
+                    alignSelf: 'center'
                   }}
                   onClick={(e) => {
                     e.stopPropagation();

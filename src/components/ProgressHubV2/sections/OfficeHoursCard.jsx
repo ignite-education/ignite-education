@@ -172,7 +172,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
         <div
           className="rounded-lg flex items-center group"
           style={{
-            padding: '1rem',
+            padding: '1.25rem 1rem 1.3rem 1rem',
             minHeight: '100px',
             background: '#7714E0',
             cursor: isLive ? 'pointer' : 'default',

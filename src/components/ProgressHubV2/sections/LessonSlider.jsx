@@ -217,14 +217,14 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
               return (
                 <div
                   key={`${lesson.module_number}-${lesson.lesson_number}`}
-                  className="relative flex items-center gap-3"
+                  className="relative flex items-start gap-3"
                   style={{
                     width: `${cardWidth}px`,
                     minWidth: `${cardWidth}px`,
                     flexShrink: 0,
-                    paddingTop: '0.7rem',
+                    paddingTop: '1.25rem',
                     paddingRight: '1.5rem',
-                    paddingBottom: '0.7rem',
+                    paddingBottom: '0.15rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
@@ -248,7 +248,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     }}
                   />
                   <div className="flex-1" style={{ minWidth: 0 }}>
-                    <h4 className="text-white" style={{ marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
+                    <h4 className="text-white" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
@@ -267,7 +267,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                       style={{
                         width: '48px', height: '48px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRadius: '0.3rem'
+                        borderRadius: '0.3rem',
+                        position: 'absolute',
+                        right: '1.5rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)'
                       }}
                       onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                     >
