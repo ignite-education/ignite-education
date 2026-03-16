@@ -58,8 +58,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
       ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
       : 0;
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
-    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1rem≈16) + buffer
-    const neededWidth = Math.ceil(maxContentWidth + 114);
+    // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1.5rem≈24) + buffer
+    const neededWidth = Math.ceil(maxContentWidth + 122);
     return Math.max(416, neededWidth);
   }, [upcomingLessons, isLessonCompleted]);
 
@@ -223,7 +223,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     minWidth: `${cardWidth}px`,
                     flexShrink: 0,
                     paddingTop: '0.85rem',
-                    paddingRight: '1rem',
+                    paddingRight: '1.5rem',
                     paddingBottom: '0.85rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',

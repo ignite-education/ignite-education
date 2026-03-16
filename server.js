@@ -784,7 +784,7 @@ Respond in JSON format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: systemPrompt,
       messages: [
@@ -940,7 +940,7 @@ Respond ONLY with valid JSON in this exact format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       system: systemPrompt,
       messages: [
@@ -1238,7 +1238,7 @@ Respond ONLY with valid JSON in this exact format:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: systemPrompt,
       messages: [
@@ -1378,7 +1378,7 @@ Respond ONLY with valid JSON in this exact format with exactly 15 flashcards:
 }`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 8192,
       system: systemPrompt,
       messages: [
@@ -1473,7 +1473,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
     // Try up to 3 times to get a question under 55 characters
     while (attempts < maxAttempts) {
       const message = await anthropic.messages.create({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 100,
         system: systemPrompt,
         messages: [
@@ -1588,7 +1588,7 @@ app.post('/api/generate-section-question', async (req, res) => {
     const { sectionContent } = req.body;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
 
@@ -1622,7 +1622,7 @@ app.post('/api/generate-section-questions', async (req, res) => {
     const { sectionContent } = req.body;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
       system: `You generate comprehension questions for educational content. Given a section of lesson content, create THREE distinct open-ended questions that test whether the student understood the key concepts.
 
@@ -1669,7 +1669,7 @@ app.post('/api/generate-single-section-question', async (req, res) => {
     const avoidList = (existingQuestions || []).filter(Boolean).map((q, i) => `${i + 1}. ${q}`).join('\n');
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
       system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
 
@@ -4265,7 +4265,7 @@ app.post('/api/fetch-jobs', async (req, res) => {
     const searchQuery = course === 'Product Management' ? 'product manager' : course.toLowerCase();
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
       messages: [{
         role: 'user',
@@ -6596,7 +6596,7 @@ app.post('/api/linkedin/profile', async (req, res) => {
 
     // Use Claude to generate a memory entry from the extracted data
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 500,
       temperature: 0.3,
       messages: [{
@@ -6692,7 +6692,7 @@ app.post('/api/autocomplete-prompt', async (req, res) => {
       .join('\n');
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       temperature: 0,
       messages: [{

@@ -112,7 +112,7 @@ const ResourcesSlider = ({ resources = [] }) => {
                 minWidth: `${CARD_WIDTH}px`,
                 flexShrink: 0,
                 paddingTop: '0.85rem',
-                paddingRight: '5.618px',
+                paddingRight: '1.5rem',
                 paddingBottom: '0.85rem',
                 paddingLeft: '1.4rem',
                 borderRadius: '0.3rem',
@@ -154,7 +154,7 @@ const ResourcesSlider = ({ resources = [] }) => {
                 style={{
                   width: '48px', height: '48px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  borderRadius: '0.3rem', marginRight: '10px'
+                  borderRadius: '0.3rem'
                 }}
                 onClick={(e) => {
                   e.stopPropagation();
