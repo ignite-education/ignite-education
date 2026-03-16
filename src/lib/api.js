@@ -548,9 +548,10 @@ export async function getUserProgress(userId, courseId) {
  * @param {string} courseId - The course ID
  * @param {number} currentModule - Current module number
  * @param {number} currentLesson - Current lesson number
+ * @param {number} currentSection - Current section group index within the lesson (default 0)
  * @returns {Promise<Object>} Updated progress object
  */
-export async function saveUserProgress(userId, courseId, currentModule, currentLesson) {
+export async function saveUserProgress(userId, courseId, currentModule, currentLesson, currentSection = 0) {
   const { data, error } = await supabase
     .from('user_progress')
     .upsert({
@@ -558,6 +559,7 @@ export async function saveUserProgress(userId, courseId, currentModule, currentL
       course_id: courseId,
       current_module: currentModule,
       current_lesson: currentLesson,
+      current_section: currentSection,
       updated_at: new Date().toISOString()
     }, {
       onConflict: 'user_id,course_id'
@@ -711,13 +713,15 @@ export async function logQuestionResults(userId, courseId, quizModule, quizLesso
 }
 
 /**
- * Get aggregated per-lesson scores from individual question results.
+ * Get aggregated per-lesson scores from section question best scores.
  * Returns { "module-lesson": { correct, total }, ... }
+ * where correct = sum of best scores, total = count × 10 (max per section).
+ * This gives (correct/total)*100 = average section score as a percentage.
  */
 export async function getLessonScores(userId, courseId) {
   const { data, error } = await supabase
-    .from('question_results')
-    .select('source_module, source_lesson, is_correct')
+    .from('section_question_scores')
+    .select('module_number, lesson_number, score')
     .eq('user_id', userId)
     .eq('course_id', courseId);
 
@@ -725,12 +729,26 @@ export async function getLessonScores(userId, courseId) {
 
   const scores = {};
   for (const row of data) {
-    const key = `${row.source_module}-${row.source_lesson}`;
+    const key = `${row.module_number}-${row.lesson_number}`;
     if (!scores[key]) scores[key] = { correct: 0, total: 0 };
-    scores[key].total++;
-    if (row.is_correct) scores[key].correct++;
+    scores[key].correct += row.score;
+    scores[key].total += 10;
   }
   return scores;
+}
+
+/**
+ * Save a section question score. Uses best-score logic on the server —
+ * only the highest score per section is kept.
+ */
+export async function saveSectionQuestionScore({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback }) {
+  const response = await fetch(`${API_URL}/api/section-question-score`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback }),
+  });
+  if (!response.ok) throw new Error(`Status ${response.status}`);
+  return response.json();
 }
 
 export async function getGlobalLessonScores(courseId) {

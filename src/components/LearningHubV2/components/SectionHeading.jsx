@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import useTypewriter from '../hooks/useTypewriter';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
-const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0 }) => {
+const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
   const level = section.content?.level || 2;
   const text = section.content?.text || section.title;
   const HeadingTag = `h${level}`;
 
+  // When skipping animation (restoring progress), call onComplete immediately
+  const skipCalledRef = useRef(false);
+  useEffect(() => {
+    if (skipAnimation && onComplete && !skipCalledRef.current) {
+      skipCalledRef.current = true;
+      onComplete();
+    }
+  }, [skipAnimation, onComplete]);
+
   const { revealedText, isComplete } = useTypewriter(text, {
     speed: 55,
-    delay,
-    enabled: true,
-    onComplete,
+    delay: skipAnimation ? 0 : delay,
+    enabled: !skipAnimation,
+    onComplete: skipAnimation ? undefined : onComplete,
   });
 
   // --- Narration mode: render with word-index spans ---
@@ -51,6 +60,35 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     return (
       <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
         {wordSpans}
+      </HeadingTag>
+    );
+  }
+
+  // Skip animation: render full text immediately
+  if (skipAnimation && text) {
+    const renderFull = (t) => {
+      const parts = t.split(/(__[^_]+__[:\.,;!?]?)/g);
+      return parts.map((part, i) => {
+        if (part.startsWith('__') && part.match(/__[:\.,;!?]?$/)) {
+          const innerText = part.replace(/^__/, '').replace(/__[:\.,;!?]?$/, '');
+          const trailingPunct = part.match(/__([:\.,;!?])$/)?.[1] || '';
+          return <u key={i}>{innerText}{trailingPunct}</u>;
+        }
+        return <span key={i}>{part}</span>;
+      });
+    };
+    if (level === 2) {
+      return (
+        <div className="mt-0 mb-3">
+          <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+            {renderFull(text)}
+          </HeadingTag>
+        </div>
+      );
+    }
+    return (
+      <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+        {renderFull(text)}
       </HeadingTag>
     );
   }

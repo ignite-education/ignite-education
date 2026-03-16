@@ -762,23 +762,23 @@ app.get('/api/lesson-scores/global/:courseId', async (req, res) => {
     }
 
     const { data, error } = await supabase
-      .from('question_results')
-      .select('source_module, source_lesson, is_correct')
+      .from('section_question_scores')
+      .select('module_number, lesson_number, score')
       .eq('course_id', courseId);
 
     if (error) throw error;
 
     const buckets = {};
     for (const row of data || []) {
-      const key = `${row.source_module}-${row.source_lesson}`;
-      if (!buckets[key]) buckets[key] = { correct: 0, total: 0 };
-      buckets[key].total++;
-      if (row.is_correct) buckets[key].correct++;
+      const key = `${row.module_number}-${row.lesson_number}`;
+      if (!buckets[key]) buckets[key] = { sum: 0, count: 0 };
+      buckets[key].sum += row.score;
+      buckets[key].count++;
     }
 
     const scores = {};
     for (const [key, v] of Object.entries(buckets)) {
-      scores[key] = Math.round((v.correct / v.total) * 1000) / 10; // one decimal
+      scores[key] = Math.round((v.sum / (v.count * 10)) * 1000) / 10; // one decimal %
     }
 
     globalScoresCache[courseId] = { data: scores, timestamp: Date.now() };
@@ -1903,6 +1903,69 @@ Feedback rules:
     }
   } catch (error) {
     console.error('Error scoring answer:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Save section question score (best-score upsert)
+app.post('/api/section-question-score', async (req, res) => {
+  try {
+    const { userId, courseId, moduleNumber, lessonNumber, sectionNumber, score, questionText, answerText, feedback } = req.body;
+
+    if (!userId || !courseId || moduleNumber == null || lessonNumber == null || sectionNumber == null || score == null) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // Check for existing score
+    const { data: existing } = await supabase
+      .from('section_question_scores')
+      .select('id, score')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .eq('module_number', moduleNumber)
+      .eq('lesson_number', lessonNumber)
+      .eq('section_number', sectionNumber)
+      .single();
+
+    if (existing && existing.score >= score) {
+      // Existing score is equal or higher — keep it
+      return res.json({ success: true, bestScore: existing.score });
+    }
+
+    if (existing) {
+      // New score is higher — update
+      const { error } = await supabase
+        .from('section_question_scores')
+        .update({
+          score,
+          question_text: questionText || null,
+          answer_text: answerText || null,
+          feedback: feedback || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id);
+      if (error) throw error;
+    } else {
+      // No existing score — insert
+      const { error } = await supabase
+        .from('section_question_scores')
+        .insert({
+          user_id: userId,
+          course_id: courseId,
+          module_number: moduleNumber,
+          lesson_number: lessonNumber,
+          section_number: sectionNumber,
+          score,
+          question_text: questionText || null,
+          answer_text: answerText || null,
+          feedback: feedback || null,
+        });
+      if (error) throw error;
+    }
+
+    res.json({ success: true, bestScore: score });
+  } catch (error) {
+    console.error('Error saving section question score:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

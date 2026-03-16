@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
 import LoadingScreen from '../LoadingScreen';
+import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
 import CourseDetailsSection from './sections/CourseDetailsSection';
@@ -159,7 +160,9 @@ const ProgressHubV2 = () => {
     }
   }, []);
 
-  if (loading) {
+  const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
+
+  if (!showContent) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
   }
 
@@ -170,7 +173,12 @@ const ProgressHubV2 = () => {
   const courseTitle = courseData?.title || courseData?.name || 'Product Manager';
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+      {showLoading && (
+        <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
+          <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
+        </div>
+      )}
       <SEO title={firstName ? `${firstName}'s Progress | Ignite` : 'Your Progress | Ignite'} />
       {/* Section 1: Introduction */}
       <IntroSection

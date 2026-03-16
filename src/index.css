@@ -153,6 +153,14 @@ body {
   animation: fadeOut 0.25s ease forwards;
 }
 
+.animate-crossfadeIn {
+  animation: fadeIn 0.5s ease;
+}
+
+.animate-crossfadeOut {
+  animation: fadeOut 0.5s ease forwards;
+}
+
 .animate-scaleDown {
   animation: scaleDown 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -272,6 +280,11 @@ body {
 @keyframes mediaFadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+@keyframes mediaFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @keyframes chatFadeIn {

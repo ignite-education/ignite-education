@@ -174,16 +174,25 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
   return rendered;
 };
 
-const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0 }) => {
+const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
   const text = typeof section.content === 'string'
     ? section.content
     : section.content?.text || section.content_text;
 
+  // When skipping animation (restoring progress), call onComplete immediately
+  const skipCalledRef = React.useRef(false);
+  React.useEffect(() => {
+    if (skipAnimation && onComplete && !skipCalledRef.current) {
+      skipCalledRef.current = true;
+      onComplete();
+    }
+  }, [skipAnimation, onComplete]);
+
   const { revealedText, isComplete, lookaheadWord } = useTypewriter(text, {
-    speed: 33,
-    delay,
-    enabled: animate,
-    onComplete,
+    speed: 38,
+    delay: skipAnimation ? 0 : delay,
+    enabled: !skipAnimation && animate,
+    onComplete: skipAnimation ? undefined : onComplete,
   });
 
   // --- Narration mode: render full text with word-index spans ---
@@ -236,6 +245,49 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
     return (
       <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
         {renderNarrationText(text, wordIndexOffset)}
+      </p>
+    );
+  }
+
+  // --- Skip animation: render full text immediately ---
+  if (skipAnimation && text) {
+    const lines = text.split('\n');
+    const hasBullets = lines.some(line => /^[•\-]\s/.test(line.trim()));
+    const hasMultipleLines = lines.filter(line => line.trim()).length > 1;
+
+    if (hasBullets || hasMultipleLines) {
+      return (
+        <div className="mb-4">
+          {lines.map((line, idx) => {
+            const trimmedLine = line.trim();
+            if (/^[•\-]\s/.test(trimmedLine)) {
+              const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
+              return (
+                <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
+                  <span className="text-black leading-relaxed">•</span>
+                  <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+                    {renderFormattedText(bulletText)}
+                  </span>
+                </div>
+              );
+            } else if (trimmedLine) {
+              return (
+                <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+                  {renderFormattedText(line)}
+                </p>
+              );
+            } else if (hasMultipleLines) {
+              return <div key={idx} className="h-2" />;
+            }
+            return null;
+          })}
+        </div>
+      );
+    }
+
+    return (
+      <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+        {renderFormattedText(text)}
       </p>
     );
   }

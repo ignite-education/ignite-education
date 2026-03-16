@@ -43,7 +43,7 @@ const useChat = () => {
 
         // Pause before newline
         if (currentIndex + 1 < fullText.length && fullText[currentIndex + 1] === '\n') {
-          pauseCounter = 15; // ~500ms (matches body text typewriter)
+          pauseCounter = 13; // ~500ms (matches body text typewriter)
           pendingNewline = true;
           currentIndex++;
           return;
@@ -53,7 +53,7 @@ const useChat = () => {
         const ch = fullText[currentIndex];
         const next = fullText[currentIndex + 1];
         if ('.,;:!?'.includes(ch) && (next === ' ' || next === '\n' || currentIndex + 1 === fullText.length)) {
-          pauseCounter = 12; // ~400ms at 33ms interval
+          pauseCounter = 11; // ~400ms at 38ms interval
         }
 
         currentIndex++;
@@ -65,7 +65,7 @@ const useChat = () => {
         setTypingMessageIndex(null);
         setDisplayedText('');
       }
-    }, 33);
+    }, 38);
 
     return () => clearInterval(typingInterval);
   }, [typingMessageIndex, chatMessages]);
@@ -199,6 +199,15 @@ const useChat = () => {
     setDisplayedText('');
   }, []);
 
+  // Add a user + assistant message pair directly (used for admin bypass)
+  const addMessagePair = useCallback((userText, assistantText) => {
+    setChatMessages(prev => [
+      ...prev,
+      { type: 'user', text: userText, isComplete: true },
+      { type: 'assistant', text: assistantText, isComplete: true },
+    ]);
+  }, []);
+
   return {
     chatMessages,
     isTyping,
@@ -206,6 +215,7 @@ const useChat = () => {
     typingMessageIndex,
     sendMessage,
     sendScoredMessage,
+    addMessagePair,
     resetChat,
   };
 };

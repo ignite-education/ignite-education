@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } f
 const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, ref) => {
   const textareaRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [wrapperHeight, setWrapperHeight] = useState(48);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -11,6 +12,19 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
+
+  const recalcHeight = () => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const newHeight = Math.min(el.scrollHeight, 160);
+    el.style.height = newHeight + 'px';
+    setWrapperHeight(newHeight);
+  };
+
+  useEffect(() => {
+    recalcHeight();
+  }, [value]);
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -34,6 +48,10 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
       className="w-full relative"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      style={{
+        height: wrapperHeight,
+        transition: 'height 0.25s cubic-bezier(0.25, 0.1, 0.25, 1)',
+      }}
     >
       <textarea
         ref={textareaRef}
@@ -42,33 +60,31 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={1}
-        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 caret-[#EF0B72] focus:outline-none transition-all resize-none"
+        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 caret-[#EF0B72] focus:outline-none resize-none"
         style={{
           boxShadow: isHovered
             ? '0 0 10px rgba(103,103,103,0.75)'
             : '0 0 10px rgba(103,103,103,0.6)',
+          transition: 'box-shadow 0.2s ease-in-out',
           fontSize: '14px',
           minHeight: '48px',
           maxHeight: '160px',
           letterSpacing: '-0.01em',
         }}
-        onInput={(e) => {
-          e.target.style.height = 'auto';
-          e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
-        }}
+        onInput={recalcHeight}
       />
       <button
           type="submit"
           className="absolute cursor-pointer flex items-center justify-center"
           style={{
             right: 12,
-            top: 8,
+            top: (wrapperHeight - 32) / 2,
             width: 32,
             height: 32,
             borderRadius: 6,
             backgroundColor: '#F0F0F0',
             opacity: value.trim() ? 1 : 0,
-            transition: 'opacity 0.2s ease-in-out',
+            transition: 'top 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.2s ease-in-out',
             pointerEvents: value.trim() ? 'auto' : 'none',
           }}
           onMouseEnter={(e) => { e.currentTarget.querySelector('svg').style.stroke = '#EF0B72'; }}

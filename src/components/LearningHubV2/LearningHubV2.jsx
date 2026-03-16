@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
-import { markLessonComplete } from '../../lib/api';
+import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore } from '../../lib/api';
 import LoadingScreen from '../LoadingScreen';
+import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
 import useNarration from './hooks/useNarration';
@@ -44,8 +45,12 @@ const LearningHubV2 = () => {
   const { user, firstName } = useAuth();
   const navigate = useNavigate();
   const { lottieData } = useAnimation();
+  useEffect(() => {
+    document.title = `${firstName ? `${firstName}'s` : 'Your'} Learning | Ignite`;
+  }, [firstName]);
   const [chatInput, setChatInput] = useState('');
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
+  const [restoringProgress, setRestoringProgress] = useState(true);
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
   const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
@@ -54,6 +59,7 @@ const LearningHubV2 = () => {
   const [scoredAttemptCount, setScoredAttemptCount] = useState(0);
   const [scoredResult, setScoredResult] = useState(null);
   const [scoredSectionContent, setScoredSectionContent] = useState('');
+  const [scoredSectionNumber, setScoredSectionNumber] = useState(null);
   const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
@@ -80,6 +86,7 @@ const LearningHubV2 = () => {
     typingMessageIndex,
     sendMessage,
     sendScoredMessage,
+    addMessagePair,
     resetChat,
   } = useChat();
 
@@ -119,7 +126,8 @@ const LearningHubV2 = () => {
     const isInContent = anchorNode && contentInnerRef.current?.contains(anchorNode);
     if (!isInContent) {
       // Clear "Explain" if selection moved outside content
-      if (chatInput.startsWith('Explain \'') && !savedRangeRef.current) {
+      if (chatInput.startsWith('Explain \'')) {
+        savedRangeRef.current = null;
         setChatInput('');
       }
       return;
@@ -127,7 +135,8 @@ const LearningHubV2 = () => {
 
     if (text && text.length > 0) {
       setChatInput(`Explain '${text}'`);
-    } else if (chatInput.startsWith('Explain \'') && !savedRangeRef.current) {
+    } else if (chatInput.startsWith('Explain \'')) {
+      savedRangeRef.current = null;
       setChatInput('');
     }
   };
@@ -204,6 +213,43 @@ const LearningHubV2 = () => {
 
     return [...carried, ...currentMedia];
   }, [activeGroupAll, allGroups, currentGroupIndex]);
+
+  // Effective media: empty during scored questions, otherwise the active group's media
+  const effectiveMedia = showingScoredQuestion ? [] : activeGroupMedia;
+  const effectiveMediaKey = showingScoredQuestion ? '' : activeGroupMedia.map(s => s.id).join('|');
+
+  // Media crossfade: fade out old media, then fade in new media (700ms each)
+  const [displayedMedia, setDisplayedMedia] = useState(effectiveMedia);
+  const [mediaFadePhase, setMediaFadePhase] = useState('visible'); // 'visible' | 'fading-out' | 'fading-in'
+  const mediaKeyRef = useRef(effectiveMediaKey);
+  const pendingMediaRef = useRef(null);
+
+  useEffect(() => {
+    if (effectiveMediaKey === mediaKeyRef.current) return;
+
+    // Store the new media for after fade-out completes
+    pendingMediaRef.current = effectiveMedia;
+    mediaKeyRef.current = effectiveMediaKey;
+
+    // If there's nothing currently displayed, swap in immediately
+    if (displayedMedia.length === 0) {
+      setDisplayedMedia(effectiveMedia);
+      setMediaFadePhase('visible');
+      return;
+    }
+
+    // Start fade-out of current media
+    setMediaFadePhase('fading-out');
+
+    const fadeOutTimer = setTimeout(() => {
+      // Swap to new media after fade-out completes
+      const next = pendingMediaRef.current;
+      setDisplayedMedia(next);
+      setMediaFadePhase('visible');
+    }, 700);
+
+    return () => clearTimeout(fadeOutTimer);
+  }, [effectiveMediaKey]);
   const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : totalGroups === 1 ? 100 : 0;
   const [lessonProgress, setLessonProgress] = useState(0);
   useEffect(() => {
@@ -291,6 +337,25 @@ const LearningHubV2 = () => {
       savedRangeRef.current = null;
       window.getSelection()?.removeAllRanges();
 
+      // Admin bypass: typing "skip" auto-passes with 10/10
+      if (userMessage.toLowerCase() === 'skip' && user?.role === 'admin') {
+        const bypassFeedback = 'Admin bypass — question skipped.';
+        addMessagePair(userMessage, bypassFeedback);
+        setScoredResult({ score: 10, feedback: bypassFeedback, passed: true });
+        saveSectionQuestionScore({
+          userId: user?.id,
+          courseId: userCourseId,
+          moduleNumber: currentModule,
+          lessonNumber: currentLesson,
+          sectionNumber: scoredSectionNumber,
+          score: 10,
+          questionText: scoredQuestionPool[scoredQuestionIndex],
+          answerText: 'skip',
+          feedback: bypassResult.feedback,
+        }).catch(() => {});
+        return;
+      }
+
       const result = await sendScoredMessage(
         userMessage,
         scoredQuestionPool[scoredQuestionIndex],
@@ -298,6 +363,18 @@ const LearningHubV2 = () => {
       );
       if (result) {
         setScoredResult({ score: result.score, feedback: result.feedback, passed: result.score >= 5 });
+        // Persist score (best-score upsert on server)
+        saveSectionQuestionScore({
+          userId: user?.id,
+          courseId: userCourseId,
+          moduleNumber: currentModule,
+          lessonNumber: currentLesson,
+          sectionNumber: scoredSectionNumber,
+          score: result.score,
+          questionText: scoredQuestionPool[scoredQuestionIndex],
+          answerText: userMessage,
+          feedback: result.feedback,
+        }).catch(() => {});
       }
       return;
     }
@@ -305,13 +382,13 @@ const LearningHubV2 = () => {
     let lessonContext = buildLessonContext();
     // If answering a user question (ungraded, per-paragraph engagement question)
     if (pendingUserQuestion && chatMessages.length === 0) {
-      lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Give brief, encouraging feedback that contextualises their answer within the lesson. Keep it conversational and supportive.\n\n${lessonContext}`;
+      lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Give brief, encouraging feedback that contextualises their answer within the lesson. Keep it conversational and supportive. Do not end your response with a question, call to action, or encouragement to continue.\n\n${lessonContext}`;
     }
     sendMessage(text, lessonContext);
     setChatInput('');
     savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
-  }, [buildLessonContext, sendMessage, sendScoredMessage, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent]);
+  }, [buildLessonContext, sendMessage, sendScoredMessage, addMessagePair, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent, user?.id, user?.role, userCourseId, currentModule, currentLesson, scoredSectionNumber]);
 
   // If current group starts with H3, find the parent H2 to display above it
   const parentH2 = useMemo(() => {
@@ -349,7 +426,7 @@ const LearningHubV2 = () => {
   const scoredIntroAnimateText = scoredIntroPhase ? scoredIntroFullText : '';
   const { revealedText: scoredIntroRevealed, isComplete: scoredIntroDone } = useTypewriter(
     scoredIntroAnimateText,
-    { speed: 33, delay: 800, enabled: !!scoredIntroAnimateText }
+    { speed: 38, delay: 800, enabled: !!scoredIntroAnimateText }
   );
 
   // Scored question text with typewriter animation (after intro phase)
@@ -358,7 +435,7 @@ const LearningHubV2 = () => {
     : '';
   const { revealedText: scoredQuestionRevealed, isComplete: scoredQuestionDone } = useTypewriter(
     scoredQuestionText,
-    { speed: 33, delay: 800, enabled: !!scoredQuestionText }
+    { speed: 38, delay: 800, enabled: !!scoredQuestionText }
   );
 
   // Sequential typing — track how many sections have finished animating
@@ -434,6 +511,7 @@ const LearningHubV2 = () => {
           setScoredAttemptCount(0);
           setScoredResult(null);
           setScoredSectionContent(buildGroupContentUpTo(prev));
+          setScoredSectionNumber(section.section_number);
           resetChat();
         });
         return prev; // Don't advance — wait for pass
@@ -546,48 +624,90 @@ const LearningHubV2 = () => {
     setShowPostChatButtons(false);
   }, [chatMessages, lastAssistantDone]);
 
-  // Reset chat when lesson changes
-  // Reset to first group when lesson changes
+  // Reset to first group when lesson changes, restoring saved progress if available
   useEffect(() => {
-    setCurrentGroupIndex(0);
+    setCompletedSections(0);
     setPendingUserQuestion(null);
     setShowingScoredQuestion(false);
     setScoredResult(null);
+    setScoredSectionNumber(null);
     resetChat();
-  }, [currentModule, currentLesson]);
+    setRestoringProgress(true);
+
+    if (user?.id && userCourseId) {
+      getUserProgress(user.id, userCourseId).then((progress) => {
+        if (
+          progress &&
+          progress.current_module === currentModule &&
+          progress.current_lesson === currentLesson &&
+          progress.current_section > 0
+        ) {
+          setCurrentGroupIndex(progress.current_section);
+        } else {
+          setCurrentGroupIndex(0);
+        }
+        setRestoringProgress(false);
+      }).catch(() => {
+        setCurrentGroupIndex(0);
+        setRestoringProgress(false);
+      });
+    } else {
+      setCurrentGroupIndex(0);
+      setRestoringProgress(false);
+    }
+  }, [currentModule, currentLesson, user?.id, userCourseId]);
 
   // Handle Continue — advance to next group
   const handleContinue = useCallback(() => {
+    setChatInput('');
     setCompletedSections(0);
     setPendingUserQuestion(null);
     setShowingScoredQuestion(false);
     setScoredResult(null);
-    setCurrentGroupIndex((prev) => prev + 1);
+    setScoredSectionNumber(null);
+    setCurrentGroupIndex((prev) => {
+      const next = prev + 1;
+      // Fire-and-forget save
+      if (user?.id && userCourseId) {
+        saveUserProgress(user.id, userCourseId, currentModule, currentLesson, next).catch(() => {});
+      }
+      return next;
+    });
     resetChat();
     requestAnimationFrame(() => {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     });
     chatInputRef.current?.focus();
-  }, [resetChat]);
+  }, [resetChat, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Handle Back — go to previous section group
   const handleBack = useCallback(() => {
+    setChatInput('');
     setCompletedSections(0);
     setPendingUserQuestion(null);
     setShowingScoredQuestion(false);
     setScoredResult(null);
-    setCurrentGroupIndex((prev) => Math.max(prev - 1, 0));
+    setScoredSectionNumber(null);
+    setCurrentGroupIndex((prev) => {
+      const next = Math.max(prev - 1, 0);
+      if (user?.id && userCourseId) {
+        saveUserProgress(user.id, userCourseId, currentModule, currentLesson, next).catch(() => {});
+      }
+      return next;
+    });
     resetChat();
     requestAnimationFrame(() => {
       contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
     });
     chatInputRef.current?.focus();
-  }, [resetChat]);
+  }, [resetChat, user?.id, userCourseId, currentModule, currentLesson]);
 
-  // End Lesson — mark complete and navigate to progress hub
+  // End Lesson — mark complete, reset section progress, and navigate to progress hub
   const handleEndLesson = useCallback(async () => {
     try {
       await markLessonComplete(user?.id, userCourseId, currentModule, currentLesson);
+      // Reset section progress so reopening this lesson starts fresh
+      await saveUserProgress(user?.id, userCourseId, currentModule, currentLesson, 0);
     } catch (err) {
       console.error('Error marking lesson complete:', err);
     }
@@ -595,6 +715,7 @@ const LearningHubV2 = () => {
   }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
 
   const handleUserQuestionContinue = useCallback(() => {
+    setChatInput('');
     setPendingUserQuestion(null);
     setPendingUserQuestionMeta(null);
     resetChat();
@@ -608,7 +729,13 @@ const LearningHubV2 = () => {
         handleEndLesson();
       } else {
         setCompletedSections(0);
-        setCurrentGroupIndex((prev) => prev + 1);
+        setCurrentGroupIndex((prev) => {
+          const next = prev + 1;
+          if (user?.id && userCourseId) {
+            saveUserProgress(user.id, userCourseId, currentModule, currentLesson, next).catch(() => {});
+          }
+          return next;
+        });
         requestAnimationFrame(() => {
           contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -618,7 +745,7 @@ const LearningHubV2 = () => {
       // More sections remain — reveal the next one
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, handleEndLesson]);
+  }, [resetChat, isLastGroup, handleEndLesson, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Scored question intro → show the actual question underneath
   const handleScoredIntroComplete = useCallback(() => {
@@ -628,10 +755,12 @@ const LearningHubV2 = () => {
 
   // Scored question — pass (advance past the block)
   const handleScoredQuestionPass = useCallback(() => {
+    setChatInput('');
     setShowingScoredQuestion(false);
     setScoredIntroPhase(true);
     setScoredResult(null);
     setScoredQuestionPool([]);
+    setScoredSectionNumber(null);
     resetChat();
 
     const groupLen = activeGroupRef.current?.length || 0;
@@ -643,7 +772,13 @@ const LearningHubV2 = () => {
         handleEndLesson();
       } else {
         setCompletedSections(0);
-        setCurrentGroupIndex((prev) => prev + 1);
+        setCurrentGroupIndex((prev) => {
+          const next = prev + 1;
+          if (user?.id && userCourseId) {
+            saveUserProgress(user.id, userCourseId, currentModule, currentLesson, next).catch(() => {});
+          }
+          return next;
+        });
         requestAnimationFrame(() => {
           contentScrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
         });
@@ -652,7 +787,7 @@ const LearningHubV2 = () => {
     } else {
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, handleEndLesson]);
+  }, [resetChat, isLastGroup, handleEndLesson, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Scored question — retry same question
   const handleScoredQuestionRetry = useCallback(() => {
@@ -686,12 +821,19 @@ const LearningHubV2 = () => {
   // Determine scored question button state
   const scoredQuestionAnswered = showingScoredQuestion && scoredResult && lastAssistantDone && !isTyping;
 
-  if (loading) {
+  const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
+
+  if (!showContent) {
     return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
   }
 
   return (
-    <div className="bg-white">
+    <div className={`bg-white ${contentClassName}`}>
+      {showLoading && (
+        <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
+          <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
+        </div>
+      )}
       {/* Main two-column layout — 100vh */}
       <div className="h-screen flex">
         {/* Left column — lesson content */}
@@ -742,10 +884,11 @@ const LearningHubV2 = () => {
           {/* Scrollable content area */}
           <div
             ref={contentScrollRef}
-            className="flex-1 overflow-y-auto pb-24 hide-scrollbar"
+            className="flex-1 overflow-y-auto pb-16 hide-scrollbar"
             style={{ paddingLeft: '40px', paddingRight: '70px' }}
           >
             <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
+              {restoringProgress ? null : <>
               {/* Scored question screen — intro text, then question types underneath */}
               {showingScoredQuestion && scoredQuestionPool.length > 0 ? (
                 <div key={`scored-${scoredQuestionIndex}`}>
@@ -804,17 +947,17 @@ const LearningHubV2 = () => {
                         )}
                       </>
                     ) : (
-                      /* Static intro text after intro phase */
-                      scoredIntroFullText.split('\n').map((line, li) => (
+                      /* Static intro text after intro phase — omit "Ready to proceed?" line */
+                      scoredIntroFullText.split('\n').filter(line => line.trim() !== 'Ready to proceed?').map((line, li) => (
                         <p key={li} className={li > 0 ? 'mt-3' : ''}>{line}</p>
                       ))
                     )}
                   </div>
 
-                  {/* Question text — types underneath intro after Continue is clicked */}
+                  {/* Question text — types where "Ready to proceed?" was after Continue is clicked */}
                   {!scoredIntroPhase && (
                     <p
-                      className="text-base font-semibold leading-relaxed text-black mt-4"
+                      className="text-base font-semibold leading-relaxed text-black mt-3"
                       style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
                     >
                       {scoredQuestionRevealed}
@@ -944,11 +1087,10 @@ const LearningHubV2 = () => {
                       </button>
                     )}
                     <div className="flex items-center">
-                      {currentGroupIndex > 0 && (
                         <button
                           onClick={handleBack}
-                          className="p-2 text-black cursor-pointer transition-colors"
-                          style={{ transition: 'color 0.15s' }}
+                          className="p-2 cursor-pointer transition-colors"
+                          style={{ transition: 'color 0.15s', display: currentGroupIndex > 0 ? '' : 'none' }}
                           aria-label="Back"
                           onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
                           onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
@@ -958,7 +1100,6 @@ const LearningHubV2 = () => {
                             <path d="M12 19l-7-7 7-7" />
                           </svg>
                         </button>
-                      )}
                       <button
                         onClick={toggleNarration}
                         className="p-2 cursor-pointer transition-colors"
@@ -1042,6 +1183,19 @@ const LearningHubV2 = () => {
                     >
                       Continue
                     </button>
+                    <button
+                      onClick={handleBack}
+                      className="p-2 text-black cursor-pointer transition-colors"
+                      style={{ transition: 'color 0.15s', display: currentGroupIndex > 0 ? '' : 'none' }}
+                      aria-label="Back"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5" />
+                        <path d="M12 19l-7-7 7-7" />
+                      </svg>
+                    </button>
                   </div>
                 )}
 
@@ -1059,6 +1213,19 @@ const LearningHubV2 = () => {
                       onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
                     >
                       Continue
+                    </button>
+                    <button
+                      onClick={handleBack}
+                      className="p-2 text-black cursor-pointer transition-colors"
+                      style={{ transition: 'color 0.15s', display: currentGroupIndex > 0 ? '' : 'none' }}
+                      aria-label="Back"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5" />
+                        <path d="M12 19l-7-7 7-7" />
+                      </svg>
                     </button>
                   </div>
                 )}
@@ -1130,24 +1297,24 @@ const LearningHubV2 = () => {
                         Continue
                       </button>
                     )}
-                    {currentGroupIndex > 0 && (
-                      <button
-                        onClick={handleBack}
-                        className="p-2 text-black cursor-pointer transition-colors"
-                        style={{ transition: 'color 0.15s' }}
-                        aria-label="Back"
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
-                      >
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M19 12H5" />
-                          <path d="M12 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                    )}
+                    <button
+                      onClick={handleBack}
+                      className="p-2 cursor-pointer transition-colors"
+                      style={{ transition: 'color 0.15s, opacity 0.15s', color: currentGroupIndex > 0 ? '#000' : '#9CA3AF', opacity: currentGroupIndex > 0 ? 1 : 0.4 }}
+                      aria-label="Back"
+                      disabled={currentGroupIndex === 0}
+                      onMouseEnter={(e) => { if (currentGroupIndex > 0) e.currentTarget.style.color = '#EF0B72'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = currentGroupIndex > 0 ? '' : '#9CA3AF'; }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5" />
+                        <path d="M12 19l-7-7 7-7" />
+                      </svg>
+                    </button>
                   </div>
                 )}
               </div>
+              </>}
             </div>
           </div>
 
@@ -1168,7 +1335,7 @@ const LearningHubV2 = () => {
               style={{
                 opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons)) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons)) ? 'auto' : 'none',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && allTypingComplete && showButtons ? 'auto' : 'none',
                 height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion ? 0 : 'auto',
                 overflow: 'hidden',
               }}
@@ -1199,8 +1366,15 @@ const LearningHubV2 = () => {
 
         {/* Right column — media panel */}
         <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
-          <div key={activeGroupMedia.map(s => s.id).join('|')} className="w-full" style={{ animation: 'mediaFadeIn 500ms ease-in-out' }}>
-            <MediaPanel sections={showingScoredQuestion ? [] : activeGroupMedia} />
+          <div
+            key={displayedMedia.map(s => s.id).join('|')}
+            className="w-full"
+            style={{
+              opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
+              transition: 'opacity 700ms ease-in-out',
+            }}
+          >
+            <MediaPanel sections={displayedMedia} />
           </div>
         </div>
       </div>

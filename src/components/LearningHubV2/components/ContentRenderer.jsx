@@ -5,9 +5,9 @@ import SectionList from './SectionList';
 
 // ContentRenderer only renders text-based sections (left column).
 // Image and YouTube sections are handled by MediaPanel (right column).
-const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0 }) => {
+const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
   // Add a 750ms gap after a heading before the next section starts typing
-  const startDelay = (prevSectionType === 'heading' || sectionIdx === 0) ? 1200 : 0;
+  const startDelay = skipAnimation ? 0 : (prevSectionType === 'heading' || sectionIdx === 0) ? 1200 : 0;
   // Auto-complete non-animated section types immediately
   useEffect(() => {
     if (isActive && section.content_type !== 'heading' && section.content_type !== 'paragraph') {
@@ -17,10 +17,10 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
 
   switch (section.content_type) {
     case 'heading':
-      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
+      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} skipAnimation={skipAnimation} />;
 
     case 'paragraph':
-      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
+      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} skipAnimation={skipAnimation} />;
 
     case 'list':
     case 'bulletlist':
