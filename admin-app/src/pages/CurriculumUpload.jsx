@@ -2163,7 +2163,21 @@ ${contentBlocks.map((block, index) => {
                 placeholder="e.g., What do you think this means for product managers?"
                 className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
               />
-              <p className="text-xs text-gray-500 mt-1">Ungraded question to engage the user — they must answer before the lesson continues</p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs text-gray-500">Ungraded question to engage the user — they must answer before the lesson continues</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const current = block.userQuestion || '';
+                    setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                      b.id === block.id ? { ...b, userQuestion: current + '{{firstName}}' } : b
+                    ));
+                  }}
+                  className="text-xs text-pink-400 hover:text-pink-300 whitespace-nowrap transition"
+                >
+                  + Insert name
+                </button>
+              </div>
             </div>
           </div>
         );

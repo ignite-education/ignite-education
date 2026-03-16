@@ -527,7 +527,7 @@ const LearningHubV2 = () => {
                     className="text-base font-medium leading-relaxed text-black"
                     style={{ letterSpacing: '-0.01em' }}
                   >
-                    {pendingUserQuestion}
+                    {pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || 'there')}
                   </p>
                 </div>
               )}
