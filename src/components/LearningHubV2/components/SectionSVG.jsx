@@ -16,11 +16,16 @@ const SectionSVG = ({ section }) => {
   if (!markup) return null;
 
   return (
-    <div className="flex items-center justify-center py-4">
-      <div
-        style={{ width: `${width}px`, height: `${height}px` }}
-        dangerouslySetInnerHTML={{ __html: renderedMarkup }}
-      />
+    <div className="py-4">
+      <div className="flex items-center justify-center">
+        <div
+          style={{ width: `${width}px`, height: `${height}px` }}
+          dangerouslySetInnerHTML={{ __html: renderedMarkup }}
+        />
+      </div>
+      {content.description && (
+        <p className="text-base font-light leading-relaxed mt-3 text-black" style={{ letterSpacing: '-0.01em' }}>{content.description}</p>
+      )}
     </div>
   );
 };

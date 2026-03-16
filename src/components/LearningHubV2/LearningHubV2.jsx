@@ -93,6 +93,7 @@ const LearningHubV2 = () => {
   } = useLessonNavigation({ groupedLessons, lessonsMetadata, completedLessons });
 
   // Text selection → "Explain '...'" in chat input
+  const justSetExplainRef = useRef(false);
   const handleSelectionRef = useRef(null);
   handleSelectionRef.current = () => {
     const selection = window.getSelection();
@@ -106,8 +107,10 @@ const LearningHubV2 = () => {
 
     if (text && text.length > 0) {
       setChatInput(`Explain '${text}'`);
+      justSetExplainRef.current = true;
       chatInputRef.current?.focus();
-    } else if (chatInput.startsWith('Explain \'')) {
+      setTimeout(() => { justSetExplainRef.current = false; }, 200);
+    } else if (chatInput.startsWith('Explain \'') && !justSetExplainRef.current) {
       setChatInput('');
     }
   };
@@ -522,14 +525,14 @@ const LearningHubV2 = () => {
                         className="p-2 cursor-pointer transition-colors"
                         style={{
                           transition: 'color 0.15s',
-                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF',
+                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF',
                           opacity: audioReady ? 1 : 0.4,
                         }}
                         disabled={!audioReady}
                         aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
                         title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
-                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF'; }}
+                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#D10A64'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF'; }}
                       >
                         {isReading && !isPaused ? (
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -633,14 +636,14 @@ const LearningHubV2 = () => {
                         className="p-2 cursor-pointer transition-colors"
                         style={{
                           transition: 'color 0.15s',
-                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF',
+                          color: isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF',
                           opacity: audioReady ? 1 : 0.4,
                         }}
                         disabled={!audioReady}
                         aria-label={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available'}
                         title={isReading && !isPaused ? 'Pause narration' : audioReady ? 'Listen to lesson' : 'Audio not available for this lesson'}
-                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#000' : '#9CA3AF'; }}
+                        onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#D10A64'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#D10A64' : audioReady ? '#EF0B72' : '#9CA3AF'; }}
                       >
                         {isReading && !isPaused ? (
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -709,7 +712,7 @@ const LearningHubV2 = () => {
 
         {/* Right column — media panel */}
         <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
-          <div key={currentGroupIndex} className="w-full" style={{ animation: 'mediaFadeIn 500ms ease-in-out' }}>
+          <div key={activeGroupMedia.map(s => s.id).join('|')} className="w-full" style={{ animation: 'mediaFadeIn 500ms ease-in-out' }}>
             <MediaPanel sections={activeGroupMedia} />
           </div>
         </div>

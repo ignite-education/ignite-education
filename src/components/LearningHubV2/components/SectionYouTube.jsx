@@ -10,9 +10,6 @@ const SectionYouTube = ({ section }) => {
       {videoData.title && (
         <h3 className="text-lg font-bold mb-1">{videoData.title}</h3>
       )}
-      {videoData.description && (
-        <p className="text-sm text-gray-600 mb-3">{videoData.description}</p>
-      )}
       <div className="aspect-video">
         <iframe
           src={`https://www.youtube.com/embed/${videoId}${videoData.startTime ? `?start=${videoData.startTime}` : ''}`}
@@ -22,6 +19,9 @@ const SectionYouTube = ({ section }) => {
           className="w-full h-full rounded-lg"
         />
       </div>
+      {videoData.description && (
+        <p className="text-base font-light leading-relaxed mt-3 text-black" style={{ letterSpacing: '-0.01em' }}>{videoData.description}</p>
+      )}
     </div>
   );
 };

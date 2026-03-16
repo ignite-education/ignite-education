@@ -14,6 +14,9 @@ const SectionImage = ({ section }) => {
       {imageData.caption && (
         <p className="text-sm text-gray-500 mt-2 italic">{imageData.caption}</p>
       )}
+      {imageData.description && (
+        <p className="text-base font-light leading-relaxed mt-3 text-black" style={{ letterSpacing: '-0.01em' }}>{imageData.description}</p>
+      )}
     </div>
   );
 };

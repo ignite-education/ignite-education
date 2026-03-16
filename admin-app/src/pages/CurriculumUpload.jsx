@@ -888,12 +888,12 @@ const CurriculumUpload = () => {
     const newBlock = {
       id: Date.now(),
       type,
-      content: type === 'youtube' ? { videoId: '', title: '' } :
-              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium' } :
+      content: type === 'youtube' ? { videoId: '', title: '', description: '' } :
+              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium', description: '' } :
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' } } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -904,12 +904,12 @@ const CurriculumUpload = () => {
     const newBlock = {
       id: Date.now(),
       type,
-      content: type === 'youtube' ? { videoId: '', title: '' } :
-              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium' } :
+      content: type === 'youtube' ? { videoId: '', title: '', description: '' } :
+              type === 'image' ? { url: '', alt: '', caption: '', width: 'medium', description: '' } :
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' } } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -2249,6 +2249,13 @@ ${contentBlocks.map((block, index) => {
                   onChange={(e) => updateBlock(block.id, { ...block.content, caption: e.target.value })}
                   className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none"
                 />
+                <textarea
+                  placeholder="Description (optional) — displayed below the image"
+                  value={block.content.description || ''}
+                  onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
+                  className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+                  rows={2}
+                />
                 <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
                   <input
                     type="checkbox"
@@ -2279,6 +2286,13 @@ ${contentBlocks.map((block, index) => {
               value={block.content.title || ''}
               onChange={(e) => updateBlock(block.id, { ...block.content, title: e.target.value })}
               className="w-full px-4 py-2 border rounded-lg"
+            />
+            <textarea
+              placeholder="Description (optional) — displayed below the video"
+              value={block.content.description || ''}
+              onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+              rows={2}
             />
             {block.content.videoId && (
               <div className="aspect-w-16 aspect-h-9" style={{ minHeight: '256px' }}>
@@ -2475,6 +2489,13 @@ ${contentBlocks.map((block, index) => {
                 </div>
               </div>
             )}
+            <textarea
+              placeholder="Description (optional) — displayed below the graphic"
+              value={block.content.description || ''}
+              onChange={(e) => updateBlock(block.id, { ...block.content, description: e.target.value })}
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none resize-y"
+              rows={2}
+            />
             <label className="flex items-center gap-2 mt-3 text-sm text-gray-300 cursor-pointer">
               <input
                 type="checkbox"
