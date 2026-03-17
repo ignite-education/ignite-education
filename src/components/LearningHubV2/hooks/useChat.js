@@ -55,7 +55,7 @@ const useChat = () => {
         // Pause after punctuation (matches body text typewriter: 400ms for . , ; : ! ?)
         const ch = fullText[currentIndex];
         const next = fullText[currentIndex + 1];
-        if ('.,;:!?'.includes(ch) && (next === ' ' || next === '\n' || currentIndex + 1 === fullText.length)) {
+        if ('.,;:!?()'.includes(ch) && (next === ' ' || next === '\n' || currentIndex + 1 === fullText.length)) {
           pauseCounter = 11; // ~400ms at 38ms interval
         }
 

@@ -299,7 +299,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
   const cursor = !isComplete ? (
     <span style={{ position: 'relative', display: 'inline', whiteSpace: 'pre-wrap' }}>
       <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingLine}</span>
-      <span className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
+      <span data-scroll-anchor className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
     </span>
   ) : null;
 
@@ -307,7 +307,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
   if (!revealedText && !isComplete) {
     return (
       <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-        <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }} />
+        <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }} />
       </p>
     );
   }
@@ -341,7 +341,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
       // Empty last line during newline pause — show cursor at start of new line
       return (
         <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-          <span className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
+          <span data-scroll-anchor className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
         </p>
       );
     } else if (hasMultipleLines) {

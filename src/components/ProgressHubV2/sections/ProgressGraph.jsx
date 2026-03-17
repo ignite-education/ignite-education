@@ -40,6 +40,7 @@ const ProgressGraph = ({
   courseData = null,
   userLessonScores = {},
   globalLessonScores = {},
+  completedLessons = [],
 }) => {
   // Build flat lesson list and module ranges from course structure
   const lessons = [];
@@ -71,6 +72,10 @@ const ProgressGraph = ({
       }
     });
   }
+
+  const completedSet = new Set(
+    (completedLessons || []).map(l => `${l.module_number}-${l.lesson_number}`)
+  );
 
   if (lessons.length === 0) {
     return (
@@ -194,7 +199,7 @@ const ProgressGraph = ({
   });
   const userPoints = lessons.map((lesson, idx) => {
     const result = userLessonScores[lesson.key];
-    const hasData = result && result.total > 0;
+    const hasData = result && result.total > 0 && completedSet.has(lesson.key);
     const actualScore = hasData ? (result.correct / result.total) * 100 : null;
     const progress = animationStarted ? animationProgress : 0;
     // Interpolate from 65% to actual score based on animation progress

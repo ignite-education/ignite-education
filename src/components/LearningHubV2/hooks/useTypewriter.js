@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-const PAUSE_CHARS = new Set(['.', ',', ';', ':', '!', '?']);
+const PAUSE_CHARS = new Set(['.', ',', ';', ':', '!', '?', '(', ')']);
 const PAUSE_DURATION = 400; // ms pause after punctuation
 
 export default function useTypewriter(text, { speed = 33, delay = 0, enabled = true, onComplete } = {}) {

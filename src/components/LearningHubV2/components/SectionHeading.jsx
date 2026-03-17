@@ -108,7 +108,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
 
   // Show cursor immediately during delay, before text starts
   if (!revealedText && !isComplete) {
-    const cursorOnly = <span className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
+    const cursorOnly = <span data-scroll-anchor className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
     if (level === 2) {
       return (
         <div className="mt-0 mb-3">
@@ -131,7 +131,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
       <div className="mt-0 mb-3">
         <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
           {renderFormattedText(revealedText)}
-          {!isComplete && <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
+          {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
         </HeadingTag>
       </div>
     );
@@ -140,7 +140,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
   return (
     <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
       {renderFormattedText(revealedText)}
-      {!isComplete && <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
+      {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
     </HeadingTag>
   );
 };

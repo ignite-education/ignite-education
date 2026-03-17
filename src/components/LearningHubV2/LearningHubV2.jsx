@@ -538,6 +538,7 @@ const LearningHubV2 = () => {
           setScoredSectionContent(buildGroupContentUpTo(prev));
           setScoredSectionNumber(section.section_number);
           resetChat();
+          userScrolledUpRef.current = false;
         });
         return prev; // Don't advance — wait for pass
       }
@@ -580,12 +581,24 @@ const LearningHubV2 = () => {
   }, [currentGroupIndex]);
 
   // Continuous scroll loop — runs for lifetime of component
+  // Scrolls toward the typing cursor (data-scroll-anchor) rather than the full container bottom,
+  // so hidden layout-reserve text doesn't cause premature scroll jumps.
   useEffect(() => {
     let rafId;
     const tick = () => {
       const el = contentScrollRef.current;
       if (el && !userScrolledUpRef.current) {
-        const target = el.scrollHeight - el.clientHeight;
+        const anchor = el.querySelector('[data-scroll-anchor]');
+        let target;
+        if (anchor) {
+          const anchorRect = anchor.getBoundingClientRect();
+          const containerRect = el.getBoundingClientRect();
+          const anchorOffset = anchorRect.bottom - containerRect.top + el.scrollTop;
+          target = anchorOffset - el.clientHeight + 80;
+          target = Math.max(0, Math.min(target, el.scrollHeight - el.clientHeight));
+        } else {
+          target = el.scrollHeight - el.clientHeight;
+        }
         const diff = target - el.scrollTop;
         if (diff > 0.5) {
           el.scrollTop += diff * 0.08;
@@ -818,6 +831,7 @@ const LearningHubV2 = () => {
   // Scored question intro → show the actual question underneath
   const handleScoredIntroComplete = useCallback(() => {
     setScoredIntroPhase(false);
+    userScrolledUpRef.current = false;
     // Focus chat input after question finishes typing — handled via effect
   }, []);
 
@@ -862,6 +876,7 @@ const LearningHubV2 = () => {
     setScoredAttemptCount((prev) => prev + 1);
     setScoredResult(null);
     resetChat();
+    userScrolledUpRef.current = false;
   }, [resetChat]);
 
   // Scored question — move to next question in pool (after 2 failed attempts)
@@ -877,6 +892,7 @@ const LearningHubV2 = () => {
     setScoredResult(null);
     setScoredIntroPhase(false); // skip intro for subsequent questions
     resetChat();
+    userScrolledUpRef.current = false;
   }, [resetChat, scoredQuestionIndex, scoredQuestionPool.length, handleScoredQuestionPass]);
 
   // Auto-focus chat input when scored question finishes typing
@@ -1052,6 +1068,7 @@ const LearningHubV2 = () => {
                               {line}
                               {li === lines.length - 1 && !scoredIntroDone && scoredIntroRevealed && (
                                 <span
+                                  data-scroll-anchor
                                   className="inline-block ml-1.5"
                                   style={{
                                     width: 8,
@@ -1069,6 +1086,7 @@ const LearningHubV2 = () => {
                         {!scoredIntroDone && !scoredIntroRevealed && (
                           <p>
                             <span
+                              data-scroll-anchor
                               className="inline-block"
                               style={{
                                 width: 8,
@@ -1100,6 +1118,7 @@ const LearningHubV2 = () => {
                       {scoredQuestionRevealed}
                       {!scoredQuestionDone && scoredQuestionRevealed && (
                         <span
+                          data-scroll-anchor
                           className="inline-block ml-1.5"
                           style={{
                             width: 8,
@@ -1113,6 +1132,7 @@ const LearningHubV2 = () => {
                       )}
                       {!scoredQuestionDone && !scoredQuestionRevealed && (
                         <span
+                          data-scroll-anchor
                           className="inline-block"
                           style={{
                             width: 8,
@@ -1168,6 +1188,7 @@ const LearningHubV2 = () => {
                               {userQuestionRevealed}
                               {!userQuestionTypingDone && (
                                 <span
+                                  data-scroll-anchor
                                   className="inline-block ml-1.5"
                                   style={{
                                     width: 8,
@@ -1299,6 +1320,7 @@ const LearningHubV2 = () => {
                 {isTyping && (
                   <div className="mt-3 mb-3">
                     <span
+                      data-scroll-anchor
                       className="inline-block"
                       style={{
                         width: 8,

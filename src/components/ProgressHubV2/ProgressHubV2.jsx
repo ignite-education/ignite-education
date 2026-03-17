@@ -190,7 +190,7 @@ const ProgressHubV2 = () => {
       {/* Section 2: Course Details */}
       <CourseDetailsSection
         courseTitle={courseTitle}
-        graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} />}
+        graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} completedLessons={completedLessons} />}
         left={
           <>
             <LessonSlider

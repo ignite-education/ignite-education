@@ -113,7 +113,7 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping, remainingLine 
   const cursorEl = showCursor ? (
     <span style={{ position: 'relative', display: 'inline', whiteSpace: 'pre-wrap' }}>
       <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingLine}</span>
-      <span className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
+      <span data-scroll-anchor className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
     </span>
   ) : null;
 
