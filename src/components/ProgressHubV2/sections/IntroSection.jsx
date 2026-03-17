@@ -345,8 +345,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
 
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [showInsiderConfetti, setShowInsiderConfetti] = useState(false);
+  const [activeConfetti, setActiveConfetti] = useState({});
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount);
@@ -406,51 +405,34 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     enabled: !!firstName,
   });
 
+  // Confetti for all tags — fires once per tag per user
   useEffect(() => {
-    if (totalCompletedLessons < 1 || !userId) return;
+    if (!userId) return;
 
-    const storageKey = `ignite_lesson_tag_confetti_shown_${userId}`;
-    const alreadyShown = localStorage.getItem(storageKey);
+    const tags = [
+      { key: 'joined', active: !!formatJoinDate(joinedAt) },
+      { key: 'lesson', active: totalCompletedLessons >= 1 },
+      { key: 'insider', active: !!isInsider },
+      { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
+    ];
 
-    if (!alreadyShown) {
+    const timers = [];
+    tags.forEach(({ key, active }) => {
+      if (!active) return;
+      const storageKey = `ignite_${key}_tag_confetti_shown_${userId}`;
+      if (localStorage.getItem(storageKey)) return;
+
       localStorage.setItem(storageKey, 'true');
-      const startTimer = setTimeout(() => {
-        setShowConfetti(true);
-      }, 1000);
+      timers.push(setTimeout(() => {
+        setActiveConfetti(prev => ({ ...prev, [key]: true }));
+      }, 1000));
+      timers.push(setTimeout(() => {
+        setActiveConfetti(prev => ({ ...prev, [key]: false }));
+      }, 5000));
+    });
 
-      const hideTimer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 5000);
-
-      return () => {
-        clearTimeout(startTimer);
-        clearTimeout(hideTimer);
-      };
-    }
-  }, [totalCompletedLessons, userId]);
-
-  useEffect(() => {
-    if (!isInsider || !userId) return;
-
-    const storageKey = `ignite_insider_tag_confetti_shown_${userId}`;
-    const alreadyShown = localStorage.getItem(storageKey);
-
-    if (!alreadyShown) {
-      localStorage.setItem(storageKey, 'true');
-      const startTimer = setTimeout(() => {
-        setShowInsiderConfetti(true);
-      }, 1000);
-
-      const hideTimer = setTimeout(() => {
-        setShowInsiderConfetti(false);
-      }, 5000);
-
-      return () => {
-        clearTimeout(startTimer);
-        clearTimeout(hideTimer);
-      };
-    }
-  }, [isInsider, userId]);
+    return () => timers.forEach(clearTimeout);
+  }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {
@@ -554,18 +536,21 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           <div className="flex items-center gap-2" style={{ marginTop: '16px' }}>
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
-              <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
-              >
-                {formatJoinDate(joinedAt)}
+              <span style={{ position: 'relative', display: 'inline-block' }}>
+                {activeConfetti.joined && <ConfettiBurst />}
+                <span
+                  className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
+                  style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
+                >
+                  {formatJoinDate(joinedAt)}
+                </span>
               </span>
             )}
 
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
               <span style={{ position: 'relative', display: 'inline-block' }}>
-                {showConfetti && <ConfettiBurst />}
+                {activeConfetti.lesson && <ConfettiBurst />}
                 <span
                   className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                   style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
@@ -578,7 +563,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             {/* Insider Tag */}
             {isInsider && (
               <span style={{ position: 'relative', display: 'inline-block' }}>
-                {showInsiderConfetti && <ConfettiBurst />}
+                {activeConfetti.insider && <ConfettiBurst />}
                 <span
                   className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
                   style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
@@ -590,15 +575,18 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
             {/* Admin/Teacher Tag */}
             {(userRole === 'admin' || userRole === 'teacher') && (
-              <a
-                href="https://admin.ignite.education"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal transition-colors"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer' }}
-              >
-                {userRole === 'admin' ? 'Admin' : 'Teacher'}
-              </a>
+              <span style={{ position: 'relative', display: 'inline-block' }}>
+                {activeConfetti.role && <ConfettiBurst />}
+                <a
+                  href="https://admin.ignite.education"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal transition-colors"
+                  style={{ fontSize: '12px', letterSpacing: '-0.02em', textDecoration: 'none', cursor: 'pointer', position: 'relative', zIndex: 2 }}
+                >
+                  {userRole === 'admin' ? 'Admin' : 'Teacher'}
+                </a>
+              </span>
             )}
           </div>
 
