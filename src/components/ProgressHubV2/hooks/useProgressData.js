@@ -6,7 +6,7 @@ import { trackPageVisit } from '../../../lib/tracking';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
-const DEFAULT_STAT_IMAGES = ['https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v2.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png'];
+const DEFAULT_STAT_IMAGES = ['https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -275,7 +275,7 @@ const useProgressData = () => {
             const joinDate = new Date(authUser.created_at);
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v2.png' };
+            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png' };
           } else {
             const signIns = await getRecentSignIns(userId);
             if (signIns.length > 0) {
@@ -328,7 +328,7 @@ const useProgressData = () => {
               const joinDate = new Date(authUser.created_at);
               const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v2.png' };
+              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png' };
             }
           }
           if (isMounted) setBehaviourStat(behaviourStatValue);

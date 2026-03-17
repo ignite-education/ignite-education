@@ -70,6 +70,16 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const [availableCourses, setAvailableCourses] = useState([]);
   const [enrolledCourse, setEnrolledCourse] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState(null);
+  const [profileImageLoaded, setProfileImageLoaded] = useState(false);
+
+  // Preload profile picture so it's cached before modal opens
+  useEffect(() => {
+    if (!profilePicture) { setProfileImageLoaded(false); return; }
+    setProfileImageLoaded(false);
+    const img = new Image();
+    img.onload = () => setProfileImageLoaded(true);
+    img.src = profilePicture;
+  }, [profilePicture]);
 
   // Email preferences (synced with backend)
   const [emailPrefs, setEmailPrefs] = useState({
@@ -527,7 +537,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
             {/* Profile Picture */}
             <div className="flex items-stretch gap-7 mb-4">
               <div className="flex flex-col items-center justify-between">
-                {profilePicture ? (
+                {profilePicture && profileImageLoaded ? (
                   <img
                     src={profilePicture}
                     alt="Profile"

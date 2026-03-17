@@ -109,11 +109,11 @@ const ProgressHubV2 = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Set Safari theme color to black
+  // Set Safari theme color to white
   useEffect(() => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
-    if (metaThemeColor) metaThemeColor.setAttribute('content', '#000000');
+    if (metaThemeColor) metaThemeColor.setAttribute('content', '#FFFFFF');
     const originalHtmlBg = document.documentElement.style.backgroundColor;
     const originalBodyBg = document.body.style.backgroundColor;
     document.documentElement.style.backgroundColor = '#000000';

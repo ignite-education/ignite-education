@@ -170,41 +170,60 @@ const formatJoinDate = (dateStr) => {
 };
 
 const ConfettiBurst = () => {
-  const particles = Array.from({ length: 10 }, (_, i) => {
-    // Spread across upper arc: -150deg to -30deg (top-left through top to top-right)
-    const angle = -150 + (i / 9) * 120 + (Math.random() - 0.5) * 20;
-    const distance = 40 + Math.random() * 50;
-    const tx = Math.cos((angle * Math.PI) / 180) * distance;
-    const ty = Math.sin((angle * Math.PI) / 180) * distance;
-    const size = 8;
-    const delay = Math.random() * 0.3;
-    const shape = Math.random() > 0.5 ? 'circle' : 'square';
-    return { id: i, tx, ty, size, delay, shape };
-  });
+  const particles = [
+    { id: 0, tx: -50, ty: -25, delay: 0.5, duration: 2.5, rotation: 30, width: 10.8, height: 16.2, color: '#8200EA', startX: -30, softFade: false },
+    { id: 1, tx: 20, ty: -25, delay: 0.7, duration: 2.6, rotation: 90, width: 8.5, height: 13.6, color: '#BB65FF', startX: 25, softFade: true },
+    { id: 2, tx: 40, ty: -25, delay: 0.9, duration: 2.7, rotation: 150, width: 12.1, height: 18.7, color: '#6A00BD', startX: 20, softFade: true },
+    { id: 3, tx: 40, ty: -25, delay: 1.1, duration: 2.8, rotation: 60, width: 11, height: 11, color: '#BB65FF', startX: 20, softFade: true },
+  ];
 
   return (
     <>
       <style>{`
-        @keyframes confettiBurst {
-          0% { opacity: 1; transform: translate(0, 0) scale(0); }
-          50% { opacity: 1; }
-          100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1); }
+        @keyframes confettiFall {
+          0% { opacity: 0; transform: translate(var(--sx), 0) rotate(0deg) scale(0.5); }
+          20% { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1); }
+          70% { opacity: 1; }
+          80% { opacity: 0.7; }
+          90% { opacity: 0.3; }
+          100% { opacity: 0; transform: translate(var(--tx), calc(var(--ty) + 50px)) rotate(calc(var(--rot) + 40deg)) scale(0.8); }
+        }
+        @keyframes confettiFallSoft {
+          0% { opacity: 0; transform: translate(var(--sx), 0) rotate(0deg) scale(0.5); }
+          20% { opacity: 1; transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(1); }
+          55% { opacity: 1; }
+          67% { opacity: 0.85; }
+          80% { opacity: 0.55; }
+          85% { opacity: 0.22; }
+          88% { opacity: 0.16; }
+          91% { opacity: 0.11; }
+          94% { opacity: 0.07; }
+          97% { opacity: 0.03; }
+          100% { opacity: 0; transform: translate(var(--tx), calc(var(--ty) + 50px)) rotate(calc(var(--rot) + 40deg)) scale(0.8); }
+        }
+        @keyframes confettiToFront {
+          0%, 35% { z-index: 1; }
+          36%, 100% { z-index: 3; }
         }
       `}</style>
-      <div style={{ position: 'absolute', top: 0, left: '50%', width: 0, height: 0, pointerEvents: 'none', zIndex: -1 }}>
+      <div style={{ position: 'absolute', top: '0', left: '50%', width: 0, height: 0, pointerEvents: 'none' }}>
         {particles.map((p) => (
           <div
             key={p.id}
             style={{
               position: 'absolute',
-              width: `${p.size}px`,
-              height: `${p.size}px`,
-              backgroundColor: '#7714E0',
-              borderRadius: p.shape === 'circle' ? '50%' : '1px',
+              width: `${p.width}px`,
+              height: `${p.height}px`,
+              background: `linear-gradient(135deg, ${p.color} 0%, ${p.color}CC 50%, ${p.color} 100%)`,
+              borderRadius: '0px',
+              boxShadow: `inset 1px 1px 2px rgba(255,255,255,0.25), inset -1px -1px 1px rgba(0,0,0,0.15)`,
+              '--sx': `${p.startX}px`,
               '--tx': `${p.tx}px`,
               '--ty': `${p.ty}px`,
-              animation: `confettiBurst 1.2s ease-out ${p.delay}s forwards`,
+              '--rot': `${p.rotation}deg`,
+              animation: `${p.softFade ? 'confettiFallSoft' : 'confettiFall'} ${p.duration}s ease ${p.delay}s forwards, confettiToFront ${p.duration}s step-end ${p.delay}s forwards`,
               opacity: 0,
+              zIndex: 1,
             }}
           />
         ))}
@@ -327,6 +346,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const loopCountRef = useRef(0);
 
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showInsiderConfetti, setShowInsiderConfetti] = useState(false);
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount);
@@ -400,7 +420,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
       const hideTimer = setTimeout(() => {
         setShowConfetti(false);
-      }, 4000);
+      }, 5000);
 
       return () => {
         clearTimeout(startTimer);
@@ -408,6 +428,29 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       };
     }
   }, [totalCompletedLessons, userId]);
+
+  useEffect(() => {
+    if (!isInsider || !userId) return;
+
+    const storageKey = `ignite_insider_tag_confetti_shown_${userId}`;
+    const alreadyShown = localStorage.getItem(storageKey);
+
+    if (!alreadyShown) {
+      localStorage.setItem(storageKey, 'true');
+      const startTimer = setTimeout(() => {
+        setShowInsiderConfetti(true);
+      }, 1000);
+
+      const hideTimer = setTimeout(() => {
+        setShowInsiderConfetti(false);
+      }, 5000);
+
+      return () => {
+        clearTimeout(startTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [isInsider, userId]);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {
@@ -521,22 +564,27 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
             {/* Lesson Tag */}
             {totalCompletedLessons >= 1 && (
-              <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative' }}
-              >
-                {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
+              <span style={{ position: 'relative', display: 'inline-block' }}>
                 {showConfetti && <ConfettiBurst />}
+                <span
+                  className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
+                  style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
+                >
+                  {totalCompletedLessons === 1 ? '1 Lesson' : `${totalCompletedLessons} Lessons`}
+                </span>
               </span>
             )}
 
             {/* Insider Tag */}
             {isInsider && (
-              <span
-                className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
-                style={{ fontSize: '12px', letterSpacing: '-0.02em' }}
-              >
-                Insider
+              <span style={{ position: 'relative', display: 'inline-block' }}>
+                {showInsiderConfetti && <ConfettiBurst />}
+                <span
+                  className="inline-block px-[8px] py-[3px] text-black bg-[#F0F0F0] rounded-[4px] font-normal"
+                  style={{ fontSize: '12px', letterSpacing: '-0.02em', position: 'relative', zIndex: 2 }}
+                >
+                  Insider
+                </span>
               </span>
             )}
 
@@ -553,6 +601,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               </a>
             )}
           </div>
+
+
         </div>
 
         {/* Right Column: Progress Summary + Stats */}

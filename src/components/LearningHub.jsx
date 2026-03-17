@@ -196,7 +196,7 @@ const LearningHub = () => {
     const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
 
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', '#000000');
+      metaThemeColor.setAttribute('content', '#FFFFFF');
     }
 
     const originalHtmlBg = document.documentElement.style.backgroundColor;
