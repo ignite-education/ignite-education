@@ -4793,14 +4793,22 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
     const { data: authData, error: authError } = await supabase.auth.admin.deleteUser(userId);
 
     if (authError) {
-      console.error('Error deleting user from auth:', authError);
-      return res.status(500).json({
-        error: 'Failed to delete user from auth',
-        details: authError.message
-      });
+      // If user doesn't exist in auth, that's fine — continue to clean up public.users
+      const isNotFound = authError.message?.toLowerCase().includes('not found') ||
+                         authError.message?.toLowerCase().includes('user not found') ||
+                         authError.status === 404;
+      if (isNotFound) {
+        console.log(`User ${userId} not found in auth (already deleted?) — continuing to clean up database`);
+      } else {
+        console.error('Error deleting user from auth:', authError);
+        return res.status(500).json({
+          error: 'Failed to delete user from auth',
+          details: authError.message
+        });
+      }
+    } else {
+      console.log('User deleted from auth successfully:', authData);
     }
-
-    console.log('User deleted from auth successfully:', authData);
 
     // Delete from public.users table
     const { data: dbData, error: dbError } = await supabase
