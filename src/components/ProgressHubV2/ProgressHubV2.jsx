@@ -114,14 +114,8 @@ const ProgressHubV2 = () => {
     const metaThemeColor = document.querySelector('meta[name="theme-color"]');
     const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
     if (metaThemeColor) metaThemeColor.setAttribute('content', '#FFFFFF');
-    const originalHtmlBg = document.documentElement.style.backgroundColor;
-    const originalBodyBg = document.body.style.backgroundColor;
-    document.documentElement.style.backgroundColor = '#000000';
-    document.body.style.backgroundColor = '#000000';
     return () => {
       if (metaThemeColor) metaThemeColor.setAttribute('content', originalColor);
-      document.documentElement.style.backgroundColor = originalHtmlBg;
-      document.body.style.backgroundColor = originalBodyBg;
     };
   }, []);
 
