@@ -405,33 +405,42 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     enabled: !!firstName,
   });
 
-  // Confetti for all tags — fires once per tag per user
+  // Confetti for all tags — fires once per tag per user, waits for page load
   useEffect(() => {
     if (!userId) return;
 
-    const tags = [
-      { key: 'joined', active: !!formatJoinDate(joinedAt) },
-      { key: 'lesson', active: totalCompletedLessons >= 1 },
-      { key: 'insider', active: !!isInsider },
-      { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
-    ];
+    const startConfetti = () => {
+      const tags = [
+        { key: 'joined', active: !!formatJoinDate(joinedAt) },
+        { key: 'lesson', active: totalCompletedLessons >= 1 },
+        { key: 'insider', active: !!isInsider },
+        { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
+      ];
+
+      tags.forEach(({ key, active }) => {
+        if (!active) return;
+        const storageKey = `ignite_${key}_tag_confetti_shown_${userId}`;
+        if (localStorage.getItem(storageKey)) return;
+
+        localStorage.setItem(storageKey, 'true');
+        timers.push(setTimeout(() => {
+          setActiveConfetti(prev => ({ ...prev, [key]: true }));
+        }, 1500));
+        timers.push(setTimeout(() => {
+          setActiveConfetti(prev => ({ ...prev, [key]: false }));
+        }, 5000));
+      });
+    };
 
     const timers = [];
-    tags.forEach(({ key, active }) => {
-      if (!active) return;
-      const storageKey = `ignite_${key}_tag_confetti_shown_${userId}`;
-      if (localStorage.getItem(storageKey)) return;
+    if (document.readyState === 'complete') {
+      startConfetti();
+    } else {
+      window.addEventListener('load', startConfetti);
+      timers.push(() => window.removeEventListener('load', startConfetti));
+    }
 
-      localStorage.setItem(storageKey, 'true');
-      timers.push(setTimeout(() => {
-        setActiveConfetti(prev => ({ ...prev, [key]: true }));
-      }, 1000));
-      timers.push(setTimeout(() => {
-        setActiveConfetti(prev => ({ ...prev, [key]: false }));
-      }, 5000));
-    });
-
-    return () => timers.forEach(clearTimeout);
+    return () => timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
   }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
 
   useEffect(() => {

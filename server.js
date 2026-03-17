@@ -4682,6 +4682,45 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
   }
 });
 
+// Self-service delete account endpoint
+app.delete('/api/delete-account', verifyAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    console.log(`User ${userId} requesting account deletion`);
+
+    // Delete from auth.users using service role
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+
+    if (authError) {
+      console.error('Error deleting user from auth:', authError);
+      return res.status(500).json({
+        error: 'Failed to delete account',
+        details: authError.message
+      });
+    }
+
+    // Delete from public.users table
+    const { error: dbError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', userId);
+
+    if (dbError && dbError.code !== 'PGRST116') {
+      console.error('Error deleting user from database:', dbError);
+      return res.status(500).json({
+        error: 'Account deleted from auth but failed to remove database record',
+        details: dbError.message
+      });
+    }
+
+    console.log(`User ${userId} account deleted successfully`);
+    res.json({ success: true, message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Error in delete account endpoint:', error);
+    res.status(500).json({ error: 'Failed to delete account', details: error.message });
+  }
+});
+
 // Email sending endpoint
 app.post('/api/send-email', async (req, res) => {
   try {

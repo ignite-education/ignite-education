@@ -321,10 +321,15 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     if (!confirm('This will permanently delete all your data. Are you absolutely sure?')) return;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Not authenticated');
+
       const response = await fetch(`${API_URL}/api/delete-account`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: authUser.id })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
       });
 
       if (response.ok) {
