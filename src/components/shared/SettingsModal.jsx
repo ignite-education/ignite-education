@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js';
+
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { removeSavedCourse } from '../../lib/api';
@@ -41,14 +41,13 @@ const resizeProfileImage = (file) => {
 };
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
   const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName, refreshSession } = useAuth();
   const navigate = useNavigate();
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
-  const checkoutRef = useRef(null);
+
   const memoryRef = useRef(null);
 
   const savedCoursesScrollRef = useRef(null);
@@ -80,10 +79,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   });
   const [originalEmailPrefs, setOriginalEmailPrefs] = useState(null);
 
-  // Stripe upgrade state
-  const [showCheckout, setShowCheckout] = useState(false);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [upgradingToInsider, setUpgradingToInsider] = useState(false);
 
   // Preload upsell + insider images so they're ready when modal opens
   useEffect(() => {
@@ -201,27 +196,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     })();
   }, [isOpen]);
 
-  // Mount Stripe Checkout
-  useEffect(() => {
-    let checkout = null;
-    let cancelled = false;
-    const mountCheckout = async () => {
-      if (clientSecret && checkoutRef.current) {
-        try {
-          const stripe = await stripePromise;
-          if (cancelled) return;
-          checkout = await stripe.initEmbeddedCheckout({ clientSecret });
-          if (cancelled) { checkout.destroy(); return; }
-          checkout.mount(checkoutRef.current);
-        } catch (error) {
-          console.error('Error mounting Stripe checkout:', error);
-          setUpgradingToInsider(false);
-        }
-      }
-    };
-    mountCheckout();
-    return () => { cancelled = true; if (checkout) checkout.destroy(); };
-  }, [clientSecret]);
 
   const handleProfilePictureUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -312,8 +286,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
     memoryRef.current?.save();
     setIsClosing(true);
-    setShowCheckout(false);
-    setClientSecret(null);
     setTimeout(() => {
       setIsClosing(false);
       onClose();
@@ -412,31 +384,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
     }
   };
 
-  const handleStartCheckout = async () => {
-    if (!authUser) return;
-    setShowCheckout(true);
-    setUpgradingToInsider(true);
-    try {
-      const response = await fetch(`${API_URL}/api/create-checkout-session`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: authUser.id }),
-      });
-      const data = await response.json();
-      if (data.clientSecret) {
-        setClientSecret(data.clientSecret);
-        localStorage.setItem('pendingPaymentRefresh', Date.now().toString());
-        setUpgradingToInsider(false);
-      } else {
-        throw new Error('Failed to create checkout session');
-      }
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      setShowCheckout(false);
-      setClientSecret(null);
-      setUpgradingToInsider(false);
-    }
-  };
 
   const handleLinkProvider = async (provider) => {
     try {
@@ -532,51 +479,6 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   const isGoogleLinked = authUser?.identities?.some(id => id.provider === 'google');
   const isLinkedInLinked = authUser?.identities?.some(id => id.provider === 'linkedin_oidc');
 
-  // If checkout is active, show Stripe embedded checkout
-  if (showCheckout) {
-    return (
-      <div
-        className="fixed inset-0 flex justify-center items-center"
-        style={{
-          backdropFilter: 'blur(2.4px)',
-          WebkitBackdropFilter: 'blur(2.4px)',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.25), rgba(0,0,0,0.3))',
-          zIndex: 9999,
-          animation: isClosing ? 'fadeOut 0.2s ease-out' : 'fadeIn 0.2s ease-out',
-          padding: '2rem',
-        }}
-        onClick={handleClose}
-      >
-        <div className="relative w-full" style={{ maxWidth: '700px' }} onClick={(e) => e.stopPropagation()}>
-          <h2 className="font-semibold text-white pl-1" style={{ fontSize: '1.6rem', letterSpacing: '-1%', marginBottom: '0.15rem' }}>Upgrade</h2>
-          <div
-            className="bg-white relative"
-            style={{
-              animation: isClosing ? 'scaleDown 0.2s ease-out' : 'scaleUp 0.2s ease-out',
-              borderRadius: '0.3rem',
-              padding: '1.5rem',
-              maxHeight: '85vh',
-              overflowY: 'auto',
-            }}
-          >
-            <button onClick={handleClose} className="absolute top-4 right-4 text-gray-600 hover:text-black z-10">
-              <X size={20} strokeWidth={2} />
-            </button>
-            {upgradingToInsider ? (
-              <div className="flex items-center justify-center py-16">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-3"></div>
-                  <p className="text-sm text-gray-500">Loading checkout...</p>
-                </div>
-              </div>
-            ) : (
-              <div ref={checkoutRef} style={{ minHeight: '400px' }} />
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -776,7 +678,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                     </>
                   )}
                   <button
-                    onClick={hasUsedTrial ? handleJoinInsider : handleStartCheckout}
+                    onClick={handleJoinInsider}
                     className="text-white px-5 py-2 transition cursor-pointer"
                     style={{ borderRadius: '0.3rem', backgroundColor: '#8200EA', fontSize: '1rem', fontWeight: 500 }}
                     onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 0 8px rgba(103,103,103,0.55)'}

@@ -175,11 +175,11 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
             padding: '1.25rem 1rem 1.3rem 1rem',
             minHeight: '100px',
             background: '#7714E0',
-            cursor: isLive ? 'pointer' : 'default',
+            cursor: (isLive || !isInsider) ? 'pointer' : 'default',
             position: 'relative',
             overflow: 'hidden',
           }}
-          onClick={isLive ? handleJoinOfficeHours : undefined}
+          onClick={(isLive || !isInsider) ? handleJoinOfficeHours : undefined}
         >
           {coaches ? (
             <div className="flex gap-2.5 w-full items-center">
@@ -293,7 +293,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                 {isLive ? (
                   <button
                     onClick={handleJoinOfficeHours}
-                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0"
                     style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.3rem' }}
                     title="Join Office Hours"
                   >
@@ -304,7 +304,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                 ) : !isInsider ? (
                   <button
                     onClick={handleOpenUpgradeModal}
-                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0"
                     style={{ width: '48px', height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '0.3rem' }}
                     title="Upgrade to Insider"
                   >
