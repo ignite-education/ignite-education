@@ -1026,7 +1026,7 @@ const LearningHubV2 = () => {
           {/* Scrollable content area wrapper */}
           <div className="flex-1 min-h-0 relative">
             {/* White gradient fade below progress bar */}
-            <div className="absolute pointer-events-none" style={{ top: '-10px', height: '10px', zIndex: 5, left: '40px', right: '40px' }}>
+            <div className="absolute pointer-events-none" style={{ top: '-10px', height: '15px', zIndex: 5, left: '40px', right: '40px' }}>
               <div className="absolute inset-0" style={{
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
@@ -1176,7 +1176,7 @@ const LearningHubV2 = () => {
 
                   {/* User question — shown after a paragraph section finishes typing, gates next section */}
                   {pendingUserQuestion && (
-                    <div className="mt-2 mb-4">
+                    <div className="mt-1 mb-4">
                       <p
                         className="text-base font-medium leading-relaxed text-black"
                         style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
