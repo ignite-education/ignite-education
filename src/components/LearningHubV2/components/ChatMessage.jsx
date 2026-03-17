@@ -1,4 +1,5 @@
 import React from 'react';
+import ThumbsFeedback from './ThumbsFeedback';
 
 // Parse inline formatting: **bold**, *italic*, bullet points
 const parseText = (text) => {
@@ -80,7 +81,7 @@ const parseText = (text) => {
   });
 };
 
-const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
+const ChatMessage = ({ message, displayedText, isCurrentlyTyping, remainingLine = '', showFeedback, chatRating, onFeedback }) => {
   const isUser = message.type === 'user';
 
   // For assistant messages that are typing, show displayedText
@@ -108,20 +109,13 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
     );
   }
 
-  // Assistant message
+  // Assistant message — overlay approach: hidden full text for stable layout, typed portion on top
   const showCursor = isCurrentlyTyping && !message.isComplete;
   const cursorEl = showCursor ? (
-    <span
-      className="inline-block ml-1.5"
-      style={{
-        width: 8,
-        height: 8,
-        backgroundColor: '#8200EA',
-        verticalAlign: 'middle',
-        position: 'relative',
-        top: '-1px',
-      }}
-    />
+    <span style={{ position: 'relative', display: 'inline', whiteSpace: 'pre-wrap' }}>
+      <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingLine}</span>
+      <span className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
+    </span>
   ) : null;
 
   const parsed = parseText(textToShow);
@@ -135,6 +129,28 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
       )
     : parsed;
 
+  // During typing, use overlay to prevent layout flicker
+  if (showCursor) {
+    const fullParsed = parseText(message.text);
+    return (
+      <div className="mb-3">
+        <div
+          className="text-base font-light leading-relaxed text-black"
+          style={{ letterSpacing: '-0.01em', position: 'relative' }}
+        >
+          {/* Hidden full text for stable layout */}
+          <div style={{ visibility: 'hidden' }} aria-hidden="true">
+            {fullParsed}
+          </div>
+          {/* Visible typed portion overlaid */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+            {withCursor}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mb-3">
       <div
@@ -143,6 +159,11 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping }) => {
       >
         {withCursor}
       </div>
+      {showFeedback && (
+        <div className="mt-1">
+          <ThumbsFeedback rating={chatRating} onRate={onFeedback} size={14} />
+        </div>
+      )}
     </div>
   );
 };

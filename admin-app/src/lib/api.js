@@ -1269,6 +1269,13 @@ export async function getLessonRatingStats(courseId, moduleNumber, lessonNumber)
   return stats;
 }
 
+export async function getSectionFeedbackStats(courseId, moduleNumber, lessonNumber) {
+  const params = new URLSearchParams({ courseId, moduleNumber, lessonNumber });
+  const res = await fetch(`${API_URL}/api/section-feedback/stats?${params}`);
+  const json = await res.json();
+  return json.stats || {};
+}
+
 /**
  * Get all users with their roles for user management
  * Note: This requires RLS policies to allow admins to read all users

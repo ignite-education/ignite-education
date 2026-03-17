@@ -7,6 +7,7 @@ const useChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [typingMessageIndex, setTypingMessageIndex] = useState(null);
   const [displayedText, setDisplayedText] = useState('');
+  const [chatRemainingLine, setChatRemainingLine] = useState('');
 
   // Typing animation effect
   useEffect(() => {
@@ -36,10 +37,12 @@ const useChat = () => {
             setDisplayedText(fullText.substring(0, currentIndex + 1));
             currentIndex++;
           }
+          setChatRemainingLine(fullText.slice(currentIndex).split('\n')[0]);
           return;
         }
 
         setDisplayedText(fullText.substring(0, currentIndex + 1));
+        setChatRemainingLine(fullText.slice(currentIndex + 1).split('\n')[0]);
 
         // Pause before newline
         if (currentIndex + 1 < fullText.length && fullText[currentIndex + 1] === '\n') {
@@ -64,6 +67,7 @@ const useChat = () => {
         ));
         setTypingMessageIndex(null);
         setDisplayedText('');
+        setChatRemainingLine('');
       }
     }, 38);
 
@@ -81,6 +85,7 @@ const useChat = () => {
       ));
       setTypingMessageIndex(null);
       setDisplayedText('');
+      setChatRemainingLine('');
     }
 
     // Add user message
@@ -136,6 +141,7 @@ const useChat = () => {
       ));
       setTypingMessageIndex(null);
       setDisplayedText('');
+      setChatRemainingLine('');
     }
 
     const newMessages = [...chatMessages, { type: 'user', text: userMessage, isComplete: true }];
@@ -197,6 +203,7 @@ const useChat = () => {
     setIsTyping(false);
     setTypingMessageIndex(null);
     setDisplayedText('');
+    setChatRemainingLine('');
   }, []);
 
   // Add a user + assistant message pair directly (used for admin bypass)
@@ -212,6 +219,7 @@ const useChat = () => {
     chatMessages,
     isTyping,
     displayedText,
+    chatRemainingLine,
     typingMessageIndex,
     sendMessage,
     sendScoredMessage,

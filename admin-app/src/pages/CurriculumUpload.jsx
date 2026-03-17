@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Plus, Trash2, MoveUp, MoveDown, Save, ArrowLeft, Image as ImageIcon, Youtube, List as ListIcon, Edit, User, Volume2, History, RotateCcw, Clock, X, Pen, HelpCircle } from 'lucide-react';
 import CourseManagement from '../components/CourseManagement';
-import { getAllCoaches, createCoach, updateCoach, deleteCoach, createLessonBackup, getLessonBackups, restoreLessonFromBackup } from '../lib/api';
+import { getAllCoaches, createCoach, updateCoach, deleteCoach, createLessonBackup, getLessonBackups, restoreLessonFromBackup, getSectionFeedbackStats } from '../lib/api';
 
 // API URL for backend calls
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
@@ -52,6 +52,9 @@ const CurriculumUpload = () => {
   const [generatedFlashcards, setGeneratedFlashcards] = useState([]);
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Section feedback stats (thumbs up/down per H2)
+  const [sectionFeedbackStats, setSectionFeedbackStats] = useState({});
 
   // SVG generation state
   const [svgPrompt, setSvgPrompt] = useState('');
@@ -304,6 +307,10 @@ const CurriculumUpload = () => {
 
   const loadLessonContent = async (courseId, moduleNumber, lessonNumber) => {
     setIsLoadingContent(true);
+    // Load section feedback stats in parallel
+    getSectionFeedbackStats(courseId, moduleNumber, lessonNumber)
+      .then(setSectionFeedbackStats)
+      .catch(() => setSectionFeedbackStats({}));
     try {
       // Try to load lesson metadata from module_structure first
       const selectedCourse = courses.find(c => c.name === courseId);
@@ -3058,6 +3065,18 @@ ${contentBlocks.map((block, index) => {
                           <p className="text-xs text-gray-500 mt-1">
                             This question will appear when users scroll to this H2 section in the learning hub ({(block.suggestedQuestion || '').length}/55 characters)
                           </p>
+
+                          {/* Section feedback stats */}
+                          {sectionFeedbackStats[index + 1] && sectionFeedbackStats[index + 1].total > 0 && (
+                            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-gray-700/50">
+                              <span className="text-xs text-gray-400">Section Feedback:</span>
+                              <span className="text-xs text-green-400">👍 {sectionFeedbackStats[index + 1].thumbsUp}</span>
+                              <span className="text-xs text-red-400">👎 {sectionFeedbackStats[index + 1].thumbsDown}</span>
+                              <span className="text-xs text-gray-500">
+                                ({Math.round((sectionFeedbackStats[index + 1].thumbsUp / sectionFeedbackStats[index + 1].total) * 100)}% positive, {sectionFeedbackStats[index + 1].total} votes)
+                              </span>
+                            </div>
+                          )}
 
                           {/* Section Questions removed — use Scored Question block instead */}
                         </div>

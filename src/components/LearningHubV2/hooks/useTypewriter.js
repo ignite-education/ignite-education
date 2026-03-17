@@ -80,12 +80,11 @@ export default function useTypewriter(text, { speed = 33, delay = 0, enabled = t
   const isComplete = revealedCount >= totalChars;
   const revealedText = isComplete ? text : (text || '').slice(0, revealedCount);
 
-  // Rest of current word (for layout stability — prevents word-wrap jumps)
-  let lookaheadWord = '';
+  // Rest of current line for word-wrap stability in overlay approach
+  let remainingLine = '';
   if (!isComplete && text && revealedCount < totalChars) {
-    const match = text.slice(revealedCount).match(/^\S*/);
-    if (match && match[0]) lookaheadWord = match[0];
+    remainingLine = text.slice(revealedCount).split('\n')[0];
   }
 
-  return { revealedText, isComplete, lookaheadWord };
+  return { revealedText, isComplete, remainingLine };
 }

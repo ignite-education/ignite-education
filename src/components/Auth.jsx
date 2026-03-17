@@ -577,19 +577,6 @@ const Auth = () => {
     };
   }, []);
 
-  // Set html/body background for Safari mobile browser chrome detection
-  // Note: Not overriding theme-color to allow translucent URL bar effect
-  useEffect(() => {
-    const originalHtmlBg = document.documentElement.style.backgroundColor;
-    const originalBodyBg = document.body.style.backgroundColor;
-    document.documentElement.style.backgroundColor = '#000000';
-    document.body.style.backgroundColor = '#000000';
-
-    return () => {
-      document.documentElement.style.backgroundColor = originalHtmlBg;
-      document.body.style.backgroundColor = originalBodyBg;
-    };
-  }, []);
 
   // Track mobile and tablet viewport for conditional rendering (debounced for performance)
   useEffect(() => {

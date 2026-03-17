@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import Lottie from 'lottie-react';
 import { useAnimation } from '../../../contexts/AnimationContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
@@ -346,6 +347,9 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const loopCountRef = useRef(0);
 
   const [activeConfetti, setActiveConfetti] = useState({});
+  const { user: authUser, updateProfile } = useAuth();
+  const confettiShown = authUser?.user_metadata?.confetti_shown;
+  const confettiFiredRef = useRef(false);
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount);
@@ -405,10 +409,11 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     enabled: !!firstName,
   });
 
-  // Confetti for all tags — fires once per tag per user, waits for page load
+  // Confetti for all tags — fires once per tag per user, persisted in user_metadata
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || confettiFiredRef.current) return;
 
+    const shown = confettiShown || {};
     const startConfetti = () => {
       const tags = [
         { key: 'joined', active: !!formatJoinDate(joinedAt) },
@@ -417,12 +422,12 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
       ];
 
+      const newlyShown = [];
       tags.forEach(({ key, active }) => {
         if (!active) return;
-        const storageKey = `ignite_${key}_tag_confetti_shown_${userId}`;
-        if (localStorage.getItem(storageKey)) return;
+        if (shown[key]) return;
 
-        localStorage.setItem(storageKey, 'true');
+        newlyShown.push(key);
         timers.push(setTimeout(() => {
           setActiveConfetti(prev => ({ ...prev, [key]: true }));
         }, 2000));
@@ -430,6 +435,14 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           setActiveConfetti(prev => ({ ...prev, [key]: false }));
         }, 5000));
       });
+
+      if (newlyShown.length > 0) {
+        const updated = { ...shown };
+        newlyShown.forEach(key => { updated[key] = true; });
+        updateProfile({ confetti_shown: updated });
+      }
+
+      confettiFiredRef.current = true;
     };
 
     const timers = [];
@@ -441,7 +454,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     }
 
     return () => timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
-  }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
+  }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole, confettiShown]);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {

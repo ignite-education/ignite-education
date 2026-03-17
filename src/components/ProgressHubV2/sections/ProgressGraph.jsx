@@ -153,22 +153,31 @@ const ProgressGraph = ({
   }, []);
 
   useEffect(() => {
-    const startAnimation = () => {
-      if (hasTriggeredRef.current) return;
-      hasTriggeredRef.current = true;
-      const startTime = performance.now();
-      const duration = 1500;
-      const animate = (now) => {
-        const elapsed = now - startTime;
-        const t = Math.min(elapsed / duration, 1);
-        const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-        setAnimationProgress(eased);
-        if (t < 1) requestAnimationFrame(animate);
-      };
-      requestAnimationFrame(animate);
-    };
-    window.addEventListener('scroll', startAnimation, { once: true });
-    return () => window.removeEventListener('scroll', startAnimation);
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasTriggeredRef.current) {
+          hasTriggeredRef.current = true;
+          observer.disconnect();
+          const startTime = performance.now();
+          const duration = 1500;
+          const animate = (now) => {
+            const elapsed = now - startTime;
+            const t = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+            setAnimationProgress(eased);
+            if (t < 1) requestAnimationFrame(animate);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.3 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   // Build data points for both series

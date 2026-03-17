@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
-import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore } from '../../lib/api';
+import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore, submitSectionFeedback, getSectionFeedback, submitChatFeedback } from '../../lib/api';
 import LoadingScreen from '../LoadingScreen';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
@@ -15,6 +15,7 @@ import ContentRenderer from './components/ContentRenderer';
 import MediaPanel from './components/MediaPanel';
 import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
+import ThumbsFeedback from './components/ThumbsFeedback';
 import useChat from './hooks/useChat';
 import useTypewriter from './hooks/useTypewriter';
 import Footer from '../Footer';
@@ -50,6 +51,8 @@ const LearningHubV2 = () => {
   }, [firstName]);
   const [chatInput, setChatInput] = useState('');
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
+  const [resetKey, setResetKey] = useState(0);
+  const [resetClicked, setResetClicked] = useState(false);
   const [restoringProgress, setRestoringProgress] = useState(true);
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
@@ -61,6 +64,8 @@ const LearningHubV2 = () => {
   const [scoredSectionContent, setScoredSectionContent] = useState('');
   const [scoredSectionNumber, setScoredSectionNumber] = useState(null);
   const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
+  const [sectionFeedback, setSectionFeedback] = useState({});
+  const [chatFeedbackRating, setChatFeedbackRating] = useState(null);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
@@ -83,6 +88,7 @@ const LearningHubV2 = () => {
     chatMessages,
     isTyping,
     displayedText,
+    chatRemainingLine,
     typingMessageIndex,
     sendMessage,
     sendScoredMessage,
@@ -214,6 +220,24 @@ const LearningHubV2 = () => {
     return [...carried, ...currentMedia];
   }, [activeGroupAll, allGroups, currentGroupIndex]);
 
+  // Section number of the H2 heading for the current group (for feedback key)
+  const currentH2SectionNumber = useMemo(() => {
+    const h2 = activeGroup.find(
+      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
+    );
+    if (h2) return h2.section_number;
+    // Walk backwards for H3 sub-groups to find the parent H2
+    for (let i = currentGroupIndex - 1; i >= 0; i--) {
+      const group = allGroups[i] || [];
+      for (let j = group.length - 1; j >= 0; j--) {
+        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
+          return group[j].section_number;
+        }
+      }
+    }
+    return null;
+  }, [activeGroup, allGroups, currentGroupIndex]);
+
   // Effective media: empty during scored questions, otherwise the active group's media
   const effectiveMedia = showingScoredQuestion ? [] : activeGroupMedia;
   const effectiveMediaKey = showingScoredQuestion ? '' : activeGroupMedia.map(s => s.id).join('|');
@@ -323,7 +347,7 @@ const LearningHubV2 = () => {
   const userQuestionDisplayText = pendingUserQuestion
     ? pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || 'there')
     : '';
-  const { revealedText: userQuestionRevealed, isComplete: userQuestionTypingDone, lookaheadWord: userQuestionLookahead } = useTypewriter(
+  const { revealedText: userQuestionRevealed, isComplete: userQuestionTypingDone } = useTypewriter(
     userQuestionDisplayText,
     { speed: 45, delay: 1000, enabled: !!pendingUserQuestion }
   );
@@ -382,10 +406,11 @@ const LearningHubV2 = () => {
     let lessonContext = buildLessonContext();
     // If answering a user question (ungraded, per-paragraph engagement question)
     if (pendingUserQuestion && chatMessages.length === 0) {
-      lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Give brief, encouraging feedback that contextualises their answer within the lesson. Keep it conversational and supportive. Do not end your response with a question, call to action, or encouragement to continue.\n\n${lessonContext}`;
+      lessonContext = `USER QUESTION: ${pendingUserQuestion}\n\nThe student is answering the above engagement question. This is not graded. Respond briefly and neutrally. Do not comment on or evaluate their experience level. Instead, acknowledge that the course is designed for learners at all levels and will build understanding from the ground up. Keep it conversational. Do not end your response with a question, call to action, or encouragement to continue.\n\n${lessonContext}`;
     }
     sendMessage(text, lessonContext);
     setChatInput('');
+    setChatFeedbackRating(null);
     savedRangeRef.current = null;
     window.getSelection()?.removeAllRanges();
   }, [buildLessonContext, sendMessage, sendScoredMessage, addMessagePair, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent, user?.id, user?.role, userCourseId, currentModule, currentLesson, scoredSectionNumber]);
@@ -657,6 +682,44 @@ const LearningHubV2 = () => {
     }
   }, [currentModule, currentLesson, user?.id, userCourseId]);
 
+  // Load existing section feedback for this lesson
+  useEffect(() => {
+    if (user?.id && userCourseId && currentModule && currentLesson) {
+      getSectionFeedback(user.id, userCourseId, currentModule, currentLesson)
+        .then(setSectionFeedback)
+        .catch(() => setSectionFeedback({}));
+    }
+  }, [currentModule, currentLesson, user?.id, userCourseId]);
+
+  const handleSectionFeedback = useCallback((rating) => {
+    const sn = currentH2SectionNumber;
+    if (sn == null || !user?.id) return;
+    const current = sectionFeedback[sn];
+    const newRating = current === rating ? null : rating;
+    setSectionFeedback(prev => {
+      const next = { ...prev };
+      if (newRating === null) delete next[sn];
+      else next[sn] = newRating;
+      return next;
+    });
+    submitSectionFeedback({
+      userId: user.id, courseId: userCourseId,
+      moduleNumber: currentModule, lessonNumber: currentLesson,
+      sectionNumber: sn, rating: newRating,
+    });
+  }, [currentH2SectionNumber, sectionFeedback, user?.id, userCourseId, currentModule, currentLesson]);
+
+  const handleChatFeedback = useCallback((rating, assistantMsg, userMsg) => {
+    const newRating = chatFeedbackRating === rating ? null : rating;
+    setChatFeedbackRating(newRating);
+    submitChatFeedback({
+      userId: user.id, courseId: userCourseId,
+      moduleNumber: currentModule, lessonNumber: currentLesson,
+      sectionNumber: currentH2SectionNumber,
+      userMessage: userMsg, assistantMessage: assistantMsg, rating: newRating,
+    });
+  }, [chatFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentH2SectionNumber]);
+
   // Handle Continue — advance to next group
   const handleContinue = useCallback(() => {
     setChatInput('');
@@ -869,15 +932,63 @@ const LearningHubV2 = () => {
                 lessonName={lessonName}
               />
             </div>
-            <div className="rounded-full" style={{ backgroundColor: '#F0F0F0', height: '5px' }}>
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${lessonProgress}%`,
-                  backgroundColor: '#EF0B72',
-                  transition: 'width 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
+            <div className="flex items-center gap-3">
+              <div className="rounded-full flex-1" style={{ backgroundColor: '#F0F0F0', height: '5px' }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${lessonProgress}%`,
+                    backgroundColor: '#EF0B72',
+                    transition: 'width 1s cubic-bezier(0.25, 0.1, 0.25, 1)',
+                  }}
+                />
+              </div>
+              <button
+                className="group cursor-pointer flex-shrink-0"
+                title="Restart lesson"
+                onClick={() => {
+                  if (user?.id && userCourseId) {
+                    saveUserProgress(user.id, userCourseId, currentModule, currentLesson, 0).catch(() => {});
+                  }
+                  // Reset all section/typing state
+                  setCompletedSections(0);
+                  setPendingUserQuestion(null);
+                  setShowingScoredQuestion(false);
+                  setScoredResult(null);
+                  setScoredSectionNumber(null);
+                  resetChat();
+                  setChatInput('');
+                  setCurrentGroupIndex(0);
+                  // Bump key to force remount of content (re-triggers typewriter)
+                  setResetKey(k => k + 1);
+                  // Scroll content back to top
+                  contentScrollRef.current?.scrollTo({ top: 0 });
+                  setResetClicked(true);
                 }}
-              />
+                onMouseLeave={() => setResetClicked(false)}
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className={`transition-transform duration-300 ease-in-out ${resetClicked ? '' : 'group-hover:-rotate-45'}`}
+                >
+                  <path
+                    d="M12 4a8 8 0 1 1-6.3 3.1"
+                    fill="none"
+                    stroke="#000000"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:stroke-[#EF0B72]'}`}
+                  />
+                  <polygon
+                    points="12,1 12,7 6,4"
+                    fill="#000000"
+                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:fill-[#EF0B72]'}`}
+                  />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -994,7 +1105,7 @@ const LearningHubV2 = () => {
               ) : (
                 <>
                   {/* Render sections sequentially — each starts typing after the previous finishes */}
-                  <div key={currentGroupIndex}>
+                  <div key={`${currentGroupIndex}-${resetKey}`}>
                     {parentH2 && (
                       <div className="mt-0 mb-3">
                         <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
@@ -1127,6 +1238,10 @@ const LearningHubV2 = () => {
                           </svg>
                         )}
                       </button>
+                      <ThumbsFeedback
+                        rating={sectionFeedback[currentH2SectionNumber] ?? null}
+                        onRate={handleSectionFeedback}
+                      />
                     </div>
                   </div>
                 )}
@@ -1146,6 +1261,13 @@ const LearningHubV2 = () => {
                           message={msg}
                           displayedText={displayedText}
                           isCurrentlyTyping={typingMessageIndex === idx}
+                          remainingLine={typingMessageIndex === idx ? chatRemainingLine : ''}
+                          showFeedback={msg.type === 'assistant' && idx === chatMessages.length - 1 && msg.isComplete}
+                          chatRating={msg.type === 'assistant' && idx === chatMessages.length - 1 ? chatFeedbackRating : null}
+                          onFeedback={(rating) => {
+                            const userMsg = chatMessages[idx - 1]?.text || '';
+                            handleChatFeedback(rating, msg.text, userMsg);
+                          }}
                         />
                       </div>
                     ))}

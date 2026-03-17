@@ -1430,6 +1430,35 @@ export async function getLessonRatingStats(courseId, moduleNumber, lessonNumber)
   return stats;
 }
 
+// ── Section feedback (thumbs up/down per H2 group) ──────────────────────────
+
+export async function submitSectionFeedback({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, rating }) {
+  const res = await fetch(`${API_URL}/api/section-feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, rating }),
+  });
+  return res.json();
+}
+
+export async function getSectionFeedback(userId, courseId, moduleNumber, lessonNumber) {
+  const params = new URLSearchParams({ userId, courseId, moduleNumber, lessonNumber });
+  const res = await fetch(`${API_URL}/api/section-feedback?${params}`);
+  const json = await res.json();
+  return json.ratings || {};
+}
+
+// ── Chat feedback (thumbs up/down on Claude responses) ──────────────────────
+
+export async function submitChatFeedback({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, userMessage, assistantMessage, rating }) {
+  const res = await fetch(`${API_URL}/api/chat-feedback`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, courseId, moduleNumber, lessonNumber, sectionNumber, userMessage, assistantMessage, rating }),
+  });
+  return res.json();
+}
+
 /**
  * Get all users with their roles for user management
  * Note: This requires RLS policies to allow admins to read all users

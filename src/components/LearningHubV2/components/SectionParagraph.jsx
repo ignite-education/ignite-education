@@ -188,7 +188,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
     }
   }, [skipAnimation, onComplete]);
 
-  const { revealedText, isComplete, lookaheadWord } = useTypewriter(text, {
+  const { revealedText, isComplete, remainingLine } = useTypewriter(text, {
     speed: 38,
     delay: skipAnimation ? 0 : delay,
     enabled: !skipAnimation && animate,
@@ -293,16 +293,14 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
   }
 
   // --- Normal mode: typewriter animation ---
-  const cursorDot = <span className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
-  // Invisible remaining text keeps the full layout stable — prevents mid-word line breaks
-  const remainingText = !isComplete && text ? text.slice(revealedText.length) : '';
-  // Extract the current line's remaining text (up to next newline) for inline lookahead
-  const remainingOnLine = remainingText.split('\n')[0] || '';
+  // Overlay approach: hidden full text for stable container height, typed portion overlaid on top.
+  // The typed portion includes invisible remaining-line text so the browser wraps words correctly.
+  // Because the overlay is position:absolute, the invisible text can't cause vertical layout shifts.
   const cursor = !isComplete ? (
-    <>
-      {cursorDot}
-      <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingOnLine}</span>
-    </>
+    <span style={{ position: 'relative', display: 'inline', whiteSpace: 'pre-wrap' }}>
+      <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{remainingLine}</span>
+      <span className="inline-block" style={{ position: 'absolute', left: 0, top: '0.65em', transform: 'translateY(-50%)', width: 8, height: 8, backgroundColor: '#8200EA', marginLeft: 6 }} />
+    </span>
   ) : null;
 
   // Show pulsing cursor during delay, before text starts
@@ -315,54 +313,74 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
   }
   if (!revealedText) return null;
 
-  const lines = revealedText.split('\n');
+  const revealedLines = revealedText.split('\n');
   const fullLines = text ? text.split('\n') : [];
   const hasBullets = fullLines.some(line => /^[•\-]\s/.test(line.trim()));
   const hasMultipleLines = fullLines.filter(line => line.trim()).length > 1;
 
+  // Helper: render a line as bullet or paragraph
+  const renderLine = (line, idx, { showCursor = false, inProgress = false, hidden = false } = {}) => {
+    const trimmedLine = line.trim();
+    if (/^[•\-]\s/.test(trimmedLine)) {
+      const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
+      return (
+        <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
+          <span className="text-black leading-relaxed">•</span>
+          <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+            {renderFormattedText(bulletText, { inProgress })}{showCursor && cursor}
+          </span>
+        </div>
+      );
+    } else if (trimmedLine) {
+      return (
+        <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+          {renderFormattedText(line, { inProgress })}{showCursor && cursor}
+        </p>
+      );
+    } else if (showCursor && inProgress) {
+      // Empty last line during newline pause — show cursor at start of new line
+      return (
+        <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
+          <span className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
+        </p>
+      );
+    } else if (hasMultipleLines) {
+      return <div key={idx} className="h-2" />;
+    }
+    return null;
+  };
+
   if (hasBullets || hasMultipleLines) {
-    const lastLineIdx = lines.length - 1;
+    const lastRevealedIdx = revealedLines.length - 1;
     return (
-      <div className="mb-4">
-        {lines.map((line, idx) => {
-          const trimmedLine = line.trim();
-          const isLast = idx === lastLineIdx;
-          if (/^[•\-]\s/.test(trimmedLine)) {
-            const bulletText = trimmedLine.replace(/^[•\-]\s+/, '');
-            return (
-              <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
-                <span className="text-black leading-relaxed">•</span>
-                <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-                  {renderFormattedText(bulletText, { inProgress: isLast && !isComplete })}{isLast && cursor}
-                </span>
-              </div>
-            );
-          } else if (trimmedLine) {
-            return (
-              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-                {renderFormattedText(line, { inProgress: isLast && !isComplete })}{isLast && cursor}
-              </p>
-            );
-          } else if (isLast && !isComplete) {
-            // Empty last line during newline pause — show cursor at start of new line
-            return (
-              <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-                <span className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />
-              </p>
-            );
-          } else if (hasMultipleLines) {
-            return <div key={idx} className="h-2" />;
-          }
-          return null;
-        })}
+      <div className="mb-4" style={{ position: 'relative' }}>
+        {/* Hidden full text for stable layout */}
+        <div style={{ visibility: 'hidden' }} aria-hidden="true">
+          {fullLines.map((line, idx) => renderLine(line, idx))}
+        </div>
+        {/* Visible typed portion overlaid */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
+          {revealedLines.map((line, idx) =>
+            renderLine(line, idx, {
+              showCursor: idx === lastRevealedIdx,
+              inProgress: idx === lastRevealedIdx && !isComplete,
+            })
+          )}
+        </div>
       </div>
     );
   }
 
+  // Simple paragraph — overlay approach
   return (
-    <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-      {renderFormattedText(revealedText, { inProgress: !isComplete })}{cursor}
-    </p>
+    <div className="mb-4" style={{ position: 'relative' }}>
+      <p className="text-base font-light leading-relaxed text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal', visibility: 'hidden' }} aria-hidden="true">
+        {renderFormattedText(text)}
+      </p>
+      <p className="text-base font-light leading-relaxed text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal', position: 'absolute', top: 0, left: 0, right: 0 }}>
+        {renderFormattedText(revealedText, { inProgress: !isComplete })}{cursor}
+      </p>
+    </div>
   );
 };
 

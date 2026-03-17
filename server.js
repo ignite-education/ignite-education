@@ -1970,6 +1970,159 @@ app.post('/api/section-question-score', async (req, res) => {
   }
 });
 
+// ── Section feedback (thumbs up/down per H2 group) ──────────────────────────
+
+app.post('/api/section-feedback', async (req, res) => {
+  try {
+    const { userId, courseId, moduleNumber, lessonNumber, sectionNumber, rating } = req.body;
+
+    if (!userId || !courseId || moduleNumber == null || lessonNumber == null || sectionNumber == null) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // rating === null means toggle off — delete the row
+    if (rating === null || rating === undefined) {
+      await supabase
+        .from('section_feedback')
+        .delete()
+        .eq('user_id', userId)
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .eq('section_number', sectionNumber);
+      return res.json({ success: true, rating: null });
+    }
+
+    const { error } = await supabase
+      .from('section_feedback')
+      .upsert({
+        user_id: userId,
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        section_number: sectionNumber,
+        rating,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,course_id,module_number,lesson_number,section_number'
+      });
+    if (error) throw error;
+
+    res.json({ success: true, rating });
+  } catch (error) {
+    console.error('Error saving section feedback:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/section-feedback', async (req, res) => {
+  try {
+    const { userId, courseId, moduleNumber, lessonNumber } = req.query;
+
+    if (!userId || !courseId || !moduleNumber || !lessonNumber) {
+      return res.status(400).json({ success: false, error: 'Missing required query params' });
+    }
+
+    const { data, error } = await supabase
+      .from('section_feedback')
+      .select('section_number, rating')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .eq('module_number', Number(moduleNumber))
+      .eq('lesson_number', Number(lessonNumber));
+
+    if (error) throw error;
+
+    const ratings = {};
+    (data || []).forEach(r => { ratings[r.section_number] = r.rating; });
+
+    res.json({ success: true, ratings });
+  } catch (error) {
+    console.error('Error fetching section feedback:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/section-feedback/stats', async (req, res) => {
+  try {
+    const { courseId, moduleNumber, lessonNumber } = req.query;
+
+    if (!courseId || !moduleNumber || !lessonNumber) {
+      return res.status(400).json({ success: false, error: 'Missing required query params' });
+    }
+
+    const { data, error } = await supabase
+      .from('section_feedback')
+      .select('section_number, rating')
+      .eq('course_id', courseId)
+      .eq('module_number', Number(moduleNumber))
+      .eq('lesson_number', Number(lessonNumber));
+
+    if (error) throw error;
+
+    const stats = {};
+    (data || []).forEach(r => {
+      if (!stats[r.section_number]) {
+        stats[r.section_number] = { thumbsUp: 0, thumbsDown: 0, total: 0 };
+      }
+      stats[r.section_number].total++;
+      if (r.rating) stats[r.section_number].thumbsUp++;
+      else stats[r.section_number].thumbsDown++;
+    });
+
+    res.json({ success: true, stats });
+  } catch (error) {
+    console.error('Error fetching section feedback stats:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ── Chat feedback (thumbs up/down on Claude responses for evals) ────────────
+
+app.post('/api/chat-feedback', async (req, res) => {
+  try {
+    const { userId, courseId, moduleNumber, lessonNumber, sectionNumber, userMessage, assistantMessage, rating } = req.body;
+
+    if (!userId || !courseId || moduleNumber == null || lessonNumber == null || !userMessage || !assistantMessage) {
+      return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // rating === null means toggle off — delete
+    if (rating === null || rating === undefined) {
+      await supabase
+        .from('chat_feedback')
+        .delete()
+        .eq('user_id', userId)
+        .eq('course_id', courseId)
+        .eq('module_number', moduleNumber)
+        .eq('lesson_number', lessonNumber)
+        .eq('assistant_message', assistantMessage);
+      return res.json({ success: true });
+    }
+
+    const { error } = await supabase
+      .from('chat_feedback')
+      .upsert({
+        user_id: userId,
+        course_id: courseId,
+        module_number: moduleNumber,
+        lesson_number: lessonNumber,
+        section_number: sectionNumber || null,
+        user_message: userMessage,
+        assistant_message: assistantMessage,
+        rating,
+      }, {
+        onConflict: 'user_id,course_id,module_number,lesson_number,assistant_message'
+      });
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error saving chat feedback:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Create Stripe checkout session for ad-free upgrade
 app.post('/api/create-checkout-session', async (req, res) => {
   try {
