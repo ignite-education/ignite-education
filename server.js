@@ -4789,7 +4789,27 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
 
     console.log(`Admin ${req.user.id} attempting to delete user ${userId}`);
 
-    // Delete from auth.users using service role
+    // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
+    const nonCascadingTables = [
+      { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'section_feedback', column: 'user_id' },
+      { table: 'chat_feedback', column: 'user_id' },
+      { table: 'user_question_responses', column: 'user_id' },
+    ];
+
+    for (const { table, column, isText } of nonCascadingTables) {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq(column, isText ? String(userId) : userId);
+      if (error) {
+        console.warn(`Warning: failed to delete from ${table}:`, error.message);
+      } else {
+        console.log(`Cleaned up ${table} for user ${userId}`);
+      }
+    }
+
+    // Delete from auth.users using service role (cascades to remaining tables)
     const { data: authData, error: authError } = await supabase.auth.admin.deleteUser(userId);
 
     if (authError) {
@@ -4849,7 +4869,25 @@ app.delete('/api/delete-account', verifyAuth, async (req, res) => {
     const userId = req.user.id;
     console.log(`User ${userId} requesting account deletion`);
 
-    // Delete from auth.users using service role
+    // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
+    const nonCascadingTables = [
+      { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'section_feedback', column: 'user_id' },
+      { table: 'chat_feedback', column: 'user_id' },
+      { table: 'user_question_responses', column: 'user_id' },
+    ];
+
+    for (const { table, column, isText } of nonCascadingTables) {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq(column, isText ? String(userId) : userId);
+      if (error) {
+        console.warn(`Warning: failed to delete from ${table}:`, error.message);
+      }
+    }
+
+    // Delete from auth.users using service role (cascades to remaining tables)
     const { error: authError } = await supabase.auth.admin.deleteUser(userId);
 
     if (authError) {
