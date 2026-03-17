@@ -425,7 +425,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         localStorage.setItem(storageKey, 'true');
         timers.push(setTimeout(() => {
           setActiveConfetti(prev => ({ ...prev, [key]: true }));
-        }, 1500));
+        }, 2000));
         timers.push(setTimeout(() => {
           setActiveConfetti(prev => ({ ...prev, [key]: false }));
         }, 5000));

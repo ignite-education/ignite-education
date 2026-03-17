@@ -835,7 +835,7 @@ const LearningHubV2 = () => {
         </div>
       )}
       {/* Main two-column layout — 100vh */}
-      <div className="h-screen flex">
+      <div className="h-dvh flex">
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}

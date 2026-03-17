@@ -109,16 +109,6 @@ const ProgressHubV2 = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Set Safari theme color to white
-  useEffect(() => {
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    const originalColor = metaThemeColor?.getAttribute('content') || '#EF0B72';
-    if (metaThemeColor) metaThemeColor.setAttribute('content', '#FFFFFF');
-    return () => {
-      if (metaThemeColor) metaThemeColor.setAttribute('content', originalColor);
-    };
-  }, []);
-
 
   // Refresh user session after successful payment
   useEffect(() => {
