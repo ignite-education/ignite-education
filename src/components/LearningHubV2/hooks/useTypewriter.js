@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
-const PAUSE_CHARS = new Set(['.', ',', ';', ':', '!', '?', '(', ')']);
+const PAUSE_AFTER_SPACE = new Set(['.', ',', ';', ':', '!', '?']);
+const PAUSE_ALWAYS = new Set(['(', ')']);
 const PAUSE_DURATION = 400; // ms pause after punctuation
 
 export default function useTypewriter(text, { speed = 33, delay = 0, enabled = true, onComplete } = {}) {
@@ -49,7 +50,7 @@ export default function useTypewriter(text, { speed = 33, delay = 0, enabled = t
           if (lastChar === '\n') {
             pauseUntil = timestamp + 500;
             break;
-          } else if (PAUSE_CHARS.has(lastChar) && (nextChar === ' ' || nextChar === '\n' || count === totalChars)) {
+          } else if (PAUSE_ALWAYS.has(lastChar) || (PAUSE_AFTER_SPACE.has(lastChar) && (nextChar === ' ' || nextChar === '\n' || count === totalChars))) {
             pauseUntil = timestamp + PAUSE_DURATION;
             break;
           }

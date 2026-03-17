@@ -161,7 +161,10 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         )}
 
         {/* Right side - Sign In button by default, swaps to avatar once auth confirms signed in */}
-        <div className="flex items-center justify-end w-[85px] h-[35px] md:h-[41px]">
+        <div
+          className="flex items-center justify-end w-[85px] h-[35px] md:h-[41px] transition-opacity duration-300 ease-out"
+          style={{ opacity: authLoaded ? 1 : 0 }}
+        >
           {authLoaded && (user ? (
             <Link href="/progress" className="inline-block">
               {profilePicture ? (
