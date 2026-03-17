@@ -58,7 +58,7 @@ const renderNarrationText = (text, wordIndexOffset) => {
     if (part.startsWith('**') && part.match(/\*\*[:\.,;!?]?$/)) {
       const innerText = part.replace(/^\*\*/, '').replace(/\*\*[:\.,;!?]?$/, '');
       const trailingPunct = part.match(/\*\*([:\.,;!?])$/)?.[1] || '';
-      return <strong key={i} className="font-semibold">{wrapWords(innerText + trailingPunct)}</strong>;
+      return <strong key={i} className="font-medium">{wrapWords(innerText + trailingPunct)}</strong>;
     }
 
     // Underline
@@ -110,7 +110,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
     if (part.startsWith('**') && part.match(/\*\*[:\.,;!?]?$/)) {
       const innerText = part.replace(/^\*\*/, '').replace(/\*\*[:\.,;!?]?$/, '');
       const trailingPunct = part.match(/\*\*([:\.,;!?])$/)?.[1] || '';
-      return <strong key={i} className="font-semibold">{innerText}{trailingPunct}</strong>;
+      return <strong key={i} className="font-medium">{innerText}{trailingPunct}</strong>;
     }
 
     // Underline: __text__
@@ -141,7 +141,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
         rendered[lastIdx] = (
           <span key={lastIdx}>
             {unclosedBold[1] && <span>{unclosedBold[1]}</span>}
-            <strong className="font-semibold">{unclosedBold[2]}</strong>
+            <strong className="font-medium">{unclosedBold[2]}</strong>
           </span>
         );
         return rendered;

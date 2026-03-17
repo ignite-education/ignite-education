@@ -933,7 +933,7 @@ const LearningHubV2 = () => {
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
-          <div className="px-10" style={{ paddingTop: '30px', paddingBottom: '15px' }}>
+          <div className="px-10" style={{ paddingTop: '30px', paddingBottom: '10px' }}>
             <div className="max-w-2xl">
               <a href="/progress" style={{ marginBottom: '20px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
                 {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -1026,7 +1026,7 @@ const LearningHubV2 = () => {
           {/* Scrollable content area wrapper */}
           <div className="flex-1 min-h-0 relative">
             {/* White gradient fade below progress bar */}
-            <div className="absolute pointer-events-none" style={{ top: '-10px', height: '15px', zIndex: 5, left: '40px', right: '40px' }}>
+            <div className="absolute pointer-events-none" style={{ top: '0px', height: '10px', zIndex: 5, left: '40px', right: '40px' }}>
               <div className="absolute inset-0" style={{
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
@@ -1047,7 +1047,7 @@ const LearningHubV2 = () => {
                 <div key={`scored-${scoredQuestionIndex}`}>
                   {/* H2 heading persists at top */}
                   {currentH2Name && (
-                    <div className="mt-0 mb-3">
+                    <div className="mt-[5px] mb-3">
                       <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
                         {currentH2Name}
                       </h2>

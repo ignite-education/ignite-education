@@ -17,7 +17,7 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = 'auto';
-    const newHeight = Math.min(el.scrollHeight, 58);
+    const newHeight = Math.min(el.scrollHeight, 62);
     el.style.height = newHeight + 'px';
     setWrapperHeight(newHeight);
   };
@@ -68,8 +68,9 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
           transition: 'box-shadow 0.2s ease-in-out',
           fontSize: '14px',
           minHeight: '48px',
-          maxHeight: '58px',
-          overflowY: 'auto',
+          maxHeight: '62px',
+          overflowY: 'scroll',
+          scrollbarWidth: 'none',
           letterSpacing: '-0.01em',
         }}
         onInput={recalcHeight}
