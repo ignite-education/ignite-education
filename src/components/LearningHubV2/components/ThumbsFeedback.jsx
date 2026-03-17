@@ -4,7 +4,7 @@ export default function ThumbsFeedback({ rating, onRate, size = 16 }) {
   const [hovered, setHovered] = useState(null); // 'up' | 'down' | null
 
   const activeColor = '#EF0B72';
-  const inactiveColor = '#9CA3AF';
+  const inactiveColor = '#000000';
 
   const handleClick = (value) => {
     // Toggle: clicking the same thumb clears it
@@ -27,7 +27,7 @@ export default function ThumbsFeedback({ rating, onRate, size = 16 }) {
           width={size}
           height={size}
           viewBox="0 0 24 24"
-          fill={rating === true ? activeColor : 'none'}
+          fill="none"
           stroke={rating === true ? activeColor : hovered === 'up' ? activeColor : inactiveColor}
           strokeWidth="2"
           strokeLinecap="round"
@@ -53,7 +53,7 @@ export default function ThumbsFeedback({ rating, onRate, size = 16 }) {
           width={size}
           height={size}
           viewBox="0 0 24 24"
-          fill={rating === false ? activeColor : 'none'}
+          fill="none"
           stroke={rating === false ? activeColor : hovered === 'down' ? activeColor : inactiveColor}
           strokeWidth="2"
           strokeLinecap="round"

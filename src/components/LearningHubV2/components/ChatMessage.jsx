@@ -1,5 +1,4 @@
 import React from 'react';
-import ThumbsFeedback from './ThumbsFeedback';
 
 // Parse inline formatting: **bold**, *italic*, bullet points
 const parseText = (text) => {
@@ -81,7 +80,7 @@ const parseText = (text) => {
   });
 };
 
-const ChatMessage = ({ message, displayedText, isCurrentlyTyping, remainingLine = '', showFeedback, chatRating, onFeedback }) => {
+const ChatMessage = ({ message, displayedText, isCurrentlyTyping, remainingLine = '' }) => {
   const isUser = message.type === 'user';
 
   // For assistant messages that are typing, show displayedText
@@ -159,11 +158,6 @@ const ChatMessage = ({ message, displayedText, isCurrentlyTyping, remainingLine 
       >
         {withCursor}
       </div>
-      {showFeedback && (
-        <div className="mt-1">
-          <ThumbsFeedback rating={chatRating} onRate={onFeedback} size={14} />
-        </div>
-      )}
     </div>
   );
 };

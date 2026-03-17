@@ -221,22 +221,12 @@ const LearningHubV2 = () => {
   }, [activeGroupAll, allGroups, currentGroupIndex]);
 
   // Section number of the H2 heading for the current group (for feedback key)
-  const currentH2SectionNumber = useMemo(() => {
-    const h2 = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    if (h2) return h2.section_number;
-    // Walk backwards for H3 sub-groups to find the parent H2
-    for (let i = currentGroupIndex - 1; i >= 0; i--) {
-      const group = allGroups[i] || [];
-      for (let j = group.length - 1; j >= 0; j--) {
-        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
-          return group[j].section_number;
-        }
-      }
-    }
-    return null;
-  }, [activeGroup, allGroups, currentGroupIndex]);
+  const currentSectionNumber = useMemo(() => {
+    const heading = activeGroup.find(s => s.content_type === 'heading');
+    if (heading) return heading.section_number;
+    // Fallback: use first section's section_number
+    return activeGroup[0]?.section_number ?? null;
+  }, [activeGroup]);
 
   // Effective media: empty during scored questions, otherwise the active group's media
   const effectiveMedia = showingScoredQuestion ? [] : activeGroupMedia;
@@ -451,7 +441,7 @@ const LearningHubV2 = () => {
   const scoredIntroAnimateText = scoredIntroPhase ? scoredIntroFullText : '';
   const { revealedText: scoredIntroRevealed, isComplete: scoredIntroDone } = useTypewriter(
     scoredIntroAnimateText,
-    { speed: 38, delay: 800, enabled: !!scoredIntroAnimateText }
+    { speed: 38, delay: 1200, enabled: !!scoredIntroAnimateText }
   );
 
   // Scored question text with typewriter animation (after intro phase)
@@ -460,7 +450,7 @@ const LearningHubV2 = () => {
     : '';
   const { revealedText: scoredQuestionRevealed, isComplete: scoredQuestionDone } = useTypewriter(
     scoredQuestionText,
-    { speed: 38, delay: 800, enabled: !!scoredQuestionText }
+    { speed: 38, delay: 1200, enabled: !!scoredQuestionText }
   );
 
   // Sequential typing — track how many sections have finished animating
@@ -518,6 +508,16 @@ const LearningHubV2 = () => {
     }
     setShowButtons(false);
   }, [allTypingComplete, currentGroupIndex]);
+
+  // Delayed show for scored intro Continue button (matches nav button timing)
+  const [showScoredIntroButton, setShowScoredIntroButton] = useState(false);
+  useEffect(() => {
+    if (scoredIntroDone && scoredIntroPhase) {
+      const timer = setTimeout(() => setShowScoredIntroButton(true), 500);
+      return () => clearTimeout(timer);
+    }
+    setShowScoredIntroButton(false);
+  }, [scoredIntroDone, scoredIntroPhase]);
 
   const handleSectionComplete = useCallback(() => {
     setCompletedSections((prev) => {
@@ -607,6 +607,11 @@ const LearningHubV2 = () => {
   // User question answered — Claude has responded, show Continue button
   const userQuestionAnswered = pendingUserQuestion && chatMessages.length >= 2 && lastAssistantDone && !isTyping;
 
+  // Free-form chat done — non-engagement chat where Claude has finished responding
+  const freeFormChatDone = !pendingUserQuestion && chatMessages.length > 0
+    && chatMessages[chatMessages.length - 1]?.type === 'assistant'
+    && chatMessages[chatMessages.length - 1]?.isComplete && !isTyping;
+
   // Silently save user question response when save_feedback is enabled
   const savedResponseRef = useRef(false);
   useEffect(() => {
@@ -692,7 +697,7 @@ const LearningHubV2 = () => {
   }, [currentModule, currentLesson, user?.id, userCourseId]);
 
   const handleSectionFeedback = useCallback((rating) => {
-    const sn = currentH2SectionNumber;
+    const sn = currentSectionNumber;
     if (sn == null || !user?.id) return;
     const current = sectionFeedback[sn];
     const newRating = current === rating ? null : rating;
@@ -707,7 +712,7 @@ const LearningHubV2 = () => {
       moduleNumber: currentModule, lessonNumber: currentLesson,
       sectionNumber: sn, rating: newRating,
     });
-  }, [currentH2SectionNumber, sectionFeedback, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [currentSectionNumber, sectionFeedback, user?.id, userCourseId, currentModule, currentLesson]);
 
   const handleChatFeedback = useCallback((rating, assistantMsg, userMsg) => {
     const newRating = chatFeedbackRating === rating ? null : rating;
@@ -715,10 +720,10 @@ const LearningHubV2 = () => {
     submitChatFeedback({
       userId: user.id, courseId: userCourseId,
       moduleNumber: currentModule, lessonNumber: currentLesson,
-      sectionNumber: currentH2SectionNumber,
+      sectionNumber: currentSectionNumber,
       userMessage: userMsg, assistantMessage: assistantMsg, rating: newRating,
     });
-  }, [chatFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentH2SectionNumber]);
+  }, [chatFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
 
   // Handle Continue — advance to next group
   const handleContinue = useCallback(() => {
@@ -884,6 +889,16 @@ const LearningHubV2 = () => {
   // Determine scored question button state
   const scoredQuestionAnswered = showingScoredQuestion && scoredResult && lastAssistantDone && !isTyping;
 
+  // Delayed show for scored answer buttons (matches nav button timing)
+  const [showScoredAnswerButton, setShowScoredAnswerButton] = useState(false);
+  useEffect(() => {
+    if (scoredQuestionAnswered) {
+      const timer = setTimeout(() => setShowScoredAnswerButton(true), 500);
+      return () => clearTimeout(timer);
+    }
+    setShowScoredAnswerButton(false);
+  }, [scoredQuestionAnswered]);
+
   const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
 
   if (!showContent) {
@@ -992,12 +1007,23 @@ const LearningHubV2 = () => {
             </div>
           </div>
 
-          {/* Scrollable content area */}
-          <div
-            ref={contentScrollRef}
-            className="flex-1 overflow-y-auto pb-16 hide-scrollbar"
-            style={{ paddingLeft: '40px', paddingRight: '70px' }}
-          >
+          {/* Scrollable content area wrapper */}
+          <div className="flex-1 min-h-0 relative">
+            {/* White gradient fade below progress bar */}
+            <div className="absolute pointer-events-none" style={{ top: '-5px', height: '10px', zIndex: 5, left: '40px', right: '40px' }}>
+              <div className="absolute inset-0" style={{
+                backdropFilter: 'blur(4px)',
+                WebkitBackdropFilter: 'blur(4px)',
+                maskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)',
+                WebkitMaskImage: 'linear-gradient(to top, transparent 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,1) 100%)',
+              }} />
+              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/70 to-white" />
+            </div>
+            <div
+              ref={contentScrollRef}
+              className="h-full overflow-y-auto hide-scrollbar"
+              style={{ paddingLeft: '40px', paddingRight: '70px' }}
+            >
             <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
               {restoringProgress ? null : <>
               {/* Scored question screen — intro text, then question types underneath */}
@@ -1165,15 +1191,13 @@ const LearningHubV2 = () => {
 
               {/* Action area — buttons crossfade with chat messages at the same position */}
               <div className="mt-3 mb-4">
-                {/* Navigation buttons — fade out when chat is active */}
-                {allTypingComplete && !showingScoredQuestion && (
+                {/* Navigation buttons — hidden when chat is active */}
+                {allTypingComplete && !showingScoredQuestion && chatMessages.length === 0 && (
                   <div
                     className="flex items-center gap-2"
                     style={{
-                      opacity: showButtons && chatMessages.length === 0 ? 1 : 0,
+                      opacity: showButtons ? 1 : 0,
                       transition: 'opacity 0.25s ease-in',
-                      height: chatMessages.length > 0 ? 0 : 'auto',
-                      overflow: 'hidden',
                     }}
                   >
                     {isLastGroup ? (
@@ -1225,21 +1249,24 @@ const LearningHubV2 = () => {
                         onMouseEnter={(e) => { if (audioReady) e.currentTarget.style.color = '#EF0B72'; }}
                         onMouseLeave={(e) => { e.currentTarget.style.color = isReading && !isPaused ? '#EF0B72' : audioReady ? '#000' : '#9CA3AF'; }}
                       >
-                        {isReading && !isPaused ? (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                        <span style={{ display: 'grid' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"
+                            style={{ gridArea: '1 / 1', transition: 'opacity 0.2s ease', opacity: isReading && !isPaused ? 1 : 0 }}
+                          >
                             <rect x="6" y="4" width="4" height="16" rx="1" />
                             <rect x="14" y="4" width="4" height="16" rx="1" />
                           </svg>
-                        ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                            style={{ gridArea: '1 / 1', transition: 'opacity 0.2s ease', opacity: isReading && !isPaused ? 0 : 1 }}
+                          >
                             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
                             <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
                           </svg>
-                        )}
+                        </span>
                       </button>
                       <ThumbsFeedback
-                        rating={sectionFeedback[currentH2SectionNumber] ?? null}
+                        rating={sectionFeedback[currentSectionNumber] ?? null}
                         onRate={handleSectionFeedback}
                       />
                     </div>
@@ -1262,12 +1289,6 @@ const LearningHubV2 = () => {
                           displayedText={displayedText}
                           isCurrentlyTyping={typingMessageIndex === idx}
                           remainingLine={typingMessageIndex === idx ? chatRemainingLine : ''}
-                          showFeedback={msg.type === 'assistant' && idx === chatMessages.length - 1 && msg.isComplete}
-                          chatRating={msg.type === 'assistant' && idx === chatMessages.length - 1 ? chatFeedbackRating : null}
-                          onFeedback={(rating) => {
-                            const userMsg = chatMessages[idx - 1]?.text || '';
-                            handleChatFeedback(rating, msg.text, userMsg);
-                          }}
                         />
                       </div>
                     ))}
@@ -1287,6 +1308,59 @@ const LearningHubV2 = () => {
                         animation: 'purplePulse 1.2s ease-in-out infinite',
                       }}
                     />
+                  </div>
+                )}
+
+                {/* Free-form chat done — Continue, back, thumbs below the response */}
+                {freeFormChatDone && !showingScoredQuestion && (
+                  <div
+                    className="flex items-center gap-2 mt-3"
+                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                  >
+                    {isLastGroup ? (
+                      <button
+                        onClick={handleEndLesson}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        End Lesson
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleContinue}
+                        className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+                        style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+                      >
+                        Continue
+                      </button>
+                    )}
+                    <button
+                      onClick={handleBack}
+                      className="p-2 cursor-pointer transition-colors"
+                      style={{ transition: 'color 0.15s', display: currentGroupIndex > 0 ? '' : 'none' }}
+                      aria-label="Back"
+                      onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.color = ''; }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M19 12H5" />
+                        <path d="M12 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                    {(() => {
+                      const lastMsg = chatMessages[chatMessages.length - 1];
+                      const lastUser = chatMessages[chatMessages.length - 2];
+                      return (
+                        <ThumbsFeedback
+                          rating={chatFeedbackRating}
+                          onRate={(rating) => handleChatFeedback(rating, lastMsg.text, lastUser?.text || '')}
+                        />
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -1318,6 +1392,16 @@ const LearningHubV2 = () => {
                         <path d="M12 19l-7-7 7-7" />
                       </svg>
                     </button>
+                    {(() => {
+                      const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
+                      const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
+                      return lastAssistant ? (
+                        <ThumbsFeedback
+                          rating={chatFeedbackRating}
+                          onRate={(rating) => handleChatFeedback(rating, lastAssistant.text, lastUser?.text || '')}
+                        />
+                      ) : null;
+                    })()}
                   </div>
                 )}
 
@@ -1325,7 +1409,10 @@ const LearningHubV2 = () => {
                 {showingScoredQuestion && scoredIntroPhase && scoredIntroDone && (
                   <div
                     className="flex items-center gap-2 mt-3"
-                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                    style={{
+                      opacity: showScoredIntroButton ? 1 : 0,
+                      transition: 'opacity 0.25s ease-in',
+                    }}
                   >
                     <button
                       onClick={handleScoredIntroComplete}
@@ -1356,7 +1443,10 @@ const LearningHubV2 = () => {
                 {scoredQuestionAnswered && (
                   <div
                     className="flex items-center gap-2 mt-3"
-                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                    style={{
+                      opacity: showScoredAnswerButton ? 1 : 0,
+                      transition: 'opacity 0.25s ease-in',
+                    }}
                   >
                     {scoredResult.passed ? (
                       <button
@@ -1392,8 +1482,8 @@ const LearningHubV2 = () => {
                   </div>
                 )}
 
-                {/* Buttons reappear after assistant finishes typing (not during scored question flow) */}
-                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && !showingScoredQuestion && (
+                {/* Buttons reappear after assistant finishes typing (not during scored question flow or free-form/engagement chat) */}
+                {chatMessages.length > 0 && lastAssistantDone && !isTyping && allTypingComplete && !showingScoredQuestion && !freeFormChatDone && !userQuestionAnswered && (
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{ opacity: showPostChatButtons ? 1 : 0, transition: 'opacity 0.25s ease-in' }}
@@ -1438,6 +1528,9 @@ const LearningHubV2 = () => {
               </div>
               </>}
             </div>
+            {/* Bottom spacer — smaller when suggested question takes up space below */}
+            <div style={{ height: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion ? '8px' : '40px' }} />
+          </div>
           </div>
 
           {/* White gradient fade above input */}
@@ -1455,9 +1548,9 @@ const LearningHubV2 = () => {
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons)) ? 1 : 0,
+                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && allTypingComplete && showButtons ? 'auto' : 'none',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
                 height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion ? 0 : 'auto',
                 overflow: 'hidden',
               }}
