@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import type { Prompt } from '@/data/placeholderPrompts'
 import ComplexityIcon from '@/components/prompts/ComplexityIcon'
@@ -82,11 +81,13 @@ function InlinePlaceholderInput({
   value,
   onChange,
   autoFocus,
+  highlighted,
 }: {
   placeholderText: string
   value: string
   onChange: (value: string) => void
   autoFocus?: boolean
+  highlighted?: boolean
 }) {
   const measureRef = useRef<HTMLSpanElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -138,7 +139,8 @@ function InlinePlaceholderInput({
           borderRadius: '4px',
           padding: '0px 4px',
           margin: '2px 1px',
-          outline: 'none',
+          outline: highlighted ? '0.5px solid #EF0B72' : '0.5px solid transparent',
+          transition: 'outline-color 0.6s ease',
           textAlign: 'left',
           verticalAlign: 'baseline',
         }}
@@ -178,13 +180,14 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [authLoaded, setAuthLoaded] = useState(false)
-  const [linkCopied, setLinkCopied] = useState(false)
+  const [shareHovered, setShareHovered] = useState(false)
   const [copiedTool, setCopiedTool] = useState<string | null>(null)
   const [promptCopied, setPromptCopied] = useState(false)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [placeholderValues, setPlaceholderValues] = useState<Record<number, string>>({})
+  const [highlightedFields, setHighlightedFields] = useState<Set<number>>(new Set())
   const [autocompleting, setAutocompleting] = useState(false)
   const [autocompleteSuccess, setAutocompleteSuccess] = useState(false)
   const [autocompleteError, setAutocompleteError] = useState(false)
@@ -248,74 +251,14 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
     }).join('')
   }, [segments, placeholderValues])
 
-  const googleBtnRef = useRef<HTMLDivElement>(null)
-  const linkCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const copiedToolTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const promptCopyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const autocompleteTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const shareUrl = `https://ignite.education/prompts/${professionSlug}/${slug}`
 
-  // Handle Google sign-in success (direct, no redirect)
-  const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
-    try {
-      const supabase = createClient()
-      const { data, error: authError } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: credential,
-        nonce: nonce,
-      })
-
-      if (authError || !data.user) {
-        console.error('[PromptDetail] Google sign-in failed:', authError)
-        return
-      }
-
-      setUser(data.user)
-      setFirstName(extractFirstName(data.user))
-      setCheckingStatus(false)
-
-      // Auto-save the prompt
-      const supabase2 = createClient()
-      const { data: existing } = await supabase2
-        .from('saved_prompts')
-        .select('id')
-        .eq('user_id', data.user.id)
-        .eq('prompt_id', prompt.id)
-        .maybeSingle()
-
-      if (!existing) {
-        await supabase2
-          .from('saved_prompts')
-          .insert({ user_id: data.user.id, prompt_id: prompt.id })
-      }
-      setSaved(true)
-    } catch (err) {
-      console.error('[PromptDetail] Unexpected error:', err)
-    }
-  }, [prompt.id])
-
-  const { isLoaded, renderButton } = useGoogleOneTap({
-    onSuccess: handleGoogleSuccess,
-    enabled: !user,
-    autoPrompt: false,
-  })
-
-  // Render Google GIS button when ready
-  useEffect(() => {
-    if (!user && isLoaded && googleBtnRef.current) {
-      const containerWidth = googleBtnRef.current.offsetWidth
-      renderButton(googleBtnRef.current, {
-        width: containerWidth,
-        theme: 'outline',
-        size: 'large',
-        shape: 'rectangular',
-        text: 'continue_with',
-      })
-    }
-  }, [user, isLoaded, renderButton])
-
-  // Handle Google OAuth redirect (used by mobile where GIS renderButton isn't available)
+  // Handle Google OAuth redirect
   const handleGoogleOAuthClick = useCallback(async () => {
     sessionStorage.setItem('pendingSavePrompt', prompt.id)
     const supabase = createClient()
@@ -437,6 +380,7 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
     setAutocompleteError(false)
 
     try {
+      const startTime = Date.now()
       const placeholders = segments
         .filter((seg): seg is Extract<PromptSegment, { type: 'placeholder' }> => seg.type === 'placeholder')
         .map(seg => ({ index: seg.index, name: seg.content }))
@@ -452,16 +396,24 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
       const data = await res.json()
       const values: Record<string, string> = data.values || {}
 
+      const elapsed = Date.now() - startTime
+      if (elapsed < 1500) await new Promise(r => setTimeout(r, 1500 - elapsed))
+
+      const filledIndices = new Set<number>()
       setPlaceholderValues(prev => {
         const updated = { ...prev }
         for (const [indexStr, value] of Object.entries(values)) {
           const idx = parseInt(indexStr, 10)
           if ((!updated[idx] || updated[idx].trim() === '') && value && (value as string).trim() !== '') {
             updated[idx] = value as string
+            filledIndices.add(idx)
           }
         }
         return updated
       })
+
+      setHighlightedFields(filledIndices)
+      setTimeout(() => setHighlightedFields(new Set()), 1300)
 
       setAutocompleteSuccess(true)
       if (autocompleteTimeoutRef.current) clearTimeout(autocompleteTimeoutRef.current)
@@ -490,17 +442,23 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
               : autocompleteError
               ? 'bg-[#DC2626] text-white'
               : 'bg-white text-black'
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+          } disabled:cursor-not-allowed`}
           style={{ paddingTop: '0.575rem', paddingBottom: '0.575rem', borderRadius: '8px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
           onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.7)' }}
           onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 0 10px rgba(103,103,103,0.4)' }}
         >
           {autocompleting ? (
-            <span className="flex items-center justify-center gap-2">
-              <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-              <span className="text-[1rem] font-medium" style={{ letterSpacing: '-0.01em' }}>
-                Autocompleting...
-              </span>
+            <span className="inline-flex items-center justify-center text-[1rem] font-medium text-black" style={{ letterSpacing: '-0.01em' }}>
+              {'Thinking...'.split('').map((char, i) => (
+                <span
+                  key={i}
+                  style={{
+                    animation: 'letterFadeIn 0.4s ease forwards',
+                    animationDelay: `${i * 0.03}s`,
+                    opacity: 0,
+                  }}
+                >{char}</span>
+              ))}
             </span>
           ) : autocompleteSuccess ? (
             <span className="flex items-center justify-center gap-2">
@@ -566,20 +524,20 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
     }
   }
 
-  const handleCopyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-    } catch {
-      const textarea = document.createElement('textarea')
-      textarea.value = shareUrl
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
+  const handleShare = async () => {
+    const shareData = {
+      title: `${prompt.title} | Ignite Education`,
+      url: shareUrl,
     }
-    setLinkCopied(true)
-    if (linkCopyTimeoutRef.current) clearTimeout(linkCopyTimeoutRef.current)
-    linkCopyTimeoutRef.current = setTimeout(() => setLinkCopied(false), 2000)
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') console.error('Share failed:', err)
+      }
+    } else {
+      await navigator.clipboard.writeText(shareData.url)
+    }
   }
 
   const handleLinkedInShare = () => {
@@ -589,10 +547,6 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
   const handleWhatsAppShare = () => {
     const text = `Check out this AI prompt: ${prompt.title} on Ignite Education`
     window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')
-  }
-
-  const handleSubstackShare = () => {
-    window.open(`https://substack.com/note?url=${encodeURIComponent(shareUrl)}`, '_blank')
   }
 
   const updatedDate = new Date(prompt.updatedAt + 'T00:00:00')
@@ -707,9 +661,9 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
       <div className="flex gap-6 items-stretch">
       {/* LEFT COLUMN — Grey prompt container (matches curriculum grey box) */}
       <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1 min-w-0 relative">
-          <pre
-            className="text-sm text-black whitespace-pre-wrap leading-relaxed relative"
-            style={{ fontFamily: 'var(--font-geist-mono), monospace', fontSize: '13px' }}
+          <div
+            className="text-sm text-black whitespace-pre-wrap leading-relaxed relative font-normal"
+            style={{ letterSpacing: '-0.02em' }}
           >
             {segments.map((seg, i) =>
               seg.type === 'text' ? (
@@ -722,11 +676,12 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
                   placeholderText={seg.content}
                   value={placeholderValues[seg.index] || ''}
                   onChange={(val) => handlePlaceholderChange(seg.index, val)}
+                  highlighted={highlightedFields.has(seg.index)}
                   autoFocus={seg.index === 0}
                 />
               )
             )}
-          </pre>
+          </div>
           <button
             onClick={async () => {
               trackUsage()
@@ -786,20 +741,28 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
               <>
                 {/* Sign-in buttons */}
                 <div className="space-y-2 w-[90%] mx-auto mb-3">
-                  {/* Standard GIS "Continue with Google" button */}
-                  <div
-                    ref={googleBtnRef}
-                    className="mx-auto rounded overflow-hidden"
-                    style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
-                  />
+                  <button
+                    onClick={handleGoogleOAuthClick}
+                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                    style={{ height: '40px' }}
+                  >
+                    Continue with Google
+                    <img
+                      src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
+                      alt="Google"
+                      style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
+                    />
+                  </button>
 
-                  {/* LinkedIn Sign In Button */}
                   <button
                     onClick={handleLinkedInClick}
-                    className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
-                    style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+                    className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                    style={{ height: '40px' }}
                   >
                     Continue with LinkedIn
+                    <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-2px' }}>
+                      <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
+                    </svg>
                   </button>
                 </div>
 
@@ -862,25 +825,42 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
 
             {/* Share Buttons Row */}
             <div className="flex items-center justify-center gap-2">
-              {/* Copy Link Button */}
-              <button
-                onClick={handleCopyLink}
-                className={`flex items-center justify-center gap-1.5 h-[30px] rounded-md transition-colors w-[85px] ${
-                  linkCopied
-                    ? 'bg-[#009600] text-white'
-                    : 'bg-[#EDEDED] text-black hover:bg-[#E0E0E0]'
-                }`}
+              {/* Share Button */}
+              <div
+                onClick={handleShare}
+                onMouseEnter={() => setShareHovered(true)}
+                onMouseLeave={() => setShareHovered(false)}
+                className="flex items-center justify-center rounded-[4px]"
+                style={{ width: '33px', height: '33px', cursor: 'pointer' }}
               >
-                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g style={{ transition: 'transform 0.2s ease', transform: shareHovered ? 'translateY(-2px)' : 'translateY(0)' }}>
+                    <path
+                      d="M12 3v12M8 7l4-4 4 4"
+                      stroke={shareHovered ? '#EF0B72' : '#000000'}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ transition: 'stroke 0.2s ease' }}
+                    />
+                  </g>
+                  <path
+                    d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
+                    stroke={shareHovered ? '#EF0B72' : '#000000'}
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ transition: 'stroke 0.2s ease' }}
+                  />
                 </svg>
-                <span className="text-xs font-medium">{linkCopied ? 'Copied' : 'Copy link'}</span>
-              </button>
+              </div>
+
+              <div className="w-1" />
 
               {/* LinkedIn Share */}
               <button
                 onClick={handleLinkedInShare}
-                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#0A66C2] hover:bg-[#004182] transition-colors"
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#0A66C2] transition-shadow duration-350 ease-in-out hover:shadow-[0_0_10px_rgba(103,103,103,0.4)]"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
@@ -890,20 +870,10 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
               {/* WhatsApp Share */}
               <button
                 onClick={handleWhatsAppShare}
-                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#25D366] hover:bg-[#1DA851] transition-colors"
+                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#25D366] transition-shadow duration-350 ease-in-out hover:shadow-[0_0_10px_rgba(103,103,103,0.4)]"
               >
                 <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
                   <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-              </button>
-
-              {/* Substack Share */}
-              <button
-                onClick={handleSubstackShare}
-                className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#FF6719] hover:bg-[#E55A14] transition-colors"
-              >
-                <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
-                  <path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/>
                 </svg>
               </button>
             </div>
@@ -914,7 +884,7 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
 
       {/* Copy to LLM buttons — below the two-column flex, inside the -mx-24 wrapper */}
       <div className="flex items-center gap-2 flex-wrap mt-4">
-        {prompt.llmTools.map((tool) => {
+        {(['Claude', 'ChatGPT', 'CoPilot', 'Gemini'] as const).filter(t => prompt.llmTools.includes(t)).map((tool) => {
           const isCopied = copiedTool === tool
           return (
             <button
@@ -1023,28 +993,27 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
       <div className="lg:hidden mt-8">
         {!user ? (
           <div className="space-y-2 w-full mb-3">
-            {/* Custom Google button for mobile (GIS renderButton already used by desktop sidebar) */}
             <button
               onClick={handleGoogleOAuthClick}
-              className="mx-auto flex items-center bg-white border border-[#dadce0] rounded text-sm hover:bg-gray-50 transition cursor-pointer overflow-hidden"
-              style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+              style={{ height: '40px' }}
             >
-              <div className="flex items-center justify-center" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                </svg>
-              </div>
-              <span className="flex-1 text-center text-[14px] font-medium text-[#3c4043]">Continue with Google</span>
+              Continue with Google
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
+                alt="Google"
+                style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
+              />
             </button>
             <button
               onClick={handleLinkedInClick}
-              className="mx-auto flex items-center justify-center bg-[#0a66c2] text-white rounded text-sm hover:bg-[#084d93] transition font-medium cursor-pointer"
-              style={{ width: '100%', height: '40px', boxShadow: '0 0 10px rgba(103,103,103,0.4)' }}
+              className="w-full flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+              style={{ height: '40px' }}
             >
               Continue with LinkedIn
+              <svg width="21" height="21" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '-2px' }}>
+                <path fill="#0A66C2" d="M60.67 6H11.33A5.33 5.33 0 006 11.33v49.34A5.33 5.33 0 0011.33 66h49.34A5.33 5.33 0 0066 60.67V11.33A5.33 5.33 0 0060.67 6zM24.29 56H15.7V29.12h8.59V56zM20 25.46a4.97 4.97 0 110-9.94 4.97 4.97 0 010 9.94zM56 56h-8.59V42.93c0-3.12-.06-7.13-4.34-7.13-4.35 0-5.01 3.39-5.01 6.9V56h-8.59V29.12h8.24v3.67h.12a9.03 9.03 0 018.12-4.46c8.69 0 10.29 5.72 10.29 13.15V56z"/>
+              </svg>
             </button>
             <p className="text-center text-black text-sm font-normal mt-1" style={{ letterSpacing: '-0.02em' }}>
               Sign in to save the prompt

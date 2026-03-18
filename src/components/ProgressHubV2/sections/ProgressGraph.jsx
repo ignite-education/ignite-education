@@ -297,7 +297,7 @@ const ProgressGraph = ({
               width: '16px', height: '16px',
               borderRadius: '2px',
               backgroundColor: greyColor,
-              marginTop: '2px',
+              marginTop: '1px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexDirection: 'column',
               cursor: 'pointer',

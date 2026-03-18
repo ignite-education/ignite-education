@@ -43,6 +43,7 @@ export default function PromptFilters({
   hideProfession,
 }: PromptFiltersProps) {
   const [openFilter, setOpenFilter] = useState<FilterType | null>(null)
+  const [hoveredFilter, setHoveredFilter] = useState<FilterType | null>(null)
 
   const filterOptions: Record<FilterType, readonly string[]> = {
     profession: professions,
@@ -108,8 +109,8 @@ export default function PromptFilters({
           <div
             key={type}
             className="relative"
-            onMouseEnter={() => setOpenFilter(type)}
-            onMouseLeave={() => setOpenFilter(null)}
+            onMouseEnter={() => { setOpenFilter(type); setHoveredFilter(type) }}
+            onMouseLeave={() => { setOpenFilter(null); setHoveredFilter(null) }}
           >
             <button
               type="button"
@@ -150,21 +151,23 @@ export default function PromptFilters({
                     className="shrink-0"
                   >
                     <line x1="3" y1="8" x2="21" y2="8" />
-                    <circle cx="16" cy="8" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-top" />
+                    <circle cx="16" cy="8" r="3" fill="currentColor" stroke="currentColor" style={{ transform: hoveredFilter === type ? 'translateX(-8px)' : 'translateX(0)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
                     <line x1="3" y1="16" x2="21" y2="16" />
-                    <circle cx="8" cy="16" r="3" fill="currentColor" stroke="currentColor" className="filter-knob-bottom" />
+                    <circle cx="8" cy="16" r="3" fill="currentColor" stroke="currentColor" style={{ transform: hoveredFilter === type ? 'translateX(8px)' : 'translateX(0)', transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }} />
                   </svg>
                 )}
               </span>
             </button>
 
-            {isOpen && (
               <div
-                className="absolute top-full left-1/2 pt-2 z-50 animate-fadeIn"
+                className="absolute top-full left-1/2 pt-2 z-50"
                 style={{
                   transform: 'translateX(-50%)',
                   minWidth: '100%',
                   width: 'max-content',
+                  opacity: isOpen ? 1 : 0,
+                  pointerEvents: isOpen ? 'auto' : 'none',
+                  transition: 'opacity 0.3s ease',
                 }}
               >
                 <div
@@ -211,7 +214,6 @@ export default function PromptFilters({
                 })}
                 </div>
               </div>
-            )}
           </div>
         )
       })}
