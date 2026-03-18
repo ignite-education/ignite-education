@@ -123,6 +123,8 @@ const ProgressGraph = ({
   const [animationProgress, setAnimationProgress] = useState(-1); // -1 = not started
   const hasTriggeredRef = useRef(false);
   const [hoveredLessonIdx, setHoveredLessonIdx] = useState(null);
+  const [showScoreInfo, setShowScoreInfo] = useState(false);
+  const lastTooltipDataRef = useRef(null);
   const graphRef = useRef(null);
 
   // Find closest lesson by mouse x-position within module line boundaries
@@ -276,12 +278,71 @@ const ProgressGraph = ({
     };
   })() : null;
 
+  if (tooltipData) lastTooltipDataRef.current = tooltipData;
+  const displayTooltip = tooltipData || lastTooltipDataRef.current;
+
   return (
     <div ref={containerRef} className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
-        <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '4px' }}>
-          {userName}'s Progress
-        </h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%' }}>
+            {userName}'s Progress
+          </h3>
+          <div
+            style={{ position: 'relative', display: 'inline-flex' }}
+            onMouseEnter={() => setShowScoreInfo(true)}
+            onMouseLeave={() => setShowScoreInfo(false)}
+          >
+            <div style={{
+              width: '16px', height: '16px',
+              borderRadius: '2px',
+              backgroundColor: greyColor,
+              marginTop: '2px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexDirection: 'column',
+              cursor: 'pointer',
+              color: '#fff',
+            }}>
+              <div style={{ width: '2.5px', height: '2.5px', borderRadius: '0px', backgroundColor: '#000', marginBottom: '2px' }} />
+              <div style={{ width: '2.5px', height: '6px', borderRadius: '0px', backgroundColor: '#000' }} />
+            </div>
+            <div style={{
+                position: 'absolute',
+                left: 'calc(100% + 10px)',
+                top: '50%',
+                transform: 'translateY(-10%)',
+                backgroundColor: '#171717',
+                borderRadius: '3px',
+                padding: '12px 17px',
+                width: '231px',
+                zIndex: 50,
+                fontFamily: 'Geist, sans-serif',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+                textAlign: 'center',
+                opacity: showScoreInfo ? 1 : 0,
+                pointerEvents: showScoreInfo ? 'auto' : 'none',
+                transition: 'opacity 300ms ease',
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '-7px', top: '10%', transform: 'translateY(-50%)',
+                  width: 0, height: 0,
+                  borderTop: '7px solid transparent',
+                  borderBottom: '7px solid transparent',
+                  borderRight: '7px solid #171717',
+                }} />
+                <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.85rem', marginBottom: '6px' }}>
+                  Score Calculations
+                </div>
+                <div style={{ color: '#fff', fontWeight: 200, fontSize: '0.8rem', lineHeight: '1.4', marginBottom: '8px' }}>
+                  Lesson scores are the average from the individual section scores.
+                </div>
+                <div style={{ color: '#fff', fontWeight: 300, fontSize: '0.8rem', lineHeight: '1.4' }}>
+                  Retake a lesson anytime. We use your highest lesson score.
+                </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <style>{`
@@ -393,13 +454,13 @@ const ProgressGraph = ({
         )}
 
         {/* Tooltip popup on hover */}
-        {tooltipData && (
+        {displayTooltip && (
           <div
             style={{
               position: 'absolute',
-              left: `${(tooltipData.anchorX / SVG_WIDTH) * 100}%`,
+              left: `${(displayTooltip.anchorX / SVG_WIDTH) * 100}%`,
               top: '40%',
-              transform: tooltipData.side === 'right'
+              transform: displayTooltip.side === 'right'
                 ? 'translate(16px, -50%)'
                 : 'translate(calc(-100% - 16px), -50%)',
               backgroundColor: '#171717',
@@ -416,20 +477,22 @@ const ProgressGraph = ({
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
+              opacity: tooltipData ? 1 : 0,
+              transition: 'opacity 300ms ease',
             }}
           >
             {/* Arrow pointer */}
             <div
               style={{
                 position: 'absolute',
-                top: `${tooltipData.arrowTopPx}px`,
-                [tooltipData.side === 'right' ? 'left' : 'right']: '-7px',
+                top: `${displayTooltip.arrowTopPx}px`,
+                [displayTooltip.side === 'right' ? 'left' : 'right']: '-7px',
                 transform: 'translateY(-7px)',
                 width: 0,
                 height: 0,
                 borderTop: '7px solid transparent',
                 borderBottom: '7px solid transparent',
-                ...(tooltipData.side === 'right'
+                ...(displayTooltip.side === 'right'
                   ? { borderRight: '7px solid #171717' }
                   : { borderLeft: '7px solid #171717' }),
               }}
@@ -442,30 +505,30 @@ const ProgressGraph = ({
               lineHeight: '1.3',
               marginBottom: '5px',
             }}>
-              {formatModuleName(tooltipData.lessonName).map((line, i) => (
+              {formatModuleName(displayTooltip.lessonName).map((line, i) => (
                 <div key={i}>{line}</div>
               ))}
             </div>
             {/* User's score */}
-            {tooltipData.userScore !== null && (
+            {displayTooltip.userScore !== null && (
               <div style={{
                 color: '#EF0B72',
                 fontWeight: 500,
                 fontSize: '0.85rem',
                 lineHeight: '1.3',
               }}>
-                {userName}'s Score: {tooltipData.userScore}%
+                {userName}'s Score: {displayTooltip.userScore}%
               </div>
             )}
             {/* Global average */}
-            {tooltipData.globalScore !== null && (
+            {displayTooltip.globalScore !== null && (
               <div style={{
                 color: '#fff',
                 fontWeight: 200,
                 fontSize: '0.85rem',
                 lineHeight: '1.3',
               }}>
-                Average Score: {tooltipData.globalScore}%
+                Average Score: {displayTooltip.globalScore}%
               </div>
             )}
           </div>

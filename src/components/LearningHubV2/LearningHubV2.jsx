@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
-import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore, submitSectionFeedback, getSectionFeedback, submitChatFeedback } from '../../lib/api';
+import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore, submitSectionFeedback, getSectionFeedback, submitChatFeedback, getLessonSectionScores } from '../../lib/api';
 import LoadingScreen from '../LoadingScreen';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
@@ -16,6 +16,7 @@ import MediaPanel from './components/MediaPanel';
 import ChatInput from './components/ChatInput';
 import ChatMessage from './components/ChatMessage';
 import ThumbsFeedback from './components/ThumbsFeedback';
+import LessonSummary from './components/LessonSummary';
 import useChat from './hooks/useChat';
 import useTypewriter from './hooks/useTypewriter';
 import Footer from '../Footer';
@@ -66,6 +67,8 @@ const LearningHubV2 = () => {
   const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState({});
   const [chatFeedbackRating, setChatFeedbackRating] = useState(null);
+  const [showLessonSummary, setShowLessonSummary] = useState(false);
+  const [lessonSectionScores, setLessonSectionScores] = useState([]);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
@@ -188,6 +191,14 @@ const LearningHubV2 = () => {
   const totalGroups = allGroups.length;
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
   const activeGroupAll = allGroups[currentGroupIndex] || [];
+
+  // Extract H2 heading text from each group for the lesson summary
+  const sectionHeadings = useMemo(() => {
+    return allGroups.map(group => {
+      const h2 = group.find(s => s.content_type === 'heading' && (s.content?.level || 2) === 2);
+      return h2?.content?.text || h2?.title || '';
+    });
+  }, [allGroups]);
 
   // Text sections for left column (typing animation)
   const activeGroup = useMemo(() => {
@@ -795,6 +806,19 @@ const LearningHubV2 = () => {
     navigate('/progress');
   }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
 
+  // Show lesson summary screen — fetch section scores and display summary
+  const showSummary = useCallback(async () => {
+    if (user?.id && userCourseId) {
+      try {
+        const scores = await getLessonSectionScores(user.id, userCourseId, currentModule, currentLesson);
+        setLessonSectionScores(scores);
+      } catch (err) {
+        console.error('Error fetching section scores:', err);
+      }
+    }
+    setShowLessonSummary(true);
+  }, [user?.id, userCourseId, currentModule, currentLesson]);
+
   const handleUserQuestionContinue = useCallback(() => {
     setChatInput('');
     setPendingUserQuestion(null);
@@ -805,9 +829,9 @@ const LearningHubV2 = () => {
     const currentCompleted = completedSectionsRef.current;
 
     if (currentCompleted + 1 >= groupLen) {
-      // Last section in group — advance to next group or end lesson
+      // Last section in group — advance to next group or show summary
       if (isLastGroup) {
-        handleEndLesson();
+        showSummary();
       } else {
         setCompletedSections(0);
         setCurrentGroupIndex((prev) => {
@@ -826,7 +850,7 @@ const LearningHubV2 = () => {
       // More sections remain — reveal the next one
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, handleEndLesson, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Scored question intro → show the actual question underneath
   const handleScoredIntroComplete = useCallback(() => {
@@ -849,9 +873,9 @@ const LearningHubV2 = () => {
     const currentCompleted = completedSectionsRef.current;
 
     if (currentCompleted + 1 >= groupLen) {
-      // Scored question was last section — advance to next group directly
+      // Scored question was last section — advance to next group or show summary
       if (isLastGroup) {
-        handleEndLesson();
+        showSummary();
       } else {
         setCompletedSections(0);
         setCurrentGroupIndex((prev) => {
@@ -869,7 +893,7 @@ const LearningHubV2 = () => {
     } else {
       setCompletedSections((prev) => prev + 1);
     }
-  }, [resetChat, isLastGroup, handleEndLesson, user?.id, userCourseId, currentModule, currentLesson]);
+  }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Scored question — retry same question
   const handleScoredQuestionRetry = useCallback(() => {
@@ -933,7 +957,7 @@ const LearningHubV2 = () => {
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
-          <div className="px-10" style={{ paddingTop: '30px', paddingBottom: '10px' }}>
+          <div className="px-10" style={{ paddingTop: '30px', paddingBottom: '5px' }}>
             <div className="max-w-2xl">
               <a href="/progress" style={{ marginBottom: '20px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
                 {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -1026,7 +1050,7 @@ const LearningHubV2 = () => {
           {/* Scrollable content area wrapper */}
           <div className="flex-1 min-h-0 relative">
             {/* White gradient fade below progress bar */}
-            <div className="absolute pointer-events-none" style={{ top: '0px', height: '10px', zIndex: 5, left: '40px', right: '40px' }}>
+            <div className="absolute pointer-events-none" style={{ top: '0px', height: '15px', zIndex: 5, left: '40px', right: '40px' }}>
               <div className="absolute inset-0" style={{
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
@@ -1041,13 +1065,23 @@ const LearningHubV2 = () => {
               style={{ paddingLeft: '40px', paddingRight: '70px' }}
             >
             <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }}>
-              {restoringProgress ? null : <>
+              {restoringProgress ? null : showLessonSummary ? (
+                <div style={{ paddingTop: 13 }}>
+                  <LessonSummary
+                    sectionScores={lessonSectionScores}
+                    sectionHeadings={sectionHeadings}
+                    lessonTitle={lessonName}
+                    firstName={firstName}
+                    onEndLesson={handleEndLesson}
+                  />
+                </div>
+              ) : <>
               {/* Scored question screen — intro text, then question types underneath */}
               {showingScoredQuestion && scoredQuestionPool.length > 0 ? (
                 <div key={`scored-${scoredQuestionIndex}`}>
                   {/* H2 heading persists at top */}
                   {currentH2Name && (
-                    <div className="mt-[5px] mb-3">
+                    <div className="mt-[13px] mb-3">
                       <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
                         {currentH2Name}
                       </h2>
@@ -1223,7 +1257,7 @@ const LearningHubV2 = () => {
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={handleEndLesson}
+                        onClick={showSummary}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
@@ -1341,7 +1375,7 @@ const LearningHubV2 = () => {
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={handleEndLesson}
+                        onClick={showSummary}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
@@ -1512,7 +1546,7 @@ const LearningHubV2 = () => {
                   >
                     {isLastGroup ? (
                       <button
-                        onClick={handleEndLesson}
+                        onClick={showSummary}
                         className="px-4 py-1.5 text-white transition-colors cursor-pointer"
                         style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
                         onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}

@@ -8,4 +8,4 @@ export const COUNTRY_CONFIG = {
   ES: { label: 'in Spain', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/ES.png' },
 };
 
-export const DEFAULT_COMMUNITY = { label: 'around the world', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/WW.png' };
+export const DEFAULT_COMMUNITY = { label: 'worldwide', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/WW.png' };

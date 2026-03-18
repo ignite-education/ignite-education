@@ -738,6 +738,24 @@ export async function getLessonScores(userId, courseId) {
 }
 
 /**
+ * Get per-section scores and feedback for a specific lesson.
+ * Returns [{ section_number, score, feedback }, ...] ordered by section.
+ */
+export async function getLessonSectionScores(userId, courseId, moduleNumber, lessonNumber) {
+  const { data, error } = await supabase
+    .from('section_question_scores')
+    .select('section_number, score, feedback')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .eq('module_number', moduleNumber)
+    .eq('lesson_number', lessonNumber)
+    .order('section_number', { ascending: true });
+
+  if (error || !data) return [];
+  return data;
+}
+
+/**
  * Save a section question score. Uses best-score logic on the server —
  * only the highest score per section is kept.
  */
