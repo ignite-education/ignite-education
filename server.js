@@ -1665,6 +1665,49 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
   }
 });
 
+// Generate an engagement user question based on preceding lesson content
+app.post('/api/generate-user-question', async (req, res) => {
+  try {
+    const { sectionContent } = req.body;
+
+    const message = await anthropic.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 200,
+      system: `You are Will, an AI tutor. Generate ONE engaging question for students who have just read the following lesson content.
+
+Section Content:
+${sectionContent}
+
+Your task:
+Generate an engagement question that encourages the student to reflect on, personally connect with, or practically apply what they have just read. This is NOT a test — do not ask comprehension or recall questions. Instead, prompt genuine thinking.
+
+Guidelines:
+1. Be conversational and warm — write as if speaking directly to the student
+2. Encourage reflection, personal experience, or practical application
+3. Keep it to 1-2 sentences
+4. Use British English
+5. Do not reference specific paragraph numbers or section structure
+6. Do not start with "Based on what you just read" or similar meta-references
+
+Examples of good engagement questions:
+- "What do you think this means for product managers?"
+- "How might you apply this in your own team?"
+- "Have you experienced something like this before?"
+- "What challenges do you think this approach could face in practice?"
+
+Respond with ONLY the question text, nothing else.`,
+      messages: [{ role: 'user', content: 'Generate an engagement question for this section.' }],
+    });
+
+    const question = message.content[0].text.trim();
+
+    res.json({ success: true, question });
+  } catch (error) {
+    console.error('Error generating user question:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Generate or edit SVG icon from a text prompt
 app.post('/api/admin/generate-svg', async (req, res) => {
   try {

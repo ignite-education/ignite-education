@@ -70,6 +70,9 @@ const CurriculumUpload = () => {
   const [editingQuestionDifficulty, setEditingQuestionDifficulty] = useState('medium');
   const [isSavingQuestion, setIsSavingQuestion] = useState(false);
 
+  // User question generation state
+  const [generatingUserQuestion, setGeneratingUserQuestion] = useState(null);
+
   // Audio generation state
   const [audioStatus, setAudioStatus] = useState(null);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -1010,6 +1013,43 @@ const CurriculumUpload = () => {
     } catch (error) {
       console.error('Error generating question:', error);
       alert('Error generating question. Make sure the backend server is running.');
+      return '';
+    }
+  };
+
+  // Generate an engagement user question for a paragraph block based on preceding content
+  const generateUserQuestion = async (blockIndex) => {
+    const block = contentBlocks[blockIndex];
+    if (!block || block.type !== 'paragraph') {
+      return '';
+    }
+
+    // Get content from nearest H2 above down to this block (exclusive)
+    let sectionContent = getContentBeforeBlock(blockIndex);
+
+    // Append this paragraph's own content for full context
+    const paragraphContent = block.content || '';
+    if (paragraphContent) {
+      sectionContent += '\n\n' + paragraphContent;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/generate-user-question`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionContent })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        return data.question;
+      } else {
+        alert('Failed to generate question: ' + (data.error || 'Unknown error'));
+        return '';
+      }
+    } catch (error) {
+      console.error('Error generating user question:', error);
+      alert('Error generating question. Please try again.');
       return '';
     }
   };
@@ -2247,7 +2287,26 @@ ${contentBlocks.map((block, index) => {
             </div>
             {/* User Question — optional ungraded question shown after this paragraph */}
             <div className="mt-3 pt-3 border-t border-gray-700">
-              <label className="text-sm font-medium text-gray-300 block mb-1">User Question (Optional)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium text-gray-300">User Question (Optional)</label>
+                <button
+                  type="button"
+                  disabled={generatingUserQuestion === block.id}
+                  onClick={async () => {
+                    setGeneratingUserQuestion(block.id);
+                    const questionText = await generateUserQuestion(index);
+                    if (questionText) {
+                      setContentBlocks(prevBlocks => prevBlocks.map(b =>
+                        b.id === block.id ? { ...b, userQuestion: questionText } : b
+                      ));
+                    }
+                    setGeneratingUserQuestion(null);
+                  }}
+                  className="text-xs px-3 py-1 bg-purple-900/30 text-purple-400 rounded-lg hover:bg-purple-900/50 transition disabled:opacity-50"
+                >
+                  {generatingUserQuestion === block.id ? 'Generating...' : 'Auto-generate'}
+                </button>
+              </div>
               <input
                 type="text"
                 value={block.userQuestion || ''}
