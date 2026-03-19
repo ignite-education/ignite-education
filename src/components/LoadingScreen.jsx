@@ -18,7 +18,7 @@ const LoadingScreen = ({ message = null, autoRefresh = false, autoRefreshDelay =
   }, [autoRefresh, autoRefreshDelay]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white animate-crossfadeIn">
       <div
         className="loading-animation-container"
         style={{

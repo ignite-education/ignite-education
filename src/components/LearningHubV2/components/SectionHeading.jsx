@@ -49,7 +49,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
 
     if (level === 2) {
       return (
-        <div className="mt-0 mb-3">
+        <div className="mb-3" style={{ marginTop: '10px' }}>
           <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
             {wordSpans}
           </HeadingTag>
@@ -79,7 +79,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     };
     if (level === 2) {
       return (
-        <div className="mt-0 mb-3">
+        <div className="mb-3" style={{ marginTop: '10px' }}>
           <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
             {renderFull(text)}
           </HeadingTag>
@@ -108,10 +108,10 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
 
   // Show cursor immediately during delay, before text starts
   if (!revealedText && !isComplete) {
-    const cursorOnly = <span data-scroll-anchor className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />;
+    const cursorOnly = <span data-scroll-anchor className="inline-block" style={{ width: 8, height: 8, backgroundColor: '#8200EA', borderRadius: 1, verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }} />;
     if (level === 2) {
       return (
-        <div className="mt-0 mb-3">
+        <div className="mb-3" style={{ marginTop: '10px' }}>
           <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
             {cursorOnly}
           </HeadingTag>
@@ -128,7 +128,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
 
   if (level === 2) {
     return (
-      <div className="mt-0 mb-3">
+      <div className="mb-3" style={{ marginTop: '10px' }}>
         <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
           {renderFormattedText(revealedText)}
           {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}

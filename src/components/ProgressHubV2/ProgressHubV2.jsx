@@ -146,11 +146,7 @@ const ProgressHubV2 = () => {
 
   const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
 
-  if (!showContent) {
-    return <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />;
-  }
-
-  if (isMobile) {
+  if (isMobile && showContent) {
     return <MobileBlockScreen onSignOut={signOut} />;
   }
 
@@ -159,10 +155,14 @@ const ProgressHubV2 = () => {
   return (
     <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
       {showLoading && (
-        <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
-          <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
-        </div>
+        <>
+          <div className={`fixed inset-0 z-40 bg-white ${loadingClassName}`} />
+          <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
+            <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
+          </div>
+        </>
       )}
+      {showContent && (<>
       <SEO title={firstName ? `${firstName}'s Progress | Ignite` : 'Your Progress | Ignite'} />
       {/* Section 1: Introduction */}
       <IntroSection
@@ -231,6 +231,7 @@ const ProgressHubV2 = () => {
         isOpen={showMyPostsModal}
         onClose={() => setShowMyPostsModal(false)}
       />
+      </>)}
     </div>
   );
 };

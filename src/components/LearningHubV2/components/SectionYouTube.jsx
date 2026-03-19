@@ -8,7 +8,10 @@ const SectionYouTube = ({ section }) => {
   return (
     <div className="mb-6">
       {videoData.title && (
-        <h3 className="text-lg font-bold mb-1">{videoData.title}</h3>
+        <h3 className="text-lg mb-1" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>{videoData.title}</h3>
+      )}
+      {videoData.description && (
+        <p className="text-base font-light leading-relaxed mb-3 text-black" style={{ letterSpacing: '-0.01em' }}>{videoData.description}</p>
       )}
       <div className="aspect-video">
         <iframe
@@ -19,9 +22,6 @@ const SectionYouTube = ({ section }) => {
           className="w-full h-full rounded-lg"
         />
       </div>
-      {videoData.description && (
-        <p className="text-base font-light leading-relaxed mt-3 text-black" style={{ letterSpacing: '-0.01em' }}>{videoData.description}</p>
-      )}
     </div>
   );
 };
