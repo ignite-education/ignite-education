@@ -20,6 +20,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+
 // Initialize Stripe (optional - only if key is provided)
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
@@ -1606,40 +1607,42 @@ Based on this section content, generate ONE suggested question that would help s
 2. Focus on understanding key concepts or practical application
 3. Be answerable based on the section content provided
 4. Be conversational and natural (avoid overly academic language)
-5. Be MAXIMUM 55 characters long (this is strict - count carefully)
+5. Be MAXIMUM 100 characters long (this is strict - count carefully)
 6. Be 5-12 words long
+7. Never use em dashes (—) or en dashes (–) - use commas or restructure instead
+8. Always use British English spelling (e.g. "organisation" not "organization", "prioritise" not "prioritize")
 
-Examples of good questions (all under 55 characters):
-- "How would you apply this to your product?" (47 chars)
-- "What makes this approach effective?" (36 chars)
-- "Why is this concept important for PMs?" (39 chars)
-- "How does this differ from other methods?" (41 chars)
+Examples of good questions (all under 100 characters):
+- "How would you apply this to your product?" (42 chars)
+- "What makes this approach effective?" (35 chars)
+- "Why is this concept important for PMs?" (38 chars)
+- "How does this differ from other methods?" (40 chars)
 
-Respond with ONLY the question text, nothing else. No introduction, no explanation, just the question. Keep it under 55 characters.`;
+Respond with ONLY the question text, nothing else. No introduction, no explanation, just the question. Keep it under 100 characters.`;
 
     let question = '';
     let attempts = 0;
     const maxAttempts = 3;
 
-    // Try up to 3 times to get a question under 55 characters
+    // Try up to 3 times to get a question under 100 characters
     while (attempts < maxAttempts) {
       const message = await anthropic.messages.create({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 100,
+        max_tokens: 150,
         system: systemPrompt,
         messages: [
           {
             role: 'user',
             content: attempts === 0
               ? 'Generate a suggested question for this section.'
-              : `Generate a shorter suggested question for this section. Make it under 55 characters. Previous attempt was ${question.length} characters.`
+              : `Generate a shorter suggested question for this section. Make it under 100 characters. Previous attempt was ${question.length} characters.`
           }
         ],
       });
 
       question = message.content[0].text.trim();
 
-      if (question.length <= 55) {
+      if (question.length <= 100) {
         break;
       }
 
@@ -1647,7 +1650,7 @@ Respond with ONLY the question text, nothing else. No introduction, no explanati
     }
 
     // If still too long after 3 attempts, use a generic fallback
-    if (question.length > 55) {
+    if (question.length > 100) {
       question = "What are the key concepts here?";
     }
 
@@ -1709,46 +1712,59 @@ Respond with ONLY the question text, nothing else.`,
 });
 
 // Generate or edit SVG icon from a text prompt
+app.post('/api/admin/suggest-svg-prompt', async (req, res) => {
+  try {
+    const { sectionContent } = req.body;
+
+    if (!sectionContent) {
+      return res.status(400).json({ success: false, error: 'Section content is required' });
+    }
+
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 300,
+      system: `You suggest detailed SVG illustration descriptions for an educational platform. Given lesson section content, describe an icon that visually represents the key concept.
+
+Your description should be 2-4 sentences covering:
+1. The main subject/object and its composition (what shapes, elements, and layout)
+2. Visual style details (line weights, fills, opacity, gradients)
+3. Animation suggestions (what should move, pulse, rotate, fade, or flow — keep it subtle and professional)
+
+The SVG will use only two colours (a primary purple and a secondary pink). Design with that constraint in mind.
+
+Output ONLY the description, nothing else.
+
+Examples:
+- "A network of five interconnected nodes arranged in a pentagon, with thin lines linking each node. The central node glows with a soft pulse animation. Data particles travel along the connecting lines from outer nodes towards the centre, representing information flow and connectivity."
+- "A layered funnel with three tiers, wide at the top narrowing to a focused stream at the bottom. Scattered dots drift downward through each tier, becoming more organised as they pass through. The dots gently fade in at the top and consolidate into a steady stream at the base, illustrating the filtering process."
+- "An open book with pages fanning upward, each page slightly offset. Above the book, a lightbulb composed of small geometric shapes assembles itself. The shapes float up from the pages and slowly rotate into position to form the bulb, symbolising knowledge building into insight."`,
+      messages: [
+        { role: 'user', content: `Suggest a detailed SVG illustration for this educational section:\n\n${sectionContent}` }
+      ],
+    });
+
+    const prompt = message.content[0].text.trim();
+    res.json({ success: true, prompt });
+
+  } catch (error) {
+    console.error('Error suggesting SVG prompt:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 app.post('/api/admin/generate-svg', async (req, res) => {
   try {
-    const { prompt, existingMarkup, colors } = req.body;
+    const { fullPrompt } = req.body;
 
-    if (!prompt) {
+    if (!fullPrompt) {
       return res.status(400).json({ success: false, error: 'Prompt is required' });
     }
 
-    const primary = colors?.primary || '#8200EA';
-    const secondary = colors?.secondary || '#EF0B72';
-
-    const systemPrompt = `You are an expert SVG illustrator creating clean, minimal icons for an educational platform.
-
-RULES:
-- Output ONLY valid SVG markup starting with <svg> and ending with </svg>
-- Use viewBox="0 0 200 200" — the SVG will be rendered at various sizes
-- Use {{primary}} and {{secondary}} as color placeholders (they will be replaced with actual colors at render time)
-- Current primary color: ${primary}, secondary color: ${secondary}
-- Keep designs clean, minimal, and professional — avoid excessive detail
-- Use strokes (2-4px width), simple fills with opacity, and basic shapes
-- No text elements, no external references, no scripts, no style tags
-- No xmlns declaration needed beyond the svg tag
-- Ensure the icon is visually centered in the 200x200 viewBox
-- The icon should work well at sizes from 100px to 400px
-
-${existingMarkup ? `EXISTING SVG (modify based on the user's request):\n${existingMarkup}` : 'Create a new SVG from scratch.'}
-
-Respond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG.`;
-
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      system: systemPrompt,
+      model: 'claude-opus-4-6',
+      max_tokens: 3000,
       messages: [
-        {
-          role: 'user',
-          content: existingMarkup
-            ? `Edit this SVG: ${prompt}`
-            : `Create an SVG icon: ${prompt}`
-        }
+        { role: 'user', content: fullPrompt + '\n\nRespond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG starting with <svg> and ending with </svg>.' }
       ],
     });
 
@@ -1813,27 +1829,36 @@ Respond with ONLY the question text, nothing else.`,
 // Generate 3 section questions — student is randomly presented one
 app.post('/api/generate-section-questions', async (req, res) => {
   try {
-    const { sectionContent } = req.body;
+    const { sectionContent, difficulties } = req.body;
+    const diffs = difficulties || ['easy', 'medium', 'medium'];
+    const diffList = diffs.map((d, i) => `Question ${i + 1}: ${d}`).join('\n');
 
     const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 600,
-      system: `You generate comprehension questions for educational content. Given a section of lesson content, create THREE distinct open-ended questions that test whether the student understood the key concepts.
+      system: `You generate short comprehension questions for educational content.
 
 Section Content:
 ${sectionContent}
 
-Rules:
+Difficulty for each question:
+${diffList}
+
+Difficulty guidelines:
+- easy: straightforward recall or basic understanding of a concept explicitly stated in the content
+- medium: requires the student to explain, compare, or apply a concept from the content
+- hard: requires synthesis of multiple concepts from the content, or deeper critical thinking about the material
+
+CRITICAL RULES:
+- EVERY question MUST be answerable using ONLY the section content above. The student has read NOTHING else. Do not reference concepts, terms, or ideas not explicitly covered in the section content.
+- Each question MUST be under 130 characters. This is a hard limit. Count carefully.
 - Each question should test a DIFFERENT aspect or concept from the section
-- Questions should be answerable from the section content
-- Ask about understanding, not recall of specific facts
-- Keep each question conversational and natural
-- 1-2 sentences max per question
+- Keep questions short, direct, and conversational — one sentence only
 - Do NOT start with "Based on what you just read" or similar meta-references
 - Use British English throughout
 
 Respond with EXACTLY 3 questions, one per line, numbered 1-3. Nothing else.`,
-      messages: [{ role: 'user', content: 'Generate 3 section comprehension questions.' }],
+      messages: [{ role: 'user', content: 'Generate 3 short comprehension questions (each under 130 characters).' }],
     });
 
     const raw = message.content[0].text.trim();
@@ -1841,7 +1866,8 @@ Respond with EXACTLY 3 questions, one per line, numbered 1-3. Nothing else.`,
       .split('\n')
       .map(line => line.replace(/^\d+[\.\)]\s*/, '').trim())
       .filter(Boolean)
-      .slice(0, 3);
+      .slice(0, 3)
+      .map(q => q.length > 130 ? q.slice(0, 127) + '...' : q);
 
     // Pad to exactly 3 if AI returned fewer
     while (questions.length < 3) {
@@ -1858,33 +1884,39 @@ Respond with EXACTLY 3 questions, one per line, numbered 1-3. Nothing else.`,
 // Generate a single replacement section question (for individual regeneration)
 app.post('/api/generate-single-section-question', async (req, res) => {
   try {
-    const { sectionContent, existingQuestions } = req.body;
+    const { sectionContent, existingQuestions, difficulty } = req.body;
+    const diff = difficulty || 'medium';
 
     const avoidList = (existingQuestions || []).filter(Boolean).map((q, i) => `${i + 1}. ${q}`).join('\n');
 
     const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 200,
-      system: `You generate comprehension questions for educational content. Given a section of lesson content, create ONE open-ended question that tests whether the student understood the key concepts.
+      system: `You generate short comprehension questions for educational content.
 
 Section Content:
 ${sectionContent}
 
+Difficulty: ${diff}
+- easy: straightforward recall or basic understanding of a concept explicitly stated in the content
+- medium: requires the student to explain, compare, or apply a concept from the content
+- hard: requires synthesis of multiple concepts from the content, or deeper critical thinking about the material
+
 ${avoidList ? `These questions already exist — generate something DIFFERENT:\n${avoidList}\n` : ''}
-Rules:
-- The question should be answerable from the section content
-- Ask about understanding, not recall of specific facts
-- Keep it conversational and natural
-- 1-2 sentences max
+CRITICAL RULES:
+- The question MUST be answerable using ONLY the section content above. The student has read NOTHING else. Do not reference concepts, terms, or ideas not explicitly covered in the section content.
+- The question MUST be under 130 characters. This is a hard limit. Count carefully.
+- Keep it short, direct, and conversational — one sentence only
 - Do NOT start with "Based on what you just read" or similar meta-references
 - Do NOT duplicate any existing question
 - Use British English throughout
 
 Respond with ONLY the question text, nothing else.`,
-      messages: [{ role: 'user', content: 'Generate a section comprehension question.' }],
+      messages: [{ role: 'user', content: 'Generate one short comprehension question (under 130 characters).' }],
     });
 
-    const question = message.content[0].text.trim();
+    let question = message.content[0].text.trim();
+    if (question.length > 130) question = question.slice(0, 127) + '...';
 
     res.json({ success: true, question });
   } catch (error) {
@@ -1927,10 +1959,12 @@ Important: If the student addresses the core idea of the question, even without 
 Feedback rules:
 - Keep feedback to 1-2 sentences
 - If score >= 5: Confirm what they got right and add a small insight
-- If score < 5: Gently explain what is missing without giving the full answer. Give a small hint on how to approach the answer correctly, and end by prompting them to try again
+- If score < 5: Briefly note what's missing and give a small hint to help them think about their answer differently. Always end with an invitation to try again (e.g. "Have another go.", "Give it another try."). Do NOT direct the user to revisit, look at, re-read, or go back to the curriculum content (e.g. avoid "have a look at the section on...", "look again at...", "review the section", "go back to the content", "try reading through the content again"). The user should re-attempt based on your hint alone. Do not reference the section content directly (e.g. avoid "the section outlines", "the section clearly outlines", "the text clearly states", "the material covers")
 - Use British English
 - Do NOT use exclamation marks
-- Be encouraging but honest
+- Do NOT use em dashes (—) or hyphens (-) as bullet points or list markers. Write feedback as plain flowing sentences, never as a list
+- Do NOT use em dashes (—) within sentences — use commas, full stops, or semicolons instead
+- Tone must be direct, helpful, and conversational. Never be condescending or patronising. Avoid phrases like "clearly outlines", "you haven't attempted", "you failed to". Instead be matter-of-fact and supportive
 - Always address the student directly in second person ("you", "your") — never use third person ("the student", "they")`,
       messages: [{ role: 'user', content: 'Evaluate the student answer.' }],
     });

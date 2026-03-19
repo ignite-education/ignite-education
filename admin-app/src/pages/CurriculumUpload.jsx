@@ -59,6 +59,12 @@ const CurriculumUpload = () => {
   // SVG generation state
   const [svgPrompt, setSvgPrompt] = useState('');
   const [isGeneratingSvg, setIsGeneratingSvg] = useState(false);
+  const [svgStyleGuide, setSvgStyleGuide] = useState(() =>
+    localStorage.getItem('svgStyleGuide') || 'Purple (#8200EA) and pink (#EF0B72) colour palette. Clean line art with 2-3px strokes. Minimal fills with low opacity. Modern, professional aesthetic. Simple geometric shapes. Transparent background.'
+  );
+  const [svgFullPrompt, setSvgFullPrompt] = useState(() =>
+    localStorage.getItem('svgRules') || ''
+  );
 
   // Knowledge check questions state
   const [questionStatus, setQuestionStatus] = useState(null);
@@ -905,8 +911,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } :
-              type === 'scored_question' ? { questions: ['', '', ''] } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '', animated: 'once' } :
+              type === 'scored_question' ? { questions: ['', '', ''], difficulties: ['easy', 'medium', 'medium'] } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -922,8 +928,8 @@ const CurriculumUpload = () => {
               type === 'heading' ? { text: '', level: 2 } :
               type === 'bulletlist' ? { items: [''] } :
               type === 'list' ? { type: 'unordered', items: [''] } :
-              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '' } :
-              type === 'scored_question' ? { questions: ['', '', ''] } : '',
+              type === 'svg' ? { markup: '', width: '200', height: '200', colors: { primary: '#8200EA', secondary: '#EF0B72' }, description: '', animated: 'once' } :
+              type === 'scored_question' ? { questions: ['', '', ''], difficulties: ['easy', 'medium', 'medium'] } : '',
       suggestedQuestion: '',
       sectionQuestion: ['', '', '']
     };
@@ -1119,13 +1125,19 @@ const CurriculumUpload = () => {
   // Generate all 3 scored questions from preceding H2 content
   const generateScoredQuestions = async (blockIndex) => {
     const sectionContent = getContentBeforeBlock(blockIndex);
-    if (!sectionContent) return;
+    console.log('[ScoredQ] Section content for block', blockIndex, ':', sectionContent?.slice(0, 200));
+    if (!sectionContent) {
+      alert('No section content found above this block. Make sure there is text content between the H2 heading and this question block.');
+      return;
+    }
+
+    const difficulties = contentBlocks[blockIndex]?.content?.difficulties || ['easy', 'medium', 'medium'];
 
     try {
       const response = await fetch(`${API_URL}/api/generate-section-questions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sectionContent })
+        body: JSON.stringify({ sectionContent, difficulties })
       });
 
       const data = await response.json();
@@ -1148,12 +1160,13 @@ const CurriculumUpload = () => {
     if (!sectionContent) return;
 
     const existingQuestions = contentBlocks[blockIndex]?.content?.questions || [];
+    const difficulty = contentBlocks[blockIndex]?.content?.difficulties?.[qIdx] || 'medium';
 
     try {
       const response = await fetch(`${API_URL}/api/generate-single-section-question`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sectionContent, existingQuestions: existingQuestions.filter(Boolean) })
+        body: JSON.stringify({ sectionContent, existingQuestions: existingQuestions.filter(Boolean), difficulty })
       });
 
       const data = await response.json();
@@ -1970,13 +1983,65 @@ ${contentBlocks.map((block, index) => {
     });
   };
 
-  const generateSvg = async (blockId, prompt, existingMarkup, colors) => {
+  const getSectionContextForBlock = (blockIndex) => {
+    const textTypes = ['heading', 'paragraph', 'list', 'bulletlist'];
+    const parts = [];
+    // Walk backwards to find the H2 above (inclusive)
+    for (let i = blockIndex - 1; i >= 0; i--) {
+      const b = contentBlocks[i];
+      if (textTypes.includes(b.type)) {
+        const text = b.type === 'heading' ? b.content?.text : b.content?.text || b.content?.html || '';
+        if (text) parts.unshift(text);
+      }
+      if (b.type === 'heading' && b.content?.level === 'h2') break;
+    }
+    // Walk forwards to find the H2 below (exclusive)
+    for (let i = blockIndex + 1; i < contentBlocks.length; i++) {
+      const b = contentBlocks[i];
+      if (b.type === 'heading' && b.content?.level === 'h2') break;
+      if (textTypes.includes(b.type)) {
+        const text = b.type === 'heading' ? b.content?.text : b.content?.text || b.content?.html || '';
+        if (text) parts.push(text);
+      }
+    }
+    return parts.join('\n\n');
+  };
+
+  const buildSvgRules = (block) => {
+    const animated = block.content.animated;
+    const iterationCount = animated === 'once' ? '1' : 'infinite';
+    const animationRules = animated
+      ? `- You MAY use a <style> block for CSS animations
+- Use @keyframes for smooth, subtle animations (e.g. gentle pulse, slow rotate, soft fade)
+- All animation durations should be 2-5 seconds with iteration-count: ${iterationCount}
+- Use animation-fill-mode: forwards
+- Prefix all CSS class names with "svga-"
+- Keep animations subtle and professional
+- Use ease-in-out timing`
+      : '- No style tags, no animations';
+
+    return `RULES:
+- Output ONLY valid SVG markup starting with <svg> and ending with </svg>
+- Use viewBox="0 0 200 200"
+- No text elements, no external references, no scripts
+${animationRules}
+- Ensure the icon is visually centered in the 200x200 viewBox
+
+STYLE:
+${svgStyleGuide}`;
+  };
+
+  const generateSvg = async (blockId, prompt, rules, existingMarkup) => {
+    let fullPrompt = prompt;
+    if (rules) fullPrompt += `\n\n${rules}`;
+    if (existingMarkup) fullPrompt += `\n\nEXISTING SVG TO MODIFY:\n${existingMarkup}`;
+
     setIsGeneratingSvg(true);
     try {
       const response = await fetch(`${API_URL}/api/admin/generate-svg`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, existingMarkup: existingMarkup || null, colors })
+        body: JSON.stringify({ fullPrompt })
       });
 
       const data = await response.json();
@@ -2525,29 +2590,44 @@ ${contentBlocks.map((block, index) => {
             {/* AI Prompt */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                {block.content.markup ? 'Edit with AI' : 'Generate with AI'}
+                {block.content.markup ? 'Describe changes' : 'Describe the SVG'}
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-2 mb-2">
                 <input
                   type="text"
                   value={svgPrompt}
                   onChange={(e) => setSvgPrompt(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && svgPrompt.trim() && !isGeneratingSvg) {
-                      generateSvg(block.id, svgPrompt, block.content.markup, block.content.colors);
+                      generateSvg(block.id, svgPrompt, svgFullPrompt, block.content.markup);
                     }
                   }}
                   placeholder={block.content.markup
-                    ? 'e.g., "Make it more abstract", "Add a graduation cap", "Change to a circuit board style"'
-                    : 'e.g., "A lightbulb with gears inside", "A brain connected to a network", "A mountain with a flag"'
+                    ? 'e.g., "Make it more abstract", "Add a graduation cap"'
+                    : 'e.g., "A lightbulb with gears inside", "A brain connected to a network"'
                   }
                   className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none text-sm"
                   disabled={isGeneratingSvg}
                 />
                 <button
-                  onClick={() => generateSvg(block.id, svgPrompt, block.content.markup, block.content.colors)}
+                  onClick={() => {
+                    const context = getSectionContextForBlock(index);
+                    if (!context) {
+                      alert('No section content found above this SVG block.');
+                      return;
+                    }
+                    setSvgPrompt(context);
+                  }}
+                  className="px-3 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 text-sm font-medium whitespace-nowrap transition"
+                >
+                  Use section content
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => generateSvg(block.id, svgPrompt, svgFullPrompt, block.content.markup)}
                   disabled={!svgPrompt.trim() || isGeneratingSvg}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium whitespace-nowrap transition flex items-center gap-2"
+                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition flex items-center justify-center gap-2"
                 >
                   {isGeneratingSvg ? (
                     <>
@@ -2561,81 +2641,87 @@ ${contentBlocks.map((block, index) => {
                     block.content.markup ? 'Edit SVG' : 'Generate SVG'
                   )}
                 </button>
+                <button
+                  onClick={() => {
+                    const combined = svgPrompt + (svgFullPrompt ? `\n\n${svgFullPrompt}` : '') + (block.content.markup ? `\n\nEXISTING SVG TO MODIFY:\n${block.content.markup}` : '');
+                    navigator.clipboard.writeText(combined + '\n\nRespond with ONLY the SVG markup. No explanation, no markdown code blocks, just the raw SVG starting with <svg> and ending with </svg>.');
+                  }}
+                  className="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm hover:bg-gray-700 hover:text-white transition"
+                  title="Copy full prompt to clipboard"
+                >
+                  Copy prompt
+                </button>
               </div>
-              {block.content.markup && (
-                <p className="text-xs text-gray-500 mt-1">Describe how you want to change the current SVG — the AI will modify it</p>
-              )}
+
+              {/* Editable rules */}
+              <details className="mt-3" onToggle={(e) => {
+                if (e.target.open && !svgFullPrompt) setSvgFullPrompt(buildSvgRules(block));
+              }}>
+                <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition">View / edit rules</summary>
+                <textarea
+                  value={svgFullPrompt || buildSvgRules(block)}
+                  onChange={(e) => setSvgFullPrompt(e.target.value)}
+                  className="w-full mt-2 bg-gray-950 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-300 font-mono focus:border-purple-500 focus:outline-none resize-y"
+                  rows={8}
+                />
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={() => { localStorage.setItem('svgRules', svgFullPrompt); alert('Rules saved'); }}
+                    className="px-3 py-1 bg-green-700 text-white rounded text-xs font-medium hover:bg-green-600 transition"
+                  >
+                    Save rules
+                  </button>
+                  <button
+                    onClick={() => { const fresh = buildSvgRules(block); setSvgFullPrompt(fresh); localStorage.removeItem('svgRules'); }}
+                    className="px-3 py-1 bg-gray-800 text-gray-400 rounded text-xs font-medium hover:bg-gray-700 hover:text-white transition"
+                  >
+                    Reset to defaults
+                  </button>
+                </div>
+              </details>
             </div>
 
-            {/* SVG Templates */}
-            {!block.content.markup && (
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Or start from a template</label>
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { name: 'Lightbulb', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><circle cx="100" cy="80" r="50" stroke="{{primary}}" stroke-width="4"/><path d="M80 130 h40 v10 a20 20 0 0 1 -40 0z" fill="{{primary}}" opacity="0.3"/><line x1="100" y1="50" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="80" y1="65" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="120" y1="65" x2="100" y2="80" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><line x1="85" y1="140" x2="115" y2="140" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/><line x1="88" y1="148" x2="112" y2="148" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/></svg>' },
-                    { name: 'Target', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><circle cx="100" cy="100" r="80" stroke="{{primary}}" stroke-width="3"/><circle cx="100" cy="100" r="55" stroke="{{primary}}" stroke-width="3" opacity="0.6"/><circle cx="100" cy="100" r="30" stroke="{{secondary}}" stroke-width="3"/><circle cx="100" cy="100" r="8" fill="{{secondary}}"/><line x1="140" y1="60" x2="108" y2="92" stroke="{{secondary}}" stroke-width="3" stroke-linecap="round"/><polygon points="145,45 155,55 140,60" fill="{{secondary}}"/></svg>' },
-                    { name: 'Gear', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><path d="M100 30 l10 20 20-5 5 20 20 5 -10 18 15 15 -18 10 5 20 -20 5 -5 20 -22-10 -15 15 -10-18 -20 5 -5-20 -20-5 10-18 -15-15 18-10 -5-20 20-5 5-20z" stroke="{{primary}}" stroke-width="3" fill="{{primary}}" opacity="0.15"/><circle cx="100" cy="100" r="30" stroke="{{secondary}}" stroke-width="3"/><circle cx="100" cy="100" r="12" fill="{{secondary}}" opacity="0.4"/></svg>' },
-                    { name: 'Chart', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><line x1="40" y1="160" x2="40" y2="40" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/><line x1="40" y1="160" x2="170" y2="160" stroke="{{primary}}" stroke-width="3" stroke-linecap="round"/><rect x="55" y="100" width="20" height="60" rx="4" fill="{{primary}}" opacity="0.4"/><rect x="85" y="70" width="20" height="90" rx="4" fill="{{secondary}}" opacity="0.6"/><rect x="115" y="90" width="20" height="70" rx="4" fill="{{primary}}" opacity="0.4"/><rect x="145" y="50" width="20" height="110" rx="4" fill="{{secondary}}" opacity="0.6"/><polyline points="55,95 95,65 125,85 155,45" stroke="{{secondary}}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="55" cy="95" r="3" fill="{{secondary}}"/><circle cx="95" cy="65" r="3" fill="{{secondary}}"/><circle cx="125" cy="85" r="3" fill="{{secondary}}"/><circle cx="155" cy="45" r="3" fill="{{secondary}}"/></svg>' },
-                    { name: 'Puzzle', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><path d="M40 90 h30 a15 15 0 0 1 0 30 h-30 v-30z" fill="{{primary}}" opacity="0.3" stroke="{{primary}}" stroke-width="2"/><path d="M70 90 h40 v-10 a15 15 0 0 1 0-30 v-10 h-40z" fill="{{secondary}}" opacity="0.3" stroke="{{secondary}}" stroke-width="2"/><path d="M110 40 h50 v50 h-10 a15 15 0 0 0 0 30 h10 v40 h-50 v-10 a15 15 0 0 1 -30 0 v10 h-10 v-50 h10 a15 15 0 0 0 0-30 h-10 v-40z" fill="{{primary}}" opacity="0.15" stroke="{{primary}}" stroke-width="2"/></svg>' },
-                    { name: 'Rocket', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><path d="M100 30 C100 30 70 70 70 120 L100 140 L130 120 C130 70 100 30 100 30Z" fill="{{primary}}" opacity="0.2" stroke="{{primary}}" stroke-width="3"/><circle cx="100" cy="85" r="12" fill="{{secondary}}" opacity="0.6"/><path d="M70 120 L50 140 L65 145 L70 130Z" fill="{{secondary}}" opacity="0.5"/><path d="M130 120 L150 140 L135 145 L130 130Z" fill="{{secondary}}" opacity="0.5"/><path d="M85 140 L80 170 L100 155 L120 170 L115 140Z" fill="{{secondary}}" opacity="0.7"/></svg>' },
-                    { name: 'Brain', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none"><path d="M100 160 v-80" stroke="{{primary}}" stroke-width="2"/><path d="M100 80 C100 50 70 40 60 60 C40 55 35 80 50 90 C35 95 40 120 55 115 C50 135 70 145 85 130" stroke="{{primary}}" stroke-width="3" fill="{{primary}}" opacity="0.15"/><path d="M100 80 C100 50 130 40 140 60 C160 55 165 80 150 90 C165 95 160 120 145 115 C150 135 130 145 115 130" stroke="{{secondary}}" stroke-width="3" fill="{{secondary}}" opacity="0.15"/><circle cx="72" cy="80" r="4" fill="{{primary}}"/><circle cx="60" cy="100" r="3" fill="{{primary}}"/><circle cx="128" cy="80" r="4" fill="{{secondary}}"/><circle cx="140" cy="100" r="3" fill="{{secondary}}"/></svg>' },
-                    { name: 'Blank', markup: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none">\n  <!-- Add your SVG elements here -->\n  \n</svg>' },
-                  ].map(template => {
-                    const previewMarkup = template.markup
-                      .replace(/\{\{primary\}\}/g, block.content.colors?.primary || '#8200EA')
-                      .replace(/\{\{secondary\}\}/g, block.content.colors?.secondary || '#EF0B72');
-                    return (
-                      <button
-                        key={template.name}
-                        onClick={() => updateBlock(block.id, { ...block.content, markup: template.markup })}
-                        className="flex flex-col items-center gap-2 p-3 bg-gray-900 border border-gray-700 rounded-lg hover:border-purple-500 hover:bg-gray-800 transition group"
-                      >
-                        <div
-                          className="w-16 h-16"
-                          dangerouslySetInnerHTML={{ __html: previewMarkup }}
-                        />
-                        <span className="text-xs text-gray-400 group-hover:text-purple-400">{template.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Color Controls */}
+            {/* Size + Animation Controls */}
             <div className="flex gap-4 items-center">
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Primary</label>
-                <input
-                  type="color"
-                  value={block.content.colors?.primary || '#8200EA'}
-                  onChange={(e) => updateBlock(block.id, { ...block.content, colors: { ...block.content.colors, primary: e.target.value } })}
-                  className="w-8 h-8 rounded cursor-pointer border border-gray-600"
-                />
-                <span className="text-xs text-gray-500 font-mono">{block.content.colors?.primary || '#8200EA'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-400">Secondary</label>
-                <input
-                  type="color"
-                  value={block.content.colors?.secondary || '#EF0B72'}
-                  onChange={(e) => updateBlock(block.id, { ...block.content, colors: { ...block.content.colors, secondary: e.target.value } })}
-                  className="w-8 h-8 rounded cursor-pointer border border-gray-600"
-                />
-                <span className="text-xs text-gray-500 font-mono">{block.content.colors?.secondary || '#EF0B72'}</span>
-              </div>
-              <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-400">Size</label>
-                <input
-                  type="number"
-                  value={block.content.width || '200'}
-                  onChange={(e) => updateBlock(block.id, { ...block.content, width: e.target.value, height: e.target.value })}
-                  className="w-20 px-2 py-1 bg-gray-900 border border-gray-700 rounded text-sm text-white focus:border-pink-500 focus:outline-none"
-                  min="50"
-                  max="600"
-                />
-                <span className="text-xs text-gray-500">px</span>
+                {[
+                  { label: 'S', value: '100' },
+                  { label: 'M', value: '200' },
+                  { label: 'L', value: '300' },
+                  { label: 'XL', value: '400' },
+                  { label: 'XXL', value: '500' },
+                ].map(size => (
+                  <button
+                    key={size.label}
+                    onClick={() => updateBlock(block.id, { ...block.content, width: size.value, height: size.value })}
+                    className={`px-3 py-1 rounded text-xs font-medium transition ${
+                      (block.content.width || '200') === size.value
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-900 border border-gray-700 text-gray-400 hover:border-purple-500 hover:text-purple-400'
+                    }`}
+                  >
+                    {size.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-400">Animation</label>
+                {['off', 'once', 'loop'].map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => updateBlock(block.id, { ...block.content, animated: mode === 'off' ? false : mode })}
+                    className={`px-3 py-1 rounded text-xs font-medium transition ${
+                      (mode === 'off' && !block.content.animated) ||
+                      (mode === 'once' && block.content.animated === 'once') ||
+                      (mode === 'loop' && (block.content.animated === 'loop' || block.content.animated === true))
+                        ? 'bg-pink-600 text-white'
+                        : 'bg-gray-900 border border-gray-700 text-gray-400 hover:border-pink-500 hover:text-pink-400'
+                    }`}
+                  >
+                    {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -2712,6 +2798,7 @@ ${contentBlocks.map((block, index) => {
 
       case 'scored_question': {
         const questions = block.content?.questions || ['', '', ''];
+        const difficulties = block.content?.difficulties || ['easy', 'medium', 'medium'];
         return (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -2724,28 +2811,59 @@ ${contentBlocks.map((block, index) => {
               </button>
             </div>
             {questions.map((q, qIdx) => (
-              <div key={qIdx} className="flex gap-2 items-start">
-                <span className="text-xs text-gray-500 mt-2.5 w-4 shrink-0">{qIdx + 1}.</span>
-                <textarea
-                  value={q}
-                  onChange={(e) => {
-                    const newQuestions = [...questions];
-                    newQuestions[qIdx] = e.target.value;
-                    setContentBlocks(prev => prev.map((b, i) =>
-                      i === index ? { ...b, content: { ...b.content, questions: newQuestions } } : b
-                    ));
-                  }}
-                  placeholder={`Question ${qIdx + 1}`}
-                  rows={2}
-                  className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none text-sm resize-none"
-                />
-                <button
-                  onClick={() => regenerateSingleScoredQuestion(index, qIdx)}
-                  className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition shrink-0"
-                  title="Regenerate this question"
-                >
-                  <RotateCcw size={14} />
-                </button>
+              <div key={qIdx} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-4 shrink-0">{qIdx + 1}.</span>
+                  <div className="flex gap-1">
+                    {['easy', 'medium', 'hard'].map(diff => (
+                      <button
+                        key={diff}
+                        onClick={() => {
+                          const newDifficulties = [...difficulties];
+                          newDifficulties[qIdx] = diff;
+                          setContentBlocks(prev => prev.map((b, i) =>
+                            i === index ? { ...b, content: { ...b.content, difficulties: newDifficulties } } : b
+                          ));
+                        }}
+                        className={`px-2 py-0.5 text-xs rounded-full capitalize transition ${
+                          difficulties[qIdx] === diff
+                            ? diff === 'easy' ? 'bg-green-900 text-green-300 border border-green-600'
+                              : diff === 'hard' ? 'bg-red-900 text-red-300 border border-red-600'
+                              : 'bg-yellow-900 text-yellow-300 border border-yellow-600'
+                            : 'bg-gray-800 text-gray-500 border border-gray-700 hover:text-gray-300'
+                        }`}
+                      >
+                        {diff}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 items-start pl-6">
+                  <div className="flex-1">
+                    <textarea
+                      value={q}
+                      onChange={(e) => {
+                        const newQuestions = [...questions];
+                        newQuestions[qIdx] = e.target.value;
+                        setContentBlocks(prev => prev.map((b, i) =>
+                          i === index ? { ...b, content: { ...b.content, questions: newQuestions } } : b
+                        ));
+                      }}
+                      maxLength={130}
+                      placeholder={`Question ${qIdx + 1}`}
+                      rows={2}
+                      className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:border-pink-500 focus:outline-none text-sm resize-none"
+                    />
+                    <span className={`text-xs ${q.length > 120 ? 'text-red-400' : 'text-gray-600'}`}>{q.length}/130</span>
+                  </div>
+                  <button
+                    onClick={() => regenerateSingleScoredQuestion(index, qIdx)}
+                    className="p-2 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition shrink-0"
+                    title="Regenerate this question"
+                  >
+                    <RotateCcw size={14} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

@@ -303,8 +303,8 @@ const ProgressGraph = ({
               cursor: 'pointer',
               color: '#fff',
             }}>
-              <div style={{ width: '2.5px', height: '2.5px', borderRadius: '0px', backgroundColor: '#000', marginBottom: '2px' }} />
-              <div style={{ width: '2.5px', height: '6px', borderRadius: '0px', backgroundColor: '#000' }} />
+              <div style={{ width: '2.5px', height: '2.5px', borderRadius: '1px', backgroundColor: '#000', marginBottom: '2px' }} />
+              <div style={{ width: '2.5px', height: '6px', borderRadius: '1px', backgroundColor: '#000' }} />
             </div>
             <div style={{
                 position: 'absolute',
@@ -338,7 +338,9 @@ const ProgressGraph = ({
                   Lesson scores are the average from the individual section scores.
                 </div>
                 <div style={{ color: '#fff', fontWeight: 300, fontSize: '0.8rem', lineHeight: '1.4' }}>
-                  Retake a lesson anytime. We use your highest lesson score.
+                  Retake a lesson anytime.
+                  <br />
+                  We use your highest score.
                 </div>
             </div>
           </div>

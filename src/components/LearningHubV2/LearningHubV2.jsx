@@ -30,19 +30,100 @@ const AutoRetry = ({ onRetry }) => {
   return null;
 };
 
-// Group text sections by h2 headings — each h2 starts a new group
+// Typewriter text with cursor — used for revisit message after second scored-question failure
+const TypewriterMessage = ({ text, onComplete, speed = 45, delay = 1000 }) => {
+  const { revealedText, isComplete } = useTypewriter(text, { speed, delay, enabled: !!text, onComplete });
+  if (!revealedText && !isComplete) {
+    return (
+      <span
+        data-scroll-anchor
+        className="inline-block"
+        style={{ width: 8, height: 8, backgroundColor: '#8200EA', borderRadius: 1, verticalAlign: 'middle', position: 'relative', top: '-1px', animation: 'purplePulse 1.2s ease-in-out infinite' }}
+      />
+    );
+  }
+  if (!revealedText) return null;
+  return (
+    <span>
+      {revealedText}
+      {!isComplete && (
+        <span
+          data-scroll-anchor
+          className="inline-block ml-1.5"
+          style={{ width: 8, height: 8, backgroundColor: '#8200EA', borderRadius: 1, verticalAlign: 'middle', position: 'relative', top: '-1px' }}
+        />
+      )}
+    </span>
+  );
+};
+
+// Revisit message after second scored-question failure — types out then shows Continue button
+const RevisitMessage = ({ sectionName, onRevisit }) => {
+  const [typingDone, setTypingDone] = useState(false);
+  const [showButton, setShowButton] = useState(false);
+  useEffect(() => {
+    if (typingDone) {
+      const timer = setTimeout(() => setShowButton(true), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [typingDone]);
+  const text = `Your answer doesn't quite cover what we covered in ${sectionName || 'this section'}. To continue in the lesson, we'll need to revisit the content in this section first. Ask me any questions along the way, and we'll try again afterwards.`;
+  return (
+    <div>
+      <p className="text-base font-light leading-relaxed text-black mb-3" style={{ letterSpacing: '-0.01em' }}>
+        <TypewriterMessage text={text} onComplete={() => setTypingDone(true)} />
+      </p>
+      {typingDone && (
+        <div className="flex items-center gap-2" style={{ opacity: showButton ? 1 : 0, transition: 'opacity 0.25s ease-in' }}>
+          <button
+            onClick={onRevisit}
+            className="px-4 py-1.5 text-white transition-colors cursor-pointer"
+            style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
+            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            Continue
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Group sections into screens — each paragraph gets its own screen.
+// A heading attaches to the next paragraph (same screen). Media/lists attach to the current screen.
 const groupSectionsByHeading = (sections) => {
   const groups = [];
   let currentGroup = [];
+  let hasContentInGroup = false; // tracks if we've seen a paragraph/scored_question in this group
 
   sections.forEach((section) => {
     const level = section.content?.level || 2;
     const isHeading = section.content_type === 'heading' && (level === 2 || level === 3);
-    if (isHeading && currentGroup.length > 0) {
-      groups.push(currentGroup);
-      currentGroup = [];
+    const isParagraph = section.content_type === 'paragraph';
+    const isScoredQuestion = section.content_type === 'scored_question';
+
+    if (isHeading) {
+      // Headings always start a new group
+      if (currentGroup.length > 0) {
+        groups.push(currentGroup);
+        currentGroup = [];
+        hasContentInGroup = false;
+      }
+      currentGroup.push(section);
+    } else if (isParagraph || isScoredQuestion) {
+      // Each paragraph/scored_question gets its own screen
+      if (hasContentInGroup) {
+        groups.push(currentGroup);
+        currentGroup = [];
+        hasContentInGroup = false;
+      }
+      currentGroup.push(section);
+      hasContentInGroup = true;
+    } else {
+      // Media, lists, bulletlists — attach to current group
+      currentGroup.push(section);
     }
-    currentGroup.push(section);
   });
 
   if (currentGroup.length > 0) {
@@ -69,17 +150,21 @@ const LearningHubV2 = () => {
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
   const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
+  const [scoredIntroFading, setScoredIntroFading] = useState(false);
   const [scoredQuestionPool, setScoredQuestionPool] = useState([]);
   const [scoredQuestionIndex, setScoredQuestionIndex] = useState(0);
   const [scoredAttemptCount, setScoredAttemptCount] = useState(0);
+  const scoredAttemptCountRef = useRef(0);
   const [scoredResult, setScoredResult] = useState(null);
   const [scoredSectionContent, setScoredSectionContent] = useState('');
   const [scoredSectionNumber, setScoredSectionNumber] = useState(null);
   const [suggestedQuestionDismissed, setSuggestedQuestionDismissed] = useState(false);
   const [sectionFeedback, setSectionFeedback] = useState({});
   const [chatFeedbackRating, setChatFeedbackRating] = useState(null);
+  const [scoredFeedbackRating, setScoredFeedbackRating] = useState(null);
   const [showLessonSummary, setShowLessonSummary] = useState(false);
   const [lessonSectionScores, setLessonSectionScores] = useState([]);
+  const [savedProgressSection, setSavedProgressSection] = useState(null);
   const contentScrollRef = useRef(null);
   const contentInnerRef = useRef(null);
   const sectionRefs = useRef([]);
@@ -88,6 +173,21 @@ const LearningHubV2 = () => {
   const loopCountRef = useRef(0);
   const chatInputRef = useRef(null);
   const prevSuggestedQuestionRef = useRef(null);
+  const leftHeaderObserverRef = useRef(null);
+  const [leftHeaderHeight, setLeftHeaderHeight] = useState(0);
+  const leftHeaderRef = useCallback((el) => {
+    // Clean up previous observer
+    if (leftHeaderObserverRef.current) {
+      leftHeaderObserverRef.current.disconnect();
+      leftHeaderObserverRef.current = null;
+    }
+    if (!el) return;
+    const measure = () => setLeftHeaderHeight(el.offsetHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    leftHeaderObserverRef.current = observer;
+  }, []);
 
   // Start logo animation after a short delay (matches ProgressHubV2 behavior)
   useEffect(() => {
@@ -203,12 +303,20 @@ const LearningHubV2 = () => {
   const isLastGroup = currentGroupIndex >= totalGroups - 1;
   const activeGroupAll = allGroups[currentGroupIndex] || [];
 
-  // Extract H2 heading text from each group for the lesson summary
-  const sectionHeadings = useMemo(() => {
-    return allGroups.map(group => {
-      const h2 = group.find(s => s.content_type === 'heading' && (s.content?.level || 2) === 2);
-      return h2?.content?.text || h2?.title || '';
+  // Map scored_question section_numbers to their parent H2 heading text
+  const scoredQuestionHeadings = useMemo(() => {
+    const map = {};
+    let currentH2 = '';
+    const allSections = allGroups.flat();
+    allSections.forEach(s => {
+      if (s.content_type === 'heading' && (s.content?.level || 2) === 2) {
+        currentH2 = s.content?.text || s.title || '';
+      }
+      if (s.content_type === 'scored_question') {
+        map[s.section_number] = currentH2;
+      }
     });
+    return map;
   }, [allGroups]);
 
   // Text sections for left column (typing animation)
@@ -217,29 +325,34 @@ const LearningHubV2 = () => {
   }, [activeGroupAll]);
 
   // Media sections for right column (with persistent media support)
+  // Rules: only show ONE media item at a time; persistent media carries forward
+  // until a new media item appears, which replaces it.
   const activeGroupMedia = useMemo(() => {
     const MEDIA_TYPES = ['image', 'youtube', 'svg'];
 
-    // Walk groups 0..currentGroupIndex to find the latest persistent media set
-    let persistentMedia = [];
-    for (let i = 0; i <= currentGroupIndex; i++) {
+    // Current group's own media — if present, it replaces any persistent media
+    const currentMedia = activeGroupAll.filter(s => MEDIA_TYPES.includes(s.content_type));
+    console.log('[MediaDebug] group', currentGroupIndex, 'allSections:', activeGroupAll.map(s => s.content_type), 'media:', currentMedia.map(s => ({ type: s.content_type, id: s.id })));
+    if (currentMedia.length > 0) {
+      // Only show the first media item (never multiple at once)
+      return [currentMedia[0]];
+    }
+
+    // No media in current group — walk backwards to find the latest persistent media
+    for (let i = currentGroupIndex - 1; i >= 0; i--) {
       const group = allGroups[i] || [];
       const persistentInGroup = group.filter(
         s => MEDIA_TYPES.includes(s.content_type) && s.content?.persist
       );
       if (persistentInGroup.length > 0) {
-        persistentMedia = persistentInGroup;
+        return [persistentInGroup[persistentInGroup.length - 1]];
       }
+      // If this group had non-persistent media, stop looking further back
+      const anyMedia = group.some(s => MEDIA_TYPES.includes(s.content_type));
+      if (anyMedia) break;
     }
 
-    // Current group's own media (persistent or not)
-    const currentMedia = activeGroupAll.filter(s => MEDIA_TYPES.includes(s.content_type));
-
-    // Merge: persistent first, then current (excluding duplicates)
-    const currentIds = new Set(currentMedia.map(s => s.id));
-    const carried = persistentMedia.filter(s => !currentIds.has(s.id));
-
-    return [...carried, ...currentMedia];
+    return [];
   }, [activeGroupAll, allGroups, currentGroupIndex]);
 
   // Section number of the H2 heading for the current group (for feedback key)
@@ -251,10 +364,10 @@ const LearningHubV2 = () => {
   }, [activeGroup]);
 
   // Effective media: empty during scored questions, otherwise the active group's media
-  const effectiveMedia = showingScoredQuestion ? [] : activeGroupMedia;
-  const effectiveMediaKey = showingScoredQuestion ? '' : activeGroupMedia.map(s => s.id).join('|');
+  const effectiveMedia = showingScoredQuestion || showLessonSummary ? [] : activeGroupMedia;
+  const effectiveMediaKey = showingScoredQuestion || showLessonSummary ? '' : activeGroupMedia.map(s => s.id).join('|');
 
-  // Media crossfade: fade out old media, then fade in new media (300ms each)
+  // Media crossfade: fade out old media, then fade in new media (250ms each)
   const [displayedMedia, setDisplayedMedia] = useState(effectiveMedia);
   const [mediaFadePhase, setMediaFadePhase] = useState('visible'); // 'visible' | 'fading-out' | 'fading-in'
   const mediaKeyRef = useRef(effectiveMediaKey);
@@ -282,13 +395,20 @@ const LearningHubV2 = () => {
       const next = pendingMediaRef.current;
       setDisplayedMedia(next);
       setMediaFadePhase('visible');
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(fadeOutTimer);
   }, [effectiveMediaKey]);
-  const targetProgress = totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : totalGroups === 1 ? 100 : 0;
+  const targetProgress = showLessonSummary
+    ? 100
+    : totalGroups > 1 ? ((currentGroupIndex + 1) / totalGroups) * 100 : 0;
   const [lessonProgress, setLessonProgress] = useState(0);
   const progressAnimatedRef = useRef(false);
+
+  // Check if current group has a user question — used to hide suggested question early
+  const groupHasUserQuestion = useMemo(() => {
+    return activeGroupAll.some(s => s.user_question?.trim());
+  }, [activeGroupAll]);
 
   // Get suggested question — persists from parent H2 across H3 sub-sections
   const suggestedQuestion = useMemo(() => {
@@ -354,7 +474,7 @@ const LearningHubV2 = () => {
   const [pendingUserQuestion, setPendingUserQuestion] = useState(null);
   const [pendingUserQuestionMeta, setPendingUserQuestionMeta] = useState(null);
   const userQuestionDisplayText = pendingUserQuestion
-    ? pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || 'there')
+    ? pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || '').replace(/\s+([,.])/g, '$1').replace(/\s{2,}/g, ' ').trim().replace(/^[,.\s]+/, '').replace(/^./, c => c.toUpperCase())
     : '';
   const { revealedText: userQuestionRevealed, isComplete: userQuestionTypingDone } = useTypewriter(
     userQuestionDisplayText,
@@ -362,6 +482,19 @@ const LearningHubV2 = () => {
   );
 
   const handleChatSubmit = useCallback(async (text) => {
+    // Scored intro phase — treat any input as "yes, proceed"
+    if (showingScoredQuestion && scoredIntroPhase && scoredIntroDoneRef.current) {
+      setChatInput('');
+      savedRangeRef.current = null;
+      window.getSelection()?.removeAllRanges();
+      setScoredIntroFading(true);
+      setTimeout(() => {
+        setScoredIntroPhase(false);
+        setScoredIntroFading(false);
+        userScrolledUpRef.current = false;
+      }, 200);
+      return;
+    }
     // Scored question mode — use /api/score-answer instead of regular chat
     if (showingScoredQuestion && !scoredIntroPhase) {
       const userMessage = text.trim();
@@ -386,6 +519,13 @@ const LearningHubV2 = () => {
           answerText: 'skip',
           feedback: bypassResult.feedback,
         }).catch(() => {});
+        return;
+      }
+
+      // Second attempt — skip API feedback, go straight to revisit message
+      if (scoredAttemptCountRef.current >= 1) {
+        addMessagePair(userMessage, '');
+        setScoredResult({ score: 0, feedback: '', passed: false });
         return;
       }
 
@@ -424,15 +564,21 @@ const LearningHubV2 = () => {
     window.getSelection()?.removeAllRanges();
   }, [buildLessonContext, sendMessage, sendScoredMessage, addMessagePair, pendingUserQuestion, chatMessages.length, showingScoredQuestion, scoredIntroPhase, scoredQuestionPool, scoredQuestionIndex, scoredSectionContent, user?.id, user?.role, userCourseId, currentModule, currentLesson, scoredSectionNumber]);
 
-  // If current group starts with H3, find the parent H2 to display above it
-  const parentH2 = useMemo(() => {
-    const firstSection = activeGroup[0];
-    if (!firstSection) return null;
-    const level = firstSection.content?.level || 2;
-    if (firstSection.content_type !== 'heading' || level === 2) return null;
-    // Look backwards through previous groups for the most recent H2
+  // Find parent H2 and H3 headings to persist across paragraph-only screens
+  const hasOwnH2 = activeGroup?.some(s => s.content_type === 'heading' && (s.content?.level || 2) === 2) || false;
+  const hasOwnH3 = activeGroup?.some(s => s.content_type === 'heading' && s.content?.level === 3) || false;
+
+  // Resolve the active H2 — either from this group or inherited from a previous one
+  const persistentH2 = useMemo(() => {
+    // Check current group first
+    if (hasOwnH2) {
+      const own = activeGroup?.find(s => s.content_type === 'heading' && (s.content?.level || 2) === 2);
+      if (own) return own;
+    }
+    // Walk backwards
     for (let i = currentGroupIndex - 1; i >= 0; i--) {
       const group = allGroups[i];
+      if (!group?.length) continue;
       for (let j = group.length - 1; j >= 0; j--) {
         if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
           return group[j];
@@ -440,10 +586,38 @@ const LearningHubV2 = () => {
       }
     }
     return null;
-  }, [allGroups, currentGroupIndex, activeGroup]);
+  }, [allGroups, activeGroup, currentGroupIndex, hasOwnH2]);
+
+
+  // Resolve the active H3 — either from this group or inherited (scoped within current H2)
+  const persistentH3 = useMemo(() => {
+    // If this group has a new H2 (new section), no inherited H3
+    if (hasOwnH2 && !hasOwnH3) return null;
+    // Check current group first
+    if (hasOwnH3) {
+      const own = activeGroup?.find(s => s.content_type === 'heading' && s.content?.level === 3);
+      if (own) return own;
+    }
+    // Walk backwards — stop at H2 boundary
+    for (let i = currentGroupIndex - 1; i >= 0; i--) {
+      const group = allGroups[i];
+      if (!group?.length) continue;
+      for (let j = group.length - 1; j >= 0; j--) {
+        if (group[j].content_type === 'heading' && group[j].content?.level === 3) {
+          return group[j];
+        }
+        if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
+          return null;
+        }
+      }
+    }
+    return null;
+  }, [allGroups, activeGroup, currentGroupIndex, hasOwnH3, hasOwnH2]);
+
 
   // Get the group index of the current H2 (for revisiting after failed scored question)
   const currentH2GroupIndex = useMemo(() => {
+    if (!allGroups.length) return 0;
     const h2InGroup = activeGroup.find(
       s => s.content_type === 'heading' && (s.content?.level || 2) === 2
     );
@@ -451,6 +625,7 @@ const LearningHubV2 = () => {
     // Walk backwards to find the parent H2's group
     for (let i = currentGroupIndex - 1; i >= 0; i--) {
       const group = allGroups[i];
+      if (!group) continue;
       for (let j = group.length - 1; j >= 0; j--) {
         if (group[j].content_type === 'heading' && (group[j].content?.level || 2) === 2) {
           return i;
@@ -462,17 +637,13 @@ const LearningHubV2 = () => {
 
   // Get H2 section name for scored question intro
   const currentH2Name = useMemo(() => {
-    const h2InGroup = activeGroup.find(
-      s => s.content_type === 'heading' && (s.content?.level || 2) === 2
-    );
-    if (h2InGroup) return h2InGroup.content?.text || h2InGroup.title || '';
-    if (parentH2) return parentH2.content?.text || parentH2.title || '';
+    if (persistentH2) return persistentH2.content?.text || persistentH2.title || '';
     return '';
-  }, [activeGroup, parentH2]);
+  }, [persistentH2]);
 
   // Scored question intro text — persists across both phases so it stays visible when question appears
   const scoredIntroFullText = showingScoredQuestion
-    ? `${firstName || 'there'}, I'll now ask you a question based on the content in ${currentH2Name || 'this section'} that we've reviewed together. You'll need to answer it correctly to continue. Therefore, ensure your answer is thorough and you answer the question asked.\nReady to proceed?`
+    ? `${firstName ? `${firstName}, I` : 'I'}'ll now ask you a question based on the content in ${currentH2Name || 'this section'} that we've reviewed together. You'll need to answer it correctly to continue. Therefore, ensure your answer is thorough and you answer the question asked.\nReady to proceed?`
     : '';
   // Only animate during intro phase; once past intro, text is rendered statically
   const scoredIntroAnimateText = scoredIntroPhase ? scoredIntroFullText : '';
@@ -480,6 +651,8 @@ const LearningHubV2 = () => {
     scoredIntroAnimateText,
     { speed: 38, delay: 1200, enabled: !!scoredIntroAnimateText }
   );
+  const scoredIntroDoneRef = useRef(false);
+  scoredIntroDoneRef.current = scoredIntroDone;
 
   // Scored question text with typewriter animation (after intro phase)
   const scoredQuestionText = showingScoredQuestion && !scoredIntroPhase
@@ -570,8 +743,9 @@ const LearningHubV2 = () => {
           setScoredIntroPhase(true);
           setScoredQuestionPool(questions);
           setScoredQuestionIndex(Math.floor(Math.random() * questions.length));
-          setScoredAttemptCount(0);
+          setScoredAttemptCount(0); scoredAttemptCountRef.current = 0;
           setScoredResult(null);
+          setScoredFeedbackRating(null);
           setScoredSectionContent(buildGroupContentUpTo(prev));
           setScoredSectionNumber(section.section_number);
           resetChat();
@@ -715,19 +889,22 @@ const LearningHubV2 = () => {
     setRestoringProgress(true);
 
     if (user?.id && userCourseId) {
-      getUserProgress(user.id, userCourseId).then((progress) => {
+      getUserProgress(user.id, userCourseId).then(async (progress) => {
         if (
           progress &&
           progress.current_module === currentModule &&
           progress.current_lesson === currentLesson &&
           progress.current_section > 0
         ) {
+          setSavedProgressSection(progress.current_section);
           setCurrentGroupIndex(progress.current_section);
         } else {
+          setSavedProgressSection(null);
           setCurrentGroupIndex(0);
         }
         setRestoringProgress(false);
       }).catch(() => {
+        setSavedProgressSection(null);
         setCurrentGroupIndex(0);
         setRestoringProgress(false);
       });
@@ -745,6 +922,20 @@ const LearningHubV2 = () => {
         .catch(() => setSectionFeedback({}));
     }
   }, [currentModule, currentLesson, user?.id, userCourseId]);
+
+  // When allGroups loads and saved progress is beyond the last group, show lesson summary
+  useEffect(() => {
+    if (savedProgressSection != null && allGroups.length > 0 && savedProgressSection >= allGroups.length) {
+      setCurrentGroupIndex(allGroups.length - 1);
+      if (user?.id && userCourseId) {
+        getLessonSectionScores(user.id, userCourseId, currentModule, currentLesson)
+          .then(setLessonSectionScores)
+          .catch(err => console.error('Error fetching section scores:', err));
+      }
+      setShowLessonSummary(true);
+      setSavedProgressSection(null);
+    }
+  }, [savedProgressSection, allGroups.length, user?.id, userCourseId, currentModule, currentLesson]);
 
   const handleSectionFeedback = useCallback((rating) => {
     const sn = currentSectionNumber;
@@ -774,6 +965,17 @@ const LearningHubV2 = () => {
       userMessage: userMsg, assistantMessage: assistantMsg, rating: newRating,
     });
   }, [chatFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
+
+  const handleScoredFeedback = useCallback((rating, assistantMsg, userMsg) => {
+    const newRating = scoredFeedbackRating === rating ? null : rating;
+    setScoredFeedbackRating(newRating);
+    submitChatFeedback({
+      userId: user.id, courseId: userCourseId,
+      moduleNumber: currentModule, lessonNumber: currentLesson,
+      sectionNumber: currentSectionNumber,
+      userMessage: userMsg, assistantMessage: assistantMsg, rating: newRating,
+    });
+  }, [scoredFeedbackRating, user?.id, userCourseId, currentModule, currentLesson, currentSectionNumber]);
 
   // Handle Continue — advance to next group
   // Shared logic for transitioning between section groups with a fade-out
@@ -832,9 +1034,11 @@ const LearningHubV2 = () => {
       } catch (err) {
         console.error('Error fetching section scores:', err);
       }
+      // Save progress beyond last group so refresh goes straight to summary
+      saveUserProgress(user.id, userCourseId, currentModule, currentLesson, allGroups.length).catch(() => {});
     }
     setShowLessonSummary(true);
-  }, [user?.id, userCourseId, currentModule, currentLesson]);
+  }, [user?.id, userCourseId, currentModule, currentLesson, allGroups.length]);
 
   const handleUserQuestionContinue = useCallback(() => {
     setChatInput('');
@@ -871,9 +1075,12 @@ const LearningHubV2 = () => {
 
   // Scored question intro → show the actual question underneath
   const handleScoredIntroComplete = useCallback(() => {
-    setScoredIntroPhase(false);
-    userScrolledUpRef.current = false;
-    // Focus chat input after question finishes typing — handled via effect
+    setScoredIntroFading(true);
+    setTimeout(() => {
+      setScoredIntroPhase(false);
+      setScoredIntroFading(false);
+      userScrolledUpRef.current = false;
+    }, 200);
   }, []);
 
   // Scored question — pass (advance past the block)
@@ -913,12 +1120,15 @@ const LearningHubV2 = () => {
   }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
 
   // Scored question — retry same question (auto-triggered after first failed attempt)
+  // Keep chat history so previous feedback stays visible; just clear scoredResult to allow re-submission
   const handleScoredQuestionRetry = useCallback(() => {
-    setScoredAttemptCount((prev) => prev + 1);
+    setScoredAttemptCount((prev) => {
+      scoredAttemptCountRef.current = prev + 1;
+      return prev + 1;
+    });
     setScoredResult(null);
-    resetChat();
     userScrolledUpRef.current = false;
-  }, [resetChat]);
+  }, []);
 
   // Scored question — revisit section (after second failed attempt)
   const handleScoredQuestionRevisit = useCallback(() => {
@@ -999,7 +1209,7 @@ const LearningHubV2 = () => {
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
-          <div className="px-10" style={{ paddingTop: '30px', paddingBottom: '5px' }}>
+          <div ref={leftHeaderRef} className="px-10" style={{ paddingTop: '30px', paddingBottom: '5px' }}>
             <div className="max-w-2xl">
               <a href="/progress" style={{ marginBottom: '20px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
                 {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -1106,12 +1316,27 @@ const LearningHubV2 = () => {
               className="h-full overflow-y-auto hide-scrollbar"
               style={{ paddingLeft: '40px', paddingRight: '70px' }}
             >
-            <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }} style={{ opacity: contentFading ? 0 : 1, transition: 'opacity 0.3s ease-out' }}>
+            {/* Persistent H2 — always rendered outside fade container so it never flickers */}
+            {!restoringProgress && !showLessonSummary && !showingScoredQuestion && persistentH2 && (
+              <div key={persistentH2.id || persistentH2.content?.text} className="mb-3" style={{ marginTop: '10px' }}>
+                <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                  {persistentH2.content?.text || persistentH2.title}
+                </h2>
+              </div>
+            )}
+            {!restoringProgress && !showLessonSummary && !showingScoredQuestion && persistentH3 && (
+              <div key={persistentH3.id || persistentH3.content?.text}>
+                <h3 className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+                  {persistentH3.content?.text || persistentH3.title}
+                </h3>
+              </div>
+            )}
+            <div ref={(el) => { contentInnerRef.current = el; contentContainerRef.current = el; }} style={{ opacity: contentFading ? 0 : 1, transition: 'opacity 0.25s ease-out' }}>
               {restoringProgress ? null : showLessonSummary ? (
                 <div style={{ paddingTop: 13 }}>
                   <LessonSummary
                     sectionScores={lessonSectionScores}
-                    sectionHeadings={sectionHeadings}
+                    scoredQuestionHeadings={scoredQuestionHeadings}
                     lessonTitle={lessonName}
                     firstName={firstName}
                     onEndLesson={handleEndLesson}
@@ -1140,7 +1365,7 @@ const LearningHubV2 = () => {
                           const text = scoredIntroRevealed || '';
                           const lines = text.split('\n');
                           return lines.map((line, li) => (
-                            <p key={li} className={li > 0 ? 'mt-3' : ''}>
+                            <p key={li} className={li > 0 ? 'mt-3' : ''} style={li > 0 && scoredIntroFading ? { opacity: 0, transition: 'opacity 0.2s ease-out' } : li > 0 ? { transition: 'opacity 0.2s ease-out' } : undefined}>
                               {line}
                               {li === lines.length - 1 && !scoredIntroDone && scoredIntroRevealed && (
                                 <span
@@ -1228,14 +1453,13 @@ const LearningHubV2 = () => {
                 <>
                   {/* Render sections sequentially — each starts typing after the previous finishes */}
                   <div key={`${currentGroupIndex}-${resetKey}`}>
-                    {parentH2 && (
-                      <div className="mb-3" style={{ marginTop: '10px' }}>
-                        <h2 className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
-                          {parentH2.content?.text || parentH2.title}
-                        </h2>
-                      </div>
-                    )}
-                    {activeGroup.slice(0, completedSections + 1).map((section, sIdx) => (
+                    {activeGroup.slice(0, completedSections + 1).map((section, sIdx) => {
+                      // Skip H2/H3 headings — they're rendered persistently outside the fade container
+                      if (section.content_type === 'heading' && ((section.content?.level || 2) === 2 || section.content?.level === 3)) {
+                        return <div key={section.id || sIdx} style={{ display: 'none' }}><ContentRenderer section={section} sectionIdx={sIdx} isActive={sIdx === completedSections} onComplete={handleSectionComplete} skipAnimation /></div>;
+                      }
+                      const isFirstVisible = !activeGroup.slice(0, sIdx).some(s => s.content_type !== 'heading' || ((s.content?.level || 2) !== 2 && s.content?.level !== 3));
+                      return (
                       <div key={section.id || sIdx}>
                         <ContentRenderer
                           section={section}
@@ -1245,10 +1469,11 @@ const LearningHubV2 = () => {
                           onComplete={handleSectionComplete}
                           narrationActive={narrationActive}
                           wordIndexOffset={sectionWordOffsets[sIdx] || 0}
-                          extraDelay={sIdx === 0 && !progressBarDone ? 1150 : 0}
+                          extraDelay={isFirstVisible && !progressBarDone ? 3000 : 0}
                         />
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* User question — shown after a paragraph section finishes typing, gates next section */}
@@ -1374,7 +1599,13 @@ const LearningHubV2 = () => {
                 {/* Chat messages — fade in at the same position */}
                 {chatMessages.length > 0 && (
                   <div>
-                    {chatMessages.map((msg, idx) => (
+                    {chatMessages
+                    .filter((msg, idx) => {
+                      // Hide the last assistant message on second scored-question failure (revisit text replaces it)
+                      if (scoredQuestionAnswered && !scoredResult?.passed && scoredAttemptCount >= 1 && msg.type === 'assistant' && idx === chatMessages.length - 1) return false;
+                      return true;
+                    })
+                    .map((msg, idx) => (
                       <div
                         key={`${idx}-${msg.text?.substring(0, 20)}`}
                         style={{
@@ -1414,7 +1645,7 @@ const LearningHubV2 = () => {
                 {freeFormChatDone && !showingScoredQuestion && (
                   <div
                     className="flex items-center gap-2 mt-3"
-                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                    style={{ animation: 'chatFadeIn 0.25s ease-out' }}
                   >
                     {isLastGroup ? (
                       <button
@@ -1467,7 +1698,7 @@ const LearningHubV2 = () => {
                 {userQuestionAnswered && !showingScoredQuestion && (
                   <div
                     className="flex items-center gap-2 mt-3"
-                    style={{ animation: 'chatFadeIn 0.3s ease-out' }}
+                    style={{ animation: 'chatFadeIn 0.25s ease-out' }}
                   >
                     <button
                       onClick={handleUserQuestionContinue}
@@ -1509,8 +1740,8 @@ const LearningHubV2 = () => {
                   <div
                     className="flex items-center gap-2 mt-3"
                     style={{
-                      opacity: showScoredIntroButton ? 1 : 0,
-                      transition: 'opacity 0.25s ease-in',
+                      opacity: scoredIntroFading ? 0 : (showScoredIntroButton ? 1 : 0),
+                      transition: scoredIntroFading ? 'opacity 0.2s ease-out' : 'opacity 0.25s ease-in',
                     }}
                   >
                     <button
@@ -1558,31 +1789,35 @@ const LearningHubV2 = () => {
                         >
                           Continue
                         </button>
+                        {(() => {
+                          const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
+                          const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
+                          return lastAssistant ? (
+                            <ThumbsFeedback
+                              rating={scoredFeedbackRating}
+                              onRate={(rating) => handleScoredFeedback(rating, lastAssistant.text, lastUser?.text || '')}
+                            />
+                          ) : null;
+                        })()}
                       </div>
                     ) : scoredAttemptCount === 0 ? (
-                      // First failed attempt — auto-retry after a short pause
-                      <AutoRetry onRetry={handleScoredQuestionRetry} />
-                    ) : (
-                      // Second failed attempt — revisit section
-                      <div>
-                        <p
-                          className="text-base font-light leading-relaxed text-black mb-3"
-                          style={{ letterSpacing: '-0.01em' }}
-                        >
-                          Your answer doesn't quite cover what we covered in <span className="font-medium">{currentH2Name || 'this section'}</span>. To continue in the lesson, we'll need to revisit the content in this section first. Ask me any questions along the way, and we'll try again afterwards.
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={handleScoredQuestionRevisit}
-                            className="px-4 py-1.5 text-white transition-colors cursor-pointer"
-                            style={{ borderRadius: 6, backgroundColor: '#EF0B72', fontSize: '0.85rem', fontWeight: 500, letterSpacing: '-0.01em' }}
-                            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 0 6px rgba(103,103,103,0.35)'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
-                          >
-                            Continue
-                          </button>
-                        </div>
+                      // First failed attempt — auto-retry after a short pause, thumbs shown alongside
+                      <div className="flex items-center gap-2">
+                        <AutoRetry onRetry={handleScoredQuestionRetry} />
+                        {(() => {
+                          const lastAssistant = [...chatMessages].reverse().find(m => m.type === 'assistant' && m.isComplete);
+                          const lastUser = lastAssistant ? chatMessages[chatMessages.indexOf(lastAssistant) - 1] : null;
+                          return lastAssistant ? (
+                            <ThumbsFeedback
+                              rating={scoredFeedbackRating}
+                              onRate={(rating) => handleScoredFeedback(rating, lastAssistant.text, lastUser?.text || '')}
+                            />
+                          ) : null;
+                        })()}
                       </div>
+                    ) : (
+                      // Second failed attempt — revisit section (typed out with animation)
+                      <RevisitMessage sectionName={currentH2Name} onRevisit={handleScoredQuestionRevisit} />
                     )}
                   </div>
                 )}
@@ -1634,11 +1869,12 @@ const LearningHubV2 = () => {
               </>}
             </div>
             {/* Bottom spacer — smaller when suggested question takes up space below */}
-            <div style={{ height: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion ? '8px' : '40px' }} />
+            <div style={{ height: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary ? '8px' : '40px' }} />
           </div>
           </div>
 
           {/* White gradient fade above input */}
+          {!showLessonSummary && (
           <div className="absolute left-0 right-0 pointer-events-none" style={{ bottom: '64px', height: '60px', zIndex: 5 }}>
             <div className="absolute inset-0" style={{
               backdropFilter: 'blur(4px)',
@@ -1648,15 +1884,17 @@ const LearningHubV2 = () => {
             }} />
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/70 to-white" />
           </div>
+          )}
 
           {/* Chat input pinned at bottom */}
+          {!showLessonSummary && (
           <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
             <div
               style={{
-                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
+                opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
-                height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion ? 0 : 'auto',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
+                height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion || pendingUserQuestion || groupHasUserQuestion || showLessonSummary ? 0 : 'auto',
                 overflow: 'hidden',
               }}
             >
@@ -1682,21 +1920,27 @@ const LearningHubV2 = () => {
               onSubmit={handleChatSubmit}
             />
           </div>
+          )}
         </div>
 
         {/* Right column — media panel */}
-        <div className="flex-[2] overflow-y-auto p-8 flex flex-col items-center justify-center" style={{ backgroundColor: '#F0F0F0' }}>
-          <div
-            key={displayedMedia.map(s => s.id).join('|')}
-            className="w-full"
-            style={{
-              opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
-              transition: 'opacity 300ms ease-out',
-            }}
-          >
-            <MediaPanel sections={displayedMedia} />
-          </div>
-        </div>
+        {(() => {
+          const svgOnly = displayedMedia.every(s => s.content_type !== 'youtube');
+          return (
+            <div className="flex-[2] overflow-y-auto flex flex-col items-center" style={{ backgroundColor: '#F0F0F0', paddingTop: svgOnly ? '32px' : (leftHeaderHeight ? `${leftHeaderHeight + 9}px` : '32px'), paddingLeft: '32px', paddingRight: '32px', paddingBottom: '32px' }}>
+              <div
+                key={displayedMedia.map(s => s.id).join('|')}
+                className={`w-full ${svgOnly ? 'flex-1 flex flex-col justify-center' : ''}`}
+                style={{
+                  opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
+                  transition: 'opacity 250ms ease-out',
+                }}
+              >
+                <MediaPanel sections={displayedMedia} />
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Footer */}

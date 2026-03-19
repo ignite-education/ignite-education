@@ -400,7 +400,7 @@ const useProgressData = () => {
             monday.setHours(0, 0, 0, 0);
             const weekCount = completedLessonsData.filter(c => c.completed_at && new Date(c.completed_at) >= monday).length;
             if (weekCount >= 1) {
-              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} completed`, value: 'this week', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Books.png' });
+              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} done`, value: 'this week', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Books.png' });
             }
 
             // Percentile: from pre-computed table

@@ -7,7 +7,7 @@ import SectionList from './SectionList';
 // Image and YouTube sections are handled by MediaPanel (right column).
 const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false, extraDelay = 0 }) => {
   // Add a 750ms gap after a heading before the next section starts typing
-  const startDelay = (skipAnimation ? 0 : (prevSectionType === 'heading' || sectionIdx === 0) ? 1200 : 0) + extraDelay;
+  const startDelay = (skipAnimation ? 0 : (prevSectionType === 'heading' || sectionIdx === 0) ? 700 : 0) + extraDelay;
   // Auto-complete non-animated section types immediately
   useEffect(() => {
     if (isActive && section.content_type !== 'heading' && section.content_type !== 'paragraph') {
