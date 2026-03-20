@@ -47,19 +47,19 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
 
             {/* Description */}
             <p
-              className="text-black text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light course-description px-4 md:px-0 mb-2 md:mb-[30px]"
+              className="text-black text-[1.1rem] md:text-lg leading-normal md:leading-relaxed font-light course-description px-1 md:px-0 mb-2 md:mb-[30px]"
               style={{ letterSpacing: '-0.02em', textWrap: 'balance' }}
             >
               {getTwoSentences(course.description)}
             </p>
 
             {/* Course Benefits */}
-            <div className="mb-8 grid grid-cols-3 gap-4">
+            <div className="mb-8 md:mb-4 grid grid-cols-3 gap-4">
               <div className="flex flex-col items-center text-center">
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
-                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
+                <span className="text-sm md:text-base text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Certificate upon<br />completion
                 </span>
               </div>
@@ -67,7 +67,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
-                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
+                <span className="text-sm md:text-base text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Built by<br />industry experts
                 </span>
               </div>
@@ -75,7 +75,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 <div className="mb-2">
                   <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" className="w-[85px] h-[85px] md:w-[100px] md:h-[100px] object-contain" />
                 </div>
-                <span className="text-sm text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
+                <span className="text-sm md:text-base text-black leading-tight font-medium" style={{ letterSpacing: '-0.02em' }}>
                   Self-paced<br />learning
                 </span>
               </div>

@@ -179,7 +179,7 @@ export default function TestimonialsSection() {
               fontSize: isMobile ? 'clamp(2.1rem, 5vw, 3rem)' : '2.5rem',
               lineHeight: '1.2',
               minHeight: isMobile ? '10rem' : '7.5rem',
-              marginTop: isMobile ? '55px' : 0,
+              marginTop: isMobile ? '25px' : 0,
               marginBottom: '1.5rem'
             }}
           >

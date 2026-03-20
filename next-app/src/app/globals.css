@@ -209,6 +209,16 @@ body {
   contain: layout style paint;
 }
 
+/* Course card hover - smooth grow */
+.auth-course-card-inner {
+  transform: translateZ(0);
+  transition: transform 500ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 500ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.auth-course-card-inner:hover {
+  transform: translateZ(0) scale(1.015);
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
 /* Section 4 - Learning Model: clear the overlapping image from Section 3 */
 @media (min-width: 768px) {
   .auth-section-4 {

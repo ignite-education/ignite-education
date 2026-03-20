@@ -54,7 +54,7 @@ export default function LearningModelSection() {
     'Building a smarter, \nmore personalised era of education.',
     {
       charDelay: 75,
-      startDelay: isMobile ? 300 : 1000,
+      startDelay: isMobile ? 300 : 0,
       pausePoints: [{ after: 19, duration: 700 }],
       enabled: typingEnabled
     }

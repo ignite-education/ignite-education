@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import useTypingAnimation from '@/hooks/useTypingAnimation'
-import CourseModal from './CourseModal'
 
 interface Lesson {
   name: string
@@ -38,7 +37,7 @@ interface CoursesSectionProps {
 }
 
 // Course Card for Section 3 - 2x2 grid style
-function CourseCard({ course, onClick }: { course: Course; onClick?: () => void }) {
+function CourseCard({ course, onClick, isMobile }: { course: Course; onClick?: () => void; isMobile?: boolean }) {
   // Get first sentence of description
   const getFirstSentence = (desc: string) => {
     const firstSentenceEnd = desc.indexOf('. ')
@@ -52,18 +51,18 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
       onClick={onClick}
     >
       <div
-        className="absolute inset-0 text-black rounded-[8px] flex flex-col justify-start aspect-square cursor-pointer auth-course-card-inner hover:scale-[1.015] hover:shadow-xl"
-        style={{ backgroundColor: '#F6F6F6', transformOrigin: 'center', zIndex: 1, transition: 'transform 300ms ease-in-out, box-shadow 300ms ease-in-out', transform: 'translateZ(0)' }}
+        className="absolute inset-0 text-black rounded-[8px] flex flex-col justify-start cursor-pointer auth-course-card-inner"
+        style={{ backgroundColor: '#F6F6F6', transformOrigin: 'center', zIndex: 1, overflow: 'hidden' }}
       >
         <div
-          className="flex flex-col h-full auth-course-card-content"
+          className="flex flex-col auth-course-card-content"
           style={{
             paddingTop: '13px',
             paddingLeft: '13px',
             paddingRight: '13px',
             paddingBottom: '13px',
             backgroundColor: '#F6F6F6',
-            borderRadius: 'inherit'
+            borderRadius: 'inherit',
           }}
         >
           <h4
@@ -81,10 +80,10 @@ function CourseCard({ course, onClick }: { course: Course; onClick?: () => void 
             </p>
           )}
           {course.module_names && (
-            <div className="pb-8 auth-course-card-modules">
+            <div className="auth-course-card-modules">
               <p className="text-black font-semibold mb-1" style={{ fontSize: '0.85rem' }}>Modules:</p>
               <ul className="text-black space-y-0" style={{ fontSize: '0.85rem' }}>
-                {course.module_names.split(', ').slice(0, (course.title || course.name).length > 25 ? 4 : 5).map((moduleName, idx) => (
+                {course.module_names.split(', ').slice(0, isMobile ? ((course.title || course.name).length > 20 ? 4 : 5) : ((course.title || course.name).length > 20 ? 3 : 4)).map((moduleName, idx) => (
                   <li key={idx} className="flex items-start">
                     <span className="mr-1.5">•</span>
                     <span className="line-clamp-1">{moduleName}</span>
@@ -118,7 +117,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
   const scrollRef = useRef<HTMLDivElement>(null)
   const sectionRef = useRef<HTMLElement>(null)
   const [typingEnabled, setTypingEnabled] = useState(false)
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null)
+
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
@@ -132,7 +131,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     'The best courses.\nFor the best students.',
     {
       charDelay: 75,
-      startDelay: 1000,
+      startDelay: 0,
       pausePoints: [{ after: 17, duration: 1000 }],
       enabled: typingEnabled
     }
@@ -343,13 +342,10 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                           >
                             <CourseCard
                               course={course}
+                              isMobile={isMobile}
                               onClick={() => {
-                                if (isMobile) {
-                                  const slug = course.name?.toLowerCase().replace(/\s+/g, '-')
-                                  window.open(`/courses/${slug}`, '_blank')
-                                } else {
-                                  setSelectedCourse(course)
-                                }
+                                const slug = course.name?.toLowerCase().replace(/\s+/g, '-')
+                                window.open(`/courses/${slug}`, '_blank')
                               }}
                             />
                           </div>
@@ -413,13 +409,6 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
       </div>
     </section>
 
-    {selectedCourse && (
-      <CourseModal
-        course={selectedCourse}
-        coaches={coaches[selectedCourse.name] || []}
-        onClose={() => setSelectedCourse(null)}
-      />
-    )}
   </>
   )
 }

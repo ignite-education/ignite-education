@@ -78,7 +78,7 @@ export async function GET(request: Request) {
           return NextResponse.redirect(`${origin}/welcome`)
         }
 
-        const destination = data?.enrolled_course ? '/progress' : '/courses'
+        const destination = next !== '/courses' ? next : (data?.enrolled_course ? '/progress' : '/courses')
         return NextResponse.redirect(`${origin}${destination}`)
       }
 

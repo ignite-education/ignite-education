@@ -154,7 +154,7 @@ export default function EducationSection() {
                   opacity: visiblePromises.has(idx) ? 1 : 0,
                   transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
                   transition: 'opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1), transform 3.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: !isMobile && visiblePromises.has(idx) ? `${idx * 1.5}s` : '0s',
+                  transitionDelay: '0s',
                 }}
               >
                 <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
