@@ -349,6 +349,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const [activeConfetti, setActiveConfetti] = useState({});
   const { user: authUser, updateProfile } = useAuth();
   const confettiShown = authUser?.user_metadata?.confetti_shown;
+  const confettiShownRef = useRef(confettiShown);
+  confettiShownRef.current = confettiShown;
   const confettiFiredRef = useRef(new Set());
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
@@ -413,7 +415,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   useEffect(() => {
     if (!userId) return;
 
-    const shown = confettiShown || {};
+    const shown = confettiShownRef.current || {};
     const startConfetti = () => {
       const tags = [
         { key: 'joined', active: !!formatJoinDate(joinedAt) },
@@ -455,7 +457,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
     }
 
     return () => timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
-  }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole, confettiShown]);
+  }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
 
   useEffect(() => {
     if (lottieData && lottieRef.current) {
