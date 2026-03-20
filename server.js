@@ -4870,9 +4870,15 @@ app.delete('/api/users/:userId', verifyAdmin, async (req, res) => {
     // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
     const nonCascadingTables = [
       { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'question_results', column: 'user_id', isText: true },
       { table: 'section_feedback', column: 'user_id' },
       { table: 'chat_feedback', column: 'user_id' },
       { table: 'user_question_responses', column: 'user_id' },
+      { table: 'office_hours_sessions', column: 'student_id' },
+      { table: 'achievement_percentile_stats', column: 'user_id' },
+      { table: 'lesson_backups', column: 'created_by' },
+      { table: 'saved_courses', column: 'user_id' },
+      { table: 'saved_prompts', column: 'user_id' },
     ];
 
     for (const { table, column, isText } of nonCascadingTables) {
@@ -4950,9 +4956,15 @@ app.delete('/api/delete-account', verifyAuth, async (req, res) => {
     // Delete from tables that won't cascade (no FK or no ON DELETE CASCADE)
     const nonCascadingTables = [
       { table: 'section_question_scores', column: 'user_id', isText: true },
+      { table: 'question_results', column: 'user_id', isText: true },
       { table: 'section_feedback', column: 'user_id' },
       { table: 'chat_feedback', column: 'user_id' },
       { table: 'user_question_responses', column: 'user_id' },
+      { table: 'office_hours_sessions', column: 'student_id' },
+      { table: 'achievement_percentile_stats', column: 'user_id' },
+      { table: 'lesson_backups', column: 'created_by' },
+      { table: 'saved_courses', column: 'user_id' },
+      { table: 'saved_prompts', column: 'user_id' },
     ];
 
     for (const { table, column, isText } of nonCascadingTables) {
