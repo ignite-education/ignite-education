@@ -83,12 +83,12 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
         ) : (
           <Link href="/" className="inline-block">
             {/* Mobile: animated square icon — Lottie canvas is 600x600 with ~15% internal padding, so we overflow-clip it */}
-            <div className="md:hidden w-[35px] h-[35px] overflow-hidden">
+            <div className="md:hidden w-[33px] h-[33px] overflow-hidden">
               <Lottie
                 animationData={lottieData}
                 loop
                 autoplay
-                style={{ width: '50px', height: '50px', marginTop: '-8px', marginLeft: '-7px' }}
+                style={{ width: '47.5px', height: '47.5px', marginTop: '-7.5px', marginLeft: '-6.5px' }}
               />
             </div>
             {/* Desktop: text logo with clip-path transitions */}

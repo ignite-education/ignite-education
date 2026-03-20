@@ -38,7 +38,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
   }, [])
 
   return (
-    <section className="flex items-center justify-center bg-black" style={{ height: isMobile ? 'auto' : '100vh', minHeight: isMobile ? undefined : '500px', maxHeight: isMobile ? undefined : '800px', paddingTop: isMobile ? '2rem' : undefined, paddingBottom: isMobile ? '2rem' : undefined }}>
+    <section className="flex items-center justify-center bg-black" style={{ height: isMobile ? 'auto' : '100vh', minHeight: isMobile ? undefined : '500px', maxHeight: isMobile ? undefined : '800px', paddingTop: isMobile ? '55px' : undefined, paddingBottom: isMobile ? '2rem' : undefined }}>
       <div
         className="w-full text-white"
         style={{
@@ -108,7 +108,7 @@ export default function FAQSection({ faqs, posts = [] }: FAQSectionProps) {
           </div>
 
           {/* Blog Column */}
-          <div className={`flex flex-col justify-start ${isMobile ? '' : 'order-1'}`}>
+          <div className={`flex flex-col justify-start ${isMobile ? '' : 'order-1'}`} style={isMobile ? { marginTop: '23px' } : undefined}>
             <div className="w-full">
               <h3 className="font-bold text-white text-left text-3xl mb-4">
                 Latest from Ignite

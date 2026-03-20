@@ -62,7 +62,6 @@ export default function LearningModelSection() {
 
   useEffect(() => {
     if (!isMobile) return
-    if (!typingComplete) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -82,7 +81,7 @@ export default function LearningModelSection() {
     })
 
     return () => observer.disconnect()
-  }, [isMobile, typingComplete])
+  }, [isMobile])
 
   useEffect(() => {
     const target = isMobile ? titleRef.current : sectionRef.current
@@ -146,7 +145,7 @@ export default function LearningModelSection() {
           <h3
             ref={titleRef}
             className="font-bold text-white text-left auth-section-4-title"
-            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '0' : '1.5rem', marginTop: '2rem' }}
+            style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '0' : '1.5rem', marginTop: isMobile ? '55px' : '2rem' }}
           >
             {renderTypedTagline()}
           </h3>

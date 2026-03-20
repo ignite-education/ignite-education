@@ -259,7 +259,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
     <section
       ref={sectionRef}
       className="flex items-start justify-center px-8 md:px-10 relative auth-section-3"
-      style={{ background: 'white', overflow: 'visible', paddingTop: isMobile ? '2rem' : '3rem', paddingBottom: isMobile ? '2rem' : '3rem' }}
+      style={{ background: 'white', overflow: 'visible', paddingTop: isMobile ? '55px' : '3rem', paddingBottom: isMobile ? '2rem' : '3rem' }}
     >
       <div className="w-full text-white">
         {/* Two Column Layout */}

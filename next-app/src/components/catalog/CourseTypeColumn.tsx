@@ -90,15 +90,15 @@ export default function CourseTypeColumn({
               key={course.id || course.name}
               style={{
                 display: 'grid',
-                gridTemplateRows: isVisible ? '1fr' : '0fr',
-                opacity: isVisible ? 1 : 0,
-                marginBottom: isVisible ? '12px' : '0px',
+                gridTemplateRows: (useStagger || isVisible) ? '1fr' : '0fr',
+                opacity: useStagger ? undefined : (isVisible ? 1 : 0),
+                marginBottom: (useStagger || isVisible) ? '12px' : '0px',
                 transition: transitionsEnabled
                   ? 'grid-template-rows 300ms cubic-bezier(0.33, 1, 0.68, 1), opacity 250ms ease, margin-bottom 300ms cubic-bezier(0.33, 1, 0.68, 1)'
                   : 'none',
               }}
             >
-              <div style={{ overflow: 'hidden' }}>
+              <div style={{ overflow: useStagger ? 'visible' : 'hidden' }}>
                 <div
                   style={useStagger ? {
                     animation: 'fadeInUpSmall 0.6s ease-out forwards',

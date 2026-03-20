@@ -108,10 +108,8 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
   const filteredSubject = filterCourses(coursesByType.subject)
 
   const hasSearchQuery = searchQuery.trim().length > 0
-  const noResults = hasSearchQuery
-    && filteredSpecialism.length === 0
-    && filteredSkill.length === 0
-    && filteredSubject.length === 0
+  const totalFilteredResults = filteredSpecialism.length + filteredSkill.length + filteredSubject.length
+  const noResults = hasSearchQuery && totalFilteredResults <= 1
 
   const [isMobile, setIsMobile] = useState<boolean | null>(null) // null = pre-hydration
   useEffect(() => {
@@ -292,7 +290,7 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
       {showRequestModal && (
         <CourseRequestModal
           courseName={requestedQuery}
-          onClose={() => { setShowRequestModal(false); setSearchQuery('') }}
+          onClose={() => { setShowRequestModal(false); requestAnimationFrame(() => { setSearchQuery('') }) }}
           initialPhase={modalPhase}
           initialUserName={modalUserName}
         />
