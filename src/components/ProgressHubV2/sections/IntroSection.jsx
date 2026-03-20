@@ -349,7 +349,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const [activeConfetti, setActiveConfetti] = useState({});
   const { user: authUser, updateProfile } = useAuth();
   const confettiShown = authUser?.user_metadata?.confetti_shown;
-  const confettiFiredRef = useRef(false);
+  const confettiFiredRef = useRef(new Set());
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
   const animatedCount = useCountUp(communityCount);
@@ -411,7 +411,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
   // Confetti for all tags — fires once per tag per user, persisted in user_metadata
   useEffect(() => {
-    if (!userId || confettiFiredRef.current) return;
+    if (!userId) return;
 
     const shown = confettiShown || {};
     const startConfetti = () => {
@@ -426,8 +426,10 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       tags.forEach(({ key, active }) => {
         if (!active) return;
         if (shown[key]) return;
+        if (confettiFiredRef.current.has(key)) return;
 
         newlyShown.push(key);
+        confettiFiredRef.current.add(key);
         timers.push(setTimeout(() => {
           setActiveConfetti(prev => ({ ...prev, [key]: true }));
         }, 2000));
@@ -442,7 +444,6 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         updateProfile({ confetti_shown: updated });
       }
 
-      confettiFiredRef.current = true;
     };
 
     const timers = [];
