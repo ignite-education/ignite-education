@@ -212,52 +212,61 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     }
   }, [checkingStatus])
 
+  // Handle user sign-in: check pending enrollment + saved course status
+  const handleUserSignedIn = useCallback(async (signedInUser: User) => {
+    const supabase = createClient()
+    setUser(signedInUser)
+    setFirstName(extractFirstName(signedInUser))
+
+    // Check for pending enrollment (LinkedIn or Google OAuth redirect)
+    const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
+    if (pendingSlug === courseSlug) {
+      sessionStorage.removeItem('pendingEnrollCourse')
+      await enrollUserInCourse(signedInUser.id, signedInUser)
+      setCheckingStatus(false)
+      setAuthLoaded(true)
+      return
+    }
+
+    // Check if course is already saved
+    const { data } = await supabase
+      .from('saved_courses')
+      .select('id')
+      .eq('user_id', signedInUser.id)
+      .eq('course_id', courseSlug)
+      .maybeSingle()
+    setIsSaved(!!data)
+    setCheckingStatus(false)
+    setAuthLoaded(true)
+  }, [courseSlug, enrollUserInCourse])
+
   // Initial auth check + OAuth callback detection
   useEffect(() => {
     const supabase = createClient()
 
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      setUser(user)
       if (user) {
-        setFirstName(extractFirstName(user))
-
-        // Check for pending enrollment (LinkedIn or Google OAuth redirect)
-        const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
-        if (pendingSlug === courseSlug) {
-          sessionStorage.removeItem('pendingEnrollCourse')
-          await enrollUserInCourse(user.id, user)
-          setCheckingStatus(false)
-          setAuthLoaded(true)
-          return
-        }
-
-        // Check if course is already saved
-        const { data } = await supabase
-          .from('saved_courses')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('course_id', courseSlug)
-          .maybeSingle()
-        setIsSaved(!!data)
-        setCheckingStatus(false)
+        await handleUserSignedIn(user)
       } else {
         setCheckingStatus(false)
+        setAuthLoaded(true)
       }
-      setAuthLoaded(true)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
       if (session?.user) {
-        setFirstName(extractFirstName(session.user))
+        handleUserSignedIn(session.user)
       } else {
+        setUser(null)
         setFirstName(null)
         setIsSaved(false)
+        setCheckingStatus(false)
+        setAuthLoaded(true)
       }
     })
 
     return () => subscription.unsubscribe()
-  }, [courseSlug, enrollUserInCourse, isComingSoon])
+  }, [courseSlug, handleUserSignedIn])
 
   const handleSaveToggle = async () => {
     if (!user) return
