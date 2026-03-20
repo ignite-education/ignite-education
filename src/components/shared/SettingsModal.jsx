@@ -43,7 +43,7 @@ const resizeProfileImage = (file) => {
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
 const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) => {
-  const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName, refreshSession } = useAuth();
+  const { user: authUser, updateProfile, signOut, isInsider, hasUsedTrial, profilePicture, firstName, refreshSession, userRole } = useAuth();
   const navigate = useNavigate();
   const imageInputRef = useRef(null);
   const scrollRef = useRef(null);
@@ -419,7 +419,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
 
   const handleStartCourse = async (courseSlug) => {
     const course = availableCourses.find(c => c.name === courseSlug);
-    if (course?.status === 'coming_soon') return;
+    if (course?.status === 'coming_soon' && userRole !== 'admin') return;
 
     try {
       const { error } = await supabase
@@ -851,7 +851,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                             </p>
                           </div>
                           <div className="flex flex-col shrink-0" style={{ justifyContent: course.status !== 'coming_soon' ? 'flex-end' : 'center', gap: '0.5rem' }}>
-                            {course.status !== 'coming_soon' && (
+                            {(course.status !== 'coming_soon' || userRole === 'admin') && (
                               <button
                                 onClick={() => handleStartCourse(course.name)}
                                 className="text-white px-3 py-1 hover:opacity-90 transition cursor-pointer"

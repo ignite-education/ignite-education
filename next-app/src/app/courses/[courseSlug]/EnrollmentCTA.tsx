@@ -85,9 +85,14 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       // Ensure user record exists before updating
       const { data: existing } = await supabase
         .from('users')
-        .select('id')
+        .select('id, enrolled_course')
         .eq('id', userId)
         .maybeSingle()
+
+      // Already enrolled in this course — skip email & audience sync
+      if (existing?.enrolled_course === courseSlug) {
+        return
+      }
 
       if (!existing) {
         const metadata = authUser.user_metadata || {}

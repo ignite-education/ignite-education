@@ -73,10 +73,10 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
     const lessonName = getLessonName(completed.module_number, completed.lesson_number);
     const score = getLessonScore(completed.module_number, completed.lesson_number);
     const scoreText = score !== null ? `You scored ${score}% on ${lessonName}. ` : '';
-    const linkText = 'to your LinkedIn';
+    const linkText = `${courseTitle} course to your LinkedIn`;
     return {
       headline: `Congratulations on completing your first lesson, ${firstName}.`,
-      body: `${scoreText}Mark your achievement by adding the ${courseTitle} course ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
+      body: `${scoreText}Mark your achievement by adding the ${linkText}. Profiles with certifications get 6x more views than those without. Onwards, ${firstName}!`,
       linkText,
       linkUrl: `https://www.linkedin.com/profile/add?startTask=CERTIFICATION_NAME&name=${encodeURIComponent(courseTitle)}&organizationId=106869661&certUrl=https://ignite.education`,
     };
