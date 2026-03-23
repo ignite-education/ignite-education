@@ -6,7 +6,7 @@ import { trackPageVisit } from '../../../lib/tracking';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
-const DEFAULT_STAT_IMAGES = ['https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png'];
+const DEFAULT_STAT_IMAGES = ['https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Star-23.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -275,7 +275,7 @@ const useProgressData = () => {
             const joinDate = new Date(authUser.created_at);
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png' };
+            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png' };
           } else {
             const signIns = await getRecentSignIns(userId);
             if (signIns.length > 0) {
@@ -300,35 +300,27 @@ const useProgressData = () => {
               });
               const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0][0];
 
+              const weatherImage = 'https://auth.ignite.education/storage/v1/object/public/assets/Weather-23.png';
               const timeConfig = {
-                morning: { label: "You're an early", value: 'morning learner', image: '/behaviour-morning.png' },
-                afternoon: { label: "You're an", value: 'afternoon learner', image: '/behaviour-afternoon.png' },
-                evening: { label: "You're an", value: 'evening learner', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Evening.png' },
+                morning: { label: "You're an early", value: 'morning learner', image: weatherImage },
+                afternoon: { label: "You're an", value: 'afternoon learner', image: weatherImage },
+                evening: { label: "You're an", value: 'evening learner', image: weatherImage },
               };
 
-              const dayImageBase = 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons';
-              const dayImages = {
-                Sunday: `${dayImageBase}/Sunday.png`,
-                Monday: `${dayImageBase}/Monday.png`,
-                Tuesday: `${dayImageBase}/Tuesday.png`,
-                Wednesday: `${dayImageBase}/Wednesday.png`,
-                Thursday: `${dayImageBase}/Thursday.png`,
-                Friday: `${dayImageBase}/Friday.png`,
-                Saturday: `${dayImageBase}/Saturday.png`,
-              };
+              const dayImage = 'https://auth.ignite.education/storage/v1/object/public/assets/Calendar-23.png';
 
               // Random per session: time-of-day or day-of-week
               if (Math.random() < 0.5) {
                 behaviourStatValue = timeConfig[topBucket];
               } else {
-                behaviourStatValue = { label: 'Most active', value: `on ${topDay}s`, image: dayImages[topDay] };
+                behaviourStatValue = { label: 'Most active', value: `on ${topDay}s`, image: dayImage };
               }
             } else {
               // No sign-in history yet — show welcome fallback
               const joinDate = new Date(authUser.created_at);
               const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Hand-v3.png' };
+              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png' };
             }
           }
           if (isMounted) setBehaviourStat(behaviourStatValue);
@@ -340,7 +332,7 @@ const useProgressData = () => {
         let achievementStatValue = null;
         try {
           if (completedCount === 0) {
-            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png' };
+            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Star-23.png' };
           } else {
             const candidates = [];
 
@@ -400,20 +392,20 @@ const useProgressData = () => {
             monday.setHours(0, 0, 0, 0);
             const weekCount = completedLessonsData.filter(c => c.completed_at && new Date(c.completed_at) >= monday).length;
             if (weekCount >= 1) {
-              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} done`, value: 'this week', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Books.png' });
+              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} done`, value: 'this week', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-23.png' });
             }
 
             // Percentile: from pre-computed table
             const percentile = await getUserAchievementPercentile(userId, courseId);
             if (percentile != null && percentile <= 40) {
-              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Trophy.png' });
+              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Medal-23.png' });
             }
 
             // Random pick or fallback
             if (candidates.length > 0) {
               achievementStatValue = candidates[Math.floor(Math.random() * candidates.length)];
             } else {
-              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Rocket.png' };
+              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Trumpet-23.png' };
             }
           }
           if (isMounted) setAchievementStat(achievementStatValue);

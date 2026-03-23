@@ -413,7 +413,11 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
   // Confetti for all tags — fires once per tag per user, persisted in user_metadata
   useEffect(() => {
-    if (!userId) return;
+    console.log('🎊 [Confetti] Effect running', { userId, totalCompletedLessons, joinedAt, isInsider, userRole, confettiShown: confettiShownRef.current, firedKeys: [...(confettiFiredRef.current || [])] });
+    if (!userId) {
+      console.log('🎊 [Confetti] No userId, skipping');
+      return;
+    }
 
     const shown = confettiShownRef.current || {};
     const startConfetti = () => {
@@ -424,26 +428,34 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
       ];
 
+      console.log('🎊 [Confetti] startConfetti called', { tags: tags.map(t => `${t.key}:${t.active}`), shown, firedKeys: [...confettiFiredRef.current] });
+
       const newlyShown = [];
       tags.forEach(({ key, active }) => {
-        if (!active) return;
-        if (shown[key]) return;
-        if (confettiFiredRef.current.has(key)) return;
+        if (!active) { console.log(`🎊 [Confetti] ${key}: skipped (not active)`); return; }
+        if (shown[key]) { console.log(`🎊 [Confetti] ${key}: skipped (already in shown metadata)`); return; }
+        if (confettiFiredRef.current.has(key)) { console.log(`🎊 [Confetti] ${key}: skipped (already in firedRef)`); return; }
 
+        console.log(`🎊 [Confetti] ${key}: FIRING confetti! Setting timers at 2000ms and 5000ms`);
         newlyShown.push(key);
         confettiFiredRef.current.add(key);
         timers.push(setTimeout(() => {
+          console.log(`🎊 [Confetti] ${key}: Timer fired — setting activeConfetti to TRUE`);
           setActiveConfetti(prev => ({ ...prev, [key]: true }));
         }, 2000));
         timers.push(setTimeout(() => {
+          console.log(`🎊 [Confetti] ${key}: Timer fired — setting activeConfetti to FALSE`);
           setActiveConfetti(prev => ({ ...prev, [key]: false }));
         }, 5000));
       });
 
       if (newlyShown.length > 0) {
+        console.log('🎊 [Confetti] Persisting confetti_shown:', newlyShown);
         const updated = { ...shown };
         newlyShown.forEach(key => { updated[key] = true; });
         updateProfile({ confetti_shown: updated });
+      } else {
+        console.log('🎊 [Confetti] No new tags to fire');
       }
 
     };
@@ -456,7 +468,10 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       timers.push(() => window.removeEventListener('load', startConfetti));
     }
 
-    return () => timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
+    return () => {
+      console.log('🎊 [Confetti] Cleanup — clearing', timers.length, 'timers');
+      timers.forEach(t => typeof t === 'function' ? t() : clearTimeout(t));
+    };
   }, [userId, joinedAt, totalCompletedLessons, isInsider, userRole]);
 
   useEffect(() => {

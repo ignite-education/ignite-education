@@ -7,13 +7,12 @@ export async function GET(request: Request) {
   const code = searchParams.get('code')
   const next = searchParams.get('next') ?? '/courses'
 
-  // Determine redirect origin: prefer forwarded host (set by Vite proxy in local dev),
-  // then explicit site URL (production), then request origin as fallback
+  // Determine redirect origin: prefer explicit site URL (production),
+  // then forwarded host (set by Vite proxy in local dev), then request origin as fallback
   const forwardedHost = request.headers.get('x-forwarded-host')
   const forwardedProto = request.headers.get('x-forwarded-proto') ?? 'https'
-  const origin = forwardedHost
-    ? `${forwardedProto}://${forwardedHost}`
-    : (process.env.NEXT_PUBLIC_SITE_URL || new URL(request.url).origin)
+  const origin = process.env.NEXT_PUBLIC_SITE_URL
+    || (forwardedHost ? `${forwardedProto}://${forwardedHost}` : new URL(request.url).origin)
 
   if (code) {
     const supabase = await createClient()
