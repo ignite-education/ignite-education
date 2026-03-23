@@ -111,11 +111,48 @@ export default function EducationSection() {
     <section
       ref={sectionRef}
       className="flex items-center justify-center px-8 relative auth-section-2"
-      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '800px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '7rem' : undefined, paddingBottom: isMobile ? '8rem' : undefined }}
+      style={{ background: 'black', minHeight: '500px', maxHeight: isMobile ? undefined : '700px', height: isMobile ? 'auto' : '100vh', maxWidth: '1500px', margin: '0 auto', paddingTop: isMobile ? '7rem' : '8vh', paddingBottom: isMobile ? '5rem' : undefined, overflow: 'hidden' }}
     >
       <div className="w-full text-white">
         {/* Heading — stays centered with max-w-3xl */}
-        <div className="w-full max-w-3xl mx-auto px-4">
+        <div className="w-full max-w-3xl mx-auto px-4" style={{ position: 'relative' }}>
+          {/* Decorative images around heading */}
+          {/* Star — top left (shown on all viewports) */}
+          <img
+            src="https://auth.ignite.education/storage/v1/object/public/assets/Star-LandingPage.png"
+            alt=""
+            style={{ position: 'absolute', top: isMobile ? '-30%' : '-45%', left: isMobile ? '0%' : isTablet ? '17%' : '0%', width: isMobile ? '101px' : isTablet ? '91px' : '117px', pointerEvents: 'none', transform: 'rotate(-29deg)' }}
+          />
+          {/* Bulb — bottom right (shown on mobile) */}
+          {isMobile && (
+            <img
+              src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
+              alt=""
+              style={{ position: 'absolute', bottom: '-15%', right: '5%', width: '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
+            />
+          )}
+          {!isMobile && (
+            <>
+              {/* Medal — left */}
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/Medal-LandingPage.png"
+                alt=""
+                style={{ position: 'absolute', bottom: '40%', left: isTablet ? '-10%' : '-18%', width: isTablet ? '53px' : '65px', pointerEvents: 'none' }}
+              />
+              {/* Book — top right */}
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/Book-LandingPage.png"
+                alt=""
+                style={{ position: 'absolute', top: '-50%', right: isTablet ? '12%' : '-5%', width: isTablet ? '49px' : '62px', pointerEvents: 'none' }}
+              />
+              {/* Bulb — right */}
+              <img
+                src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
+                alt=""
+                style={{ position: 'absolute', bottom: '40%', right: isTablet ? '-10%' : '-18%', width: isTablet ? '65px' : '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
+              />
+            </>
+          )}
           <h2
             className="text-4xl md:text-5xl font-bold leading-tight text-center w-full auth-education-heading"
             style={{ minHeight: '240px', marginBottom: isMobile ? '4rem' : undefined }}
@@ -137,7 +174,7 @@ export default function EducationSection() {
           }}
         >
           <div
-            className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1' : 'grid-cols-3'}`}
+            className={`grid text-center auth-promises-list ${isMobile ? 'grid-cols-1 justify-items-center' : 'grid-cols-3'}`}
             style={{ width: '100%', gap: isMobile ? '3rem' : '0.5rem' }}
           >
             {[
@@ -154,14 +191,24 @@ export default function EducationSection() {
                   opacity: visiblePromises.has(idx) ? 1 : 0,
                   transform: visiblePromises.has(idx) ? 'translateY(0)' : 'translateY(15px)',
                   transition: 'opacity 3.5s cubic-bezier(0.16, 1, 0.3, 1), transform 3.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: '0s',
+                  transitionDelay: isMobile ? '0s' : `${idx * 1000}ms`,
                 }}
               >
-                <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
-                  {promise.title}
-                </div>
-                <div className="text-base text-white font-normal">
-                  {promise.desc}
+                <img
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/Tick%20Transparent.png"
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="mb-4"
+                  style={{ width: isMobile ? '50px' : '42px', height: isMobile ? '50px' : '42px' }}
+                />
+                <div>
+                  <div className="text-xl font-semibold text-white mb-3" style={{ whiteSpace: 'nowrap' }}>
+                    {promise.title}
+                  </div>
+                  <div className="text-base text-white font-normal">
+                    {promise.desc}
+                  </div>
                 </div>
               </div>
             ))}

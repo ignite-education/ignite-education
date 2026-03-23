@@ -1,9 +1,62 @@
 import React from 'react';
 
+// Single-pass inline formatting parser that produces stable React keys.
+// Each segment gets a key based on its character offset in the source text,
+// so adding characters at the end never shifts existing keys (no flicker).
+const parseInline = (line) => {
+  const segments = [];
+  let i = 0;
+  let buf = '';
+  let bufStart = 0;
+
+  const flush = () => {
+    if (buf) { segments.push({ offset: bufStart, text: buf, style: null }); buf = ''; }
+  };
+
+  while (i < line.length) {
+    // Bold: **...**
+    if (line[i] === '*' && line[i + 1] === '*') {
+      flush();
+      const start = i;
+      i += 2;
+      let inner = '';
+      while (i < line.length) {
+        if (line[i] === '*' && line[i + 1] === '*') { i += 2; break; }
+        inner += line[i]; i++;
+      }
+      // Strip trailing * from unclosed bold (first char of closing ** not yet typed)
+      if (i >= line.length && inner.endsWith('*')) inner = inner.slice(0, -1);
+      if (inner) segments.push({ offset: start, text: inner, style: 'bold' });
+      bufStart = i;
+      continue;
+    }
+    // Italic: single * (not **)
+    if (line[i] === '*' && line[i + 1] !== '*') {
+      flush();
+      const start = i;
+      i += 1;
+      let inner = '';
+      while (i < line.length) {
+        if (line[i] === '*' && line[i + 1] !== '*') { i += 1; break; }
+        inner += line[i]; i++;
+      }
+      // Strip trailing * from unclosed italic (closing * not yet typed)
+      if (i >= line.length && inner.endsWith('*')) inner = inner.slice(0, -1);
+      if (inner) segments.push({ offset: start, text: inner, style: 'italic' });
+      bufStart = i;
+      continue;
+    }
+    if (!buf) bufStart = i;
+    buf += line[i]; i++;
+  }
+  flush();
+  return segments;
+};
+
 // Parse inline formatting: **bold**, *italic*, bullet points
 const parseText = (text) => {
   const lines = text.split('\n');
-  return lines.map((line, i) => {
+  return lines.map((line, lineIdx) => {
     // Bullet point with colon — "• Term: description"
     const bulletMatchColon = line.match(/^[•\-*]\s+(.+?):\s*(.*)$/);
     const bulletMatchDash = line.match(/^[•\-*]\s+(.+?)\s+-\s+(.*)$/);
@@ -14,7 +67,7 @@ const parseText = (text) => {
       const titleText = bulletMatchColon[1].replace(/\*\*/g, '');
       const contentText = bulletMatchColon[2].replace(/\*\*/g, '');
       return (
-        <p key={i} className={i > 0 ? 'mt-2' : ''}>
+        <p key={lineIdx} className={lineIdx > 0 ? 'mt-2' : ''}>
           <span>{bulletMatchColon[0].charAt(0)} </span>
           <strong className="font-medium">{titleText}:</strong>
           <span> {contentText}</span>
@@ -24,7 +77,7 @@ const parseText = (text) => {
       const titleText = bulletMatchDash[1].replace(/\*\*/g, '');
       const contentText = bulletMatchDash[2].replace(/\*\*/g, '');
       return (
-        <p key={i} className={i > 0 ? 'mt-2' : ''}>
+        <p key={lineIdx} className={lineIdx > 0 ? 'mt-2' : ''}>
           <span>{bulletMatchDash[0].charAt(0)} </span>
           <strong className="font-medium">{titleText}</strong>
           <span> - {contentText}</span>
@@ -34,7 +87,7 @@ const parseText = (text) => {
       const titleText = numberedMatchColon[2].replace(/\*\*/g, '');
       const contentText = numberedMatchColon[3].replace(/\*\*/g, '');
       return (
-        <p key={i} className={i > 0 ? 'mt-2' : ''}>
+        <p key={lineIdx} className={lineIdx > 0 ? 'mt-2' : ''}>
           <span>{numberedMatchColon[1]}. </span>
           <strong className="font-medium">{titleText}:</strong>
           <span> {contentText}</span>
@@ -44,35 +97,20 @@ const parseText = (text) => {
       const titleText = numberedMatchDash[2].replace(/\*\*/g, '');
       const contentText = numberedMatchDash[3].replace(/\*\*/g, '');
       return (
-        <p key={i} className={i > 0 ? 'mt-2' : ''}>
+        <p key={lineIdx} className={lineIdx > 0 ? 'mt-2' : ''}>
           <span>{numberedMatchDash[1]}. </span>
           <strong className="font-medium">{titleText}</strong>
           <span> - {contentText}</span>
         </p>
       );
     } else {
-      // Regular text with inline bold
-      const parts = line.split(/(\*\*.*?\*\*|\*\*[^*]*$|(?<!\*)\*(?!\*).*?(?<!\*)\*(?!\*)|(?<!\*)\*(?!\*)[^*]*$)/g);
+      const segments = parseInline(line);
       return (
-        <p key={i} className={i > 0 ? 'mt-2' : ''}>
-          {parts.map((part, j) => {
-            if (!part) return null;
-            if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
-              return <strong key={j} className="font-medium">{part.slice(2, -2)}</strong>;
-            }
-            // Unclosed bold — still typing, render as bold without the leading **
-            if (part.startsWith('**') && part.length > 2) {
-              return <strong key={j} className="font-medium">{part.slice(2)}</strong>;
-            }
-            // Italic: *text* (single asterisks, not double)
-            if (/^(?<!\*)\*(?!\*)(.+)\*(?!\*)$/.test(part)) {
-              return <em key={j}>{part.slice(1, -1)}</em>;
-            }
-            // Unclosed italic — still typing
-            if (/^(?<!\*)\*(?!\*)/.test(part) && !part.startsWith('**') && part.length > 1) {
-              return <em key={j}>{part.slice(1)}</em>;
-            }
-            return <span key={j}>{part}</span>;
+        <p key={lineIdx} className={lineIdx > 0 ? 'mt-2' : ''}>
+          {segments.map((seg) => {
+            if (seg.style === 'bold') return <strong key={seg.offset} className="font-medium">{seg.text}</strong>;
+            if (seg.style === 'italic') return <em key={seg.offset}>{seg.text}</em>;
+            return <span key={seg.offset}>{seg.text}</span>;
           })}
         </p>
       );

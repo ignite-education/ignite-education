@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 
-const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, ref) => {
+const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', disabled = false }, ref) => {
   const textareaRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [wrapperHeight, setWrapperHeight] = useState(48);
@@ -29,7 +29,7 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (value.trim()) {
+      if (value.trim() && !disabled) {
         onSubmit(value.trim());
       }
     }
@@ -37,7 +37,7 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (value.trim()) {
+    if (value.trim() && !disabled) {
       onSubmit(value.trim());
     }
   };
@@ -85,9 +85,9 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '' }, r
             height: 32,
             borderRadius: 6,
             backgroundColor: '#F0F0F0',
-            opacity: value.trim() ? 1 : 0,
+            opacity: value.trim() && !disabled ? 1 : 0,
             transition: 'top 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.2s ease-in-out',
-            pointerEvents: value.trim() ? 'auto' : 'none',
+            pointerEvents: value.trim() && !disabled ? 'auto' : 'none',
           }}
           onMouseEnter={(e) => { e.currentTarget.querySelector('svg').style.stroke = '#EF0B72'; }}
           onMouseLeave={(e) => { e.currentTarget.querySelector('svg').style.stroke = 'black'; }}

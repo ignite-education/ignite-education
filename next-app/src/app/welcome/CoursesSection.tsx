@@ -289,14 +289,16 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                 Because of this, our course content is comprehensive, relevant and
                 in-demand by employers.
               </p>
-              <Image
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
-                alt="Trustpilot"
-                width={576}
-                height={144}
-                loading="lazy"
-                style={{ maxWidth: isMobile ? '107px' : '113px', height: 'auto', marginTop: '15px' }}
-              />
+              <a href="https://www.trustpilot.com/review/ignite.education" target="_blank" rel="noopener noreferrer">
+                <Image
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
+                  alt="Trustpilot"
+                  width={576}
+                  height={144}
+                  loading="lazy"
+                  style={{ maxWidth: isMobile ? '107px' : '113px', height: 'auto', marginTop: '15px' }}
+                />
+              </a>
             </div>
           </div>
 

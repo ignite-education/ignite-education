@@ -517,7 +517,7 @@ const LearningHubV2 = () => {
           score: 10,
           questionText: scoredQuestionPool[scoredQuestionIndex],
           answerText: 'skip',
-          feedback: bypassResult.feedback,
+          feedback: bypassFeedback,
         }).catch(() => {});
         return;
       }
@@ -549,6 +549,15 @@ const LearningHubV2 = () => {
           feedback: result.feedback,
         }).catch(() => {});
       }
+      return;
+    }
+
+    // Admin bypass for non-graded user questions
+    if (text.trim().toLowerCase() === 'skip' && user?.role === 'admin' && pendingUserQuestion) {
+      setChatInput('');
+      savedRangeRef.current = null;
+      window.getSelection()?.removeAllRanges();
+      handleUserQuestionContinueRef.current?.();
       return;
     }
 
@@ -828,6 +837,14 @@ const LearningHubV2 = () => {
     return last.type === 'user' || last.isComplete;
   }, [chatMessages]);
 
+  // True while any on-screen typing animation is still running (body, question, or Claude response)
+  const isAnyAnimationActive =
+    (completedSections < activeGroup.length && !pendingUserQuestion && !showingScoredQuestion)
+    || (!!pendingUserQuestion && !userQuestionTypingDone)
+    || (showingScoredQuestion && scoredIntroPhase && !scoredIntroDone)
+    || (showingScoredQuestion && !scoredIntroPhase && !!scoredQuestionText && !scoredQuestionDone)
+    || typingMessageIndex !== null;
+
   // User question answered — Claude has responded, show Continue button
   const userQuestionAnswered = pendingUserQuestion && chatMessages.length >= 2 && lastAssistantDone && !isTyping;
 
@@ -1072,6 +1089,8 @@ const LearningHubV2 = () => {
       setCompletedSections((prev) => prev + 1);
     }
   }, [resetChat, isLastGroup, showSummary, user?.id, userCourseId, currentModule, currentLesson]);
+  const handleUserQuestionContinueRef = useRef(handleUserQuestionContinue);
+  handleUserQuestionContinueRef.current = handleUserQuestionContinue;
 
   // Scored question intro → show the actual question underneath
   const handleScoredIntroComplete = useCallback(() => {
@@ -1893,7 +1912,7 @@ const LearningHubV2 = () => {
               style={{
                 opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
                 transition: 'opacity 0.25s ease-in',
-                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
+                pointerEvents: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && !isAnyAnimationActive && ((allTypingComplete && showButtons) || userQuestionTypingDone) ? 'auto' : 'none',
                 height: !suggestedQuestion || suggestedQuestionDismissed || showingScoredQuestion || pendingUserQuestion || groupHasUserQuestion || showLessonSummary ? 0 : 'auto',
                 overflow: 'hidden',
               }}
@@ -1918,6 +1937,7 @@ const LearningHubV2 = () => {
               value={chatInput}
               onChange={setChatInput}
               onSubmit={handleChatSubmit}
+              disabled={isAnyAnimationActive}
             />
           </div>
           )}

@@ -489,7 +489,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                   return effectivelySaved
                     ? isComingSoon
                       ? `We'll notify you when ${courseTitle} is available`
-                      : <>{`Go to ${firstName || 'your'}'s account`}<br />to get started</>
+                      : <>To get started,<br />{`head to ${firstName || 'your'}'s account`}</>
                     : isComingSoon
                       ? 'Join the course waitlist'
                       : "We'll save this course to start later"

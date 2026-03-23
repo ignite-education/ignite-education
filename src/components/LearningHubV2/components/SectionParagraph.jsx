@@ -81,97 +81,107 @@ const renderNarrationText = (text, wordIndexOffset) => {
   return elements;
 };
 
-// Parse bold (**), underline (__), italic (*), and link [text](url) formatting
-// When inProgress is true, unclosed markers at the end of the string are rendered
-// in their intended style immediately (e.g. "*partial" renders italic while typing)
-const renderFormattedText = (text, { inProgress = false } = {}) => {
-  const parts = text.split(/(\*\*.+?\*\*[:\.,;!?]?|__.+?__[:\.,;!?]?|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*)[:\.,;!?]?)/g);
+// Single-pass inline formatting parser that produces stable React keys.
+// Each segment gets a key based on its character offset in the source text,
+// so adding characters at the end never shifts existing keys (no flicker).
+const parseFormattedSegments = (text) => {
+  const segments = [];
+  let i = 0;
+  let buf = '';
+  let bufStart = 0;
 
-  const rendered = parts.map((part, i) => {
-    if (part === undefined) return null;
+  const flush = () => {
+    if (buf) { segments.push({ offset: bufStart, text: buf, style: null }); buf = ''; }
+  };
 
+  while (i < text.length) {
     // Link: [text](url)
-    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-    if (linkMatch) {
+    if (text[i] === '[') {
+      const closeB = text.indexOf(']', i + 1);
+      if (closeB !== -1 && text[closeB + 1] === '(') {
+        const closeP = text.indexOf(')', closeB + 2);
+        if (closeP !== -1) {
+          flush();
+          segments.push({ offset: i, text: text.slice(i + 1, closeB), style: 'link', url: text.slice(closeB + 2, closeP) });
+          i = closeP + 1;
+          bufStart = i;
+          continue;
+        }
+      }
+    }
+    // Bold: **...**
+    if (text[i] === '*' && text[i + 1] === '*') {
+      flush();
+      const start = i;
+      i += 2;
+      let inner = '';
+      while (i < text.length) {
+        if (text[i] === '*' && text[i + 1] === '*') { i += 2; break; }
+        inner += text[i]; i++;
+      }
+      // Strip trailing * from unclosed bold (first char of closing ** not yet typed)
+      if (i >= text.length && inner.endsWith('*')) inner = inner.slice(0, -1);
+      if (inner) segments.push({ offset: start, text: inner, style: 'bold' });
+      bufStart = i;
+      continue;
+    }
+    // Underline: __...__
+    if (text[i] === '_' && text[i + 1] === '_') {
+      flush();
+      const start = i;
+      i += 2;
+      let inner = '';
+      while (i < text.length) {
+        if (text[i] === '_' && text[i + 1] === '_') { i += 2; break; }
+        inner += text[i]; i++;
+      }
+      // Strip trailing _ from unclosed underline (first char of closing __ not yet typed)
+      if (i >= text.length && inner.endsWith('_')) inner = inner.slice(0, -1);
+      if (inner) segments.push({ offset: start, text: inner, style: 'underline' });
+      bufStart = i;
+      continue;
+    }
+    // Italic: single * (not **)
+    if (text[i] === '*' && text[i + 1] !== '*') {
+      flush();
+      const start = i;
+      i += 1;
+      let inner = '';
+      while (i < text.length) {
+        if (text[i] === '*' && text[i + 1] !== '*') { i += 1; break; }
+        inner += text[i]; i++;
+      }
+      // Strip trailing * from unclosed italic
+      if (i >= text.length && inner.endsWith('*')) inner = inner.slice(0, -1);
+      if (inner) segments.push({ offset: start, text: inner, style: 'italic' });
+      bufStart = i;
+      continue;
+    }
+    if (!buf) bufStart = i;
+    buf += text[i]; i++;
+  }
+  flush();
+  return segments;
+};
+
+// Parse bold (**), underline (__), italic (*), and link [text](url) formatting.
+// Uses offset-based keys so that appending characters during typing never shifts
+// existing element keys — this eliminates flicker for bold/italic during typewriter.
+const renderFormattedText = (text, { inProgress = false } = {}) => {
+  const segments = parseFormattedSegments(text);
+  return segments.map((seg) => {
+    if (seg.style === 'bold') return <strong key={seg.offset} className="font-medium">{seg.text}</strong>;
+    if (seg.style === 'underline') return <u key={seg.offset}>{seg.text}</u>;
+    if (seg.style === 'italic') return <em key={seg.offset}>{seg.text}</em>;
+    if (seg.style === 'link') {
       return (
-        <a
-          key={i}
-          href={linkMatch[2]}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-600 underline hover:text-blue-800"
-        >
-          {linkMatch[1]}
+        <a key={seg.offset} href={seg.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">
+          {seg.text}
         </a>
       );
     }
-
-    // Bold: **text**
-    if (part.startsWith('**') && part.match(/\*\*[:\.,;!?]?$/)) {
-      const innerText = part.replace(/^\*\*/, '').replace(/\*\*[:\.,;!?]?$/, '');
-      const trailingPunct = part.match(/\*\*([:\.,;!?])$/)?.[1] || '';
-      return <strong key={i} className="font-medium">{innerText}{trailingPunct}</strong>;
-    }
-
-    // Underline: __text__
-    if (part.startsWith('__') && part.match(/__[:\.,;!?]?$/)) {
-      const innerText = part.replace(/^__/, '').replace(/__[:\.,;!?]?$/, '');
-      const trailingPunct = part.match(/__([:\.,;!?])$/)?.[1] || '';
-      return <u key={i}>{innerText}{trailingPunct}</u>;
-    }
-
-    // Italic: *text*
-    if (part.match(/^(?<!\*)\*(?!\*)(.+)\*(?!\*)[:\.,;!?]?$/)) {
-      const innerText = part.replace(/^\*/, '').replace(/\*[:\.,;!?]?$/, '');
-      const trailingPunct = part.match(/\*([:\.,;!?])$/)?.[1] || '';
-      return <em key={i}>{innerText}{trailingPunct}</em>;
-    }
-
-    return <span key={i}>{part}</span>;
+    return <span key={seg.offset}>{seg.text}</span>;
   });
-
-  // During typing, handle unclosed formatting markers at the end of the string
-  if (inProgress && rendered.length > 0) {
-    const lastIdx = rendered.length - 1;
-    const lastPart = parts[lastIdx];
-    if (lastPart) {
-      // Unclosed bold: **text (no closing **) — [^*]* allows zero chars so ** alone doesn't flash
-      const unclosedBold = lastPart.match(/^(.*)\*\*([^*]*)$/s);
-      if (unclosedBold) {
-        rendered[lastIdx] = (
-          <span key={lastIdx}>
-            {unclosedBold[1] && <span>{unclosedBold[1]}</span>}
-            <strong className="font-medium">{unclosedBold[2]}</strong>
-          </span>
-        );
-        return rendered;
-      }
-      // Unclosed underline: __text (no closing __)
-      const unclosedUnderline = lastPart.match(/^(.*)__([^_]*)$/s);
-      if (unclosedUnderline) {
-        rendered[lastIdx] = (
-          <span key={lastIdx}>
-            {unclosedUnderline[1] && <span>{unclosedUnderline[1]}</span>}
-            <u>{unclosedUnderline[2]}</u>
-          </span>
-        );
-        return rendered;
-      }
-      // Unclosed italic: *text (no closing *, and not **)
-      const unclosedItalic = lastPart.match(/^(.*?)(?<!\*)\*(?!\*)([^*]*)$/s);
-      if (unclosedItalic) {
-        rendered[lastIdx] = (
-          <span key={lastIdx}>
-            {unclosedItalic[1] && <span>{unclosedItalic[1]}</span>}
-            <em>{unclosedItalic[2]}</em>
-          </span>
-        );
-        return rendered;
-      }
-    }
-  }
-
-  return rendered;
 };
 
 const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
