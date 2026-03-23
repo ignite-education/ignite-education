@@ -354,7 +354,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
   const confettiFiredRef = useRef(new Set());
 
   const communityConfig = COUNTRY_CONFIG[userCountry] || DEFAULT_COMMUNITY;
-  const animatedCount = useCountUp(communityCount);
+  const animatedCount = useCountUp(communityCount, 1200, 1000);
 
   const introText = useMemo(() => generateIntroText({
     firstName, courseTitle, progressPercentage, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons,
@@ -647,7 +647,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             {/* Stats Row */}
             <div className="flex items-start justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
               {[
-                achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: '/achievement-start.png' },
+                achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-23.png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
                 { label: communityCount != null ? `${animatedCount} learners` : '…', value: communityConfig.label, image: communityConfig.image },
               ].map((stat, idx) => (

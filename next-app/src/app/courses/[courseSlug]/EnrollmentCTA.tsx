@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
@@ -38,6 +38,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [checkingStatus, setCheckingStatus] = useState(true)
   const [showButton, setShowButton] = useState(false)
   const [authLoaded, setAuthLoaded] = useState(false)
+  const handlingSignInRef = useRef(false)
 
   // Save course for a given user
   const saveCourseForUser = useCallback(async (userId: string) => {
@@ -219,30 +220,37 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
   // Handle user sign-in: check pending enrollment + saved course status
   const handleUserSignedIn = useCallback(async (signedInUser: User) => {
-    const supabase = createClient()
-    setUser(signedInUser)
-    setFirstName(extractFirstName(signedInUser))
+    if (handlingSignInRef.current) return
+    handlingSignInRef.current = true
 
-    // Check for pending enrollment (LinkedIn or Google OAuth redirect)
-    const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
-    if (pendingSlug === courseSlug) {
-      sessionStorage.removeItem('pendingEnrollCourse')
-      await enrollUserInCourse(signedInUser.id, signedInUser)
+    try {
+      const supabase = createClient()
+      setUser(signedInUser)
+      setFirstName(extractFirstName(signedInUser))
+
+      // Check for pending enrollment (LinkedIn or Google OAuth redirect)
+      const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
+      if (pendingSlug === courseSlug) {
+        sessionStorage.removeItem('pendingEnrollCourse')
+        await enrollUserInCourse(signedInUser.id, signedInUser)
+        setCheckingStatus(false)
+        setAuthLoaded(true)
+        return
+      }
+
+      // Check if course is already saved
+      const { data } = await supabase
+        .from('saved_courses')
+        .select('id')
+        .eq('user_id', signedInUser.id)
+        .eq('course_id', courseSlug)
+        .maybeSingle()
+      setIsSaved(!!data)
       setCheckingStatus(false)
       setAuthLoaded(true)
-      return
+    } finally {
+      handlingSignInRef.current = false
     }
-
-    // Check if course is already saved
-    const { data } = await supabase
-      .from('saved_courses')
-      .select('id')
-      .eq('user_id', signedInUser.id)
-      .eq('course_id', courseSlug)
-      .maybeSingle()
-    setIsSaved(!!data)
-    setCheckingStatus(false)
-    setAuthLoaded(true)
   }, [courseSlug, enrollUserInCourse])
 
   // Initial auth check + OAuth callback detection
@@ -481,7 +489,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
                   return effectivelySaved
                     ? isComingSoon
                       ? `We'll notify you when ${courseTitle} is available`
-                      : `Head to ${firstName || 'your'}'s account to get started`
+                      : <>{`Go to ${firstName || 'your'}'s account`}<br />to get started</>
                     : isComingSoon
                       ? 'Join the course waitlist'
                       : "We'll save this course to start later"
