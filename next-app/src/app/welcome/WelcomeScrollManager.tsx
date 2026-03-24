@@ -25,9 +25,13 @@ export default function WelcomeScrollManager({
   const [logoClipPercentage, setLogoClipPercentage] = useState(100)
   const [invertLayers, setInvertLayers] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
+    const check = () => {
+      setIsMobile(window.innerWidth < 768)
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1200)
+    }
     check()
     window.addEventListener('resize', check)
     return () => window.removeEventListener('resize', check)
@@ -198,10 +202,10 @@ export default function WelcomeScrollManager({
       {/* Sticky Navbar — transparent, section backgrounds show through */}
       <div className="sticky top-0 z-50">
         <Navbar
-          logoClipPercentage={isMobile ? 100 : logoClipPercentage}
-          invertLayers={isMobile ? false : invertLayers}
+          logoClipPercentage={isMobile || isTablet ? 100 : logoClipPercentage}
+          invertLayers={isMobile || isTablet ? false : invertLayers}
           logoContainerRef={logoContainerRef}
-          variant={isMobile ? 'black' : 'default'}
+          variant={isMobile || isTablet ? 'black' : 'default'}
         />
       </div>
 

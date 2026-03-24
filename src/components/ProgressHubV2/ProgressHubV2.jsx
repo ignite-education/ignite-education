@@ -146,6 +146,14 @@ const ProgressHubV2 = () => {
 
   const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
 
+  // Preload profile picture during loading screen so it's cached when content renders
+  useEffect(() => {
+    if (profilePicture) {
+      const img = new Image();
+      img.src = profilePicture.replace(/=s\d+-c/, '=s200-c');
+    }
+  }, [profilePicture]);
+
   if (isMobile && showContent) {
     return <MobileBlockScreen onSignOut={signOut} />;
   }

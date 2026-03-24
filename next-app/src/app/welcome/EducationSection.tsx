@@ -121,35 +121,23 @@ export default function EducationSection() {
           <img
             src="https://auth.ignite.education/storage/v1/object/public/assets/Star-LandingPage.png"
             alt=""
-            style={{ position: 'absolute', top: isMobile ? '-30%' : '-45%', left: isMobile ? '0%' : isTablet ? '17%' : '0%', width: isMobile ? '101px' : isTablet ? '91px' : '117px', pointerEvents: 'none', transform: 'rotate(-29deg)' }}
+            style={{ position: 'absolute', top: isMobile ? '-30%' : isTablet ? '-37%' : '-45%', left: isMobile ? '0%' : isTablet ? '7%' : '0%', width: isMobile ? '116px' : isTablet ? '105px' : '149px', pointerEvents: 'none', transform: 'rotate(-29deg)' }}
           />
           {/* Bulb — bottom right (shown on mobile) */}
           {isMobile && (
             <img
               src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
               alt=""
-              style={{ position: 'absolute', bottom: '-15%', right: '5%', width: '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
+              style={{ position: 'absolute', bottom: '-20%', right: '3%', width: '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
             />
           )}
           {!isMobile && (
             <>
-              {/* Medal — left */}
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Medal-LandingPage.png"
-                alt=""
-                style={{ position: 'absolute', bottom: '40%', left: isTablet ? '-10%' : '-18%', width: isTablet ? '53px' : '65px', pointerEvents: 'none' }}
-              />
-              {/* Book — top right */}
-              <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Book-LandingPage.png"
-                alt=""
-                style={{ position: 'absolute', top: '-50%', right: isTablet ? '12%' : '-5%', width: isTablet ? '49px' : '62px', pointerEvents: 'none' }}
-              />
               {/* Bulb — right */}
               <img
                 src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
                 alt=""
-                style={{ position: 'absolute', bottom: '40%', right: isTablet ? '-10%' : '-18%', width: isTablet ? '65px' : '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
+                style={{ position: 'absolute', bottom: isTablet ? '17%' : '18%', right: isTablet ? '-5%' : '-11%', width: isTablet ? '78px' : '96px', pointerEvents: 'none', transform: 'rotate(29deg)' }}
               />
             </>
           )}
@@ -195,7 +183,7 @@ export default function EducationSection() {
                 }}
               >
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Tick%20Transparent.png"
+                  src="https://auth.ignite.education/storage/v1/object/public/assets/White%20Tick.png"
                   alt=""
                   width={48}
                   height={48}

@@ -381,7 +381,7 @@ const useProgressData = () => {
             const scoredLessons = Object.values(userScoresResult);
             const acedCount = scoredLessons.filter(s => s.total > 0 && s.correct === s.total).length;
             if (acedCount >= 1) {
-              candidates.push({ label: `${acedCount} lessons with`, value: '100% score', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Star.png' });
+              candidates.push({ label: `${acedCount} lesson${acedCount !== 1 ? 's' : ''} with`, value: '100% score', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Star.png' });
             }
 
             // Weekly: completions since Monday 00:00 (ISO week)
@@ -405,7 +405,7 @@ const useProgressData = () => {
             if (candidates.length > 0) {
               achievementStatValue = candidates[Math.floor(Math.random() * candidates.length)];
             } else {
-              achievementStatValue = { label: `${completedCount} lessons`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Trumpet-23.png' };
+              achievementStatValue = { label: `${completedCount} lesson${completedCount !== 1 ? 's' : ''}`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Trumpet-23.png' };
             }
           }
           if (isMounted) setAchievementStat(achievementStatValue);
