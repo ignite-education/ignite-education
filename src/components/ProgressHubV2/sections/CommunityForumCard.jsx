@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { MessageSquare, ThumbsUp, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
+import RedditMarkdown from './RedditMarkdown';
 
 const getTimeAgo = (timestamp) => {
   const now = new Date();
@@ -246,9 +247,12 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                       <h3 className="text-white flex-1" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <p className="text-white mb-2 leading-snug" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', overflow: 'hidden', transition: 'max-height 0.3s ease-out', ...(expandedPostId === post.id ? { maxHeight: '2000px', display: 'block' } : { maxHeight: '8.25em', display: '-webkit-box', WebkitLineClamp: 6, WebkitBoxOrient: 'vertical' }) }}>
-                      {post.content}
-                    </p>
+                    <div className="text-white mb-2 leading-snug relative" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', overflow: 'hidden', transition: 'max-height 0.3s ease-out', ...(expandedPostId === post.id ? { maxHeight: '2000px' } : { maxHeight: '8.25em' }) }}>
+                      <RedditMarkdown content={post.content} />
+                      {expandedPostId !== post.id && post.content && post.content.length > 300 && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2em', background: 'linear-gradient(transparent, #171717)', pointerEvents: 'none' }} />
+                      )}
+                    </div>
                     <div className="flex items-center gap-4 text-xs text-white">
                       <div className="flex items-center gap-1.5">
                         <button
@@ -334,7 +338,9 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                         postComments[post.id].map(comment => (
                           <div key={comment.id}>
                             <div className="flex items-start gap-2">
-                              <p className="text-white leading-snug break-words flex-1" style={{ fontSize: '0.9rem', fontWeight: 300 }}>{comment.content}</p>
+                              <div className="text-white leading-snug break-words flex-1" style={{ fontSize: '0.9rem', fontWeight: 300 }}>
+                                <RedditMarkdown content={comment.content} />
+                              </div>
                               <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(comment.created_at)}</span>
                             </div>
                           </div>

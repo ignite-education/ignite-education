@@ -39,7 +39,9 @@
     "react": "^19.1.1",
     "react-calendly": "^4.4.0",
     "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.4",
+    "remark-gfm": "^4.0.1",
     "resend": "^6.2.2",
     "stripe": "^19.1.0"
   },

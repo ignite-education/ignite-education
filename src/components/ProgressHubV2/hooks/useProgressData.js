@@ -332,7 +332,7 @@ const useProgressData = () => {
         let achievementStatValue = null;
         try {
           if (completedCount === 0) {
-            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-23.png' };
+            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-LandingPage%20(1).png' };
           } else {
             const candidates = [];
 
