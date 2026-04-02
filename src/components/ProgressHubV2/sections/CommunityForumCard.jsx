@@ -24,6 +24,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   const [localCommentCounts, setLocalCommentCounts] = useState({});
   const [closingPostId, setClosingPostId] = useState(null);
   const [commentsVisibleId, setCommentsVisibleId] = useState(null);
+  const [hoveredPostId, setHoveredPostId] = useState(null);
   const leaveTimerRef = useRef(null);
   const animTimerRef = useRef(null);
   const expandTimerRef = useRef(null);
@@ -226,10 +227,11 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               <div
                 className="rounded-lg cursor-pointer transition-colors"
                 style={{ background: '#171717', padding: '1.25rem' }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#212121'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#171717'}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#212121'; setHoveredPostId(post.id); }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#171717'; setHoveredPostId(null); }}
                 onClick={() => togglePost(post)}
               >
+                {/* Avatar + Title row */}
                 <div className="flex mb-2" style={{ alignItems: 'flex-start', gap: '1rem' }}>
                   {post.author_icon ? (
                     <img
@@ -243,46 +245,48 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                     {post.author && post.author.length > 2 ? post.author.charAt(2).toUpperCase() : 'U'}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start gap-2" style={{ marginTop: '-4px', marginBottom: '0.4rem' }}>
+                    <div className="flex items-start gap-2" style={{ marginTop: '-4px' }}>
                       <h3 className="text-white flex-1" style={{ fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%', lineHeight: '1.4' }}>{post.title}</h3>
                       <span className="text-xs text-white flex-shrink-0" style={{ marginTop: '2px' }}>{getTimeAgo(post.created_at)}</span>
                     </div>
-                    <div className="text-white mb-2 leading-snug relative" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', overflow: 'hidden', transition: 'max-height 0.3s ease-out', ...(expandedPostId === post.id ? { maxHeight: '2000px' } : { maxHeight: '8.25em' }) }}>
-                      <RedditMarkdown content={post.content} />
-                      {expandedPostId !== post.id && post.content && post.content.length > 300 && (
-                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2em', background: 'linear-gradient(transparent, #171717)', pointerEvents: 'none' }} />
-                      )}
-                    </div>
-                    <div className="flex items-center gap-4 text-xs text-white">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          className={`hover:text-white transition ${likedPosts.has(post.id) ? 'text-pink-500' : ''}`}
-                          onClick={(e) => handleLikePost(e, post)}
-                        >
-                          <ThumbsUp size={13} fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
-                        </button>
-                        <span style={{ fontWeight: 300 }}>{localUpvotes[post.id] ?? post.upvotes}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MessageSquare size={13} />
-                        <span style={{ fontWeight: 300 }}>{localCommentCounts[post.id] ?? post.comments ?? 0}</span>
-                      </div>
-                      {userRole === 'admin' && onBlockPost && (
-                        <button
-                          className="ml-auto text-white/30 hover:text-red-400 transition"
-                          title="Block this post"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (confirm('Block this post? It will be hidden for all users.')) {
-                              onBlockPost(post.redditId);
-                            }
-                          }}
-                        >
-                          <Ban size={13} />
-                        </button>
-                      )}
-                    </div>
                   </div>
+                </div>
+                {/* Body text - full width */}
+                <div className="text-white mb-2 leading-snug relative" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', overflow: 'hidden', transition: 'max-height 0.3s ease-out', ...(expandedPostId === post.id ? { maxHeight: '2000px' } : { maxHeight: '8.25em' }) }}>
+                  <RedditMarkdown content={post.content} />
+                  {expandedPostId !== post.id && post.content && post.content.length > 300 && (
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2em', background: `linear-gradient(transparent, ${hoveredPostId === post.id ? '#212121' : '#171717'})`, transition: 'background 0.15s', pointerEvents: 'none' }} />
+                  )}
+                </div>
+                {/* Actions row - full width */}
+                <div className="flex items-center gap-4 text-xs text-white">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      className={`hover:text-white transition ${likedPosts.has(post.id) ? 'text-pink-500' : ''}`}
+                      onClick={(e) => handleLikePost(e, post)}
+                    >
+                      <ThumbsUp size={13} fill={likedPosts.has(post.id) ? 'currentColor' : 'none'} />
+                    </button>
+                    <span style={{ fontWeight: 300 }}>{localUpvotes[post.id] ?? post.upvotes}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare size={13} />
+                    <span style={{ fontWeight: 300 }}>{localCommentCounts[post.id] ?? post.comments ?? 0}</span>
+                  </div>
+                  {userRole === 'admin' && onBlockPost && (
+                    <button
+                      className="ml-auto text-white/30 hover:text-red-400 transition"
+                      title="Block this post"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Block this post? It will be hidden for all users.')) {
+                          onBlockPost(post.redditId);
+                        }
+                      }}
+                    >
+                      <Ban size={13} />
+                    </button>
+                  )}
                 </div>
               </div>
 
