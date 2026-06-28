@@ -515,7 +515,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             href="/welcome"
             style={{
               marginTop: isMobile ? '-5px' : 0,
-              marginBottom: isMobile ? '106.48px' : '55px',
+              marginBottom: isMobile ? '90px' : '55px',
               marginLeft: isMobile ? '4px' : '-9px',
               display: 'block',
               width: 'fit-content',
@@ -681,7 +681,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             )}
 
             {/* Stats Row */}
-            <div className="flex items-start justify-between" style={{ paddingLeft: isMobile ? '0' : '25px', paddingRight: isMobile ? '0' : '50px', gap: isMobile ? '8px' : 0 }}>
+            <div className="flex items-start justify-between" style={{ paddingLeft: isMobile ? '0' : '25px', paddingRight: isMobile ? '0' : '50px', gap: isMobile ? '8px' : 0, marginTop: isMobile ? '8px' : 0 }}>
               {[
                 achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Book-LandingPage%20(1).png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },

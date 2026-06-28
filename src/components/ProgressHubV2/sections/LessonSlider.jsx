@@ -166,8 +166,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
   const showBackButton = isNotViewingCurrentLesson && !allLessonsCompleted;
 
   return (
-    <div className="relative" style={{ marginTop: '1.5rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
+    <div className="relative" style={{ marginTop: isMobile ? '0.25rem' : '1.5rem', minHeight: '160px' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.4rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
@@ -208,7 +208,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
         onMouseLeave={handleScrollMouseLeave}
         onScroll={handleScroll}
       >
-        <div className="flex gap-4 items-stretch">
+        <div className={`flex gap-4 ${isMobile ? 'items-start' : 'items-stretch'}`}>
           {upcomingLessons.length > 0 ? (
             upcomingLessons.map((lesson, index) => {
               const cardWidth = getCardWidth(lesson);
@@ -216,11 +216,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
               return (
                 <div
                   key={`${lesson.module_number}-${lesson.lesson_number}`}
-                  className="relative flex items-start gap-3"
+                  className={isMobile ? "relative flex flex-col" : "relative flex items-start gap-3"}
                   style={{
                     width: `${cardWidth}px`,
                     minWidth: `${cardWidth}px`,
-                    minHeight: '132px',
+                    minHeight: isMobile ? '0' : '132px',
                     flexShrink: 0,
                     paddingTop: '1.25rem',
                     paddingRight: '1.5rem',
@@ -247,11 +247,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                       willChange: 'opacity',
                     }}
                   />
-                  <div className="flex-1" style={{ minWidth: 0, ...(isMobile && { paddingRight: '50px' }) }}>
+                  <div className="flex-1" style={{ minWidth: 0 }}>
                     <h4 className="text-white" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
-                    <ul style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.25rem' : '0' }}>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
                           <span className="mt-0.5 text-white">•</span>
@@ -261,10 +261,12 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     </ul>
                   </div>
 
+                  {/* Desktop: arrow inside the card on the right. Mobile: full-width arrow at the bottom of the card. */}
+                  {!isMobile ? (
                   <button
                     className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                     style={{
-                      width: isMobile ? '38px' : '48px', height: isMobile ? '38px' : '48px',
+                      width: '48px', height: '48px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       borderRadius: '0.3rem',
                       position: 'absolute',
@@ -274,10 +276,29 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     }}
                     onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                   >
-                    <svg className="group-hover:stroke-pink-500 transition-colors" width={isMobile ? 21 : 26} height={isMobile ? 19 : 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="group-hover:stroke-pink-500 transition-colors" width={26} height={24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                   </button>
+                  ) : (
+                  <button
+                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors group"
+                    style={{
+                      width: '100%', height: '38px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: '0.3rem',
+                      marginTop: '0.75rem',
+                      position: 'relative', zIndex: 1,
+                      gap: '0.125rem',
+                    }}
+                    onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
+                  >
+                    <span className="group-hover:text-pink-500 transition-colors" style={{ fontSize: '1rem', fontWeight: 300 }}>Start</span>
+                    <svg className="group-hover:stroke-pink-500 transition-colors" width={21} height={19} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                  )}
                 </div>
               );
             })

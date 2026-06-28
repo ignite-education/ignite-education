@@ -170,7 +170,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
   return (
     <>
       <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
-        <h2 className="font-semibold text-white leading-snug" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
+        <h2 className="font-semibold text-white leading-snug" style={{ fontSize: isMobile ? '1.4rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
         <div
           className="rounded-lg flex items-center group"
           style={{

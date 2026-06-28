@@ -149,13 +149,15 @@ const ProgressHubV2 = () => {
       <CourseDetailsSection
         courseTitle={courseTitle}
         graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} completedLessons={completedLessons} />}
+        lessonSlider={
+          <LessonSlider
+            upcomingLessons={upcomingLessons}
+            completedLessons={completedLessons}
+            isLessonCompleted={isLessonCompleted}
+          />
+        }
         left={
           <>
-            <LessonSlider
-              upcomingLessons={upcomingLessons}
-              completedLessons={completedLessons}
-              isLessonCompleted={isLessonCompleted}
-            />
             <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />
             <ResourcesSlider resources={resources} />
           </>
