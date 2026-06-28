@@ -352,7 +352,7 @@ const SettingsCog = ({ onClick }) => {
 
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat }) => {
   const isMobile = useIsMobile();
-  const avatarSize = isMobile ? 35 : 150; // mobile: 35x35 to match welcome navbar
+  const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (navbar 35 +21%)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
@@ -507,7 +507,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       }}
     >
       <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
-      <div className="flex flex-col lg:flex-row w-full gap-3 lg:gap-16 items-start">
+      <div className="flex flex-col lg:flex-row w-full gap-4 lg:gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo — mobile matches the welcome navbar (33x33 cropped box); desktop keeps 61x61 */}
@@ -515,14 +515,14 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             href="/welcome"
             style={{
               marginTop: isMobile ? '-5px' : 0,
-              marginBottom: isMobile ? '88px' : '55px',
+              marginBottom: isMobile ? '106.48px' : '55px',
               marginLeft: isMobile ? '4px' : '-9px',
               display: 'block',
               width: 'fit-content',
             }}
           >
             {/* Lottie canvas has ~15% internal padding, so on mobile we overflow-clip it to match the navbar icon */}
-            <div style={isMobile ? { width: 33, height: 33, overflow: 'hidden' } : { width: 61, height: 61 }}>
+            <div style={isMobile ? { width: 39.93, height: 39.93, overflow: 'hidden' } : { width: 61, height: 61 }}>
               {lottieData && Object.keys(lottieData).length > 0 ? (
                 <Lottie
                   lottieRef={lottieRef}
@@ -538,7 +538,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
                       }, 4000);
                     }
                   }}
-                  style={isMobile ? { width: 47.5, height: 47.5, marginTop: -7.5, marginLeft: -6.5 } : { width: 61, height: 61 }}
+                  style={isMobile ? { width: 57.475, height: 57.475, marginTop: -9.075, marginLeft: -7.865 } : { width: 61, height: 61 }}
                 />
               ) : (
                 <div style={{ width: '100%', height: '100%' }} />
@@ -562,7 +562,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '25px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '30.25px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
