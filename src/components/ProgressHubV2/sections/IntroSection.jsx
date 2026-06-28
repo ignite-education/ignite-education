@@ -501,7 +501,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       style={{
         position: 'relative',
         ...(isMobile
-          ? { padding: '20px 20px 12px 20px' }
+          ? { padding: '20px 20px 15px 20px' }
           : { height: '70vh', minHeight: '500px', maxHeight: '550px', padding: '30px 40px 0 40px' }),
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
