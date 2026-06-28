@@ -352,8 +352,8 @@ const SettingsCog = ({ onClick }) => {
 
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat }) => {
   const isMobile = useIsMobile();
-  const avatarSize = isMobile ? 50 : 150; // mobile: 50x50
-  const statImgSize = isMobile ? 68.4 : 80; // mobile: 5% smaller than 72
+  const avatarSize = isMobile ? 35 : 150; // mobile: 35x35 to match welcome navbar
+  const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -507,55 +507,67 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       }}
     >
       <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
-      <div className="flex flex-col lg:flex-row w-full gap-5 lg:gap-16 items-start">
+      <div className="flex flex-col lg:flex-row w-full gap-3 lg:gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
-          {/* Lottie Logo */}
-          <a href="/welcome" style={{ marginTop: isMobile ? '-9px' : 0, marginBottom: isMobile ? '52px' : '55px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
-            {lottieData && Object.keys(lottieData).length > 0 ? (
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={lottieData}
-                loop={true}
-                autoplay={false}
-                onLoopComplete={() => {
-                  loopCountRef.current += 1;
-                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
-                    lottieRef.current.pause();
-                    setTimeout(() => {
-                      lottieRef.current?.goToAndPlay(0);
-                    }, 4000);
-                  }
-                }}
-                style={{ width: 61, height: 61 }}
-              />
-            ) : (
-              <div style={{ width: 61, height: 61 }} />
-            )}
+          {/* Lottie Logo — mobile matches the welcome navbar (33x33 cropped box); desktop keeps 61x61 */}
+          <a
+            href="/welcome"
+            style={{
+              marginTop: isMobile ? '-5px' : 0,
+              marginBottom: isMobile ? '88px' : '55px',
+              marginLeft: isMobile ? '4px' : '-9px',
+              display: 'block',
+              width: 'fit-content',
+            }}
+          >
+            {/* Lottie canvas has ~15% internal padding, so on mobile we overflow-clip it to match the navbar icon */}
+            <div style={isMobile ? { width: 33, height: 33, overflow: 'hidden' } : { width: 61, height: 61 }}>
+              {lottieData && Object.keys(lottieData).length > 0 ? (
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={lottieData}
+                  loop={true}
+                  autoplay={false}
+                  onLoopComplete={() => {
+                    loopCountRef.current += 1;
+                    if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                      lottieRef.current.pause();
+                      setTimeout(() => {
+                        lottieRef.current?.goToAndPlay(0);
+                      }, 4000);
+                    }
+                  }}
+                  style={isMobile ? { width: 47.5, height: 47.5, marginTop: -7.5, marginLeft: -6.5 } : { width: 61, height: 61 }}
+                />
+              ) : (
+                <div style={{ width: '100%', height: '100%' }} />
+              )}
+            </div>
           </a>
 
           {/* Profile Picture */}
           <div
             onClick={isMobile ? onSettingsClick : undefined}
             style={isMobile
-              ? { position: 'absolute', top: '11px', right: '20px', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }
+              ? { position: 'absolute', top: '15px', right: '24px', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }
               : { marginBottom: '30px', position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px` }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
                 className="object-cover"
-                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               />
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '25px' : '36px', borderRadius: '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '25px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
             )}
-            {(!hasHighQualityAvatar || !profilePicture) && (
+            {!isMobile && (!hasHighQualityAvatar || !profilePicture) && (
               <button
                 onClick={onSettingsClick}
                 className="absolute flex items-center justify-center transition-colors group"
@@ -580,8 +592,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </div>
 
           {/* Greeting */}
-          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2.2rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
-            {getGreeting()},{isMobile ? <br /> : ' '}
+          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
+            {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName || (isMobile ? ' ' : '')}
             </span>
