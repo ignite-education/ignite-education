@@ -353,7 +353,7 @@ const SettingsCog = ({ onClick }) => {
 
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
   const isMobile = useIsMobile();
-  const avatarSize = isMobile ? 69.37 : 150; // mobile: 69.37 (above greeting, +5% more)
+  const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
@@ -516,7 +516,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             href="/welcome"
             style={{
               marginTop: isMobile ? '-5px' : 0,
-              marginBottom: isMobile ? '23px' : '55px',
+              marginBottom: isMobile ? '98px' : '55px',
               marginLeft: isMobile ? '-1px' : '-9px',
               display: 'block',
               width: 'fit-content',
@@ -551,7 +551,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           <div
             onClick={isMobile ? onSettingsClick : undefined}
             style={isMobile
-              ? { position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px`, marginTop: '16px', marginBottom: '16px', cursor: 'pointer' }
+              ? { position: 'absolute', top: '15px', right: '24px', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }
               : { marginBottom: '30px', position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px` }}>
             {profilePicture ? (
               <img
@@ -563,7 +563,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '49.55px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '30.25px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
@@ -593,8 +593,8 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </div>
 
           {/* Greeting */}
-          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '1.7rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
-            {getGreeting()},{' '}
+          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2.1rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
+            {getGreeting()},{isMobile ? <br /> : ' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName || (isMobile ? ' ' : '')}
             </span>

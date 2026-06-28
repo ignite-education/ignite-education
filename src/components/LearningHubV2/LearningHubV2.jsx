@@ -149,6 +149,7 @@ const LearningHubV2 = () => {
   const [currentGroupIndex, setCurrentGroupIndex] = useState(0);
   const [resetKey, setResetKey] = useState(0);
   const [resetClicked, setResetClicked] = useState(false);
+  const [mobileResetAnim, setMobileResetAnim] = useState(false);
   const [contentFading, setContentFading] = useState(false);
   const [restoringProgress, setRestoringProgress] = useState(true);
   const [progressBarDone, setProgressBarDone] = useState(false);
@@ -1233,7 +1234,7 @@ const LearningHubV2 = () => {
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
-          <div ref={leftHeaderRef} className={isMobile ? 'px-5' : 'px-10'} style={{ paddingTop: '30px', paddingBottom: '5px' }}>
+          <div ref={leftHeaderRef} className={isMobile ? 'px-5' : 'px-10'} style={{ paddingTop: isMobile ? '20px' : '30px', paddingBottom: '5px' }}>
             <div className={`max-w-2xl ${isMobile ? 'flex items-center' : ''}`} style={isMobile ? { gap: '16px', marginBottom: '14px' } : undefined}>
               <a
                 href="/progress"
@@ -1291,6 +1292,11 @@ const LearningHubV2 = () => {
                 className="group cursor-pointer flex-shrink-0"
                 title="Restart lesson"
                 onClick={() => {
+                  if (isMobile) {
+                    // No hover on touch — play the desktop rotate + pink animation on tap
+                    setMobileResetAnim(true);
+                    setTimeout(() => setMobileResetAnim(false), 450);
+                  }
                   if (user?.id && userCourseId) {
                     saveUserProgress(user.id, userCourseId, currentModule, currentLesson, 0).catch(() => {});
                   }
@@ -1316,7 +1322,7 @@ const LearningHubV2 = () => {
                   height={isMobile ? 21 : 18}
                   viewBox="0 0 24 24"
                   fill="none"
-                  className={`transition-transform duration-300 ease-in-out ${resetClicked ? '' : 'group-hover:-rotate-45'}`}
+                  className={`transition-transform duration-300 ease-in-out ${resetClicked ? '' : 'group-hover:-rotate-45'} ${mobileResetAnim ? '-rotate-45' : ''}`}
                 >
                   <path
                     d="M12 4a8 8 0 1 1-6.3 3.1"
@@ -1324,12 +1330,12 @@ const LearningHubV2 = () => {
                     stroke="#000000"
                     strokeWidth="2.5"
                     strokeLinecap="round"
-                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:stroke-[#EF0B72]'}`}
+                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:stroke-[#EF0B72]'} ${mobileResetAnim ? 'stroke-[#EF0B72]' : ''}`}
                   />
                   <polygon
                     points="12,1 12,7 6,4"
                     fill="#000000"
-                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:fill-[#EF0B72]'}`}
+                    className={`transition-colors duration-300 ${resetClicked ? '' : 'group-hover:fill-[#EF0B72]'} ${mobileResetAnim ? 'fill-[#EF0B72]' : ''}`}
                   />
                 </svg>
               </button>
@@ -1940,7 +1946,7 @@ const LearningHubV2 = () => {
 
           {/* Chat input pinned at bottom */}
           {!showLessonSummary && (
-          <div className={`${isMobile ? 'px-5' : 'px-10'} py-5 bg-white relative`} style={{ zIndex: 6 }}>
+          <div className={`${isMobile ? 'px-5' : 'px-10'} pt-5 ${isMobile ? 'pb-2.5' : 'pb-5'} bg-white relative`} style={{ zIndex: 6 }}>
             <div
               style={{
                 opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,

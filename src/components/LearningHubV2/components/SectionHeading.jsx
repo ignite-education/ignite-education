@@ -52,7 +52,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
             {wordSpans}
           </HeadingTag>
         </div>
@@ -82,7 +82,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
             {renderFull(text)}
           </HeadingTag>
         </div>
@@ -114,7 +114,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
             {cursorOnly}
           </HeadingTag>
         </div>
@@ -131,7 +131,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
   if (level === 2) {
     return (
       <div className="mb-3" style={{ marginTop: '10px' }}>
-        <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
+        <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
           {renderFormattedText(revealedText)}
           {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
         </HeadingTag>
