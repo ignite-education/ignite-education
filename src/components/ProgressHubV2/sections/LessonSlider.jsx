@@ -167,7 +167,9 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
 
   return (
     <div className="relative" style={{ marginTop: isMobile ? '0.25rem' : '1.5rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.4rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
+      {/* Title hidden on mobile — cards only */}
+      {!isMobile && (
+      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
@@ -183,6 +185,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
           </span>
         ))}
       </h2>
+      )}
 
       <div className="relative">
       <div
@@ -196,7 +199,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
           cursor: isScrolling ? 'grabbing' : 'grab',
           scrollSnapType: 'x mandatory',
           scrollSnapStop: 'always',
-          scrollPaddingLeft: '0px',
+          // Mobile: scroll-padding matches the padding below so snapped cards align to the title's left edge (not the padding-box edge)
+          scrollPaddingLeft: isMobile ? '14px' : '0px',
+          // Mobile: equal negative margin + padding lets the card shadow spill over the track edges without clipping or resizing the cards
+          margin: isMobile ? '-14px' : 0,
+          padding: isMobile ? '14px' : 0,
           willChange: 'scroll-position',
           opacity: isCarouselReady ? 1 : 0,
           visibility: isCarouselReady ? 'visible' : 'hidden',
@@ -226,8 +233,9 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     paddingRight: '1.5rem',
                     paddingBottom: isMobile ? '1rem' : '0.15rem',
                     paddingLeft: '1.4rem',
-                    borderRadius: '0.3rem',
-                    background: '#7714E0',
+                    borderRadius: isMobile ? '0.5rem' : '0.3rem',
+                    background: isMobile ? '#FFFFFF' : '#7714E0',
+                    boxShadow: isMobile ? '0 0 10px rgba(103, 103, 103, 0.5)' : 'none',
                     scrollSnapAlign: 'start',
                     scrollSnapStop: 'always'
                   }}
@@ -240,7 +248,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                       backgroundColor: 'rgba(0, 0, 0, 0.5)',
                       backdropFilter: 'blur(0.75px)',
                       WebkitBackdropFilter: 'blur(0.75px)',
-                      borderRadius: '0.3rem',
+                      borderRadius: isMobile ? '0.5rem' : '0.3rem',
                       pointerEvents: 'none',
                       opacity: index !== snappedCardIndex ? 1 : 0,
                       transition: 'opacity 0.3s ease-in-out',
@@ -248,13 +256,13 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     }}
                   />
                   <div className="flex-1" style={{ minWidth: 0 }}>
-                    <h4 className="text-white" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
+                    <h4 className={isMobile ? 'text-black' : 'text-white'} style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
                     <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
-                          <span className="mt-0.5 text-white">•</span>
+                        <li key={idx} className={`flex items-start gap-2 ${isMobile ? 'text-black' : 'text-white'}`} style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
+                          <span className={`mt-0.5 ${isMobile ? 'text-black' : 'text-white'}`}>•</span>
                           <span style={isMobile ? { flex: 1, minWidth: 0 } : undefined}>{bulletPoint}</span>
                         </li>
                       ))}
@@ -290,6 +298,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                       marginTop: '0.75rem',
                       position: 'relative', zIndex: 1,
                       gap: '0.125rem',
+                      backgroundColor: '#E5E5E7',
                     }}
                     onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                   >

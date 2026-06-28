@@ -110,6 +110,15 @@ const ProgressHubV2 = () => {
 
   const courseTitle = courseData?.title || courseData?.name || 'Product Manager';
 
+  // Lesson slider — rendered in the white IntroSection on mobile, in the black CourseDetailsSection on desktop
+  const lessonSlider = (
+    <LessonSlider
+      upcomingLessons={upcomingLessons}
+      completedLessons={completedLessons}
+      isLessonCompleted={isLessonCompleted}
+    />
+  );
+
   return (
     <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', ...(isMobile && { overflowX: 'hidden' }) }}>
       {showLoading && (
@@ -143,19 +152,14 @@ const ProgressHubV2 = () => {
         communityCount={communityCount}
         behaviourStat={behaviourStat}
         achievementStat={achievementStat}
+        lessonSlider={lessonSlider}
       />
 
       {/* Section 2: Course Details */}
       <CourseDetailsSection
         courseTitle={courseTitle}
         graph={<ProgressGraph userName={firstName} courseData={courseData} userLessonScores={userLessonScores} globalLessonScores={globalLessonScores} completedLessons={completedLessons} />}
-        lessonSlider={
-          <LessonSlider
-            upcomingLessons={upcomingLessons}
-            completedLessons={completedLessons}
-            isLessonCompleted={isLessonCompleted}
-          />
-        }
+        lessonSlider={lessonSlider}
         left={
           <>
             <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />

@@ -24,7 +24,7 @@ const CourseDetailsSection = ({ courseTitle, graph, lessonSlider, left, right })
       {!isMobile && graph && <div style={{ marginBottom: '20px' }}>{graph}</div>}
       <div className="flex flex-col lg:flex-row w-full gap-8 lg:gap-16" style={{ overflow: 'hidden', alignItems: 'flex-start' }}>
         <div ref={leftColRef} className="flex flex-col w-full" style={{ flex: 1, minWidth: 0, gap: '20px' }}>
-          {lessonSlider}
+          {!isMobile && lessonSlider}
           {isMobile && graph}
           {left}
         </div>
