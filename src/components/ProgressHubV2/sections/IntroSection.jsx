@@ -352,7 +352,7 @@ const SettingsCog = ({ onClick }) => {
 
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
   const isMobile = useIsMobile();
-  const avatarSize = isMobile ? 66.07 : 150; // mobile: 66.07 (above greeting, +30% more)
+  const avatarSize = isMobile ? 69.37 : 150; // mobile: 69.37 (above greeting, +5% more)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
@@ -501,7 +501,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       style={{
         position: 'relative',
         ...(isMobile
-          ? { padding: '20px 20px 2px 20px' }
+          ? { padding: '20px 20px 12px 20px' }
           : { height: '70vh', minHeight: '500px', maxHeight: '550px', padding: '30px 40px 0 40px' }),
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
@@ -562,7 +562,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '47.19px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '49.55px' : '36px', borderRadius: isMobile ? '0.125rem' : '0.1rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
@@ -592,7 +592,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </div>
 
           {/* Greeting */}
-          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
+          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '1.7rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
             {getGreeting()},{' '}
             <span style={{ color: '#EF0B72' }}>
               {typedName || (isMobile ? ' ' : '')}

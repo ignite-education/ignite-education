@@ -298,11 +298,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                       marginTop: '0.75rem',
                       position: 'relative', zIndex: 1,
                       gap: '0.125rem',
-                      backgroundColor: '#E5E5E7',
+                      backgroundColor: '#F6F6F6',
                     }}
                     onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                   >
-                    <span className="group-hover:text-pink-500 transition-colors" style={{ fontSize: '1rem', fontWeight: 300 }}>Start</span>
+                    <span className="group-hover:text-pink-500 transition-colors" style={{ fontSize: '1rem', fontWeight: 500 }}>Start</span>
                     <svg className="group-hover:stroke-pink-500 transition-colors" width={21} height={19} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
