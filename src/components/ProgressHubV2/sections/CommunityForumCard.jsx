@@ -3,6 +3,7 @@ import { MessageSquare, ThumbsUp, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
 import RedditMarkdown from './RedditMarkdown';
+import useIsMobile from '../hooks/useIsMobile';
 
 const getTimeAgo = (timestamp) => {
   const now = new Date();
@@ -15,6 +16,7 @@ const getTimeAgo = (timestamp) => {
 };
 
 const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost, onMyPosts, userRole, userId, onBlockPost }) => {
+  const isMobile = useIsMobile();
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [postComments, setPostComments] = useState({});
   const [loadingComments, setLoadingComments] = useState({});
@@ -178,7 +180,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   return (
     <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       <div className="flex items-center" style={{ marginBottom: '0.75rem', flexShrink: 0 }}>
-        <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%' }}>Community Forum</h2>
+        <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%' }}>Community Forum</h2>
         {onMyPosts && (
           <button
             onClick={onMyPosts}

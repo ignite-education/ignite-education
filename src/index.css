@@ -89,6 +89,18 @@ body {
   }
 }
 
+/* Matches next-app's course-card entrance stagger (10px rise) */
+@keyframes fadeInUpSmall {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;

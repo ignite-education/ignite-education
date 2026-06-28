@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 
 const SVG_WIDTH = 1200;
 const SVG_HEIGHT = 200;
@@ -42,6 +43,8 @@ const ProgressGraph = ({
   globalLessonScores = {},
   completedLessons = [],
 }) => {
+  const isMobile = useIsMobile();
+
   // Build flat lesson list and module ranges from course structure
   const lessons = [];
   const moduleRanges = [];
@@ -81,7 +84,7 @@ const ProgressGraph = ({
     return (
       <div className="w-full" style={{ marginTop: '8px' }}>
         {userName && (
-          <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '4px' }}>
+          <h3 className="text-white font-semibold" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '4px' }}>
             {userName}'s Progress
           </h3>
         )}
@@ -285,7 +288,7 @@ const ProgressGraph = ({
     <div ref={containerRef} className="w-full" style={{ marginTop: '8px' }}>
       {userName && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-          <h3 className="text-white font-semibold" style={{ fontSize: '1.6rem', letterSpacing: '0%' }}>
+          <h3 className="text-white font-semibold" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%' }}>
             {userName}'s Progress
           </h3>
           <div
@@ -359,7 +362,7 @@ const ProgressGraph = ({
         ref={graphRef}
         onMouseMove={handleGraphMouseMove}
         onMouseLeave={handleGraphMouseLeave}
-        style={{ position: 'relative', height: '120px', cursor: 'pointer', width: '90%', maxWidth: '1500px', margin: '0 auto' }}
+        style={{ position: 'relative', height: '120px', cursor: 'pointer', width: isMobile ? '95%' : '90%', maxWidth: '1500px', margin: '0 auto' }}
       >
         <svg
           viewBox={`0 0 ${SVG_WIDTH} ${PADDING_TOP + GRAPH_HEIGHT + 10}`}
@@ -403,15 +406,17 @@ const ProgressGraph = ({
             />
           )}
 
-          {/* Horizontal separator */}
-          <line
-            x1={0}
-            y1={baseY + 8}
-            x2={SVG_WIDTH}
-            y2={baseY + 8}
-            stroke="#fff"
-            strokeWidth="1"
-          />
+          {/* Horizontal separator — hidden on mobile */}
+          {!isMobile && (
+            <line
+              x1={0}
+              y1={baseY + 8}
+              x2={SVG_WIDTH}
+              y2={baseY + 8}
+              stroke="#fff"
+              strokeWidth="1"
+            />
+          )}
         </svg>
 
         {/* HTML dots — immune to SVG non-uniform scaling */}
@@ -537,7 +542,8 @@ const ProgressGraph = ({
         )}
       </div>
 
-      {/* HTML module labels — absolutely positioned at midpoint of each module's dots */}
+      {/* HTML module labels — hidden on mobile (x-axis markers) */}
+      {!isMobile && (
       <div style={{ position: 'relative', marginTop: '8px', height: '2.4em', width: '90%', maxWidth: '1500px', margin: '8px auto 0' }}>
         {moduleRanges.map((mod, idx) => {
           const lines = formatModuleName(mod.name);
@@ -564,6 +570,7 @@ const ProgressGraph = ({
           );
         })}
       </div>
+      )}
     </div>
   );
 };

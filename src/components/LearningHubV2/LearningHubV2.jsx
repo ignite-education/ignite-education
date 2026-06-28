@@ -9,6 +9,7 @@ import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
 import useNarration from './hooks/useNarration';
+import useIsMobile from './hooks/useIsMobile';
 import { normalizeTextForNarration, splitIntoWords } from '../../utils/textNormalization';
 import LessonHeader from './components/LessonHeader';
 import ContentRenderer from './components/ContentRenderer';
@@ -137,6 +138,10 @@ const LearningHubV2 = () => {
   const { user, firstName } = useAuth();
   const navigate = useNavigate();
   const { lottieData } = useAnimation();
+  // On phones the two-column layout collapses to a single full-width column
+  // with media rendered inline in the lesson flow (see render below).
+  // Breakpoint 768px = below tablet portrait, so tablets/laptops keep two columns.
+  const isMobile = useIsMobile(768);
   useEffect(() => {
     document.title = `${firstName ? `${firstName}'s` : 'Your'} Learning | Ignite`;
   }, [firstName]);
@@ -1228,7 +1233,7 @@ const LearningHubV2 = () => {
         {/* Left column — lesson content */}
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
-          <div ref={leftHeaderRef} className="px-10" style={{ paddingTop: '30px', paddingBottom: '5px' }}>
+          <div ref={leftHeaderRef} className={isMobile ? 'px-5' : 'px-10'} style={{ paddingTop: '30px', paddingBottom: '5px' }}>
             <div className="max-w-2xl">
               <a href="/progress" style={{ marginBottom: '20px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
                 {lottieData && Object.keys(lottieData).length > 0 ? (
@@ -1321,7 +1326,7 @@ const LearningHubV2 = () => {
           {/* Scrollable content area wrapper */}
           <div className="flex-1 min-h-0 relative">
             {/* White gradient fade below progress bar */}
-            <div className="absolute pointer-events-none" style={{ top: '0px', height: '10px', zIndex: 5, left: '40px', right: '40px' }}>
+            <div className="absolute pointer-events-none" style={{ top: '0px', height: '10px', zIndex: 5, left: isMobile ? '20px' : '40px', right: isMobile ? '20px' : '40px' }}>
               <div className="absolute inset-0" style={{
                 backdropFilter: 'blur(4px)',
                 WebkitBackdropFilter: 'blur(4px)',
@@ -1333,7 +1338,7 @@ const LearningHubV2 = () => {
             <div
               ref={contentScrollRef}
               className="h-full overflow-y-auto hide-scrollbar"
-              style={{ paddingLeft: '40px', paddingRight: '70px' }}
+              style={{ paddingLeft: isMobile ? '20px' : '40px', paddingRight: isMobile ? '20px' : '70px' }}
             >
             {/* Persistent H2 — always rendered outside fade container so it never flickers */}
             {!restoringProgress && !showLessonSummary && !showingScoredQuestion && persistentH2 && (
@@ -1529,6 +1534,21 @@ const LearningHubV2 = () => {
                     </div>
                   )}
                 </>
+              )}
+
+              {/* Inline media (mobile only) — on desktop this renders in the right column.
+                  Uses the same displayedMedia + crossfade state so behavior matches. */}
+              {isMobile && !showingScoredQuestion && !showLessonSummary && displayedMedia.length > 0 && (
+                <div
+                  key={displayedMedia.map(s => s.id).join('|')}
+                  className="mt-5"
+                  style={{
+                    opacity: mediaFadePhase === 'fading-out' ? 0 : 1,
+                    transition: 'opacity 250ms ease-out',
+                  }}
+                >
+                  <MediaPanel sections={displayedMedia} />
+                </div>
               )}
 
               {/* Action area — buttons crossfade with chat messages at the same position */}
@@ -1907,7 +1927,7 @@ const LearningHubV2 = () => {
 
           {/* Chat input pinned at bottom */}
           {!showLessonSummary && (
-          <div className="px-10 py-5 bg-white relative" style={{ zIndex: 6 }}>
+          <div className={`${isMobile ? 'px-5' : 'px-10'} py-5 bg-white relative`} style={{ zIndex: 6 }}>
             <div
               style={{
                 opacity: suggestedQuestion && !suggestedQuestionDismissed && !showingScoredQuestion && !pendingUserQuestion && !groupHasUserQuestion && !showLessonSummary && (suggestedQuestionPersisted || (allTypingComplete && showButtons) || userQuestionTypingDone) ? 1 : 0,
@@ -1943,8 +1963,8 @@ const LearningHubV2 = () => {
           )}
         </div>
 
-        {/* Right column — media panel */}
-        {(() => {
+        {/* Right column — media panel (desktop only; on mobile media renders inline above) */}
+        {!isMobile && (() => {
           const svgOnly = displayedMedia.every(s => s.content_type !== 'youtube');
           return (
             <div className="flex-[2] overflow-y-auto flex flex-col items-center" style={{ backgroundColor: '#F0F0F0', paddingTop: svgOnly ? '32px' : (leftHeaderHeight ? `${leftHeaderHeight + 9}px` : '32px'), paddingLeft: '32px', paddingRight: '32px', paddingBottom: '32px' }}>

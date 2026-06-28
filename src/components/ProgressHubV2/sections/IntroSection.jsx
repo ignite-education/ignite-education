@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import Lottie from 'lottie-react';
+import useIsMobile from '../hooks/useIsMobile';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
@@ -168,6 +169,14 @@ const formatJoinDate = (dateStr) => {
   const date = new Date(dateStr);
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `Joined ${months[date.getMonth()]}-${String(date.getFullYear()).slice(-2)}`;
+};
+
+// Keep only the first N sentences of a string (used to cap intro text on mobile)
+const limitSentences = (text, n) => {
+  if (!text) return text;
+  const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g);
+  if (!sentences) return text;
+  return sentences.slice(0, n).join('').trim();
 };
 
 const ConfettiBurst = () => {
@@ -342,6 +351,9 @@ const SettingsCog = ({ onClick }) => {
 };
 
 const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat }) => {
+  const isMobile = useIsMobile();
+  const avatarSize = isMobile ? 50 : 150; // mobile: 50x50
+  const statImgSize = isMobile ? 68.4 : 80; // mobile: 5% smaller than 72
   const { lottieData } = useAnimation();
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
@@ -488,19 +500,18 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       className="bg-white"
       style={{
         position: 'relative',
-        height: '70vh',
-        minHeight: '500px',
-        maxHeight: '550px',
-        padding: '30px 40px 0 40px',
+        ...(isMobile
+          ? { padding: '20px 20px 28px 20px' }
+          : { height: '70vh', minHeight: '500px', maxHeight: '550px', padding: '30px 40px 0 40px' }),
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
       <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
-      <div className="flex w-full gap-16 items-start">
+      <div className="flex flex-col lg:flex-row w-full gap-5 lg:gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
           {/* Lottie Logo */}
-          <a href="/welcome" style={{ marginBottom: '55px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
+          <a href="/welcome" style={{ marginTop: isMobile ? '-9px' : 0, marginBottom: isMobile ? '52px' : '55px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
             {lottieData && Object.keys(lottieData).length > 0 ? (
               <Lottie
                 lottieRef={lottieRef}
@@ -524,18 +535,22 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </a>
 
           {/* Profile Picture */}
-          <div style={{ marginBottom: '30px', position: 'relative', width: '150px', height: '150px' }}>
+          <div
+            onClick={isMobile ? onSettingsClick : undefined}
+            style={isMobile
+              ? { position: 'absolute', top: '11px', right: '20px', width: `${avatarSize}px`, height: `${avatarSize}px`, cursor: 'pointer' }
+              : { marginBottom: '30px', position: 'relative', width: `${avatarSize}px`, height: `${avatarSize}px` }}>
             {profilePicture ? (
               <img
                 src={profilePicture.replace(/=s\d+-c/, '=s200-c')}
                 alt={firstName}
                 className="object-cover"
-                style={{ width: '150px', height: '150px', borderRadius: '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: '0.1rem' }}
               />
             ) : (
               <div
                 className="bg-[#7714E0] flex items-center justify-center text-white font-bold"
-                style={{ width: '150px', height: '150px', fontSize: '36px', borderRadius: '0.1rem' }}
+                style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, fontSize: isMobile ? '25px' : '36px', borderRadius: '0.1rem' }}
               >
                 {(firstName || 'U')[0].toUpperCase()}
               </div>
@@ -565,15 +580,15 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           </div>
 
           {/* Greeting */}
-          <h1 className="font-bold text-black" style={{ fontSize: '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
-            {getGreeting()},{' '}
+          <h1 className="font-bold text-black" style={{ fontSize: isMobile ? '2.2rem' : '2.4rem', lineHeight: '1.2', letterSpacing: '-0.01em' }}>
+            {getGreeting()},{isMobile ? <br /> : ' '}
             <span style={{ color: '#EF0B72' }}>
-              {typedName}
+              {typedName || (isMobile ? ' ' : '')}
             </span>
           </h1>
 
-          {/* Tags Row */}
-          <div className="flex items-center gap-2" style={{ marginTop: '16px' }}>
+          {/* Tags Row — hidden on mobile */}
+          <div className="flex items-center gap-2" style={{ marginTop: '16px', display: isMobile ? 'none' : 'flex' }}>
             {/* Joined Tag */}
             {formatJoinDate(joinedAt) && (
               <span style={{ position: 'relative', display: 'inline-block' }}>
@@ -634,18 +649,27 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
 
         {/* Right Column: Progress Summary + Stats */}
-        <div className="flex flex-col items-center" style={{ flex: 1, minWidth: 0, paddingTop: '106px' }}>
+        <div className="flex flex-col items-start lg:items-center" style={{ flex: 1, minWidth: 0, paddingTop: isMobile ? '4px' : '106px' }}>
           <div style={{ maxWidth: '550px', width: '100%', overflowWrap: 'break-word' }}>
             {/* Progress Summary */}
-            <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
-              {introText.headline}
-            </p>
-            <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '43px' }}>
-              {renderBodyWithLink(introText.body)}
-            </p>
+            {isMobile ? (
+              <p className="text-black" style={{ fontSize: '16px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '14px' }}>
+                <span className="font-semibold">{introText.headline}</span>{' '}
+                {renderBodyWithLink(limitSentences(introText.body, 2))}
+              </p>
+            ) : (
+              <>
+                <p className="text-black font-semibold" style={{ fontSize: '20px', marginBottom: '6px' }}>
+                  {introText.headline}
+                </p>
+                <p className="text-black" style={{ fontSize: '17px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '43px' }}>
+                  {renderBodyWithLink(introText.body)}
+                </p>
+              </>
+            )}
 
             {/* Stats Row */}
-            <div className="flex items-start justify-between" style={{ paddingLeft: '25px', paddingRight: '50px' }}>
+            <div className="flex items-start justify-between" style={{ paddingLeft: isMobile ? '0' : '25px', paddingRight: isMobile ? '0' : '50px', gap: isMobile ? '8px' : 0 }}>
               {[
                 achievementStat ? { label: achievementStat.label, value: achievementStat.value, image: achievementStat.image } : { label: 'Start your', value: 'first lesson', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Book-LandingPage%20(1).png' },
                 behaviourStat ? { label: behaviourStat.label, value: behaviourStat.value, image: behaviourStat.image } : { label: "You're a late", value: 'night learner', image: '/moon.png' },
@@ -653,14 +677,14 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
               ].map((stat, idx) => (
                 <div key={idx} className="text-center flex flex-col items-center" style={{ flex: '1 1 0', minWidth: 0 }}>
                   {stat.image ? (
-                    <img src={stat.image} alt="" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '8px' }} />
+                    <img src={stat.image} alt="" style={{ width: `${statImgSize}px`, height: `${statImgSize}px`, objectFit: 'contain', marginBottom: '8px' }} />
                   ) : (
-                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: '80px', height: '80px', marginBottom: '8px' }} />
+                    <div className="bg-[#F0F0F0] rounded-[6px]" style={{ width: `${statImgSize}px`, height: `${statImgSize}px`, marginBottom: '8px' }} />
                   )}
-                  <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-normal" style={{ fontSize: isMobile ? '14px' : '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.label}
                   </p>
-                  <p className="text-black font-normal" style={{ fontSize: '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                  <p className="text-black font-normal" style={{ fontSize: isMobile ? '14px' : '16px', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
                     {stat.value}
                   </p>
                 </div>
@@ -670,11 +694,13 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
       </div>
 
-      {/* Bottom Icons */}
-      <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px' }}>
-        <SettingsCog onClick={onSettingsClick} />
-        <ShareButton />
-      </div>
+      {/* Bottom Icons — desktop only (on mobile, tapping the avatar opens settings) */}
+      {!isMobile && (
+        <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px' }}>
+          <SettingsCog onClick={onSettingsClick} />
+          <ShareButton />
+        </div>
+      )}
     </section>
   );
 };

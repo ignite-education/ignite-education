@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 
 const MIN_CARD_WIDTH = 450;
 const CARD_GAP = 16;
@@ -15,6 +16,7 @@ const getTextWidth = (() => {
 })();
 
 const ResourcesSlider = ({ resources = [] }) => {
+  const isMobile = useIsMobile();
   const scrollContainerRef = useRef(null);
   const rafRef = useRef(null);
   const [isScrolling, setIsScrolling] = useState(false);
@@ -92,7 +94,7 @@ const ResourcesSlider = ({ resources = [] }) => {
 
   return (
     <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>
         Resources
       </h2>
 

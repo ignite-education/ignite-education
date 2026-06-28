@@ -26,6 +26,14 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
   const lottieRef = useRef<LottieRefCurrentProps>(null)
   const loopCountRef = useRef(0)
 
+  const [isMobile, setIsMobile] = useState<boolean | null>(null) // null = pre-hydration
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
   // Load Lottie animation
   useEffect(() => {
     fetch('/icon-animation.json')
@@ -141,9 +149,26 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
 
         {/* Course Columns - 3 column grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <CourseTypeColumn type="specialism" courses={filteredSpecialism} cardStaggerBase={0.3} cardStaggerIncrement={0.8} />
-          <CourseTypeColumn type="skill" courses={filteredSkill} cardStaggerBase={0.3} cardStaggerIncrement={0.8} />
-          <CourseTypeColumn type="subject" courses={filteredSubject} cardStaggerBase={0.3} cardStaggerIncrement={0.8} />
+          {(() => {
+            const columns = [
+              { type: 'specialism' as const, allCourses: coursesByType.specialism, filteredCount: filteredSpecialism.length },
+              { type: 'skill' as const, allCourses: coursesByType.skill, filteredCount: filteredSkill.length },
+              { type: 'subject' as const, allCourses: coursesByType.subject, filteredCount: filteredSubject.length },
+            ]
+            let cardOffset = 0
+            return columns.map(({ type, allCourses, filteredCount }) => {
+              const baseDelay = isMobile
+                ? 0.15 + cardOffset * 0.1
+                : 0.15
+              const el = (
+                <div key={type} className={filteredCount === 0 && hasSearchQuery ? 'hidden md:block' : ''}>
+                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} cardStaggerBase={baseDelay} />
+                </div>
+              )
+              cardOffset += allCourses.length
+              return el
+            })
+          })()}
         </div>
       </div>
 

@@ -5,11 +5,13 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    // Pin to 5174 so the OAuth redirect URL matches Supabase's allowlist (http://localhost:5174/**)
+    port: 5174,
+    strictPort: true,
     proxy: {
       // Forward OAuth callback to local Next.js dev server (mirrors Vercel rewrite in production)
-      // NOTE: temporarily 3002 for local testing (3000 in use by another project). Revert to 3000 before committing.
       '/auth/callback': {
-        target: 'http://localhost:3002',
+        target: 'http://localhost:3000',
         changeOrigin: true,
       },
     },

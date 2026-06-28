@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import useIsMobile from '../hooks/useIsMobile';
 
 // Measure text width using Canvas API to dynamically size cards
 const getTextWidth = (() => {
@@ -13,6 +14,7 @@ const getTextWidth = (() => {
 })();
 
 const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) => {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
   const hasInitializedScrollRef = useRef(false);
@@ -56,8 +58,11 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth);
     // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1.5rem≈24) + buffer
     const neededWidth = Math.ceil(maxContentWidth + 122);
-    return Math.max(416, neededWidth);
-  }, []);
+    const desktopWidth = Math.max(416, neededWidth);
+    // On mobile, never exceed the visible slider width — content truncates instead.
+    if (isMobile && containerWidth > 0) return Math.min(desktopWidth, containerWidth);
+    return desktopWidth;
+  }, [isMobile, containerWidth]);
 
   // Scroll handlers
   const handleScrollMouseDown = (e) => {
@@ -162,7 +167,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
 
   return (
     <div className="relative" style={{ marginTop: '1.5rem', minHeight: '160px' }}>
-      <h2 className="font-semibold text-white" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
+      <h2 className="font-semibold text-white" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem', position: 'relative', height: '1.5em' }}>
         {['Completed Lesson', 'Current Lesson', 'Upcoming Lesson'].map((label) => (
           <span
             key={label}
@@ -219,7 +224,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     flexShrink: 0,
                     paddingTop: '1.25rem',
                     paddingRight: '1.5rem',
-                    paddingBottom: '0.15rem',
+                    paddingBottom: isMobile ? '1rem' : '0.15rem',
                     paddingLeft: '1.4rem',
                     borderRadius: '0.3rem',
                     background: '#7714E0',
@@ -242,15 +247,15 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                       willChange: 'opacity',
                     }}
                   />
-                  <div className="flex-1" style={{ minWidth: 0 }}>
+                  <div className="flex-1" style={{ minWidth: 0, ...(isMobile && { paddingRight: '50px' }) }}>
                     <h4 className="text-white" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
                       {lesson.lesson_name || `Lesson ${lesson.lesson_number}`}
                     </h4>
-                    <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.25rem' : '0' }}>
                       {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-white" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
                           <span className="mt-0.5 text-white">•</span>
-                          <span>{bulletPoint}</span>
+                          <span style={isMobile ? { flex: 1, minWidth: 0 } : undefined}>{bulletPoint}</span>
                         </li>
                       ))}
                     </ul>
@@ -259,7 +264,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                   <button
                     className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
                     style={{
-                      width: '48px', height: '48px',
+                      width: isMobile ? '38px' : '48px', height: isMobile ? '38px' : '48px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       borderRadius: '0.3rem',
                       position: 'absolute',
@@ -269,7 +274,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
                     }}
                     onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
                   >
-                    <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg className="group-hover:stroke-pink-500 transition-colors" width={isMobile ? 21 : 26} height={isMobile ? 19 : 24} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M5 12h14M12 5l7 7-7 7" />
                     </svg>
                   </button>
@@ -288,7 +293,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
         </div>
       </div>
 
-      {/* Back to Current Lesson Button */}
+      {/* Back to Current Lesson Button — hidden on mobile */}
+      {!isMobile && (
       <button
         onClick={scrollToCurrentLesson}
         className="absolute bg-white text-black hover:bg-purple-50"
@@ -329,6 +335,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) 
           <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
       </button>
+      )}
       </div>
     </div>
   );

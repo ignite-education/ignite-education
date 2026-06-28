@@ -26,9 +26,17 @@ const CourseCatalog = ({
   const [shouldPlayAnimation, setShouldPlayAnimation] = useState(false);
   const lottieRef = useRef(null);
   const loopCountRef = useRef(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   const isFeatured = variant === 'featured';
   const isWelcome = variant === 'welcome';
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     const refreshCoursesInBackground = async () => {
@@ -208,24 +216,34 @@ const CourseCatalog = ({
 
         {/* Course Columns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[35px]">
-          <CourseTypeColumn
-            type="specialism"
-            courses={filteredSpecialism}
-            showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
-          />
-          <CourseTypeColumn
-            type="skill"
-            courses={filteredSkill}
-            showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
-          />
-          <CourseTypeColumn
-            type="subject"
-            courses={filteredSubject}
-            showDescription={showDescriptions}
-            maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
-          />
+          {(() => {
+            const hasSearchQuery = searchQuery.trim().length > 0;
+            const columns = [
+              { type: 'specialism', allCourses: coursesByType.specialism, filteredCount: filteredSpecialism.length },
+              { type: 'skill', allCourses: coursesByType.skill, filteredCount: filteredSkill.length },
+              { type: 'subject', allCourses: coursesByType.subject, filteredCount: filteredSubject.length },
+            ];
+            let cardOffset = 0;
+            return columns.map(({ type, allCourses, filteredCount }) => {
+              const baseDelay = isFeatured
+                ? 0
+                : (isMobile ? 0.15 + cardOffset * 0.1 : 0.15);
+              const el = (
+                <div key={type} className={filteredCount === 0 && hasSearchQuery ? 'hidden md:block' : ''}>
+                  <CourseTypeColumn
+                    type={type}
+                    courses={allCourses}
+                    searchQuery={searchQuery}
+                    showDescription={showDescriptions}
+                    maxCourses={isFeatured ? (maxCoursesPerColumn || 3) : undefined}
+                    cardStaggerBase={baseDelay}
+                  />
+                </div>
+              );
+              cardOffset += allCourses.length;
+              return el;
+            });
+          })()}
         </div>
 
         {/* View All Link (Featured mode only) */}

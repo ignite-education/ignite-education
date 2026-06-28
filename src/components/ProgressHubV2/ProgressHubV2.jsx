@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
+import useIsMobile from './hooks/useIsMobile';
 import LoadingScreen from '../LoadingScreen';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
@@ -21,44 +22,8 @@ import SettingsModal from '../shared/SettingsModal';
 import SEO from '../SEO';
 import { blockRedditPost } from '../../lib/api';
 
-// Mobile Block Screen
-const MobileBlockScreen = ({ onSignOut }) => {
-  const handleGoBack = async () => {
-    await onSignOut();
-    window.location.href = 'https://ignite.education';
-  };
-
-  return (
-    <div className="min-h-screen flex flex-col justify-center bg-black text-white px-8 relative">
-      <div
-        className="absolute top-6 left-8"
-        style={{
-          backgroundImage: 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png)',
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          width: '120px',
-          height: '40px'
-        }}
-      />
-      <p className="font-semibold" style={{ fontSize: '2.5rem', lineHeight: '1.2', color: '#EF0B72' }}>
-        Learning looks<br />better on a laptop.
-      </p>
-      <p className="mt-4" style={{ fontSize: '1.1rem', lineHeight: '1.5' }}>
-        We're building the mobile version of Ignite. In the meantime, please re-visit us on a tablet or computer.
-      </p>
-      <button
-        onClick={handleGoBack}
-        className="mt-6 px-6 py-3 bg-white text-black font-semibold rounded-lg text-center"
-        style={{ width: 'fit-content' }}
-      >
-        Go back
-      </button>
-    </div>
-  );
-};
-
 const ProgressHubV2 = () => {
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 950);
+  const isMobile = useIsMobile();
   const [showSettings, setShowSettings] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMyPostsModal, setShowMyPostsModal] = useState(false);
@@ -98,14 +63,6 @@ const ProgressHubV2 = () => {
     upcomingLessons,
     isLessonCompleted,
   } = useCourseProgress(groupedLessons, lessonsMetadata, completedLessons);
-
-  // Track viewport size for mobile blocking
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 950);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
 
   // Refresh user session after successful payment
   useEffect(() => {
@@ -151,14 +108,10 @@ const ProgressHubV2 = () => {
     }
   }, [profilePicture]);
 
-  if (isMobile && showContent) {
-    return <MobileBlockScreen onSignOut={signOut} />;
-  }
-
   const courseTitle = courseData?.title || courseData?.name || 'Product Manager';
 
   return (
-    <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif' }}>
+    <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', ...(isMobile && { overflowX: 'hidden' }) }}>
       {showLoading && (
         <>
           <div className={`fixed inset-0 z-40 bg-white ${loadingClassName}`} />

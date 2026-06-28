@@ -20,7 +20,7 @@ const LoadingScreen = ({ message = null, autoRefresh = false, autoRefreshDelay =
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white animate-crossfadeIn">
       <div
-        className="loading-animation-container"
+        className="loading-animation-container w-[140px] h-[140px] lg:w-[200px] lg:h-[200px]"
         style={{
           opacity: lottieData && !animationLoading ? 1 : 0,
           transition: 'opacity 0.3s ease-out',
@@ -35,14 +35,14 @@ const LoadingScreen = ({ message = null, autoRefresh = false, autoRefreshDelay =
             loop={true}
             autoplay={true}
             style={{
-              width: 200,
-              height: 200,
+              width: '100%',
+              height: '100%',
               transform: 'translateZ(0)',
               backfaceVisibility: 'hidden'
             }}
           />
         ) : (
-          <div className="w-[200px] h-[200px] flex items-center justify-center">
+          <div className="w-full h-full flex items-center justify-center">
             {/* Placeholder to maintain layout */}
           </div>
         )}

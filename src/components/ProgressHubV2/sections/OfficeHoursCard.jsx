@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js';
 import { useAuth } from '../../../contexts/AuthContext';
 import { supabase } from '../../../lib/supabase';
+import useIsMobile from '../hooks/useIsMobile';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
@@ -29,6 +30,7 @@ const formatUpcomingTime = (dateStr) => {
 };
 
 const OfficeHoursCard = ({ coaches, courseId }) => {
+  const isMobile = useIsMobile();
   const { user: authUser, isInsider, hasUsedTrial, firstName } = useAuth();
   const [liveSession, setLiveSession] = useState(null); // { id, status, coach }
   const [nextUpcoming, setNextUpcoming] = useState(null);
@@ -168,7 +170,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
   return (
     <>
       <div style={{ marginTop: '0.875rem', minHeight: '160px' }}>
-        <h2 className="font-semibold text-white leading-snug" style={{ fontSize: '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
+        <h2 className="font-semibold text-white leading-snug" style={{ fontSize: isMobile ? '1.5rem' : '1.6rem', letterSpacing: '0%', marginBottom: '0.75rem' }}>Office Hours</h2>
         <div
           className="rounded-lg flex items-center group"
           style={{
