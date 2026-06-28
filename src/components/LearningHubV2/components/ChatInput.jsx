@@ -60,6 +60,15 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', dis
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
+        onBlur={() => {
+          if (!isMobile) return;
+          // iOS Safari scrolls the document up to reveal a focused input above the
+          // keyboard and often leaves that offset behind on dismiss, showing as
+          // whitespace under the input. Snap back to top (now and after the
+          // keyboard's dismiss animation finishes).
+          window.scrollTo(0, 0);
+          setTimeout(() => window.scrollTo(0, 0), 300);
+        }}
         placeholder={placeholder}
         rows={1}
         className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 placeholder-gray-400 caret-[#EF0B72] focus:outline-none resize-none"

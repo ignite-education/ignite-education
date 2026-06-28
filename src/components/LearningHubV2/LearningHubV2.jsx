@@ -1234,7 +1234,7 @@ const LearningHubV2 = () => {
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
           <div ref={leftHeaderRef} className={isMobile ? 'px-5' : 'px-10'} style={{ paddingTop: '30px', paddingBottom: '5px' }}>
-            <div className={`max-w-2xl ${isMobile ? 'flex items-center' : ''}`} style={isMobile ? { gap: '12px', marginBottom: '14px' } : undefined}>
+            <div className={`max-w-2xl ${isMobile ? 'flex items-center' : ''}`} style={isMobile ? { gap: '16px', marginBottom: '14px' } : undefined}>
               <a
                 href="/progress"
                 style={{
