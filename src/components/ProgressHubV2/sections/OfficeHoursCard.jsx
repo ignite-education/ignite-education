@@ -41,7 +41,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
   // Preload upgrade modal image
   useEffect(() => {
     const img = new Image();
-    img.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
+    img.src = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
   }, []);
 
   // Fetch initial live status + subscribe to realtime updates
@@ -368,7 +368,7 @@ const OfficeHoursCard = ({ coaches, courseId }) => {
                 <div>
                   <div style={{ marginBottom: '1rem' }}>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png"
                       alt=""
                       style={{ width: '120px', height: '120px', objectFit: 'contain' }}
                     />

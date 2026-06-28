@@ -28,10 +28,10 @@ const LLM_SITE_URLS: Record<string, string> = {
 }
 
 const LLM_LOGO_PATHS: Record<string, string> = {
-  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
-  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
-  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
-  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
+  'Claude': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
+  'Co-Pilot': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
 
 function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
@@ -748,7 +748,7 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
                   >
                     Continue with Google
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Favicon_2025.png"
                       alt="Google"
                       style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
                     />
@@ -1000,7 +1000,7 @@ export default function PromptDetailClient({ prompt, professionSlug, slug, isPen
             >
               Continue with Google
               <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Favicon_2025.png"
                 alt="Google"
                 style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
               />

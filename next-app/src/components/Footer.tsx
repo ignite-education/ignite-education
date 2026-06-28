@@ -11,7 +11,7 @@ export default function Footer({ className = '' }: FooterProps) {
         {/* Left Side - Logo & Company Info */}
         <div className="flex flex-col items-start gap-6">
           <img
-            src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_2.png"
+            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_S_2.png"
             alt="Ignite Education"
             style={{ height: '37px', width: 'auto' }}
           />

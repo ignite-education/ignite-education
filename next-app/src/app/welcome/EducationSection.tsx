@@ -119,14 +119,14 @@ export default function EducationSection() {
           {/* Decorative images around heading */}
           {/* Star — top left (shown on all viewports) */}
           <img
-            src="https://auth.ignite.education/storage/v1/object/public/assets/Star-LandingPage.png"
+            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Star-LandingPage.png"
             alt=""
             style={{ position: 'absolute', top: isMobile ? '-30%' : isTablet ? '-37%' : '-45%', left: isMobile ? '0%' : isTablet ? '7%' : '0%', width: isMobile ? '116px' : isTablet ? '105px' : '149px', pointerEvents: 'none', transform: 'rotate(-29deg)' }}
           />
           {/* Bulb — bottom right (shown on mobile) */}
           {isMobile && (
             <img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
+              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Bulb-LandingPage.png"
               alt=""
               style={{ position: 'absolute', bottom: '-20%', right: '3%', width: '80px', pointerEvents: 'none', transform: 'rotate(18deg)' }}
             />
@@ -135,7 +135,7 @@ export default function EducationSection() {
             <>
               {/* Bulb — right */}
               <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/Bulb-LandingPage.png"
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Bulb-LandingPage.png"
                 alt=""
                 style={{ position: 'absolute', bottom: isTablet ? '17%' : '18%', right: isTablet ? '-5%' : '-11%', width: isTablet ? '78px' : '96px', pointerEvents: 'none', transform: 'rotate(29deg)' }}
               />
@@ -183,7 +183,7 @@ export default function EducationSection() {
                 }}
               >
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/White%20Tick.png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/White%20Tick.png"
                   alt=""
                   width={48}
                   height={48}

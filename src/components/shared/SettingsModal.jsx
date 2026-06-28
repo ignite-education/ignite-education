@@ -93,9 +93,9 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
   // Preload upsell + insider images so they're ready when modal opens
   useEffect(() => {
     const img = new Image();
-    img.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
+    img.src = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png';
     const img2 = new Image();
-    img2.src = 'https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png';
+    img2.src = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png';
   }, []);
 
   // Lock body scroll and prevent overscroll bounce inside modal
@@ -683,7 +683,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
               </h4>
               <div className="flex gap-4">
                 <div className="flex-1 flex flex-col items-center justify-center text-center">
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt={hasUsedTrial ? 'Subscribe' : 'Free trial'} className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
+                  <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_4uq8su4uq8su4uq8%20(1).png" alt={hasUsedTrial ? 'Subscribe' : 'Free trial'} className="mb-1" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
                   {hasUsedTrial ? (
                     <p className="text-black mb-3" style={{ fontWeight: 300, fontSize: '1rem', lineHeight: 1.2 }}>£4.99/month</p>
                   ) : (
@@ -751,7 +751,7 @@ const SettingsModal = ({ isOpen, onClose, progressPercentage = 0, courseData }) 
                   </div>
                   <div className="flex flex-col items-center justify-center" style={{ width: '30%' }}>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_7pniju7pniju7pni%20(1).png"
                       alt="Ignite Insider"
                       style={{ width: '150px', height: '150px', objectFit: 'contain' }}
                     />

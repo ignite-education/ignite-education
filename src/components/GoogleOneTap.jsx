@@ -150,7 +150,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                       Continue with Google
                     </span>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
                       alt="Google"
                       className="w-5 h-5 flex-shrink-0"
                     />
@@ -173,7 +173,7 @@ const GoogleOneTap = ({ courseSlug, courseStatus = 'live', courseTitle = '', use
                       Continue with LinkedIn
                     </span>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
                       alt="LinkedIn"
                       className="w-5 h-5 flex-shrink-0"
                     />

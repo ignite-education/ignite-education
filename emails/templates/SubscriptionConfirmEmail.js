@@ -172,7 +172,7 @@ const SubscriptionConfirmEmail = ({ firstName = 'there' }) => {
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png',
+              src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png',
               width: '80',
               alt: 'Ignite',
               style: logo
@@ -188,7 +188,7 @@ const SubscriptionConfirmEmail = ({ firstName = 'there' }) => {
         // Certificate Image
         e(Section, { style: imageSection },
           e(Img, {
-            src: 'https://auth.ignite.education/storage/v1/object/public/assets/db6d49f3f5a82b1540bf96c8d4a06334.png',
+            src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/db6d49f3f5a82b1540bf96c8d4a06334.png',
             width: '235',
             height: '239',
             alt: 'Certificate',

@@ -149,8 +149,8 @@ const SignIn = () => {
           className="min-h-screen flex items-center justify-center px-8 relative auth-section-1"
           style={{
             backgroundImage: !isMobile
-              ? 'url(https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)'
-              : 'url(https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20design%20%281%29.png)',
+              ? 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Ignite%20-%20Desktop%20Background%20%283%29.png)'
+              : 'url(https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Untitled%20design%20%281%29.png)',
             backgroundSize: isMobile ? '100% 100%' : 'auto 97%',
             backgroundPosition: isMobile ? 'center center' : 'left center',
             backgroundRepeat: 'no-repeat',
@@ -201,7 +201,7 @@ const SignIn = () => {
                   >
                     <span className="truncate">Continue with Google</span>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.00.44.png"
                       alt="Google"
                       className="w-5 h-5 flex-shrink-0 object-contain"
                     />
@@ -215,7 +215,7 @@ const SignIn = () => {
                   >
                     <span className="truncate">Continue with LinkedIn</span>
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Screenshot%202026-01-10%20at%2013.01.02%20(1).png"
                       alt="LinkedIn"
                       className="w-5 h-5 flex-shrink-0 object-contain"
                     />

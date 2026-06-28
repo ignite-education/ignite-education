@@ -322,8 +322,8 @@ const Auth = () => {
   useEffect(() => {
     const blackLogo = new Image();
     const whiteLogo = new Image();
-    blackLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png";
-    whiteLogo.src = "https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png";
+    blackLogo.src = "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_5.png";
+    whiteLogo.src = "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png";
   }, []);
   const navigate = useNavigate();
   const location = useLocation();
@@ -1094,7 +1094,7 @@ const Auth = () => {
   useEffect(() => {
     const imagesToPreload = [
       'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6.png',
-      'https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg'
+      'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/envato-labs-image-edit.jpg'
     ];
 
     imagesToPreload.forEach(src => {
@@ -1802,7 +1802,7 @@ const Auth = () => {
                     We work backwards from industry professionals to build bespoke courses. Because of this, our course content is comprehensive, relevant and in-demand by employers.
                   </p>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot.png"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trustpilot.png"
                     alt="Trustpilot"
                     style={{ maxWidth: '200px', height: 'auto', marginTop: '10px' }}
                     loading="lazy"
@@ -1934,7 +1934,7 @@ const Auth = () => {
             {/* Mobile image */}
             {isMobile && (
               <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                 alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                 className="rounded-lg auth-section-3-image-mobile"
                 style={{ width: '70%' }}
@@ -1960,7 +1960,7 @@ const Auth = () => {
               pointerEvents: 'none'
             }}>
               <img
-                src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+                src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
                 alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
                 className="rounded-lg auth-section-3-image"
                 style={{
@@ -2010,7 +2010,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/AI%20v7.png"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/AI%20v7.png"
                     alt="Levelling up learning with smart AI integration"
                     loading="lazy"
                     decoding="async"
@@ -2042,7 +2042,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v7.png"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Expert%20v7.png"
                     alt="Personalised support from industry professionals"
                     loading="lazy"
                     decoding="async"
@@ -2074,7 +2074,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Community%20v8.png"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Community%20v8.png"
                     alt="Connect with the global community"
                     loading="lazy"
                     decoding="async"
@@ -2106,7 +2106,7 @@ const Auth = () => {
                     </p>
                   </div>
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Certificate.png"
                     alt="Get certified to take on your next role"
                     loading="lazy"
                     decoding="async"
@@ -2209,31 +2209,31 @@ const Auth = () => {
                         quote: "I was pretty lost with my career direction. I joined Ignite, and it helped me identify my strengths and understand different paths I could take. Crazy considering it's free.",
                         name: "Amelia C",
                         role: "Jr Product Manager",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
+                        avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/2.png"
                       },
                       {
                         quote: "Ignite gave me the confidence to explore a new career. Best decision I've made.",
                         name: "Sarah M",
                         role: "Product Marketing Manager",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
+                        avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1.png"
                       },
                       {
                         quote: "I needed something more than my degree to get into Product Management, so I started the Ignite course. I wish I'd found this sooner!",
                         name: "James P",
                         role: "Student",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
+                        avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/3.png"
                       },
                       {
                         quote: "Taking a career break left me feeling out of touch. So, I joined Ignite and the neat AI features allowed me learn at my own pace.",
                         name: "Rebecca T",
                         role: "Programme Manager",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
+                        avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/4.png"
                       },
                       {
                         quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
                         name: "David M",
                         role: "Sr Product Manager",
-                        avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
+                        avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/5.png"
                       }
                     ].map((testimonial, idx) => (
                       <div
@@ -2515,7 +2515,7 @@ const Auth = () => {
                 style={{ width: '100%', maxWidth: isTablet ? '36rem' : 'none', margin: isTablet ? '0 auto' : undefined }}
               >
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15296564955925613761_2048.jpg.webp"
                   alt="Tote bag"
                   loading="lazy"
                   decoding="async"
@@ -2524,7 +2524,7 @@ const Auth = () => {
                   onClick={handleOpenToteBag}
                 />
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp"
                   alt="Black Mug"
                   loading="lazy"
                   decoding="async"
@@ -2533,7 +2533,7 @@ const Auth = () => {
                   onClick={handleOpenMug}
                 />
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg"
                   alt="Notebook"
                   loading="lazy"
                   decoding="async"
@@ -2543,7 +2543,7 @@ const Auth = () => {
                 />
                 {!isTablet && !isMobile && (
                   <img
-                    src="https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp"
+                    src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/14638277160201691379_2048.webp"
                     alt="Quote Tote"
                     loading="lazy"
                     decoding="async"
@@ -2553,7 +2553,7 @@ const Auth = () => {
                   />
                 )}
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp"
                   alt="Sweatshirt"
                   loading="lazy"
                   decoding="async"
@@ -2900,19 +2900,19 @@ const Auth = () => {
                 <div className="mb-8 grid grid-cols-3 gap-4 auth-course-modal-benefits">
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-2">
-                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
+                      <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
                     </div>
                     <span className="text-sm text-black leading-tight">Certificate upon<br/>completion</span>
                   </div>
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-2">
-                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
+                      <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
                     </div>
                     <span className="text-sm text-black leading-tight">Built by<br/>industry experts</span>
                   </div>
                   <div className="flex flex-col items-center text-center">
                     <div className="mb-2">
-                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
+                      <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
                     </div>
                     <span className="text-sm text-black leading-tight">Self-paced<br/>learning</span>
                   </div>

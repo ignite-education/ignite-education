@@ -8,28 +8,28 @@ const features = [
   {
     title: <>Levelling up learning with <span className="text-white">smart AI integration</span></>,
     description: 'Learn like never before with Chat with Will, Smart Notes, Voice Over and Knowledge Check, all personalised and bespoke to you.',
-    image: 'https://auth.ignite.education/storage/v1/object/public/assets/AI%20v7.png',
+    image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/AI%20v7.png',
     alt: 'Levelling up learning with smart AI integration',
     aspectRatio: '4/3' as const
   },
   {
     title: <>Personalised support from <span className="text-white">industry professionals</span></>,
     description: 'Ignite courses are built by industry professionals. If you want 1:1 support, you can talk to them through Office Hours at a time that suits you.',
-    image: 'https://auth.ignite.education/storage/v1/object/public/assets/Expert%20v7.png',
+    image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Expert%20v7.png',
     alt: 'Personalised support from industry professionals',
     aspectRatio: '4/3' as const
   },
   {
     title: <>Connect with the <span className="text-white">global community</span></>,
     description: 'Hear the latest conversation, industry trends and ask a question to other people in your specialism through the global Community Forum.',
-    image: 'https://auth.ignite.education/storage/v1/object/public/assets/Community%20v8.png',
+    image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Community%20v8.png',
     alt: 'Connect with the global community',
     aspectRatio: '4/3' as const
   },
   {
     title: <>Get certified to take<br /><span className="text-white">on your next role</span></>,
     description: "Upon completing the course, you'll get a personalised certification demonstrating your knowledge with future employers and to share on LinkedIn.",
-    image: 'https://auth.ignite.education/storage/v1/object/public/assets/Certificate.png',
+    image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Certificate.png',
     alt: 'Get certified to take on your next role',
     aspectRatio: '1/1' as const
   }

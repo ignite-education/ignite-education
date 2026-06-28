@@ -8,7 +8,7 @@ const mockCoaches = [
     name: 'Max Shillam',
     position: 'Sr Program Manager at Amazon',
     description: 'Max is a Senior PM at Amazon currently overseeing the development of the Technical Products customer experience across Search, Detail Page and Rufus.',
-    image_url: 'https://auth.ignite.education/storage/v1/object/public/assets/_I4A4206%20(1).jpg',
+    image_url: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/_I4A4206%20(1).jpg',
   },
 ];
 

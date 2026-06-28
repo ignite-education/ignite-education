@@ -743,19 +743,19 @@ const CoursePage = () => {
               <div className="mb-8 grid grid-cols-3 gap-4">
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Untitled%20folder/Gemini_Generated_Image_a4zn8wa4zn8wa4zn.png" alt="Certificate" width="100" height="100" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Certificate upon<br/>completion</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_20fn7520fn7520fn.png" alt="Industry experts" width="100" height="100" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Built by<br/>industry experts</span>
                 </div>
                 <div className="flex flex-col items-center text-center">
                   <div className="mb-2">
-                    <img src="https://auth.ignite.education/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
+                    <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Gemini_Generated_Image_mkil8emkil8emkil.png" alt="Self-paced learning" width="100" height="100" style={{ objectFit: 'contain' }} />
                   </div>
                   <span className="text-sm text-black leading-tight" style={{ letterSpacing: '-0.01em' }}>Self-paced<br/>learning</span>
                 </div>

@@ -1,4 +1,4 @@
-const EARTH_IMAGE = 'https://auth.ignite.education/storage/v1/object/public/assets/Globe-23.png';
+const EARTH_IMAGE = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Globe-23.png';
 
 export const COUNTRY_CONFIG = {
   GB: { label: 'in the UK', image: EARTH_IMAGE },

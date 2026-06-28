@@ -7,7 +7,7 @@ export const COURSE_TESTIMONIALS = {
     quote: "Ignite gave me the confidence to change careers. Best decision I've made.",
     name: "Sarah Matthews",
     role: "Product Marketing Manager",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1.png"
   }
 };
 

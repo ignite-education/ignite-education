@@ -360,7 +360,7 @@ export default function CourseRequestModal({ courseName, onClose, initialPhase =
                 >
                   Continue with Google
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png" alt="Google" width="17.5" height="17.5" style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }} />
+                  <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Favicon_2025.png" alt="Google" width="17.5" height="17.5" style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }} />
                 </button>
 
                 <button

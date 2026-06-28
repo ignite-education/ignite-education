@@ -974,7 +974,7 @@ const ConnectedPreview = ({ feedbackPreview = false }) => {
           </h3>
           <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
             <img
-              src="https://auth.ignite.education/storage/v1/object/public/assets/_I4A4206%20(1).jpg"
+              src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/_I4A4206%20(1).jpg"
               alt="Max Shillam"
               style={{
                 width: '64px',

@@ -26,7 +26,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
                 {/* Standard order for BLACK→WHITE transitions */}
                 {/* Black logo - clips from top, shows bottom portion */}
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
                   alt="Ignite Education"
                   className="logo-layer"
                   style={{
@@ -40,7 +40,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
                 />
                 {/* White logo - clips from bottom, shows top portion */}
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
                   alt=""
                   aria-hidden="true"
                   className="logo-layer"
@@ -57,7 +57,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
                 {/* Inverted order for WHITE→BLACK transitions */}
                 {/* White logo - clips from top, shows bottom portion */}
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_6%20(2).png"
                   alt="Ignite Education"
                   className="logo-layer"
                   style={{
@@ -71,7 +71,7 @@ const CoursePageNavbar = ({ logoClipPercentage = 100, invertLayers = false, logo
                 />
                 {/* Black logo - clips from bottom, shows top portion */}
                 <img
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_5.png"
                   alt=""
                   aria-hidden="true"
                   className="logo-layer"

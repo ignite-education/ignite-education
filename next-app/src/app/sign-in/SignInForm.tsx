@@ -134,7 +134,7 @@ export default function SignInForm() {
                   >
                     Continue with Google
                     <img
-                      src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png"
+                      src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Favicon_2025.png"
                       alt="Google"
                       style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }}
                     />

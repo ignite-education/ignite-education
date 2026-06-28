@@ -561,7 +561,7 @@ const VideoChat = () => {
     }}>
       <a href="/progress" style={{ display: 'block' }}>
         <img
-          src="https://auth.ignite.education/storage/v1/object/public/assets/Ignite%20Logo%20V2%20-%20Black.png"
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Ignite%20Logo%20V2%20-%20Black.png"
           alt="Ignite"
           style={{ width: '80px', height: '80px', objectFit: 'contain' }}
         />

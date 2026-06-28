@@ -5,10 +5,10 @@ import { LLM_TOOLS, COMPLEXITIES } from '@/data/placeholderPrompts'
 import ComplexityIcon from './ComplexityIcon'
 
 const TOOL_LOGOS: Record<string, string> = {
-  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
-  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
-  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
-  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
+  'Claude': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
+  'Co-Pilot': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
 
 interface PromptFiltersProps {

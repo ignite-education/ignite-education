@@ -291,7 +291,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
               </p>
               <a href="https://www.trustpilot.com/review/ignite.education" target="_blank" rel="noopener noreferrer">
                 <Image
-                  src="https://auth.ignite.education/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trustpilot_brandmark_gr-blk_RGB-576x144-XL.png"
                   alt="Trustpilot"
                   width={576}
                   height={144}
@@ -400,7 +400,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
         }}
       >
         <Image
-          src="https://auth.ignite.education/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
+          src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/envato-labs-image-edit.jpg"
           alt="Ignite interactive course curriculum showing AI-powered lessons, flashcards, and knowledge checks"
           className="rounded-lg auth-section-3-image"
           width={1400}

@@ -38,10 +38,10 @@ function extractAvatar(user: { user_metadata?: Record<string, string> }) {
 const FONT = { fontFamily: 'var(--font-geist-sans), sans-serif' }
 
 const LLM_LOGO_PATHS: Record<string, string> = {
-  'Claude': 'https://auth.ignite.education/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
-  'ChatGPT': 'https://auth.ignite.education/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
-  'Co-Pilot': 'https://auth.ignite.education/storage/v1/object/public/assets/copilot-color.png',
-  'Gemini': 'https://auth.ignite.education/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
+  'Claude': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Claude_AI_symbol.svg.png',
+  'ChatGPT': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1024px-ChatGPT-Logo%20(1).png',
+  'Co-Pilot': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/copilot-color.png',
+  'Gemini': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Gemini_icon_2025.svg',
 }
 
 const FIELD_TOOLTIPS: Record<string, string> = {
@@ -858,7 +858,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     {/* LinkedIn */}
                     <div className="flex items-center gap-3">
                       <div style={{ width: '52px', flexShrink: 0 }} className="flex items-center">
-                        <img src="https://auth.ignite.education/storage/v1/object/public/assets/LinkedIn_logo_initials.png" alt="" width={20} height={20} />
+                        <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/LinkedIn_logo_initials.png" alt="" width={20} height={20} />
                       </div>
                       <div
                         className="flex-1 min-w-0 flex items-center rounded-lg py-1.5 text-sm text-gray-900 cursor-text"
@@ -920,7 +920,7 @@ export default function PromptContributeModal({ professions, initialTitle, user:
                     >
                       Continue with Google
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="https://auth.ignite.education/storage/v1/object/public/assets/Google_Favicon_2025.png" alt="Google" width="17.5" height="17.5" style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }} />
+                      <img src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Google_Favicon_2025.png" alt="Google" width="17.5" height="17.5" style={{ width: '17.5px', height: '17.5px', marginTop: '-3px' }} />
                     </button>
 
                     <button

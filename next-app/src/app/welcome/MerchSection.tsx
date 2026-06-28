@@ -5,25 +5,25 @@ import useTypingAnimation from '@/hooks/useTypingAnimation'
 
 const merchItems = [
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp',
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/6000531078946675470_2048.jpg.webp',
     alt: 'Black Mug',
     url: 'https://shop.ignite.education/products/black-mug-11oz-15oz?variant=53677361889611',
     mobileOrder: 0
   },
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/14638277160201691379_2048.webp',
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/14638277160201691379_2048.webp',
     alt: 'Quote Tote',
     url: 'https://shop.ignite.education/products/copy-of-empowering-quote-organic-cotton-tote-bag-eco-friendly-shopper-sustainable-gift-motivational-bag-reusable-grocery-tote-1?variant=53677328367947',
     mobileOrder: 3
   },
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg',
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/15764184527208086102_2048%20(1).jpg',
     alt: 'Notebook',
     url: 'https://shop.ignite.education/products/notebook?variant=53241113084235',
     mobileOrder: 1
   },
   {
-    src: 'https://auth.ignite.education/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp',
+    src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/13210320553437944029_2048.jpg.webp',
     alt: 'Sweatshirt',
     url: 'https://shop.ignite.education/products/unisex-heavy-blend™-crewneck-sweatshirt?variant=53677325254987',
     mobileOrder: 2

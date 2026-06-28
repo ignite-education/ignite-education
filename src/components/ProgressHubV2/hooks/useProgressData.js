@@ -6,7 +6,7 @@ import { trackPageVisit } from '../../../lib/tracking';
 import { COUNTRY_CONFIG, DEFAULT_COMMUNITY } from '../../../lib/countries';
 
 const PRELOAD_IMAGES = ['/trophy.png', '/moon.png'];
-const DEFAULT_STAT_IMAGES = ['https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png', 'https://auth.ignite.education/storage/v1/object/public/assets/Star-23.png'];
+const DEFAULT_STAT_IMAGES = ['https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Hat-23.png', 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Star-23.png'];
 
 const preloadImages = (urls) =>
   Promise.all(
@@ -275,7 +275,7 @@ const useProgressData = () => {
             const joinDate = new Date(authUser.created_at);
             const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png' };
+            behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Hat-23.png' };
           } else {
             const signIns = await getRecentSignIns(userId);
             if (signIns.length > 0) {
@@ -300,14 +300,14 @@ const useProgressData = () => {
               });
               const topDay = Object.entries(dayCounts).sort((a, b) => b[1] - a[1])[0][0];
 
-              const weatherImage = 'https://auth.ignite.education/storage/v1/object/public/assets/Weather-23.png';
+              const weatherImage = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Weather-23.png';
               const timeConfig = {
                 morning: { label: "You're an early", value: 'morning learner', image: weatherImage },
                 afternoon: { label: "You're an", value: 'afternoon learner', image: weatherImage },
                 evening: { label: "You're an", value: 'evening learner', image: weatherImage },
               };
 
-              const dayImage = 'https://auth.ignite.education/storage/v1/object/public/assets/Calendar-23.png';
+              const dayImage = 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Calendar-23.png';
 
               // Random per session: time-of-day or day-of-week
               if (Math.random() < 0.5) {
@@ -320,7 +320,7 @@ const useProgressData = () => {
               const joinDate = new Date(authUser.created_at);
               const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
               const monthYear = `${monthNames[joinDate.getMonth()]}-${String(joinDate.getFullYear()).slice(2)}`;
-              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Hat-23.png' };
+              behaviourStatValue = { label: 'Welcome to', value: `class of ${monthYear}`, image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Hat-23.png' };
             }
           }
           if (isMounted) setBehaviourStat(behaviourStatValue);
@@ -332,7 +332,7 @@ const useProgressData = () => {
         let achievementStatValue = null;
         try {
           if (completedCount === 0) {
-            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-LandingPage%20(1).png' };
+            achievementStatValue = { label: 'Start your', value: 'first lesson', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Book-LandingPage%20(1).png' };
           } else {
             const candidates = [];
 
@@ -372,7 +372,7 @@ const useProgressData = () => {
                   }
                 }
                 if (streak >= 2) {
-                  candidates.push({ label: "You're on a", value: `${streak} day streak`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Flame.png' });
+                  candidates.push({ label: "You're on a", value: `${streak} day streak`, image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Progress%20Hub%20Icons/Flame.png' });
                 }
               }
             }
@@ -381,7 +381,7 @@ const useProgressData = () => {
             const scoredLessons = Object.values(userScoresResult);
             const acedCount = scoredLessons.filter(s => s.total > 0 && s.correct === s.total).length;
             if (acedCount >= 1) {
-              candidates.push({ label: `${acedCount} lesson${acedCount !== 1 ? 's' : ''} with`, value: '100% score', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Progress%20Hub%20Icons/Star.png' });
+              candidates.push({ label: `${acedCount} lesson${acedCount !== 1 ? 's' : ''} with`, value: '100% score', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Progress%20Hub%20Icons/Star.png' });
             }
 
             // Weekly: completions since Monday 00:00 (ISO week)
@@ -392,20 +392,20 @@ const useProgressData = () => {
             monday.setHours(0, 0, 0, 0);
             const weekCount = completedLessonsData.filter(c => c.completed_at && new Date(c.completed_at) >= monday).length;
             if (weekCount >= 1) {
-              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} done`, value: 'this week', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Book-23.png' });
+              candidates.push({ label: `${weekCount} lesson${weekCount !== 1 ? 's' : ''} done`, value: 'this week', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Book-23.png' });
             }
 
             // Percentile: from pre-computed table
             const percentile = await getUserAchievementPercentile(userId, courseId);
             if (percentile != null && percentile <= 40) {
-              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: 'https://auth.ignite.education/storage/v1/object/public/assets/Medal-23.png' });
+              candidates.push({ label: "You're in the top", value: `${percentile}% of learners`, image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Medal-23.png' });
             }
 
             // Random pick or fallback
             if (candidates.length > 0) {
               achievementStatValue = candidates[Math.floor(Math.random() * candidates.length)];
             } else {
-              achievementStatValue = { label: `${completedCount} lesson${completedCount !== 1 ? 's' : ''}`, value: 'completed', image: 'https://auth.ignite.education/storage/v1/object/public/assets/Trumpet-23.png' };
+              achievementStatValue = { label: `${completedCount} lesson${completedCount !== 1 ? 's' : ''}`, value: 'completed', image: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/Trumpet-23.png' };
             }
           }
           if (isMounted) setAchievementStat(achievementStatValue);

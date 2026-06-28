@@ -8,31 +8,31 @@ const testimonials = [
     quote: "I was pretty lost with my career direction. I joined Ignite, and it helped me identify my strengths and understand different paths I could take. Crazy considering it's free.",
     name: "Amelia C",
     role: "Jr Product Manager",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/2.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/2.png"
   },
   {
     quote: "Ignite gave me the confidence to explore a new career. Best decision I've made.",
     name: "Sarah M",
     role: "Product Marketing Manager",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/1.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/1.png"
   },
   {
     quote: "I needed something more than my degree to get into Product Management, so I started the Ignite course. I wish I'd found this sooner!",
     name: "James P",
     role: "Student",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/3.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/3.png"
   },
   {
     quote: "Taking a career break left me feeling out of touch. So, I joined Ignite and the neat AI features allowed me learn at my own pace.",
     name: "Rebecca T",
     role: "Programme Manager",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/4.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/4.png"
   },
   {
     quote: "Fresh perspectives that actually made a difference. Working at my own pace meant I could properly reflect and apply what I learned.",
     name: "David M",
     role: "Sr Product Manager",
-    avatar: "https://auth.ignite.education/storage/v1/object/public/assets/5.png"
+    avatar: "https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/5.png"
   }
 ]
 

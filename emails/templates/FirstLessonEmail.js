@@ -170,7 +170,7 @@ const FirstLessonEmail = ({ firstName = 'there', lessonName = 'your first lesson
         e(Section, { style: logoSection },
           e(Link, { href: 'https://ignite.education' },
             e(Img, {
-              src: 'https://auth.ignite.education/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png',
+              src: 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_S_5%20(2).png',
               width: '80',
               alt: 'Ignite',
               style: logo
