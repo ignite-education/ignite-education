@@ -10,7 +10,7 @@ export default function FeedbackSection({ courseTitle }: FeedbackSectionProps) {
       <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
         Feedback
       </h2>
-      <div className="bg-[#F0F0F2] p-6 rounded-lg">
+      <div className="bg-[#F6F6F6] p-6 rounded-lg">
         <p className="text-black font-medium" style={{ fontSize: '1.2rem', letterSpacing: '-0.01em' }}>
           &ldquo;The {courseTitle} course was great! For someone new to the topic, this is a great introduction and allowed me to connect with the community&rdquo;
         </p>

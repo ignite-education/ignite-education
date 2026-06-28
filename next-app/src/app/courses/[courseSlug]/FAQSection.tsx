@@ -21,7 +21,7 @@ export default function FAQSection({ faqs }: FAQSectionProps) {
             key={idx}
             className="rounded cursor-pointer"
             style={{
-              backgroundColor: '#F0F0F2',
+              backgroundColor: '#F6F6F6',
               overflow: 'hidden',
               paddingTop: '1rem',
               paddingRight: '1rem',

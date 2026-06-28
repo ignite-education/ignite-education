@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createUserRecord, addToResendAudience } from '@/lib/auth'
+import { enrollUserInCourse } from '@/lib/enroll'
+import { getCourseBySlug } from '@/lib/courseData'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -58,6 +60,27 @@ export async function GET(request: Request) {
           } catch (e) {
             // Non-critical — continue with default OIDC picture
             console.error('[LinkedIn] profile picture fetch failed:', e)
+          }
+        }
+
+        // If a course was specified (e.g. "start lesson" from a public course
+        // page), enroll the user in that course before redirecting to the lesson.
+        const courseSlug = searchParams.get('course')
+        if (courseSlug) {
+          try {
+            const course = await getCourseBySlug(courseSlug)
+            if (course) {
+              await enrollUserInCourse({
+                supabase,
+                userId: user.id,
+                authUser: user,
+                courseSlug,
+                courseTitle: course.title,
+                isComingSoon: course.status === 'coming_soon',
+              })
+            }
+          } catch (e) {
+            console.error('[auth/callback] course enroll failed:', e)
           }
         }
 

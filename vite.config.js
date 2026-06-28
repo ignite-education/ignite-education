@@ -7,8 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       // Forward OAuth callback to local Next.js dev server (mirrors Vercel rewrite in production)
+      // NOTE: temporarily 3002 for local testing (3000 in use by another project). Revert to 3000 before committing.
       '/auth/callback': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:3002',
         changeOrigin: true,
       },
     },

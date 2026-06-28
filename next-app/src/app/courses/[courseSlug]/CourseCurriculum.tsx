@@ -1,6 +1,7 @@
 import { generateModuleIntro } from '@/lib/courseUtils'
 import type { Module } from '@/types/course'
 import EnrollmentCTA from './EnrollmentCTA'
+import CurriculumLessonSlider from './CurriculumLessonSlider'
 
 interface CourseCurriculumProps {
   moduleStructure: Module[]
@@ -25,86 +26,66 @@ export default function CourseCurriculum({
   const lessons = isLessonsOnly ? (moduleStructure[0]?.lessons || []) : []
 
   return (
-    <div className="mb-8 lg:-mx-24 curriculum-section">
-      <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
-        Curriculum
-      </h2>
-      <div className="flex gap-6 items-stretch">
-        {/* Left Column - Curriculum Content */}
-        <div className="bg-[#F0F0F2] p-6 rounded-lg flex-1">
-          <div className="space-y-6">
-            {isLessonsOnly ? (
-              lessons.map((lesson, lessonIndex) => (
-                <div key={lessonIndex}>
-                  <h3
-                    className="font-semibold mb-1"
-                    style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}
-                  >
-                    {lesson.name}
-                  </h3>
+    <div className="curriculum-section bg-[#F6F6F6]">
+      {/* Full-bleed grey background; content stays at the original width */}
+      <div className="max-w-4xl mx-auto px-6 py-8 md:py-10 flex justify-center">
+        <div className="w-full" style={{ maxWidth: '762px' }}>
+          <div className="lg:-mx-24">
+            <h2 className="font-bold text-gray-900 mb-2" style={{ fontSize: '28px', letterSpacing: '-0.02em' }}>
+              Content
+            </h2>
+            <div className="flex gap-6 items-stretch">
+              {/* Left Column - Curriculum Content */}
+              <div className="flex-1 min-w-0">
+                <div className="space-y-6">
+                  {isLessonsOnly ? (
+                    <CurriculumLessonSlider
+                      lessons={lessons}
+                      moduleNumber={1}
+                      courseSlug={courseSlug}
+                      courseTitle={courseTitle}
+                      isComingSoon={isComingSoon}
+                    />
+                  ) : (
+                    moduleStructure.map((module, moduleIndex) => (
+                      <div key={moduleIndex}>
+                        <h3
+                          className="font-semibold mb-1"
+                          style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}
+                        >
+                          {module.name}
+                        </h3>
 
-                  <div>
-                    {lesson.description && (
-                      <p className="text-gray-900 mb-3 font-light" style={{ fontSize: '0.9rem', letterSpacing: '-0.01em' }}>
-                        {lesson.description}
-                      </p>
-                    )}
+                        <div>
+                          <p className="text-gray-900 mb-3 font-light" style={{ fontSize: '0.9rem', letterSpacing: '-0.01em' }}>
+                            {module.description || generateModuleIntro(module)}
+                          </p>
 
-                    {lesson.bullet_points && lesson.bullet_points.length > 0 && (
-                      <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
-                        {lesson.bullet_points.map((point, pointIndex) => (
-                          <li key={pointIndex} className="flex items-center gap-2" style={{ fontSize: '0.9rem' }}>
-                            <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                            <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.02em' }}>
-                              {point}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
+                          <CurriculumLessonSlider
+                            lessons={module.lessons || []}
+                            moduleNumber={moduleIndex + 1}
+                            courseSlug={courseSlug}
+                            courseTitle={courseTitle}
+                            isComingSoon={isComingSoon}
+                          />
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ))
-            ) : (
-              moduleStructure.map((module, moduleIndex) => (
-                <div key={moduleIndex}>
-                  <h3
-                    className="font-semibold mb-1"
-                    style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}
-                  >
-                    Module {moduleIndex + 1} - {module.name}
-                  </h3>
+              </div>
 
-                  <div>
-                    <p className="text-gray-900 mb-3 font-light" style={{ fontSize: '0.9rem', letterSpacing: '-0.01em' }}>
-                      {module.description || generateModuleIntro(module)}
-                    </p>
-
-                    <ul style={{ display: 'flex', flexDirection: 'column', gap: '0', paddingLeft: '0.4rem' }}>
-                      {(module.lessons || []).map((lesson, lessonIndex) => (
-                        <li key={lessonIndex} className="flex items-center gap-2" style={{ fontSize: '0.9rem' }}>
-                          <span className="text-gray-900" style={{ fontSize: '0.5em' }}>&#9632;</span>
-                          <span className="font-medium text-gray-900" style={{ letterSpacing: '-0.02em' }}>
-                            {lesson.name}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+              {/* Right Column - Sticky CTA (hidden on mobile) */}
+              <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
+                <div className="sticky top-24">
+                  <EnrollmentCTA
+                    courseSlug={courseSlug}
+                    courseTitle={courseTitle}
+                    isComingSoon={isComingSoon}
+                  />
                 </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Right Column - Sticky CTA (hidden on mobile) */}
-        <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
-          <div className="sticky top-24">
-            <EnrollmentCTA
-              courseSlug={courseSlug}
-              courseTitle={courseTitle}
-              isComingSoon={isComingSoon}
-            />
+              </div>
+            </div>
           </div>
         </div>
       </div>

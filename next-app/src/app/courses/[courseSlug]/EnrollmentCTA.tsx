@@ -4,16 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
+import { enrollUserInCourse, registerInterestForUser } from '@/lib/enroll'
 import ShareButtons from './ShareButtons'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://ignite-education-api.onrender.com'
-const RESEND_AUDIENCE_GENERAL = process.env.NEXT_PUBLIC_RESEND_AUDIENCE_GENERAL || ''
-const RESEND_AUDIENCE_PM_FREE = process.env.NEXT_PUBLIC_RESEND_AUDIENCE_PM_FREE || ''
-
-// Map course slugs to their Resend audience IDs
-const COURSE_TO_AUDIENCE: Record<string, string> = {
-  'product-manager': RESEND_AUDIENCE_PM_FREE,
-}
 
 interface EnrollmentCTAProps {
   courseSlug: string
@@ -40,121 +32,6 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   const [authLoaded, setAuthLoaded] = useState(false)
   const handlingSignInRef = useRef(false)
 
-  // Save course for a given user
-  const saveCourseForUser = useCallback(async (userId: string) => {
-    const supabase = createClient()
-    const { data: existing } = await supabase
-      .from('saved_courses')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('course_id', courseSlug)
-      .maybeSingle()
-
-    if (!existing) {
-      await supabase
-        .from('saved_courses')
-        .insert({ user_id: userId, course_id: courseSlug })
-    }
-    setIsSaved(true)
-  }, [courseSlug])
-
-  // Register interest in a coming-soon course
-  const registerInterestForUser = useCallback(async (userId: string) => {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('course_requests')
-      .insert({ user_id: userId, course_name: courseSlug, status: 'upcoming' })
-    if (error && error.code !== '23505') {
-      console.error('[EnrollmentCTA] Failed to register interest:', error)
-    }
-  }, [courseSlug])
-
-  // Enroll user in a course: save + set enrolled_course + welcome email + audience sync
-  const enrollUserInCourse = useCallback(async (userId: string, authUser: User) => {
-    const supabase = createClient()
-
-    // Always save to saved_courses
-    await saveCourseForUser(userId)
-
-    // Auto-register interest for coming-soon courses
-    if (isComingSoon) {
-      await registerInterestForUser(userId)
-    }
-
-    // Only set enrolled_course for live courses
-    if (!isComingSoon) {
-      // Ensure user record exists before updating
-      const { data: existing } = await supabase
-        .from('users')
-        .select('id, enrolled_course')
-        .eq('id', userId)
-        .maybeSingle()
-
-      // Already enrolled in this course — skip email & audience sync
-      if (existing?.enrolled_course === courseSlug) {
-        return
-      }
-
-      if (!existing) {
-        const metadata = authUser.user_metadata || {}
-        await supabase.from('users').insert({
-          id: userId,
-          first_name: metadata.first_name || metadata.given_name || metadata.full_name?.split(' ')[0] || '',
-          last_name: metadata.last_name || metadata.family_name || metadata.full_name?.split(' ').slice(1).join(' ') || '',
-          enrolled_course: courseSlug,
-          onboarding_completed: true,
-          role: 'student',
-        })
-      } else {
-        await supabase
-          .from('users')
-          .update({
-            enrolled_course: courseSlug,
-            onboarding_completed: true,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', userId)
-      }
-
-      // Send welcome email (non-blocking)
-      fetch(`${API_URL}/api/send-email`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'welcome',
-          userId,
-          data: { courseName: courseTitle },
-        }),
-      }).catch(err => console.error('[EnrollmentCTA] Welcome email failed:', err))
-
-      // Audience sync: move from General → course-specific (non-blocking)
-      const courseAudienceId = COURSE_TO_AUDIENCE[courseSlug]
-      if (courseAudienceId && authUser.email) {
-        const contactInfo = {
-          email: authUser.email,
-          firstName: authUser.user_metadata?.first_name || authUser.user_metadata?.full_name?.split(' ')[0] || '',
-          lastName: authUser.user_metadata?.last_name || authUser.user_metadata?.full_name?.split(' ')[1] || '',
-        }
-
-        // Remove from General audience
-        if (RESEND_AUDIENCE_GENERAL) {
-          fetch(`${API_URL}/api/resend/remove-contact`, {
-            method: 'DELETE',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: contactInfo.email, audienceId: RESEND_AUDIENCE_GENERAL }),
-          }).catch(err => console.error('[EnrollmentCTA] Remove from General failed:', err))
-        }
-
-        // Add to course-specific audience
-        fetch(`${API_URL}/api/resend/add-contact`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...contactInfo, audienceId: courseAudienceId }),
-        }).catch(err => console.error('[EnrollmentCTA] Add to course audience failed:', err))
-      }
-    }
-  }, [courseSlug, courseTitle, isComingSoon, saveCourseForUser, registerInterestForUser])
-
   // Handle Google sign-in success (direct, no redirect)
   const handleGoogleSuccess = useCallback(async (credential: string, nonce: string) => {
     try {
@@ -175,11 +52,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       setCheckingStatus(false)
 
       // Auto-enroll in the course
-      await enrollUserInCourse(data.user.id, data.user)
+      await enrollUserInCourse({ supabase, userId: data.user.id, authUser: data.user, courseSlug, courseTitle, isComingSoon })
+      setIsSaved(true)
     } catch (err) {
       console.error('[EnrollmentCTA] Unexpected error:', err)
     }
-  }, [enrollUserInCourse, isComingSoon])
+  }, [courseSlug, courseTitle, isComingSoon])
 
   const { triggerPrompt } = useGoogleOneTap({
     onSuccess: handleGoogleSuccess,
@@ -232,7 +110,8 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
       const pendingSlug = sessionStorage.getItem('pendingEnrollCourse')
       if (pendingSlug === courseSlug) {
         sessionStorage.removeItem('pendingEnrollCourse')
-        await enrollUserInCourse(signedInUser.id, signedInUser)
+        await enrollUserInCourse({ supabase, userId: signedInUser.id, authUser: signedInUser, courseSlug, courseTitle, isComingSoon })
+        setIsSaved(true)
         setCheckingStatus(false)
         setAuthLoaded(true)
         return
@@ -251,7 +130,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
     } finally {
       handlingSignInRef.current = false
     }
-  }, [courseSlug, enrollUserInCourse])
+  }, [courseSlug, courseTitle, isComingSoon])
 
   // Initial auth check + OAuth callback detection
   useEffect(() => {
@@ -336,7 +215,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
 
         // Register interest for coming-soon courses
         if (isComingSoon) {
-          await registerInterestForUser(user.id)
+          await registerInterestForUser(supabase, user.id, courseSlug)
         }
 
         // Auto-enroll if user has no enrolled course and this is a live course

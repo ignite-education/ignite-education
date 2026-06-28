@@ -12,7 +12,7 @@ const getTextWidth = (() => {
   };
 })();
 
-const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, isLessonAccessible, currentModule, currentLesson }) => {
+const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted }) => {
   const navigate = useNavigate();
   const scrollContainerRef = useRef(null);
   const hasInitializedScrollRef = useRef(false);
@@ -45,12 +45,8 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
   }, []);
 
   const getCardWidth = useCallback((lesson) => {
-    const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-    const firstIncompleteIndex = upcomingLessons.findIndex(l => !isLessonCompleted(l.module_number, l.lesson_number));
-    const isCurrent = upcomingLessons.indexOf(lesson) === firstIncompleteIndex;
-    if (!isCompleted && !isCurrent) return 368;
-
-    // Measure content width to expand card if needed
+    // Every lesson is startable and shows the arrow button, so all cards are
+    // sized to fit their content plus the button (no narrower "upcoming" variant).
     const titleText = lesson.lesson_name || `Lesson ${lesson.lesson_number}`;
     const titleWidth = getTextWidth(titleText, 17.6, '500');
     const bulletPoints = (lesson.bullet_points || []).slice(0, 3);
@@ -61,7 +57,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
     // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1.5rem≈24) + buffer
     const neededWidth = Math.ceil(maxContentWidth + 122);
     return Math.max(416, neededWidth);
-  }, [upcomingLessons, isLessonCompleted]);
+  }, []);
 
   // Scroll handlers
   const handleScrollMouseDown = (e) => {
@@ -210,8 +206,6 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
         <div className="flex gap-4 items-stretch">
           {upcomingLessons.length > 0 ? (
             upcomingLessons.map((lesson, index) => {
-              const isCompleted = isLessonCompleted(lesson.module_number, lesson.lesson_number);
-              const isCurrentLesson = index === firstIncompleteIndex;
               const cardWidth = getCardWidth(lesson);
 
               return (
@@ -221,6 +215,7 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                   style={{
                     width: `${cardWidth}px`,
                     minWidth: `${cardWidth}px`,
+                    minHeight: '132px',
                     flexShrink: 0,
                     paddingTop: '1.25rem',
                     paddingRight: '1.5rem',
@@ -261,25 +256,23 @@ const LessonSlider = ({ upcomingLessons, completedLessons, isLessonCompleted, is
                     </ul>
                   </div>
 
-                  {(isCompleted || isCurrentLesson) && (
-                    <button
-                      className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
-                      style={{
-                        width: '48px', height: '48px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRadius: '0.3rem',
-                        position: 'absolute',
-                        right: '1.5rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)'
-                      }}
-                      onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
-                    >
-                      <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  )}
+                  <button
+                    className="bg-white text-black font-bold hover:bg-purple-50 transition-colors flex-shrink-0 group"
+                    style={{
+                      width: '48px', height: '48px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: '0.3rem',
+                      position: 'absolute',
+                      right: '1.5rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)'
+                    }}
+                    onClick={() => navigate(`/learning?module=${lesson.module_number}&lesson=${lesson.lesson_number}`)}
+                  >
+                    <svg className="group-hover:stroke-pink-500 transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </button>
                 </div>
               );
             })

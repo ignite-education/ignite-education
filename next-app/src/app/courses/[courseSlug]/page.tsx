@@ -146,16 +146,17 @@ export default async function CoursePage({ params }: PageProps) {
             isComingSoon={isComingSoon}
           />
 
-          <div className="max-w-4xl mx-auto px-6 pb-4 md:pb-12 flex justify-center">
-            <div className="w-full" style={{ maxWidth: '762px' }}>
-              <CourseCurriculum
-                moduleStructure={course.module_structure}
-                structureType={course.structure_type}
-                courseSlug={courseSlug}
-                courseTitle={course.title}
-                isComingSoon={isComingSoon}
-              />
+          {/* Full-bleed grey curriculum band */}
+          <CourseCurriculum
+            moduleStructure={course.module_structure}
+            structureType={course.structure_type}
+            courseSlug={courseSlug}
+            courseTitle={course.title}
+            isComingSoon={isComingSoon}
+          />
 
+          <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center">
+            <div className="w-full" style={{ maxWidth: '762px' }}>
               {!isComingSoon && (
                 <FeedbackSection courseTitle={course.title} />
               )}

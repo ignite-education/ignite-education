@@ -40,14 +40,21 @@ export default function SignInForm() {
 
     try {
       const redirectParam = searchParams.get('redirect')
-      const callbackParams = redirectParam === 'admin'
-        ? '?next=/courses&redirect=admin'
-        : '?next=/courses'
+      // Optional post-sign-in destination (e.g. a specific lesson) and the course
+      // to enroll in, passed through to the OAuth callback. URLSearchParams encodes
+      // `next` (which itself contains a query string) as a single value.
+      const nextParam = searchParams.get('next') || '/courses'
+      const courseParam = searchParams.get('course')
+
+      const callbackParams = new URLSearchParams()
+      callbackParams.set('next', nextParam)
+      if (courseParam) callbackParams.set('course', courseParam)
+      if (redirectParam === 'admin') callbackParams.set('redirect', 'admin')
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${siteUrl}/auth/callback${callbackParams}`,
+          redirectTo: `${siteUrl}/auth/callback?${callbackParams.toString()}`,
         },
       })
       if (error) throw error

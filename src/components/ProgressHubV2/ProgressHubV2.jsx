@@ -97,9 +97,6 @@ const ProgressHubV2 = () => {
     progressPercentage,
     upcomingLessons,
     isLessonCompleted,
-    isLessonAccessible,
-    currentModule,
-    currentLesson,
   } = useCourseProgress(groupedLessons, lessonsMetadata, completedLessons);
 
   // Track viewport size for mobile blocking
@@ -205,9 +202,6 @@ const ProgressHubV2 = () => {
               upcomingLessons={upcomingLessons}
               completedLessons={completedLessons}
               isLessonCompleted={isLessonCompleted}
-              isLessonAccessible={isLessonAccessible}
-              currentModule={currentModule}
-              currentLesson={currentLesson}
             />
             <OfficeHoursCard coaches={coaches} courseId={courseData?.name} />
             <ResourcesSlider resources={resources} />
