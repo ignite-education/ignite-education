@@ -39,13 +39,32 @@ export default function CourseCurriculum({
               <div className="flex-1 min-w-0">
                 <div className="space-y-6">
                   {isLessonsOnly ? (
-                    <CurriculumLessonSlider
-                      lessons={lessons}
-                      moduleNumber={1}
-                      courseSlug={courseSlug}
-                      courseTitle={courseTitle}
-                      isComingSoon={isComingSoon}
-                    />
+                    lessons.map((lesson, lessonIndex) => (
+                      <div key={lessonIndex}>
+                        <h3
+                          className="font-semibold mb-1"
+                          style={{ fontSize: '18px', color: '#7714E0', letterSpacing: '-0.01em' }}
+                        >
+                          {lesson.name}
+                        </h3>
+
+                        {lesson.description && (
+                          <p className="text-gray-900 mb-3 font-light" style={{ fontSize: '0.9rem', letterSpacing: '-0.01em', maxWidth: '85%' }}>
+                            {lesson.description}
+                          </p>
+                        )}
+
+                        <CurriculumLessonSlider
+                          lessons={[lesson]}
+                          moduleNumber={1}
+                          baseLessonNumber={lessonIndex}
+                          showCardTitle={false}
+                          courseSlug={courseSlug}
+                          courseTitle={courseTitle}
+                          isComingSoon={isComingSoon}
+                        />
+                      </div>
+                    ))
                   ) : (
                     moduleStructure.map((module, moduleIndex) => (
                       <div key={moduleIndex}>

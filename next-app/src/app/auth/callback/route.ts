@@ -50,6 +50,8 @@ export async function GET(request: Request) {
               console.log('[LinkedIn] existing picture:', metadata.picture)
               if (profile.picture && profile.picture !== metadata.avatar_url && profile.picture !== metadata.picture) {
                 await supabase.auth.updateUser({ data: { avatar_url: profile.picture } })
+                // Mirror the higher-res picture into public.users so the public profile shows it
+                await supabase.from('users').update({ avatar_url: profile.picture }).eq('id', user.id)
                 console.log('[LinkedIn] Updated avatar_url to userinfo picture')
               } else {
                 console.log('[LinkedIn] userinfo picture is same as existing — no update')

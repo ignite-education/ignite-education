@@ -2,6 +2,8 @@
 
 import { useRef, useEffect, useState } from 'react'
 import CourseCard from './CourseCard'
+import { courseMatchesQuery } from '@/lib/courseUtils'
+import type { Module } from '@/types/course'
 
 export const COURSE_TYPE_CONFIG: Record<string, { title: string; description: string }> = {
   specialism: {
@@ -20,7 +22,7 @@ export const COURSE_TYPE_CONFIG: Record<string, { title: string; description: st
 
 interface CourseTypeColumnProps {
   type: string
-  courses: Array<{ id?: string; name: string; title?: string }>
+  courses: Array<{ id?: string; name: string; title?: string; module_structure?: Module[] }>
   showDescription?: boolean
   hideHeader?: boolean
   cardStaggerBase?: number
@@ -43,15 +45,51 @@ export default function CourseTypeColumn({
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
 
   // Disable CSS transitions during initial stagger, enable after stagger completes
+  const containerRef = useRef<HTMLDivElement>(null)
   const initialRenderRef = useRef(true)
   const useStagger = initialRenderRef.current && cardStaggerBase > 0
   const [transitionsEnabled, setTransitionsEnabled] = useState(false)
+  // Start the entrance stagger only once the column scrolls into view, so it's
+  // seen even when the catalog sits below the fold (e.g. on the profile page).
+  // On pages where it's already in view at load (e.g. /courses) the observer
+  // fires immediately, so the behaviour there is unchanged.
+  const [inView, setInView] = useState(false)
 
   useEffect(() => {
     if (!useStagger) {
+      setInView(true)
       setTransitionsEnabled(true)
       return
     }
+    const el = containerRef.current
+    if (!el) {
+      setInView(true)
+      return
+    }
+    // Already in view at mount (e.g. /courses, where the catalog is at the top)?
+    // Play immediately. Otherwise wait for it to scroll into view (the profile).
+    const rect = el.getBoundingClientRect()
+    const vh = window.innerHeight || document.documentElement.clientHeight
+    if (rect.top < vh && rect.bottom > 0) {
+      setInView(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0, rootMargin: '0px 0px -10% 0px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!useStagger || !inView) return
     const longestDelay = cardStaggerBase + (displayCourses.length - 1) * cardStaggerIncrement
     const timer = setTimeout(() => {
       initialRenderRef.current = false
@@ -59,12 +97,10 @@ export default function CourseTypeColumn({
     }, (longestDelay + 0.6) * 1000)
     return () => clearTimeout(timer)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  const query = searchQuery.toLowerCase().trim()
+  }, [inView])
 
   return (
-    <div className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
+    <div ref={containerRef} className={`flex flex-col ${courses.length === 0 ? 'hidden md:flex' : ''}`}>
       <h2
         className={`text-[22px] font-bold text-[#EF0B72] mb-1 text-center tracking-[-0.01em] ${hideHeader ? 'hidden md:block' : ''}`}
         style={{ fontFamily: 'var(--font-geist-sans), sans-serif' }}
@@ -81,9 +117,7 @@ export default function CourseTypeColumn({
       )}
       <div className="flex flex-col">
         {displayCourses.map((course, idx) => {
-          const isVisible = !query ||
-            course.title?.toLowerCase().includes(query) ||
-            course.name?.toLowerCase().includes(query)
+          const isVisible = courseMatchesQuery(course, searchQuery)
 
           return (
             <div
@@ -101,7 +135,7 @@ export default function CourseTypeColumn({
               <div style={{ overflow: useStagger ? 'visible' : 'hidden' }}>
                 <div
                   style={useStagger ? {
-                    animation: 'fadeInUpSmall 0.6s ease-out forwards',
+                    animation: inView ? 'fadeInUpSmall 0.6s ease-out forwards' : 'none',
                     animationDelay: `${cardStaggerBase + idx * cardStaggerIncrement}s`,
                     opacity: 0,
                   } : undefined}

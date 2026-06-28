@@ -43,6 +43,8 @@
     { "source": "/learning", "destination": "/index.html" },
     { "source": "/admin/:path*", "destination": "https://admin.ignite.education/:path*" },
     { "source": "/auth/:path*", "destination": "/index.html" },
+    { "source": "/:username/opengraph-image", "destination": "https://next.ignite.education/:username/opengraph-image" },
+    { "source": "/:username", "destination": "https://next.ignite.education/:username" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "trailingSlash": false,

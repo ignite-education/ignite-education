@@ -6,6 +6,8 @@ import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
+import { courseMatchesQuery } from '@/lib/courseUtils'
+import type { Module } from '@/types/course'
 import CourseRequestModal from './CourseRequestModal'
 import lottieData from '../../../public/icon-animation.json'
 
@@ -15,6 +17,7 @@ interface Course {
   title?: string
   description?: string
   status: string
+  module_structure?: Module[]
 }
 
 interface WelcomeHeroProps {
@@ -92,16 +95,9 @@ export default function WelcomeHero({ coursesByType }: WelcomeHeroProps) {
     })
   }, [])
 
-  // Filter courses based on search
-  const filterCourses = (courses: Course[]) => {
-    if (!searchQuery.trim()) return courses
-    const query = searchQuery.toLowerCase()
-    return courses.filter(
-      (course) =>
-        course.title?.toLowerCase().includes(query) ||
-        course.name?.toLowerCase().includes(query)
-    )
-  }
+  // Filter courses based on search (matches title, name, module names, and lesson names)
+  const filterCourses = (courses: Course[]) =>
+    courses.filter((course) => courseMatchesQuery(course, searchQuery))
 
   const filteredSpecialism = filterCourses(coursesByType.specialism)
   const filteredSkill = filterCourses(coursesByType.skill)

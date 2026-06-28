@@ -269,6 +269,42 @@ export function generateCertificateStructuredData(certificate: Certificate) {
 }
 
 /**
+ * Generate Person schema.org structured data for public profile pages
+ */
+export function generatePersonStructuredData(profile: {
+  display_name: string
+  username: string
+  avatar_url: string | null
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    'name': profile.display_name,
+    'url': `${BASE_URL}/${profile.username}`,
+    ...(profile.avatar_url ? { 'image': profile.avatar_url } : {}),
+    'memberOf': {
+      '@type': 'EducationalOrganization',
+      'name': 'Ignite Education',
+      'url': BASE_URL,
+    },
+  }
+}
+
+/**
+ * Generate Breadcrumb schema.org structured data for public profile pages
+ */
+export function generateProfileBreadcrumbStructuredData(displayName: string, username: string) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    'itemListElement': [
+      { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
+      { '@type': 'ListItem', 'position': 2, 'name': displayName, 'item': `${BASE_URL}/${username}` },
+    ],
+  }
+}
+
+/**
  * Generate Breadcrumb schema.org structured data for certificate pages
  */
 export function generateCertificateBreadcrumbStructuredData(

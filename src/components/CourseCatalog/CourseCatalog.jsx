@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { getCoursesByType } from '../../lib/api';
+import { courseMatchesQuery } from '../../lib/courseSearch';
 import { getCachedCourses, setCachedCourses } from '../../lib/courseCatalogCache';
 import CourseTypeColumn from './CourseTypeColumn';
 import CourseSearch from './CourseSearch';
@@ -84,15 +85,9 @@ const CourseCatalog = ({
     }
   }, [shouldPlayAnimation]);
 
-  const filterCourses = (courses) => {
-    if (!searchQuery.trim()) return courses;
-    const query = searchQuery.toLowerCase();
-    return courses.filter(
-      (course) =>
-        course.title?.toLowerCase().includes(query) ||
-        course.name?.toLowerCase().includes(query)
-    );
-  };
+  // Filter courses based on search (matches title, name, module names, and lesson names)
+  const filterCourses = (courses) =>
+    courses.filter((course) => courseMatchesQuery(course, searchQuery));
 
   const filteredSpecialism = filterCourses(coursesByType.specialism);
   const filteredSkill = filterCourses(coursesByType.skill);

@@ -6,14 +6,17 @@ import Lottie from 'lottie-react'
 import type { LottieRefCurrentProps } from 'lottie-react'
 import { createClient } from '@/lib/supabase/client'
 import { CourseTypeColumn, CourseSearch } from '@/components/catalog'
+import { courseMatchesQuery } from '@/lib/courseUtils'
 import CourseRequestModal from '@/app/welcome/CourseRequestModal'
 import type { CoursesByType } from '@/lib/courseData'
 
 interface CourseCatalogClientProps {
   coursesByType: CoursesByType
+  /** Hide the centered Ignite logo above the heading (e.g. on the profile page, which has its own logo) */
+  hideLogo?: boolean
 }
 
-export default function CourseCatalogClient({ coursesByType }: CourseCatalogClientProps) {
+export default function CourseCatalogClient({ coursesByType, hideLogo = false }: CourseCatalogClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
@@ -76,15 +79,8 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
     })
   }, [])
 
-  const filterCourses = (courses: typeof coursesByType.specialism) => {
-    if (!searchQuery.trim()) return courses
-    const query = searchQuery.toLowerCase()
-    return courses.filter(
-      (course) =>
-        course.title?.toLowerCase().includes(query) ||
-        course.name?.toLowerCase().includes(query)
-    )
-  }
+  const filterCourses = (courses: typeof coursesByType.specialism) =>
+    courses.filter((course) => courseMatchesQuery(course, searchQuery))
 
   const filteredSpecialism = filterCourses(coursesByType.specialism)
   const filteredSkill = filterCourses(coursesByType.skill)
@@ -101,28 +97,30 @@ export default function CourseCatalogClient({ coursesByType }: CourseCatalogClie
       <div className="max-w-[1267px] mx-auto px-6">
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
-          <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
-            {lottieData ? (
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={lottieData}
-                loop={true}
-                autoplay={false}
-                onLoopComplete={() => {
-                  loopCountRef.current += 1
-                  if (loopCountRef.current % 3 === 0 && lottieRef.current) {
-                    lottieRef.current.pause()
-                    setTimeout(() => {
-                      lottieRef.current?.goToAndPlay(0)
-                    }, 4000)
-                  }
-                }}
-                style={{ width: 80, height: 80, margin: '0 auto' }}
-              />
-            ) : (
-              <div style={{ width: 80, height: 80, margin: '0 auto' }} />
-            )}
-          </Link>
+          {!hideLogo && (
+            <Link href="/" className="inline-block" style={{ marginBottom: '28.8px' }}>
+              {lottieData ? (
+                <Lottie
+                  lottieRef={lottieRef}
+                  animationData={lottieData}
+                  loop={true}
+                  autoplay={false}
+                  onLoopComplete={() => {
+                    loopCountRef.current += 1
+                    if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                      lottieRef.current.pause()
+                      setTimeout(() => {
+                        lottieRef.current?.goToAndPlay(0)
+                      }, 4000)
+                    }
+                  }}
+                  style={{ width: 80, height: 80, margin: '0 auto' }}
+                />
+              ) : (
+                <div style={{ width: 80, height: 80, margin: '0 auto' }} />
+              )}
+            </Link>
+          )}
           <h1
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]"
             style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}

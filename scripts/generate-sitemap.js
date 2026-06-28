@@ -74,6 +74,17 @@ async function generateSitemap() {
     console.log(`Found ${prompts?.length || 0} prompts`);
   }
 
+  // Fetch public user profiles from the anon-readable view (excludes private + null-username users)
+  const { data: profiles, error: profilesError } = await supabase
+    .from('public_profiles')
+    .select('username, joined_at');
+
+  if (profilesError) {
+    console.error('Error fetching profiles:', profilesError);
+  } else {
+    console.log(`Found ${profiles?.length || 0} public profiles`);
+  }
+
   // Build sitemap XML
   let xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -140,13 +151,26 @@ async function generateSitemap() {
 `;
   });
 
+  // Add public user profiles (one bare /{username} URL each)
+  // NOTE: once profiles exceed ~40k, split into a sitemap index (50k URL / 50MB limit per file).
+  (profiles || []).forEach(profile => {
+    const lastmod = profile.joined_at?.split('T')[0] || today;
+    xml += `  <url>
+    <loc>${baseUrl}/${profile.username}</loc>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+`;
+  });
+
   xml += '</urlset>';
 
   // Write to public/sitemap.xml
   const sitemapPath = path.join(__dirname, '..', 'public', 'sitemap.xml');
   fs.writeFileSync(sitemapPath, xml);
 
-  const totalUrls = staticPages.length + (courses?.length || 0) + specialismCourses.length + (posts?.length || 0) + (prompts?.length || 0);
+  const totalUrls = staticPages.length + (courses?.length || 0) + specialismCourses.length + (posts?.length || 0) + (prompts?.length || 0) + (profiles?.length || 0);
   console.log(`Sitemap generated with ${totalUrls} URLs`);
   console.log(`Written to: ${sitemapPath}`);
 }

@@ -185,7 +185,7 @@ export default function Navbar({ logoClipPercentage = 100, invertLayers = false,
           ) : (
             <Link
               href="/sign-in"
-              className="px-5 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors flex items-center justify-center h-[35px] md:h-auto md:py-2"
+              className="px-5 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors flex items-center justify-center whitespace-nowrap h-[35px] md:h-auto md:py-2"
               style={{ letterSpacing: '-0.01em', borderRadius: '0.25rem', width: '85px', textAlign: 'center' }}
             >
               Sign In

@@ -23,6 +23,11 @@ interface CurriculumLessonSliderProps {
   courseSlug: string
   courseTitle: string
   isComingSoon: boolean
+  // Hide the lesson name inside the card (used when the name is shown as a
+  // heading above the card, e.g. lessons-only courses).
+  showCardTitle?: boolean
+  // Added to each card's index to produce the real lesson number in the URL.
+  baseLessonNumber?: number
 }
 
 export default function CurriculumLessonSlider({
@@ -31,6 +36,8 @@ export default function CurriculumLessonSlider({
   courseSlug,
   courseTitle,
   isComingSoon,
+  showCardTitle = true,
+  baseLessonNumber = 0,
 }: CurriculumLessonSliderProps) {
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const rafRef = useRef<number | null>(null)
@@ -69,7 +76,7 @@ export default function CurriculumLessonSlider({
     // Fallback (also the min width) until the client measures text after mount.
     if (!measured || typeof document === 'undefined') return 416
     // All cards are sized to fit their content plus the start button.
-    const titleWidth = getTextWidth(lesson.name, 17.6, '500')
+    const titleWidth = showCardTitle ? getTextWidth(lesson.name, 17.6, '500') : 0
     const bulletPoints = (lesson.bullet_points || []).slice(0, 3)
     const maxBulletWidth = bulletPoints.length > 0
       ? Math.max(...bulletPoints.map(bp => getTextWidth(bp, 14.4) + 16))
@@ -77,8 +84,10 @@ export default function CurriculumLessonSlider({
     const maxContentWidth = Math.max(titleWidth, maxBulletWidth)
     // paddingLeft(1.4rem≈22.4) + gap-3(12) + button(48) + paddingRight(1.5rem≈24) + buffer
     const neededWidth = Math.ceil(maxContentWidth + 122)
-    return Math.max(416, neededWidth)
-  }, [measured])
+    const width = Math.max(416, neededWidth)
+    // Lessons-only cards (no in-card title) are 5% wider.
+    return showCardTitle ? width : Math.round(width * 1.05)
+  }, [measured, showCardTitle])
 
   // Drag-to-scroll handlers
   const handleScrollMouseDown = (e: React.MouseEvent) => {
@@ -122,17 +131,24 @@ export default function CurriculumLessonSlider({
     })
   }
 
-  // Start a lesson: signed-in → enroll-if-needed + open learning hub;
-  // signed-out → sign-in page carrying the target lesson + course.
+  // Start a lesson. For a live course: signed-in → enroll-if-needed + open the
+  // learning hub; signed-out → sign-in carrying the target lesson + course.
+  // For a coming-soon course there is no lesson to open, so the arrow instead
+  // adds the course to the user's account (join the waitlist): signed-in →
+  // register interest + return to the course page; signed-out → sign-in (which
+  // registers interest server-side) and return to the course page.
   const handleStart = async (lessonNumber: number) => {
     if (isStarting) return
     setIsStarting(true)
-    const target = `/learning?module=${moduleNumber}&lesson=${lessonNumber}`
+    const target = isComingSoon
+      ? `/courses/${courseSlug}`
+      : `/learning?module=${moduleNumber}&lesson=${lessonNumber}`
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Silently enroll/switch to this course, then open the lesson.
+        // Live: silently enroll/switch then open the lesson.
+        // Coming-soon: save + register interest, then reload the course page.
         await enrollUserInCourse({ supabase, userId: user.id, authUser: user, courseSlug, courseTitle, isComingSoon })
         window.location.href = target
       } else {
@@ -171,7 +187,7 @@ export default function CurriculumLessonSlider({
         <div className="flex gap-4 items-stretch">
           {lessons.map((lesson, index) => {
             const cardWidth = getCardWidth(lesson)
-            const lessonNumber = index + 1
+            const lessonNumber = baseLessonNumber + index + 1
 
             return (
               <div
@@ -180,11 +196,13 @@ export default function CurriculumLessonSlider({
                 style={{
                   width: `${cardWidth}px`,
                   minWidth: `${cardWidth}px`,
-                  minHeight: '132px',
+                  // Lessons-only cards (no in-card title) hug their content with
+                  // balanced padding; module cards keep the fixed minimum height.
+                  minHeight: showCardTitle ? '132px' : undefined,
                   flexShrink: 0,
                   paddingTop: '1.25rem',
                   paddingRight: '1.5rem',
-                  paddingBottom: '0.15rem',
+                  paddingBottom: showCardTitle ? '0.15rem' : '1.25rem',
                   paddingLeft: '1.4rem',
                   borderRadius: '0.3rem',
                   background: '#ffffff',
@@ -208,9 +226,11 @@ export default function CurriculumLessonSlider({
                   }}
                 />
                 <div className="flex-1" style={{ minWidth: 0 }}>
-                  <h4 className="text-black" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
-                    {lesson.name}
-                  </h4>
+                  {showCardTitle && (
+                    <h4 className="text-black" style={{ marginTop: '-4px', marginBottom: '3px', fontSize: '1.1rem', fontWeight: 500, letterSpacing: '0%' }}>
+                      {lesson.name}
+                    </h4>
+                  )}
                   <ul style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                     {(lesson.bullet_points || []).slice(0, 3).map((bulletPoint, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-black" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', lineHeight: '1.375' }}>
@@ -221,34 +241,32 @@ export default function CurriculumLessonSlider({
                   </ul>
                 </div>
 
-                {!isComingSoon && (
-                  <button
-                    type="button"
-                    className="bg-[#F6F6F6] text-black font-bold transition-colors flex-shrink-0 group disabled:opacity-70"
-                    style={{
-                      width: '48px', height: '48px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      borderRadius: '0.3rem',
-                      position: 'absolute',
-                      right: '1.5rem',
-                      top: '50%',
-                      transform: 'translateY(-50%)',
-                      cursor: isStarting ? 'wait' : 'pointer',
-                    }}
-                    onClick={() => handleStart(lessonNumber)}
-                    disabled={isStarting}
-                    aria-label={`Start lesson: ${lesson.name}`}
-                  >
-                    <svg className="group-hover:stroke-[#EF0B72] transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  className="bg-[#F6F6F6] text-black font-bold transition-colors flex-shrink-0 group disabled:opacity-70"
+                  style={{
+                    width: '48px', height: '48px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderRadius: '0.3rem',
+                    position: 'absolute',
+                    right: '1.5rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    cursor: isStarting ? 'wait' : 'pointer',
+                  }}
+                  onClick={() => handleStart(lessonNumber)}
+                  disabled={isStarting}
+                  aria-label={isComingSoon ? `Join the waitlist for ${courseTitle}` : `Start lesson: ${lesson.name}`}
+                >
+                  <svg className="group-hover:stroke-[#EF0B72] transition-colors" width="26" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             )
           })}
           {/* Spacer to allow the last card to scroll fully to the start position */}
-          {containerWidth > 0 && (
+          {containerWidth > 0 && lessons.length > 1 && (
             <div style={{ width: `${Math.max(0, containerWidth - getCardWidth(lessons[lessons.length - 1]))}px`, flexShrink: 0 }} />
           )}
         </div>

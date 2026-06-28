@@ -20,10 +20,15 @@ CREATE TABLE IF NOT EXISTS public.users (
   onboarding_completed BOOLEAN DEFAULT false,
   enrolled_course TEXT,
   role TEXT DEFAULT 'student' CHECK (role IN ('student', 'teacher', 'admin')),
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  -- Public profile fields (see migrations/add_public_profiles.sql)
+  username TEXT UNIQUE,
+  avatar_url TEXT,
+  is_public BOOLEAN NOT NULL DEFAULT true
 );
 
 CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
+CREATE INDEX IF NOT EXISTS idx_users_username ON public.users(username);
 
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
@@ -43,17 +48,71 @@ CREATE POLICY "Admins can update all users" ON public.users
     EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
   );
 
+-- Public-profile username helpers (see migrations/add_public_profiles.sql)
+CREATE OR REPLACE FUNCTION public.is_reserved_username(slug TEXT)
+RETURNS BOOLEAN LANGUAGE sql IMMUTABLE AS $$
+  SELECT slug IS NULL OR slug = '' OR slug = ANY (ARRAY[
+    'courses','blog','welcome','privacy','terms','release-notes',
+    'sign-in','reset-password','auth','certificate','prompts','progress',
+    'admin','office-hours','learning','api','sitemap','sitemap.xml',
+    'robots.txt','ai.txt','_next','assets','index'
+  ]);
+$$;
+
+CREATE OR REPLACE FUNCTION public.slugify(input TEXT)
+RETURNS TEXT LANGUAGE sql IMMUTABLE AS $$
+  SELECT TRIM(BOTH '-' FROM
+    regexp_replace(lower(COALESCE(input, '')), '[^a-z0-9]+', '-', 'g')
+  );
+$$;
+
+CREATE OR REPLACE FUNCTION public.generate_username(p_first TEXT, p_last TEXT)
+RETURNS TEXT LANGUAGE plpgsql AS $$
+DECLARE
+  base      TEXT;
+  candidate TEXT;
+  n         INT := 1;
+BEGIN
+  base := public.slugify(TRIM(COALESCE(p_first, '') || ' ' || COALESCE(p_last, '')));
+  IF base IS NULL OR base = '' THEN
+    base := 'user';
+  END IF;
+  candidate := base;
+  LOOP
+    IF public.is_reserved_username(candidate)
+       OR EXISTS (SELECT 1 FROM public.users WHERE username = candidate) THEN
+      n := n + 1;
+      candidate := base || '-' || n;
+    ELSE
+      EXIT;
+    END IF;
+  END LOOP;
+  RETURN candidate;
+END;
+$$;
+
 -- Trigger to auto-create user record on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_first TEXT;
+  v_last  TEXT;
 BEGIN
-  INSERT INTO public.users (id, first_name, last_name, onboarding_completed, role)
+  v_first := TRIM(COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), ''));
+  v_last  := TRIM(COALESCE(NEW.raw_user_meta_data->>'last_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 2), ''));
+  INSERT INTO public.users (id, first_name, last_name, onboarding_completed, role, username, avatar_url)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'first_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 1), ''),
-    COALESCE(NEW.raw_user_meta_data->>'last_name', split_part(NEW.raw_user_meta_data->>'full_name', ' ', 2), ''),
+    v_first,
+    v_last,
     false,
-    'student'
+    'student',
+    public.generate_username(v_first, v_last),
+    COALESCE(
+      NEW.raw_user_meta_data->>'custom_avatar_url',
+      NEW.raw_user_meta_data->>'avatar_url',
+      NEW.raw_user_meta_data->>'picture'
+    )
   );
   RETURN NEW;
 END;
@@ -149,6 +208,30 @@ ALTER TABLE lesson_completions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view their own completions" ON lesson_completions FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert their own completions" ON lesson_completions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Anon-safe public profile projection (see migrations/add_public_profiles.sql).
+-- security_invoker stays OFF so the view runs as its owner and bypasses the
+-- strict RLS on users + lesson_completions; the view enforces is_public and
+-- exposes only the four public-safe fields.
+CREATE OR REPLACE VIEW public.public_profiles
+WITH (security_barrier = true) AS
+SELECT
+  u.username,
+  TRIM(BOTH ' ' FROM (COALESCE(u.first_name, '') || ' ' || COALESCE(u.last_name, ''))) AS display_name,
+  u.avatar_url,
+  u.created_at AS joined_at,
+  COALESCE(lc.lessons_completed, 0)::int AS lessons_completed
+FROM public.users u
+LEFT JOIN (
+  SELECT user_id, COUNT(*) AS lessons_completed
+  FROM public.lesson_completions
+  GROUP BY user_id
+) lc ON lc.user_id = u.id::text  -- lesson_completions.user_id is TEXT (and may hold non-UUID values like 'temp-user-id')
+WHERE u.is_public = true
+  AND u.username IS NOT NULL;
+
+REVOKE ALL ON public.public_profiles FROM PUBLIC;
+GRANT SELECT ON public.public_profiles TO anon, authenticated;
 
 -- ============================================================================
 -- 5. USER PROGRESS TABLE
