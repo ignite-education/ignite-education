@@ -1234,36 +1234,49 @@ const LearningHubV2 = () => {
         <div className="flex-[3] flex flex-col min-h-0 relative">
           {/* Fixed header — logo, lesson label, title, pink line */}
           <div ref={leftHeaderRef} className={isMobile ? 'px-5' : 'px-10'} style={{ paddingTop: '30px', paddingBottom: '5px' }}>
-            <div className="max-w-2xl">
-              <a href="/progress" style={{ marginBottom: '20px', display: 'block', width: 'fit-content', marginLeft: '-9px' }}>
-                {lottieData && Object.keys(lottieData).length > 0 ? (
-                  <Lottie
-                    lottieRef={lottieRef}
-                    animationData={lottieData}
-                    loop={true}
-                    autoplay={false}
-                    onLoopComplete={() => {
-                      loopCountRef.current += 1;
-                      if (loopCountRef.current % 3 === 0 && lottieRef.current) {
-                        lottieRef.current.pause();
-                        setTimeout(() => {
-                          lottieRef.current?.goToAndPlay(0);
-                        }, 4000);
-                      }
-                    }}
-                    style={{ width: 61, height: 61 }}
-                  />
-                ) : (
-                  <div style={{ width: 61, height: 61 }} />
-                )}
+            <div className={`max-w-2xl ${isMobile ? 'flex items-center' : ''}`} style={isMobile ? { gap: '12px', marginBottom: '14px' } : undefined}>
+              <a
+                href="/progress"
+                style={{
+                  display: 'block',
+                  width: 'fit-content',
+                  ...(isMobile
+                    ? { marginLeft: '-1px', flexShrink: 0 }
+                    : { marginBottom: '20px', marginLeft: '-9px' }),
+                }}
+              >
+                {/* Lottie canvas has ~15% internal padding, so on mobile we overflow-clip it to match the ProgressHubV2 navbar icon (39.93x39.93 box) */}
+                <div style={isMobile ? { width: 39.93, height: 39.93, overflow: 'hidden' } : { width: 61, height: 61 }}>
+                  {lottieData && Object.keys(lottieData).length > 0 ? (
+                    <Lottie
+                      lottieRef={lottieRef}
+                      animationData={lottieData}
+                      loop={true}
+                      autoplay={false}
+                      onLoopComplete={() => {
+                        loopCountRef.current += 1;
+                        if (loopCountRef.current % 3 === 0 && lottieRef.current) {
+                          lottieRef.current.pause();
+                          setTimeout(() => {
+                            lottieRef.current?.goToAndPlay(0);
+                          }, 4000);
+                        }
+                      }}
+                      style={isMobile ? { width: 57.475, height: 57.475, marginTop: -9.075, marginLeft: -7.865 } : { width: 61, height: 61 }}
+                    />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%' }} />
+                  )}
+                </div>
               </a>
 
               <LessonHeader
                 globalLessonNumber={globalLessonNumber}
                 lessonName={lessonName}
+                isMobile={isMobile}
               />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3" style={isMobile ? { marginTop: '-6px' } : undefined}>
               <div className="rounded-full flex-1" style={{ backgroundColor: '#F0F0F0', height: '5px' }}>
                 <div
                   className="h-full rounded-full"
@@ -1299,8 +1312,8 @@ const LearningHubV2 = () => {
                 onMouseLeave={() => setResetClicked(false)}
               >
                 <svg
-                  width="18"
-                  height="18"
+                  width={isMobile ? 21 : 18}
+                  height={isMobile ? 21 : 18}
                   viewBox="0 0 24 24"
                   fill="none"
                   className={`transition-transform duration-300 ease-in-out ${resetClicked ? '' : 'group-hover:-rotate-45'}`}
@@ -1958,6 +1971,7 @@ const LearningHubV2 = () => {
               onChange={setChatInput}
               onSubmit={handleChatSubmit}
               disabled={isAnyAnimationActive}
+              placeholder={isMobile ? 'Type here' : ''}
             />
           </div>
           )}
@@ -1983,8 +1997,8 @@ const LearningHubV2 = () => {
         })()}
       </div>
 
-      {/* Footer */}
-      <Footer />
+      {/* Footer — hidden on mobile */}
+      {!isMobile && <Footer />}
       </>)}
     </div>
   );

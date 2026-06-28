@@ -1,9 +1,11 @@
 import React, { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
+import useIsMobile from '../hooks/useIsMobile';
 
 const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', disabled = false }, ref) => {
   const textareaRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [wrapperHeight, setWrapperHeight] = useState(48);
+  const isMobile = useIsMobile(768);
 
   useImperativeHandle(ref, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -60,13 +62,14 @@ const ChatInput = forwardRef(({ value, onChange, onSubmit, placeholder = '', dis
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
         rows={1}
-        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 caret-[#EF0B72] focus:outline-none resize-none"
+        className="w-full bg-white rounded-xl px-6 py-3 pr-14 font-light text-gray-900 placeholder-gray-400 caret-[#EF0B72] focus:outline-none resize-none"
         style={{
           boxShadow: isHovered
             ? '0 0 10px rgba(103,103,103,0.75)'
             : '0 0 10px rgba(103,103,103,0.6)',
           transition: 'box-shadow 0.2s ease-in-out',
-          fontSize: '14px',
+          // iOS Safari zooms when a focused input's font-size is < 16px — keep ≥16px on mobile
+          fontSize: isMobile ? '16px' : '14px',
           minHeight: '48px',
           maxHeight: '62px',
           overflowY: 'scroll',

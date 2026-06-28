@@ -1,11 +1,13 @@
 import React, { useEffect, useRef } from 'react';
 import useTypewriter from '../hooks/useTypewriter';
+import useIsMobile from '../hooks/useIsMobile';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
 const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
   const level = section.content?.level || 2;
   const text = section.content?.text || section.title;
   const HeadingTag = `h${level}`;
+  const isMobile = useIsMobile(768);
 
   // When skipping animation (restoring progress), call onComplete immediately
   const skipCalledRef = useRef(false);
@@ -50,7 +52,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
             {wordSpans}
           </HeadingTag>
         </div>
@@ -58,7 +60,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     }
 
     return (
-      <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+      <HeadingTag className={isMobile ? 'mt-5 mb-1.5' : 'text-lg mt-5 mb-1.5'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
         {wordSpans}
       </HeadingTag>
     );
@@ -80,14 +82,14 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
             {renderFull(text)}
           </HeadingTag>
         </div>
       );
     }
     return (
-      <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+      <HeadingTag className={isMobile ? 'mt-5 mb-1.5' : 'text-lg mt-5 mb-1.5'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
         {renderFull(text)}
       </HeadingTag>
     );
@@ -112,14 +114,14 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
     if (level === 2) {
       return (
         <div className="mb-3" style={{ marginTop: '10px' }}>
-          <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+          <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
             {cursorOnly}
           </HeadingTag>
         </div>
       );
     }
     return (
-      <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+      <HeadingTag className={isMobile ? 'mt-5 mb-1.5' : 'text-lg mt-5 mb-1.5'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
         {cursorOnly}
       </HeadingTag>
     );
@@ -129,7 +131,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
   if (level === 2) {
     return (
       <div className="mb-3" style={{ marginTop: '10px' }}>
-        <HeadingTag className="text-xl" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+        <HeadingTag className={isMobile ? '' : 'text-xl'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.15rem' }) }}>
           {renderFormattedText(revealedText)}
           {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
         </HeadingTag>
@@ -138,7 +140,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
   }
 
   return (
-    <HeadingTag className="text-lg mt-5 mb-1.5" style={{ fontWeight: 500, letterSpacing: '-0.01em' }}>
+    <HeadingTag className={isMobile ? 'mt-5 mb-1.5' : 'text-lg mt-5 mb-1.5'} style={{ fontWeight: 500, letterSpacing: '-0.01em', ...(isMobile && { fontSize: '1.1rem' }) }}>
       {renderFormattedText(revealedText)}
       {!isComplete && <span data-scroll-anchor className="inline-block ml-1.5" style={{ width: 8, height: 8, backgroundColor: '#8200EA', verticalAlign: 'middle', position: 'relative', top: '-1px' }} />}
     </HeadingTag>

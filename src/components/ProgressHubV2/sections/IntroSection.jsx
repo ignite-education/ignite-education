@@ -65,6 +65,7 @@ const generateIntroText = ({ firstName, courseTitle, progressPercentage, complet
       body: `Here you can see your progress, upcoming lessons, get support from industry professionals and connect with the global community. To get started, click on the ${firstLessonName} lesson below. Let's get started, ${firstName}!`,
       linkText: firstLessonName,
       linkUrl: '#course-details',
+      mobileSentences: 1, // mobile: drop the "To get started, click on the … lesson below" CTA (redundant with the lesson card)
     };
   }
 
@@ -501,7 +502,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
       style={{
         position: 'relative',
         ...(isMobile
-          ? { padding: '20px 20px 15px 20px' }
+          ? { padding: '20px 20px 18px 20px' }
           : { height: '70vh', minHeight: '500px', maxHeight: '550px', padding: '30px 40px 0 40px' }),
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
@@ -667,7 +668,7 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
             {isMobile ? (
               <p className="text-black" style={{ fontSize: '16px', lineHeight: '1.6', letterSpacing: '-0.01em', fontWeight: 300, marginBottom: '14px' }}>
                 <span className="font-semibold">{introText.headline}</span>{' '}
-                {renderBodyWithLink(limitSentences(introText.body, 2))}
+                {renderBodyWithLink(limitSentences(introText.body, introText.mobileSentences ?? 2))}
               </p>
             ) : (
               <>
