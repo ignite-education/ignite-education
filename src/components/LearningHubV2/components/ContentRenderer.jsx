@@ -5,7 +5,7 @@ import SectionList from './SectionList';
 
 // ContentRenderer only renders text-based sections (left column).
 // Image and YouTube sections are handled by MediaPanel (right column).
-const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false, extraDelay = 0 }) => {
+const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onComplete, narrationActive = false, wordIndexOffset = 0, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1, skipAnimation = false, extraDelay = 0 }) => {
   // Add a 750ms gap after a heading before the next section starts typing
   const startDelay = (skipAnimation ? 0 : (prevSectionType === 'heading' || sectionIdx === 0) ? 700 : 0) + extraDelay;
   // Auto-complete non-animated section types immediately
@@ -17,14 +17,14 @@ const ContentRenderer = ({ section, sectionIdx, isActive, prevSectionType, onCom
 
   switch (section.content_type) {
     case 'heading':
-      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} skipAnimation={skipAnimation} />;
+      return <SectionHeading section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} revealIndex={revealIndex} sentenceStart={sentenceStart} sentenceEnd={sentenceEnd} skipAnimation={skipAnimation} />;
 
     case 'paragraph':
-      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} skipAnimation={skipAnimation} />;
+      return <SectionParagraph section={section} delay={startDelay} onComplete={isActive ? onComplete : undefined} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} revealIndex={revealIndex} sentenceStart={sentenceStart} sentenceEnd={sentenceEnd} skipAnimation={skipAnimation} />;
 
     case 'list':
     case 'bulletlist':
-      return <SectionList section={section} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} />;
+      return <SectionList section={section} narrationActive={narrationActive} wordIndexOffset={wordIndexOffset} revealIndex={revealIndex} sentenceStart={sentenceStart} sentenceEnd={sentenceEnd} />;
 
     // Scored questions are handled by LearningHubV2 directly (blank screen flow)
     // Auto-complete triggers handleSectionComplete to enter scored question mode

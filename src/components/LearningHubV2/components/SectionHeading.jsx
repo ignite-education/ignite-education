@@ -3,7 +3,7 @@ import useTypewriter from '../hooks/useTypewriter';
 import useIsMobile from '../hooks/useIsMobile';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
-const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
+const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1, skipAnimation = false }) => {
   const level = section.content?.level || 2;
   const text = section.content?.text || section.title;
   const HeadingTag = `h${level}`;
@@ -29,7 +29,18 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
   if (narrationActive && text) {
     const normalized = normalizeTextForNarration(text);
     const words = splitIntoWords(normalized);
-    const wordStyle = { padding: '2px', margin: '-2px', borderRadius: '2px' };
+    const wordStyleFor = (idx) => {
+      const inSentence = sentenceStart >= 0 && idx >= sentenceStart && idx <= sentenceEnd;
+      const style = {
+        padding: '2px',
+        margin: '-2px',
+        borderRadius: '2px',
+        transition: inSentence ? 'background-color 0s' : 'background-color 0.35s ease',
+        backgroundColor: inSentence ? '#fef0f8' : 'transparent',
+      };
+      if (idx === revealIndex) style.boxShadow = 'inset 0 0 0 100px #fbcee7';
+      return style;
+    };
 
     // Split visible text by spaces, assign word indices
     const visibleWords = text
@@ -43,7 +54,7 @@ const SectionHeading = ({ section, delay = 0, onComplete, narrationActive = fals
       const idx = wordIndexOffset + wordCounter;
       wordCounter++;
       return (
-        <span key={`w-${idx}`} data-word-index={idx} style={wordStyle}>
+        <span key={`w-${idx}`} data-word-index={idx} style={wordStyleFor(idx)}>
           {part}
         </span>
       );

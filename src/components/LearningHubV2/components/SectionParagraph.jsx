@@ -2,9 +2,31 @@ import React from 'react';
 import useTypewriter from '../hooks/useTypewriter';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
+// Highlight colours for narration: the whole current sentence in light pink,
+// with the word currently being spoken a shade darker.
+const SENTENCE_HL = '#fef0f8';
+const WORD_HL = '#fbcee7';
+
+// Per-word style for narration spans: light-highlight the current sentence and
+// darker-highlight the word currently being spoken.
+const narrationWordStyle = (idx, revealIndex, sentenceStart, sentenceEnd) => {
+  const inSentence = sentenceStart >= 0 && idx >= sentenceStart && idx <= sentenceEnd;
+  const style = {
+    padding: '2px',
+    margin: '-2px',
+    borderRadius: '2px',
+    // Sentence band appears instantly (in sync with the crisp current word) and
+    // fades out only when narration leaves the sentence.
+    transition: inSentence ? 'background-color 0s' : 'background-color 0.35s ease',
+    backgroundColor: inSentence ? SENTENCE_HL : 'transparent',
+  };
+  if (idx === revealIndex) style.boxShadow = `inset 0 0 0 100px ${WORD_HL}`;
+  return style;
+};
+
 // Render text with each word wrapped in a data-word-index span for narration highlighting.
 // Preserves bold/italic/underline formatting while splitting into individual word spans.
-const renderNarrationText = (text, wordIndexOffset) => {
+export const renderNarrationText = (text, wordIndexOffset, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1) => {
   if (!text) return null;
   const normalized = normalizeTextForNarration(text);
   const words = splitIntoWords(normalized);
@@ -14,7 +36,6 @@ const renderNarrationText = (text, wordIndexOffset) => {
   const parts = text.split(/(\*\*.+?\*\*[:\.,;!?]?|__.+?__[:\.,;!?]?|\[(?:[^\]]+)\]\((?:[^)]+)\)|(?<!\*)\*(?!\*)(?:[^*]+)\*(?!\*)[:\.,;!?]?)/g);
 
   let wordCounter = 0;
-  const wordStyle = { padding: '2px', margin: '-2px', borderRadius: '2px' };
 
   const wrapWords = (str, WrapTag) => {
     // Normalize this segment the same way to get accurate word count
@@ -32,7 +53,7 @@ const renderNarrationText = (text, wordIndexOffset) => {
       wordCounter++;
 
       const span = (
-        <span key={`w-${idx}`} data-word-index={idx} style={wordStyle}>
+        <span key={`w-${idx}`} data-word-index={idx} style={narrationWordStyle(idx, revealIndex, sentenceStart, sentenceEnd)}>
           {part}
         </span>
       );
@@ -184,7 +205,7 @@ const renderFormattedText = (text, { inProgress = false } = {}) => {
   });
 };
 
-const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, skipAnimation = false }) => {
+const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narrationActive = false, wordIndexOffset = 0, revealIndex = -1, sentenceStart = -1, sentenceEnd = -1, skipAnimation = false }) => {
   const text = typeof section.content === 'string'
     ? section.content
     : section.content?.text || section.content_text;
@@ -227,7 +248,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
                 <div key={idx} className="flex items-start gap-2 mb-1" style={{ paddingLeft: 10 }}>
                   <span className="text-black leading-relaxed">•</span>
                   <span className="text-base font-light leading-relaxed flex-1 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-                    {renderNarrationText(bulletText, lineWordOffset)}
+                    {renderNarrationText(bulletText, lineWordOffset, revealIndex, sentenceStart, sentenceEnd)}
                   </span>
                 </div>
               );
@@ -237,7 +258,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
             } else if (trimmedLine) {
               const el = (
                 <p key={idx} className="text-base font-light leading-relaxed mb-2 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-                  {renderNarrationText(line, lineWordOffset)}
+                  {renderNarrationText(line, lineWordOffset, revealIndex, sentenceStart, sentenceEnd)}
                 </p>
               );
               const normalized = normalizeTextForNarration(line);
@@ -254,7 +275,7 @@ const SectionParagraph = ({ section, animate = true, delay = 0, onComplete, narr
 
     return (
       <p className="text-base font-light leading-relaxed mb-4 text-black" style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}>
-        {renderNarrationText(text, wordIndexOffset)}
+        {renderNarrationText(text, wordIndexOffset, revealIndex, sentenceStart, sentenceEnd)}
       </p>
     );
   }

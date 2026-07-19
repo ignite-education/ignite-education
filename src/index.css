@@ -167,11 +167,11 @@ body {
 }
 
 .animate-crossfadeIn {
-  animation: fadeIn 0.4s ease;
+  animation: fadeIn 0.6s ease;
 }
 
 .animate-crossfadeOut {
-  animation: fadeOut 0.4s ease forwards;
+  animation: fadeOut 0.6s ease forwards;
 }
 
 .animate-scaleDown {

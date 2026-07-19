@@ -18,12 +18,12 @@ const LoadingScreen = ({ message = null, autoRefresh = false, autoRefreshDelay =
   }, [autoRefresh, autoRefreshDelay]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white animate-crossfadeIn">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white text-white animate-crossfadeIn">
       <div
         className="loading-animation-container w-[140px] h-[140px] lg:w-[200px] lg:h-[200px]"
         style={{
           opacity: lottieData && !animationLoading ? 1 : 0,
-          transition: 'opacity 0.3s ease-out',
+          transition: 'opacity 0.6s ease-out',
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
           willChange: 'transform, opacity'

@@ -3,11 +3,19 @@ import { supabase } from '../../../lib/supabase';
 import { normalizeTextForNarration, splitIntoWords } from '../../../utils/textNormalization';
 
 /**
- * Hook for narration with word-by-word highlighting in LearningHubV2.
+ * Hook for voice-driven narration in LearningHubV2.
  *
- * Uses pre-generated audio from the lesson_audio table (ElevenLabs).
- * Narrates only the current section group, highlighting words via DOM
- * data-word-index attributes using requestAnimationFrame.
+ * Uses pre-generated audio from the lesson_audio table (ElevenLabs). When a
+ * group is in "audio mode" (audio available, not muted, no interactive gate),
+ * the audio DRIVES the on-screen text reveal: each word appears exactly when
+ * the voice speaks it, with the current word highlighted. Reveal + highlight
+ * are driven by React state (`revealIndex`, group-local) that the RAF loop
+ * updates at word-rate — no imperative DOM mutation, so LearningHubV2
+ * re-renders never fight the reveal.
+ *
+ * When muted (or a lesson has no audio), the caller falls back to the
+ * fixed-speed typewriter and this hook only powers on-demand replay via the
+ * bottom speaker button (`toggleNarration`).
  */
 export default function useNarration({
   courseId,
@@ -15,23 +23,39 @@ export default function useNarration({
   currentLesson,
   allGroups,
   currentGroupIndex,
-  allTypingComplete,
+  resetKey,
+  muted,
+  groupHasGate,
+  restoringProgress,
+  progressBarDone,
 }) {
   // --- State ---
   const [isReading, setIsReading] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [audioReady, setAudioReady] = useState(false);
+  // Latched per group: does this group use audio-driven reveal? (mute toggled
+  // mid-group does NOT change this — it only takes effect from the next group.)
+  const [groupAudioMode, setGroupAudioMode] = useState(false);
+  // Group-local index of the current/last spoken word (-1 = nothing revealed yet).
+  const [revealIndex, setRevealIndex] = useState(-1);
+  // True once the group's audio has fully played (or reveal was force-completed).
+  const [revealComplete, setRevealComplete] = useState(false);
 
   // --- Refs ---
   const audioRef = useRef(null);
   const wordTimestampsRef = useRef(null); // full lesson timestamps
   const titleWordCountRef = useRef(0);
-  const currentHighlightRef = useRef(null);
   const contentContainerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const isPausedRef = useRef(false);
   const audioDataRef = useRef(null); // cached audio data
   const debounceRef = useRef(0);
+  const awaitingGestureRef = useRef(false); // autoplay blocked → waiting for first interaction
+  const pendingStartRef = useRef(null); // fn to run on the next user interaction
+  const mutedRef = useRef(muted);
+  mutedRef.current = muted;
+  const revealIndexRef = useRef(-1);
+  revealIndexRef.current = revealIndex;
 
   // --- Fetch audio on lesson change ---
   useEffect(() => {
@@ -109,145 +133,171 @@ export default function useNarration({
     return ranges;
   }, [allGroups, titleWordCountRef.current]);
 
-  // --- Stop narration (cleanup) ---
+  // --- Stop audio + RAF (does not touch reveal state) ---
   const stopNarration = useCallback(() => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-
-    if (currentHighlightRef.current) {
-      currentHighlightRef.current.style.backgroundColor = '';
-      currentHighlightRef.current.style.padding = '';
-      currentHighlightRef.current.style.margin = '';
-      currentHighlightRef.current.style.borderRadius = '';
-      currentHighlightRef.current = null;
-    }
-
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current = null;
     }
-
     isPausedRef.current = false;
     setIsReading(false);
     setIsPaused(false);
   }, []);
 
-  // --- Stop narration when group changes ---
-  useEffect(() => {
-    stopNarration();
-  }, [currentGroupIndex, currentModule, currentLesson]);
+  // --- Mark the current group's reveal finished (all words visible, no highlight) ---
+  const finishGroupReveal = useCallback((groupRange) => {
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    const total = groupRange ? (groupRange.endIndex - groupRange.startIndex + 1) : 0;
+    // revealIndex past the last word → every word visible, none highlighted
+    setRevealIndex(total);
+    setRevealComplete(true);
+    isPausedRef.current = false;
+    setIsReading(false);
+    setIsPaused(false);
+  }, []);
 
-  // --- Highlight loop ---
-  const startHighlightLoop = useCallback((audio, groupRange) => {
+  // --- Reveal loop: audio time → current group-local word index (React state) ---
+  const startRevealLoop = useCallback((audio, groupRange) => {
     const wordTimestamps = wordTimestampsRef.current;
     if (!wordTimestamps || wordTimestamps.length === 0) return;
 
     const { startIndex, endIndex } = groupRange;
-    let lastHighlightedWord = -1;
 
-    const updateHighlight = () => {
+    const tick = () => {
       if (!audio || audio.paused || audio.ended) return;
-
       const currentTime = audio.currentTime;
 
-      let wordToHighlight = lastHighlightedWord;
-
-      // Search within group range
+      // Largest index in the group whose start time has passed = current word.
+      let wordIdx = startIndex - 1;
       for (let i = startIndex; i <= endIndex && i < wordTimestamps.length; i++) {
-        const ts = wordTimestamps[i];
-        if (currentTime >= ts.start && currentTime < ts.end) {
-          wordToHighlight = i;
-          break;
-        }
-        // Anti-flicker: keep current word in gaps
-        if (i < endIndex && i + 1 < wordTimestamps.length) {
-          const next = wordTimestamps[i + 1];
-          if (currentTime >= ts.end && currentTime < next.start) {
-            wordToHighlight = i;
-            break;
-          }
-        }
+        if (currentTime >= wordTimestamps[i].start) wordIdx = i;
+        else break;
       }
+      const local = wordIdx - startIndex; // -1 before the first word is spoken
+      if (local !== revealIndexRef.current) setRevealIndex(local);
 
-      if (wordToHighlight !== lastHighlightedWord) {
-        lastHighlightedWord = wordToHighlight;
-
-        // Clear previous highlight
-        if (currentHighlightRef.current) {
-          currentHighlightRef.current.style.backgroundColor = '';
-          currentHighlightRef.current.style.padding = '';
-          currentHighlightRef.current.style.margin = '';
-          currentHighlightRef.current.style.borderRadius = '';
-        }
-
-        // Find word span — local index (relative to group)
-        if (contentContainerRef.current) {
-          const localIndex = wordToHighlight - startIndex;
-          const wordSpan = contentContainerRef.current.querySelector(
-            `[data-word-index="${localIndex}"]`
-          );
-
-          if (wordSpan) {
-            wordSpan.style.backgroundColor = '#fde7f4';
-            wordSpan.style.padding = '2px';
-            wordSpan.style.margin = '-2px';
-            wordSpan.style.borderRadius = '2px';
-            currentHighlightRef.current = wordSpan;
-          } else {
-            currentHighlightRef.current = null;
-          }
-        }
-      }
-
-      // Stop if past group range
+      // Stop at the group boundary (audio is one continuous file for the lesson)
       if (endIndex < wordTimestamps.length && currentTime >= wordTimestamps[endIndex].end) {
-        // Clear final highlight
-        if (currentHighlightRef.current) {
-          currentHighlightRef.current.style.backgroundColor = '';
-          currentHighlightRef.current.style.padding = '';
-          currentHighlightRef.current.style.margin = '';
-          currentHighlightRef.current.style.borderRadius = '';
-          currentHighlightRef.current = null;
-        }
-        // Stop audio and reset
-        audio.pause();
-        setIsReading(false);
-        setIsPaused(false);
-        isPausedRef.current = false;
-        audioRef.current = null;
-        animationFrameRef.current = null;
+        finishGroupReveal(groupRange);
         return;
       }
 
-      animationFrameRef.current = requestAnimationFrame(updateHighlight);
+      animationFrameRef.current = requestAnimationFrame(tick);
     };
 
-    animationFrameRef.current = requestAnimationFrame(updateHighlight);
+    animationFrameRef.current = requestAnimationFrame(tick);
+  }, [finishGroupReveal]);
+
+  // --- Start (or replay) narration for the current group ---
+  // fromLocalIndex lets callers resume; 0 = from the group's first word.
+  // resetReveal=true hides the text and re-reveals it (initial voice-driven pass);
+  // resetReveal=false keeps the text visible and only moves the highlight (replay).
+  const startNarration = useCallback((fromLocalIndex = 0, { onBlocked, resetReveal = true } = {}) => {
+    const groupRange = groupWordRanges[currentGroupIndex];
+    const wordTimestamps = wordTimestampsRef.current;
+    const audioData = audioDataRef.current;
+    if (!groupRange || !wordTimestamps || wordTimestamps.length === 0 || !audioData) return;
+
+    const startWord = Math.min(groupRange.startIndex + fromLocalIndex, wordTimestamps.length - 1);
+    const startTime = wordTimestamps[startWord]?.start ?? 0;
+
+    const audio = new Audio(audioData.audio_url);
+    audioRef.current = audio;
+    audio.muted = mutedRef.current;
+    audio.onended = () => finishGroupReveal(groupRange);
+    audio.onerror = () => { stopNarration(); };
+
+    isPausedRef.current = false;
+    if (resetReveal) {
+      setRevealComplete(false);
+      setRevealIndex(fromLocalIndex > 0 ? fromLocalIndex - 1 : -1);
+    }
+    audio.currentTime = startTime;
+
+    audio.play().then(() => {
+      setIsReading(true);
+      setIsPaused(false);
+      startRevealLoop(audio, groupRange);
+    }).catch((err) => {
+      // Autoplay blocked (no user gesture yet) or playback failed. The caller
+      // arms a first-interaction listener to start it.
+      console.warn('Narration playback blocked/failed:', err?.message || err);
+      audioRef.current = null;
+      onBlocked?.();
+    });
+  }, [groupWordRanges, currentGroupIndex, startRevealLoop, finishGroupReveal, stopNarration]);
+
+  // --- On group / lesson change: reset reveal, stop audio, re-latch audio mode ---
+  useEffect(() => {
+    stopNarration();
+    setRevealIndex(-1);
+    setRevealComplete(false);
+    awaitingGestureRef.current = false;
+    pendingStartRef.current = null;
+    // Audio mode (the line/word highlight animation) runs whenever the lesson has
+    // audio — even when muted. Mute only silences the voiceover, not the animation.
+    setGroupAudioMode(audioReady && !groupHasGate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGroupIndex, currentModule, currentLesson, resetKey, audioReady, groupHasGate]);
+
+  // --- One persistent listener: start pending narration on first interaction ---
+  // Kept separate from the auto-start effect so its cleanup never races with
+  // auto-start re-runs (which previously could drop the listener).
+  useEffect(() => {
+    const onGesture = () => {
+      const fn = pendingStartRef.current;
+      if (fn) { pendingStartRef.current = null; fn(); }
+    };
+    document.addEventListener('pointerdown', onGesture, true);
+    document.addEventListener('keydown', onGesture, true);
+    return () => {
+      document.removeEventListener('pointerdown', onGesture, true);
+      document.removeEventListener('keydown', onGesture, true);
+    };
   }, []);
 
-  // --- Toggle narration ---
+  // --- Auto-start narration when a group enters audio mode ---
+  // If the browser blocks autoplay, queue a start for the first interaction.
+  // groupWordRanges is a dep so this retries once ranges finish computing.
+  useEffect(() => {
+    if (!groupAudioMode || restoringProgress || !progressBarDone || revealComplete || isReading) return;
+    if (animationFrameRef.current || audioRef.current || awaitingGestureRef.current) return;
+
+    startNarration(0, {
+      onBlocked: () => {
+        awaitingGestureRef.current = true;
+        pendingStartRef.current = () => {
+          awaitingGestureRef.current = false;
+          startNarration(0);
+        };
+      },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupAudioMode, restoringProgress, progressBarDone, revealComplete, isReading, currentGroupIndex, groupWordRanges]);
+
+  // --- Toggle narration (bottom speaker button: pause / resume / replay) ---
   const toggleNarration = useCallback(() => {
-    // Debounce
     const now = Date.now();
-    if (now - debounceRef.current < 500) return;
+    if (now - debounceRef.current < 400) return;
     debounceRef.current = now;
 
-    // Don't start if typing animation isn't done
-    if (!allTypingComplete) return;
-
     const groupRange = groupWordRanges[currentGroupIndex];
-    if (!groupRange) return;
+    if (!groupRange || !wordTimestampsRef.current?.length || !audioDataRef.current) return;
 
-    const wordTimestamps = wordTimestampsRef.current;
-    if (!wordTimestamps || wordTimestamps.length === 0) return;
-
-    // Case 1: Currently reading, not paused → pause
+    // Currently playing → pause
     if (isReading && !isPausedRef.current) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      audioRef.current?.pause();
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
@@ -257,85 +307,79 @@ export default function useNarration({
       return;
     }
 
-    // Case 2: Paused → resume
+    // Paused → resume from where we left off
     if (isReading && isPausedRef.current) {
       if (audioRef.current) {
-        audioRef.current.play();
-        startHighlightLoop(audioRef.current, groupRange);
+        audioRef.current.play().catch(() => {});
+        startRevealLoop(audioRef.current, groupRange);
       }
       isPausedRef.current = false;
       setIsPaused(false);
       return;
     }
 
-    // Case 3: Not reading → start from beginning of group
-    const audioData = audioDataRef.current;
-    if (!audioData) return;
+    // Not reading → replay this group from the start (user gesture, so play() is allowed).
+    // Keep the text visible; a replay just moves the highlight.
+    startNarration(0, { resetReveal: false });
+  }, [isReading, groupWordRanges, currentGroupIndex, startRevealLoop, startNarration]);
 
-    const { startIndex } = groupRange;
-    const startTime = startIndex < wordTimestamps.length
-      ? wordTimestamps[startIndex].start
-      : 0;
-
-    const audio = new Audio(audioData.audio_url);
-    audioRef.current = audio;
-
-    audio.onended = () => {
-      if (currentHighlightRef.current) {
-        currentHighlightRef.current.style.backgroundColor = '';
-        currentHighlightRef.current.style.padding = '';
-        currentHighlightRef.current.style.margin = '';
-        currentHighlightRef.current.style.borderRadius = '';
-        currentHighlightRef.current = null;
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-        animationFrameRef.current = null;
-      }
-      setIsReading(false);
-      setIsPaused(false);
-      isPausedRef.current = false;
-      audioRef.current = null;
-    };
-
-    audio.onerror = () => {
-      console.error('Audio playback error');
-      stopNarration();
-    };
-
-    isPausedRef.current = false;
-    setIsReading(true);
-    setIsPaused(false);
-
-    // Seek to group start and play
-    audio.currentTime = startTime;
-    audio.play().then(() => {
-      // Double RAF to ensure React has rendered word spans
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          startHighlightLoop(audio, groupRange);
-        });
-      });
-    }).catch((err) => {
-      console.error('Failed to play audio:', err);
-      stopNarration();
-    });
-  }, [isReading, allTypingComplete, currentGroupIndex, groupWordRanges, startHighlightLoop, stopNarration]);
+  // --- Keep the live audio's muted state in sync with the mute toggle ---
+  // Toggling the button silences/re-enables the voiceover without stopping the
+  // highlight animation (the click is a user gesture, so unmuting is allowed).
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.muted = muted;
+  }, [muted]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => stopNarration();
   }, [stopNarration]);
 
-  // Whether narration mode is active (reading or paused — word spans should be rendered)
-  const narrationActive = isReading || isPaused;
+  // --- Sentence ranges for the current group (group-local word indices) ---
+  // Used to light-highlight the whole sentence currently being narrated, with a
+  // darker highlight on the current word.
+  const sentenceRanges = useMemo(() => {
+    const wt = wordTimestampsRef.current;
+    const range = groupWordRanges[currentGroupIndex];
+    if (!wt || !range) return [];
+    const { startIndex, endIndex } = range;
+    const lastLocal = endIndex - startIndex;
+    const ranges = [];
+    let sentStart = 0;
+    for (let i = startIndex; i <= endIndex && i < wt.length; i++) {
+      const local = i - startIndex;
+      // Strip trailing quotes/brackets, then check for sentence-ending punctuation.
+      const word = (wt[i]?.word || '').replace(/[)"'\]’”]+$/, '');
+      if (/[.!?]$/.test(word)) {
+        ranges.push({ start: sentStart, end: local });
+        sentStart = local + 1;
+      }
+    }
+    if (sentStart <= lastLocal) ranges.push({ start: sentStart, end: lastLocal });
+    return ranges;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentGroupIndex, groupWordRanges, audioReady]);
+
+  const currentSentence = useMemo(() => {
+    if (revealIndex < 0) return null;
+    return sentenceRanges.find(r => revealIndex >= r.start && revealIndex <= r.end) || null;
+  }, [sentenceRanges, revealIndex]);
+
+  // Render word-index spans whenever we're in audio mode OR manually reading.
+  const narrationActive = groupAudioMode || isReading || isPaused;
 
   return {
     isReading,
     isPaused,
     audioReady,
+    groupAudioMode,
     narrationActive,
+    revealIndex,
+    revealComplete,
+    sentenceStart: currentSentence ? currentSentence.start : -1,
+    sentenceEnd: currentSentence ? currentSentence.end : -1,
     toggleNarration,
+    stopNarration,
     contentContainerRef,
   };
 }

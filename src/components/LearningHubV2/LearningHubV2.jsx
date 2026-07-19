@@ -153,6 +153,13 @@ const LearningHubV2 = () => {
   const [contentFading, setContentFading] = useState(false);
   const [restoringProgress, setRestoringProgress] = useState(true);
   const [progressBarDone, setProgressBarDone] = useState(false);
+  // Read-aloud master mute — on by default, persisted across lessons.
+  const [readAloudMuted, setReadAloudMuted] = useState(() => {
+    try { return localStorage.getItem('ignite:readAloudMuted') === 'true'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('ignite:readAloudMuted', String(readAloudMuted)); } catch { /* ignore */ }
+  }, [readAloudMuted]);
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
   const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
@@ -482,10 +489,6 @@ const LearningHubV2 = () => {
   const userQuestionDisplayText = pendingUserQuestion
     ? pendingUserQuestion.replace(/\{\{firstName\}\}/g, firstName || '').replace(/\s+([,.])/g, '$1').replace(/\s{2,}/g, ' ').trim().replace(/^[,.\s]+/, '').replace(/^./, c => c.toUpperCase())
     : '';
-  const { revealedText: userQuestionRevealed, isComplete: userQuestionTypingDone } = useTypewriter(
-    userQuestionDisplayText,
-    { speed: 45, delay: 1000, enabled: !!pendingUserQuestion }
-  );
 
   const handleChatSubmit = useCallback(async (text) => {
     // Scored intro phase — treat any input as "yes, proceed"
@@ -685,14 +688,30 @@ const LearningHubV2 = () => {
   const completedSectionsRef = useRef(completedSections);
   completedSectionsRef.current = completedSections;
 
-  const allTypingComplete = completedSections >= activeGroup.length && !pendingUserQuestion;
+  // Only a scored question (a full-screen interrupt) forces the typewriter path.
+  // Inline user questions still narrate — the question is shown after the group's
+  // narration finishes (see the deferred effect below).
+  const groupHasGate = useMemo(
+    () => activeGroup.some(s => s.content_type === 'scored_question'),
+    [activeGroup]
+  );
+  // The inline user question in the current group, if any (shown post-narration in audio mode).
+  const groupUserQuestionSection = useMemo(
+    () => activeGroup.find(s => s.user_question?.trim()) || null,
+    [activeGroup]
+  );
 
-  // Narration — word highlighting & audio playback
+  // Narration — voice-driven reveal, word highlighting & audio playback
   const {
     isReading,
     isPaused,
     audioReady,
+    groupAudioMode,
     narrationActive,
+    revealIndex,
+    revealComplete,
+    sentenceStart,
+    sentenceEnd,
     toggleNarration,
     contentContainerRef,
   } = useNarration({
@@ -701,8 +720,54 @@ const LearningHubV2 = () => {
     currentLesson,
     allGroups,
     currentGroupIndex,
-    allTypingComplete,
+    resetKey,
+    muted: readAloudMuted,
+    groupHasGate,
+    restoringProgress,
+    progressBarDone,
   });
+
+  // In audio mode the action buttons appear only after the group's narration /
+  // highlight has finished; otherwise the typewriter drives completion.
+  const allContentRevealed = groupAudioMode
+    ? revealComplete
+    : completedSections >= activeGroup.length;
+  const allTypingComplete = allContentRevealed && !pendingUserQuestion;
+
+  // Lets handleSectionComplete know whether we're narrating (defer the question).
+  const groupAudioModeRef = useRef(groupAudioMode);
+  groupAudioModeRef.current = groupAudioMode;
+
+  // Audio mode: show the inline user question at the same time as the body text.
+  // (Its highlight sweep waits until the body narration finishes — see below.)
+  const audioUserQuestionShownRef = useRef(false);
+  useEffect(() => {
+    audioUserQuestionShownRef.current = false;
+  }, [currentGroupIndex, currentModule, currentLesson, resetKey]);
+  useEffect(() => {
+    if (!groupAudioMode || restoringProgress || !groupUserQuestionSection) return;
+    if (pendingUserQuestion || audioUserQuestionShownRef.current) return;
+    audioUserQuestionShownRef.current = true;
+    const s = groupUserQuestionSection;
+    setPendingUserQuestion(s.user_question.trim());
+    setPendingUserQuestionMeta({
+      saveFeedback: s.save_feedback || false,
+      courseId: s.course_id,
+      moduleNumber: s.module_number,
+      lessonNumber: s.lesson_number,
+      sectionNumber: s.section_number,
+    });
+  }, [groupAudioMode, restoringProgress, groupUserQuestionSection, pendingUserQuestion]);
+
+  // The user question is shown as plain text (no highlight or typewriter animation).
+  const userQuestionTypingDone = true;
+
+  // Top mute toggle. Muting mid-reveal stops the audio and shows the rest of the
+  // group instantly; unmuting takes effect from the next group (plan decision).
+  // Mute only silences the voiceover — the line/word highlight keeps animating.
+  const toggleMute = useCallback(() => {
+    setReadAloudMuted((prev) => !prev);
+  }, []);
 
   // Compute per-section word index offsets within the active group (for narration)
   const sectionWordOffsets = useMemo(() => {
@@ -769,8 +834,10 @@ const LearningHubV2 = () => {
         return prev; // Don't advance — wait for pass
       }
 
-      // User question — gate progression until answered
+      // User question — gate progression until answered.
+      // In audio mode, don't gate here; the deferred effect shows it after narration.
       if (section?.user_question?.trim()) {
+        if (groupAudioModeRef.current) return prev + 1;
         queueMicrotask(() => {
           setPendingUserQuestion(section.user_question.trim());
           setPendingUserQuestionMeta({
@@ -1288,6 +1355,41 @@ const LearningHubV2 = () => {
                   }}
                 />
               </div>
+              {audioReady && (
+                <button
+                  className="cursor-pointer flex-shrink-0 flex items-center transition-colors"
+                  style={{ color: readAloudMuted ? '#9CA3AF' : '#000000' }}
+                  title={readAloudMuted ? 'Unmute read-aloud' : 'Mute read-aloud'}
+                  aria-label={readAloudMuted ? 'Unmute read-aloud' : 'Mute read-aloud'}
+                  onClick={toggleMute}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = readAloudMuted ? '#9CA3AF' : '#000000'; }}
+                >
+                  <svg
+                    width={isMobile ? 20 : 17}
+                    height={isMobile ? 20 : 17}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                    {readAloudMuted ? (
+                      <>
+                        <line x1="23" y1="9" x2="17" y2="15" />
+                        <line x1="17" y1="9" x2="23" y2="15" />
+                      </>
+                    ) : (
+                      <>
+                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                      </>
+                    )}
+                  </svg>
+                </button>
+              )}
               <button
                 className="group cursor-pointer flex-shrink-0"
                 title="Restart lesson"
@@ -1496,7 +1598,7 @@ const LearningHubV2 = () => {
                 <>
                   {/* Render sections sequentially — each starts typing after the previous finishes */}
                   <div key={`${currentGroupIndex}-${resetKey}`}>
-                    {activeGroup.slice(0, completedSections + 1).map((section, sIdx) => {
+                    {(groupAudioMode ? activeGroup : activeGroup.slice(0, completedSections + 1)).map((section, sIdx) => {
                       // Skip H2/H3 headings — they're rendered persistently outside the fade container
                       if (section.content_type === 'heading' && ((section.content?.level || 2) === 2 || section.content?.level === 3)) {
                         return <div key={section.id || sIdx} style={{ display: 'none' }}><ContentRenderer section={section} sectionIdx={sIdx} isActive={sIdx === completedSections} onComplete={handleSectionComplete} skipAnimation /></div>;
@@ -1512,6 +1614,9 @@ const LearningHubV2 = () => {
                           onComplete={handleSectionComplete}
                           narrationActive={narrationActive}
                           wordIndexOffset={sectionWordOffsets[sIdx] || 0}
+                          revealIndex={revealIndex}
+                          sentenceStart={sentenceStart}
+                          sentenceEnd={sentenceEnd}
                           extraDelay={isFirstVisible && !progressBarDone ? 3000 : 0}
                         />
                       </div>
@@ -1526,29 +1631,7 @@ const LearningHubV2 = () => {
                         className="text-base font-medium leading-relaxed text-black"
                         style={{ letterSpacing: '-0.01em', overflowWrap: 'normal' }}
                       >
-                        {chatMessages.length > 0
-                          ? userQuestionDisplayText
-                          : (
-                            <>
-                              {userQuestionRevealed}
-                              {!userQuestionTypingDone && (
-                                <span
-                                  data-scroll-anchor
-                                  className="inline-block ml-1.5"
-                                  style={{
-                                    width: 8,
-                                    height: 8,
-                                    backgroundColor: '#8200EA',
-                                    verticalAlign: 'middle',
-                                    position: 'relative',
-                                    top: '-1px',
-                                  }}
-                                />
-                              )}
-                              <span style={{ color: 'transparent', pointerEvents: 'none', userSelect: 'none' }} aria-hidden="true">{userQuestionDisplayText.slice(userQuestionRevealed.length)}</span>
-                            </>
-                          )
-                        }
+                        {userQuestionDisplayText}
                       </p>
                     </div>
                   )}
