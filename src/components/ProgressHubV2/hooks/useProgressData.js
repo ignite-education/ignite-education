@@ -52,6 +52,7 @@ const useProgressData = () => {
   const [resources, setResources] = useState([]);
   const [userRole, setUserRole] = useState('student');
   const [userCountry, setUserCountry] = useState(null);
+  const [communityPostsError, setCommunityPostsError] = useState(null);
   const [communityCount, setCommunityCount] = useState(null);
   const [behaviourStat, setBehaviourStat] = useState(null);
   const [achievementStat, setAchievementStat] = useState(null);
@@ -62,6 +63,7 @@ const useProgressData = () => {
     const data = courseDataForFetch || courseDataResultRef.current;
     if (!data) return;
     try {
+      if (isMounted) setCommunityPostsError(null);
       const subreddit = (data.reddit_url || '')
         .replace(/\/$/, '')
         .split('/r/')[1] || (data.reddit_channel || 'r/ProductManagement').replace(/^r\//, '');
@@ -92,8 +94,12 @@ const useProgressData = () => {
       }))
       .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       if (isMounted) setCommunityPosts(posts);
-    } catch {
-      if (isMounted) setCommunityPosts([]);
+    } catch (error) {
+      console.warn('[ProgressHub] Failed to load community posts:', error);
+      if (isMounted) {
+        setCommunityPosts([]);
+        setCommunityPostsError(error);
+      }
     }
   }, []);
 
@@ -458,6 +464,7 @@ const useProgressData = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    communityPostsError,
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,

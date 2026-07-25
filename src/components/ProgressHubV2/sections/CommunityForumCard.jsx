@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { MessageSquare, ThumbsUp, Ban } from 'lucide-react';
 import { getRedditComments } from '../../../lib/api';
 import { isRedditAuthenticated, initiateRedditAuth, voteOnReddit, commentOnReddit, getRedditUsername } from '../../../lib/reddit';
@@ -15,8 +15,135 @@ const getTimeAgo = (timestamp) => {
   return `${diffInDays}d`;
 };
 
-const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost, onMyPosts, userRole, userId, onBlockPost }) => {
+const POST_PREVIEW_LIMIT = 300;
+
+// Hover-intent delays: long enough that merely sweeping the cursor across the
+// list (or scrolling past it) doesn't open or close anything.
+const HOVER_EXPAND_DELAY = 1500;
+const HOVER_COLLAPSE_DELAY = 1500;
+const POST_ANIM_MS = 300;
+
+// Drop a marker left unpaired by the cut, so it doesn't render as a literal character.
+const balanceMarker = (text, marker) => {
+  if ((text.split(marker).length - 1) % 2 === 0) return text;
+  const last = text.lastIndexOf(marker);
+  return text.slice(0, last) + text.slice(last + marker.length);
+};
+
+// Cut the markdown source (rather than clipping visually) so the preview can end in a
+// real ellipsis. Trims back off any syntax the cut would have left half-open.
+const truncateMarkdown = (content, limit = POST_PREVIEW_LIMIT) => {
+  if (!content || content.length <= limit) return content;
+  let slice = content.slice(0, limit);
+
+  // Never cut inside a [label](url) — drop the partial link entirely.
+  const lastLinkOpen = slice.lastIndexOf('[');
+  if (lastLinkOpen !== -1 && slice.indexOf(')', lastLinkOpen) === -1) {
+    slice = slice.slice(0, lastLinkOpen);
+  }
+
+  // Prefer a word boundary, as long as it doesn't shorten the preview too much.
+  const lastSpace = slice.lastIndexOf(' ');
+  if (lastSpace > limit * 0.6) slice = slice.slice(0, lastSpace);
+
+  slice = balanceMarker(slice, '**');
+  slice = balanceMarker(slice, '`');
+
+  return `${slice.replace(/[\s,;:.\-–—]+$/, '')}…`;
+};
+
+/**
+ * Post body that animates between its truncated preview and its full text.
+ *
+ * The two states render different content (preview ends in an ellipsis), so the height
+ * can't be transitioned with a fixed CSS pair — a hardcoded expanded value overshoots the
+ * real height and the easing lands in the wrong place. Instead both heights are measured
+ * off the live element and animated in pixels. On close the full text stays mounted for
+ * the duration, otherwise the box would shrink around text that had already been swapped out.
+ */
+const PostBody = ({ content, expanded, previewLimit }) => {
+  const innerRef = useRef(null);
+  const collapsedHeightRef = useRef(null);
+  const timerRef = useRef(null);
+  const rafRef = useRef(null);
+  const mountedRef = useRef(false);
+  const [showFull, setShowFull] = useState(expanded);
+  const [height, setHeight] = useState(null); // px mid-animation, null = natural height
+
+  // Remember the preview height while settled closed — it's the target to animate back to.
+  useLayoutEffect(() => {
+    if (!showFull && height === null && innerRef.current) {
+      collapsedHeightRef.current = innerRef.current.offsetHeight;
+    }
+  }, [showFull, height, content, previewLimit]);
+
+  // Opening is driven by showFull so the full text is already in the DOM to measure.
+  useLayoutEffect(() => {
+    if (!mountedRef.current) { mountedRef.current = true; return; }
+    const el = innerRef.current;
+    if (!el) return;
+    clearTimeout(timerRef.current);
+    cancelAnimationFrame(rafRef.current);
+
+    if (expanded) {
+      // The preview is still the rendered content here, so this is the one moment the
+      // closed height can be read accurately — after fonts have settled, unlike on mount.
+      collapsedHeightRef.current = el.offsetHeight;
+      setShowFull(true);
+      return;
+    }
+    setHeight(el.offsetHeight); // pin the open height before easing down
+    rafRef.current = requestAnimationFrame(() => setHeight(collapsedHeightRef.current ?? 0));
+    timerRef.current = setTimeout(() => {
+      setShowFull(false);
+      setHeight(null);
+    }, POST_ANIM_MS);
+  }, [expanded]);
+
+  useLayoutEffect(() => {
+    if (!showFull) return undefined;
+    const el = innerRef.current;
+    if (!el) return undefined;
+    const target = el.offsetHeight;
+    setHeight(collapsedHeightRef.current ?? 0);
+    rafRef.current = requestAnimationFrame(() => setHeight(target));
+    timerRef.current = setTimeout(() => setHeight(null), POST_ANIM_MS);
+    return () => {
+      clearTimeout(timerRef.current);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [showFull]);
+
+  useEffect(() => () => {
+    clearTimeout(timerRef.current);
+    cancelAnimationFrame(rafRef.current);
+  }, []);
+
+  return (
+    <div
+      className="text-white mb-2 leading-snug"
+      style={{
+        fontSize: '0.9rem',
+        fontWeight: 300,
+        letterSpacing: '0%',
+        overflow: 'hidden',
+        transition: `height ${POST_ANIM_MS}ms ease-out`,
+        ...(height === null ? {} : { height: `${height}px` }),
+      }}
+    >
+      {/* flow-root so descendant margins are contained rather than collapsing out —
+          otherwise the measured height misses them and the animation starts off-target. */}
+      <div ref={innerRef} style={{ display: 'flow-root' }}>
+        <RedditMarkdown content={showFull ? content : truncateMarkdown(content, previewLimit)} />
+      </div>
+    </div>
+  );
+};
+
+const CommunityForumCard = ({ courseName, courseReddit, posts = [], postsError = null, onCreatePost, onMyPosts, userRole, userId, onBlockPost }) => {
   const isMobile = useIsMobile();
+  // Narrower cards wrap sooner, so shorten the preview to keep the ellipsis inside the collapsed height.
+  const previewLimit = isMobile ? 180 : POST_PREVIEW_LIMIT;
   const [expandedPostId, setExpandedPostId] = useState(null);
   const [postComments, setPostComments] = useState({});
   const [loadingComments, setLoadingComments] = useState({});
@@ -26,18 +153,91 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
   const [localCommentCounts, setLocalCommentCounts] = useState({});
   const [closingPostId, setClosingPostId] = useState(null);
   const [commentsVisibleId, setCommentsVisibleId] = useState(null);
-  const [hoveredPostId, setHoveredPostId] = useState(null);
+  const postsListRef = useRef(null);
   const leaveTimerRef = useRef(null);
   const animTimerRef = useRef(null);
   const expandTimerRef = useRef(null);
+  const hoverIntentRef = useRef(null);
+  const collapseTimerRef = useRef(null);
+  const collapseTargetRef = useRef(null);
+  const postElsRef = useRef({});
+  const anchorRafRef = useRef(null);
 
   useEffect(() => {
     return () => {
       clearTimeout(leaveTimerRef.current);
       clearTimeout(animTimerRef.current);
       clearTimeout(expandTimerRef.current);
+      clearTimeout(hoverIntentRef.current);
+      clearTimeout(collapseTimerRef.current);
+      cancelAnimationFrame(anchorRafRef.current);
     };
   }, []);
+
+  const stopAnchoring = () => cancelAnimationFrame(anchorRafRef.current);
+
+  // Chrome and Firefox keep the scroll position steady through layout changes via native
+  // scroll anchoring, but Safari has never shipped it. Anchoring is therefore switched off
+  // on the list (see overflowAnchor below) and corrected here instead, so every browser
+  // behaves the same. Both helpers below run per frame because the heights are animated,
+  // and share one rAF slot — whichever starts last wins, which is what we want when a
+  // close and an open are triggered together.
+  const ANCHOR_MS = POST_ANIM_MS + 350; // body eases for 300ms, the tray for 250ms after it
+
+  const runAnchorLoop = (correct) => {
+    let start = null;
+    // Timestamped rather than frame-counted so the window is the same on a 120Hz display.
+    const step = (now) => {
+      if (start === null) start = now;
+      correct();
+      if (now - start < ANCHOR_MS) anchorRafRef.current = requestAnimationFrame(step);
+    };
+    anchorRafRef.current = requestAnimationFrame(step);
+  };
+
+  /**
+   * Opening: pin the post's own top edge so it always grows downward.
+   *
+   * Without this the post can appear to open upward — either because a post above it is
+   * collapsing at the same moment and pulling it up, or because holding the content below
+   * in place forces the growth to come out of the top instead.
+   */
+  const anchorPostTop = (postId) => {
+    stopAnchoring();
+    const scroller = postsListRef.current;
+    const el = postElsRef.current[postId];
+    if (!scroller || !el) return;
+    const offsetNow = () => el.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+    const target = offsetNow();
+    runAnchorLoop(() => {
+      const drift = offsetNow() - target;
+      if (drift !== 0) scroller.scrollTop += drift;
+    });
+  };
+
+  /**
+   * Closing: hold the reader's place when the post is above the visible area.
+   *
+   * Keyed off the scroller's own scrollHeight rather than any single element, because a
+   * post changes height in two places at once: the body text and the comments tray.
+   */
+  const anchorContentBelow = (postId) => {
+    stopAnchoring();
+    const scroller = postsListRef.current;
+    const el = postElsRef.current[postId];
+    if (!scroller || !el) return;
+    // Only correct when the post sits above the visible area. If it's on screen the user is
+    // watching it move, and content shifting below is the expected result.
+    if (el.getBoundingClientRect().top >= scroller.getBoundingClientRect().top) return;
+    let last = scroller.scrollHeight;
+    runAnchorLoop(() => {
+      const sh = scroller.scrollHeight;
+      if (sh !== last) {
+        scroller.scrollTop += sh - last;
+        last = sh;
+      }
+    });
+  };
 
   const handleCommentsMouseLeave = (postId) => {
     clearTimeout(leaveTimerRef.current);
@@ -160,21 +360,65 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
     }
   };
 
-  const togglePost = (post) => {
+  const expandPost = (post) => {
     clearTimeout(leaveTimerRef.current);
     clearTimeout(animTimerRef.current);
     clearTimeout(expandTimerRef.current);
     setClosingPostId(null);
-    if (expandedPostId === post.id) {
-      setCommentsVisibleId(null);
-      setExpandedPostId(null);
-    } else {
-      setExpandedPostId(post.id);
-      fetchComments(post);
-      expandTimerRef.current = setTimeout(() => {
-        setCommentsVisibleId(post.id);
-      }, 300);
+    anchorPostTop(post.id);
+    setExpandedPostId(post.id);
+    fetchComments(post);
+    expandTimerRef.current = setTimeout(() => {
+      setCommentsVisibleId(post.id);
+    }, 300);
+  };
+
+  const collapsePost = (postId) => {
+    clearTimeout(leaveTimerRef.current);
+    clearTimeout(animTimerRef.current);
+    clearTimeout(expandTimerRef.current);
+    anchorContentBelow(postId);
+    // Guarded so a pending close can't shut a post the cursor has already moved on to.
+    setCommentsVisibleId(prev => (prev === postId ? null : prev));
+    setExpandedPostId(prev => (prev === postId ? null : prev));
+    // Keep the comments tray mounted while the body eases shut, so the two collapse
+    // together instead of the tray vanishing on the first frame.
+    setClosingPostId(postId);
+    animTimerRef.current = setTimeout(() => {
+      setClosingPostId(prev => (prev === postId ? null : prev));
+    }, POST_ANIM_MS);
+  };
+
+  const togglePost = (post) => {
+    clearTimeout(hoverIntentRef.current);
+    clearTimeout(collapseTimerRef.current);
+    collapseTargetRef.current = null;
+    if (expandedPostId === post.id) collapsePost(post.id);
+    else expandPost(post);
+  };
+
+  // Desktop opens/closes on hover intent; touch devices have no hover, so they keep tap-to-toggle.
+  const handlePostMouseEnter = (post) => {
+    if (isMobile) return;
+    // Coming back to a post that's on its way out cancels the close.
+    if (collapseTargetRef.current === post.id) {
+      clearTimeout(collapseTimerRef.current);
+      collapseTargetRef.current = null;
     }
+    if (expandedPostId === post.id) return;
+    clearTimeout(hoverIntentRef.current);
+    hoverIntentRef.current = setTimeout(() => expandPost(post), HOVER_EXPAND_DELAY);
+  };
+
+  const handlePostMouseLeave = (post) => {
+    if (isMobile) return;
+    clearTimeout(hoverIntentRef.current);
+    if (expandedPostId !== post.id) return;
+    collapseTargetRef.current = post.id;
+    collapseTimerRef.current = setTimeout(() => {
+      collapseTargetRef.current = null;
+      collapsePost(post.id);
+    }, HOVER_COLLAPSE_DELAY);
   };
 
   return (
@@ -210,6 +454,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
 
       {/* Posts list */}
       <div
+        ref={postsListRef}
         className="space-y-2 overflow-y-auto"
         style={{
           flex: 1,
@@ -217,21 +462,35 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
           marginTop: '0',
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
+          // PostBody corrects the scroll offset itself; leaving the browser's own
+          // anchoring on would apply the same correction twice where it's supported.
+          overflowAnchor: 'none',
         }}
       >
         {posts.length === 0 ? (
           <div className="rounded-lg p-6 text-center" style={{ background: '#171717' }}>
-            <p className="text-gray-400 text-sm">No posts yet.</p>
+            <p className="text-gray-400 text-sm">
+              {postsError ? "Couldn't load posts right now." : 'No posts yet.'}
+            </p>
           </div>
         ) : (
           posts.map(post => (
-            <div key={post.id}>
+            <div
+              key={post.id}
+              ref={(el) => { postElsRef.current[post.id] = el; }}
+              onMouseEnter={() => handlePostMouseEnter(post)}
+              onMouseLeave={() => handlePostMouseLeave(post)}
+            >
+              {/* Hover intent is bound here rather than on the card below, so moving down
+                  into the comments tray (a sibling of the card) isn't read as leaving. */}
+              {/* An open post keeps the lighter fill even once the cursor has left it —
+                  hence a class rather than the imperative hover swap this used to do. */}
               <div
-                className="rounded-lg cursor-pointer transition-colors"
-                style={{ background: '#171717', padding: '1.25rem' }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = '#212121'; setHoveredPostId(post.id); }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#171717'; setHoveredPostId(null); }}
-                onClick={() => togglePost(post)}
+                className={`rounded-lg transition-colors ${
+                  expandedPostId === post.id ? 'bg-[#212121]' : 'bg-[#171717] hover:bg-[#212121]'
+                } ${isMobile ? 'cursor-pointer' : ''}`}
+                style={{ padding: '1.25rem' }}
+                onClick={isMobile ? () => togglePost(post) : undefined}
               >
                 {/* Avatar + Title row */}
                 <div className="flex mb-2" style={{ alignItems: 'flex-start', gap: '1rem' }}>
@@ -254,12 +513,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                   </div>
                 </div>
                 {/* Body text - full width */}
-                <div className="text-white mb-2 leading-snug relative" style={{ fontSize: '0.9rem', fontWeight: 300, letterSpacing: '0%', overflow: 'hidden', transition: 'max-height 0.3s ease-out', ...(expandedPostId === post.id ? { maxHeight: '2000px' } : { maxHeight: '8.25em' }) }}>
-                  <RedditMarkdown content={post.content} />
-                  {expandedPostId !== post.id && post.content && post.content.length > 300 && (
-                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '2em', background: `linear-gradient(transparent, ${hoveredPostId === post.id ? '#212121' : '#171717'})`, transition: 'background 0.15s', pointerEvents: 'none' }} />
-                  )}
-                </div>
+                <PostBody content={post.content} expanded={expandedPostId === post.id} previewLimit={previewLimit} />
                 {/* Actions row - full width */}
                 <div className="flex items-center gap-4 text-xs text-white">
                   <div className="flex items-center gap-1.5">
@@ -293,7 +547,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
               </div>
 
               {/* Comments */}
-              {expandedPostId === post.id && (
+              {(expandedPostId === post.id || closingPostId === post.id) && (
                 <div
                   className="ml-auto"
                   style={{
@@ -308,7 +562,7 @@ const CommunityForumCard = ({ courseName, courseReddit, posts = [], onCreatePost
                   onMouseEnter={handleCommentsMouseEnter}
                 >
                   <div style={{ overflow: 'hidden', minHeight: 0 }}>
-                  <div className="rounded-lg" style={{ background: '#171717', padding: '1rem 1.3rem' }}>
+                  <div className="rounded-lg" style={{ background: '#212121', padding: '1rem 1.3rem' }}>
                     <h4 className="text-white mb-2" style={{ fontSize: '1rem', fontWeight: 500 }}>
                       Comments
                     </h4>

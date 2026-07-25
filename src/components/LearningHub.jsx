@@ -10,7 +10,7 @@ import { sendModuleCompleteEmail, sendCourseCompleteEmail, sendFirstLessonEmail 
 import { useAuth } from '../contexts/AuthContext';
 import { useAnimation } from '../contexts/AnimationContext';
 import KnowledgeCheck from './KnowledgeCheck';
-import LoadingScreen from './LoadingScreen';
+import useGlobalLoading from '../hooks/useGlobalLoading';
 import { supabase } from '../lib/supabase';
 import { normalizeTextForNarration, normalizeTextForSmartNotes, splitIntoWords, convertCharacterToWordTimestamps } from '../utils/textNormalization';
 
@@ -63,6 +63,7 @@ const LearningHub = () => {
     return userData?.enrolled_course || 'product-manager';
   };
   const [loading, setLoading] = useState(true);
+  useGlobalLoading(loading, { autoRefreshAfter: 45000 });
   const [groupedLessons, setGroupedLessons] = useState({});
   const [lessonsMetadata, setLessonsMetadata] = useState([]);
   const [completedLessons, setCompletedLessons] = useState([]);
@@ -2497,8 +2498,9 @@ Content: ${typeof section.content === 'string' ? section.content : JSON.stringif
     return { isLessonLocked: locked, lockReason: reason, currentLessonToNavigate: lessonToNavigate };
   }, [loading, lessonsMetadata, completedLessons, dailyLimitReached, currentModule, currentLesson]);
 
+  // The global loading overlay is up (claimed above).
   if (loading) {
-    return <LoadingScreen autoRefresh={true} autoRefreshDelay={45000} />;
+    return null;
   }
 
   if (!currentLessonSections || currentLessonSections.length === 0) {

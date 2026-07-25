@@ -4,7 +4,6 @@ import Lottie from 'lottie-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAnimation } from '../../contexts/AnimationContext';
 import { markLessonComplete, saveUserProgress, getUserProgress, saveSectionQuestionScore, submitSectionFeedback, getSectionFeedback, submitChatFeedback, getLessonSectionScores } from '../../lib/api';
-import LoadingScreen from '../LoadingScreen';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import useLessonData from './hooks/useLessonData';
 import useLessonNavigation from './hooks/useLessonNavigation';
@@ -153,13 +152,10 @@ const LearningHubV2 = () => {
   const [contentFading, setContentFading] = useState(false);
   const [restoringProgress, setRestoringProgress] = useState(true);
   const [progressBarDone, setProgressBarDone] = useState(false);
-  // Read-aloud master mute — on by default, persisted across lessons.
-  const [readAloudMuted, setReadAloudMuted] = useState(() => {
-    try { return localStorage.getItem('ignite:readAloudMuted') === 'true'; } catch { return false; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('ignite:readAloudMuted', String(readAloudMuted)); } catch { /* ignore */ }
-  }, [readAloudMuted]);
+  // Read-aloud master mute — always starts un-muted when a lesson is opened (reset per lesson below).
+  const [readAloudMuted, setReadAloudMuted] = useState(false);
+  // Hover state for the read-aloud button — animates the mute slash in on hover.
+  const [muteHover, setMuteHover] = useState(false);
   // Scored question flow state
   const [showingScoredQuestion, setShowingScoredQuestion] = useState(false);
   const [scoredIntroPhase, setScoredIntroPhase] = useState(true); // true = intro, false = question
@@ -243,6 +239,11 @@ const LearningHubV2 = () => {
     isLessonCompleted,
     goToNextLesson,
   } = useLessonNavigation({ groupedLessons, lessonsMetadata, completedLessons });
+
+  // Read-aloud always starts un-muted whenever a new lesson is opened/started.
+  useEffect(() => {
+    setReadAloudMuted(false);
+  }, [currentModule, currentLesson]);
 
   // Text selection → "Explain '...'" in chat input
   // selectionchange updates live as user drags; mouseup saves range, focuses input, then restores highlight
@@ -1112,6 +1113,9 @@ const LearningHubV2 = () => {
     } catch (err) {
       console.error('Error marking lesson complete:', err);
     }
+    // Signal the progress hub to celebrate the lesson badge with confetti — fires on
+    // every completion, even when the lesson count is unchanged (e.g. re-completing).
+    try { sessionStorage.setItem('igniteCelebrateLesson', '1'); } catch { /* storage unavailable */ }
     navigate('/progress');
   }, [user?.id, userCourseId, currentModule, currentLesson, navigate]);
 
@@ -1268,11 +1272,11 @@ const LearningHubV2 = () => {
     setShowScoredAnswerButton(false);
   }, [scoredQuestionAnswered]);
 
-  const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
+  const { showContent, isReady } = useFadeTransition(loading, { autoRefreshAfter: 30000 });
 
   // Animate progress bar after loading screen disappears
   useEffect(() => {
-    if (!showLoading && showContent) {
+    if (isReady) {
       if (!progressAnimatedRef.current) {
         // First time content is visible: delay so bar paints at 0% first
         progressAnimatedRef.current = true;
@@ -1283,18 +1287,10 @@ const LearningHubV2 = () => {
       }
       setLessonProgress(targetProgress);
     }
-  }, [showLoading, showContent, targetProgress]);
+  }, [isReady, targetProgress]);
 
   return (
-    <div className={`bg-white ${contentClassName}`}>
-      {showLoading && (
-        <>
-          <div className={`fixed inset-0 z-40 bg-white ${loadingClassName}`} />
-          <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
-            <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
-          </div>
-        </>
-      )}
+    <div className="bg-white">
       {showContent && (<>
       {/* Main two-column layout — 100vh */}
       <div className="h-dvh flex">
@@ -1358,12 +1354,12 @@ const LearningHubV2 = () => {
               {audioReady && (
                 <button
                   className="cursor-pointer flex-shrink-0 flex items-center transition-colors"
-                  style={{ color: readAloudMuted ? '#9CA3AF' : '#000000' }}
+                  style={{ color: '#000000' }}
                   title={readAloudMuted ? 'Unmute read-aloud' : 'Mute read-aloud'}
                   aria-label={readAloudMuted ? 'Unmute read-aloud' : 'Mute read-aloud'}
-                  onClick={toggleMute}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.color = readAloudMuted ? '#9CA3AF' : '#000000'; }}
+                  onClick={() => { toggleMute(); setMuteHover(false); }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = '#EF0B72'; setMuteHover(true); }}
+                  onMouseLeave={(e) => { e.currentTarget.style.color = '#000000'; setMuteHover(false); }}
                 >
                   <svg
                     width={isMobile ? 20 : 17}
@@ -1376,17 +1372,19 @@ const LearningHubV2 = () => {
                     strokeLinejoin="round"
                   >
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
-                    {readAloudMuted ? (
-                      <>
-                        <line x1="23" y1="9" x2="17" y2="15" />
-                        <line x1="17" y1="9" x2="23" y2="15" />
-                      </>
-                    ) : (
-                      <>
-                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
-                      </>
-                    )}
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                    <line
+                      x1="22"
+                      y1="2"
+                      x2="2"
+                      y2="22"
+                      style={{
+                        strokeDasharray: 30,
+                        strokeDashoffset: (readAloudMuted !== muteHover) ? 0 : 30,
+                        transition: 'stroke-dashoffset 0.45s ease',
+                      }}
+                    />
                   </svg>
                 </button>
               )}

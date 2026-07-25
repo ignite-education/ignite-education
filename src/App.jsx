@@ -1,16 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { lazy, Suspense, useEffect } from 'react'
 import ProtectedRoute from './components/ProtectedRoute'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AuthProvider } from './contexts/AuthContext'
 import { AnimationProvider } from './contexts/AnimationContext'
-
-// Lazy-load LoadingScreen to defer ui-vendor chunk (lottie-react)
-const LoadingScreen = lazy(() => import('./components/LoadingScreen'))
-
-// Simple CSS-only loader as fallback while LoadingScreen chunk loads
-const SimpleLoader = () => (
-  <div className="fixed inset-0 bg-white" />
-)
+import GlobalLoadingOverlay from './components/GlobalLoadingOverlay'
+import SuspenseLoadingSignal from './components/SuspenseLoadingSignal'
+import { releaseBootClaim } from './lib/loadingStore'
 
 // Redirect old /admin/* routes to admin.ignite.education
 const AdminRedirect = () => {
@@ -35,13 +30,17 @@ function App() {
   useEffect(() => {
     document.dispatchEvent(new Event('render-complete'));
 
+    // The overlay is visible from the very first paint via a synthetic boot claim.
+    // Child effects flush before this one, so any real claim (auth check, suspended
+    // chunk, hub data) has already taken over by the time it's released.
+    releaseBootClaim();
   }, []);
 
   return (
     <BrowserRouter>
       <AnimationProvider>
         <AuthProvider>
-          <Suspense fallback={<Suspense fallback={<SimpleLoader />}><LoadingScreen showTimeoutMessage={true} /></Suspense>}>
+          <Suspense fallback={<SuspenseLoadingSignal />}>
           <Routes>
             <Route path="/" element={
               <ProtectedRoute>
@@ -76,6 +75,9 @@ function App() {
           </Routes>
         </Suspense>
       </AuthProvider>
+      {/* Mounted for the lifetime of the document — outside <Suspense> and <Routes>
+          so nothing can ever unmount it and the Lottie player is created once. */}
+      <GlobalLoadingOverlay />
       </AnimationProvider>
     </BrowserRouter>
   )

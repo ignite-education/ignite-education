@@ -434,6 +434,11 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
 
     const shown = confettiShownRef.current || {};
     const startConfetti = () => {
+      // One-shot signal set by "End Lesson" — celebrate the lesson badge on every
+      // completion, bypassing the once-per-user persistence (even if the count is unchanged).
+      let justCompletedLesson = false;
+      try { justCompletedLesson = sessionStorage.getItem('igniteCelebrateLesson') === '1'; } catch { /* storage unavailable */ }
+
       const tags = [
         { key: 'joined', active: !!formatJoinDate(joinedAt) },
         { key: 'lesson', active: totalCompletedLessons >= 1 },
@@ -441,16 +446,19 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         { key: 'role', active: userRole === 'admin' || userRole === 'teacher' },
       ];
 
-      console.log('🎊 [Confetti] startConfetti called', { tags: tags.map(t => `${t.key}:${t.active}`), shown, firedKeys: [...confettiFiredRef.current] });
+      console.log('🎊 [Confetti] startConfetti called', { tags: tags.map(t => `${t.key}:${t.active}`), shown, firedKeys: [...confettiFiredRef.current], justCompletedLesson });
 
       const newlyShown = [];
+      let lessonCelebrated = false;
       tags.forEach(({ key, active }) => {
+        const forceLesson = key === 'lesson' && justCompletedLesson;
         if (!active) { console.log(`🎊 [Confetti] ${key}: skipped (not active)`); return; }
-        if (shown[key]) { console.log(`🎊 [Confetti] ${key}: skipped (already in shown metadata)`); return; }
+        if (!forceLesson && shown[key]) { console.log(`🎊 [Confetti] ${key}: skipped (already in shown metadata)`); return; }
         if (confettiFiredRef.current.has(key)) { console.log(`🎊 [Confetti] ${key}: skipped (already in firedRef)`); return; }
 
-        console.log(`🎊 [Confetti] ${key}: FIRING confetti! Setting timers at 2000ms and 5000ms`);
-        newlyShown.push(key);
+        console.log(`🎊 [Confetti] ${key}: FIRING confetti!${forceLesson ? ' (forced by lesson completion)' : ''} Setting timers at 2000ms and 5000ms`);
+        if (forceLesson) lessonCelebrated = true;
+        if (!shown[key]) newlyShown.push(key); // only persist the first-ever showing
         confettiFiredRef.current.add(key);
         timers.push(setTimeout(() => {
           console.log(`🎊 [Confetti] ${key}: Timer fired — setting activeConfetti to TRUE`);
@@ -461,6 +469,12 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
           setActiveConfetti(prev => ({ ...prev, [key]: false }));
         }, 5000));
       });
+
+      // Consume the signal only once the badge has actually celebrated (so a load
+      // before the lesson data is ready doesn't waste it).
+      if (lessonCelebrated) {
+        try { sessionStorage.removeItem('igniteCelebrateLesson'); } catch { /* storage unavailable */ }
+      }
 
       if (newlyShown.length > 0) {
         console.log('🎊 [Confetti] Persisting confetti_shown:', newlyShown);

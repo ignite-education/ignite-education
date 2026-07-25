@@ -53,18 +53,45 @@ export function getCourseTypeLabel(course: Course): string {
 }
 
 /**
- * Get the dynamic tagline based on course type
+ * Terminate a sentence with a full stop unless it already ends in punctuation.
+ */
+function withFullStop(sentence: string): string {
+  return /[.!?]$/.test(sentence) ? sentence : `${sentence}.`
+}
+
+/**
+ * Shared tail of every tagline variant.
+ *
+ * ‑ is a NON-BREAKING HYPHEN rather than an ordinary "-", so that
+ * "expert-built" is treated as a single word and never split across two lines.
+ * Geist renders it identically to U+002D. Written as an escape so it stays
+ * visible in diffs and cannot be mistaken for a plain hyphen.
+ */
+const TAGLINE_SUFFIX = "with Ignite's free, expert\u2011built course"
+
+/**
+ * Get the dynamic tagline based on course type. Always ends in a full stop,
+ * whichever variant applies.
  */
 export function getCourseTagline(course: Course): string {
-  if (!course?.title) return "Learn with Ignite's free, expert-built course"
+  if (!course?.title) return withFullStop(`Learn ${TAGLINE_SUFFIX}`)
 
   const taglineTemplates: Record<string, string> = {
-    'specialism': `Become a ${course.title} with Ignite's free, expert-built course`,
-    'skill': `Upskill at ${course.title} with Ignite's free, expert-built course`,
-    'subject': `Learn ${course.title} with Ignite's free, expert-built course`,
+    'specialism': `Become a ${course.title} ${TAGLINE_SUFFIX}`,
+    'skill': `Upskill at ${course.title} ${TAGLINE_SUFFIX}`,
+    'subject': `Learn ${course.title} ${TAGLINE_SUFFIX}`,
   }
 
-  return taglineTemplates[course.course_type] || `Become a ${course.title} with Ignite's free, expert-built course`
+  return withFullStop(taglineTemplates[course.course_type] || `Become a ${course.title} ${TAGLINE_SUFFIX}`)
+}
+
+/**
+ * Get first sentence of description
+ */
+export function getFirstSentence(description: string): string {
+  if (!description) return ''
+  const sentences = description.match(/[^.!?]*[.!?]+/g) || [description]
+  return sentences.slice(0, 1).join('').trim()
 }
 
 /**

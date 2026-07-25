@@ -11,6 +11,13 @@ interface EnrollmentCTAProps {
   courseSlug: string
   courseTitle: string
   isComingSoon: boolean
+  /** Set when rendered on a dark background (the black course hero) */
+  onDark?: boolean
+  /**
+   * Set by EnrollmentRail. Body text follows the band behind it via
+   * .rail-clip-text instead of taking a fixed colour.
+   */
+  clipText?: boolean
 }
 
 function extractFirstName(user: { user_metadata?: Record<string, string>; email?: string }) {
@@ -21,7 +28,15 @@ function extractFirstName(user: { user_metadata?: Record<string, string>; email?
     || 'your'
 }
 
-export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }: EnrollmentCTAProps) {
+export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, onDark, clipText }: EnrollmentCTAProps) {
+  const bodyTextColor = clipText ? 'rail-clip-text' : onDark ? 'text-white' : 'text-black'
+  // Sign-in button glow: clipped white→grey in the rail, static white where the
+  // buttons never leave the black band, original grey everywhere else.
+  const signInGlow = clipText
+    ? 'btn-glow-split'
+    : onDark
+      ? 'btn-glow-on-dark'
+      : 'shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]'
   const [user, setUser] = useState<User | null>(null)
   const [firstName, setFirstName] = useState<string | null>(null)
   const [isSaved, setIsSaved] = useState(false)
@@ -262,9 +277,16 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
   }
 
   return (
-    <div className="w-full">
+    /* onDark sets currentColor for the share icon; the rail instead draws it as
+       two clipped layers, so it needs no inherited colour. */
+    <div className={`w-full${onDark ? ' text-white' : ''}`}>
+      {/* Reserves the tallest of the three states (signed-out: two 40px
+          buttons + 8px gap + 16px + 24px caption + 16px = 144px) so the share
+          row below never moves — not while auth resolves, not when the saved
+          status lands, and not between signed-in and signed-out. */}
+      <div data-cta-slot style={{ minHeight: '144px' }}>
         {!authLoaded ? (
-          <div className="w-[80%] mx-auto mb-4" style={{ minHeight: '95px' }} />
+          <div className="w-[80%] mx-auto mb-4" />
         ) : !user ? (
           <>
             {/* Sign-in buttons */}
@@ -272,7 +294,8 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               {/* Continue with Google button */}
               <button
                 onClick={() => triggerPrompt(handleGoogleOAuthFallback)}
-                className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                data-clip-split=""
+                className={`mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer ${signInGlow}`}
                 style={{ width: '100%', height: '40px' }}
               >
                 Continue with Google
@@ -283,7 +306,8 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               {/* LinkedIn Sign In Button */}
               <button
                 onClick={handleLinkedInClick}
-                className="mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer shadow-[0_0_10px_rgba(103,103,103,0.3)] hover:shadow-[0_0_10px_rgba(103,103,103,0.5)]"
+                data-clip-split=""
+                className={`mx-auto flex items-center justify-center gap-2 bg-white text-black rounded-[0.65rem] text-[1rem] tracking-[-0.02em] transition-shadow duration-350 ease-in-out font-normal cursor-pointer ${signInGlow}`}
                 style={{ width: '100%', height: '40px' }}
               >
                 Continue with LinkedIn
@@ -294,7 +318,7 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
             </div>
 
             {/* Status Text */}
-            <p className="text-center text-black text-base font-normal mb-4" style={{ letterSpacing: '-0.03em' }}>
+            <p className={`text-center ${bodyTextColor} text-base font-normal mb-4`} style={{ letterSpacing: '-0.03em' }}>
               {isComingSoon ? 'Sign in to join the course waitlist' : 'Sign in to start the course'}
             </p>
           </>
@@ -354,11 +378,15 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
               </div>
 
               <p
-                className="text-center text-black text-base font-normal mt-3"
+                className={`text-center ${bodyTextColor} text-base font-normal mt-3`}
                 style={{
                   letterSpacing: '-0.03em',
                   textWrap: 'balance',
-                  minHeight: '1.5em',
+                  /* Two lines, not one: while the saved status is loading this
+                     renders the 1-line "not saved" copy, then swaps to the
+                     2-line saved copy. Reserving both stops that swap pushing
+                     the share row down. */
+                  minHeight: '3em',
                   opacity: showButton ? 1 : 0,
                   transition: 'opacity 0.5s ease',
                 }}
@@ -377,9 +405,10 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon }:
             </div>
           </>
         )}
+      </div>
 
-        {/* Share Buttons Row */}
-        <ShareButtons courseSlug={courseSlug} courseTitle={courseTitle} />
+      {/* Share Buttons Row */}
+      <ShareButtons courseSlug={courseSlug} courseTitle={courseTitle} clip={clipText} />
     </div>
   )
 }

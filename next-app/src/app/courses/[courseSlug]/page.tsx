@@ -10,8 +10,11 @@ import {
   generateSpeakableSchema,
 } from '@/lib/structuredData'
 import type { FAQ } from '@/types/course'
+import Navbar from '@/components/Navbar'
 import CourseHero from './CourseHero'
 import CourseCurriculum from './CourseCurriculum'
+import EnrollmentRail from './EnrollmentRail'
+import SignupTicker from './SignupTicker'
 import FeedbackSection from './FeedbackSection'
 import CourseLeaders from './CourseLeaders'
 import FAQSection from './FAQSection'
@@ -75,7 +78,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const title = `Become a ${course.title}`
-  const shortDesc = `Become a ${course.title} with Ignite's free, expert-built course`
+  const shortDesc = `Become a ${course.title} with Ignite's free, expert-built course.`
   const description = course.description
     ? `${shortDesc} ${course.description}`.slice(0, 160)
     : shortDesc
@@ -140,37 +143,73 @@ export default async function CoursePage({ params }: PageProps) {
 
       <div className="flex flex-col min-h-screen bg-white">
         <div className="flex-1">
-          <CourseHero
-            course={course}
-            courseSlug={courseSlug}
-            isComingSoon={isComingSoon}
-          />
+          <div className="sticky top-0 z-50">
+            <Navbar variant="black" />
+          </div>
 
-          {/* Full-bleed grey curriculum band */}
-          <CourseCurriculum
-            moduleStructure={course.module_structure}
-            structureType={course.structure_type}
-            courseSlug={courseSlug}
-            courseTitle={course.title}
-            isComingSoon={isComingSoon}
-          />
+          {/* Hero and Content share one positioning context so the desktop
+              enrollment rail can stay stuck across both, then release. */}
+          <div className="relative">
+            <CourseHero
+              course={course}
+              courseSlug={courseSlug}
+              isComingSoon={isComingSoon}
+            />
+
+            {/* Full-bleed grey curriculum band */}
+            <CourseCurriculum
+              moduleStructure={course.module_structure}
+              structureType={course.structure_type}
+              courseSlug={courseSlug}
+              courseTitle={course.title}
+              isComingSoon={isComingSoon}
+            />
+
+            {/* Desktop enrollment rail. Sits in the 315px track reserved by
+                CourseCurriculum, starting beside the hero title and sticking
+                until the end of Content. Same centring chain as the sections
+                so it lands exactly on that track. */}
+            {/* pb-10 restores the breathing room the rail used to inherit: as a
+                child of CourseCurriculum it sat inside that section's 40px
+                vertical padding, so it stopped 40px short of the band's bottom
+                edge. As a full-height overlay it would otherwise run flush. */}
+            <div className="hidden lg:block absolute inset-0 pb-10 pointer-events-none">
+              <div className="max-w-4xl mx-auto px-6 h-full flex justify-center">
+                <div className="w-full h-full" style={{ maxWidth: '762px' }}>
+                  <div className="lg:-mx-24 h-full flex justify-end">
+                    <EnrollmentRail
+                      courseSlug={courseSlug}
+                      courseTitle={course.title}
+                      isComingSoon={isComingSoon}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="max-w-4xl mx-auto px-6 pt-8 pb-4 md:pb-12 flex justify-center">
             <div className="w-full" style={{ maxWidth: '762px' }}>
-              {!isComingSoon && (
-                <FeedbackSection courseTitle={course.title} />
-              )}
+              {/* Matches CourseCurriculum's grid so every heading shares one left edge */}
+              <div className="lg:-mx-24">
+                {!isComingSoon && (
+                  <FeedbackSection courseTitle={course.title} />
+                )}
 
-              {coaches.length > 0 && (
-                <CourseLeaders coaches={coaches} courseTitle={course.title} />
-              )}
+                {coaches.length > 0 && (
+                  <CourseLeaders coaches={coaches} courseTitle={course.title} />
+                )}
 
-              <FAQSection faqs={COURSE_FAQS} />
+                <FAQSection faqs={COURSE_FAQS} />
+              </div>
             </div>
           </div>
         </div>
 
         <Footer />
+
+        {/* Fixed to the viewport, so DOM position only affects paint order. */}
+        <SignupTicker />
       </div>
     </>
   )

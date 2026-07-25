@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { getCertificate } from '../lib/api';
 import { jsPDF } from 'jspdf';
 
-import LoadingScreen from './LoadingScreen';
+import useGlobalLoading from '../hooks/useGlobalLoading';
 import SEO from './SEO';
 
 
@@ -15,6 +15,7 @@ export default function Certificate() {
   const navigate = useNavigate();
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(true);
+  useGlobalLoading(loading);
   const [error, setError] = useState(null);
   const certificateRef = useRef(null);
 
@@ -135,8 +136,9 @@ export default function Certificate() {
     });
   };
 
+  // The global loading overlay is up (claimed above).
   if (loading) {
-    return <LoadingScreen />;
+    return null;
   }
 
   if (error || !certificate) {

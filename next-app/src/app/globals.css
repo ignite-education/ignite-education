@@ -447,3 +447,111 @@ body {
     transform-origin: center;
   }
 }
+
+/* Enrollment rail: ink that follows the band behind it.
+   The gradient is anchored to the viewport (background-attachment: fixed) and
+   clipped to the glyphs, so a single --rail-split value set by EnrollmentRail
+   colours every affected element correctly — and text straddling the
+   black/grey boundary is split mid-glyph rather than snapping. */
+.rail-clip-text {
+  color: transparent;
+  background-image: linear-gradient(
+    to bottom,
+    #ffffff 0,
+    #ffffff var(--rail-split, 100vh),
+    #000000 var(--rail-split, 100vh),
+    #000000 100%
+  );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Enrollment buttons: glow that follows the band behind them.
+   box-shadow cannot take a gradient, so the two colours live on stacked
+   pseudo-elements and are split at --clip-split (px from the button's own top
+   edge, written by EnrollmentRail). Polygon coordinates deliberately overshoot
+   the border box so the blur is never clipped off. The 100% default keeps the
+   glow fully on-dark before scripting runs, matching the rail's resting
+   position in the black band.
+
+   Defined once here so the clipped and static variants cannot drift apart.
+   EnrollmentRail clamps --clip-split well beyond these blur radii, so changing
+   them needs no matching change there. */
+:root {
+  --btn-glow-dark: 0 0 15px rgba(153, 153, 153, 0.8);
+  --btn-glow-dark-hover: 0 0 17px rgba(153, 153, 153, 0.95);
+  --btn-glow-light: 0 0 10px rgba(103, 103, 103, 0.3);
+  --btn-glow-light-hover: 0 0 10px rgba(103, 103, 103, 0.5);
+}
+.btn-glow-split {
+  position: relative;
+}
+.btn-glow-split::before,
+.btn-glow-split::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  transition: box-shadow 0.35s ease-in-out;
+}
+.btn-glow-split::before {
+  box-shadow: var(--btn-glow-dark);
+  clip-path: polygon(
+    -100% -100%, 200% -100%,
+    200% var(--clip-split, 100%), -100% var(--clip-split, 100%)
+  );
+}
+.btn-glow-split::after {
+  box-shadow: var(--btn-glow-light);
+  clip-path: polygon(
+    -100% var(--clip-split, 100%), 200% var(--clip-split, 100%),
+    200% 200%, -100% 200%
+  );
+}
+.btn-glow-split:hover::before {
+  box-shadow: var(--btn-glow-dark-hover);
+}
+.btn-glow-split:hover::after {
+  box-shadow: var(--btn-glow-light-hover);
+}
+
+/* Static variant for buttons that never leave the black band. */
+.btn-glow-on-dark {
+  box-shadow: var(--btn-glow-dark);
+}
+.btn-glow-on-dark:hover {
+  box-shadow: var(--btn-glow-dark-hover);
+}
+
+/* Two-layer colour clip for content that cannot use background-clip: text —
+   notably SVG strokes. A dark-band copy and a light-band copy are stacked and
+   clipped against each other at --clip-split, so the colour changes across the
+   band boundary mid-glyph rather than snapping. Same overshooting polygons as
+   the button glows. */
+.clip-stack {
+  position: relative;
+}
+.clip-stack > .clip-layer-dark,
+.clip-stack > .clip-layer-light {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.clip-stack > .clip-layer-dark {
+  clip-path: polygon(
+    -100% -100%, 200% -100%,
+    200% var(--clip-split, 100%), -100% var(--clip-split, 100%)
+  );
+}
+.clip-stack > .clip-layer-light {
+  clip-path: polygon(
+    -100% var(--clip-split, 100%), 200% var(--clip-split, 100%),
+    200% 200%, -100% 200%
+  );
+}

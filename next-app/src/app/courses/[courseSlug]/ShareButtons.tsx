@@ -5,12 +5,17 @@ import { useState } from 'react'
 interface ShareButtonsProps {
   courseSlug: string
   courseTitle: string
+  /**
+   * Set in the sticky rail, which crosses the black/grey boundary. The share
+   * glyph is drawn twice and clipped at --clip-split so its colour changes with
+   * the band behind it. Elsewhere the glyph inherits currentColor.
+   */
+  clip?: boolean
 }
 
-export default function ShareButtons({ courseSlug, courseTitle }: ShareButtonsProps) {
+export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareButtonsProps) {
   const [shareHovered, setShareHovered] = useState(false)
   const shareUrl = `https://ignite.education/courses/${courseSlug}`
-  const shareIconColor = shareHovered ? '#EF0B72' : '#000000'
 
   const handleShare = async () => {
     const shareData = {
@@ -32,6 +37,34 @@ export default function ShareButtons({ courseSlug, courseTitle }: ShareButtonsPr
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')
   }
 
+  // One definition so both clipped layers stay pixel-identical, including the
+  // hover lift. Hover paints pink on both, so the split is invisible then.
+  const shareGlyph = (baseColor: string) => {
+    const stroke = shareHovered ? '#EF0B72' : baseColor
+    return (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g style={{ transition: 'transform 0.2s ease', transform: shareHovered ? 'translateY(-2px)' : 'translateY(0)' }}>
+          <path
+            d="M12 3v12M8 7l4-4 4 4"
+            stroke={stroke}
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ transition: 'stroke 0.2s ease' }}
+          />
+        </g>
+        <path
+          d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
+          stroke={stroke}
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{ transition: 'stroke 0.2s ease' }}
+        />
+      </svg>
+    )
+  }
+
   const handleWhatsAppShare = () => {
     const text = `Check out this course: ${courseTitle || 'Course'} on Ignite Education`
     window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')
@@ -44,29 +77,18 @@ export default function ShareButtons({ courseSlug, courseTitle }: ShareButtonsPr
         onClick={handleShare}
         onMouseEnter={() => setShareHovered(true)}
         onMouseLeave={() => setShareHovered(false)}
-        className="flex items-center justify-center rounded-[4px]"
+        className={`flex items-center justify-center rounded-[4px]${clip ? ' clip-stack' : ''}`}
+        data-clip-split={clip ? '' : undefined}
         style={{ width: '33px', height: '33px', cursor: 'pointer' }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <g style={{ transition: 'transform 0.2s ease', transform: shareHovered ? 'translateY(-2px)' : 'translateY(0)' }}>
-            <path
-              d="M12 3v12M8 7l4-4 4 4"
-              stroke={shareIconColor}
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              style={{ transition: 'stroke 0.2s ease' }}
-            />
-          </g>
-          <path
-            d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"
-            stroke={shareIconColor}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{ transition: 'stroke 0.2s ease' }}
-          />
-        </svg>
+        {clip ? (
+          <>
+            <span className="clip-layer-dark">{shareGlyph('#FFFFFF')}</span>
+            <span className="clip-layer-light" aria-hidden>{shareGlyph('#000000')}</span>
+          </>
+        ) : (
+          shareGlyph('currentColor')
+        )}
       </div>
 
       <div className="w-1" />

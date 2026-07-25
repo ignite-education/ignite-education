@@ -1,6 +1,5 @@
 import { generateModuleIntro } from '@/lib/courseUtils'
 import type { Module } from '@/types/course'
-import EnrollmentCTA from './EnrollmentCTA'
 import CurriculumLessonSlider from './CurriculumLessonSlider'
 
 interface CourseCurriculumProps {
@@ -94,16 +93,10 @@ export default function CourseCurriculum({
                 </div>
               </div>
 
-              {/* Right Column - Sticky CTA (hidden on mobile) */}
-              <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }}>
-                <div className="sticky top-24">
-                  <EnrollmentCTA
-                    courseSlug={courseSlug}
-                    courseTitle={courseTitle}
-                    isComingSoon={isComingSoon}
-                  />
-                </div>
-              </div>
+              {/* Right Column - reserves the track for the sticky enrollment
+                  rail, which is rendered in page.tsx so it can stay sticky
+                  from the hero through to the end of this section. */}
+              <div className="flex-shrink-0 hidden lg:block self-stretch" style={{ width: '315px' }} aria-hidden />
             </div>
           </div>
         </div>

@@ -1,7 +1,8 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import LoadingScreen from './LoadingScreen';
+import useGlobalLoading from '../hooks/useGlobalLoading';
+import { holdLoadingForNavigation } from '../lib/loadingStore';
 
 // Minimal sign-in form for local development only
 const DevSignIn = () => {
@@ -57,41 +58,69 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const DB_TIMEOUT = 30000; // 30 seconds to handle Supabase cold starts
 const MAX_RETRIES = 2; // Will try 3 times total (initial + 2 retries)
 
+// Read the cached enrollment result synchronously. Used as the useState initialiser
+// so that on a cache hit the very first render where `user` is known already has
+// the answer — there is no window in which children can mount prematurely.
+const readCachedEnrollment = () => {
+  try {
+    const cached = sessionStorage.getItem(ENROLLMENT_CACHE_KEY);
+    if (!cached) return null;
+    const { userId, hasEnrolledCourse, timestamp } = JSON.parse(cached);
+    if (!userId || Date.now() - timestamp >= CACHE_DURATION) return null;
+    return { userId, hasEnrolled: Boolean(hasEnrolledCourse) };
+  } catch {
+    return null;
+  }
+};
+
 const ProtectedRoute = ({ children }) => {
   const { user, isInitialized } = useAuth();
-  const [enrollmentLoading, setEnrollmentLoading] = useState(false);
-  const [hasEnrolledCourse, setHasEnrolledCourse] = useState(null); // null = not checked yet
+  const [enrollment, setEnrollment] = useState(readCachedEnrollment);
+
+  // Derived, not stateful. Previously `enrollmentLoading` started false, so there
+  // existed a render where auth was initialised but the gate read "not loading" —
+  // children mounted, then the effect flipped the flag and unmounted them again,
+  // remounting from scratch when the DB call resolved. Deriving the gate from
+  // "do I have a result for *this* user?" removes that window entirely.
+  const enrollmentReady = !user || enrollment?.userId === user.id;
+  const isChecking = !isInitialized || !enrollmentReady;
+
+  const isDevLocalhost = import.meta.env.DEV && window.location.hostname === 'localhost';
+  const redirectTo = isChecking
+    ? null
+    : !user
+      ? (isDevLocalhost ? null : '/welcome')
+      : (enrollment?.hasEnrolled === false && !isDevLocalhost ? '/courses' : null);
+
+  // Keep the overlay up through the redirect so the user never sees a blank page
+  // while the new document loads.
+  useGlobalLoading(isChecking || !!redirectTo);
 
   useEffect(() => {
+    if (!redirectTo) return;
+    holdLoadingForNavigation();
+    window.location.href = redirectTo;
+  }, [redirectTo]);
+
+  useEffect(() => {
+    if (!isInitialized || !user) return;
+
+    const cached = readCachedEnrollment();
+    if (cached?.userId === user.id) {
+      setEnrollment(cached);
+      return;
+    }
+    if (cached) {
+      try { sessionStorage.removeItem(ENROLLMENT_CACHE_KEY); } catch { /* ignore */ }
+    }
+
+    let cancelled = false;
+    const applyResult = (hasEnrolled) => {
+      cacheEnrollmentStatus(user.id, hasEnrolled);
+      if (!cancelled) setEnrollment({ userId: user.id, hasEnrolled });
+    };
+
     const checkEnrollment = async () => {
-      if (!user) {
-        setHasEnrolledCourse(null);
-        setEnrollmentLoading(false);
-        return;
-      }
-
-      setEnrollmentLoading(true);
-
-      // Check session storage cache first
-      try {
-        const cached = sessionStorage.getItem(ENROLLMENT_CACHE_KEY);
-        if (cached) {
-          const { userId, hasEnrolledCourse: cachedHasEnrolled, timestamp } = JSON.parse(cached);
-          const age = Date.now() - timestamp;
-
-          // Use cache if it's for the current user and not expired
-          if (userId === user.id && age < CACHE_DURATION) {
-            setHasEnrolledCourse(cachedHasEnrolled);
-            setEnrollmentLoading(false);
-            return;
-          } else {
-            sessionStorage.removeItem(ENROLLMENT_CACHE_KEY);
-          }
-        }
-      } catch {
-        // Continue to database check
-      }
-
       // Retry logic wrapper
       for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
         try {
@@ -118,12 +147,9 @@ const ProtectedRoute = ({ children }) => {
             console.error('[ProtectedRoute] Database error:', error);
             if (attempt < MAX_RETRIES) continue;
             // On last attempt with error, redirect to /courses (safe fallback)
-            setHasEnrolledCourse(false);
-            cacheEnrollmentStatus(user.id, false);
+            applyResult(false);
           } else if (data) {
-            const enrolled = Boolean(data.enrolled_course);
-            setHasEnrolledCourse(enrolled);
-            cacheEnrollmentStatus(user.id, enrolled);
+            applyResult(Boolean(data.enrolled_course));
           } else {
             // No user record found - create one for new users
             const metadata = user.user_metadata || {};
@@ -145,8 +171,7 @@ const ProtectedRoute = ({ children }) => {
               }
             }
 
-            setHasEnrolledCourse(false);
-            cacheEnrollmentStatus(user.id, false);
+            applyResult(false);
           }
 
           // Success! Break out of retry loop
@@ -156,16 +181,14 @@ const ProtectedRoute = ({ children }) => {
 
           // On last attempt with exception, redirect to /courses (safe fallback)
           console.error('[ProtectedRoute] All retry attempts failed:', err);
-          setHasEnrolledCourse(false);
-          cacheEnrollmentStatus(user.id, false);
+          applyResult(false);
         }
       }
-
-      setEnrollmentLoading(false);
     };
 
     checkEnrollment();
-  }, [user?.id]);
+    return () => { cancelled = true; };
+  }, [isInitialized, user?.id]);
 
   // Helper function to cache enrollment status
   const cacheEnrollmentStatus = (userId, hasEnrolled) => {
@@ -180,29 +203,12 @@ const ProtectedRoute = ({ children }) => {
     }
   };
 
-  // Wait for auth to be initialized first
-  if (!isInitialized || enrollmentLoading) {
-    return <LoadingScreen />;
-  }
+  // Still resolving auth/enrollment, or navigating away — the global loading
+  // overlay is up (claimed above), so render nothing underneath it.
+  if (isChecking || redirectTo) return null;
 
-  if (!user) {
-    // In local dev, show a sign-in form instead of redirecting to Next.js
-    if (import.meta.env.DEV && window.location.hostname === 'localhost') {
-      return <DevSignIn />;
-    }
-    window.location.href = '/welcome';
-    return null;
-  }
-
-  // Redirect unenrolled users to course catalog (skip on localhost for dev)
-  if (hasEnrolledCourse === false) {
-    if (import.meta.env.DEV && window.location.hostname === 'localhost') {
-      // Allow access on localhost even without enrollment
-    } else {
-      window.location.href = '/courses';
-      return null;
-    }
-  }
+  // Only reachable on localhost dev; production redirects to /welcome above.
+  if (!user) return <DevSignIn />;
 
   return children;
 };

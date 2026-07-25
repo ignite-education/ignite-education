@@ -4,7 +4,6 @@ import { supabase } from '../../lib/supabase';
 import useProgressData from './hooks/useProgressData';
 import useCourseProgress from './hooks/useCourseProgress';
 import useIsMobile from './hooks/useIsMobile';
-import LoadingScreen from '../LoadingScreen';
 import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
@@ -47,6 +46,7 @@ const ProgressHubV2 = () => {
     userCertificate,
     courseReddit,
     communityPosts,
+    communityPostsError,
     refetchCommunityPosts,
     userLessonScores,
     globalLessonScores,
@@ -98,7 +98,7 @@ const ProgressHubV2 = () => {
     }
   }, []);
 
-  const { showLoading, showContent, loadingClassName, contentClassName } = useFadeTransition(loading);
+  const { showContent } = useFadeTransition(loading, { autoRefreshAfter: 30000 });
 
   // Preload profile picture during loading screen so it's cached when content renders
   useEffect(() => {
@@ -120,15 +120,7 @@ const ProgressHubV2 = () => {
   );
 
   return (
-    <div className={`min-h-screen bg-black text-white ${contentClassName}`} style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', ...(isMobile && { overflowX: 'hidden' }) }}>
-      {showLoading && (
-        <>
-          <div className={`fixed inset-0 z-40 bg-white ${loadingClassName}`} />
-          <div className={`fixed inset-0 z-50 ${loadingClassName}`}>
-            <LoadingScreen autoRefresh={true} autoRefreshDelay={30000} />
-          </div>
-        </>
-      )}
+    <div className="min-h-screen bg-black text-white" style={{ fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif', ...(isMobile && { overflowX: 'hidden' }) }}>
       {showContent && (<>
       <SEO title={firstName ? `${firstName}'s Progress | Ignite` : 'Your Progress | Ignite'} />
       {/* Section 1: Introduction */}
@@ -166,7 +158,7 @@ const ProgressHubV2 = () => {
             <ResourcesSlider resources={resources} />
           </>
         }
-        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
+        right={<CommunityForumCard courseName={courseTitle} courseReddit={courseReddit} posts={communityPosts} postsError={communityPostsError} onCreatePost={() => setShowPostModal(true)} onMyPosts={localStorage.getItem('hasPostedToReddit') ? () => setShowMyPostsModal(true) : undefined} userRole={userRole} userId={authUser?.id} onBlockPost={async (postId) => { try { await blockRedditPost(postId, authUser?.id); await refetchCommunityPosts(); } catch {} }} />}
       />
 
       {/* Section 3: Merchandise */}

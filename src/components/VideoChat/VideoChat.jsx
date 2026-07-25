@@ -6,7 +6,7 @@ import OfficeHours from './OfficeHours';
 import CameraPreview from './CameraPreview';
 import { getLessonsMetadata, getCoachesForCourse } from '../../lib/api';
 import { Video } from 'lucide-react';
-import LoadingScreen from '../LoadingScreen';
+import useGlobalLoading from '../../hooks/useGlobalLoading';
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://ignite-education-api.onrender.com';
 
@@ -18,6 +18,8 @@ const VideoChat = () => {
   useEffect(() => { document.title = 'Office Hours | Ignite'; }, []);
 
   const [state, setState] = useState('loading'); // loading | lobby | queued | joining | joined | error | ended
+  const isConnecting = state === 'loading' || state === 'joining';
+  useGlobalLoading(isConnecting);
   const [error, setError] = useState('');
   const [callObject, setCallObject] = useState(null);
   const callObjectRef = useRef(null);
@@ -422,9 +424,9 @@ const VideoChat = () => {
     }
   }, [sessionId]);
 
-  // Loading state
-  if (state === 'loading' || state === 'joining') {
-    return <LoadingScreen />;
+  // Loading state — the global loading overlay is up (claimed above).
+  if (isConnecting) {
+    return null;
   }
 
   // Office Hours page — lobby, queued, and connected states
