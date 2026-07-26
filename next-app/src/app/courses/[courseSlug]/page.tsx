@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import { getCourseBySlug, getCoachesByCourseSlug } from '@/lib/courseData'
 import { generateCourseKeywords } from '@/lib/seoKeywords'
+import { getCourseTitlePhrase, getCourseTagline, getFirstSentence } from '@/lib/courseUtils'
+import { OG_DEFAULTS, SITE_NAME, SITE_URL, ogImages, truncateAtWord } from '@/lib/siteConfig'
 import {
   generateCourseStructuredData,
   generateFAQStructuredData,
@@ -77,34 +79,44 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Course Not Found' }
   }
 
-  const title = `Become a ${course.title}`
-  const shortDesc = `Become a ${course.title} with Ignite's free, expert-built course.`
+  const title = getCourseTitlePhrase(course)
+  const shortDesc = getCourseTagline(course)
+  // A flat .slice(0, 160) here used to cut mid-word — SERPs were showing
+  // "...decisions across organisa". Take whole sentences, then trim on a word
+  // boundary if the result is still too long.
   const description = course.description
-    ? `${shortDesc} ${course.description}`.slice(0, 160)
-    : shortDesc
-  const url = `https://ignite.education/courses/${courseSlug}`
-  const ogImage = course.og_image || course.image_url || 'https://ignite.education/og-image.png'
+    ? truncateAtWord(`${shortDesc} ${getFirstSentence(course.description)}`)
+    : truncateAtWord(shortDesc)
+  const url = `/courses/${courseSlug}`
+  // Real course artwork wins; otherwise fall back to the generated per-course
+  // card from opengraph-image.tsx rather than the generic site image. Set
+  // explicitly rather than relying on the file convention, because declaring
+  // `openGraph` at all replaces the layout's defaults.
+  const ogImages_ = ogImages(
+    course.og_image || course.image_url || `${SITE_URL}/courses/${courseSlug}/opengraph-image`
+  )
 
   return {
     title,
     description,
-    keywords: generateCourseKeywords(course.title),
+    keywords: generateCourseKeywords(course.title, course.course_type),
     alternates: {
       canonical: url,
     },
     openGraph: {
-      title: `${title} | Ignite Education`,
+      ...OG_DEFAULTS,
+      // openGraph.title has no template applied, so it keeps the brand suffix.
+      title: `${title} | ${SITE_NAME}`,
       description,
       url,
-      siteName: 'Ignite Education',
-      images: [{ url: ogImage }],
       type: 'website',
+      images: ogImages_,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${title} | Ignite Education`,
+      title: `${title} | ${SITE_NAME}`,
       description,
-      images: [ogImage],
+      images: ogImages_,
     },
   }
 }

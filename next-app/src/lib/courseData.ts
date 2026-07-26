@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { slugToNameVariations } from './courseUtils'
 import type { Course, Coach } from '@/types/course'
@@ -16,8 +17,12 @@ function getSupabase() {
 /**
  * Fetch a single course by URL slug.
  * Tries exact match with name variations, then falls back to fuzzy search.
+ *
+ * Wrapped in React `cache()` so the per-request memo is shared across the
+ * route's layout, generateMetadata and page — otherwise each render pass fires
+ * its own Supabase query (3x per request).
  */
-export async function getCourseBySlug(slug: string): Promise<Course | null> {
+export const getCourseBySlug = cache(async (slug: string): Promise<Course | null> => {
   const supabase = getSupabase()
   const nameVariations = slugToNameVariations(slug)
 
@@ -43,7 +48,7 @@ export async function getCourseBySlug(slug: string): Promise<Course | null> {
     .maybeSingle()
 
   return (fuzzyResult as Course) || null
-}
+})
 
 /**
  * Fetch active coaches for a course by URL slug.

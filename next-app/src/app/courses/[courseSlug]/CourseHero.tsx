@@ -3,6 +3,7 @@ import type { Course } from '@/types/course'
 import Image from 'next/image'
 import Link from 'next/link'
 import EnrollmentCTA from './EnrollmentCTA'
+import HeroSticker from './HeroSticker'
 
 interface CourseHeroProps {
   course: Course
@@ -112,26 +113,14 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             compiled CSS. An arbitrary-value class is newly generated, and if it
             is ever missing from a stale bundle `left` silently falls back to 0
             and dumps the sticker off the left edge instead of near centre. */}
-        <div className="hidden lg:block absolute left-1/2 ml-6 bottom-0 -translate-x-1/2 translate-y-1/2 rotate-[5deg] z-10 pointer-events-none">
-          <Image
-            /* Supabase assets bucket, not next-app/public: this page is served
-               on ignite.education through a Vercel rewrite, and a root-relative
-               src resolves against the apex (Vite) project, which has no such
-               file. It matters doubly here because next/image rewrites the src
-               to /_next/image — a Vercel built-in that the /_next/:path* rewrite
-               does not capture, so the apex optimizer handles it and 400s on any
-               path living in next-app/public. A remote URL sidesteps both: it is
-               in remotePatterns for this app and the apex, so it stays optimized. */
-            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/slooow-dopamine.png"
-            alt="Slooow Dopamine — Ignite"
-            width={762}
-            height={489}
-            /* drop-shadow, not box-shadow: the artwork has rounded, stepped
-               edges with transparent corners, and box-shadow would trace a
-               rectangle around them. Reuses the same token as the sign-in
-               buttons over the light band, so the two cannot drift apart. */
-            style={{ width: '163px', height: 'auto', filter: 'drop-shadow(var(--btn-glow-light))' }}
-          />
+        <div className="hidden lg:block absolute left-1/2 ml-6 bottom-0 -translate-x-1/2 translate-y-1/2 z-10 pointer-events-none">
+          {/* Which of the four is drawn, and its tilt, are decided client-side
+              per visit — see HeroSticker for why they cannot be decided here.
+              The tilt lives there too, on the image rather than this wrapper,
+              because a rotate-* utility here would share Tailwind's transform
+              stack with the centring translates above. The cards vary in width
+              (161–215px), so the centring is on the wrapper, not a fixed width. */}
+          <HeroSticker />
         </div>
       </div>
     </>

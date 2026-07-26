@@ -6,10 +6,11 @@ import { getPromptBySlug, getAllPrompts } from '@/data/placeholderPrompts'
 import { getCoursesByType } from '@/lib/courseData'
 import { getProfessionBySlug, getAllProfessionSlugs, pluraliseProfession } from '@/lib/professionUtils'
 import PromptToolkitClient from '../PromptToolkitClient'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 60
 
-const BASE_URL = 'https://ignite.education'
+const BASE_URL = SITE_URL
 
 interface PageProps {
   params: Promise<{ professionSlug: string }>
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (profession) {
     const professionName = profession.title || profession.name
     const plural = pluraliseProfession(professionName)
-    const title = `AI Prompt Toolkit for ${plural} | Ignite`
+    // No brand suffix — the root layout applies `%s | Ignite Education`.
+    const title = `AI Prompt Toolkit for ${plural}`
     const description = `Free AI prompt templates for ${plural}. Ready-to-use prompts for ChatGPT, Claude, Co-Pilot and Gemini tailored to ${professionName} workflows.`
     const url = `${BASE_URL}/prompts/${professionSlug}`
 
@@ -37,18 +39,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       alternates: { canonical: url },
       openGraph: {
+        ...OG_DEFAULTS,
         title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
         description,
         url,
-        siteName: 'Ignite Education',
-        images: [{ url: `${BASE_URL}/og-image.png` }],
+        images: ogImages(),
         type: 'website',
       },
       twitter: {
         card: 'summary_large_image',
         title: `AI Prompt Toolkit for ${plural} | Ignite Education`,
         description,
-        images: [`${BASE_URL}/og-image.png`],
+        images: ogImages(),
       },
     }
   }
@@ -75,11 +77,7 @@ export default async function PromptSlugPage({ params }: PageProps) {
         'name': `AI Prompt Toolkit for ${plural}`,
         'description': `Curated LLM prompts for ${plural}.`,
         'url': `${BASE_URL}/prompts/${professionSlug}`,
-        'publisher': {
-          '@type': 'Organization',
-          'name': 'Ignite Education',
-          'url': BASE_URL,
-        },
+        'publisher': { '@id': ORG_ID },
       },
       {
         '@context': 'https://schema.org',

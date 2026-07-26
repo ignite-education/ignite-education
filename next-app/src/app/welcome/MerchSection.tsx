@@ -120,7 +120,18 @@ export default function MerchSection() {
               minHeight: isMobile ? '5rem' : '3rem'
             }}
           >
-            {renderTypedHeading()}
+            {/*
+              Same as LearningModelSection: the typed heading is empty in the
+              server HTML until the client animation runs, so the crawlable
+              text is carried by a hidden span. isMobile is false server-side,
+              so this uses the desktop wording.
+            */}
+            <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
+              Big dreams. Universal fit.
+            </span>
+            <span style={{ position: 'relative' }}>
+              {renderTypedHeading()}
+            </span>
           </h3>
           <p style={{
             fontSize: '1.125rem',

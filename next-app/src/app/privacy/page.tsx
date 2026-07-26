@@ -4,23 +4,26 @@ import { Home, ChevronRight } from 'lucide-react'
 import { generateStaticPageBreadcrumb } from '@/lib/structuredData'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
   description: 'Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws.',
   keywords: 'privacy policy, data protection, GDPR, UK data privacy, personal information, Ignite Education privacy',
   alternates: {
-    canonical: 'https://ignite.education/privacy',
+    canonical: '/privacy',
   },
   openGraph: {
+    ...OG_DEFAULTS,
     title: 'Privacy Policy | Ignite Education',
     description: 'Learn how Ignite Education collects, uses, and protects your personal information. Our privacy policy complies with UK GDPR and data protection laws.',
-    url: 'https://ignite.education/privacy',
-    siteName: 'Ignite Education',
+    url: '/privacy',
+    images: ogImages(),
     type: 'website',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
+    images: ogImages(),
     title: 'Privacy Policy | Ignite Education',
     description: 'Learn how Ignite Education collects, uses, and protects your personal information.',
   },

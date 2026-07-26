@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "seo:validate": "node scripts/validate-seo.mjs",
+    "seo:validate:staging": "node scripts/validate-seo.mjs --base-url https://next.ignite.education"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.9.0",

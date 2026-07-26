@@ -8,6 +8,7 @@ import useFadeTransition from '../../hooks/useFadeTransition';
 import Footer from '../Footer';
 import IntroSection from './sections/IntroSection';
 import CourseDetailsSection from './sections/CourseDetailsSection';
+import SeamSticker from './SeamSticker';
 import ProgressGraph from './sections/ProgressGraph';
 import LessonSlider from './sections/LessonSlider';
 import OfficeHoursCard from './sections/OfficeHoursCard';
@@ -146,6 +147,10 @@ const ProgressHubV2 = () => {
         achievementStat={achievementStat}
         lessonSlider={lessonSlider}
       />
+
+      {/* Sticker straddling the seam between sections 1 and 2. Self-positioning
+          and zero-height, so neither section's layout changes. */}
+      <SeamSticker />
 
       {/* Section 2: Course Details */}
       <CourseDetailsSection

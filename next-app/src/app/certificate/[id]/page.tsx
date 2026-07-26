@@ -28,11 +28,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
+    // Per-user artifacts with unbounded cardinality and near-identical copy.
+    // noindex does not affect LinkedIn/X unfurling, so sharing — the actual
+    // purpose of these pages — still works via opengraph-image.tsx.
+    robots: { index: false, follow: true },
+    alternates: { canonical: `/certificate/${id}` },
     openGraph: {
       title,
       description,
       url,
-      siteName: 'Ignite Education',
       type: 'article',
     },
     twitter: {

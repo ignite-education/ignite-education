@@ -4,6 +4,7 @@ import { generateItemListStructuredData, generateSpeakableSchema } from '@/lib/s
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import CourseCatalogClient from './CourseCatalogClient'
+import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -16,15 +17,15 @@ export const metadata: Metadata = {
   keywords:
     'free online courses, product management course, cybersecurity course, data analysis course, career courses uk, free courses with certificate, ignite education, online learning',
   alternates: {
-    canonical: `${BASE_URL}/courses`,
+    canonical: `/courses`,
   },
   openGraph: {
+    ...OG_DEFAULTS,
     title: 'Courses | Ignite Education',
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
     url: `${BASE_URL}/courses`,
-    siteName: 'Ignite Education',
-    images: [{ url: `${BASE_URL}/og-image.png` }],
+    images: ogImages(),
     type: 'website',
   },
   twitter: {
@@ -32,7 +33,7 @@ export const metadata: Metadata = {
     title: 'Courses | Ignite Education',
     description:
       'Explore free, expert-led courses in Product Management, Cybersecurity, Data Analysis, and more.',
-    images: [`${BASE_URL}/og-image.png`],
+    images: ogImages(),
   },
 }
 

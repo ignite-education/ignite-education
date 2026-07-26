@@ -60,7 +60,13 @@ export default function Footer({ className = '' }: FooterProps) {
           <div className="flex flex-col">
             <span className="text-white font-semibold mb-4" style={{ fontSize: '17px' }}>Resources</span>
             <div className="flex flex-col gap-2">
-              <span className="text-white hover:text-[#EF0B72] transition cursor-pointer" style={{ fontSize: '14px' }}>Blog</span>
+              <Link
+                href="/blog"
+                className="text-white font-light hover:text-[#EF0B72] transition"
+                style={{ fontSize: '14px' }}
+              >
+                Blog
+              </Link>
               <Link
                 href="/release-notes"
                 className="text-white font-light hover:text-[#EF0B72] transition"

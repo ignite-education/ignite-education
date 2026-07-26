@@ -1,8 +1,18 @@
 import type { Course, Coach, FAQ } from '@/types/course'
 import type { BlogPost } from '@/types/blog'
 import type { Certificate } from '@/types/certificate'
+import { SITE_URL, ORG_ID, DEFAULT_OG_IMAGE } from '@/lib/siteConfig'
 
-const BASE_URL = 'https://ignite.education'
+const BASE_URL = SITE_URL
+
+/**
+ * Reference to the single Organization node declared once in
+ * components/SiteJsonLd.tsx (rendered from the root layout).
+ *
+ * Every schema below points at this instead of redeclaring the organisation,
+ * so search engines and LLMs resolve one entity rather than seven variants.
+ */
+const ORG_REF = { '@id': ORG_ID } as const
 
 /**
  * Generate Course schema.org structured data
@@ -27,15 +37,8 @@ export function generateCourseStructuredData(
     'name': course.title,
     'description': course.description,
     'url': `${BASE_URL}/courses/${courseSlug}`,
-    'image': course.image_url || `${BASE_URL}/og-image.png`,
-    'provider': {
-      '@type': 'EducationalOrganization',
-      'name': 'Ignite Education',
-      'url': BASE_URL,
-      'sameAs': [
-        'https://www.linkedin.com/school/ignite-courses',
-      ],
-    },
+    'image': course.image_url || DEFAULT_OG_IMAGE,
+    'provider': ORG_REF,
     'educationalLevel': 'Beginner',
     'courseMode': 'online',
     'isAccessibleForFree': true,
@@ -78,10 +81,7 @@ export function generateCourseStructuredData(
       'name': coach.name,
       'jobTitle': coach.position,
       'image': coach.image_url,
-      'worksFor': {
-        '@type': 'Organization',
-        'name': 'Ignite Education',
-      },
+      'worksFor': ORG_REF,
     })),
   }
 }
@@ -113,7 +113,7 @@ export function generateBreadcrumbStructuredData(courseTitle: string, courseSlug
     '@type': 'BreadcrumbList',
     'itemListElement': [
       { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
-      { '@type': 'ListItem', 'position': 2, 'name': 'Courses', 'item': `${BASE_URL}/welcome` },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Courses', 'item': `${BASE_URL}/courses` },
       { '@type': 'ListItem', 'position': 3, 'name': courseTitle, 'item': `${BASE_URL}/courses/${courseSlug}` },
     ],
   }
@@ -146,11 +146,7 @@ export function generateItemListStructuredData(
         'name': course.title || course.name,
         'description': course.description || `Learn ${course.title || course.name} from industry experts`,
         'url': `${BASE_URL}/courses/${course.name?.toLowerCase().replace(/\s+/g, '-')}`,
-        'provider': {
-          '@type': 'EducationalOrganization',
-          'name': 'Ignite Education',
-          'url': BASE_URL,
-        },
+        'provider': ORG_REF,
         'isAccessibleForFree': true,
         'inLanguage': 'en-GB',
       },
@@ -167,7 +163,7 @@ export function generateBlogPostStructuredData(post: BlogPost, postSlug: string)
     '@type': 'BlogPosting',
     'headline': post.meta_title || post.title,
     'description': post.meta_description || post.excerpt,
-    'image': post.og_image || post.featured_image || `${BASE_URL}/og-image.png`,
+    'image': post.og_image || post.featured_image || DEFAULT_OG_IMAGE,
     'datePublished': post.published_at,
     'dateModified': post.updated_at,
     'author': {
@@ -176,15 +172,7 @@ export function generateBlogPostStructuredData(post: BlogPost, postSlug: string)
       ...(post.author_role && { 'jobTitle': post.author_role }),
       ...(post.author_avatar && { 'image': post.author_avatar }),
     },
-    'publisher': {
-      '@type': 'Organization',
-      'name': 'Ignite Education',
-      'url': BASE_URL,
-      'logo': {
-        '@type': 'ImageObject',
-        'url': 'https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/ignite_Logo_MV_4.png',
-      },
-    },
+    'publisher': ORG_REF,
     'mainEntityOfPage': {
       '@type': 'WebPage',
       '@id': `${BASE_URL}/blog/${postSlug}`,
@@ -203,7 +191,7 @@ export function generateBlogBreadcrumbStructuredData(postTitle: string, postSlug
     '@type': 'BreadcrumbList',
     'itemListElement': [
       { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': BASE_URL },
-      { '@type': 'ListItem', 'position': 2, 'name': 'Posts', 'item': `${BASE_URL}/blog` },
+      { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${BASE_URL}/blog` },
       { '@type': 'ListItem', 'position': 3, 'name': postTitle, 'item': `${BASE_URL}/blog/${postSlug}` },
     ],
   }
@@ -253,11 +241,7 @@ export function generateCertificateStructuredData(certificate: Certificate) {
     'credentialCategory': 'Certificate of Completion',
     'name': `${certificate.course_name} Certificate`,
     'description': `Verified certificate of completion for the ${certificate.course_name} course from Ignite Education, awarded to ${certificate.user_name}.`,
-    'recognizedBy': {
-      '@type': 'EducationalOrganization',
-      'name': 'Ignite Education',
-      'url': BASE_URL,
-    },
+    'recognizedBy': ORG_REF,
     'dateCreated': certificate.issued_date,
     'identifier': {
       '@type': 'PropertyValue',
@@ -282,11 +266,7 @@ export function generatePersonStructuredData(profile: {
     'name': profile.display_name,
     'url': `${BASE_URL}/${profile.username}`,
     ...(profile.avatar_url ? { 'image': profile.avatar_url } : {}),
-    'memberOf': {
-      '@type': 'EducationalOrganization',
-      'name': 'Ignite Education',
-      'url': BASE_URL,
-    },
+    'memberOf': ORG_REF,
   }
 }
 

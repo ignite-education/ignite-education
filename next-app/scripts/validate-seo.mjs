@@ -18,71 +18,94 @@ const PAGES = [
   {
     path: '/welcome',
     expectedTitle: /welcome/i,
-    expectedTypes: ['ItemList', 'FAQPage', 'WebPage'],
+    expectedTypes: ['WebSite', 'ItemList', 'FAQPage', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/courses',
     expectedTitle: /courses/i,
-    expectedTypes: ['ItemList', 'BreadcrumbList', 'WebPage'],
+    expectedTypes: ['WebSite', 'ItemList', 'BreadcrumbList', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/courses/product-manager',
     expectedTitle: /product manager/i,
-    expectedTypes: ['Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
+    expectedTypes: ['WebSite', 'Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/courses/cyber-security-analyst',
     expectedTitle: /cyber security/i,
-    expectedTypes: ['Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
+    expectedTypes: ['WebSite', 'Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/courses/data-analyst',
     expectedTitle: /data analyst/i,
-    expectedTypes: ['Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
+    expectedTypes: ['WebSite', 'Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/courses/ux-designer',
     expectedTitle: /ux designer/i,
-    expectedTypes: ['Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
+    expectedTypes: ['WebSite', 'Course', 'FAQPage', 'BreadcrumbList', 'WebPage'],
     requireKeywords: true,
   },
   {
     path: '/blog/the-case-for-slow-dopamine',
     expectedTitle: /slow dopamine/i,
-    expectedTypes: ['BlogPosting', 'BreadcrumbList'],
+    expectedTypes: ['WebSite', 'BlogPosting', 'BreadcrumbList'],
     requireKeywords: false,
   },
   {
     path: '/privacy',
     expectedTitle: /privacy/i,
-    expectedTypes: ['BreadcrumbList'],
+    expectedTypes: ['WebSite', 'BreadcrumbList'],
     requireKeywords: false,
   },
   {
     path: '/terms',
     expectedTitle: /terms/i,
-    expectedTypes: ['BreadcrumbList'],
+    expectedTypes: ['WebSite', 'BreadcrumbList'],
     requireKeywords: false,
   },
   {
     path: '/release-notes',
     expectedTitle: /release notes/i,
-    expectedTypes: ['BreadcrumbList'],
+    expectedTypes: ['WebSite', 'BreadcrumbList'],
     requireKeywords: false,
   },
   {
+    path: '/blog',
+    expectedTitle: /blog/i,
+    expectedTypes: ['WebSite', 'CollectionPage', 'BreadcrumbList'],
+  },
+  {
+    path: '/prompts',
+    expectedTitle: /prompt/i,
+    expectedTypes: ['WebSite', 'CollectionPage', 'BreadcrumbList'],
+    requireKeywords: true,
+  },
+  {
+    path: '/prompts/data-analyst',
+    expectedTitle: /prompt/i,
+    expectedTypes: ['WebSite', 'CollectionPage', 'BreadcrumbList'],
+  },
+  {
+    path: '/prompts/data-analyst/data-quality-audit',
+    expectedTitle: /prompt/i,
+    expectedTypes: ['WebSite', 'CreativeWork', 'BreadcrumbList'],
+  },
+  {
     path: '/sign-in',
+    noindex: true,
     expectedTitle: /sign in/i,
     expectedTypes: [],
     requireKeywords: false,
   },
   {
     path: '/reset-password',
+    noindex: true,
     expectedTitle: /reset|password/i,
     expectedTypes: [],
     requireKeywords: false,
@@ -116,12 +139,19 @@ function extractJsonLd(html) {
   while ((match = regex.exec(html)) !== null) {
     try {
       const parsed = JSON.parse(match[1]);
-      // Handle array of schemas in a single script tag
-      if (Array.isArray(parsed)) {
-        scripts.push(...parsed);
-      } else {
-        scripts.push(parsed);
-      }
+      // Handle an array of schemas in one script tag, and @graph containers
+      // (the site-wide Organization + WebSite entity uses @graph).
+      // `_inGraph` marks nodes lifted out of an @graph container. They
+      // legitimately have no own @context — it lives on the container — so the
+      // @context assertion below must skip them.
+      const flatten = (node, inGraph = false) => {
+        if (Array.isArray(node)) return node.flatMap((n) => flatten(n, inGraph));
+        if (node && Array.isArray(node['@graph'])) {
+          return node['@graph'].flatMap((n) => flatten(n, true));
+        }
+        return [inGraph ? { ...node, _inGraph: true } : node];
+      };
+      scripts.push(...flatten(parsed));
     } catch {
       scripts.push({ _parseError: true, _raw: match[1].slice(0, 200) });
     }
@@ -191,8 +221,45 @@ async function validatePage(page) {
     } else {
       warn(`Title missing brand name "Ignite Education"`);
     }
+    // The root layout applies a `%s | Ignite Education` template, so any title
+    // that already carries the brand renders double- or triple-branded.
+    const brandCount = (title.match(/ignite/gi) || []).length;
+    if (brandCount > 1) {
+      fail(`Title is multi-branded (${brandCount}x "Ignite"): "${title}"`);
+    } else {
+      pass(`Title is branded exactly once`);
+    }
   } else {
     fail(`Missing <title>`);
+  }
+
+  // Canonical — previously unchecked entirely.
+  const canonical = extractTag(html, /<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)
+    || extractTag(html, /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i);
+  const expectsCanonical = page.noindex !== true;
+  if (canonical) {
+    if (!/^https:\/\/ignite\.education\//.test(canonical)) {
+      fail(`Canonical is not an absolute apex URL: ${canonical}`);
+    } else if (canonical.replace('https://ignite.education', '') !== page.path) {
+      fail(`Canonical "${canonical}" does not match request path "${page.path}"`);
+    } else {
+      pass(`Canonical: ${canonical}`);
+    }
+  } else if (expectsCanonical) {
+    fail(`Missing <link rel="canonical">`);
+  } else {
+    pass(`No canonical (page is noindex)`);
+  }
+
+  // Robots directive
+  const robotsMeta = extractMetaContent(html, 'name', 'robots');
+  if (page.noindex) {
+    if (robotsMeta && /noindex/i.test(robotsMeta)) pass(`Robots: ${robotsMeta}`);
+    else fail(`Expected noindex, got "${robotsMeta || 'no robots meta'}"`);
+  } else if (robotsMeta && /noindex/i.test(robotsMeta)) {
+    fail(`Page is unexpectedly noindexed: "${robotsMeta}"`);
+  } else {
+    pass(`Indexable (no noindex directive)`);
   }
 
   // Meta description
@@ -229,6 +296,30 @@ async function validatePage(page) {
 
   if (ogDesc) pass(`OG description present`);
   else fail(`Missing og:description`);
+
+  // og:image — previously not extracted at all, which is how a 404ing
+  // og-image.png shipped on every page for months. Verify it RESOLVES.
+  const ogImage = extractMetaContent(html, 'property', 'og:image');
+  if (!ogImage) {
+    fail(`Missing og:image`);
+  } else if (!/^https?:\/\//.test(ogImage)) {
+    fail(`og:image is not an absolute URL: ${ogImage}`);
+  } else {
+    try {
+      const imgRes = await fetch(ogImage, { method: 'GET', headers: { Range: 'bytes=0-0' } });
+      const ct = imgRes.headers.get('content-type') || '';
+      // Some CDNs answer a Range request with a multi-value Content-Type, so
+      // match a substring rather than a prefix. `text/html` here means the apex
+      // catch-all served the SPA shell where an image was declared.
+      if (imgRes.ok && /image\//.test(ct)) {
+        pass(`og:image resolves (${ct}): ${ogImage.slice(0, 70)}`);
+      } else {
+        fail(`og:image does not resolve to an image — HTTP ${imgRes.status}, Content-Type "${ct}": ${ogImage}`);
+      }
+    } catch (e) {
+      fail(`og:image fetch failed: ${e.message}`);
+    }
+  }
 
   if (ogUrl) {
     if (ogUrl.includes('ignite.education') && !ogUrl.includes('next.ignite.education')) {
@@ -284,7 +375,7 @@ async function validatePage(page) {
     }
 
     // Validate @context
-    for (const schema of jsonLd.filter((j) => !j._parseError)) {
+    for (const schema of jsonLd.filter((j) => !j._parseError && !j._inGraph)) {
       if (schema['@context'] !== 'https://schema.org') {
         warn(`JSON-LD @context is "${schema['@context']}" (expected "https://schema.org")`);
       }
@@ -328,24 +419,57 @@ async function validateSitemap() {
   else fail(`Missing <urlset>`);
 
   // Check for expected URLs
-  const expectedPaths = ['/welcome', '/courses', '/courses/product-manager', '/privacy', '/terms'];
+  const expectedPaths = ['/welcome', '/courses', '/blog', '/prompts', '/courses/product-manager', '/privacy', '/terms'];
   for (const path of expectedPaths) {
-    if (xml.includes(`ignite.education${path}`)) {
+    if (xml.includes(`<loc>https://ignite.education${path}</loc>`) || xml.includes(`ignite.education${path}<`)) {
       pass(`Contains ${path}`);
     } else {
       fail(`Missing ${path} from sitemap`);
     }
   }
 
-  // Count URLs
-  const urlCount = (xml.match(/<loc>/g) || []).length;
-  pass(`${urlCount} URLs in sitemap`);
+  const locs = [...xml.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
+
+  // A sitemap must not list URLs that redirect or are noindexed.
+  if (locs.includes('https://ignite.education/')) {
+    fail(`Lists the bare "/" URL, which 307s to /welcome — never sitemap a redirect`);
+  } else {
+    pass(`Does not list the redirecting "/" URL`);
+  }
+
+  const KNOWN_TOP_LEVEL = new Set(['welcome', 'courses', 'blog', 'prompts', 'privacy', 'terms', 'release-notes']);
+  const profileUrls = locs.filter((l) => {
+    const path = l.replace(/^https?:\/\/[^/]+\//, '');
+    return path && !path.includes('/') && !KNOWN_TOP_LEVEL.has(path);
+  });
+  if (profileUrls.length) {
+    fail(`Lists ${profileUrls.length} noindexed profile URL(s), e.g. ${profileUrls[0]}`);
+  } else {
+    pass(`Contains no noindexed profile URLs`);
+  }
+
+  const nonApex = locs.filter((l) => !l.startsWith('https://ignite.education/'));
+  if (nonApex.length) {
+    fail(`${nonApex.length} URL(s) are not on the apex host, e.g. ${nonApex[0]}`);
+  } else {
+    pass(`All URLs use the apex host`);
+  }
+
+  pass(`${locs.length} URLs in sitemap`);
 }
 
 // ─── Robots.txt Validation ───────────────────────────────────────────────────
 
 async function validateRobots() {
   section('Robots.txt (/robots.txt)');
+
+  // The apex robots.txt is served from the ROOT (Vite) project's public/ dir.
+  // The Next origin serves its own "Disallow: /" via app/robots.ts, so these
+  // assertions only make sense against the apex.
+  if (!BASE_URL.startsWith('https://ignite.education')) {
+    warn('Skipped — apex-only check (this origin serves its own Disallow: / robots.txt)');
+    return;
+  }
 
   let res;
   try {
@@ -389,18 +513,80 @@ async function validate404() {
     return;
   }
 
-  // We expect either a 404 or a 200 with a "not found" page
+  // A 200 with "not found" content is a SOFT 404 — Google logs it as such and
+  // uses it to discount the whole directory. This used to be a warn; it is a
+  // failure. See courses/[courseSlug]/layout.tsx for the cause and the fix.
   if (res.status === 404) {
     pass(`Returns 404 for non-existent course`);
   } else if (res.status === 200) {
     const html = await res.text();
     if (/not found/i.test(html)) {
-      warn(`Returns 200 with "not found" content (ideally should be 404)`);
+      fail(`SOFT 404: returns 200 with "not found" content (must be a real 404)`);
     } else {
       fail(`Returns 200 without "not found" indication — may be indexing bad URLs`);
     }
   } else {
     warn(`Unexpected status ${res.status}`);
+  }
+
+  // Same defect class on the blog route.
+  section('404 Handling (/blog/does-not-exist)');
+  try {
+    const blogRes = await fetch(`${BASE_URL}/blog/does-not-exist`, { redirect: 'follow' });
+    if (blogRes.status === 404) {
+      pass(`Returns 404 for non-existent post`);
+    } else {
+      fail(`SOFT 404: returns ${blogRes.status} for a non-existent post (must be 404)`);
+    }
+  } catch (e) {
+    fail(`Fetch failed: ${e.message}`);
+  }
+}
+
+// ─── Staging Host Containment ────────────────────────────────────────────────
+
+/**
+ * next.ignite.education serves a byte-identical copy of the whole public site.
+ * Its own robots.txt must disallow everything, or Google is free to index the
+ * duplicate. Note this must NOT be done with an X-Robots-Tag header on that
+ * project — Vercel rewrites forward upstream headers, so it would ride along
+ * onto apex responses and deindex production.
+ */
+async function validateStagingHost() {
+  section('Staging host containment (next.ignite.education)');
+
+  if (!BASE_URL.includes('//ignite.education')) {
+    warn('Skipped — only meaningful when validating the production apex');
+    return;
+  }
+
+  try {
+    const res = await fetch('https://next.ignite.education/robots.txt');
+    if (res.status !== 200) {
+      fail(`next.ignite.education/robots.txt returned ${res.status} (expected 200)`);
+      return;
+    }
+    const txt = await res.text();
+    if (/^\s*Disallow:\s*\/\s*$/im.test(txt)) {
+      pass('Origin host robots.txt disallows all crawling');
+    } else {
+      fail(`Origin host robots.txt does not "Disallow: /" — duplicate site is crawlable`);
+    }
+  } catch (e) {
+    fail(`Fetch failed: ${e.message}`);
+  }
+
+  // The apex must NOT inherit a noindex header from the origin project.
+  try {
+    const res = await fetch(`${BASE_URL}/welcome`);
+    const xRobots = res.headers.get('x-robots-tag');
+    if (xRobots && /noindex/i.test(xRobots)) {
+      fail(`CRITICAL: apex /welcome carries "X-Robots-Tag: ${xRobots}" — production is deindexed`);
+    } else {
+      pass('Apex carries no noindex X-Robots-Tag header');
+    }
+  } catch (e) {
+    fail(`Fetch failed: ${e.message}`);
   }
 }
 
@@ -461,6 +647,7 @@ async function main() {
   await validateSitemap();
   await validateRobots();
   await validate404();
+  await validateStagingHost();
 
   // Summary
   console.log(`\n\x1b[1m\x1b[36m━━━ Summary ━━━\x1b[0m`);

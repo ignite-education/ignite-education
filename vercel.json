@@ -17,14 +17,22 @@
       "source": "/",
       "destination": "/welcome",
       "permanent": false
+    },
+    {
+      "source": "/ai.txt",
+      "destination": "/llms.txt",
+      "permanent": true
     }
   ],
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "https://ignite-education-api.onrender.com/sitemap.xml" },
+    { "source": "/sitemap.xml", "destination": "https://next.ignite.education/sitemap.xml" },
+    { "source": "/llms.txt", "destination": "https://next.ignite.education/llms.txt" },
 
     { "source": "/welcome", "destination": "https://next.ignite.education/welcome" },
     { "source": "/courses", "destination": "https://next.ignite.education/courses" },
+    { "source": "/courses/:slug/opengraph-image", "destination": "https://next.ignite.education/courses/:slug/opengraph-image" },
     { "source": "/courses/:slug", "destination": "https://next.ignite.education/courses/:slug" },
+    { "source": "/blog", "destination": "https://next.ignite.education/blog" },
     { "source": "/blog/:slug", "destination": "https://next.ignite.education/blog/:slug" },
     { "source": "/privacy", "destination": "https://next.ignite.education/privacy" },
     { "source": "/terms", "destination": "https://next.ignite.education/terms" },
@@ -42,6 +50,8 @@
     { "source": "/progress", "destination": "/index.html" },
     { "source": "/office-hours/:path*", "destination": "/index.html" },
     { "source": "/learning", "destination": "/index.html" },
+    { "source": "/learning-v1", "destination": "/index.html" },
+    { "source": "/dev/lobby", "destination": "/index.html" },
     { "source": "/admin/:path*", "destination": "https://admin.ignite.education/:path*" },
     { "source": "/auth/:path*", "destination": "/index.html" },
     { "source": "/:username/opengraph-image", "destination": "https://next.ignite.education/:username/opengraph-image" },
@@ -100,19 +110,6 @@
     },
     {
       "source": "/robots.txt",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/plain"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=86400, s-maxage=86400"
-        }
-      ]
-    },
-    {
-      "source": "/ai.txt",
       "headers": [
         {
           "key": "Content-Type",

@@ -19,15 +19,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/welcome',
-        permanent: false,
-      },
-    ]
-  },
+  // NOTE: `/` -> `/welcome` is NOT redirected here. It was declared in three
+  // places (this config, src/app/page.tsx, and the apex vercel.json) and the
+  // config redirect fired first, making page.tsx dead code. The apex
+  // vercel.json is the authority for visitors; src/app/page.tsx covers direct
+  // hits on this origin.
 };
 
 export default nextConfig;

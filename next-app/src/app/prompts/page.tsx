@@ -4,27 +4,30 @@ import Footer from '@/components/Footer'
 import PromptToolkitClient from './PromptToolkitClient'
 import { getCoursesByType } from '@/lib/courseData'
 import { getAllPrompts } from '@/data/placeholderPrompts'
+import { OG_DEFAULTS, ORG_ID, SITE_URL, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 60
 
-const BASE_URL = 'https://ignite.education'
+const BASE_URL = SITE_URL
 
 export const metadata: Metadata = {
-  title: 'Free AI Prompt Templates for Professionals | Ignite Education',
+  // No brand suffix here — the root layout's `%s | Ignite Education` template
+  // adds it. This title previously rendered triple-branded.
+  title: 'Free AI Prompt Templates for Professionals',
   description:
     'Browse free AI prompt templates for ChatGPT, Claude, Co-Pilot and Gemini. Ready-to-use prompts for product managers, marketers, analysts, engineers and more.',
   keywords:
     'LLM prompts, AI prompts, Claude prompts, ChatGPT prompts, Co-Pilot prompts, Gemini prompts, prompt toolkit, AI productivity, prompt engineering, ignite education, free AI prompt templates, free ChatGPT prompts, free prompt library, AI prompt templates, prompt templates, AI prompts for work, AI prompts for professionals, workplace AI prompts, AI business prompts, AI prompts for product managers, ChatGPT prompts for marketing, AI prompts for data analysts, AI prompts for HR, AI prompts for software engineers, AI prompts for sales, AI prompts for designers, AI prompts for finance, AI prompts for educators, AI writing prompts for professionals, AI prompts for productivity',
   alternates: {
-    canonical: `${BASE_URL}/prompts`,
+    canonical: `/prompts`,
   },
   openGraph: {
+    ...OG_DEFAULTS,
     title: 'Prompt Toolkit | Ignite Education',
     description:
       'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
-    url: `${BASE_URL}/prompts`,
-    siteName: 'Ignite Education',
-    images: [{ url: `${BASE_URL}/og-image.png` }],
+    url: `/prompts`,
+    images: ogImages(),
     type: 'website',
   },
   twitter: {
@@ -32,7 +35,7 @@ export const metadata: Metadata = {
     title: 'Prompt Toolkit | Ignite Education',
     description:
       'Discover the best AI prompts for Claude, Co-Pilot, ChatGPT and Gemini to make your daily work tasks easier with better outcomes.',
-    images: [`${BASE_URL}/og-image.png`],
+    images: ogImages(),
   },
 }
 
@@ -47,11 +50,7 @@ export default async function PromptToolkitPage() {
       'name': 'Prompt Toolkit',
       'description': 'Curated LLM prompts for professionals across industries.',
       'url': `${BASE_URL}/prompts`,
-      'publisher': {
-        '@type': 'Organization',
-        'name': 'Ignite Education',
-        'url': BASE_URL,
-      },
+      'publisher': { '@id': ORG_ID },
     },
     {
       '@context': 'https://schema.org',

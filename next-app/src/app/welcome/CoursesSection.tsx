@@ -37,7 +37,13 @@ interface CoursesSectionProps {
 }
 
 // Course Card for Section 3 - 2x2 grid style
-function CourseCard({ course, onClick, isMobile }: { course: Course; onClick?: () => void; isMobile?: boolean }) {
+//
+// This is a real <a>, not a div+window.open. /welcome is the highest-authority
+// indexable page on the site and it previously linked to zero course pages —
+// crawlers saw no path from it to /courses/*, and the cards weren't keyboard
+// reachable either. The anchor does the navigating; `onClick` is kept only for
+// callers that still want the click hook.
+function CourseCard({ course, href, onClick, isMobile }: { course: Course; href: string; onClick?: () => void; isMobile?: boolean }) {
   // Get first sentence of description
   const getFirstSentence = (desc: string) => {
     const firstSentenceEnd = desc.indexOf('. ')
@@ -45,8 +51,11 @@ function CourseCard({ course, onClick, isMobile }: { course: Course; onClick?: (
   }
 
   return (
-    <div
-      className="relative cursor-pointer flex-shrink-0 auth-course-card w-[270px] h-[270px] md:w-[249px] md:h-[249px]"
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      className="relative cursor-pointer flex-shrink-0 auth-course-card w-[270px] h-[270px] md:w-[249px] md:h-[249px] block text-inherit no-underline"
       style={{ overflow: 'visible', transform: 'translateZ(0)' }}
       onClick={onClick}
     >
@@ -109,7 +118,7 @@ function CourseCard({ course, onClick, isMobile }: { course: Course; onClick?: (
           </svg>
         </div>
       </div>
-    </div>
+    </a>
   )
 }
 
@@ -345,10 +354,7 @@ export default function CoursesSection({ courses, coaches }: CoursesSectionProps
                             <CourseCard
                               course={course}
                               isMobile={isMobile}
-                              onClick={() => {
-                                const slug = course.name?.toLowerCase().replace(/\s+/g, '-')
-                                window.open(`/courses/${slug}`, '_blank')
-                              }}
+                              href={`/courses/${course.name?.toLowerCase().replace(/\s+/g, '-')}`}
                             />
                           </div>
                         )

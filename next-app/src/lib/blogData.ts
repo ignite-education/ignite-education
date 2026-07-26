@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import type { BlogPost, BlogPostAudio } from '@/types/blog'
 
@@ -14,8 +15,11 @@ function getSupabase() {
 
 /**
  * Fetch a single published blog post by slug.
+ *
+ * Wrapped in React `cache()` so the layout, generateMetadata and page share one
+ * per-request query rather than issuing three.
  */
-export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
+export const getPostBySlug = cache(async (slug: string): Promise<BlogPost | null> => {
   const supabase = getSupabase()
 
   const { data, error } = await supabase
@@ -33,7 +37,7 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
   }
 
   return data as BlogPost | null
-}
+})
 
 /**
  * Fetch pre-generated audio data for a blog post.
@@ -69,6 +73,26 @@ export async function getAllPublishedSlugs(): Promise<string[]> {
     .eq('status', 'published')
 
   return data?.map((p: { slug: string }) => p.slug) || []
+}
+
+/**
+ * Fetch every published post, newest first — for the /blog index and sitemap.
+ */
+export async function getAllPublishedPosts(): Promise<BlogPost[]> {
+  const supabase = getSupabase()
+
+  const { data, error } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('status', 'published')
+    .order('published_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching published posts:', error)
+    return []
+  }
+
+  return (data as BlogPost[]) || []
 }
 
 /**

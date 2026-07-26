@@ -70,19 +70,32 @@ function withFullStop(sentence: string): string {
 const TAGLINE_SUFFIX = "with Ignite's free, expert\u2011built course"
 
 /**
+ * The verb that opens every piece of course copy, keyed by course type.
+ * An unknown or missing type falls back to the specialism wording, matching
+ * how course_type is treated everywhere else.
+ */
+const TITLE_VERBS: Record<string, string> = {
+  'specialism': 'Become a',
+  'skill': 'Upskill at',
+  'subject': 'Learn',
+}
+
+/**
+ * Get the verb phrase for a course, e.g. "Upskill at Conflict Resolution".
+ * Used bare in page titles and as the head of the full tagline.
+ */
+export function getCourseTitlePhrase(course: Course): string {
+  if (!course?.title) return 'Learn'
+
+  return `${TITLE_VERBS[course.course_type] || TITLE_VERBS.specialism} ${course.title}`
+}
+
+/**
  * Get the dynamic tagline based on course type. Always ends in a full stop,
  * whichever variant applies.
  */
 export function getCourseTagline(course: Course): string {
-  if (!course?.title) return withFullStop(`Learn ${TAGLINE_SUFFIX}`)
-
-  const taglineTemplates: Record<string, string> = {
-    'specialism': `Become a ${course.title} ${TAGLINE_SUFFIX}`,
-    'skill': `Upskill at ${course.title} ${TAGLINE_SUFFIX}`,
-    'subject': `Learn ${course.title} ${TAGLINE_SUFFIX}`,
-  }
-
-  return withFullStop(taglineTemplates[course.course_type] || `Become a ${course.title} ${TAGLINE_SUFFIX}`)
+  return withFullStop(`${getCourseTitlePhrase(course)} ${TAGLINE_SUFFIX}`)
 }
 
 /**

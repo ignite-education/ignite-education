@@ -147,7 +147,20 @@ export default function LearningModelSection() {
             className="font-bold text-white text-left auth-section-4-title"
             style={{ fontSize: 'clamp(2.1rem, 5vw, 3rem)', lineHeight: '1.2', minHeight: isMobile ? '10rem' : '120px', marginBottom: isMobile ? '0' : '1.5rem', marginTop: isMobile ? '55px' : '2rem' }}
           >
-            {renderTypedTagline()}
+            {/*
+              useTypingAnimation starts displayText at '' and only fills it once
+              a client-side IntersectionObserver fires, so this <h3> shipped
+              completely empty in the server HTML — a crawler saw a headless
+              heading. The hidden span carries the real text for crawlers and
+              screen readers; the visible span keeps the typing effect.
+              Same pattern as TestimonialsSection.tsx.
+            */}
+            <span style={{ visibility: 'hidden', position: 'absolute' }} aria-hidden="true">
+              Building a smarter, more personalised era of education.
+            </span>
+            <span style={{ position: 'relative' }}>
+              {renderTypedTagline()}
+            </span>
           </h3>
 
           <div className="auth-section-4-features">

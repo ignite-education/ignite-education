@@ -41,6 +41,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: profile.display_name,
     description,
+    // Profiles are a display name, two stat chips and a copy of the course
+    // catalog — near-duplicate thin pages at the root of the domain, growing
+    // one per signup. Keep them out of the index but let them pass link equity
+    // through to /courses. noindex does not block social unfurls, so the
+    // opengraph-image route keeps working for sharing.
+    robots: { index: false, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title: `${profile.display_name} — Ignite Education`,

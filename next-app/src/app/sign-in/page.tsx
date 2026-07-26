@@ -2,23 +2,28 @@ import { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SignInForm from './SignInForm'
+import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
 
 export const metadata: Metadata = {
   title: 'Sign In',
   description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',
-  keywords: 'sign in, login, ignite education, online courses, free courses',
+  // An auth form has no query value and competes with nothing. Keep it
+  // crawlable (follow) so it still passes equity, but out of the index.
+  robots: { index: false, follow: true },
   alternates: {
-    canonical: 'https://ignite.education/sign-in',
+    canonical: '/sign-in',
   },
   openGraph: {
+    ...OG_DEFAULTS,
     title: 'Sign In | Ignite Education',
     description: 'Sign in to Ignite Education to access your courses. New to Ignite? Create a free account to start learning.',
-    url: 'https://ignite.education/sign-in',
-    siteName: 'Ignite Education',
+    url: '/sign-in',
+    images: ogImages(),
     type: 'website',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
+    images: ogImages(),
     title: 'Sign In | Ignite Education',
     description: 'Sign in to Ignite Education to access your courses.',
   },

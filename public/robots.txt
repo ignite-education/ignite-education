@@ -1,64 +1,29 @@
 # robots.txt for Ignite Education
 # https://ignite.education
-# Allow all search engines and AI crawlers for maximum discoverability
+#
+# Search engines and AI crawlers are all welcome. See /llms.txt and /ai.txt.
+#
+# NOTE: do not add per-crawler groups (e.g. "User-agent: Googlebot") unless that
+# crawler genuinely needs *different* rules. A named group REPLACES the "*" group
+# rather than extending it, so a named group containing only "Allow: /" silently
+# opts that crawler out of every Disallow below. That was the previous bug here:
+# Googlebot, GPTBot, PerplexityBot et al. were all permitted to crawl /api/ and
+# /admin because each had its own "Allow: /" group.
 
-# Google
-User-agent: Googlebot
-Allow: /
-Crawl-delay: 0
-
-# Google AdSense
-User-agent: Mediapartners-Google
-Allow: /
-
-User-agent: AdsBot-Google
-Allow: /
-
-# OpenAI (ChatGPT)
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: GPTBot
-Allow: /
-
-# Anthropic (Claude)
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Google Bard/Gemini
-User-agent: Google-Extended
-Allow: /
-
-# Perplexity
-User-agent: PerplexityBot
-Allow: /
-
-# Common Crawl (used by many AI models)
-User-agent: CCBot
-Allow: /
-
-# Bing
-User-agent: Bingbot
-Allow: /
-
-# Meta/Facebook
-User-agent: FacebookBot
-Allow: /
-
-# Apple
-User-agent: Applebot
-Allow: /
-
-# All other bots
 User-agent: *
 Allow: /
+
+# Admin + internal tooling
 Disallow: /admin
 Disallow: /analytics
-Disallow: /auth/reddit/callback
 Disallow: /api/
 
-# Sitemap
+# Auth flows — no indexable content, and callbacks carry one-time tokens
+Disallow: /auth/
+
+# Authenticated app routes (these return the SPA shell at 200 to crawlers)
+Disallow: /progress
+Disallow: /learning
+Disallow: /office-hours/
+
 Sitemap: https://ignite.education/sitemap.xml

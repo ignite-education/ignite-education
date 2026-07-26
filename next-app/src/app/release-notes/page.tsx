@@ -5,6 +5,7 @@ import { generateStaticPageBreadcrumb } from '@/lib/structuredData'
 import { getPublishedReleases, formatReleaseDate } from '@/lib/releaseNotesData'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { OG_DEFAULTS, ogImages } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -13,17 +14,19 @@ export const metadata: Metadata = {
   description: 'View the latest updates, features, and improvements to Ignite Education. Stay informed about new releases and enhancements to our learning platform.',
   keywords: 'release notes, updates, changelog, new features, Ignite Education updates',
   alternates: {
-    canonical: 'https://ignite.education/release-notes',
+    canonical: '/release-notes',
   },
   openGraph: {
+    ...OG_DEFAULTS,
     title: 'Release Notes | Ignite Education',
     description: 'View the latest updates, features, and improvements to Ignite Education.',
-    url: 'https://ignite.education/release-notes',
-    siteName: 'Ignite Education',
+    url: '/release-notes',
+    images: ogImages(),
     type: 'website',
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
+    images: ogImages(),
     title: 'Release Notes | Ignite Education',
     description: 'View the latest updates, features, and improvements to Ignite Education.',
   },

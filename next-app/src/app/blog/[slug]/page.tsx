@@ -9,6 +9,7 @@ import {
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import BlogPostClient from './BlogPostClient'
+import { SITE_NAME, OG_DEFAULTS, ogImages, stripBrand, truncateAtWord } from '@/lib/siteConfig'
 
 export const revalidate = 3600
 
@@ -29,10 +30,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Post Not Found' }
   }
 
-  const title = post.meta_title || post.title
-  const description = post.meta_description || post.excerpt?.slice(0, 155)
-  const url = `https://ignite.education/blog/${slug}`
-  const ogImage = post.og_image || post.featured_image || 'https://ignite.education/og-image.png'
+  // Editors sometimes save meta_title with the brand already appended (e.g.
+  // "The Case for Slow Dopamine | Ignite"), which the root layout's title
+  // template would then double up. Strip it defensively.
+  const title = stripBrand(post.meta_title || post.title)
+  const description = truncateAtWord(post.meta_description || post.excerpt || '')
+  const url = `/blog/${slug}`
+  const images = ogImages(post.og_image || post.featured_image)
 
   return {
     title,
@@ -41,21 +45,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: url,
     },
     openGraph: {
-      title: `${post.title} | Ignite Education`,
+      ...OG_DEFAULTS,
+      // openGraph.title has no template applied, so it keeps the brand suffix.
+      title: `${post.title} | ${SITE_NAME}`,
       description,
       url,
-      siteName: 'Ignite Education',
-      images: [{ url: ogImage }],
       type: 'article',
       publishedTime: post.published_at,
       modifiedTime: post.updated_at,
       authors: [post.author_name || 'Ignite Team'],
+      images,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${post.title} | Ignite Education`,
+      title: `${post.title} | ${SITE_NAME}`,
       description,
-      images: [ogImage],
+      images,
     },
   }
 }
