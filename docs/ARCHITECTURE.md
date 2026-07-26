@@ -188,6 +188,29 @@ The root `vercel.json` on `ignite.education` controls routing:
 5. **`/sitemap.xml`** → rewritten to Express API
 6. **Authenticated SPA paths** (`/progress`, `/learning`, `/office-hours/*`) and catch-all `(.*)` → served by Vite SPA (`index.html`)
 
+### Static images on public pages
+
+Reference images by **absolute Supabase storage URL**, not by a root-relative
+path into `next-app/public/`.
+
+A Next.js page rendered at `ignite.education/...` arrived via rewrite, but the
+browser then resolves relative asset paths against the **apex** origin, where
+`next-app/public/` does not exist. Such requests hit the catch-all and return
+the Vite `index.html` with a 404. Two traps make this easy to miss:
+
+- Assets work when tested directly on `next.ignite.education` and only break on
+  the apex domain.
+- `next/image` rewrites the src to `/_next/image?url=...`. Vercel's image
+  optimizer is a **built-in endpoint that the `/_next/:path*` rewrite does not
+  capture**, so the apex project's own optimizer serves it, resolves the url
+  against the Vite `public/`, and returns `400 INVALID_IMAGE_OPTIMIZE_REQUEST`.
+
+Absolute Supabase URLs sidestep both. The bucket host is in `remotePatterns` for
+both the apex (`vercel.json`) and next-app (`next.config.ts`), so images stay
+optimized. SVGs still need `unoptimized` — the optimizer rejects SVG unless
+`dangerouslyAllowSVG` is set. An `/images/:path*` rewrite exists as a backstop
+so `next-app/public` resolves on the apex, but Supabase remains the convention.
+
 ---
 
 ## Authentication
@@ -295,3 +318,4 @@ OAuth works locally via Vite's dev server proxy and Supabase redirect URL allowl
 - `next/font/google` loads Geist with hashed class names — use `var(--font-geist-sans)` not `'Geist'` in inline styles
 - `vercel.json` rewrites must use flat array format (not `beforeFiles`/`afterFiles` — that's Next.js framework-only)
 - Supabase cookie domain change requires users to sign out/in to regenerate cookies
+- Root-relative images in `next-app/public/` 404 on `ignite.education` (fine on `next.ignite.education`) — use Supabase storage URLs; see [Static images on public pages](#static-images-on-public-pages)
