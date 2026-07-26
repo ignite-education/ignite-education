@@ -56,7 +56,10 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
               </p>
 
               {/* Trustpilot brandmark + rating. Official artwork, white
-                  wordmark variant for the black band. unoptimized: the
+                  wordmark variant for the black band. Served from the Supabase
+                  assets bucket like every other image on the public pages —
+                  next-app/public is not reachable from ignite.education, which
+                  serves these pages through a Vercel rewrite. unoptimized: the
                   optimizer rejects SVG unless dangerouslyAllowSVG is on. */}
               <div
                 /* inline-flex retained deliberately: the lg gap below depends
@@ -67,7 +70,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                 className="inline-flex items-center gap-2.5 mb-[63px] lg:mb-[31px]"
               >
                 <Image
-                  src="/images/trustpilot-logo-white.svg"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/trustpilot-logo-white.svg"
                   alt="Trustpilot"
                   width={1133}
                   height={278}
@@ -75,7 +78,7 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
                   style={{ width: '91px', height: 'auto' }}
                 />
                 <Image
-                  src="/images/trustpilot-rating-4halfstar.svg"
+                  src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/trustpilot-rating-4halfstar.svg"
                   alt="4.5 out of 5 stars"
                   width={512}
                   height={96}
@@ -111,7 +114,15 @@ export default function CourseHero({ course, courseSlug, isComingSoon }: CourseH
             and dumps the sticker off the left edge instead of near centre. */}
         <div className="hidden lg:block absolute left-1/2 ml-6 bottom-0 -translate-x-1/2 translate-y-1/2 rotate-[5deg] z-10 pointer-events-none">
           <Image
-            src="/images/slooow-dopamine.png"
+            /* Supabase assets bucket, not next-app/public: this page is served
+               on ignite.education through a Vercel rewrite, and a root-relative
+               src resolves against the apex (Vite) project, which has no such
+               file. It matters doubly here because next/image rewrites the src
+               to /_next/image — a Vercel built-in that the /_next/:path* rewrite
+               does not capture, so the apex optimizer handles it and 400s on any
+               path living in next-app/public. A remote URL sidesteps both: it is
+               in remotePatterns for this app and the apex, so it stays optimized. */
+            src="https://yjvdakdghkfnlhdpbocg.supabase.co/storage/v1/object/public/assets/slooow-dopamine.png"
             alt="Slooow Dopamine — Ignite"
             width={762}
             height={489}
