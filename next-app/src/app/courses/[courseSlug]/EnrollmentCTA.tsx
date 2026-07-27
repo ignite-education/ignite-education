@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import useGoogleOneTap from '@/hooks/useGoogleOneTap'
 import type { User } from '@supabase/supabase-js'
 import { enrollUserInCourse, registerInterestForUser } from '@/lib/enroll'
-import ShareButtons from './ShareButtons'
+import ShareButtons from '@/components/ShareButtons'
 
 interface EnrollmentCTAProps {
   courseSlug: string
@@ -408,7 +408,12 @@ export default function EnrollmentCTA({ courseSlug, courseTitle, isComingSoon, o
       </div>
 
       {/* Share Buttons Row */}
-      <ShareButtons courseSlug={courseSlug} courseTitle={courseTitle} clip={clipText} />
+      <ShareButtons
+        url={`https://ignite.education/courses/${courseSlug}`}
+        title={`${courseTitle} | Ignite Education`}
+        shareText={`Check out this course: ${courseTitle || 'Course'} on Ignite Education`}
+        clip={clipText}
+      />
     </div>
   )
 }

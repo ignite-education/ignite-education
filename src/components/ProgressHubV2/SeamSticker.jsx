@@ -18,9 +18,9 @@ const STICKERS = [
 /* One factor for all four rather than a per-sticker width. The cards differ in
    width because the wordmarks do, so a shared scale is what keeps type rendering
    at the same size whichever one is drawn, and keeps their heights in step —
-   they land within 89-94px of each other here. 163/762 is the course page's
-   scale; this hub runs 15% under it. Retune by moving the 0.85 alone. */
-const SCALE = (163 / 762) * 0.85;
+   they land within 85-89px of each other here. 163/762 is the course page's
+   scale; this hub runs ~19% under it. Retune by moving the 0.8075 alone. */
+const SCALE = (163 / 762) * 0.8075;
 
 /**
  * One of the four stickers, at a random tilt, straddling the seam between the
@@ -48,10 +48,14 @@ export default function SeamSticker() {
   return (
     /* h-0 so this sits exactly on the boundary and adds no height of its own.
        z-10 to paint over the black section, which follows in normal flow.
-       Desktop only, as on the course page: centred on a narrow viewport the card
-       would land on top of the course title just below the seam. */
+       Sits at 35% of the width, left of centre. Desktop only, as on the
+       course page: on a narrow viewport the card would land on top of the
+       course title just below the seam. */
     <div className="hidden lg:block relative h-0 z-10">
-      <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+      {/* -top-3 lifts it 12px off the seam, so slightly more of the card sits in
+          the white section than the black. Kept on top-* rather than folded into
+          the translate below, which Tailwind composes with the centring one. */}
+      <div className="absolute left-[35%] -top-3 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
         {/* Tilt gets its own element: it must stay off the wrapper above, where
             Tailwind composes rotate-* and the centring translate-* utilities
             into a single transform, and off the image below, where a transform

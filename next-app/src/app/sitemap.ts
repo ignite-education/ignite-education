@@ -3,6 +3,7 @@ import { SITE_URL } from '@/lib/siteConfig'
 import { getAllCourseSlugs } from '@/lib/courseData'
 import { getAllPublishedPosts } from '@/lib/blogData'
 import { getAllProfessionSlugs } from '@/lib/professionUtils'
+import { getAllPublicProfiles } from '@/lib/profileData'
 import { getAllPromptSlugs } from '@/data/placeholderPrompts'
 
 export const revalidate = 3600
@@ -23,15 +24,15 @@ export const revalidate = 3600
  *
  * Deliberately excluded:
  *  - `/`            — 307s to /welcome; never list a redirecting URL.
- *  - `/{username}`  — noindexed thin profile pages.
  *  - `/sign-in`, `/reset-password`, `/certificate/*` — noindexed.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [courseSlugs, posts, professionSlugs, promptSlugs] = await Promise.all([
+  const [courseSlugs, posts, professionSlugs, promptSlugs, profiles] = await Promise.all([
     getAllCourseSlugs(),
     getAllPublishedPosts(),
     getAllProfessionSlugs(),
     getAllPromptSlugs(),
+    getAllPublicProfiles(),
   ])
 
   const now = new Date()
@@ -74,5 +75,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }))
 
-  return [...staticPages, ...courses, ...blogPosts, ...professions, ...prompts]
+  // Lowest priority of anything listed: these are the thinnest pages on the
+  // site and there is eventually one per signup, so they should never outrank
+  // the course/blog content in Google's crawl budget.
+  const userProfiles: MetadataRoute.Sitemap = profiles.map((profile) => ({
+    url: `${SITE_URL}/${profile.username}`,
+    lastModified: new Date(profile.joined_at || now),
+    changeFrequency: 'monthly',
+    priority: 0.3,
+  }))
+
+  return [...staticPages, ...courses, ...blogPosts, ...professions, ...prompts, ...userProfiles]
 }

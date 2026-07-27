@@ -14,10 +14,19 @@ interface CourseCatalogClientProps {
   coursesByType: CoursesByType
   /** Hide the centered Ignite logo above the heading (e.g. on the profile page, which has its own logo) */
   hideLogo?: boolean
+  /** Open course links in a new tab, so the host page is not lost. Forwarded to CourseCard. */
+  openInNewTab?: boolean
+  /**
+   * Constrain the section to a viewport-height band with a bottom fade and an
+   * Expand/Collapse control, as on /welcome. Off on /courses, where the catalog
+   * is the page and should simply run to its full length.
+   */
+  collapsible?: boolean
 }
 
-export default function CourseCatalogClient({ coursesByType, hideLogo = false }: CourseCatalogClientProps) {
+export default function CourseCatalogClient({ coursesByType, hideLogo = false, openInNewTab = false, collapsible = false }: CourseCatalogClientProps) {
   const [searchQuery, setSearchQuery] = useState('')
+  const [isExpanded, setIsExpanded] = useState(false)
   const [lottieData, setLottieData] = useState<Record<string, unknown> | null>(null)
   const [showRequestModal, setShowRequestModal] = useState(false)
   const [requestedQuery, setRequestedQuery] = useState('')
@@ -100,9 +109,80 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
     && filteredSkill.length === 0
     && filteredSubject.length === 0
 
+  // ---- Collapsible band (mirrors WelcomeHero) --------------------------------
+  // Desktop height is driven by the longest column; mobile is a computed pixel
+  // height because vh units there include the browser chrome.
+  const maxRows = Math.max(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)
+  const totalCards = filteredSpecialism.length + filteredSkill.length + filteredSubject.length
+  const sectionHeight = maxRows >= 3 ? '85vh' : maxRows === 2 ? '75vh' : maxRows === 1 ? '65vh' : '55vh'
+  // 550px at the top end, against WelcomeHero's 750px — deliberate divergence:
+  // this band sits below a hero rather than being the landing view.
+  // minHeight has to come down with it: min-height beats max-height in CSS, so
+  // leaving it at 600 would silently pin the band at 600 and ignore the cap.
+  const sectionMinHeight = maxRows >= 3 ? '500px' : maxRows === 2 ? '450px' : maxRows === 1 ? '400px' : '350px'
+  const sectionMaxHeight = maxRows >= 2 ? '550px' : maxRows === 1 ? '500px' : '450px'
+
+  const CARD_HEIGHT = 59   // py-3 (24px) + 35px icon content
+  const CARD_GAP = 12      // CourseTypeColumn's per-card marginBottom
+  const COLUMN_GAP = 35    // gap-[35px] (WelcomeHero drops to gap-3 on mobile)
+  // Everything above the first card. WelcomeHero's equivalent is 280 with its
+  // logo; this variant omits the 88px logo + 29px margin and swaps welcome's
+  // 36/16 padding for pt-12/pb-12.
+  const FIXED_OVERHEAD = hideLogo ? 227 : 280
+
+  const computeMobileHeight = (spec: number, skill: number, subj: number) => {
+    const total = spec + skill + subj
+    const cols = [spec, skill, subj].filter(c => c > 0).length
+    if (total === 0) return FIXED_OVERHEAD
+    return FIXED_OVERHEAD
+      + total * CARD_HEIGHT
+      + Math.max(0, total - cols) * CARD_GAP
+      + Math.max(0, cols - 1) * COLUMN_GAP
+  }
+
+  const mobileSectionHeight = `${computeMobileHeight(filteredSpecialism.length, filteredSkill.length, filteredSubject.length)}px`
+  // From the unfiltered set, injected as CSS so mobile has a height before JS
+  // knows isMobile — without it the band flashes at its desktop vh on load.
+  const initialMobileHeight = computeMobileHeight(
+    coursesByType.specialism.length, coursesByType.skill.length, coursesByType.subject.length
+  )
+
+  // Same thresholds as WelcomeHero: the control only appears once there is
+  // genuinely something hidden below the fold.
+  const showExpandControl = collapsible && (isMobile ? totalCards >= 7 : maxRows >= 3)
+
+  const bandStyle = collapsible ? {
+    height: isExpanded ? 'auto' : (isMobile ? mobileSectionHeight : sectionHeight),
+    minHeight: isExpanded ? 'auto' : (isMobile ? undefined : sectionMinHeight),
+    maxHeight: isExpanded ? 'none' : (isMobile ? '85vh' : sectionMaxHeight),
+    transition: isMobile === null
+      ? 'none'
+      : 'height 0.8s cubic-bezier(0.25, 1, 0.5, 1), min-height 0.8s cubic-bezier(0.25, 1, 0.5, 1), max-height 0.8s cubic-bezier(0.25, 1, 0.5, 1)',
+    overflow: 'hidden',
+  } : undefined
+
   return (
-    <div className="bg-white pb-12">
-      <div className="max-w-[1267px] mx-auto px-6">
+    <>
+    {/* Pre-hydration mobile height — prevents a flash at the desktop vh before
+        JS knows isMobile. Same trick as WelcomeHero's auth-section-1--initial. */}
+    {collapsible && isMobile === null && (
+      <style>{`@media(max-width:767px){.catalog-band--initial{height:${initialMobileHeight}px!important;max-height:85vh!important;min-height:auto!important}}`}</style>
+    )}
+    <div
+      className={`bg-white relative${collapsible && isMobile === null ? ' catalog-band--initial' : ''}`}
+      style={bandStyle}
+    >
+      {/* Without the logo (profile pages) nothing sits above the heading, so the
+          band needs its own top padding — mirroring pb-12 — or the H1 butts
+          straight against the section above it. */}
+      <div
+        className={`max-w-[1267px] mx-auto px-6${collapsible ? ' w-full h-full flex flex-col' : ''}`}
+        style={{
+          paddingTop: hideLogo ? '3rem' : undefined,
+          paddingBottom: collapsible ? (isExpanded ? '4rem' : '1rem') : '3rem',
+          overflow: collapsible && !isExpanded ? 'hidden' : undefined,
+        }}
+      >
         {/* Header with Lottie logo */}
         <div className="text-center mb-[7px]">
           {!hideLogo && (
@@ -131,7 +211,12 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
           )}
           <h1
             className="text-[38px] font-bold text-black mb-[6px] tracking-[-0.02em]"
-            style={{ fontFamily: 'var(--font-geist-sans), sans-serif', marginTop: '-12px' }}
+            // The -12px exists to tighten the gap to the Lottie logo; with no
+            // logo there is nothing to tighten against, so it just eats padding.
+            style={{
+              fontFamily: 'var(--font-geist-sans), sans-serif',
+              marginTop: hideLogo ? 0 : '-12px',
+            }}
           >
             What do you want to learn?
           </h1>
@@ -162,7 +247,7 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
                 : 0.15
               const el = (
                 <div key={type} className={filteredCount === 0 && hasSearchQuery ? 'hidden md:block' : ''}>
-                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} cardStaggerBase={baseDelay} />
+                  <CourseTypeColumn type={type} courses={allCourses} searchQuery={searchQuery} cardStaggerBase={baseDelay} openInNewTab={openInNewTab} />
                 </div>
               )
               cardOffset += allCourses.length
@@ -171,6 +256,51 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
           })()}
         </div>
       </div>
+
+      {collapsible && (
+        <>
+          {/* Bottom gradient fade — signals the band is clipped */}
+          <div
+            className="absolute bottom-0 left-0 right-0 h-[50px] pointer-events-none z-10"
+            style={{
+              background: 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,1) 100%)',
+              opacity: !isExpanded && showExpandControl ? 1 : 0,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
+
+          <button
+            onClick={() => {
+              // Collapsing on mobile leaves you scrolled past the section, so
+              // ease back to the top the way WelcomeHero does.
+              if (isExpanded && isMobile) {
+                const start = window.scrollY
+                const startTime = performance.now()
+                const duration = 800
+                const ease = (t: number) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2
+                const step = (now: number) => {
+                  const progress = Math.min((now - startTime) / duration, 1)
+                  window.scrollTo(0, start * (1 - ease(progress)))
+                  if (progress < 1) requestAnimationFrame(step)
+                }
+                requestAnimationFrame(step)
+              }
+              setIsExpanded(!isExpanded)
+            }}
+            className="absolute bottom-4 right-6 md:right-10 py-2 bg-[#8200EA] hover:bg-[#7000C9] text-white text-sm font-semibold transition-colors text-center z-20"
+            style={{
+              letterSpacing: '-0.01em',
+              borderRadius: '0.25rem',
+              width: '85px',
+              opacity: showExpandControl ? 1 : 0,
+              pointerEvents: showExpandControl ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease',
+            }}
+          >
+            {isExpanded ? 'Collapse' : 'Expand'}
+          </button>
+        </>
+      )}
 
       {showRequestModal && (
         <CourseRequestModal
@@ -181,5 +311,6 @@ export default function CourseCatalogClient({ coursesByType, hideLogo = false }:
         />
       )}
     </div>
+    </>
   )
 }

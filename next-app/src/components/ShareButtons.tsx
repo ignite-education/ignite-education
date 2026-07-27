@@ -3,8 +3,12 @@
 import { useState } from 'react'
 
 interface ShareButtonsProps {
-  courseSlug: string
-  courseTitle: string
+  /** Absolute URL to share. */
+  url: string
+  /** Title passed to the Web Share sheet. */
+  title: string
+  /** Message body for WhatsApp; the URL is appended. Defaults to `title`. */
+  shareText?: string
   /**
    * Set in the sticky rail, which crosses the black/grey boundary. The share
    * glyph is drawn twice and clipped at --clip-split so its colour changes with
@@ -13,15 +17,18 @@ interface ShareButtonsProps {
   clip?: boolean
 }
 
-export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareButtonsProps) {
+/**
+ * The share row used by the course hero and the public profile hero: native
+ * share (falling back to clipboard), LinkedIn, WhatsApp.
+ *
+ * Lives in components/ rather than a route folder because two routes use it —
+ * the blog has its own separate variant with a different visual treatment.
+ */
+export default function ShareButtons({ url, title, shareText, clip }: ShareButtonsProps) {
   const [shareHovered, setShareHovered] = useState(false)
-  const shareUrl = `https://ignite.education/courses/${courseSlug}`
 
   const handleShare = async () => {
-    const shareData = {
-      title: `${courseTitle} | Ignite Education`,
-      url: shareUrl,
-    }
+    const shareData = { title, url }
     if (navigator.share) {
       try {
         await navigator.share(shareData)
@@ -34,7 +41,7 @@ export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareBut
   }
 
   const handleLinkedInShare = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank')
   }
 
   // One definition so both clipped layers stay pixel-identical, including the
@@ -66,8 +73,7 @@ export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareBut
   }
 
   const handleWhatsAppShare = () => {
-    const text = `Check out this course: ${courseTitle || 'Course'} on Ignite Education`
-    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')
+    window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText || title} ${url}`)}`, '_blank')
   }
 
   return (
@@ -80,6 +86,8 @@ export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareBut
         className={`flex items-center justify-center rounded-[4px]${clip ? ' clip-stack' : ''}`}
         data-clip-split={clip ? '' : undefined}
         style={{ width: '33px', height: '33px', cursor: 'pointer' }}
+        role="button"
+        aria-label="Share"
       >
         {clip ? (
           <>
@@ -96,6 +104,7 @@ export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareBut
       {/* LinkedIn Share */}
       <button
         onClick={handleLinkedInShare}
+        aria-label="Share on LinkedIn"
         className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#0A66C2] transition-shadow duration-350 ease-in-out hover:shadow-[0_0_10px_rgba(103,103,103,0.4)]"
       >
         <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">
@@ -106,6 +115,7 @@ export default function ShareButtons({ courseSlug, courseTitle, clip }: ShareBut
       {/* WhatsApp Share */}
       <button
         onClick={handleWhatsAppShare}
+        aria-label="Share on WhatsApp"
         className="w-[30px] h-[30px] flex items-center justify-center rounded-md bg-[#25D366] transition-shadow duration-350 ease-in-out hover:shadow-[0_0_10px_rgba(103,103,103,0.4)]"
       >
         <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="white">

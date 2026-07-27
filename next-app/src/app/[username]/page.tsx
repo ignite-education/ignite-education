@@ -6,6 +6,7 @@ import {
   generatePersonStructuredData,
   generateProfileBreadcrumbStructuredData,
 } from '@/lib/structuredData'
+import Navbar from '@/components/Navbar'
 import ProfileHero from './ProfileHero'
 import CourseCatalogClient from '../courses/CourseCatalogClient'
 import Footer from '@/components/Footer'
@@ -41,12 +42,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: profile.display_name,
     description,
-    // Profiles are a display name, two stat chips and a copy of the course
-    // catalog — near-duplicate thin pages at the root of the domain, growing
-    // one per signup. Keep them out of the index but let them pass link equity
-    // through to /courses. noindex does not block social unfurls, so the
-    // opengraph-image route keeps working for sharing.
-    robots: { index: false, follow: true },
+    // Indexable. Note the standing caveat: a profile is currently a display
+    // name, two stat chips and a copy of the course catalog, so these are thin
+    // and near-duplicate at the root of the domain, growing one per signup —
+    // the risk is dilution rather than lift until profiles carry unique
+    // content (completed courses, certificates, a bio). Revisit if Search
+    // Console starts reporting them as "Crawled - currently not indexed".
+    robots: { index: true, follow: true },
     alternates: { canonical: url },
     openGraph: {
       title: `${profile.display_name} — Ignite Education`,
@@ -86,16 +88,16 @@ export default async function ProfilePage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
+      {/* Sticky black nav, same treatment as the course detail pages. It sits
+          on the hero's own black, so there is no seam to hide while scrolling. */}
+      <div className="sticky top-0 z-50">
+        <Navbar variant="black" />
+      </div>
+
       <main>
         <ProfileHero profile={profile} />
 
-        {/* Black section — placeholder for future profile content */}
-        <section
-          className="bg-black"
-          style={{ height: '70vh', minHeight: '500px', maxHeight: '550px' }}
-        />
-
-        <CourseCatalogClient coursesByType={coursesByType} hideLogo />
+        <CourseCatalogClient coursesByType={coursesByType} hideLogo openInNewTab collapsible />
       </main>
 
       <Footer />

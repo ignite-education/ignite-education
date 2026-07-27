@@ -6,15 +6,19 @@ interface CourseCardProps {
     name: string
     title?: string
   }
+  /** Open the course in a new tab. Used on public profiles, where the catalog
+   *  is secondary content and leaving the page would lose the profile. */
+  openInNewTab?: boolean
 }
 
-export default function CourseCard({ course }: CourseCardProps) {
+export default function CourseCard({ course, openInNewTab = false }: CourseCardProps) {
   const slug = course.name?.toLowerCase().replace(/\s+/g, '-')
     || course.title?.toLowerCase().replace(/\s+/g, '-')
 
   return (
     <Link
       href={`/courses/${slug}`}
+      {...(openInNewTab ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
       className="group block bg-[#F6F6F6] rounded-[8px] px-5 py-3"
     >
       <div className="flex items-center justify-between">

@@ -29,6 +29,8 @@ interface CourseTypeColumnProps {
   cardStaggerIncrement?: number
   maxCourses?: number
   searchQuery?: string
+  /** Forwarded to every CourseCard — see its prop docs. */
+  openInNewTab?: boolean
 }
 
 export default function CourseTypeColumn({
@@ -40,6 +42,7 @@ export default function CourseTypeColumn({
   cardStaggerIncrement = 0.1,
   maxCourses,
   searchQuery = '',
+  openInNewTab = false,
 }: CourseTypeColumnProps) {
   const config = COURSE_TYPE_CONFIG[type] || COURSE_TYPE_CONFIG.skill
   const displayCourses = maxCourses ? courses.slice(0, maxCourses) : courses
@@ -104,7 +107,7 @@ export default function CourseTypeColumn({
                     opacity: 0,
                   } : undefined}
                 >
-                  <CourseCard course={course} />
+                  <CourseCard course={course} openInNewTab={openInNewTab} />
                 </div>
               </div>
             </div>
