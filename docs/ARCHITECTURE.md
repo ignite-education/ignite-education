@@ -153,6 +153,7 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 | **LinkedIn** | `/api/linkedin/posts`, `/api/linkedin/refresh` | None |
 | **Admin Content** | `/api/admin/generate-lesson-questions`, `/api/admin/generate-svg` | Teacher+Admin |
 | **User Management** | `/api/users/:userId` (DELETE), `/api/delete-account` | Admin / Auth |
+| **Notifications** | `/api/notifications/broadcast`, `/api/notifications/admin`, `/api/notifications/:id` (DELETE) | Admin |
 
 #### Auth middleware levels
 
@@ -168,6 +169,7 @@ Ignite Education is a learning platform built as a **multi-app architecture** wi
 | Daily 10 AM ET | Inactivity reminder emails (14+ days inactive) |
 | Daily midnight UTC | Community stats + achievement percentile refresh (Supabase RPCs) |
 | Weekly Sunday 4 AM UTC | User memory aggregation via Claude |
+| Daily 2 AM UTC | Notification pruning (`prune_notifications` RPC) |
 | Daily 6 AM UTC (Render cron) | Reddit cache refresh |
 
 ---
@@ -302,10 +304,41 @@ Key tables (non-exhaustive):
 - `office_hours_sessions`, `office_hours_queue` — live session state
 - `email_preferences` — per-user email subscription settings
 - `release_notes` — product changelog
+- `notifications` — Progress Hub notification feed (see below)
 
 Supabase RPCs:
 - `refresh_community_stats()` — nightly community metrics
 - `refresh_achievement_percentile_stats()` — nightly percentile calculations
+- `prune_notifications()` — nightly deletion of aged-out/expired notifications
+
+### Notifications
+
+Backs the bell in the Progress Hub icon row. Migrations:
+`migrations/create_notifications_table.sql` then `create_notification_triggers.sql`
+(hand-applied in the Supabase SQL editor).
+
+- **One row per event, no fan-out.** Rows are either targeted (`audience = 'user'`,
+  `user_id` set) or broadcast (`audience = 'all'`, `user_id` null). A published release
+  note is one row, not one per learner.
+- **`audience` is deliberately redundant** with `user_id IS NULL`: Realtime
+  `postgres_changes` filters support only `eq/neq/lt/lte/gt/gte/in`, so a subscriber
+  cannot filter on `user_id is null`. A `CHECK` keeps the two in sync.
+- **Read state is not in the database.** The client keeps a last-seen timestamp in
+  `localStorage` (`ignite:notifications:lastSeen:<userId>`) and derives the unread count,
+  which is what lets one broadcast row serve every user.
+- **Rows are written by `SECURITY DEFINER` triggers**, not app code — the source tables
+  are written by three different clients with three different keys. Trigger types:
+  `certificate`, `release_note`, `blog_post`, `office_hours`. The fifth type,
+  `announcement`, is published by hand from the admin portal.
+- **Admin portal**: `admin.ignite.education/notifications` composes and broadcasts
+  announcements and lists/deletes every notification. Because the table has no
+  INSERT/DELETE policy, that page goes through the Express endpoints above rather
+  than its own Supabase client — unlike every other admin page.
+- **RLS:** SELECT only (`audience = 'all' OR user_id = auth.uid()`). No INSERT/UPDATE/DELETE
+  policy exists; the service role and the triggers are the only writers.
+- This is the **first RLS-enabled table in the `supabase_realtime` publication**, so the
+  websocket must carry the user JWT for the SELECT policy to be evaluated per subscriber
+  — `useNotifications` calls `supabase.realtime.setAuth()` explicitly before subscribing.
 
 ---
 

@@ -1171,7 +1171,7 @@ const OfficeHours = ({
 
   return (
     <div style={{
-      width: '100vw',
+      width: '100%',
       minHeight: '100vh',
       backgroundColor: 'white',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',

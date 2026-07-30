@@ -6493,12 +6493,124 @@ cron.schedule('0 4 * * 0', async () => {
 
 console.log('⏰ Weekly memory aggregation cron job scheduled: Sundays at 4 AM UTC');
 
+/**
+ * Notification pruning
+ * Runs daily at 2 AM UTC
+ * Deletes notifications older than 90 days and expired ephemeral ones
+ */
+cron.schedule('0 2 * * *', async () => {
+  console.log('⏰ Running notification pruning (2 AM UTC)');
+  try {
+    const { data, error } = await supabase.rpc('prune_notifications');
+    if (error) console.error('❌ Notification pruning failed:', error.message);
+    else console.log(`✅ Pruned ${data ?? 0} notifications`);
+  } catch (error) {
+    console.error('❌ Notification pruning error:', error);
+  }
+});
+
+console.log('⏰ Notification pruning cron job scheduled: 2 AM UTC');
+
 // ============================================================================
 // END LINKEDIN ENDPOINTS
 // ============================================================================
 // ============================================================================
 // ============================================================================
 
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+// The notifications table has no INSERT/UPDATE/DELETE policy — rows come only
+// from SECURITY DEFINER triggers or the service role. So every admin write has
+// to go through these endpoints; the admin app's browser client can't do it.
+
+const NOTIFICATION_TYPES = ['certificate', 'release_note', 'blog_post', 'office_hours', 'announcement'];
+
+// Broadcast a notification to every user (admin only)
+app.post('/api/notifications/broadcast', verifyAdmin, async (req, res) => {
+  try {
+    const { title, body, linkUrl, type = 'announcement' } = req.body;
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ error: 'title is required' });
+    }
+    if (!NOTIFICATION_TYPES.includes(type)) {
+      return res.status(400).json({ error: `type must be one of: ${NOTIFICATION_TYPES.join(', ')}` });
+    }
+
+    console.log(`📣 Admin ${req.user.id} broadcasting notification: ${title}`);
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .insert({
+        audience: 'all',
+        type,
+        title: title.trim(),
+        body: body?.trim() || null,
+        link_url: linkUrl?.trim() || null,
+      })
+      .select()
+      .single();
+
+    // The type CHECK is widened by a hand-applied migration, so surface a
+    // useful message rather than a raw Postgres error if it hasn't been run.
+    if (error?.code === '23514') {
+      return res.status(400).json({
+        error: `The database does not accept the '${type}' notification type yet. Run migrations/add_announcement_notification_type.sql in the Supabase SQL editor.`,
+      });
+    }
+    if (error) throw error;
+
+    res.json({ success: true, notification: data });
+  } catch (error) {
+    console.error('Error broadcasting notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// List notifications for the admin portal (admin only).
+// Returns trigger-generated rows alongside manual ones, so everything can be
+// reviewed and removed from one place.
+app.get('/api/notifications/admin', verifyAdmin, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 50, 200);
+
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('id, audience, user_id, type, title, body, link_url, course_id, expires_at, created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    res.json({ notifications: data || [] });
+  } catch (error) {
+    console.error('Error listing notifications:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete a notification (admin only)
+app.delete('/api/notifications/:id', verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('notifications')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    console.log(`🗑️  Admin ${req.user.id} deleted notification ${id}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting notification:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // ============================================================================
 // COURSE LAUNCH NOTIFICATIONS

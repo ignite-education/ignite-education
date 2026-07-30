@@ -4,6 +4,20 @@
   box-sizing: border-box;
 }
 
+/* Reserve the scrollbar gutter permanently so layout never shifts when the
+   scrollbar appears or disappears — e.g. the Progress Hub loading screen (which
+   is exactly 100vh, so it doesn't scroll) handing off to the loaded page, or a
+   modal setting `body { overflow: hidden }` to lock the page behind it. */
+html {
+  scrollbar-gutter: stable;
+}
+
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1405,6 +1419,7 @@ body {
   .animate-fadeIn,
   .animate-fadeInUp,
   .animate-slideUp,
+  .animate-scaleUp,
   .animate-blink,
   .animate-colorFade,
   .animate-expandUnderline {

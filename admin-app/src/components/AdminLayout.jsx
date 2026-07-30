@@ -10,6 +10,7 @@ import {
   FileText,
   Link2,
   Video,
+  Bell,
   LogOut,
   ExternalLink,
   Menu,
@@ -25,6 +26,7 @@ const navItems = [
   { path: '/prompts', label: 'Prompts', icon: Lightbulb, roles: ['admin'] },
   { path: '/release-notes', label: 'Release Notes', icon: FileText, roles: ['admin'] },
   { path: '/resources', label: 'Resources', icon: Link2, roles: ['admin'] },
+  { path: '/notifications', label: 'Notifications', icon: Bell, roles: ['admin'] },
 ];
 
 const AdminLayout = ({ children }) => {

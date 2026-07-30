@@ -2617,3 +2617,56 @@ export async function getBackupsSummary(courseId = null) {
     return [];
   }
 }
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+/**
+ * Fetch the current user's notification feed: their own targeted rows plus every
+ * broadcast, newest first, excluding anything that has expired or is scoped to a
+ * different course.
+ *
+ * RLS already restricts the result set to the user's rows plus broadcasts; the
+ * .or() on audience/user_id is defence in depth and keeps the query
+ * self-describing. Chained .or() calls are AND-ed together by PostgREST.
+ *
+ * @param {string} userId
+ * @param {string} [courseId] - course the learner is enrolled on; course-scoped
+ *                              notifications for other courses are filtered out
+ * @param {number} [limit]
+ * @returns {Promise<Array>}
+ */
+export async function getNotifications(userId, courseId = null, limit = 20) {
+  if (!userId) return [];
+
+  const nowIso = new Date().toISOString();
+
+  let query = supabase
+    .from('notifications')
+    .select('id, audience, type, title, body, link_url, course_id, created_at')
+    .or(`user_id.eq.${userId},audience.eq.all`)
+    .or(`expires_at.is.null,expires_at.gt.${nowIso}`);
+
+  if (courseId) {
+    query = query.or(`course_id.is.null,course_id.eq.${courseId}`);
+  } else {
+    query = query.is('course_id', null);
+  }
+
+  const { data, error } = await query
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    // The migration is hand-applied, so the frontend can ship before the table
+    // exists. Degrade to an empty bell rather than throwing on every page load.
+    if (error.code === '42P01' || error.code === 'PGRST205' || error.code === 'PGRST116') {
+      return [];
+    }
+    console.error('❌ Error in getNotifications:', error);
+    throw error;
+  }
+
+  return data || [];
+}

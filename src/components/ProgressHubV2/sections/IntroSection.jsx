@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useMemo } from 'react';
 import Lottie from 'lottie-react';
 import useIsMobile from '../hooks/useIsMobile';
+import NotificationBell from './NotificationBell';
 import { useAnimation } from '../../../contexts/AnimationContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import useTypingAnimation from '../../../hooks/useTypingAnimation';
@@ -243,6 +244,17 @@ const ConfettiBurst = () => {
   );
 };
 
+// Shared resets so a <button> renders pixel-identically to a bare <div>
+const iconButtonReset = {
+  width: '29px',
+  height: '29px',
+  cursor: 'pointer',
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  appearance: 'none',
+};
+
 const ShareButton = () => {
   const [hovered, setHovered] = useState(false);
   const iconColor = hovered ? '#EF0B72' : '#000000';
@@ -264,16 +276,14 @@ const ShareButton = () => {
   };
 
   return (
-    <div
+    <button
+      type="button"
       onClick={handleShare}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="flex items-center justify-center rounded-[4px]"
-      style={{
-        width: '29px',
-        height: '29px',
-        cursor: 'pointer',
-      }}
+      aria-label="Share your progress"
+      className="intro-icon-btn flex items-center justify-center rounded-[4px]"
+      style={iconButtonReset}
     >
       <svg
         width="19"
@@ -301,7 +311,7 @@ const ShareButton = () => {
           style={{ transition: 'stroke 0.2s ease' }}
         />
       </svg>
-    </div>
+    </button>
   );
 };
 
@@ -311,16 +321,14 @@ const SettingsCog = ({ onClick }) => {
   const iconColor = hovered ? '#EF0B72' : '#000000';
 
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
       onMouseEnter={() => { setHovered(true); setRotation((r) => r + 45); }}
       onMouseLeave={() => setHovered(false)}
-      className="flex items-center justify-center rounded-[4px]"
-      style={{
-        width: '29px',
-        height: '29px',
-        cursor: 'pointer',
-      }}
+      aria-label="Open settings"
+      className="intro-icon-btn flex items-center justify-center rounded-[4px]"
+      style={iconButtonReset}
     >
       <svg
         width="23"
@@ -347,11 +355,11 @@ const SettingsCog = ({ onClick }) => {
           style={{ transition: 'stroke 0.2s ease' }}
         />
       </svg>
-    </div>
+    </button>
   );
 };
 
-const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
+const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progressPercentage, courseTitle, joinedAt, totalCompletedLessons, isInsider, userId, courseId, onSettingsClick, completedLessons, lessonsMetadata, userLessonScores, upcomingLessons, userRole, userCountry, communityCount, behaviourStat, achievementStat, lessonSlider }) => {
   const isMobile = useIsMobile();
   const avatarSize = isMobile ? 42.35 : 150; // mobile: 42.35 (top-right)
   const statImgSize = isMobile ? 64.98 : 80; // mobile: 5% smaller than 68.4 (was 72)
@@ -521,7 +529,10 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         fontFamily: 'Geist, -apple-system, BlinkMacSystemFont, sans-serif',
       }}
     >
-      <style>{`.intro-link:hover { color: #EF0B72 !important; }`}</style>
+      <style>{`
+        .intro-link:hover { color: #EF0B72 !important; }
+        .intro-icon-btn:focus-visible { outline: 2px solid #EF0B72; outline-offset: 2px; }
+      `}</style>
       <div className="flex flex-col lg:flex-row w-full gap-4 lg:gap-16 items-start">
         {/* Left Column: Logo, Avatar, Greeting */}
         <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
@@ -728,10 +739,12 @@ const IntroSection = ({ firstName, profilePicture, hasHighQualityAvatar, progres
         </div>
       )}
 
-      {/* Bottom Icons — desktop only (on mobile, tapping the avatar opens settings) */}
+      {/* Bottom Icons — desktop only (on mobile, tapping the avatar opens settings).
+          zIndex lifts the notification popover above the tag chips (zIndex 2) above it. */}
       {!isMobile && (
-        <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px' }}>
+        <div className="flex items-center gap-2" style={{ position: 'absolute', bottom: '30px', left: '40px', zIndex: 3 }}>
           <SettingsCog onClick={onSettingsClick} />
+          <NotificationBell userId={userId} courseId={courseId} />
           <ShareButton />
         </div>
       )}

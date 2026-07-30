@@ -12,6 +12,7 @@ const BlogManagement = lazy(() => import('./pages/BlogManagement'));
 const ReleaseNotes = lazy(() => import('./pages/ReleaseNotes'));
 const PromptsManagement = lazy(() => import('./pages/PromptsManagement'));
 const ResourcesManagement = lazy(() => import('./pages/ResourcesManagement'));
+const NotificationsManagement = lazy(() => import('./pages/NotificationsManagement'));
 const OfficeHours = lazy(() => import('./pages/office-hours/index'));
 
 const App = () => {
@@ -64,6 +65,12 @@ const App = () => {
             <Route path="/resources" element={
               <AdminRoute requireAdmin>
                 <AdminLayout><ResourcesManagement /></AdminLayout>
+              </AdminRoute>
+            } />
+
+            <Route path="/notifications" element={
+              <AdminRoute requireAdmin>
+                <AdminLayout><NotificationsManagement /></AdminLayout>
               </AdminRoute>
             } />
 
