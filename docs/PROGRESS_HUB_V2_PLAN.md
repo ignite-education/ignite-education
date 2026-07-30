@@ -23,7 +23,7 @@ The redesigned progress hub is a **full-width, single-column scrollable page** w
 | # | Section | Description | Status |
 |---|---------|-------------|--------|
 | 1 | **Introduction** | Ignite logo, user photo, greeting, dynamic progress summary, stats row, settings link | Built (stats & summary mocked) |
-| 2 | **Course Details** | Course title, progress graph (mountain/wave SVG), lesson slider, office hours, community forum | Built (graph data mocked) |
+| 2 | **Course Details** | Course title, progress graph (stacked lesson blocks), lesson slider, office hours, community forum | Built (real user scores; course average still mocked) |
 | 3 | **Merchandise** | Product images linking to Shopify store | Built |
 | 4 | **Blog** | Latest blog posts via existing BlogCarousel | Built |
 | 5 | **Footer** | Standard site footer | Built (reuses existing Footer component) |
@@ -44,7 +44,7 @@ src/components/ProgressHubV2/
 └── sections/
     ├── IntroSection.jsx              # Section 1: hero with greeting, stats, progress
     ├── CourseDetailsSection.jsx      # Section 2: wrapper for course content
-    ├── ProgressGraph.jsx             # NEW: SVG mountain/wave chart
+    ├── ProgressGraph.jsx             # Per-module stacks of lesson blocks; brightness = score
     ├── LessonSlider.jsx              # Extracted lesson carousel
     ├── OfficeHoursCard.jsx           # Extracted office hours + Calendly/Stripe
     ├── CommunityForumCard.jsx        # Simplified forum CTA
@@ -113,13 +113,14 @@ Currently static text: "Overall, you're scoring great..."
 - **LLM-generated** — call Claude/GPT API with user progress data for personalized summary
 - Decision deferred to future session
 
-### 3. Progress Graph Scores (ProgressGraph.jsx)
-Currently using `MOCK_MODULE_SCORES` array with hardcoded scores.
+### 3. Progress Graph — course average (ProgressGraph.jsx)
+Each lesson is one rectangle: **pink** once the user has completed it (brightness = their score), **grey** until then (brightness = the course average).
 
-**To implement:** Wire up real quiz/assessment scores per module. Requires:
-- A `quiz_scores` or `assessments` table in Supabase
-- An API function to aggregate scores by module
-- Replace mock data with real data in the hook
+User scores are **real** — `getLessonScores` (`src/lib/api.js`) aggregates `section_question_scores` into `{ correct, total }` per lesson.
+
+Still mocked: the grey **course average**. `effectiveGlobalScores` overrides the `globalLessonScores` prop with a deterministic hash in the 65–95% range, because a real average needs data from 5+ users to be meaningful.
+
+**To implement:** delete the `effectiveGlobalScores` override and use the `globalLessonScores` prop directly (already fetched via `getGlobalLessonScores` → `GET /api/lesson-scores/global/:courseId`). Two things to handle: the shape asymmetry (user scores are `{ correct, total }`, global scores are bare percents), and sparse real data — an uncompleted lesson with no global score yet currently has no fallback colour.
 
 ### 4. Settings (ProgressHubV2.jsx)
 Settings link currently navigates to `/progress` (where the settings modal lives).
@@ -162,7 +163,7 @@ These were **copied and adapted** from `src/components/ProgressHub.jsx` — the 
 - [x] Build `useProgressData` hook (data fetching)
 - [x] Build `useCourseProgress` hook (computed state)
 - [x] Build IntroSection (greeting, mocked stats, progress bar)
-- [x] Build ProgressGraph (custom SVG, mocked scores)
+- [x] Build ProgressGraph (custom, no charting library)
 - [x] Extract LessonSlider from ProgressHub
 - [x] Extract OfficeHoursCard from ProgressHub (with Calendly/Stripe)
 - [x] Build CommunityForumCard (simplified CTA)
@@ -174,12 +175,13 @@ These were **copied and adapted** from `src/components/ProgressHub.jsx` — the 
 ### Phase 2: Visual Polish
 - [ ] Iterate layout/spacing to match design mockup exactly
 - [ ] Refine IntroSection layout (profile pic position, stats alignment)
-- [ ] Tune ProgressGraph visual style (colors, line weight, gradients)
+- [x] Tune ProgressGraph visual style — replaced the line chart with per-module stacks of equally-sized lesson blocks (lesson 1 at the bottom), brightness encoding score, modules evenly distributed
 - [ ] Ensure consistent typography and spacing across sections
 - [ ] Add section dividers/backgrounds matching the design
 
 ### Phase 3: Real Data Wiring
-- [ ] Wire progress graph to real quiz/assessment scores per module
+- [x] Wire progress graph to real per-lesson user scores (`section_question_scores`)
+- [ ] Wire the graph's grey course-average series to real global scores (see "Mocked" §3)
 - [ ] Build user stats backend queries (ranking, activity pattern, geo)
 - [ ] Wire user stats into IntroSection
 - [ ] Build AI summary (template-based or LLM-generated)
